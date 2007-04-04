@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbXDDNzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbXDDN7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbXDDNzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 09:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbXDDNzf
+	id S1753846AbXDDN7M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 09:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXDDN7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 09:55:35 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:45613 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbXDDNze (ORCPT
+	Wed, 4 Apr 2007 09:59:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:12311 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753846AbXDDN7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 09:55:34 -0400
-Date: Wed, 4 Apr 2007 16:55:32 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070404135530.GA29026@localdomain>
-References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random>
+	Wed, 4 Apr 2007 09:59:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=p61ROPZf0zgatuJ9c/ttwLxKyyd/NHwVJ+t+tBxgcsY+MvwP2fIUxUJejM4TdnlrYD+iBlv8XkT8aO2lelW09fpaM1QV0qE/SB+g5Ju1J0Ht9Imd0A6IlGJACWc4OvlfNsxmfLb7CzxXbkgGgP3KdDfdKQbWFF+vh85SXieIkEU=
+Message-ID: <9a8748490704040659t43942e96t8e70d8785f851336@mail.gmail.com>
+Date: Wed, 4 Apr 2007 15:59:10 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Maxim Uvarov" <muvarov@ru.mvista.com>
+Subject: Re: Performance Stats: Kernel patch
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+In-Reply-To: <4613A4FF.9030202@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070404122701.GB19587@v2.random>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+References: <46124E93.2000408@ru.mvista.com>
+	 <16797.1175641303@turing-police.cc.vt.edu>
+	 <4613A4FF.9030202@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 02:27:01PM +0200, Andrea Arcangeli wrote:
-> On Wed, Apr 04, 2007 at 12:24:07PM +0200, Nick Piggin wrote:
-> > But for a potential mainline merge, maybe starting with a CONFIG
-> > option is a good idea -- defaulting to off, and we could start by
-> > turning it on just in -rc kernels for a few releases, to get a bit
-> > more confidence?
-> 
-> The only reason to do that is if there are many stupid apps pretending
-> to get meaningful information from pages that cannot contain any
-> information. The zero page in the anon page fault has been there
-> forever so...
+On 04/04/07, Maxim Uvarov <muvarov@ru.mvista.com> wrote:
+> Hello again,
+>
+[snip]
+> New version of this patch. Please flay it.
+>
 
-There might be a lot of applications like that, and I'm not sure that 
-_all_ of them can be considered 'stupid' as you say.
+A few small comments below.
 
-How about applications that perform mmap() and R/W random-access on 
-large *sparse* files? (e.g. a scientific app that uses a large sparse 
-file as a big database look-up table). As I see it, these apps would
-need to keep track of what's sparse and what's not...
+>
+> +config THREAD_PERF_STAT
+> +       bool "Per-process (thread) performance statistics"
+> +       depends on (X86 || PPC || MIPS)
+> +       help
+> +         Make available to the user the following new per-process
+> (thread) performance statistics:
+
+Get rid of the word "new" - it won't continue to be a "new" feature forever :-)
+
+> +           * Involuntary Context Switches
+> +           * Voluntary Context Switches
+> +           * Number of system calls (option)
+
+In the first two lines you Capitalize Each Word, but in the last line
+you don't - why?
+Shouldn't the first two have "Number of" prepended?
+Perhaps it's just me, but I would write "(optional)" instead of "(option)".
+
+In short, I'd suggest this :
+
+           * Number of involuntary context switches
+           * Number of voluntary context switches
+           * Number of system calls (optional)
+
+> +         This information is available via /proc/PID/status.
+
+What about tools that currently parse /proc/PID/status ?  Don't you
+risk breaking userland stuff by changing this file?   Wouldn't it be
+better to use a new file?
+
+> +
+> +config THREAD_PERF_STAT_SYSC
+> +       bool "enable syscall counter"
+
+Capitalize the first word; "Enable syscall counter" .
+
+> +       depends on THREAD_PERF_STAT
+> +       help
+> +          This option add syscalls counter to  /proc/PID/status.
+
+I'd probably have written "This option adds a syscall counter to
+/proc/PID/status."
+
 
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
