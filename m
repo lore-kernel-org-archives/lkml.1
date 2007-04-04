@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992724AbXDDIGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992728AbXDDIHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992724AbXDDIGk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 04:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992726AbXDDIGk
+	id S2992728AbXDDIHS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 04:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992729AbXDDIHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 04:06:40 -0400
-Received: from mfo30.po.2iij.NET ([210.128.50.51]:1814 "EHLO mfo30.po.2iij.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992724AbXDDIGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 04:06:39 -0400
-X-Greylist: delayed 2138 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 04:06:38 EDT
-Date: Wed, 4 Apr 2007 16:29:34 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: Andrew Morton <akpm@osdl.org>
-Cc: yoichi_yuasa@tripeaks.co.jp, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mips <linux-mips@linux-mips.org>
-Subject: [PATCH] Fixed build error on zs serial driver
-Message-Id: <20070404162934.2635ef95.yoichi_yuasa@tripeaks.co.jp>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 1.0.4 (GTK+ 1.2.10; i386-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Apr 2007 04:07:18 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:17923 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992728AbXDDIHP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 04:07:15 -0400
+X-IronPort-AV: i="4.14,369,1170651600"; 
+   d="scan'208"; a="33689456:sNHT24325056"
+Subject: Re: [PATCH] Blackfin arch: add asm-blackfin socket header files
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: bryan.wu@analog.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1175669730.10608.43.camel@roc-desktop>
+References: <1175668088.10608.37.camel@roc-desktop>
+	 <1175669730.10608.43.camel@roc-desktop>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 04 Apr 2007 16:08:44 +0800
+Message-Id: <1175674124.10608.46.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-04-04 at 14:55 +0800, Wu, Bryan wrote:
+> On Wed, 2007-04-04 at 14:28 +0800, Wu, Bryan wrote:
+> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> > ---
+> >  include/asm-blackfin/socket.h  |   55 ++++++++++++++++++++++++++++++++++++++++
+> >  include/asm-blackfin/sockios.h |   13 +++++++++
+> >  2 files changed, 68 insertions(+), 0 deletions(-)
+> >  create mode 100644 include/asm-blackfin/socket.h
+> >  create mode 100644 include/asm-blackfin/sockios.h
+> > 
+> 
+> Maybe we can add generic header files such as
+> include/asm-generic/socket.h and include/asm-generic/sockios.h.
+> 
+> Cheers,
+> -Bryan
 
-This patch has fixed build error on zs serial driver.
+oops, I screwed up the patch set in my local git-tree. please drop this
+patch and I will send a new one.
 
-drivers/tc/zs.c:73:24: error: asm/dec/tc.h: No such file or directory
-make[2]: *** [drivers/tc/zs.o] Error 1
-
-Yoichi
-
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-
-diff -pruN -X mips/Documentation/dontdiff mips-orig/drivers/tc/zs.c mips/drivers/tc/zs.c
---- mips-orig/drivers/tc/zs.c	2007-04-04 15:01:22.952507000 +0900
-+++ mips/drivers/tc/zs.c	2007-04-04 15:15:37.861935500 +0900
-@@ -70,7 +70,6 @@
- #include <asm/dec/machtype.h>
- #include <asm/dec/serial.h>
- #include <asm/dec/system.h>
--#include <asm/dec/tc.h>
- 
- #ifdef CONFIG_KGDB
- #include <asm/kgdb.h>
+Sorry for this.
+-Bryan
