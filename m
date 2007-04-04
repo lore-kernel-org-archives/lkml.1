@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933566AbXDDPsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933618AbXDDPvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933566AbXDDPsv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934038AbXDDPsv
+	id S933618AbXDDPvE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934048AbXDDPvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:48:51 -0400
-Received: from ns.suse.de ([195.135.220.2]:58995 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933566AbXDDPsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:48:50 -0400
-Date: Wed, 4 Apr 2007 17:48:39 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070404154839.GI19587@v2.random>
-References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+	Wed, 4 Apr 2007 11:51:04 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:44928 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933618AbXDDPvB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:51:01 -0400
+Message-ID: <4613C941.6040706@zytor.com>
+Date: Wed, 04 Apr 2007 08:50:25 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mathiasen@gmail.com, virtualization@lists.linux-foundation.org
+Subject: Re: A set of "standard" virtual devices?
+References: <4611652F.700@zytor.com> <200704040049.13118.arnd@arndb.de> <4612F6E9.7040003@zytor.com> <200704041511.42543.arnd@arndb.de>
+In-Reply-To: <200704041511.42543.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 08:35:30AM -0700, Linus Torvalds wrote:
-> Anyway, I'm not against this, but I can see somebody actually *wanting* 
-> the ZERO page in some cases. I've used the fact for TLB testing, for 
-> example, by just doing a big malloc(), and knowing that the kernel will 
-> re-use the ZERO_PAGE so that I don't get any cache effects (well, at least 
-> not any *physical* cache effects. Virtually indexed cached will still show 
-> effects of it, of course, but I haven't cared).
+Arnd Bergmann wrote:
+> 
+>> That being said, on platforms which are PCI-centric, such as x86, this 
+>> of course makes it a lot easier to produce virtual devices which work 
+>> across hypervisors, since the device model, of *any* operating system is 
+>> set up to handle them.
+> 
+> Yes, as I said there are two separate problems. I really think that
+> a standardized virtual driver interface should be modeled after
+> kernel <-> user interfaces, not hardware <-> kernel interfaces.
+> 
+> Once we know what operations we want (e.g. read, write and SIGIO,
+> or some other set of primitives), it will be good to provide a
+> virtual PCI device that can be used as one transport mechanism
+> below it. Using PCI device IDs to tell what functionality is
+> provided by the device would provide a reasonable method for
+> autoprobing.
+> 
 
-Ok, those cases wanting the same zero page, could be fairly easily
-converted to an mmap over /dev/zero (without having to run 4k large
-mmap syscalls or nonlinear).
+That seems like a reasonable approach.  I *do* care about 
+hardware-equivalent interfaces, because they, too, keep getting 
+reinvented, but it seems reasonable to approach it in a layered fashion 
+like you describe.
+
+	-hpa
+
