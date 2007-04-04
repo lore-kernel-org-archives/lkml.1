@@ -1,74 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966225AbXDDBQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966230AbXDDBRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966225AbXDDBQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966229AbXDDBQu
+	id S966230AbXDDBRP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966229AbXDDBRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:16:50 -0400
-Received: from [202.78.101.198] ([202.78.101.198]:35548 "EHLO mail.hq.astra.ph"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S966225AbXDDBQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:16:48 -0400
-Message-ID: <4612FC57.2060207@gmail.com>
-Date: Wed, 04 Apr 2007 09:16:07 +0800
-From: Carlo Florendo <subscribermail@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel source dependency
-References: <46120EBE.8080705@gmail.com> <20070403081853.6590ef84.randy.dunlap@oracle.com>
-In-Reply-To: <20070403081853.6590ef84.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 3 Apr 2007 21:17:15 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57401 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966230AbXDDBRN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 21:17:13 -0400
+Date: Wed, 4 Apr 2007 02:19:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: paulus@samba.org, dwmw2@infradead.org, linuxppc-dev@ozlabs.org,
+       benh@kernel.crashing.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404021924.71e87580@the-village.bc.nu>
+In-Reply-To: <20070403.165518.55726194.davem@davemloft.net>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<20070403.165518.55726194.davem@davemloft.net>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Tue, 03 Apr 2007 16:22:22 +0800 Carlo Florendo wrote:
-> 
->> Hello,
->>
->> I'm not sure whether a fix is necessary for the following scenario.
->>
->> The kernel configure target "make menuconfig" requires ncurses.   FWIW, it
->> could probably be better if the error message would indicate that that
->> ncurses is necessary for "make menuconfig" to run and that the user could
->> be prompted to install the package.
-> 
-> Hi,
-> Without ncurses installed, you should see these messages:
-> 
-> 	echo " *** Unable to find the ncurses libraries."
-> 	echo " *** make menuconfig require the ncurses libraries"
-> 	echo " *** "
-> 	echo " *** Install ncurses (ncurses-devel) and try again"
-> 	echo " *** "
-> 
-> Do you not see them?  or do you need something different?
+> I totally agree with Paul, the onboard serial device should get
+> ttyS0 regardless of what hardare is used to drive it.
 
-Thanks. It seems I just made noise.   I saw exactly the same thing you 
-posted, now that I've rested and it's 9:30AM.  I didn't see it the other 
-day at 2:30AM.  Maybe I need more sleep :)
+Thats between you and udev.
 
-Thank you very much.
+> Generalizing this minor number allocation for ttyS? might be the
+> best way to handle this.
 
-Best Regards,
+Again this is a udev issue. udev can certainly do a generic "all my
+serial ports" listing.
 
-Carlo
-
-
-
--- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, Diliman 1101, Quezon City
-Philippines
-http://www.astra.ph
-
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
