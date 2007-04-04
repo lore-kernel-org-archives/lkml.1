@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbXDDQHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbXDDQJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751917AbXDDQHs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXDDQHs
+	id S1752017AbXDDQJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXDDQJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:07:48 -0400
-Received: from ns.suse.de ([195.135.220.2]:60259 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751917AbXDDQHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:07:46 -0400
-Date: Wed, 4 Apr 2007 18:07:15 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Dan Aloni <da-x@monatomic.org>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070404160715.GJ19587@v2.random>
-References: <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random> <20070404135530.GA29026@localdomain> <20070404141457.GF19587@v2.random> <20070404144421.GA13762@localdomain> <Pine.LNX.4.64.0704041553220.18202@blonde.wat.veritas.com> <20070404153451.GH19587@v2.random> <Pine.LNX.4.64.0704041636550.22242@blonde.wat.veritas.com>
+	Wed, 4 Apr 2007 12:09:29 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:37327 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbXDDQJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 12:09:28 -0400
+Message-ID: <4613CD34.8080509@zytor.com>
+Date: Wed, 04 Apr 2007 09:07:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704041636550.22242@blonde.wat.veritas.com>
+To: David Lang <david.lang@digitalinsight.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
+       dwmw2@infradead.org, flar@allandria.com, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210 02.GA13210@cynthia.pants.nu><1175648051.10567.61.camel@shinybook.infradead. org><20070403.181645.68159458.davem@davemloft.net><20070404022828.5c9b97f3@ the-village.bc.nu><Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz> <20070404024400.56d016e1@the-village.bc.nu> <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 04:41:46PM +0100, Hugh Dickins wrote:
-> Nor I: I meant that anonymous readfault should
-> (perhaps) mark the pte writable but clean.
+David Lang wrote:
+> On Wed, 4 Apr 2007, Alan Cox wrote:
+> 
+>>>> You don't get machines with 64 ethernet ports on add-in cards. There 
+>>>> are
+>>>> good reasons for the naming schemes in use.
+>>>
+>>> I've seen machines offering up to 48, what's the magic number that 
+>>> makes you
+>>> need to chagne nameing schemes?
+>>
+>> Have you tried working with 48 ports when they are not numbered 0-47 or
+>> in some logical fashion ?
+> 
+> no, but that's what we're wanting with serial ports as well. a system 
+> with 50 serial ports should have them numbered 0-49, not typea0-5, 
+> typeb0-39, typec0-5
+> 
 
-Sorry I assumed when you said clean you implied readonly... Though
-we'd need to differentiate the archs where the dirty bit is not set by
-the hardware. Overall I'm unsure it worth it. Currently the VM
-definitely wouldn't cope with a writeable and clean anonymous page, so
-we'd need to change shrink_page_list and try_to_unmap_anon to make it
-work. Likely it won't be measurable, so it may be a nice feature to
-have from a theoretical point of view, in practice I doubt it matters.
+I would actually disagree.  I have systems with multiport serial cards 
+installed, and I much prefer those to be named differently.  Not only do 
+I not have to worry about the same problem I *constantly* have with 
+onboard Ethernet cards -- whoops I just installed an expansion card and 
+suddenly my onboard NIC is eth2! -- but the expansion serial ports tend 
+to be *different.*
+
+For example, on my serial server, the Cyclades ports (ttyC*) use RJ-45 
+connections from an external expansion module, whereas of course the 
+builtin ones (ttyS*) use DB-9s.
+
+	-hpa
