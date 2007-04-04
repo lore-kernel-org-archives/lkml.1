@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992913AbXDDO4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992911AbXDDO52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992913AbXDDO4L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 10:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992911AbXDDO4K
+	id S2992911AbXDDO52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 10:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992916AbXDDO52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 10:56:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40094 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992913AbXDDO4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 10:56:09 -0400
-Message-ID: <4613BC5D.2070404@redhat.com>
-Date: Wed, 04 Apr 2007 10:55:25 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Wed, 4 Apr 2007 10:57:28 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42683 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992911AbXDDO51 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 10:57:27 -0400
+Date: Wed, 4 Apr 2007 16:57:26 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+Message-ID: <20070404145726.GD27660@stusta.de>
+References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org> <4613A1F1.2080007@gmail.com>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <20070403144948.fe8eede6.akpm@linux-foundation.org> <20070403160231.33aa862d.akpm@linux-foundation.org> <Pine.LNX.4.64.0704040949050.17341@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0704040949050.17341@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4613A1F1.2080007@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
+On Wed, Apr 04, 2007 at 03:02:41PM +0200, Rene Herman wrote:
+> On 04/04/2007 02:33 PM, Christoph Hellwig wrote:
+> 
+> >On Wed, Apr 04, 2007 at 01:26:04PM +0200, Rene Herman wrote:
+> 
+> >>Can we have a MODULE_MAINTAINER to complement MODULE_AUTHOR?
+> >
+> >#define MODULE_MAINTAINER(x) MODULE_AUTHOR(x), please.
+> >MODULE_AUTHOR really has meant maintainer in practice for ages, and it's
+> >the only actually relevant for users information we should store.
+> 
+> Given modules with multiple authors, current and non-current, I believe 
+> having "modinfo -m" tell the user whom to contact is an avantage.
 
-> (I didn't understand how Rik would achieve his point 5, _no_ lock
-> contention while repeatedly re-marking these pages, but never mind.)
+Much bigger problems are:
+- Who will maintain this information properly?
+- What about modules that are maintained implicitely by the subsystem
+  maintainer?
 
-The CPU marks them accessed&dirty when they are reused.
+And often a user can't be expected to locate the source of a problem, or 
+it might not be in a driver but in a subsystem.
 
-The VM only moves the reused pages back to the active list
-on memory pressure.  This means that when the system is
-not under memory pressure, the same page can simply stay
-PG_lazyfree for multiple malloc/free rounds.
+For vendor kernels, the user should contact the vendor.
+For ftp.kernel.org kernels, I don't see any better solution than telling 
+people to report problems to linux-kernel or the kernel Bugzilla and 
+routing them further from here.
+
+> Rene.
+
+cu
+Adrian
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
