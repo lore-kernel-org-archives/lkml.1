@@ -1,379 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbXDDS2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbXDDS3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934063AbXDDS2q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932195AbXDDSKk
+	id S1753831AbXDDS3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbXDDS2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:10:40 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:37957 "EHLO
-	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932178AbXDDSKZ (ORCPT
+	Wed, 4 Apr 2007 14:28:50 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:40670 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753831AbXDDS2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:10:25 -0400
-X-ORBL: [67.117.73.34]
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 43/90] ARM: OMAP: TUSB EVM init
-Date: Wed,  4 Apr 2007 14:05:22 -0400
-Message-Id: <11757100853841-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757100821353-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
- 57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <117571004562-git-send-email-tony@atomide.com> <11757100491583-git-send-email-tony@atomide.com> <11757100511172-git-send-email-tony@atomide.com> <1175710059333-git-send-email-tony@atomide.com> <11757100623383-git-send-email-tony@atomide.com> <11757100641006-git-send-email-tony@atomide.com> <11757100661228-git-send-email-tony@atomide.com> <11757100691131-git-send-email-tony@atomide.com> <11757100713004-git-send-email-tony@atomide.com> <11757100752021-git-send-email-tony@atomide.com> <11757100781275-git-send-email-tony@atomide.com> <11757100811771-git-send-email-tony@atomide.com> <11757100821353-git-send-email-tony@atomide.com>
+	Wed, 4 Apr 2007 14:28:42 -0400
+Date: Wed, 4 Apr 2007 11:29:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-kernel@vger.kernel.org,
+       Marek =?UTF-8?Q?Va=C5=A1ut?= <marek.vasut@gmail.com>
+Subject: Re: [PATCH 18/90] ARM: OMAP: PalmZ71 support
+Message-Id: <20070404112924.8946346e.randy.dunlap@oracle.com>
+In-Reply-To: <11757100112473-git-send-email-tony@atomide.com>
+References: <11757099691323-git-send-email-tony@atomide.com>
+	<11757099743984-git-send-email-tony@atomide.com>
+	<1175709977545-git-send-email-tony@atomide.com>
+	<1175709988265-git-send-email-tony@atomide.com>
+	<11757099942493-git-send-email-tony@atomide.com>
+	<11757100011056-git-send-email-tony@atomide.com>
+	<1175710003925-git-send-email-tony@atomide.com>
+	<11757100063945-git-send-email-tony@atomide.com>
+	<11757100092910-git-send-email-tony@atomide.com>
+	<11757100112473-git-send-email-tony@atomide.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+On Wed,  4 Apr 2007 14:04:57 -0400 Tony Lindgren wrote:
 
-Add init support for the TUSB6010 EVM board, as connected to H4.
+> From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
+> 
+> Palmz71 specific things - board file.
+> 
+> Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  arch/arm/mach-omap1/Kconfig               |    9 +
+>  arch/arm/mach-omap1/Makefile              |    1 +
+>  arch/arm/mach-omap1/board-palmz71.c       |  384 +++++++++++++++++++++++++++++
+>  include/asm-arm/arch-omap/board-palmz71.h |   26 ++
+>  include/asm-arm/arch-omap/hardware.h      |    4 +
+>  5 files changed, 424 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap1/Kconfig b/arch/arm/mach-omap1/Kconfig
+> index cc266bf..1cdb0ea 100644
+> --- a/arch/arm/mach-omap1/Kconfig
+> +++ b/arch/arm/mach-omap1/Kconfig
+> @@ -86,6 +86,15 @@ config MACH_OMAP_PALMTE
+>  	  http://palmtelinux.sourceforge.net/ for more information.
+>  	  Say Y here if you have this PDA model, say N otherwise.
+>  
+> +config MACH_OMAP_PALMZ71
+> +		bool "Palm Zire71"
+> +		depends on ARCH_OMAP1 && ARCH_OMAP15XX
+> +		help
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+Indentation as documented and expected and like the rest of the
+kernel tree, please:
+one tab on lines above, one tab + 2 spaces on help text below.
+
+> +	 Support for the Palm Zire71 PDA. To boot the kernel,
+> +	 you'll need a PalmOS compatible bootloader; check out
+> +	 http://hackndev.com/palm/z71 for more informations.
+> +	 Say Y here if you have such a PDA, say N otherwise.
+> +
+>  config MACH_NOKIA770
+>  	bool "Nokia 770"
+>  	depends on ARCH_OMAP1 && ARCH_OMAP16XX
+
 ---
- arch/arm/mach-omap2/usb-tusb6010.c |  333 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 333 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/usb-tusb6010.c b/arch/arm/mach-omap2/usb-tusb6010.c
-new file mode 100644
-index 0000000..5f276c5
---- /dev/null
-+++ b/arch/arm/mach-omap2/usb-tusb6010.c
-@@ -0,0 +1,333 @@
-+/*
-+ * linux/arch/arm/mach-omap/omap2/usb-tusb6010.c
-+ *
-+ * Copyright (C) 2006 Nokia Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
-+
-+#include <linux/usb/musb.h>
-+
-+#include <asm/arch/gpmc.h>
-+#include <asm/arch/gpio.h>
-+
-+
-+static u8		async_cs, sync_cs;
-+static unsigned		refclk_psec;
-+
-+
-+/* t2_ps, when quantized to fclk units, must happen no earlier than
-+ * the clock after after t1_NS.
-+ *
-+ * Return a possibly updated value of t2_ps, converted to nsec.
-+ */
-+static unsigned
-+next_clk(unsigned t1_NS, unsigned t2_ps, unsigned fclk_ps)
-+{
-+	unsigned	t1_ps = t1_NS * 1000;
-+	unsigned	t1_f, t2_f;
-+
-+	if ((t1_ps + fclk_ps) < t2_ps)
-+		return t2_ps / 1000;
-+
-+	t1_f = (t1_ps + fclk_ps - 1) / fclk_ps;
-+	t2_f = (t2_ps + fclk_ps - 1) / fclk_ps;
-+
-+	if (t1_f >= t2_f)
-+		t2_f = t1_f + 1;
-+
-+	return (t2_f * fclk_ps) / 1000;
-+}
-+
-+/* NOTE:  timings are from tusb 6010 datasheet Rev 1.8, 12-Sept 2006 */
-+
-+static int tusb_set_async_mode(unsigned sysclk_ps, unsigned fclk_ps)
-+{
-+	struct gpmc_timings	t;
-+	unsigned		t_acsnh_advnh = sysclk_ps + 3000;
-+	unsigned		tmp;
-+
-+	memset(&t, 0, sizeof(t));
-+
-+	/* CS_ON = t_acsnh_acsnl */
-+	t.cs_on = 8;
-+	/* ADV_ON = t_acsnh_advnh - t_advn */
-+	t.adv_on = next_clk(t.cs_on, t_acsnh_advnh - 7000, fclk_ps);
-+
-+	/*
-+	 * READ ... from omap2420 TRM fig 12-13
-+	 */
-+
-+	/* ADV_RD_OFF = t_acsnh_advnh */
-+	t.adv_rd_off = next_clk(t.adv_on, t_acsnh_advnh, fclk_ps);
-+
-+	/* OE_ON = t_acsnh_advnh + t_advn_oen (then wait for nRDY) */
-+	t.oe_on = next_clk(t.adv_on, t_acsnh_advnh + 1000, fclk_ps);
-+
-+	/* ACCESS = counters continue only after nRDY */
-+	tmp = t.oe_on * 1000 + 300;
-+	t.access = next_clk(t.oe_on, tmp, fclk_ps);
-+
-+	/* OE_OFF = after data gets sampled */
-+	tmp = t.access * 1000;
-+	t.oe_off = next_clk(t.access, tmp, fclk_ps);
-+
-+	t.cs_rd_off = t.oe_off;
-+
-+	tmp = t.cs_rd_off * 1000 + 7000 /* t_acsn_rdy_z */;
-+	t.rd_cycle = next_clk(t.cs_rd_off, tmp, fclk_ps);
-+
-+	/*
-+	 * WRITE ... from omap2420 TRM fig 12-15
-+	 */
-+
-+	/* ADV_WR_OFF = t_acsnh_advnh */
-+	t.adv_wr_off = t.adv_rd_off;
-+
-+	/* WE_ON = t_acsnh_advnh + t_advn_wen (then wait for nRDY) */
-+	t.we_on = next_clk(t.adv_wr_off, t_acsnh_advnh + 1000, fclk_ps);
-+
-+	/* WE_OFF = after data gets sampled */
-+	tmp = t.we_on * 1000 + 300;
-+	t.we_off = next_clk(t.we_on, tmp, fclk_ps);
-+
-+	t.cs_wr_off = t.we_off;
-+
-+	tmp = t.cs_wr_off * 1000 + 7000 /* t_acsn_rdy_z */;
-+	t.wr_cycle = next_clk(t.cs_wr_off, tmp, fclk_ps);
-+
-+	return gpmc_cs_set_timings(async_cs, &t);
-+}
-+
-+static int tusb_set_sync_mode(unsigned sysclk_ps, unsigned fclk_ps)
-+{
-+	struct gpmc_timings	t;
-+	unsigned		t_scsnh_advnh = sysclk_ps + 3000;
-+	unsigned		tmp;
-+
-+	memset(&t, 0, sizeof(t));
-+	t.cs_on = 8;
-+
-+	/* ADV_ON = t_acsnh_advnh - t_advn */
-+	t.adv_on = next_clk(t.cs_on, t_scsnh_advnh - 7000, fclk_ps);
-+
-+	/* GPMC_CLK rate = fclk rate / div */
-+	t.sync_clk = 12 /* 11.1 nsec */;
-+	tmp = (t.sync_clk * 1000 + fclk_ps - 1) / fclk_ps;
-+	if (tmp > 4)
-+		return -ERANGE;
-+	if (tmp <= 0)
-+		tmp = 1;
-+	t.page_burst_access = (fclk_ps * tmp) / 1000;
-+
-+	/*
-+	 * READ ... based on omap2420 TRM fig 12-19, 12-20
-+	 */
-+
-+	/* ADV_RD_OFF = t_scsnh_advnh */
-+	t.adv_rd_off = next_clk(t.adv_on, t_scsnh_advnh, fclk_ps);
-+
-+	/* OE_ON = t_scsnh_advnh + t_advn_oen * fclk_ps (then wait for nRDY) */
-+	tmp = (t.adv_rd_off * 1000) + (3 * fclk_ps);
-+	t.oe_on = next_clk(t.adv_on, tmp, fclk_ps);
-+
-+	/* ACCESS = number of clock cycles after t_adv_eon */
-+	tmp = (t.oe_on * 1000) + (5 * fclk_ps);
-+	t.access = next_clk(t.oe_on, tmp, fclk_ps);
-+
-+	/* OE_OFF = after data gets sampled */
-+	tmp = (t.access * 1000) + (1 * fclk_ps);
-+	t.oe_off = next_clk(t.access, tmp, fclk_ps);
-+
-+	t.cs_rd_off = t.oe_off;
-+
-+	tmp = t.cs_rd_off * 1000 + 7000 /* t_scsn_rdy_z */;
-+	t.rd_cycle = next_clk(t.cs_rd_off, tmp, fclk_ps);
-+
-+	/*
-+	 * WRITE ... based on omap2420 TRM fig 12-21
-+	 */
-+
-+	/* ADV_WR_OFF = t_scsnh_advnh */
-+	t.adv_wr_off = t.adv_rd_off;
-+
-+	/* WE_ON = t_scsnh_advnh + t_advn_wen * fclk_ps (then wait for nRDY) */
-+	tmp = (t.adv_wr_off * 1000) + (3 * fclk_ps);
-+	t.we_on = next_clk(t.adv_wr_off, tmp, fclk_ps);
-+
-+	/* WE_OFF = number of clock cycles after t_adv_wen */
-+	tmp = (t.we_on * 1000) + (6 * fclk_ps);
-+	t.we_off = next_clk(t.we_on, tmp, fclk_ps);
-+
-+	t.cs_wr_off = t.we_off;
-+
-+	tmp = t.cs_wr_off * 1000 + 7000 /* t_scsn_rdy_z */;
-+	t.wr_cycle = next_clk(t.cs_wr_off, tmp, fclk_ps);
-+
-+	return gpmc_cs_set_timings(sync_cs, &t);
-+}
-+
-+extern unsigned long gpmc_get_fclk_period(void);
-+
-+/* tusb driver calls this when it changes the chip's clocking */
-+int tusb6010_platform_retime(unsigned is_refclk)
-+{
-+	static const char	error[] =
-+		KERN_ERR "tusb6010 %s retime error %d\n";
-+
-+	unsigned	fclk_ps = gpmc_get_fclk_period();
-+	unsigned	sysclk_ps;
-+	int		status;
-+
-+	if (!refclk_psec)
-+		return -ENODEV;
-+
-+	sysclk_ps = is_refclk ? refclk_psec : TUSB6010_OSCCLK_60;
-+
-+	status = tusb_set_async_mode(sysclk_ps, fclk_ps);
-+	if (status < 0) {
-+		printk(error, "async", status);
-+		goto done;
-+	}
-+	status = tusb_set_sync_mode(sysclk_ps, fclk_ps);
-+	if (status < 0)
-+		printk(error, "sync", status);
-+done:
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(tusb6010_platform_retime);
-+
-+static struct resource tusb_resources[] = {
-+	/* Order is significant!  The start/end fields
-+	 * are updated during setup..
-+	 */
-+	{ /* Asynchronous access */
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{ /* Synchronous access */
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{ /* IRQ */
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static u64 tusb_dmamask = ~(u32)0;
-+
-+static struct platform_device tusb_device = {
-+	.name		= "musb_hdrc",
-+	.id		= -1,
-+	.dev = {
-+		.dma_mask		= &tusb_dmamask,
-+		.coherent_dma_mask	= 0xffffffff,
-+	},
-+	.num_resources	= ARRAY_SIZE(tusb_resources),
-+	.resource	= tusb_resources,
-+};
-+
-+
-+/* this may be called only from board-*.c setup code */
-+int __init
-+tusb6010_setup_interface(struct musb_hdrc_platform_data *data,
-+		unsigned ps_refclk, unsigned waitpin,
-+		unsigned async, unsigned sync,
-+		unsigned irq, unsigned dmachan)
-+{
-+	int		status;
-+	static char	error[] __initdata =
-+		KERN_ERR "tusb6010 init error %d, %d\n";
-+
-+	/* ASYNC region, primarily for PIO */
-+	status = gpmc_cs_request(async, SZ_16M, (unsigned long *)
-+				&tusb_resources[0].start);
-+	if (status < 0) {
-+		printk(error, 1, status);
-+		return status;
-+	}
-+	tusb_resources[0].end = tusb_resources[0].start + 0x9ff;
-+	async_cs = async;
-+	gpmc_cs_write_reg(async, GPMC_CS_CONFIG1,
-+			  GPMC_CONFIG1_PAGE_LEN(2)
-+			| GPMC_CONFIG1_WAIT_READ_MON
-+			| GPMC_CONFIG1_WAIT_WRITE_MON
-+			| GPMC_CONFIG1_WAIT_PIN_SEL(waitpin)
-+			| GPMC_CONFIG1_READTYPE_ASYNC
-+			| GPMC_CONFIG1_WRITETYPE_ASYNC
-+			| GPMC_CONFIG1_DEVICESIZE_16
-+			| GPMC_CONFIG1_DEVICETYPE_NOR
-+			| GPMC_CONFIG1_MUXADDDATA);
-+
-+
-+	/* SYNC region, primarily for DMA */
-+	status = gpmc_cs_request(sync, SZ_16M, (unsigned long *)
-+				&tusb_resources[1].start);
-+	if (status < 0) {
-+		printk(error, 2, status);
-+		return status;
-+	}
-+	tusb_resources[1].end = tusb_resources[1].start + 0x9ff;
-+	sync_cs = sync;
-+	gpmc_cs_write_reg(sync, GPMC_CS_CONFIG1,
-+			  GPMC_CONFIG1_READMULTIPLE_SUPP
-+			| GPMC_CONFIG1_READTYPE_SYNC
-+			| GPMC_CONFIG1_WRITEMULTIPLE_SUPP
-+			| GPMC_CONFIG1_WRITETYPE_SYNC
-+			| GPMC_CONFIG1_CLKACTIVATIONTIME(1)
-+			| GPMC_CONFIG1_PAGE_LEN(2)
-+			| GPMC_CONFIG1_WAIT_READ_MON
-+			| GPMC_CONFIG1_WAIT_WRITE_MON
-+			| GPMC_CONFIG1_WAIT_PIN_SEL(waitpin)
-+			| GPMC_CONFIG1_DEVICESIZE_16
-+			| GPMC_CONFIG1_DEVICETYPE_NOR
-+			| GPMC_CONFIG1_MUXADDDATA
-+			/* fclk divider gets set later */
-+			);
-+
-+	/* IRQ */
-+	status = omap_request_gpio(irq);
-+	if (status < 0) {
-+		printk(error, 3, status);
-+		return status;
-+	}
-+	omap_set_gpio_direction(irq, 1);
-+	tusb_resources[2].start = irq + IH_GPIO_BASE;
-+
-+	/* set up memory timings ... can speed them up later */
-+	if (!ps_refclk) {
-+		printk(error, 4, status);
-+		return -ENODEV;
-+	}
-+	refclk_psec = ps_refclk;
-+	status = tusb6010_platform_retime(1);
-+	if (status < 0) {
-+		printk(error, 5, status);
-+		return status;
-+	}
-+
-+	/* finish device setup ... */
-+	if (!data) {
-+		printk(error, 6, status);
-+		return -ENODEV;
-+	}
-+	data->multipoint = 1;
-+	tusb_device.dev.platform_data = data;
-+
-+	/* REVISIT let the driver know what DMA channels work */
-+	if (!dmachan)
-+		tusb_device.dev.dma_mask = NULL;
-+
-+	/* so far so good ... register the device */
-+	status = platform_device_register(&tusb_device);
-+	if (status < 0) {
-+		printk(error, 7, status);
-+		return status;
-+	}
-+	return 0;
-+}
--- 
-1.4.4.2
-
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
