@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992703AbXDDHQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992713AbXDDHdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992703AbXDDHQM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 03:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992709AbXDDHQM
+	id S2992713AbXDDHdn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 03:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992714AbXDDHdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 03:16:12 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:47631 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992703AbXDDHQL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 03:16:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OMlorb0+MuSF90ROxuAgg9T6UIXDM6KUAvbTLD8Gp5+Ezwpe2pjTuECRgbEuZcK/D6mI4P41XLVaFaZ4V61i+O5cSWW7C4vSZfdNyCnfggfNzilbz8ffQOMjEAOT/vOzAoBDtKwDzaxUxJvZJ53ni1/A2xTDN76N+qNZNW6ouUI=
-Message-ID: <a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
-Date: Wed, 4 Apr 2007 00:16:09 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [PATCH 0/3] FUTEX : new PRIVATE futexes, SMP and NUMA improvements
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
-       "Ravikiran G Thirumalai" <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       "pravin b shelar" <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200703152010.35614.dada1@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 4 Apr 2007 03:33:43 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:54259 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992713AbXDDHdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 03:33:42 -0400
+Date: Wed, 4 Apr 2007 09:33:37 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [patches] threaded vma patches (was Re: missing madvise
+ functionality)
+Message-Id: <20070404093337.b68e3e65.dada1@cosmosbay.com>
+In-Reply-To: <46134BB2.2000005@redhat.com>
+References: <46128051.9000609@redhat.com>
+	<p73648dz5oa.fsf@bingen.suse.de>
+	<46128CC2.9090809@redhat.com>
+	<20070403172841.GB23689@one.firstfloor.org>
+	<20070403125903.3e8577f4.akpm@linux-foundation.org>
+	<4612B645.7030902@redhat.com>
+	<20070403202937.GE355@devserv.devel.redhat.com>
+	<20070403144948.fe8eede6.akpm@linux-foundation.org>
+	<4612DCC6.7000504@cosmosbay.com>
+	<46130BC8.9050905@yahoo.com.au>
+	<46133A8B.50203@cosmosbay.com>
+	<46134124.2040705@yahoo.com.au>
+	<461348CD.9000200@redhat.com>
+	<46134AA9.4080804@cosmosbay.com>
+	<46134BB2.2000005@redhat.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20060808070708.GA3931@localhost.localdomain>
-	 <200608090826.28249.dada1@cosmosbay.com>
-	 <200608090843.52893.dada1@cosmosbay.com>
-	 <200703152010.35614.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/15/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> But fact is POSIX defined PRIVATE and SHARED, allowing clear separation, and
-> optimal performance if carefuly implemented. Time has come for linux to have
-> better threading performance.
+On Tue, 03 Apr 2007 23:54:42 -0700
+Ulrich Drepper <drepper@redhat.com> wrote:
 
-Now that I've been pointed to the thread I can comment on it.
+> Eric Dumazet wrote:
+> > You were CC on this one, you can find an archive here :
+> 
+> You cc:ed my gmail account.  I don't pick out mails sent to me there.
+> If you want me to look at something you have to send it to my
+> @redhat.com address.
 
-Yes, this approach makes a lot of sense.  Programs which shared syn
-objects without declaring them correctly are broken and deserve to
-fail.  It would be quite a lot of change in libpthread but it's
-manageable.
+What I meant is : You got the mails and even replied to one of them :)
 
-I haven't tested the code nor will I likely do until I get a Fedora
-kernel with it.  So, convince DaveJ to take it for testing.
+http://lkml.org/lkml/2007/3/15/303
+
+I will try to remember your email address, thanks.
