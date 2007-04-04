@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934048AbXDDPxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992971AbXDDPxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934048AbXDDPxJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934056AbXDDPxJ
+	id S2992971AbXDDPxc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992975AbXDDPxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:53:09 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:4844 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934048AbXDDPxH convert rfc822-to-8bit (ORCPT
+	Wed, 4 Apr 2007 11:53:32 -0400
+Received: from usermail.globalproof.net ([194.146.153.18]:49648 "EHLO
+	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992972AbXDDPxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:53:07 -0400
+	Wed, 4 Apr 2007 11:53:31 -0400
+X-Greylist: delayed 4659 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 11:53:28 EDT
+From: "Denys" <denys@visp.net.lb>
+To: Jarek Poplawski <jarkao2@o2.pl>, Christian Kujau <christian@g-house.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+Date: Wed, 4 Apr 2007 16:53:59 +0300
+Message-Id: <20070404135259.M91581@visp.net.lb>
+In-Reply-To: <20070404112100.GA1979@ff.dom.local>
+References: <20070403065810.GA1832@ff.dom.local> <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de> <20070404112100.GA1979@ff.dom.local>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 195.69.208.253 (denys@visp.net.lb)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 04 Apr 2007 15:53:03.0908 (UTC) FILETIME=[545EA640:01C776D1]
-Content-class: urn:content-classes:message
-Subject: Re: set up new kernel with grub
-Date: Wed, 4 Apr 2007 11:53:03 -0400
-Message-ID: <Pine.LNX.4.61.0704041246010.5035@chaos.analogic.com>
-In-Reply-To: <BAY113-DAV124C8565330DC6C51B2B09B9660@phx.gbl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: set up new kernel with grub
-thread-index: Acd20VSCo0HFyTxeQra12cFSHbw5dQ==
-References: <BAY113-DAV124C8565330DC6C51B2B09B9660@phx.gbl>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Michael" <gonwg@hotmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+Content-Type: text/plain;
+	charset=koi8-r
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+IMHO it can be hardware issue also, i had something very similar with faulty 
+hardware combinations.
 
-On Wed, 4 Apr 2007, Michael wrote:
+On Wed, 4 Apr 2007 13:21:00 +0200, Jarek Poplawski wrote
+> On Tue, Apr 03, 2007 at 04:19:46PM +0100, Christian Kujau wrote:
+> > On Tue, 3 Apr 2007, Jarek Poplawski wrote:
+> > >Did you try with 8139cp instead of 8139too?
+> > 
+> > Tried that, 8139cp could not be loaded :(
+> 
+> Sorry for misleading!
+> 
+> > >(Maybe even try some other card to narrow the problem?)
+> > >You could also try to test without ehci, if it's possible.
+> > 
+> > USB has been disabled completely. After booting with 'acpi=off lapic' 
+> > the box survived ~30min then locked up again and rebooted.
+> 
+> So, it's a lot sooner than before. (BTW, isn't there anything
+> in debug log?) I see both CPUs did interrupt handling again.
+> Maybe it's a real locking problem. Here are some more
+> suggestions for testing (if you don't find anything better):
+> - try without SMP, so: 'acpi=off lapic nosmp'
+> - lock debugging turned on as much as possible
+> plus maybe for curiosity:
+> - different CONFIG_HZ
+> - 8139TOO_PIO = y
+> 
+> ....
+> > IRQ-problems with the Un-Interruptible-Power-Supply
+> 
+> I wouldn't be surprised...
+> 
+> Cheers,
+> Jarek P.
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-> Hi,
->
-> I compiled a new kernel: 2.6.20.3, and hope to test it without removing
-> my old kernel.
 
-You don't need to remove your old kernel. Log in as root.
+--
+Denys Fedoryshchenko
+Technical Manager
+Virtual ISP S.A.L.
 
-# cd /usr/src/linux-2.6.20.3
-If your current kernel is 2.6.20.3, edit the Makefile to
-add some character after "EXTRAVERSION" as EXTRAVERSION= 3x
-# cp .config ..
-# make distclean
-# cp ../.config .
-# make oldconfig
-# make
-# make modules_install
-# make install
-
-The result will put the new kernel in the GRUB menu so you can
-always go back to the old one if the new one doesn't work.
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.65 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
