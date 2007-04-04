@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbXDDG1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992695AbXDDG2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbXDDG1w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 02:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992695AbXDDG1w
+	id S2992695AbXDDG2A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 02:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992697AbXDDG2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 02:27:52 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:59379 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753493AbXDDG1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 02:27:51 -0400
-Date: Tue, 3 Apr 2007 23:26:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patches] threaded vma patches (was Re: missing madvise
- functionality)
-Message-Id: <20070403232624.11935e80.akpm@linux-foundation.org>
-In-Reply-To: <46134124.2040705@yahoo.com.au>
-References: <46128051.9000609@redhat.com>
-	<p73648dz5oa.fsf@bingen.suse.de>
-	<46128CC2.9090809@redhat.com>
-	<20070403172841.GB23689@one.firstfloor.org>
-	<20070403125903.3e8577f4.akpm@linux-foundation.org>
-	<4612B645.7030902@redhat.com>
-	<20070403202937.GE355@devserv.devel.redhat.com>
-	<20070403144948.fe8eede6.akpm@linux-foundation.org>
-	<4612DCC6.7000504@cosmosbay.com>
-	<46130BC8.9050905@yahoo.com.au>
-	<46133A8B.50203@cosmosbay.com>
-	<46134124.2040705@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Apr 2007 02:28:00 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:28480 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992695AbXDDG17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 02:27:59 -0400
+X-IronPort-AV: i="4.14,367,1170651600"; 
+   d="scan'208"; a="33682515:sNHT27514690"
+Subject: [PATCH] Blackfin arch: always include linux kallsysms header file
+	in trap c
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 04 Apr 2007 14:27:23 +0800
+Message-Id: <1175668043.10608.34.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 16:09:40 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+[PATCH] Just include linux/kallsyms.h all the time as the header will
+handle prototypes/defines when CONFIG_KALLSYMS is disabled ... fixes
+build error when disabled due to print_ip_sym not being macroed away
 
-> Andrew, do you have any objections to putting Eric's fairly
-> important patch at least into -mm?
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+---
+ arch/blackfin/kernel/traps.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-you know what to do ;)
+diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
+index f168521..9556b73 100644
+--- a/arch/blackfin/kernel/traps.c
++++ b/arch/blackfin/kernel/traps.c
+@@ -35,6 +35,8 @@
+ #include <asm/irq_handler.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/kallsyms.h>
++
+ #ifdef CONFIG_KGDB
+ # include <linux/debugger.h>
+ # include <linux/kgdb.h>
+@@ -52,9 +54,6 @@ asmlinkage void trap_c(struct pt_regs *fp);
+ 
+ int kstack_depth_to_print = 48;
+ 
+-#ifdef CONFIG_KALLSYMS
+-#include <linux/kallsyms.h>
+-#endif
+ static int printk_address(unsigned long address)
+ {
+ 	struct vm_list_struct *vml;
+-- 
+1.5.0.5
+
