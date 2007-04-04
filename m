@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992786AbXDDJfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992790AbXDDJkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992786AbXDDJfp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 05:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992789AbXDDJfo
+	id S2992790AbXDDJkK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 05:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992793AbXDDJkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 05:35:44 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:51403 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992786AbXDDJe5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 05:34:57 -0400
-To: a.p.zijlstra@chello.nl
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl
-In-reply-to: <20070403144224.709586192@taijtu.programming.kicks-ass.net>
-	(message from Peter Zijlstra on Tue, 03 Apr 2007 16:40:53 +0200)
-Subject: Re: [PATCH 6/6] mm: per device dirty threshold
-References: <20070403144047.073283598@taijtu.programming.kicks-ass.net> <20070403144224.709586192@taijtu.programming.kicks-ass.net>
-Message-Id: <E1HZ1so-0005q8-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 04 Apr 2007 11:34:26 +0200
+	Wed, 4 Apr 2007 05:40:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44672 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992790AbXDDJkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 05:40:08 -0400
+Date: Wed, 4 Apr 2007 11:39:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Paul Jackson <pj@sgi.com>
+Subject: Re: getting processor numbers
+Message-ID: <20070404093948.GA14521@elte.hu>
+References: <461286D6.2040407@redhat.com> <20070403131623.c6831607.akpm@linux-foundation.org> <4612BB89.8040102@redhat.com> <20070403141348.9bcdb13e.akpm@linux-foundation.org> <4612D175.30604@redhat.com> <20070403154831.37bde672.akpm@linux-foundation.org> <4612DCA2.2090400@redhat.com> <20070403162349.583adf84.akpm@linux-foundation.org> <20070404083927.GA100@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404083927.GA100@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Scale writeback cache per backing device, proportional to its writeout speed.
-> 
-> akpm sayeth:
-> > Which problem are we trying to solve here?  afaik our two uppermost
-> > problems are:
-> > 
-> > a) Heavy write to queue A causes light writer to queue B to blok for a long
-> > time in balance_dirty_pages().  Even if the devices have the same speed.  
-> 
-> This one; esp when not the same speed. The - my usb stick makes my
-> computer suck - problem. But even on similar speed, the separation of
-> device should avoid blocking dev B when dev A is being throttled.
-> 
-> The writeout speed is measure dynamically, so when it doesn't have
-> anything to write out for a while its writeback cache size goes to 0.
-> 
-> Conversely, when starting up it will in the beginning act almost
-> synchronous but will quickly build up a 'fair' share of the writeback
-> cache.
 
-I'm worried about two things:
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-1) If the per-bdi threshold becomes smaller than the granularity of
-   the per-bdi stat (due to the per-CPU counters), then things will
-   break.  Shouldn't there be some sanity checking for the calculated
-   threshold?
+> But we don't need tasklist_lock at all, we can use 
+> rcu_read_lock/unlock. Q: don't we need task_rq_lock() to read 
+> ->cpus_allowed "atomically" ?
 
-2) The loop is sleeping in congestion_wait(WRITE), which seems wrong.
-   It may well be possible that none of the queues are congested, so
-   it will sleep the full .1 second.  But by that time the queue may
-   have become idle and is just sitting there doing nothing.  Maybe
-   there should be a per-bdi waitq, that is woken up, when the per-bdi
-   stats are updated.
+right now ->cpus_allowed is protected by tasklist_lock. We cannot do RCU 
+here because ->cpus_allowed modifications are not RCUified.
 
-
-Thanks,
-Miklos
+	Ingo
