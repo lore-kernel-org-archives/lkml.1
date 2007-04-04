@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992909AbXDDOzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992913AbXDDO4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992909AbXDDOzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 10:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992914AbXDDOzN
+	id S2992913AbXDDO4L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 10:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992911AbXDDO4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 10:55:13 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:48492 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992909AbXDDOzL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 10:55:11 -0400
-Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Li Yu <raise.sail@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       yanghong@ccoss.com.cn,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       hongzhiyi@ccoss.com.cn, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
-References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com>
-	 <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>
-	 <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>
-	 <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>
-	 <1175516515.5815.347.camel@violet>
-	 <Pine.LNX.4.64.0704021429420.3808@jikos.suse.cz>
-	 <1175532439.5815.375.camel@violet> <4611AAC1.8050303@gmail.com>
-	 <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 16:54:49 +0200
-Message-Id: <1175698489.5815.450.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+	Wed, 4 Apr 2007 10:56:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40094 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992913AbXDDO4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 10:56:09 -0400
+Message-ID: <4613BC5D.2070404@redhat.com>
+Date: Wed, 04 Apr 2007 10:55:25 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <20070403144948.fe8eede6.akpm@linux-foundation.org> <20070403160231.33aa862d.akpm@linux-foundation.org> <Pine.LNX.4.64.0704040949050.17341@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0704040949050.17341@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+Hugh Dickins wrote:
 
-> > What's the position of hidraw? It only is used when all other driver is 
-> > not usable on some report? or, it should be stick every working device.
-> 
-> Current implementation (as you can see it in -mm or in my hid.git tree) is 
-> creating hidraw interface for just every HID device/interface. But this 
-> will get changed before merge.
-> 
-> Passing just everything to hidraw is not a good option, as this could lead 
-> to confusion and duplicating of input events (i.e. in-kernel hid driver 
-> processes the report and generates input_event(), and also userland driver 
-> obtains data from hidraw and generates input event through uinput ... not 
-> good).
+> (I didn't understand how Rik would achieve his point 5, _no_ lock
+> contention while repeatedly re-marking these pages, but never mind.)
 
-at some point I thought it would be nice to have something like hiddump
-(like tcpdump), but that can be easily achieved with hcidump and usbmon
-on the lower level.
+The CPU marks them accessed&dirty when they are reused.
 
-So if hidraw claims a report id, the kernel should no longer handle it.
+The VM only moves the reused pages back to the active list
+on memory pressure.  This means that when the system is
+not under memory pressure, the same page can simply stay
+PG_lazyfree for multiple malloc/free rounds.
 
-Regards
-
-Marcel
-
-
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
