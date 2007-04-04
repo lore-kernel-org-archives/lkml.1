@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXDDOEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbXDDOPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbXDDOEG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 10:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXDDOEG
+	id S1753862AbXDDOPH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 10:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbXDDOPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 10:04:06 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:48460 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbXDDOED (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 10:04:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=awLXBYgYUOBANNS8dZr1j1CF50p7gNmVj3KV4hsRYqD5bF7ZzcmGOtZ+I6eD+ulMZgIbd/qxooIqj/ZVNkeBm/dG0rNWmWxg4CkaPA6HzAF/aCOG/9iwK81mSvssGhE/wm4kcPGhf/FwtcC0mTmCUtW9bV09bUHehSYNuCKoDfQ=
-Message-ID: <b647ffbd0704040704k2e4b3abcyfadc7662dff37f5b@mail.gmail.com>
-Date: Wed, 4 Apr 2007 16:04:02 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: [sched] redundant reschedule when set_user_nice() boosts a prio of a task from the "expired" array
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Wed, 4 Apr 2007 10:15:07 -0400
+Received: from ns1.suse.de ([195.135.220.2]:52485 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753862AbXDDOPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 10:15:06 -0400
+Date: Wed, 4 Apr 2007 16:14:57 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070404141457.GF19587@v2.random>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random> <20070404135530.GA29026@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070404135530.GA29026@localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Apr 04, 2007 at 04:55:32PM +0300, Dan Aloni wrote:
+> How about applications that perform mmap() and R/W random-access on 
+> large *sparse* files? (e.g. a scientific app that uses a large sparse 
+> file as a big database look-up table). As I see it, these apps would
+> need to keep track of what's sparse and what's not...
 
-Scenario:
+That's not anonymous memory if those are read page faults on
+_files_. I'm only talking about anonymous memory and
+do_anonymous_page, i.e. no file data at all. In more clear words, the
+only thing we're discussing here is char = malloc(1); *char.
 
-Currently running [task1] boosts a priority (lowers a static_prio) of
-[task2] via { setpriority -> set_user_nice } and [task2] happens to be
-in the "expired" array at the moment.
-
-According to the set_user_nice(), "delta" is negative (the prio is
-boosted) and, hence, resched_task(rq->curr) is called.
-
-As the [task2] is in the "expired" array and there are still tasks (at
-least [task1]) in the "active" one, the triggered reschedule is just
-useless (e.g. gets control back to [task1]).
-
-Am I missing something?
-
-The same is applicable to rt_mutex_setprio().
-
-Of course, not a big deal, but it's easily avoidable, e.g. (delta < 0
-&& array == rq->active).
-
-Thanks in advance for any comments.
-
--- 
-Best regards,
-Dmitry Adamushko
+Your example _already_ allocates zeroed pagecache instead of the zero
+page, so your example (random access over sparse files with mmap, be
+it MAP_PRIVATE or MAP_SHARED no difference for reads) has never had
+anything to do with the zero page. If something we could optimize your
+example to _start_ using for the first time ever the ZERO_PAGE, it
+would make more sense to use it to be mapped where the lowlevel fs
+finds holes. ZERO_PAGE in do_anonymous_page instead doesn't make much
+sense to me, but it has always been there as far as I can
+remember. The thing is that it never hurted until the huge systems
+with nightmare cacheline bouncing reported heavy stalls on some
+testcase, which make it look like a DoS because of the ZERO_PAGE,
+hence now that it hurts I guess it can go.
