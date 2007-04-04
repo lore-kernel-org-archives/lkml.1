@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966202AbXDDAyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966214AbXDDA5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966202AbXDDAyv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 20:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966214AbXDDAyv
+	id S966214AbXDDA5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 20:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966215AbXDDA5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 20:54:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47420 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966202AbXDDAyu (ORCPT
+	Tue, 3 Apr 2007 20:57:00 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:2059 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966214AbXDDA47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 20:54:50 -0400
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Brad Boyer <flar@allandria.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070403221002.GA13210@cynthia.pants.nu>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	 <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	 <1175642916.10567.24.camel@shinybook.infradead.org>
-	 <20070403212928.GA12951@cynthia.pants.nu>
-	 <1175644642.10567.31.camel@shinybook.infradead.org>
-	 <20070403221002.GA13210@cynthia.pants.nu>
-Content-Type: text/plain
-Date: Tue, 03 Apr 2007 20:54:10 -0400
-Message-Id: <1175648051.10567.61.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
+	Tue, 3 Apr 2007 20:56:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=m9IVfuzNsmxC1mYA6iLQBIbaCDofFJocdET3Jado+bnCXtb8ttwBVxB3je6NbPumXbp0vVovhnshqzDs+VSM8EhhEEKNFfxlVJn7Q2nqGb1bUKcBqdzFcqCyjJXZl2kS8JJRTazL2T2UkOWHrqyJKPnuP6vpk3Y8wDN7CCcYpZI=
+Message-ID: <4612F78E.5080303@gmail.com>
+Date: Wed, 04 Apr 2007 08:55:42 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Marcel Holtmann <marcel@holtmann.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+References: <200703051532096508636@gmail.com> <45FE6971.6090503@gmail.com>  <1174897676.5815.6.camel@violet> <4609CAF2.3040303@ccoss.com.cn>  <Pine.LNX.4.64.0703280945560.19566@jikos.suse.cz>  <d120d5000703281200wd914f51s18437a6a8e4107f6@mail.gmail.com>  <1175516515.5815.347.camel@violet>  <Pine.LNX.4.64.0704021429420.3808@jikos.suse.cz> <1175532439.5815.375.camel@violet> <4611AAC1.8050303@gmail.com> <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-03 at 15:10 -0700, Brad Boyer wrote:
-> I suppose my opinion on this shows that I didn't come from the x86
-> side of Linux.
+Jiri Kosina wrote:
+> Current implementation (as you can see it in -mm or in my hid.git tree) is 
+> creating hidraw interface for just every HID device/interface. But this 
+> will get changed before merge.
+>
+> Passing just everything to hidraw is not a good option, as this could lead 
+> to confusion and duplicating of input events (i.e. in-kernel hid driver 
+> processes the report and generates input_event(), and also userland driver 
+> obtains data from hidraw and generates input event through uinput ... not 
+> good).
+>
+>   
+After hearing your words, I change my implementation use hidraw as an
+event filter, IOW, the HID core will handle these events which hidraw
+can or need not handle. The modification is easy.
 
-Perhaps, yes -- if you were just an x86 user you'd be unlikely to care
-about the issue at all -- mostly because it's never been a problem
-there. Not for the reason you imply, but just because the additional
-types of serial port you encounter on an x86 machine have always got it
-_right_, and had separate names and device numbers rather than abusing
-major 64 and 'ttyS%d'.
+> BTW as soon as you have some presentable code, could you please send it so 
+> that we could see what aproach you have taken? Debating over code is 
+> usualy more efficient than just ranting random ideas :)
+>
+> Thanks,
+>
+>   
 
->  The breakdown on this argument seems to have always
-> been that the x86 people wanted 8250 to own ttyS* and most others
-> wanted it shared.
+Of course, It's no problem. but it must be tomorrow, two reasons:
 
-But why? There's nothing special and magical about the number 64 and the
-letters 't' 't' 'y' and 'S'. And if you have broken software which only
-works with ttyS[0123] then you can still create device nodes or symlinks
-to work around that.
+1. The development PC is at my home, I am not SOHO.
+2. After change from "flip-flopping", the patch need some cleaning.
 
-If you're on a platform where 8250 serial ports _cannot_ exist, then
-abusing the 8250 driver's numbers would perhaps be workable, if a little
-strange -- but 8250 ports are ubiquitous. You can attach them to just
-about anything, of any architecture, that Linux runs on. Except perhaps
-S390.
+Good luck.
 
-Yes, it would be theoretically possible to come up with a way to share
-minor numbers so we can use 'ttyS0' for the first serial port regardless
-of what type of port it is. We could take the arch-specific hack that
-SPARC has and try to move it to generic code. But what's the point?
-
--- 
-dwmw2
+- Li Yu
 
