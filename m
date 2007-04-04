@@ -1,67 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992613AbXDDEGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992591AbXDDEGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992613AbXDDEGO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 00:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992566AbXDDEGC
+	id S2992591AbXDDEGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 00:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992579AbXDDECQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 00:06:02 -0400
-Received: from ozlabs.org ([203.10.76.45]:49672 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992588AbXDDECa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 00:02:30 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: <linux-arch@vger.kernel.org>, Linux Memory Management <linux-mm@kvack.org>,
-       <linux-kernel@vger.kernel.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 04 Apr 2007 14:02:17 +1000
-Subject: [PATCH 6/14] get_unmapped_area handles MAP_FIXED on ia64
-In-Reply-To: <1175659331.690672.592289266160.qpush@grosgo>
-Message-Id: <20070404040228.ED7A7DDE47@ozlabs.org>
+	Wed, 4 Apr 2007 00:02:16 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:62768 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992567AbXDDECE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 00:02:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:references:x-google-sender-auth;
+        b=Rrx+81DOLxo6vCB/Y9VxjLdDlQ7TWWuYc+w4mc/1tR8AMkZuU0jLt9g40jnK+f/4fEMWQh/uTx7dYSw0ienuTZVrALCuPiww3qCtc5euQb2VqkItHdY7+FFI2Z9jTDUdqhR3jYBOZETxeXnFG+u+b4wBqLql2Cvo0r8vdVAEYmU=
+Message-ID: <86802c440704032102h6e624cabrcfe6356b47d272a8@mail.gmail.com>
+Date: Tue, 3 Apr 2007 21:02:03 -0700
+From: "Yinghai Lu" <yinghai.lu@amd.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
+       "Len Brown" <lenb@kernel.org>
+Subject: Re: [PATCH] x86_64/acpi: make kernel to be compiled when CONFIG_ACPI_NUMA is set and power management with acpi is not enabled
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440704032055q43691a64v9eefb2a625c095ed@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_25438_13210766.1175659323171"
+References: <86802c440704032055q43691a64v9eefb2a625c095ed@mail.gmail.com>
+X-Google-Sender-Auth: 8606c81a5fa369bb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+------=_Part_25438_13210766.1175659323171
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
- arch/ia64/kernel/sys_ia64.c |    7 +++++++
- arch/ia64/mm/hugetlbpage.c  |    8 ++++++++
- 2 files changed, 15 insertions(+)
+resend
 
-Index: linux-cell/arch/ia64/kernel/sys_ia64.c
-===================================================================
---- linux-cell.orig/arch/ia64/kernel/sys_ia64.c	2007-03-22 15:10:45.000000000 +1100
-+++ linux-cell/arch/ia64/kernel/sys_ia64.c	2007-03-22 15:10:47.000000000 +1100
-@@ -33,6 +33,13 @@ arch_get_unmapped_area (struct file *fil
- 	if (len > RGN_MAP_LIMIT)
- 		return -ENOMEM;
- 
-+	/* handle fixed mapping: prevent overlap with huge pages */
-+	if (flags & MAP_FIXED) {
-+		if (is_hugepage_only_range(mm, addr, len))
-+			return -EINVAL;
-+		return addr;
-+	}
-+
- #ifdef CONFIG_HUGETLB_PAGE
- 	if (REGION_NUMBER(addr) == RGN_HPAGE)
- 		addr = 0;
-Index: linux-cell/arch/ia64/mm/hugetlbpage.c
-===================================================================
---- linux-cell.orig/arch/ia64/mm/hugetlbpage.c	2007-03-22 15:12:32.000000000 +1100
-+++ linux-cell/arch/ia64/mm/hugetlbpage.c	2007-03-22 15:12:39.000000000 +1100
-@@ -148,6 +148,14 @@ unsigned long hugetlb_get_unmapped_area(
- 		return -ENOMEM;
- 	if (len & ~HPAGE_MASK)
- 		return -EINVAL;
-+
-+	/* Handle MAP_FIXED */
-+	if (flags & MAP_FIXED) {
-+		if (prepare_hugepage_range(addr, len, pgoff))
-+			return -EINVAL;
-+		return addr;
-+	}
-+
- 	/* This code assumes that RGN_HPAGE != 0. */
- 	if ((REGION_NUMBER(addr) != RGN_HPAGE) || (addr & (HPAGE_SIZE - 1)))
- 		addr = HPAGE_REGION_BASE;
- 
+On 4/3/07, Yinghai Lu <yinghai.lu@amd.com> wrote:
+> please check the patch
+>
+> YH
+>
+>
+
+------=_Part_25438_13210766.1175659323171
+Content-Type: text/x-patch; name="acpi_power_system_v2.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="acpi_power_system_v2.patch"
+X-Attachment-Id: f_f03baqlx
+
+W1BBVENIXSB4ODZfNjQvYWNwaTogbWFrZSBrZXJuZWwgdG8gYmUgY29tcGlsZWQgd2hlbiAgQ09O
+RklHX0FDUElfTlVNQSBpcyBzZXQgYW5kIHBvd2VyIG1hbmFnZW1lbnQgd2l0aCBhY3BpIGlzIG5v
+dCBlbmFibGVkCgp3aGVuIENPTkZJR19BQ1BJX05VTUEgaXMgc2V0LCBhbmQgcG93ZXIgbWFuYWdl
+bWVudCB3aXRoIGFjcGkgaXMgbm90IHVzZWQuIHRoZSBrZXJuZWwgY2FuIG5vdCBiZSBjb21waWxl
+ZC4Kc28gdXNlIENPTkZJR19BQ1BJX1BPV0VSIGFuZCBDT05GSUdfQUNQSV9TWVRFTSB0byBjb21t
+ZW50IGZ1bmN0aW9uIGFib3V0IHNldC9nZXQgcG93ZXIgYW5kIGV2ZW50LgoKU2lnbmVkLW9mZi1i
+eTogWWluZ2hhaSBMdSA8eWluZ2hhaS5sdUBhbWQuY29tPiAKCmRpZmYgLS1naXQgYS9kcml2ZXJz
+L2FjcGkvYnVzLmMgYi9kcml2ZXJzL2FjcGkvYnVzLmMKaW5kZXggZGQ0OWVhMC4uNGQwNjg4NSAx
+MDA2NDQKLS0tIGEvZHJpdmVycy9hY3BpL2J1cy5jCisrKyBiL2RyaXZlcnMvYWNwaS9idXMuYwpA
+QCAtMTIxLDYgKzEyMSw3IEBAIGludCBhY3BpX2J1c19nZXRfc3RhdHVzKHN0cnVjdCBhY3BpX2Rl
+dmljZSAqZGV2aWNlKQogCiBFWFBPUlRfU1lNQk9MKGFjcGlfYnVzX2dldF9zdGF0dXMpOwogCisj
+aWZkZWYgQ09ORklHX0FDUElfUE9XRVIKIC8qIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICBQb3dlciBNYW5hZ2VtZW50CiAgICAtLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLSAqLwpAQCAtMjY5LDcgKzI3MCw5IEBAIGludCBhY3BpX2J1c19zZXRfcG93ZXIoYWNwaV9o
+YW5kbGUgaGFuZGxlLCBpbnQgc3RhdGUpCiB9CiAKIEVYUE9SVF9TWU1CT0woYWNwaV9idXNfc2V0
+X3Bvd2VyKTsKKyNlbmRpZgogCisjaWZkZWYgQ09ORklHX0FDUElfU1lTVEVNCiAvKiAtLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBFdmVudCBNYW5hZ2Vt
+ZW50CiAgICAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSAqLwpAQCAtMzU4LDYgKzM2MSw3IEBAIGludCBhY3Bp
+X2J1c19yZWNlaXZlX2V2ZW50KHN0cnVjdCBhY3BpX2J1c19ldmVudCAqZXZlbnQpCiB9CiAKIEVY
+UE9SVF9TWU1CT0woYWNwaV9idXNfcmVjZWl2ZV9ldmVudCk7CisjZW5kaWYKIAogLyogLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgTm90aWZpY2F0aW9uIEhh
+bmRsaW5nCmRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9lMTAwMC9lMTAwMF9wYXJhbS5jIGIvZHJp
+dmVycy9uZXQvZTEwMDAvZTEwMDBfcGFyYW0uYwpkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY2kvcGNp
+LWFjcGkuYyBiL2RyaXZlcnMvcGNpL3BjaS1hY3BpLmMKaW5kZXggYTA2NGYzNi4uYzJhMWFjOSAx
+MDA2NDQKLS0tIGEvZHJpdmVycy9wY2kvcGNpLWFjcGkuYworKysgYi9kcml2ZXJzL3BjaS9wY2kt
+YWNwaS5jCkBAIC0yNTUsNyArMjU1LDcgQEAgc3RhdGljIGludCBhY3BpX3BjaV9jaG9vc2Vfc3Rh
+dGUoc3RydWN0IHBjaV9kZXYgKnBkZXYsIHBtX21lc3NhZ2VfdCBzdGF0ZSkKIAogCXJldHVybiAt
+RU5PREVWOwogfQotCisjaWZkZWYgQ09ORklHX0FDUElfUE9XRVIKIHN0YXRpYyBpbnQgYWNwaV9w
+Y2lfc2V0X3Bvd2VyX3N0YXRlKHN0cnVjdCBwY2lfZGV2ICpkZXYsIHBjaV9wb3dlcl90IHN0YXRl
+KQogewogCWFjcGlfaGFuZGxlIGhhbmRsZSA9IERFVklDRV9BQ1BJX0hBTkRMRSgmZGV2LT5kZXYp
+OwpAQCAtMjcyLDcgKzI3Miw3IEBAIHN0YXRpYyBpbnQgYWNwaV9wY2lfc2V0X3Bvd2VyX3N0YXRl
+KHN0cnVjdCBwY2lfZGV2ICpkZXYsIHBjaV9wb3dlcl90IHN0YXRlKQogCQlyZXR1cm4gLUVOT0RF
+VjsKIAlyZXR1cm4gYWNwaV9idXNfc2V0X3Bvd2VyKGhhbmRsZSwgYWNwaV9zdGF0ZSk7CiB9Ci0K
+KyNlbmRpZgogCiAvKiBBQ1BJIGJ1cyB0eXBlICovCiBzdGF0aWMgaW50IGFjcGlfcGNpX2ZpbmRf
+ZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwgYWNwaV9oYW5kbGUgKmhhbmRsZSkKQEAgLTMyMSw3
+ICszMjEsOSBAQCBzdGF0aWMgaW50IF9faW5pdCBhY3BpX3BjaV9pbml0KHZvaWQpCiAJaWYgKHJl
+dCkKIAkJcmV0dXJuIDA7CiAJcGxhdGZvcm1fcGNpX2Nob29zZV9zdGF0ZSA9IGFjcGlfcGNpX2No
+b29zZV9zdGF0ZTsKKyNpZmRlZiBDT05GSUdfQUNQSV9QT1dFUgogCXBsYXRmb3JtX3BjaV9zZXRf
+cG93ZXJfc3RhdGUgPSBhY3BpX3BjaV9zZXRfcG93ZXJfc3RhdGU7CisjZW5kaWYKIAlyZXR1cm4g
+MDsKIH0KIGFyY2hfaW5pdGNhbGwoYWNwaV9wY2lfaW5pdCk7Cg==
+------=_Part_25438_13210766.1175659323171--
