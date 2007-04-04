@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXDDRDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751474AbXDDREF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750719AbXDDRDN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXDDRDN
+	id S1751474AbXDDREF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXDDREF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:03:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36959 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750719AbXDDRDM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:03:12 -0400
-Date: Wed, 4 Apr 2007 10:03:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc5-mm4 (SLUB)
-In-Reply-To: <1175698437.6185.21.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0704040946370.24640@schroedinger.engr.sgi.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> 
- <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com> 
- <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com> 
- <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031638570.12109@schroedinger.engr.sgi.com> 
- <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031653060.12109@schroedinger.engr.sgi.com>
- <1175698437.6185.21.camel@dyn9047017100.beaverton.ibm.com>
+	Wed, 4 Apr 2007 13:04:05 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:48038 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbXDDREC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 13:04:02 -0400
+Date: Wed, 4 Apr 2007 10:02:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+In-Reply-To: <20070404183220.2455465b.dada1@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0704040950570.6730@woody.linux-foundation.org>
+References: <20070329075805.GA6852@wotan.suse.de>
+ <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com>
+ <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de>
+ <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+ <20070404183220.2455465b.dada1@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Badari Pulavarty wrote:
 
-> On Tue, 2007-04-03 at 16:55 -0700, Christoph Lameter wrote:
-> > On Tue, 3 Apr 2007, Badari Pulavarty wrote:
-> > 
-> > > Hmm. booted fine with slub_debug :(
-> > 
-> > Try to selectively disable debug options... if you got the 
-> > time...
-> > 
-> > F.e. Try with sanity checks only
-> > 
-> > slub_debug=F
+
+On Wed, 4 Apr 2007, Eric Dumazet wrote:
 > 
-> slub_debug=F got something. 
+> But results on an Intel Pentium-M are interesting, in particular 2) & 3)
+> 
+> If a page is first allocated as page_zero then cow to a full rw page, this is more expensive.
+> (2660 cycles instead of 2300)
 
-Ahh.... Seems that the first 4 bytes of the allocations is zapped after 
-the object has been freed. Can you trap writes to the first four bytes of 
-the object? This should give you the culprit.
+Yes, you have an extra TLB flush there at a minimum (if the page didn't 
+exist at all before, you don't have to flush).
 
-The other thing is that the system is performing DMA allocations
-for the file cache???? Then its running out of memory.
+That said, the big cost tends to be the clearing of the page. Which is why 
+the "bring in zero page" is so much faster than anything else - it's the 
+only case that doesn't need to clear the page.
 
-Argh.... We use  GFP DMA bitmask to check SLAB flags field:
+So you should basically think of your numbers like this:
+ - roughly 900 cycles is the cost of the page fault and all the 
+   "basic software" side in the kernel
+ - roughly 1400 cycles to actually do the "memset" to clear the page (and 
+   no, that's *not* the cost of memory accesses per se - it's very likely 
+   already in the L2 cache or similar, we just need to clear it and if 
+   it wasn't marked exclusive need to do a bus cycle to invalidate it on 
+   any other CPU's).
 
-Try this fix:
+with small variation depending on what the state was before of the cache 
+in particular (for example, the TLB flush cost, but also: when you do
 
+> 4) memset 4096 bytes to 0x55:
+> Poke_full (addr=0x804f000, len=4096): 2719 cycles
 
+This only adds ~600 cycles to memset the same 4kB that cost ~1400 cycles 
+before, but that's *probably* largely because it was now already dirty in 
+the L2 and possibly the L1, so it's quite possible that this is really 
+just a cache effect, because now it's entirely exclusive in the caches so 
+you don't need to do any probing on the bus at all).
 
-SLUB: Use correct flags to check for DMA cache
+Also note: in the end, page faults are usually fairly unusual. You do them 
+once, and then use the page a lot after that. That's not *always* true, of 
+course. Some malloc()/free() patterns of big areas that are not used for 
+long will easily cause constant mmap/munmap, and a lot of page faults.
 
-We use a GFP mask to check the SLAB flags if this is a DMA cache.
+The worst effect of page faults tends to be for short-lived stuff. Notably 
+things like "system()" that executes a shell just to execute something 
+else. Almost *everything* in that path is basically "use once, then throw 
+away", and page fault latency is interesting.
 
-Fix this by using the correct SLAB mask and then use the SLUB_DMA
-for the ORing of flags. If the system does not support DMA then
-we will OR zero which will hopefully get the compiler to drop the
-useless if statement as well.
+So this is one case where it might be interesting to look at what lmbench 
+reports for the "fork/exit", "fork/exec" and "shell exec" numbers before 
+and after. 
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6.21-rc5-mm4/mm/slub.c
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/mm/slub.c	2007-04-04 09:59:05.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/mm/slub.c	2007-04-04 10:01:14.000000000 -0700
-@@ -678,8 +678,8 @@ static struct page *allocate_slab(struct
- 	if (s->order)
- 		flags |= __GFP_COMP;
- 
--	if (s->flags & SLUB_DMA)
--		flags |= GFP_DMA;
-+	if (s->flags & SLAB_CACHE_DMA)
-+		flags |= SLUB_DMA;
- 
- 	if (node == -1)
- 		page = alloc_pages(flags, s->order);
-
-
+			Linus
