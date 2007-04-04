@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992893AbXDDMY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992891AbXDDM0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992893AbXDDMY3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 08:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992894AbXDDMY3
+	id S2992891AbXDDM0I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 08:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992892AbXDDM0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 08:24:29 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:32855 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992893AbXDDMY2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 08:24:28 -0400
-Date: Wed, 4 Apr 2007 17:54:25 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, akpm@linux-foundation.org,
-       paulmck@us.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
-Message-ID: <20070404122425.GB14825@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070402092818.GE2456@in.ibm.com> <20070402111828.GA14771@elte.hu> <20070402124200.GA9566@in.ibm.com> <20070402185607.GA2081@elte.hu> <20070403125619.GA32444@in.ibm.com> <20070403141516.GB14900@in.ibm.com> <20070404031502.GA23591@in.ibm.com> <20070404100431.GB19120@elte.hu> <20070404104123.GA14825@in.ibm.com> <20070404114901.GA8261@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Apr 2007 08:26:08 -0400
+Received: from iona.labri.fr ([147.210.8.143]:52399 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992891AbXDDM0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 08:26:07 -0400
+Date: Wed, 4 Apr 2007 14:26:06 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: mbind and alignment
+Message-ID: <20070404122606.GF3638@implementation.labri.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org
+References: <20070402204202.GC3316@interface.famille.thibault.fr> <200704041352.04525.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070404114901.GA8261@elte.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200704041352.04525.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 01:49:01PM +0200, Ingo Molnar wrote:
+Hi,
+
+Andi Kleen, le Wed 04 Apr 2007 13:52:04 +0200, a écrit :
+> > So one of those should probably be done to free people from headaches:
+> > 
+> > - document "start" requirement in the manual page
+> > - require len to be aligned too, and document the requirements in the
+> >   manual page
+> > - drop the "start" requirement and just round down the page + adjust
+> >   size automatically.
 > 
-> i suspect a fork-intensive application like kernbench should be close to 
-> the worst-case already. A more IO-intensive workload would maximize the 
-> uninterruptible-sleep latencies perhaps?
+> This annoyed me in the past too. The kernel should have done that alignment
+> by itself. But changing it now would be a bad idea because it would
+> produce programs that run on newer kernels but break on olders.
+> Documenting it is the only sane option left.
 
-Ok. I hope the NFS read/write in a tight loop should do the trick.
-Will get back soon.
+Ok. I already sent a patch to the manpages maintainer.
 
-> 
-> 	Ingo
-
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Samuel
