@@ -1,32 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992841AbXDDLJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992843AbXDDLMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992841AbXDDLJf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 07:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992843AbXDDLJf
+	id S2992843AbXDDLMG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 07:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992850AbXDDLMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 07:09:35 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:46463 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992841AbXDDLJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 07:09:35 -0400
-Date: Wed, 4 Apr 2007 13:08:36 +0200 (MEST)
-Message-Id: <200704041108.l34B8ag5019443@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: utrace merge
-Cc: dino@in.ibm.com, dipankar@in.ibm.com, ego@in.ibm.com,
-       linux-kernel@vger.kernel.org, masami.hiramatsu.pt@hitachi.com,
-       oleg@tv-sign.ru, paulmck@us.ibm.com, rjw@sisk.pl, roland@redhat.com,
-       torvalds@linux-foundation.org, vatsa@in.ibm.com
+	Wed, 4 Apr 2007 07:12:06 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33435 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992843AbXDDLME (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 07:12:04 -0400
+Date: Wed, 4 Apr 2007 12:14:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: dwmw2@infradead.org, flar@allandria.com, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404121434.73d01e7e@the-village.bc.nu>
+In-Reply-To: <20070403.185026.26966290.davem@davemloft.net>
+References: <20070404022828.5c9b97f3@the-village.bc.nu>
+	<Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
+	<20070404024400.56d016e1@the-village.bc.nu>
+	<20070403.185026.26966290.davem@davemloft.net>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007 12:06:44 +0200, Ingo Molnar wrote:
-> btw., how about pushing utrace to v2.6.22, is anything big holding that 
-> up?
+> If you want hierarchy, create it:
+> 
+> /sys/blah/serial/controllerX/portY
+> 
+> and keeping them all under the ttyS? major keeps the simple
+> cases working sanely too.
 
-IMO, until regressions in the ptrace userspace API like
-<https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229112>
-are eliminated, utrace must not replace ptrace in the vanilla kernel.
-
-/Mikael
+Currently yes you could do that, but that would break all the back
+compatibility.
