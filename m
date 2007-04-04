@@ -1,71 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992772AbXDDIwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934058AbXDDIzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992772AbXDDIwN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 04:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992775AbXDDIwN
+	id S934058AbXDDIzc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 04:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992756AbXDDIzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 04:52:13 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4173 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992772AbXDDIwL (ORCPT
+	Wed, 4 Apr 2007 04:55:32 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:25878 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S934058AbXDDIzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 04:52:11 -0400
-Date: Wed, 4 Apr 2007 09:51:59 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Brad Boyer <flar@allandria.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404085159.GB13134@flint.arm.linux.org.uk>
-Mail-Followup-To: Brad Boyer <flar@allandria.com>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-References: <1175610345.2665.15.camel@shinybook.infradead.org> <17938.57292.870224.132415@cargo.ozlabs.ibm.com> <1175642916.10567.24.camel@shinybook.infradead.org> <20070403212928.GA12951@cynthia.pants.nu> <1175644642.10567.31.camel@shinybook.infradead.org> <20070403221002.GA13210@cynthia.pants.nu> <1175648051.10567.61.camel@shinybook.infradead.org> <20070403230908.GA13471@cynthia.pants.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070403230908.GA13471@cynthia.pants.nu>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 4 Apr 2007 04:55:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type;
+  b=IpN26qK7hbaSbgMUfexZNbt+271c7GgGdiqob/sFqzJB/6R7I3DzIknTrC2YSkqTQDurJXvwLedEcuL5dvQwIl+TiTxJiiYHA2R8Fc0KPfplsOj1lxaawZOwo+wZemhxxoLo6QP8w13eoUHwfVd+d/pba97r53l2xhb0TyBvXis=  ;
+X-YMail-OSG: zNDyn30VM1mgZfiwUynFeyliSomfGvqKRSZmcHCfeYSKz75rGwgDcbz9_96kUYuwvONCPSspBQ--
+Message-ID: <461367F6.10705@yahoo.com.au>
+Date: Wed, 04 Apr 2007 18:55:18 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	 <46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	 <20070403125903.3e8577f4.akpm@linux-foundation.org>	 <4612B645.7030902@redhat.com>	 <20070403202937.GE355@devserv.devel.redhat.com>	 <20070403144948.fe8eede6.akpm@linux-foundation.org>	 <4612DCC6.7000504@cosmosbay.com>  <46130BC8.9050905@yahoo.com.au> <1175675146.6483.26.camel@twins>
+In-Reply-To: <1175675146.6483.26.camel@twins>
+Content-Type: multipart/mixed;
+ boundary="------------050503080802060505000407"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 04:09:08PM -0700, Brad Boyer wrote:
-> The availability of the specific chip in question is a red herring in
-> my opinion. I do understand that 8250 compatible chips are very common
-> and are the most likely serial chips to be used with Linux. However, I
-> will point out that the define is TTY_MAJOR, not 8250_MAJOR. It seems
-> to me that whoever named it was thinking in more generic terms.
+This is a multi-part message in MIME format.
+--------------050503080802060505000407
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-You're reading too much into the name.  It's historical, and the reason
-can still be seen in LANANA:
+Peter Zijlstra wrote:
+> On Wed, 2007-04-04 at 12:22 +1000, Nick Piggin wrote:
+> 
+>>Eric Dumazet wrote:
+> 
+> 
+>>>I do think such workloads might benefit from a vma_cache not shared by 
+>>>all threads but private to each thread. A sequence could invalidate the 
+>>>cache(s).
+>>>
+>>>ie instead of a mm->mmap_cache, having a mm->sequence, and each thread 
+>>>having a current->mmap_cache and current->mm_sequence
+>>
+>>I have a patchset to do exactly this, btw.
+> 
+> 
+> /me too
+> 
+> However, I decided against pushing it because when it does happen that a
+> task is not involved with a vma lookup for longer than it takes the seq
+> count to wrap we have a stale pointer...
+> 
+> We could go and walk the tasks once in a while to reset the pointer, but
+> it all got a tad involved.
 
-  4 char        TTY devices
-                  0 = /dev/tty0         Current virtual console
-
-                  1 = /dev/tty1         First virtual console
-                    ...
-                 63 = /dev/tty63        63rd virtual console
-                 64 = /dev/ttyS0        First UART serial port
-                    ...
-                255 = /dev/ttyS191      192nd UART serial port
-
-                UART serial ports refer to 8250/16450/16550 series devices.
-
-When the drivers/char/serial.c driver was written, it was in the very
-early days of Linux.  I'd guess that the major/minor numbers were similar
-to Minix, thereby allowing a minixfs to be used as the initial filesystem
-type.
-
-Anyway, as you can see, defining chardev major 4 to be "8250_MAJOR" would
-also be a misnomer because it's used for the virtual consoles, and it's
-_that_ use for which it (probably) was called TTY_MAJOR.
-
-(Note that in the very early days, this major also got used for PTY
-devices.  Since then they've moved to major 2/3 and then we got Unix98
-PTY support.)
+Well here is my core patch (against I think 2.6.16 + a set of vma cache
+cleanups and abstractions). I didn't think the wrapping aspect was
+terribly involved.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+SUSE Labs, Novell Inc.
+
+--------------050503080802060505000407
+Content-Type: text/plain;
+ name="mm-thread-vma-cache.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mm-thread-vma-cache.patch"
+
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -296,6 +296,8 @@ struct mm_struct {
+ 	struct vm_area_struct *mmap;		/* list of VMAs */
+ 	struct rb_root mm_rb;
+ 	struct vm_area_struct *vma_cache;	/* find_vma cache */
++ 	unsigned long vma_sequence;
++
+ 	unsigned long (*get_unmapped_area) (struct file *filp,
+ 				unsigned long addr, unsigned long len,
+ 				unsigned long pgoff, unsigned long flags);
+@@ -693,6 +695,8 @@ enum sleep_type {
+ 	SLEEP_INTERRUPTED,
+ };
+ 
++#define VMA_CACHE_SIZE	4
++
+ struct task_struct {
+ 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
+ 	struct thread_info *thread_info;
+@@ -734,6 +738,8 @@ struct task_struct {
+ 	struct list_head ptrace_list;
+ 
+ 	struct mm_struct *mm, *active_mm;
++	struct vm_area_struct *vma_cache[VMA_CACHE_SIZE];
++	unsigned long vma_cache_sequence;
+ 
+ /* task state */
+ 	struct linux_binfmt *binfmt;
+Index: linux-2.6/mm/mmap.c
+===================================================================
+--- linux-2.6.orig/mm/mmap.c
++++ linux-2.6/mm/mmap.c
+@@ -32,6 +32,40 @@
+ 
+ static void vma_cache_touch(struct mm_struct *mm, struct vm_area_struct *vma)
+ {
++	struct task_struct *curr = current;
++	if (mm == curr->mm) {
++		int i;
++		if (curr->vma_cache_sequence != mm->vma_sequence) {
++			curr->vma_cache_sequence = mm->vma_sequence;
++			curr->vma_cache[0] = vma;
++			for (i = 1; i < VMA_CACHE_SIZE; i++)
++				curr->vma_cache[i] = NULL;
++		} else {
++			int update_mm;
++
++			if (curr->vma_cache[0] == vma)
++				return;
++
++			for (i = 1; i < VMA_CACHE_SIZE; i++) {
++				if (curr->vma_cache[i] == vma)
++					break;
++			}
++			update_mm = 0;
++			if (i == VMA_CACHE_SIZE) {
++				update_mm = 1;
++				i = VMA_CACHE_SIZE-1;
++			}
++			while (i != 0) {
++				curr->vma_cache[i] = curr->vma_cache[i-1];
++				i--;
++			}
++			curr->vma_cache[0] = vma;
++
++			if (!update_mm)
++				return;
++		}
++	}
++
+ 	if (mm->vma_cache != vma) /* prevent cacheline bouncing */
+ 		mm->vma_cache = vma;
+ }
+@@ -39,27 +73,56 @@ static void vma_cache_touch(struct mm_st
+ static void vma_cache_replace(struct mm_struct *mm, struct vm_area_struct *vma,
+ 						struct vm_area_struct *repl)
+ {
++	mm->vma_sequence++;
++	if (unlikely(mm->vma_sequence == 0)) {
++		struct task_struct *curr = current, *t;
++		t = curr;
++		rcu_read_lock();
++		do {
++			t->vma_cache_sequence = -1;
++			t = next_thread(t);
++		} while (t != curr);
++		rcu_read_unlock();
++	}
++
+ 	if (mm->vma_cache == vma)
+ 		mm->vma_cache = repl;
+ }
+ 
+ static void vma_cache_invalidate(struct mm_struct *mm, struct vm_area_struct *vma)
+ {
+- 	if (mm->vma_cache == vma)
+-		mm->vma_cache = NULL;
++	vma_cache_replace(mm, vma, NULL);
+ }
+ 
+ static struct vm_area_struct *vma_cache_find(struct mm_struct *mm,
+ 						unsigned long addr)
+ {
+-	struct vm_area_struct *vma = mm->vma_cache;
++	struct task_struct *curr;
++	struct vm_area_struct *vma;
+ 
+ 	preempt_disable();
+ 	__inc_page_state(vma_cache_query);
+-	if (vma && vma->vm_end > addr && vma->vm_start <= addr)
++
++	curr = current;
++	if (mm == curr->mm && mm->vma_sequence == curr->vma_cache_sequence) {
++		int i;
++		for (i = 0; i < VMA_CACHE_SIZE; i++) {
++			vma = curr->vma_cache[i];
++			if (vma && vma->vm_end > addr && vma->vm_start <= addr){
++				__inc_page_state(vma_cache_hit);
++				goto out;
++			}
++		}
++	}
++
++	vma = mm->vma_cache;
++	if (vma && vma->vm_end > addr && vma->vm_start <= addr) {
+ 		__inc_page_state(vma_cache_hit);
+-	else
+-		vma = NULL;
++		goto out;
++	}
++
++	vma = NULL;
++out:
+ 	preempt_enable();
+ 
+ 	return vma;
+@@ -1439,9 +1502,9 @@ struct vm_area_struct * find_vma(struct 
+ 				} else
+ 					rb_node = rb_node->rb_right;
+ 			}
+-			if (vma)
+-				vma_cache_touch(mm, vma);
+ 		}
++		if (vma)
++			vma_cache_touch(mm, vma);
+ 	}
+ 	return vma;
+ }
+@@ -1487,6 +1550,9 @@ find_vma_prev(struct mm_struct *mm, unsi
+ 	}
+ 
+ out:
++	if (vma)
++		vma_cache_touch(mm, vma);
++
+ 	*pprev = prev;
+ 	return prev ? prev->vm_next : vma;
+ }
+Index: linux-2.6/kernel/fork.c
+===================================================================
+--- linux-2.6.orig/kernel/fork.c
++++ linux-2.6/kernel/fork.c
+@@ -198,6 +198,7 @@ static inline int dup_mmap(struct mm_str
+ 	mm->locked_vm = 0;
+ 	mm->mmap = NULL;
+ 	mm->vma_cache = NULL;
++	mm->vma_sequence = 0;
+ 	mm->free_area_cache = oldmm->mmap_base;
+ 	mm->cached_hole_size = ~0UL;
+ 	mm->map_count = 0;
+
+--------------050503080802060505000407--
