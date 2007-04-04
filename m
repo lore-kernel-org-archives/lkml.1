@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbXDDQKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbXDDQLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395AbXDDQKq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXDDQKq
+	id S1753119AbXDDQLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXDDQKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:10:46 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:50859 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395AbXDDQKn (ORCPT
+	Wed, 4 Apr 2007 12:10:47 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3127 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752261AbXDDQKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Apr 2007 12:10:43 -0400
-X-AuditID: d80ac287-976cabb000000c42-97-4613ce0278a7 
-Date: Wed, 4 Apr 2007 17:10:37 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrea Arcangeli <andrea@suse.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-In-Reply-To: <20070404154839.GI19587@v2.random>
-Message-ID: <Pine.LNX.4.64.0704041700380.27262@blonde.wat.veritas.com>
-References: <20070329075805.GA6852@wotan.suse.de>
- <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com>
- <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de>
- <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
- <20070404154839.GI19587@v2.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 04 Apr 2007 16:10:41.0723 (UTC) FILETIME=[CAE068B0:01C776D3]
-X-Brightmail-Tracker: AAAAAA==
+Date: Wed, 4 Apr 2007 17:10:29 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
+       dwmw2@infradead.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
+       flar@allandria.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404161029.GB18990@flint.arm.linux.org.uk>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Miller <davem@davemloft.net>, dwmw2@infradead.org,
+	paulus@samba.org, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <1175663999.2932.8.camel@shinybook.infradead.org> <17939.15726.114059.679277@cargo.ozlabs.ibm.com> <1175666635.2932.17.camel@shinybook.infradead.org> <20070404.011208.120446173.davem@davemloft.net> <20070404083803.GA13134@flint.arm.linux.org.uk> <20070404122154.GF31973@thunk.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404122154.GF31973@thunk.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Andrea Arcangeli wrote:
-> On Wed, Apr 04, 2007 at 08:35:30AM -0700, Linus Torvalds wrote:
-> > Anyway, I'm not against this, but I can see somebody actually *wanting* 
-> > the ZERO page in some cases. I've used the fact for TLB testing, for 
-> > example, by just doing a big malloc(), and knowing that the kernel will 
-> > re-use the ZERO_PAGE so that I don't get any cache effects (well, at least 
-> > not any *physical* cache effects. Virtually indexed cached will still show 
-> > effects of it, of course, but I haven't cared).
-> 
-> Ok, those cases wanting the same zero page, could be fairly easily
-> converted to an mmap over /dev/zero
+On Wed, Apr 04, 2007 at 08:21:54AM -0400, Theodore Tso wrote:
+> So if we're going to do the "Worse is Better" thing, what I'd suggest
+> doing is that someone simply submit a hack so that pmac_zilog can
+> steal minor numbers and use /dev/ttyS0.  I accepted the patch way back
+> when I was serial maintainer; Russell ripped it out when he became the
+> serial maintainer; but now that he's no longer the serial maintainer,
+> he doesn't get to complain about that any more :-)
 
-No, MAP_SHARED mmap of /dev/zero uses shmem, which allocates distinct
-pages for this (because in general tmpfs doesn't know if a readonly
-file will be written to later on), and MAP_PRIVATE mmap of /dev/zero
-uses the zeromap stuff which we were hoping to eliminate too
-(though not in Nick's initial patch).
+The problem with that approach was that it was being extended to more
+and more drivers in the ARM world, creating an #ifdef mess in the
+serial driver.
 
-Looks like a job for /dev/same_page_over_and_over_again.
+Moreover, it provided *no* way to select an 8250-based serial port in
+the presence of a "foreign" port claiming the ttyS console namespace.
+Utterly unacceptable when you have a real environment of mixed serial
+port types.
 
-> (without having to run 4k large mmap syscalls or nonlinear).
+IOW, it was utterly broken.  It prevented me from doing the things I
+wanted to do.
 
-You scared me, I made no sense of that at first: ah yes,
-repeatedly mmap'ing the same page can be done those ways.
+The only real answer is to fix the problem *properly*.  Hacks just end
+up breaking peoples setups.
 
-Hugh
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
