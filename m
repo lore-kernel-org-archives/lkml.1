@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbXDDRmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbXDDRnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbXDDRmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbXDDRmr
+	id S1752145AbXDDRnF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbXDDRnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:42:47 -0400
-Received: from thunk.org ([69.25.196.29]:49996 "EHLO thunker.thunk.org"
+	Wed, 4 Apr 2007 13:43:05 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:49415 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbXDDRmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:42:46 -0400
-Date: Wed, 4 Apr 2007 13:41:53 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: David Miller <davem@davemloft.net>, dwmw2@infradead.org, paulus@samba.org,
-       alan@lxorguk.ukuu.org.uk, flar@allandria.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404174153.GI31973@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	David Miller <davem@davemloft.net>, dwmw2@infradead.org,
-	paulus@samba.org, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <1175663999.2932.8.camel@shinybook.infradead.org> <17939.15726.114059.679277@cargo.ozlabs.ibm.com> <1175666635.2932.17.camel@shinybook.infradead.org> <20070404.011208.120446173.davem@davemloft.net> <20070404083803.GA13134@flint.arm.linux.org.uk> <20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4613CF6A.2090407@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1752145AbXDDRnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 13:43:01 -0400
+Date: Wed, 4 Apr 2007 10:42:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Dillow <dave@thedillows.org>, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org, ray-gmail@madrabbit.org,
+       amanda-hackers@amanda.org, amanda-users@amanda.org
+Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
+Message-Id: <20070404104219.40e25b6a.akpm@linux-foundation.org>
+In-Reply-To: <20070404084530.GB1556@elte.hu>
+References: <200704010100.19016.gene.heskett@verizon.net>
+	<2c0942db0704010033r61f967c3y7d05e3ec0a9f6931@mail.gmail.com>
+	<200704011141.53105.gene.heskett@verizon.net>
+	<200704020021.02393.gene.heskett@gmail.com>
+	<1175488272.3161.28.camel@obelisk.thedillows.org>
+	<1175661256.31439.23.camel@obelisk.thedillows.org>
+	<20070404084530.GB1556@elte.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 09:16:42AM -0700, H. Peter Anvin wrote:
-> One option would be to move the 8250-based serial ports, to, say, 
-> /dev/ttyN* (for National Semiconductors -- the best I could come up 
-> with) and redefine /dev/ttyS* as a serial port multiplexer which maps in 
-> all the types, for the ones that really want dynamic mapping.
+On Wed, 4 Apr 2007 10:45:30 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-> Of course, now you have the potential of aliasing, again, which tends to 
-> cause all kinds of headaches w.r.t. locking.  
+> 
+> * Dave Dillow <dave@thedillows.org> wrote:
+> 
+> > > Then it is a matter of figuring out why the device number changed -- 
+> > > I'm thinking it is device-mapper, but will look closer tomorrow.
+> > 
+> > This commit is the one that changed it:
+> > 
+> > commit fdf892be32d84a1745fa0aee5fc60517421b8038
+> > Author: Andrew Morton <akpm@osdl.org>
+> > Date:   Mon Feb 12 00:51:44 2007 -0800
+> > 
+> >     [PATCH] register_blkdev(): don't hand out the LOCAL/EXPERIMENTAL majors
+> >     
+> >     As pointed out in http://bugzilla.kernel.org/show_bug.cgi?id=7922, 
+> >     dynamic blockdev major allocation can hand out majors which LANANA 
+> >     has defined as being for local/experimental use.
+> 
+> i dont think we should break backwards compatibility with a system that 
+> has not changed any hardware. Andrew, should we revert this?
 
-That would break the 99.9% of the the world using Intel-based systems
-which only have 8250's, for very little gain. 
+Well that's an odd thing for a backup program to be doing - there are any
+number of things which could cause a dynamically-allocated major to change.
 
-Like it or not, /dev/ttySx and 8250 UART's are to serial ports what
-the PCI is to system buses....
-
-						- Ted
+ho hum, yes, I guess it needs to go.
