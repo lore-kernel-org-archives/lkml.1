@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992797AbXDDJwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992800AbXDDJzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992797AbXDDJwd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 05:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992800AbXDDJwd
+	id S2992800AbXDDJzh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 05:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992802AbXDDJzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 05:52:33 -0400
-Received: from mail.screens.ru ([213.234.233.54]:49832 "EHLO mail.screens.ru"
+	Wed, 4 Apr 2007 05:55:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:57101 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992797AbXDDJwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 05:52:32 -0400
-Date: Wed, 4 Apr 2007 12:57:00 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Paul Jackson <pj@sgi.com>
-Subject: Re: getting processor numbers
-Message-ID: <20070404085700.GA170@tv-sign.ru>
-References: <461286D6.2040407@redhat.com> <20070403131623.c6831607.akpm@linux-foundation.org> <4612BB89.8040102@redhat.com> <20070403141348.9bcdb13e.akpm@linux-foundation.org> <4612D175.30604@redhat.com> <20070403154831.37bde672.akpm@linux-foundation.org> <4612DCA2.2090400@redhat.com> <20070403162349.583adf84.akpm@linux-foundation.org> <20070404083927.GA100@tv-sign.ru> <20070404093948.GA14521@elte.hu>
-Mime-Version: 1.0
+	id S2992800AbXDDJzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 05:55:36 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070404093948.GA14521@elte.hu>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
+Message-ID: <17939.30226.339390.709561@cargo.ozlabs.ibm.com>
+Date: Wed, 4 Apr 2007 19:55:30 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+In-Reply-To: <20070404074736.GA3440@flint.arm.linux.org.uk>
+References: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<20070403.165518.55726194.davem@davemloft.net>
+	<20070404021924.71e87580@the-village.bc.nu>
+	<20070403.182125.77058566.davem@davemloft.net>
+	<20070404074736.GA3440@flint.arm.linux.org.uk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/04, Ingo Molnar wrote:
-> 
-> * Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> 
-> > But we don't need tasklist_lock at all, we can use 
-> > rcu_read_lock/unlock. Q: don't we need task_rq_lock() to read 
-> > ->cpus_allowed "atomically" ?
-> 
-> right now ->cpus_allowed is protected by tasklist_lock. We cannot do RCU 
-> here because ->cpus_allowed modifications are not RCUified.
+Russell King writes:
 
-Is it so? that was my question. Afaics, set_cpus_allowed() does
-p->cpus_allowed = new_mask under rq->lock, so I don't understand
-how tasklist_lock can help.
+> FACT: you can only have one struct console with one name.
 
-Could you clarify?
+That could be solved by having the struct console at the generic
+serial driver level rather than in the individual port drivers.
 
-Oleg.
+> FACT: there is no way to know at any particular driver registration time
+>  how many "generic" serial ports will be available - as required for the
+>  chardev and tty layers.
 
+I think the thing that davem and I have in common is that we have a
+data structure that the firmware gives us that (at least) enumerates
+all of the on-board serial ports for us, thus we *can* know very early
+in the boot process how many "generic" serial ports will be available.
+
+> There are very real issues that need fixing deep within the kernel
+> before you can even think about the possibility of *PROPERLY* supporting
+> all serial ports beneath one namespace.
+
+I don't actually want to do that; I'm perfectly happy for various
+kinds of plug-in cards to each have their own namespace.  If you're
+plugging in a Cyclades card for instance I think it's quite reasonable
+for the ports to be named /dev/ttyCn.
+
+It's the built-in serial ports on the motherboard where I think the
+user should not have to know what sort of chip was used to implement
+the serial port.  We don't require users to know whether the
+manufacturer used an 8250 or a 16450 or a 16550, so why should it
+matter if the manufacturer used an 8530?
+
+BTW, are you still maintaining the serial layer?
+
+Paul.
