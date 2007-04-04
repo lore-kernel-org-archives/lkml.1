@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966230AbXDDBRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966234AbXDDBRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966230AbXDDBRP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 21:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966229AbXDDBRP
+	id S966234AbXDDBRh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 21:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966233AbXDDBRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 21:17:15 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57401 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966230AbXDDBRN (ORCPT
+	Tue, 3 Apr 2007 21:17:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47095
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S966235AbXDDBRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 21:17:13 -0400
-Date: Wed, 4 Apr 2007 02:19:24 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: paulus@samba.org, dwmw2@infradead.org, linuxppc-dev@ozlabs.org,
-       benh@kernel.crashing.org, linux-kernel@vger.kernel.org
+	Tue, 3 Apr 2007 21:17:35 -0400
+Date: Tue, 03 Apr 2007 18:17:33 -0700 (PDT)
+Message-Id: <20070403.181733.27782389.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: dwmw2@infradead.org, flar@allandria.com, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404021924.71e87580@the-village.bc.nu>
-In-Reply-To: <20070403.165518.55726194.davem@davemloft.net>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<20070403.165518.55726194.davem@davemloft.net>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1175649192.30879.19.camel@localhost.localdomain>
+References: <20070403.170212.02298297.davem@davemloft.net>
+	<1175645568.10567.42.camel@shinybook.infradead.org>
+	<1175649192.30879.19.camel@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I totally agree with Paul, the onboard serial device should get
-> ttyS0 regardless of what hardare is used to drive it.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 04 Apr 2007 11:13:12 +1000
 
-Thats between you and udev.
+> It worked before the new serial core, we had a "tweak" in the old 8250
+> driver to be able to share minors, but that got busted when Russell
+> rewrote the whole thing. I remember asking him back when he still was
+> the serial maintainer, and he refused to bring back some sharing of
+> minors.
 
-> Generalizing this minor number allocation for ttyS? might be the
-> best way to handle this.
-
-Again this is a udev issue. udev can certainly do a generic "all my
-serial ports" listing.
-
+Fork the 8250 driver like I did on Sparc so you can get the
+dynamic minor behavior back :-))))
