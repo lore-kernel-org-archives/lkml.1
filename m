@@ -1,136 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXDDV4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXDDV63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbXDDV4p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 17:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXDDV4o
+	id S1752016AbXDDV63 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 17:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXDDV62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 17:56:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:47574 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbXDDV4n (ORCPT
+	Wed, 4 Apr 2007 17:58:28 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:33906 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbXDDV61 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 17:56:43 -0400
+	Wed, 4 Apr 2007 17:58:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DXFt27/cgQxMhF0XD8qqnuCPfmc2jLi7BzBw7GhEq9rObzrl6ieSQcMtVnyIcovPHGTXeKDNuk4m7Ucm111R+sXYJD6NcR5ONb2sz7WKIQ2ZqSzJAt69vC2HowPgJ39YKOn25Bsbk9UBdHQv0q7yFRRzPteHJg2K7XzfB5yKaZQ=
-Subject: Re: 2.6.21-rc5-mm4
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070402224745.71a25af7.akpm@linux-foundation.org>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 05:56:35 +0800
-Message-Id: <1175723795.4014.6.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Sf6SdBwCbk/QABrJLL0z9J7wgyayhVl2E1WI4XMrOJzK3aEd/CMsMCdCvLE9cr2KHuVI4vVtL0gjAdlKbqQ/s0T5rlDMsFq7JyN4WYTOOk8sHeiaZfXYzwaR0gMjkLPcUbsMJ9alRbhzPehqpSs3NWLoirwHkiRz9EmgE7UxH4c=
+Message-ID: <f9be06770704041458v53b52a4er95b2f6e86e88615@mail.gmail.com>
+Date: Wed, 4 Apr 2007 17:58:21 -0400
+From: "Karl Pickett" <karl.pickett@gmail.com>
+To: "Vincent Vanackere" <vincent.vanackere@gmail.com>
+Subject: Re: [PATCH] Make ati_remote button repeat sensitivity soft-configurable
+Cc: "=?ISO-8859-1?Q?=C9ric_Piel?=" <Eric.Piel@tremplin-utc.net>,
+       linux-kernel@vger.kernel.org, inux-input@atrey.karlin.mff.cuni.cz
+In-Reply-To: <65258a580704041416v61c6f1a5qfd54cc98bd4e8300@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <f9be06770704031734k11ec894fpdf1afe385108aece@mail.gmail.com>
+	 <461357D8.8060608@tremplin-utc.net>
+	 <65258a580704040145m6eb7108frfa8197d3b88e207a@mail.gmail.com>
+	 <f9be06770704040637k419a7fd7t2cdd52186d91ad5f@mail.gmail.com>
+	 <f9be06770704040821h6d96e703hf405335fa73f289b@mail.gmail.com>
+	 <65258a580704041352q664f5da2xeaeec1a82819d9ef@mail.gmail.com>
+	 <461412C2.8090201@tremplin-utc.net>
+	 <65258a580704041416v61c6f1a5qfd54cc98bd4e8300@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-02 at 22:47 -0700, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
-> 
-> - The oops in git-net.patch has been fixed, so that tree has been restored. 
->   It is huge.
-> 
-> - Added the device-mapper development tree to the -mm lineup (Alasdair
->   Kergon).  It is a quilt tree, living at
->   ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/.
-> 
-> - Added davidel's signalfd stuff.
-> 
-> 
-> 
+On 4/4/07, Vincent Vanackere <vincent.vanackere@gmail.com> wrote:
+> On 4/4/07, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
+> > 04/04/2007 10:52 PM, Vincent Vanackere wrote/a écrit:
+> > > +        unsigned long first_jiffies;
+> >     ^^^^^^^^ space warning!
+> >
+> > Sorry for being annoying ;-)
+> > Eric
+> >
+>
+> Indeed you are    8-)
+> ... new version attached ...
+>
+> Best regards,
+>
+> Vincent
+>
+>
 
-I'm getting a kernel panic intermittently, approximately 50% of boots.
-The tracing is not always the same, but it always dies on an
-atomic_bitop operation.  Here are two hand-copied tracings (for the life
-of me, I can't make netconsole work).
+Works great for me.  I can now give it a hard press and not cause a
+repeat.  It's nice that you can  just set repeat_delay to 0 to get the
+identical previous behavior, in case anybody was in love with that.
+
+The spaces were probably my fault, I sent it from a machine with
+expandtab on (don't ask :)
 
 
-/---------------------------First Tracing----------------------/
-Oops: 0000 [#1]
-last sysfs file: class/firmware/microcode
-Modules linked in: ...
-....
-...
-CPU: 0
-EIP: ...
-EFLAGS:...
-EIP is at find_next_zero_bit
-...
-...
-...
-Process set_disk_settin
-Call Trace:
-show_trace_log
-show_stack_log
-show_register
-die
-do_page_fault
-error_code
-recalc_task_prio
-activate_task
-try_to_wake_up
-deault_wake_function
-__wake_up_common
-__wake_up
-sock_def_readable
-soc_queue_rev_skb
-udp_queue_rcv_skb
-__udp4_libr_rcv
-udp_rcv
-ip_local_delivery
-ip_rcv
-netif_receive_skb
-rtl8139_poll
-net_rx_action
-__do_soft_irq
-do_softirq
-irq_exit
-do_IRQ
-common_interrupt
 
-/---------------------- Second Tracing --------------------------/
-CPU: 0
-EIP: ...
-EFLAGS:...
-EIP is at find_next_zero_bit
-...
-...
-...
-Process sshd
-Call Trace:
-show_trace_log
-show_stack_log
-show_register
-die
-do_page_fault
-error_code
-recalc_task_prio
-enqueue_task
-activate_task
-try_to_wake_up
-wake_up_state
-signal_wake_up
-__group_complete_signal
-__group_send_signal
-group_send_sig_info
-send_group_sig_info
-it_real_fn
-run_hrtimer_softirq
-__do_softirq
-irq_exit
-smp_apic_timer_interrupt
-apic_timer_interrupt
-error_code
-
-EIP: [<c01bfa1c>. find_next_zero_bit+...
-
-Tony
-
-PS: I might try use a serial console and bisection, but this might take
-me a few days.
-
+-- 
+Karl Pickett
+The most wasted of all days is one without laughter.—E.E. Cummings
