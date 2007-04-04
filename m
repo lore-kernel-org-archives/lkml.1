@@ -1,113 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992621AbXDDFF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992588AbXDDFIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992621AbXDDFF0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 01:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992602AbXDDFF0
+	id S2992588AbXDDFIF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 01:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992602AbXDDFIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 01:05:26 -0400
-Received: from colo.lackof.org ([198.49.126.79]:48586 "EHLO colo.lackof.org"
+	Wed, 4 Apr 2007 01:08:05 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:43088 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992621AbXDDFFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 01:05:24 -0400
-Date: Tue, 3 Apr 2007 23:05:09 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Milind Arun Choudhary <milindchoudhary@gmail.com>
-Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, parisc-linux@lists.parisc-linux.org,
-       grundler@parisc-linux.org, kyle@mcmartin.ca, willy@debian.org
-Subject: Re: [KJ][PATCH] ROUND_UP macro cleanup in arch/parisc
-Message-ID: <20070404050509.GD9446@colo.lackof.org>
-References: <20070401073646.GA11444@arun.site>
+	id S2992588AbXDDFIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 01:08:02 -0400
+Date: Wed, 4 Apr 2007 10:45:26 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, containers@lists.osdl.org,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       mbligh@google.com, winget@google.com, rohitseth@google.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070404051526.GA16562@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070403164615.GJ2456@in.ibm.com> <6599ad830704030952r5c295f3ap6e366de31dab2ccb@mail.gmail.com> <20070403171155.GK2456@in.ibm.com> <6599ad830704031010i5418abf1o12b11334cde4d2c5@mail.gmail.com> <20070403173048.GL2456@in.ibm.com> <6599ad830704031030n2311bcd7hca9f34e64c66337f@mail.gmail.com> <20070403175101.GN2456@in.ibm.com> <6599ad830704031049v7fad0a83q3c24211cf44d71d6@mail.gmail.com> <20070404030756.GA9008@in.ibm.com> <6599ad830704032104hda0c4bu7099c23a86940c76@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070401073646.GA11444@arun.site>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <6599ad830704032104hda0c4bu7099c23a86940c76@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 01, 2007 at 01:06:46PM +0530, Milind Arun Choudhary wrote:
-> ROUND_UP macro cleanup, use ALIGN where ever appropriate
+On Tue, Apr 03, 2007 at 09:04:59PM -0700, Paul Menage wrote:
+> Have you posted the cpuset implementation over your system yet?
+
+Yep, here:
+
+http://lists.linux-foundation.org/pipermail/containers/2007-March/001497.html
+
+For some reason, the above mail didnt make it into lkml (maybe it
+exceeded the max size allowed). I also have a updated version of that
+which I hope to post as soon as I am done with something else I am
+working on (sigh ..)
+
+> The drawback to that is that every subsystem has to add a dentry to
+> its state, and handle the processing.
+
+Again this depends on whether every subsystem need to be able to support
+the user-space query you pointed out.
+
+> >Do you see similar queries coming in for every resource controller object
+> >(show me the path of cpu_acct, cpu_ctl, rss_ctl ... objects to which this
+> >task belongs)? IMO that will not be the case, in which case we can avoid
+> >adding N pointers (N = max hierarchies) in nsproxy just to support queries 
+> >of
+> >those sort.
 > 
-> Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+> OK, I see your argument that putting it in the aggregator probably
+> isn't the best thing to do from a space point of view in the case when
+> the number of aggregators
 
-Also looks good to me. Just one white space nit we can fixup by hand.
+Sorry that sentence seems to be garbled by some mail router :)
 
-Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
+Did you mean to say "when the number of aggregators sharing the same
+container object are more" ?
+
+I agree ..Putting N pointers in container_group object just to support
+queries isn't justified at this point, because we don't know whether all
+subsystems need to support such queries.
+
+> This seems like a place where my container_subsys_state object is
+> useful - it can store a pointer to the container object (and be
+> maintained by the generic container system), at a space cost of 1
+> pointer per subsystem grouping, rather than N pointers per aggregator.
+
+Yes that would be better than having N pointers in aggregator. From
+supporting purely user-space query pov, I think that is roughly same
+as having a 'dentry pointer' per resource object (what I mentioned earlier). 
+
+IMO we should add a dentry/container_subsys_state pointer only for those 
+subsystems which need to support such queries ..
 
 
-> 
-> ---
->  hpux/fs.c             |    5 ++---
->  kernel/sys_parisc32.c |    3 +--
->  2 files changed, 3 insertions(+), 5 deletions(-)
-> 
-> 
-> 
-> diff --git a/arch/parisc/hpux/fs.c b/arch/parisc/hpux/fs.c
-> index 4204cd1..7ff5546 100644
-> --- a/arch/parisc/hpux/fs.c
-> +++ b/arch/parisc/hpux/fs.c
-> @@ -21,6 +21,7 @@
->   *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
->   */
->  
-> +#include <linux/kernel.h>
->  #include <linux/mm.h>
->  #include <linux/sched.h>
->  #include <linux/file.h>
-> @@ -70,7 +71,6 @@ struct getdents_callback {
->  };
->  
->  #define NAME_OFFSET(de) ((int) ((de)->d_name - (char *) (de)))
-> -#define ROUND_UP(x) (((x)+sizeof(long)-1) & ~(sizeof(long)-1))
->  
->  static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
->  		u64 ino, unsigned d_type)
-> @@ -78,7 +78,7 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
->  	struct hpux_dirent * dirent;
->  	struct getdents_callback * buf = (struct getdents_callback *) __buf;
->  	ino_t d_ino;
-> -	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1);
-> +	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1,sizeof(long));
-
-Nit: I'd want a blank space after the comma.
-
-thanks,
-grant
-
->  
->  	buf->error = -EINVAL;	/* only used if we fail.. */
->  	if (reclen > buf->count)
-> @@ -103,7 +103,6 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
->  }
->  
->  #undef NAME_OFFSET
-> -#undef ROUND_UP
->  
->  int hpux_getdents(unsigned int fd, struct hpux_dirent *dirent, unsigned int count)
->  {
-> diff --git a/arch/parisc/kernel/sys_parisc32.c b/arch/parisc/kernel/sys_parisc32.c
-> index ce3245f..e590880 100644
-> --- a/arch/parisc/kernel/sys_parisc32.c
-> +++ b/arch/parisc/kernel/sys_parisc32.c
-> @@ -311,14 +311,13 @@ struct readdir32_callback {
->  	int count;
->  };
->  
-> -#define ROUND_UP(x,a)	((__typeof__(x))(((unsigned long)(x) + ((a) - 1)) & ~((a) - 1)))
->  #define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
->  static int filldir32 (void *__buf, const char *name, int namlen,
->  			loff_t offset, u64 ino, unsigned int d_type)
->  {
->  	struct linux32_dirent __user * dirent;
->  	struct getdents32_callback * buf = (struct getdents32_callback *) __buf;
-> -	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1, 4);
-> +	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, 4);
->  	u32 d_ino;
->  
->  	buf->error = -EINVAL;	/* only used if we fail.. */
-> 
-> -- 
-> Milind Arun Choudhary
+-- 
+Regards,
+vatsa
