@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992833AbXDDKl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992829AbXDDKmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992833AbXDDKl3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 06:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992839AbXDDKl3
+	id S2992829AbXDDKmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 06:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992839AbXDDKmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 06:41:29 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:49274 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992833AbXDDKl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 06:41:28 -0400
-Date: Wed, 4 Apr 2007 16:11:23 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, akpm@linux-foundation.org,
-       paulmck@us.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-Subject: Re: [RFC] Cpu-hotplug: Using the Process Freezer (try2)
-Message-ID: <20070404104123.GA14825@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070402092818.GE2456@in.ibm.com> <20070402111828.GA14771@elte.hu> <20070402124200.GA9566@in.ibm.com> <20070402185607.GA2081@elte.hu> <20070403125619.GA32444@in.ibm.com> <20070403141516.GB14900@in.ibm.com> <20070404031502.GA23591@in.ibm.com> <20070404100431.GB19120@elte.hu>
+	Wed, 4 Apr 2007 06:42:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:1294 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992829AbXDDKmM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 06:42:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=peyjn1Y2AIZx8YYvpoMhOQI3g/+SwK2hvEj/NJVGjSeERLGm/qxrE9S6mQ/7c15ONNsi5fxVrKWdS2/ckUV4fl/5/2F6ZIQ6jgOxCjbQAF+7o5S0VvtkG1gFJIepaoUirR1mbbJNvm53VWxHZuSGjYEGSvV93fZOVCNQAjn6zE4=
+Message-ID: <88df6dda0704040342q3f8988a3idac7d88e51b9b181@mail.gmail.com>
+Date: Wed, 4 Apr 2007 16:12:11 +0530
+From: "Ameya Mitragotri" <ameya.mitragotri@gmail.com>
+To: "Phillip Susi" <psusi@cfl.rr.com>
+Subject: Re: fadvise+sync_file_range Vs O_DIRECT
+Cc: linux-kernel@vger.kernel.org, suparna@in.ibm.com, pbadari@gmail.com
+In-Reply-To: <4612A8C5.1080103@cfl.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070404100431.GB19120@elte.hu>
-User-Agent: Mutt/1.5.12-2006-07-14
+References: <88df6dda0704030351u44fab6bcj20f9b48d24de861a@mail.gmail.com>
+	 <4612A8C5.1080103@cfl.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 12:04:31PM +0200, Ingo Molnar wrote:
-> 
-> yeah, i think you are right - and the TASK_UNINTERRUPTIBLE thing is not 
-> only quite complex, it also breaks the symmetry of freezer use 
-> (sw-suspend obviously cannot freeze uninterruptible tasks). We should 
-> watch whether the current latency of freezing is good enough in 
-> practice.
+On 4/4/07, Phillip Susi <psusi@cfl.rr.com> wrote:
+> Ameya Mitragotri wrote:
+> > Hello,
+> > I am doing some benchmarking on writes to the hdd from a simple
+> > application (attached).
+> > Im benchmarking the writes using the following
+> > - write with O_DIRECT
+> > - write with fadvise + O_SYNC
+> > - write with fadvise + sync_file_range
+>
+> Did you use overlapped aio with O_DIRECT or just send down one request
+> at a time?
 
-Ok. Do you have any specific tests in mind which I can run and post the
-numbers? 
+The app sends the requests one at a time
 
-As of now, I've been stressing the system with (kernbench + ondemand governor)
-and timing the hotplug operation. 
-
-> 
-> 	Ingo
-
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Thanks
+Ameya
