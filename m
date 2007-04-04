@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751951AbXDDWgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750928AbXDDWib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751951AbXDDWgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 18:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbXDDWgu
+	id S1750928AbXDDWib (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 18:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXDDWib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 18:36:50 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38720 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbXDDWgt (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 18:36:49 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: per-thread rusage
-In-Reply-To: Your message of "Wed, 04 Apr 2007 10:29:31 PDT."
-             <20070404172931.GM2986@holomorphy.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070404172931.GM2986@holomorphy.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175726207_4061P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 04 Apr 2007 18:36:47 -0400
-Message-ID: <7653.1175726207@turing-police.cc.vt.edu>
+	Wed, 4 Apr 2007 18:38:31 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53193 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750928AbXDDWia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 18:38:30 -0400
+Date: Wed, 4 Apr 2007 15:38:28 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Bob Picco <bob.picco@hp.com>
+cc: Dave Hansen <hansendc@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/4] x86_64: Switch to SPARSE_VIRTUAL
+In-Reply-To: <20070404212736.GI10084@localhost>
+Message-ID: <Pine.LNX.4.64.0704041531290.8127@schroedinger.engr.sgi.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com>
+ <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+ <200704011246.52238.ak@suse.de> <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
+ <1175544797.22373.62.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
+ <1175548086.22373.99.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0704021422040.2272@schroedinger.engr.sgi.com>
+ <20070404212736.GI10084@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175726207_4061P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 4 Apr 2007, Bob Picco wrote:
 
-On Wed, 04 Apr 2007 10:29:31 PDT, William Lee Irwin III said:
+> Well you must have forgotten about these two postings in regards to
+> performance numbers:
+> http://marc.info/?l=linux-ia64&m=111990276501051&w=2
+> and
+> http://marc.info/?l=linux-kernel&m=116664638611634&w=2
 
-> Index: anon/include/linux/resource.h
-> ===================================================================
-> --- anon.orig/include/linux/resource.h	2007-04-04 09:57:41.239118534 -
-0700
-> +++ anon/include/linux/resource.h	2007-04-04 09:57:59.840178548 -0700
-> @@ -18,7 +18,8 @@
->   */
->  #define	RUSAGE_SELF	0
->  #define	RUSAGE_CHILDREN	(-1)
-> -#define RUSAGE_BOTH	(-2)		/* sys_wait4() uses this */
-> +#define RUSAGE_THREAD	(-2)
-> +#define RUSAGE_BOTH	(-3)		/* sys_wait4() uses this */
+I am well aware of those but those were done with a PAGE_SIZE vmemmap 
+which is particularly bad on IA64 given the TLB fault overhead. You 
+eliminated the TLB fault overhead. Virtual Memmaps need to be designed in 
+such a way that they do not create additional overhead. The x86_64 version 
+here has no such overhead that you could eliminate with lookup tables.
 
-Umm.. I'm having a high-idiot-quotient day today, but don't you want to
-leave _BOTH at -2 and put _THREAD at -3, to avoid an ABI breakage?
+The bad thing is that this benchmark then was used to justify 
+sparsemem on other platforms where such overhead does not exist.
 
---==_Exmh_1175726207_4061P
-Content-Type: application/pgp-signature
+One needs to be careful with benchmarks..... Its better to review the 
+code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGFCh/cC3lWbTT17ARAre1AKD5Z6TOf6D9soCDdZr77xd9CQPesgCdEGVa
-81UZJ9a42A6o5Oj1xxlGg5s=
-=/ZeH
------END PGP SIGNATURE-----
-
---==_Exmh_1175726207_4061P--
