@@ -1,233 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422740AbXDDSYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422722AbXDDSYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422740AbXDDSYF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:24:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993017AbXDDSXn
+	id S1422722AbXDDSYG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992753AbXDDSXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:23:43 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:39302 "EHLO
-	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934085AbXDDSM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:12:56 -0400
-X-ORBL: [67.117.73.34]
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Cc: Kai Svahn <kai.svahn@nokia.com>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 66/90] ARM: OMAP: Sync framebuffer headers with N800 tree
-Date: Wed,  4 Apr 2007 14:05:45 -0400
-Message-Id: <11757101481276-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757101444-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
- 57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <117571004562-git-send-email-tony@atomide.com> <11757100491583-git-send-email-tony@atomide.com> <11757100511172-git-send-email-tony@atomide.com> <1175710059333-git-send-email-tony@atomide.com> <11757100623383-git-send-email-tony@atomide.com> <11757100641006-git-send-email-tony@atomide.com> <11757100661228-git-send-email-tony@atomide.com> <11757100691131-git-send-email-tony@atomide.com> <11757100713004-git-send-email-tony@atomide.com> <11757100752021-git-send-email-tony@atomide.com> <11757100781275-git-send-email-tony@atomide.com> <11757100811771-git-send-email-tony@atomide.com> <11757100821353-git-send-email-tony@atomide.com> <11757100853841-git-send-email-tony@atomide.com> <1175710087578-git-send-email-tony@atomide.com> <11757100911247-git-send-email-tony@atomide.com> <1175710093864-git-send-email-tony@atomide.com> <11757100952384-git-send-email-tony@atomide.com> <11757100982726-g!
- it-send-email-tony@atomide.com> <11757101012787-git-send-email-tony@atomide.com> <1175710103340-git-send-email-tony@atomide.com> <11757101072553-git-send-email-tony@atomide.com> <11757101101180-git-send-email-tony@atomide.com> <11757101123620-git-send-email-tony@atomide.com> <11757101141643-git-send-email-tony@atomide.com> <
+	Wed, 4 Apr 2007 14:23:40 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:51264 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422746AbXDDSW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 14:22:59 -0400
+Date: Wed, 4 Apr 2007 11:19:30 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Rob Sims <lkml-z@robsims.com>
+Cc: Thomas Glanzmann <thomas@glanzmann.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andreas =?UTF-8?B?QWxsZ8O2d2Vy?= <andreas.allgoewer@web.de>,
+       Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>
+Subject: Re: sky2 PHY setup
+Message-ID: <20070404111930.46321146@freekitty>
+In-Reply-To: <20070327032406.GA25659@robsims.com>
+References: <20070202102705.3cf028a6@freekitty>
+	<20070202210934.GM1693@cip.informatik.uni-erlangen.de>
+	<20070202151601.677ec5d9@freekitty>
+	<20070203073012.GO1693@cip.informatik.uni-erlangen.de>
+	<20070205090429.31d7bd32@freekitty>
+	<20070222193611.GR20035@cip.informatik.uni-erlangen.de>
+	<20070316002912.GB17594@cip.informatik.uni-erlangen.de>
+	<20070316095932.5e920222@freekitty>
+	<20070316203645.GA24699@robsims.com>
+	<20070316141648.15d7ff75@freekitty>
+	<20070327032406.GA25659@robsims.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kai Svahn <kai.svahn@nokia.com>
+On Mon, 26 Mar 2007 21:24:06 -0600
+Rob Sims <lkml-z@robsims.com> wrote:
 
-This patch syncs framebuffer headers with N800 tree.
+> On Fri, Mar 16, 2007 at 02:16:48PM -0700, Stephen Hemminger wrote:
+> > On Fri, 16 Mar 2007 14:36:45 -0600
+> > Rob Sims <lkml-z@robsims.com> wrote:
+> 
+> > > Are there some debug hooks that can be activated?  My sky2 stops
+> > > responding (very light load) about twice a day.  The netdev watchdog
+> > > notices after a while and is able to reactivate the interface:
+> 
+> > > Mar 15 13:28:12 btd kernel: NETDEV WATCHDOG: eth0: transmit timed out
+> > > Mar 15 13:28:12 btd kernel: sky2 eth0: tx timeout
+> > > Mar 15 13:28:12 btd kernel: sky2 eth0: transmit ring 458 .. 435 report=458 done=458
+> > > Mar 15 13:28:12 btd kernel: sky2 eth0: disabling interface
+> > > Mar 15 13:28:12 btd kernel: sky2 eth0: enabling interface
+> > > Mar 15 13:28:12 btd kernel: sky2 eth0: ram buffer 48K
+> > > Mar 15 13:28:15 btd kernel: sky2 eth0: Link is up at 1000 Mbps, full duplex, flow control both
+> > 
+> > Use ethtool -S to if there are any pause frames, etc. See if frames are
+> > still making it into PHY statistics but not being received.
+> > 
+> > Use ethtool -d to dump registers. Need current version of ethtool with decode logic.
+> > 
+> > Then look for things like is Ram buffer read/write pointer changing?
+> > 
+> > Is GMAC stuck in pause:
+> > 
+> > Normal is:
+> > 	GMAC 1
+> > 	Status                       0x5010  (see GM_GPSR_XXX in sky2.h)
+> > 	Control                      0x1800
+> > 
+> > Stuck is
+> > 	GMAC 1
+> > 	Status			     0x5810 (or 0x5A10)
+> 
+> First, here's the described hang in action, on the Core2 Duo on a 1Gb
+> hub:
+> GMAC 1 Status/Control remains at 0x5010/0x1800 until module is removed.
+> Read/write buffer pointers are changing.  Full ethtool output in
+> http://www.robsims.com/sky2.netmon.log.gz
+> 
+> This machine was also having major throughput problems - 17 kB/s.
+> Rebooting brought it to ~ 20 MB/s.  Booting into a kernel with the
+> proprietary sk98lin kernel module showed ~ 80MB/s.  Finally, returning
+> to sky2 gave 117 MB/s.  Tests run using netcat, dd, /dev/zero, and
+> /dev/null, transmitting from the problem box to an e1000 via a Netgear
+> GS108.  No hangs were observed during the "load test."
 
-Signed-off-by: Kai Svahn <kai.svahn@nokia.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- include/asm-arm/arch-omap/hwa742.h |   12 +++++++
- include/asm-arm/arch-omap/omapfb.h |   61 ++++++++++++++++++++++++++++++------
- 2 files changed, 63 insertions(+), 10 deletions(-)
+The vendor driver does not do hardware flow control correctly. It ignores
+Tx pause frames.
 
-diff --git a/include/asm-arm/arch-omap/hwa742.h b/include/asm-arm/arch-omap/hwa742.h
-new file mode 100644
-index 0000000..577f492
---- /dev/null
-+++ b/include/asm-arm/arch-omap/hwa742.h
-@@ -0,0 +1,12 @@
-+#ifndef _HWA742_H
-+#define _HWA742_H
-+
-+struct hwa742_platform_data {
-+	void		(*power_up)(struct device *dev);
-+	void		(*power_down)(struct device *dev);
-+	unsigned long	(*get_clock_rate)(struct device *dev);
-+
-+	unsigned	te_connected:1;
-+};
-+
-+#endif
-diff --git a/include/asm-arm/arch-omap/omapfb.h b/include/asm-arm/arch-omap/omapfb.h
-index adf1d81..46d7a4f 100644
---- a/include/asm-arm/arch-omap/omapfb.h
-+++ b/include/asm-arm/arch-omap/omapfb.h
-@@ -38,30 +38,47 @@
- #define OMAPFB_SYNC_GFX		OMAP_IO(37)
- #define OMAPFB_VSYNC		OMAP_IO(38)
- #define OMAPFB_SET_UPDATE_MODE	OMAP_IOW(40, int)
--#define OMAPFB_UPDATE_WINDOW_OLD OMAP_IOW(41, struct omapfb_update_window_old)
-+#define OMAPFB_GET_CAPS		OMAP_IOR(42, struct omapfb_caps)
- #define OMAPFB_GET_UPDATE_MODE	OMAP_IOW(43, int)
- #define OMAPFB_LCD_TEST		OMAP_IOW(45, int)
- #define OMAPFB_CTRL_TEST	OMAP_IOW(46, int)
--#define OMAPFB_UPDATE_WINDOW	OMAP_IOW(47, struct omapfb_update_window)
-+#define OMAPFB_UPDATE_WINDOW_OLD OMAP_IOW(47, struct omapfb_update_window_old)
- #define OMAPFB_SET_COLOR_KEY	OMAP_IOW(50, struct omapfb_color_key)
- #define OMAPFB_GET_COLOR_KEY	OMAP_IOW(51, struct omapfb_color_key)
- #define OMAPFB_SETUP_PLANE	OMAP_IOW(52, struct omapfb_plane_info)
- #define OMAPFB_QUERY_PLANE	OMAP_IOW(53, struct omapfb_plane_info)
-+#define OMAPFB_UPDATE_WINDOW	OMAP_IOW(54, struct omapfb_update_window)
-+#define OMAPFB_SETUP_MEM	OMAP_IOW(55, struct omapfb_mem_info)
-+#define OMAPFB_QUERY_MEM	OMAP_IOW(56, struct omapfb_mem_info)
- 
- #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
- #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
- #define OMAPFB_CAPS_PANEL_MASK		0xff000000
- 
- #define OMAPFB_CAPS_MANUAL_UPDATE	0x00001000
-+#define OMAPFB_CAPS_TEARSYNC		0x00002000
-+#define OMAPFB_CAPS_PLANE_RELOCATE_MEM	0x00004000
-+#define OMAPFB_CAPS_PLANE_SCALE		0x00008000
-+#define OMAPFB_CAPS_WINDOW_PIXEL_DOUBLE	0x00010000
-+#define OMAPFB_CAPS_WINDOW_SCALE	0x00020000
-+#define OMAPFB_CAPS_WINDOW_OVERLAY	0x00040000
- #define OMAPFB_CAPS_SET_BACKLIGHT	0x01000000
- 
- /* Values from DSP must map to lower 16-bits */
--#define OMAPFB_FORMAT_MASK         0x00ff
--#define OMAPFB_FORMAT_FLAG_DOUBLE  0x0100
-+#define OMAPFB_FORMAT_MASK		0x00ff
-+#define OMAPFB_FORMAT_FLAG_DOUBLE	0x0100
-+#define OMAPFB_FORMAT_FLAG_TEARSYNC	0x0200
-+#define OMAPFB_FORMAT_FLAG_FORCE_VSYNC	0x0400
-+#define OMAPFB_FORMAT_FLAG_ENABLE_OVERLAY	0x0800
-+#define OMAPFB_FORMAT_FLAG_DISABLE_OVERLAY	0x1000
- 
- #define OMAPFB_EVENT_READY	1
- #define OMAPFB_EVENT_DISABLED	2
- 
-+#define OMAPFB_MEMTYPE_SDRAM		0
-+#define OMAPFB_MEMTYPE_SRAM		1
-+#define OMAPFB_MEMTYPE_MAX		1
-+
- enum omapfb_color_format {
- 	OMAPFB_COLOR_RGB565 = 0,
- 	OMAPFB_COLOR_YUV422,
-@@ -78,11 +95,15 @@ struct omapfb_update_window {
- 	__u32 x, y;
- 	__u32 width, height;
- 	__u32 format;
-+	__u32 out_x, out_y;
-+	__u32 out_width, out_height;
-+	__u32 reserved[8];
- };
- 
- struct omapfb_update_window_old {
- 	__u32 x, y;
- 	__u32 width, height;
-+	__u32 format;
- };
- 
- enum omapfb_plane {
-@@ -108,6 +129,18 @@ struct omapfb_plane_info {
- 	__u32 reserved2[12];
- };
- 
-+struct omapfb_mem_info {
-+	__u32 size;
-+	__u8  type;
-+	__u8  reserved[3];
-+};
-+
-+struct omapfb_caps {
-+	__u32 ctrl;
-+	__u32 plane_color;
-+	__u32 wnd_color;
-+};
-+
- enum omapfb_color_key_type {
- 	OMAPFB_COLOR_KEY_DISABLED = 0,
- 	OMAPFB_COLOR_KEY_GFX_DST,
-@@ -191,8 +224,6 @@ struct lcd_panel {
- 	int		(*run_test)	(struct lcd_panel *panel, int test_num);
- };
- 
--struct omapfb_device;
--
- struct extif_timings {
- 	int cs_on_time;
- 	int cs_off_time;
-@@ -216,6 +247,7 @@ struct lcd_ctrl_extif {
- 	int  (*init)		(struct omapfb_device *fbdev);
- 	void (*cleanup)		(void);
- 	void (*get_clk_info)	(u32 *clk_period, u32 *max_clk_div);
-+	unsigned long (*get_max_tx_rate)(void);
- 	int  (*convert_timings)	(struct extif_timings *timings);
- 	void (*set_timings)	(const struct extif_timings *timings);
- 	void (*set_bits_per_cycle)(int bpc);
-@@ -224,6 +256,10 @@ struct lcd_ctrl_extif {
- 	void (*write_data)	(const void *buf, unsigned int len);
- 	void (*transfer_area)	(int width, int height,
- 				 void (callback)(void * data), void *data);
-+	int  (*setup_tearsync)	(unsigned pin_cnt,
-+				 unsigned hs_pulse_time, unsigned vs_pulse_time,
-+				 int hs_pol_inv, int vs_pol_inv, int div);
-+	int  (*enable_tearsync) (int enable, unsigned line);
- 
- 	unsigned long		max_transmit_size;
- };
-@@ -242,7 +278,9 @@ struct omapfb_mem_region {
- 	dma_addr_t	paddr;
- 	void		*vaddr;
- 	unsigned long	size;
--	int		alloc:1;
-+	u8		type;		/* OMAPFB_PLANE_MEM_* */
-+	unsigned	alloc:1;	/* allocated by the driver */
-+	unsigned	map:1;		/* kernel mapped by the driver */
- };
- 
- struct omapfb_mem_desc {
-@@ -259,7 +297,7 @@ struct lcd_ctrl {
- 					   struct omapfb_mem_desc *req_md);
- 	void		(*cleanup)	  (void);
- 	void		(*bind_client)	  (struct omapfb_notifier_block *nb);
--	unsigned long	(*get_caps)	  (void);
-+	void		(*get_caps)	  (int plane, struct omapfb_caps *caps);
- 	int		(*set_update_mode)(enum omapfb_update_mode mode);
- 	enum omapfb_update_mode (*get_update_mode)(void);
- 	int		(*setup_plane)	  (int plane, int channel_out,
-@@ -267,6 +305,10 @@ struct lcd_ctrl {
- 					   int screen_width,
- 					   int pos_x, int pos_y, int width,
- 					   int height, int color_mode);
-+	int		(*setup_mem)	  (int plane, size_t size,
-+					   int mem_type, unsigned long *paddr);
-+	int		(*mmap)		  (struct fb_info *info,
-+					   struct vm_area_struct *vma);
- 	int		(*set_scale)	  (int plane,
- 					   int orig_width, int orig_height,
- 					   int out_width, int out_height);
-@@ -284,7 +326,6 @@ struct lcd_ctrl {
- 					   int update_hw_mem);
- 	int		(*set_color_key)  (struct omapfb_color_key *ck);
- 	int		(*get_color_key)  (struct omapfb_color_key *ck);
--
- };
- 
- enum omapfb_state {
-@@ -315,6 +356,7 @@ struct omapfb_device {
- 	struct lcd_ctrl_extif	*ext_if;		/* LCD ctrl external
- 							   interface */
- 	struct device		*dev;
-+	struct fb_var_screeninfo	new_var;	/* for mode changes */
- 
- 	struct omapfb_mem_desc		mem_desc;
- 	struct fb_info			*fb_info[OMAPFB_PLANE_NUM];
-@@ -346,7 +388,6 @@ extern int  omapfb_update_window_async(struct fb_info *fbi,
- 				       void *callback_data);
- 
- /* in arch/arm/plat-omap/fb.c */
--extern void omapfb_reserve_mem(void);
- extern void omapfb_set_ctrl_platform_data(void *pdata);
- 
- #endif /* __KERNEL__ */
+Were you using Jumbo MTU?
+
+> I also had a hang on a Pentium 4 w/sky2, 100Mb/s hub.  I neglected to
+> try removing and re-inserting the module before rebooting.
+> GMAC 1
+> Status                       0xF004
+This is [100mbit] [Full duplex] [Tx flow control disabled] [link up] 
+	[Rx flow control disabled]
+
+> Control                      0x1800
+	[TX enabled] [Rx enabled]
+
+You might have over run the hub and it wedged.  Try doing:
+	ethtool -r eth0
+that forces a down/up
+
+
 -- 
-1.4.4.2
-
+Stephen Hemminger <shemminger@linux-foundation.org>
