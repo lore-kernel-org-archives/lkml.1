@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXDDS05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbXDDSJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbXDDS05 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934054AbXDDSLV
+	id S1753934AbXDDSJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXDDSI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:11:21 -0400
-Received: from holomorphy.com ([66.93.40.71]:38457 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932456AbXDDSLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:11:07 -0400
-Date: Wed, 4 Apr 2007 11:10:50 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: per-thread rusage
-Message-ID: <20070404181050.GN2986@holomorphy.com>
-References: <20070404172931.GM2986@holomorphy.com> <20070404194829.1a93d8fd.dada1@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070404194829.1a93d8fd.dada1@cosmosbay.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 4 Apr 2007 14:08:57 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:37185 "EHLO
+	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753932AbXDDSIx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 14:08:53 -0400
+X-ORBL: [67.117.73.34]
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 34/90] ARM: OMAP: Set keypad sense delays for the Palms
+Date: Wed,  4 Apr 2007 14:05:13 -0400
+Message-Id: <11757100623383-git-send-email-tony@atomide.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <1175710059333-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
+ 57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <117571004562-git-send-email-tony@atomide.com> <11757100491583-git-send-email-tony@atomide.com> <11757100511172-git-send-email-tony@atomide.com> <1175710059333-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007 10:29:31 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
->> It is not now possible for a thread to retrieve its own rusage in
->> isolation. Its rusage is nowhere exposed without being intermixed with
->> that of its sibling threads. This patch adds support for an
->> RUSAGE_THREAD who argument that returns rusage for only the desired
->> thread.
+From: Andrzej Zaborowski <balrog@zabor.org>
 
-On Wed, Apr 04, 2007 at 07:48:29PM +0200, Eric Dumazet wrote:
-> Please check mm, because we now return ru_inblock and ru_oublock as well.
-> r->ru_inblock = task_io_get_inblock(p);
-> r->ru_oublock = task_io_get_oublock(p);
+Wait a fixed amount of time between writing to the columns
+register and reading rows state to allow the keypad to respond
+on Palm Tungsten E and Zire 71.  The value for Zire 71 keypad
+was tested by Marek Vasut.
 
-Respun vs. 2.6.21-rc5-mm4, still untested. Also...
+Signed-off-by: Andrzej Zaborowski <balrog@zabor.org>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-palmz71.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Signed-off-by: William Irwin <bill.irwin@oracle.com>
-
-
--- wli
-
-
-Index: mm-2.6.21-rc5-4/include/linux/resource.h
-===================================================================
---- mm-2.6.21-rc5-4.orig/include/linux/resource.h	2007-04-03 23:31:19.000000000 -0700
-+++ mm-2.6.21-rc5-4/include/linux/resource.h	2007-04-04 13:08:47.000000000 -0700
-@@ -18,7 +18,8 @@
-  */
- #define	RUSAGE_SELF	0
- #define	RUSAGE_CHILDREN	(-1)
--#define RUSAGE_BOTH	(-2)		/* sys_wait4() uses this */
-+#define RUSAGE_THREAD	(-2)
-+#define RUSAGE_BOTH	(-3)		/* sys_wait4() uses this */
+diff --git a/arch/arm/mach-omap1/board-palmz71.c b/arch/arm/mach-omap1/board-palmz71.c
+index 786142b..54abbaa 100644
+--- a/arch/arm/mach-omap1/board-palmz71.c
++++ b/arch/arm/mach-omap1/board-palmz71.c
+@@ -76,6 +76,7 @@ static struct omap_kp_platform_data palmz71_kp_data = {
+ 	.cols	= 8,
+ 	.keymap	= palmz71_keymap,
+ 	.rep	= 1,
++	.delay	= 80,
+ };
  
- struct	rusage {
- 	struct timeval ru_utime;	/* user time used */
-Index: mm-2.6.21-rc5-4/kernel/sys.c
-===================================================================
---- mm-2.6.21-rc5-4.orig/kernel/sys.c	2007-04-03 23:33:27.000000000 -0700
-+++ mm-2.6.21-rc5-4/kernel/sys.c	2007-04-04 13:11:17.000000000 -0700
-@@ -2074,6 +2074,16 @@
- 	}
- 
- 	switch (who) {
-+		case RUSAGE_THREAD:
-+			utime = p->utime;
-+			stime = p->stime;
-+			r->ru_nvcsw = p->nvcsw;
-+			r->ru_nivcsw = p->nivcsw;
-+			r->ru_minflt = p->min_flt;
-+			r->ru_majflt = p->maj_flt;
-+			r->ru_inblock = task_io_get_inblock(p);
-+			r->ru_oublock = task_io_get_oublock(p);
-+			break;
- 		case RUSAGE_BOTH:
- 		case RUSAGE_CHILDREN:
- 			utime = p->signal->cutime;
-@@ -2131,7 +2141,8 @@
- 
- asmlinkage long sys_getrusage(int who, struct rusage __user *ru)
- {
--	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN)
-+	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN &&
-+						who != RUSAGE_THREAD)
- 		return -EINVAL;
- 	return getrusage(current, who, ru);
- }
+ static struct resource palmz71_kp_resources[] = {
+-- 
+1.4.4.2
+
