@@ -1,124 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbXDDWjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbXDDWqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752427AbXDDWjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 18:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbXDDWjS
+	id S1752443AbXDDWqY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 18:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXDDWqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 18:39:18 -0400
-Received: from mail38.syd.optusnet.com.au ([211.29.133.67]:39795 "EHLO
-	mail38.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752427AbXDDWjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 18:39:17 -0400
-From: Con Kolivas <kernel@kolivas.org>
+	Wed, 4 Apr 2007 18:46:24 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:47102 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752443AbXDDWqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 18:46:23 -0400
+Message-Id: <20070404224536.337573000@ldl.fc.hp.com>
+User-Agent: quilt/0.45-1
+Date: Wed, 04 Apr 2007 16:45:36 -0600
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc5-mm4
-Date: Thu, 5 Apr 2007 08:38:45 +1000
-User-Agent: KMail/1.9.5
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, linux-kernel@vger.kernel.org
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <1175723795.4014.6.camel@daplas> <20070404151027.29dfec58.akpm@linux-foundation.org>
-In-Reply-To: <20070404151027.29dfec58.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704050838.46032.kernel@kolivas.org>
+Cc: Keith Owens <kaos@ocs.com.au>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Adam Belay <ambx1@neo.rr.com>
+Cc: Matthieu CASTET <castet.matthieu@free.fr>
+Cc: Jean Tourrilhes <jt@hpl.hp.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Ville Syrjala <syrjala@sci.fi>
+Cc: Russell King <rmk+serial@arm.linux.org.uk>
+Cc: linux-serial@vger.kernel.org
+Cc: Samuel Ortiz <samuel@sortiz.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 0/5] PNP: convert x86 legacy serial to platform devs, add SMC IR PNP probe
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 April 2007 08:10, Andrew Morton wrote:
-> Thanks - that'll be the CPU scheduler changes.
->
-> Con has produced a patch or two which might address this but afaik we don't
-> yet have a definitive fix?
->
-> I believe that reverting
-> sched-implement-staircase-deadline-cpu-scheduler-staircase-improvements.pat
->ch will prevent it.
+This series converts i386 and x86_64 legacy serial ports to be platform
+devices and prevents probing for them if we have PNP.
 
-I posted a definitive fix which Michal tested for me offlist. Subject was:
- [PATCH] sched: implement staircase deadline cpu scheduler improvements fix
+This prevents double discovery, where a device was found both by the
+legacy probe and by 8250_pnp.
 
-Sorry about relative noise prior to that. Akpm please pick it up.
+This also prevents the serial driver from claiming IRDA devices (unless
+they have a UART PNP ID).  The serial legacy probe sometimes assumed the
+wrong IRQ, so the user had to use "setserial" to fix it.
 
-Here again just in case.
+Removing the need for setserial to make IRDA devices work seems good,
+but it does break some things.  In particular, you may need to keep
+setserial from poking legacy UART stuff back in by doing something like
+"dpkg-reconfigure setserial" with the "kernel" option.  Otherwise, the
+setserial-discovered "UART" will claim resources and prevent the IRDA
+driver from loading.
 
----
-Use of memset was bogus. Fix it.
-
-Fix exiting recalc_task_prio without p->array being updated.
-
-Microoptimisation courtesy of Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
-
----
- kernel/sched.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
-
-Index: linux-2.6.21-rc5-mm4/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/kernel/sched.c	2007-04-04 12:14:29.000000000 +1000
-+++ linux-2.6.21-rc5-mm4/kernel/sched.c	2007-04-04 12:49:39.000000000 +1000
-@@ -683,11 +683,13 @@ static void dequeue_task(struct task_str
-  * The task is being queued on a fresh array so it has its entitlement
-  * bitmap cleared.
-  */
--static inline void task_new_array(struct task_struct *p, struct rq *rq)
-+static void task_new_array(struct task_struct *p, struct rq *rq,
-+			   struct prio_array *array)
- {
- 	bitmap_zero(p->bitmap, PRIO_RANGE);
- 	p->rotation = rq->prio_rotation;
- 	p->time_slice = p->quota;
-+	p->array = array;
- }
- 
- /* Find the first slot from the relevant prio_matrix entry */
-@@ -709,6 +711,8 @@ static inline int next_entitled_slot(str
- 	DECLARE_BITMAP(tmp, PRIO_RANGE);
- 	int search_prio, uprio = USER_PRIO(p->static_prio);
- 
-+	if (!rq->prio_level[uprio])
-+		rq->prio_level[uprio] = MAX_RT_PRIO;
- 	/*
- 	 * Only priorities equal to the prio_level and above for their
- 	 * static_prio are acceptable, and only if it's not better than
-@@ -736,11 +740,8 @@ static inline int next_entitled_slot(str
- 
- static void queue_expired(struct task_struct *p, struct rq *rq)
- {
--	p->array = rq->expired;
--	task_new_array(p, rq);
-+	task_new_array(p, rq, rq->expired);
- 	p->prio = p->normal_prio = first_prio_slot(p);
--	p->time_slice = p->quota;
--	p->rotation = rq->prio_rotation;
- }
- 
- #ifdef CONFIG_SMP
-@@ -800,9 +801,9 @@ static void recalc_task_prio(struct task
- 			queue_expired(p, rq);
- 			return;
- 		} else
--			task_new_array(p, rq);
-+			task_new_array(p, rq, array);
- 	} else
--		task_new_array(p, rq);
-+		task_new_array(p, rq, array);
- 
- 	queue_prio = next_entitled_slot(p, rq);
- 	if (queue_prio >= MAX_PRIO) {
-@@ -3445,7 +3446,7 @@ EXPORT_SYMBOL(sub_preempt_count);
- 
- static inline void reset_prio_levels(struct rq *rq)
- {
--	memset(rq->prio_level, MAX_RT_PRIO, ARRAY_SIZE(rq->prio_level));
-+	memset(rq->prio_level, 0, sizeof(int) * PRIO_RANGE);
- }
- 
- /*
-
--- 
--ck
+--
