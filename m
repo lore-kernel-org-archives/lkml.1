@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbXDDUxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbXDDU4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751306AbXDDUxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXDDUxw
+	id S1751205AbXDDU4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 16:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXDDU4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 16:53:52 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:46590 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbXDDUxu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 16:53:50 -0400
-Subject: Re: [PATCH -mm] fix jiffies clocksource inittime
-From: john stultz <johnstul@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@muc.de>
-In-Reply-To: <20070404134310.12ad3ab8.akpm@linux-foundation.org>
-References: <1175716216.17711.59.camel@localhost>
-	 <20070404134310.12ad3ab8.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 13:53:47 -0700
-Message-Id: <1175720027.17711.69.camel@localhost>
+	Wed, 4 Apr 2007 16:56:43 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56129 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbXDDU4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 16:56:42 -0400
+Date: Wed, 4 Apr 2007 13:56:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Jakub Jelinek <jakub@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: missing madvise functionality
+Message-Id: <20070404135618.d39f98f4.akpm@linux-foundation.org>
+In-Reply-To: <4613E9AF.3030802@redhat.com>
+References: <46128051.9000609@redhat.com>
+	<p73648dz5oa.fsf@bingen.suse.de>
+	<46128CC2.9090809@redhat.com>
+	<20070403172841.GB23689@one.firstfloor.org>
+	<20070403125903.3e8577f4.akpm@linux-foundation.org>
+	<4612B645.7030902@redhat.com>
+	<20070403202937.GE355@devserv.devel.redhat.com>
+	<20070403144948.fe8eede6.akpm@linux-foundation.org>
+	<20070403160231.33aa862d.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704040949050.17341@blonde.wat.veritas.com>
+	<20070404110406.c79b850d.akpm@linux-foundation.org>
+	<4613E9AF.3030802@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 13:43 -0700, Andrew Morton wrote:
-> On Wed, 04 Apr 2007 12:50:15 -0700
-> john stultz <johnstul@us.ibm.com> wrote:
+On Wed, 04 Apr 2007 14:08:47 -0400
+Rik van Riel <riel@redhat.com> wrote:
+
+> Andrew Morton wrote:
 > 
-> > 	In debugging a problem w/ the -rt tree, I noticed that on systems that
-> > mark the tsc as unstable before it is registered, the TSC would still be
-> > selected and used for a short period of time. Digging in it looks to be
-> > a result of the mix of the clocksource list changes and my clocksource
-> > initialization changes.
-> > 
-> > With the -rt tree, using a bad TSC, even for a short period of time can
-> > results in a hang at boot. I was not able to reproduce this hang w/
-> > mainline, but I'm not completely certain that someone won't trip on it.
-> > 
-> > This patch resolves the issue by initializing the jiffies clocksource
-> > earlier so a bad TSC won't get selected just because nothing else is yet
-> > registered.
-> > 
-> > thanks
-> > -john
-> > 
-> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> > 
-> > diff --git a/kernel/time/jiffies.c b/kernel/time/jiffies.c
-> > index 3be8da8..4c256fd 100644
-> > --- a/kernel/time/jiffies.c
-> > +++ b/kernel/time/jiffies.c
-> > @@ -69,4 +69,4 @@ static int __init init_jiffies_clocksour
-> >  	return clocksource_register(&clocksource_jiffies);
-> >  }
-> >  
-> > -module_init(init_jiffies_clocksource);
-> > +core_initcall(init_jiffies_clocksource);
+> > There are other ways of doing it - I guess we could use a new page flag to
+> > indicate that this is one-of-those-pages, and add new code to handle it in
+> > all the right places.
 > 
-> Do you think this is needed in 2.6.21?
+> That's what I did.  I'm currently working on the
+> zap_page_range() side of things.
+
+Let's try to avoid consuming another page flag if poss, please.  Perhaps
+use PAGE_MAPPING_ANON's neighbouring bit?
+
+> > One thing which we haven't sorted out with all this stuff: once the
+> > application has marked an address range (and some pages) as
+> > whatever-were-going-call-this-feature, how does the application undo that
+> > change? 
 > 
-> If so: worrisome.  Startup ordering issues are fragile and tricky.  Time
-> management is fragile and tricky.  The combination of the two doesn't get
-> any better ;)
+> It doesn't have to do anything.  Just access the page and the
+> MMU will mark it dirty/accessed and the VM will not reclaim
+> it.
 
-Its likely low-risk, however I'm pretty cautious this close to release.
-
-> An option would be to test it in 2.6.22-rcX for a while, then backport to
-> 2.6.21.x.
-
-I'm fine with this (also getting it into the next -mm would help). But
-I'd defer to others with stronger opinions.
-
-thanks
--john
+um, OK.  I suspect it would be good to clear the page's
+PageWhateverWereGoingToCallThisThing() state when this happens.  Otherwise
+when the page gets clean again (ie: added to swapcache then written out)
+then it will look awfully similar to one of these new types of pages and
+things might get confusing.  We'll see.
 
