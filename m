@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993018AbXDDSvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993020AbXDDS5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993018AbXDDSvh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993028AbXDDSvh
+	id S2993020AbXDDS5c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993033AbXDDS5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:51:37 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52147 "EHLO smtp.osdl.org"
+	Wed, 4 Apr 2007 14:57:31 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:45670 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993018AbXDDSvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:51:35 -0400
-Date: Wed, 4 Apr 2007 11:51:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-Message-Id: <20070404115105.ebaff52a.akpm@linux-foundation.org>
-In-Reply-To: <20070404130918.GK2986@holomorphy.com>
-References: <46128051.9000609@redhat.com>
-	<p73648dz5oa.fsf@bingen.suse.de>
-	<46128CC2.9090809@redhat.com>
-	<20070403172841.GB23689@one.firstfloor.org>
-	<20070403125903.3e8577f4.akpm@linux-foundation.org>
-	<4612B645.7030902@redhat.com>
-	<20070403202937.GE355@devserv.devel.redhat.com>
-	<20070404130918.GK2986@holomorphy.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S2993020AbXDDS5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 14:57:30 -0400
+Date: Wed, 4 Apr 2007 19:57:27 +0100 (BST)
+From: Christian Kujau <christian@g-house.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Francois Romieu <romieu@fr.zoreil.com>
+cc: linux-kernel@vger.kernel.org, malte@g-house.de
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+In-Reply-To: <20070404181010.GA7814@electric-eye.fr.zoreil.com>
+Message-ID: <Pine.LNX.4.64.0704041952490.3963@sheep.housecafe.de>
+References: <Pine.LNX.4.64.0704022012300.3963@sheep.housecafe.de>
+ <20070403205744.GB12969@electric-eye.fr.zoreil.com>
+ <Pine.LNX.4.64.0704041342390.3963@sheep.housecafe.de>
+ <20070404181010.GA7814@electric-eye.fr.zoreil.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007 06:09:18 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
+On Wed, 4 Apr 2007, Francois Romieu wrote:
+> No serial cable ?
 
-> 
-> On Tue, Apr 03, 2007 at 04:29:37PM -0400, Jakub Jelinek wrote:
-> > void *
-> > tf (void *arg)
-> > {
-> >   (void) arg;
-> >   size_t ps = sysconf (_SC_PAGE_SIZE);
-> >   void *p = mmap (NULL, 128 * ps, PROT_READ | PROT_WRITE,
-> >                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-> >   if (p == MAP_FAILED)
-> >     exit (1);
-> >   int i;
-> 
-> Oh dear.
+No, unfortunately this hosting provider does not have a serial console 
+to access :(
 
-what's all this about?
+>>> 4 - try:
+>>>   http://www.fr.zoreil.com/linux/kernel/2.6.x/2.6.21-rc5/r8169-20070402
+>> Are they in -rc5 yet or 'not in -rc5 but should be applied to -rc5'?
+>
+> 'not in -rc5 but should be applied to -rc5 though the first two at the
+> bottom (000[12]-r8169-blah-blah.patch) are now in latest -git'.
+
+OK, that's something for after-this-weekend then...
+
+Thanks again,
+Christian.
+-- 
+BOFH excuse #68:
+
+only available on a need to know basis
