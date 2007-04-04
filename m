@@ -1,239 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbXDDSHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbXDDSH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbXDDSHW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXDDSHG
+	id S1753914AbXDDSH4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbXDDSHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:07:06 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36188 "EHLO
+	Wed, 4 Apr 2007 14:07:36 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36202 "EHLO
 	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753867AbXDDSHB (ORCPT
+	with ESMTP id S1753887AbXDDSHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:07:01 -0400
+	Wed, 4 Apr 2007 14:07:04 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
-Cc: Kyungmin Park <kyungmin.park@samsung.com>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 12/90] ARM: OMAP: Fix apollon boot
-Date: Wed,  4 Apr 2007 14:04:51 -0400
-Message-Id: <1175709988265-git-send-email-tony@atomide.com>
+Cc: Jonathan McDowell <noodles@earth.li>, Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 11/90] ARM: OMAP: Add support for Amstrad Delta keypad
+Date: Wed,  4 Apr 2007 14:04:50 -0400
+Message-Id: <1175709977545-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1175709977545-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com>
+In-Reply-To: <11757099743984-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kyungmin Park <kyungmin.park@samsung.com>
+From: Jonathan McDowell <noodles@earth.li>
 
-In previous GPMC patch, there was a typo. Fix typo and add header files for
-set_irq_type() warnings.
+This adds support for the keypad on the top of the Amstrad Delta. It's
+just a standard omap-keypad so all we need to do is add the keypad
+layout and platform data to the board definition file.
 
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Jonathan McDowell <noodles@earth.li>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/board-apollon.c |   99 +++++++++++++++++++++++++++++++---
- 1 files changed, 90 insertions(+), 9 deletions(-)
+ arch/arm/mach-omap1/board-ams-delta.c |  108 +++++++++++++++++++++++++++++++++
+ 1 files changed, 108 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apollon.c
-index 878ff91..3bb49c1 100644
---- a/arch/arm/mach-omap2/board-apollon.c
-+++ b/arch/arm/mach-omap2/board-apollon.c
-@@ -25,6 +25,8 @@
- #include <linux/irq.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/leds.h>
-+#include <linux/irq.h>
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index 8437d06..ad6265f 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -14,6 +14,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <linux/input.h>
+ #include <linux/platform_device.h>
  
  #include <asm/hardware.h>
- #include <asm/mach-types.h>
-@@ -32,10 +34,12 @@
- #include <asm/mach/flash.h>
+@@ -23,6 +24,7 @@
  
+ #include <asm/arch/board-ams-delta.h>
  #include <asm/arch/gpio.h>
-+#include <asm/arch/led.h>
++#include <asm/arch/keypad.h>
  #include <asm/arch/mux.h>
  #include <asm/arch/usb.h>
  #include <asm/arch/board.h>
- #include <asm/arch/common.h>
-+#include <asm/arch/gpmc.h>
- #include "prcm-regs.h"
+@@ -31,6 +33,86 @@
+ static u8 ams_delta_latch1_reg;
+ static u16 ams_delta_latch2_reg;
  
- /* LED & Switch macros */
-@@ -46,6 +50,9 @@
- #define SW_UP_GPIO17		17
- #define SW_DOWN_GPIO58		58
- 
-+#define APOLLON_FLASH_CS	0
-+#define APOLLON_ETH_CS		1
++static int ams_delta_keymap[] = {
++	KEY(0, 0, KEY_F1),	/* Advert	*/
 +
- static struct mtd_partition apollon_partitions[] = {
- 	{
- 		.name		= "X-Loader + U-Boot",
-@@ -85,10 +92,10 @@ static struct flash_platform_data apollon_flash_data = {
- 	.nr_parts	= ARRAY_SIZE(apollon_partitions),
++	KEY(3, 0, KEY_COFFEE),	/* Games	 */
++	KEY(2, 0, KEY_QUESTION),	/* Directory */
++	KEY(3, 2, KEY_CONNECT),	/* Internet  */
++	KEY(2, 1, KEY_SHOP),	/* Services  */
++	KEY(1, 1, KEY_PHONE),	/* VoiceMail */
++
++	KEY(1, 0, KEY_DELETE),	/* Delete	*/
++	KEY(2, 2, KEY_PLAY),	/* Play	  */
++	KEY(0, 1, KEY_PAGEUP),	/* Up	*/
++	KEY(3, 1, KEY_PAGEDOWN),	/* Down	  */
++	KEY(0, 2, KEY_EMAIL),	/* ReadEmail */
++	KEY(1, 2, KEY_STOP),	/* Stop	  */
++
++	/* Numeric keypad portion */
++	KEY(7, 0, KEY_KP1),
++	KEY(6, 0, KEY_KP2),
++	KEY(5, 0, KEY_KP3),
++	KEY(7, 1, KEY_KP4),
++	KEY(6, 1, KEY_KP5),
++	KEY(5, 1, KEY_KP6),
++	KEY(7, 2, KEY_KP7),
++	KEY(6, 2, KEY_KP8),
++	KEY(5, 2, KEY_KP9),
++	KEY(6, 3, KEY_KP0),
++	KEY(7, 3, KEY_KPASTERISK),
++	KEY(5, 3, KEY_KPDOT),	/* # key	 */
++	KEY(2, 7, KEY_NUMLOCK),	/* Mute	  */
++	KEY(1, 7, KEY_KPMINUS),	/* Recall	*/
++	KEY(1, 6, KEY_KPPLUS),	/* Redial	*/
++	KEY(6, 7, KEY_KPSLASH),	/* Handsfree */
++	KEY(0, 6, KEY_ENTER),	/* Video	 */
++
++	KEY(4, 7, KEY_CAMERA),	/* Photo	 */
++
++	KEY(4, 0, KEY_F2),	/* Home	  */
++	KEY(4, 1, KEY_F3),	/* Office	*/
++	KEY(4, 2, KEY_F4),	/* Mobile	*/
++	KEY(7, 7, KEY_F5),	/* SMS		*/
++	KEY(5, 7, KEY_F6),	/* Email	 */
++
++	/* QWERTY portion of keypad */
++	KEY(4, 3, KEY_Q),
++	KEY(3, 3, KEY_W),
++	KEY(2, 3, KEY_E),
++	KEY(1, 3, KEY_R),
++	KEY(0, 3, KEY_T),
++	KEY(7, 4, KEY_Y),
++	KEY(6, 4, KEY_U),
++	KEY(5, 4, KEY_I),
++	KEY(4, 4, KEY_O),
++	KEY(3, 4, KEY_P),
++
++	KEY(2, 4, KEY_A),
++	KEY(1, 4, KEY_S),
++	KEY(0, 4, KEY_D),
++	KEY(7, 5, KEY_F),
++	KEY(6, 5, KEY_G),
++	KEY(5, 5, KEY_H),
++	KEY(4, 5, KEY_J),
++	KEY(3, 5, KEY_K),
++	KEY(2, 5, KEY_L),
++
++	KEY(1, 5, KEY_Z),
++	KEY(0, 5, KEY_X),
++	KEY(7, 6, KEY_C),
++	KEY(6, 6, KEY_V),
++	KEY(5, 6, KEY_B),
++	KEY(4, 6, KEY_N),
++	KEY(3, 6, KEY_M),
++	KEY(2, 6, KEY_SPACE),
++
++	KEY(0, 7, KEY_LEFTSHIFT),	/* Vol up	*/
++	KEY(3, 7, KEY_LEFTCTRL),	/* Vol down  */
++
++	0
++};
++
+ void ams_delta_latch1_write(u8 mask, u8 value)
+ {
+ 	ams_delta_latch1_reg &= ~mask;
+@@ -91,12 +173,38 @@ static struct omap_board_config_kernel ams_delta_config[] = {
+ 	{ OMAP_TAG_USB,		&ams_delta_usb_config },
  };
  
--static struct resource apollon_flash_resource = {
--	.start		= APOLLON_CS0_BASE,
--	.end		= APOLLON_CS0_BASE + SZ_128K,
--	.flags		= IORESOURCE_MEM,
-+static struct resource apollon_flash_resource[] = {
++static struct resource ams_delta_kp_resources[] = {
 +	[0] = {
-+		.flags		= IORESOURCE_MEM,
-+	},
- };
- 
- static struct platform_device apollon_onenand_device = {
-@@ -97,14 +104,24 @@ static struct platform_device apollon_onenand_device = {
- 	.dev		= {
- 		.platform_data	= &apollon_flash_data,
- 	},
--	.num_resources	= ARRAY_SIZE(&apollon_flash_resource),
--	.resource	= &apollon_flash_resource,
-+	.num_resources	= ARRAY_SIZE(apollon_flash_resource),
-+	.resource	= apollon_flash_resource,
- };
- 
-+static void __init apollon_flash_init(void)
-+{
-+	unsigned long base;
-+
-+	if (gpmc_cs_request(APOLLON_FLASH_CS, SZ_128K, &base) < 0) {
-+		printk(KERN_ERR "Cannot request OneNAND GPMC CS\n");
-+		return;
-+	}
-+	apollon_flash_resource[0].start = base;
-+	apollon_flash_resource[0].end   = base + SZ_128K - 1;
-+}
-+
- static struct resource apollon_smc91x_resources[] = {
- 	[0] = {
--		.start	= APOLLON_ETHR_START,		/* Physical */
--		.end	= APOLLON_ETHR_START + 0xf,
- 		.flags  = IORESOURCE_MEM,
- 	},
- 	[1] = {
-@@ -126,14 +143,51 @@ static struct platform_device apollon_lcd_device = {
- 	.id		= -1,
- };
- 
-+static struct omap_led_config apollon_led_config[] = {
-+	{
-+		.cdev	= {
-+			.name	= "apollon:led0",
-+		},
-+		.gpio	= LED0_GPIO13,
-+	},
-+	{
-+		.cdev	= {
-+			.name	= "apollon:led1",
-+		},
-+		.gpio	= LED1_GPIO14,
-+	},
-+	{
-+		.cdev	= {
-+			.name	= "apollon:led2",
-+		},
-+		.gpio	= LED2_GPIO15,
++		.start	= INT_KEYBOARD,
++		.end	= INT_KEYBOARD,
++		.flags	= IORESOURCE_IRQ,
 +	},
 +};
 +
-+static struct omap_led_platform_data apollon_led_data = {
-+	.nr_leds	= ARRAY_SIZE(apollon_led_config),
-+	.leds		= apollon_led_config,
++static struct omap_kp_platform_data ams_delta_kp_data = {
++	.rows	= 8,
++	.cols	= 8,
++	.keymap = ams_delta_keymap,
++	.rep	= 1,
 +};
 +
-+static struct platform_device apollon_led_device = {
-+	.name		= "omap-led",
++static struct platform_device ams_delta_kp_device = {
++	.name		= "omap-keypad",
 +	.id		= -1,
 +	.dev		= {
-+		.platform_data	= &apollon_led_data,
++		.platform_data = &ams_delta_kp_data,
 +	},
++	.num_resources	= ARRAY_SIZE(ams_delta_kp_resources),
++	.resource	= ams_delta_kp_resources,
 +};
 +
- static struct platform_device *apollon_devices[] __initdata = {
- 	&apollon_onenand_device,
- 	&apollon_smc91x_device,
- 	&apollon_lcd_device,
-+	&apollon_led_device,
+ static struct platform_device ams_delta_led_device = {
+ 	.name	= "ams-delta-led",
+ 	.id	= -1
  };
  
- static inline void __init apollon_init_smc91x(void)
- {
-+	unsigned long base;
-+
- 	/* Make sure CS1 timings are correct */
- 	GPMC_CONFIG1_1 = 0x00011203;
- 	GPMC_CONFIG2_1 = 0x001f1f01;
-@@ -141,13 +195,20 @@ static inline void __init apollon_init_smc91x(void)
- 	GPMC_CONFIG4_1 = 0x1c091c09;
- 	GPMC_CONFIG5_1 = 0x041f1f1f;
- 	GPMC_CONFIG6_1 = 0x000004c4;
--	GPMC_CONFIG7_1 = 0x00000f40 | (APOLLON_CS1_BASE >> 24);
-+
-+	if (gpmc_cs_request(APOLLON_ETH_CS, SZ_16M, &base) < 0) {
-+		printk(KERN_ERR "Failed to request GPMC CS for smc91x\n");
-+		return;
-+	}
-+	apollon_smc91x_resources[0].start = base + 0x300;
-+	apollon_smc91x_resources[0].end   = base + 0x30f;
- 	udelay(100);
- 
- 	omap_cfg_reg(W4__24XX_GPIO74);
- 	if (omap_request_gpio(APOLLON_ETHR_GPIO_IRQ) < 0) {
- 		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
- 			APOLLON_ETHR_GPIO_IRQ);
-+		gpmc_cs_free(APOLLON_ETH_CS);
- 		return;
- 	}
- 	omap_set_gpio_direction(APOLLON_ETHR_GPIO_IRQ, 1);
-@@ -175,6 +236,13 @@ static struct omap_mmc_config apollon_mmc_config __initdata = {
- 	},
+ static struct platform_device *ams_delta_devices[] __initdata = {
++	&ams_delta_kp_device,
+ 	&ams_delta_led_device,
  };
  
-+static struct omap_usb_config apollon_usb_config __initdata = {
-+	.register_dev	= 1,
-+	.hmc_mode	= 0x14,	/* 0:dev 1:host1 2:disable */
-+
-+	.pins[0]	= 6,
-+};
-+
- static struct omap_lcd_config apollon_lcd_config __initdata = {
- 	.ctrl_name	= "internal",
- };
-@@ -182,6 +250,7 @@ static struct omap_lcd_config apollon_lcd_config __initdata = {
- static struct omap_board_config_kernel apollon_config[] = {
- 	{ OMAP_TAG_UART,	&apollon_uart_config },
- 	{ OMAP_TAG_MMC,		&apollon_mmc_config },
-+	{ OMAP_TAG_USB,		&apollon_usb_config },
- 	{ OMAP_TAG_LCD,		&apollon_lcd_config },
- };
- 
-@@ -250,10 +319,22 @@ static void __init apollon_sw_init(void)
- 		return;
- }
- 
-+static void __init apollon_usb_init(void)
-+{
-+	/* USB device */
-+	/* DEVICE_SUSPEND */
-+	omap_cfg_reg(P21_242X_GPIO12);
-+	omap_request_gpio(12);
-+	omap_set_gpio_direction(12, 0);		/* OUT */
-+	omap_set_gpio_dataout(12, 0);
-+}
-+
- static void __init omap_apollon_init(void)
- {
- 	apollon_led_init();
- 	apollon_sw_init();
-+	apollon_flash_init();
-+	apollon_usb_init();
- 
- 	/* REVISIT: where's the correct place */
- 	omap_cfg_reg(W19_24XX_SYS_NIRQ);
 -- 
 1.4.4.2
 
