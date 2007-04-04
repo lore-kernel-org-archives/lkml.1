@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbXDDUtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751183AbXDDUus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751243AbXDDUtM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:49:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXDDUtM
+	id S1751183AbXDDUus (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 16:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXDDUus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 16:49:12 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55943 "EHLO smtp.osdl.org"
+	Wed, 4 Apr 2007 16:50:48 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55986 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXDDUtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 16:49:09 -0400
-Date: Wed, 4 Apr 2007 13:48:12 -0700
+	id S1751183AbXDDUur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 16:50:47 -0400
+Date: Wed, 4 Apr 2007 13:50:30 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Daniel Walker <dwalker@mvista.com>, tglx@linutronix.de,
-       johnstul@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       heiko.carstens@de.ibm.com
-Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
- tree
-Message-Id: <20070404134812.0c23c5af.akpm@linux-foundation.org>
-In-Reply-To: <20070404203647.GA12563@elte.hu>
-References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net>
-	<1175417035.28263.42.camel@localhost.localdomain>
-	<1175704712.15973.35.camel@imap.mvista.com>
-	<20070404125853.1cf9b7b7.akpm@linux-foundation.org>
-	<1175717425.15973.61.camel@imap.mvista.com>
-	<20070404203647.GA12563@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, npiggin@suse.de, hugh@veritas.com,
+       linux-mm@kvack.org, tee@sgi.com, holt@sgi.com, andrea@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-Id: <20070404135030.0683fb49.akpm@linux-foundation.org>
+In-Reply-To: <20070404.131111.62667528.davem@davemloft.net>
+References: <20070330024048.GG19407@wotan.suse.de>
+	<20070404033726.GE18507@wotan.suse.de>
+	<Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+	<20070404.131111.62667528.davem@davemloft.net>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -32,39 +29,14 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007 22:36:47 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Wed, 04 Apr 2007 13:11:11 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> 
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > The struct clocksource .list field is now required to be initialized 
-> > before calling clocksource_register().
-> > 
-> > This is a prerequisite for simplifying the clocksource registration 
-> > process.
-> 
-> why?
+> As I understand the patch being considered to remove ZERO_PAGE(), this
+> kind of core dump will cause a lot of pages to be allocated, probably
+> eating up a lot of system time as well as memory.
 
-It's all enablement for
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/broken-out/clocksource-refactor-duplicate-registration-checking.patch,
-on which I have no opinion.
+Point.
 
-
-> This patch only pushes some unnecessary code into the clocksource 
-> drivers:
-> 
-> +       .list           = LIST_HEAD_INIT(clocksource_avr32.list),
-> 
-> NACK unless you can give an explanation of why this is unavoidable. A 
-> NULL initializer is just as good as an initialized list entry. (in fact 
-> it's slightly better because it's in the kernel's BSS)
-> 
-
-No, these structures are already in .data.
-
-        .mask   = CLOCKSOURCE_MASK(32),
-        .mult   = 0,
-        .shift  = 20,
-+       .list   = LIST_HEAD_INIT(clocksource_pit.list),
- };
+Also, what effect will the proposed changes have upon rss reporting,
+and upon the numbers in /proc/pid/[s]maps?
