@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161223AbXDEGCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161224AbXDEGFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161223AbXDEGCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161224AbXDEGCU
+	id S1161224AbXDEGFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161228AbXDEGFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:02:20 -0400
-Received: from www.osadl.org ([213.239.205.134]:49361 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161223AbXDEGCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:02:19 -0400
-Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
-	tree
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, johnstul@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, heiko.carstens@de.ibm.com
-In-Reply-To: <1175733279.15973.116.camel@imap.mvista.com>
-References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net>
-	 <1175417035.28263.42.camel@localhost.localdomain>
-	 <1175704712.15973.35.camel@imap.mvista.com>
-	 <20070404125853.1cf9b7b7.akpm@linux-foundation.org>
-	 <1175717425.15973.61.camel@imap.mvista.com>
-	 <20070404203647.GA12563@elte.hu>
-	 <1175719489.15973.66.camel@imap.mvista.com>
-	 <20070404211514.GA18600@elte.hu>
-	 <1175722246.15973.78.camel@imap.mvista.com>
-	 <20070404213404.GA21742@elte.hu>
-	 <1175723954.15973.96.camel@imap.mvista.com>  <46143941.7050702@goop.org>
-	 <1175731253.15973.106.camel@imap.mvista.com>  <461440C9.8040902@goop.org>
-	 <1175733279.15973.116.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 08:02:33 +0200
-Message-Id: <1175752953.28263.374.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Thu, 5 Apr 2007 02:05:44 -0400
+Received: from ozlabs.org ([203.10.76.45]:49380 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161224AbXDEGFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:05:43 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17940.14667.503535.507564@cargo.ozlabs.ibm.com>
+Date: Thu, 5 Apr 2007 09:48:27 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Brad Boyer <flar@allandria.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
+	optionally.
+In-Reply-To: <1175696383.2774.24.camel@shinybook.infradead.org>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
+	<20070404022544.59b022a6@the-village.bc.nu>
+	<17939.10130.687893.167511@cargo.ozlabs.ibm.com>
+	<1175663999.2932.8.camel@shinybook.infradead.org>
+	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+	<1175666635.2932.17.camel@shinybook.infradead.org>
+	<17939.17962.248566.886449@cargo.ozlabs.ibm.com>
+	<1175696383.2774.24.camel@shinybook.infradead.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 17:34 -0700, Daniel Walker wrote:
-> > The fact that a list is used to string together clocksource structures
-> > is an internal detail of the clock subsystem.  It's annoying that there
-> > has to be a list head in the clocksource structure, but at least as a
-> > clocksource implementer I can ignore it, and if it ever gets changed to
-> > something else I can keep ignoring it.  Your change makes it something
-> > that gets pointlessly replicated all over the kernel.
-> 
-> It's already been discussed in the past, but the clocksource structure
-> is already very simple.. Adding a list initializer doesn't change
-> anything..
+David Woodhouse writes:
 
-And it does not gain anything. 
+> OK, how about a config option to preserve the old behaviour...
 
-So what's the gain of this ? Nine useless entries in the changelog.
+Well, that's a start but it doesn't provide a migration path.
 
-	tglx
+Is it possible to have the pmac_zilog ports registered both with the
+new number and with the old number (assuming it's not already taken)?
+That way people can move over gradually.
 
-
+Paul.
