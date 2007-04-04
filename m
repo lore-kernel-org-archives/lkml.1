@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbXDDRYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbXDDR0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883AbXDDRYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 13:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXDDRYX
+	id S1751828AbXDDR0x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 13:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXDDR0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 13:24:23 -0400
-Received: from palrel10.hp.com ([156.153.255.245]:59772 "EHLO palrel10.hp.com"
+	Wed, 4 Apr 2007 13:26:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46109 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbXDDRYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 13:24:22 -0400
-Date: Wed, 4 Apr 2007 12:24:20 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: akpm@linux-foundation.org, jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       coughlan@redhat.com, coldwell@redhat.com
-Subject: [PATCH 1/1] cciss: add init of drv->cylinders back to cciss_geometry_inquiry
-Message-ID: <20070404172420.GD5412@beardog.cca.cpqcorp.net>
+	id S1751828AbXDDR0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 13:26:52 -0400
+Date: Wed, 4 Apr 2007 13:25:19 -0400
+From: Don Zickus <dzickus@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] allow vmsplice to work in 32-bit mode on ppc64
+Message-ID: <20070404172519.GZ11029@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH 1/1
+Trivial change to pass vmsplice arguments through the compat layer on
+pp64.
 
-This patch adds initialization of drv->cylinders back into the failing case in
-cciss_geometry_inquiry. I inadvertently removed it in one my 2TB updates.
+Signed-off-by: Don Zickus <dzickus@redhat.com>
 
-Please consider this for inclusion.
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
-------------------------------------------------------------------------------------------
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 072e18e..14d7806 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -1915,6 +1915,7 @@ static void cciss_geometry_inquiry(int c
- 			       "does not support reading geometry\n");
- 			drv->heads = 255;
- 			drv->sectors = 32;	// Sectors per track
-+			drv->cylinders = total_size + 1;
- 			drv->raid_level = RAID_UNKNOWN;
- 		} else {
- 			drv->heads = inq_buff->data_byte[6];
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index 8d853c5..0b00068 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -288,7 +288,7 @@ COMPAT_SYS(ppoll)
+ SYSCALL_SPU(unshare)
+ SYSCALL_SPU(splice)
+ SYSCALL_SPU(tee)
+-SYSCALL_SPU(vmsplice)
++COMPAT_SYS_SPU(vmsplice)
+ COMPAT_SYS_SPU(openat)
+ SYSCALL_SPU(mkdirat)
+ SYSCALL_SPU(mknodat)
