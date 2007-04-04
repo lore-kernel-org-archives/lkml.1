@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966275AbXDDCAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966276AbXDDCEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966275AbXDDCAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Apr 2007 22:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966276AbXDDCAx
+	id S966276AbXDDCEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Apr 2007 22:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966278AbXDDCED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Apr 2007 22:00:53 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:52140 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S966275AbXDDCAx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Apr 2007 22:00:53 -0400
-Date: Tue, 3 Apr 2007 18:32:21 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: David Miller <davem@davemloft.net>, dwmw2@infradead.org,
-       flar@allandria.com, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
-Message-ID: <Pine.LNX.4.63.0704031826000.21680@qynat.qvtvafvgr.pbz>
-References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
- 02.GA13210@cynthia.pants.nu><1175648051.10567.61.camel@shinybook.infradead.
- org><20070403.181645.68159458.davem@davemloft.net><20070404022828.5c9b97f3@
- the-village.bc.nu><Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
- <20070404024400.56d016e1@the-village.bc.nu> <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 3 Apr 2007 22:04:03 -0400
+Received: from ozlabs.org ([203.10.76.45]:43676 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966276AbXDDCEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Apr 2007 22:04:02 -0400
+Subject: Re: [patch 4/6] Rename the parainstructions symbols to be
+	consistent with the others
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070404011453.598418421@goop.org>
+References: <20070404010655.400913479@goop.org>
+	 <20070404011453.598418421@goop.org>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 12:03:17 +1000
+Message-Id: <1175652197.12230.563.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Apr 2007, David Lang wrote:
+On Tue, 2007-04-03 at 18:06 -0700, Jeremy Fitzhardinge wrote:
+> plain text document attachment (fix-parainstructions-name.patch)
+> The other symbols used to delineate the alt-instructions sections have
+> the form __foo/__foo_end.  Rename parainstructions to match.
 
-> so leave all the ports numbered 0-49, but let people who need to know run a 
-> tool (even if it's dmesg -s 200000 |grep ttyS) to learn the details of what 
-> hardware is used to run what port.
+OK, I guess this is an area where the kernel has its own standard.
 
-and by the way, this is exactly what I do on machines with different types of 
-ethernet cards to figure out what ethX name the different types of cards get. 
-after I've figured that out I learn which order the cards of that type are by 
-plugging things into a port to see what shows up (knowing the MAC address 
-doesn't do you any good if you don't know what hole to plug the wire into)
+(__start_<secname> and __stop_<secname> are the symbols automatically
+inserted by ld if the section name is straight alpha-numeric.  It's
+actually pretty cool for code where you want section boundaries without
+writing a linker script).
 
-and yes, the nameing does get messed up when you plugin a new card, or enable a 
-driver that you didn't have before, but as painful as that is it's pain that 
-only I have to deal with when reconfiguring the hardware, all the other 
-sysadmins who use the systems just know what port is what, they don't need to 
-know that box A has tulip based quad cards while box B has starfire based quad 
-cards, they just know 'eth0 is the one labled 0, eth18 is the one labled 18'
+Cheers,
+Rusty.
 
-keep it simple for as many people as possible, don't spread the pain. those who 
-will feel the pain are already dealing with it and the change to hardware-based 
-named doesn't help them anyway.
 
-David Lang
