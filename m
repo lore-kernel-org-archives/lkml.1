@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXDDPDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992898AbXDDPH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbXDDPDW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbXDDPDW
+	id S2992898AbXDDPH6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992917AbXDDPH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:03:22 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:25516 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753906AbXDDPDV (ORCPT
+	Wed, 4 Apr 2007 11:07:58 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:58136 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992916AbXDDPH5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:03:21 -0400
-X-AuditID: d80ac287-94e6abb000000c42-39-4613be38ed4e 
-Date: Wed, 4 Apr 2007 16:03:15 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Dan Aloni <da-x@monatomic.org>
-cc: Andrea Arcangeli <andrea@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-In-Reply-To: <20070404144421.GA13762@localdomain>
-Message-ID: <Pine.LNX.4.64.0704041553220.18202@blonde.wat.veritas.com>
-References: <20070329075805.GA6852@wotan.suse.de>
- <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com>
- <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de>
- <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com>
- <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random>
- <20070404135530.GA29026@localdomain> <20070404141457.GF19587@v2.random>
- <20070404144421.GA13762@localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 04 Apr 2007 15:03:20.0454 (UTC) FILETIME=[6217B260:01C776CA]
-X-Brightmail-Tracker: AAAAAA==
+	Wed, 4 Apr 2007 11:07:57 -0400
+Date: Wed, 4 Apr 2007 08:07:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bryan.wu@analog.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] blackfin arch: use boot_command_line instead of
+ save_command_line in setup c file
+Message-Id: <20070404080752.4c2375b2.randy.dunlap@oracle.com>
+In-Reply-To: <1175668103.10608.39.camel@roc-desktop>
+References: <1175668103.10608.39.camel@roc-desktop>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Dan Aloni wrote:
+On Wed, 04 Apr 2007 14:28:23 +0800 Wu, Bryan wrote:
+
 > 
-> To refine that example, you could replace the file with a large anonymous 
-> memory pool and a lot of swap space committed to it. In that case - with 
-> no ZERO_PAGE, would the kernel needlessly swap-out the zeroed pages? 
-> Perhaps it's an example too far-fetched to worth considering...
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> ---
+>  arch/blackfin/kernel/setup.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
+> index ce51882..9870c60 100644
+> --- a/arch/blackfin/kernel/setup.c
+> +++ b/arch/blackfin/kernel/setup.c
+> @@ -221,7 +221,7 @@ void __init setup_arch(char **cmdline_p)
+>  
+>  	/* Keep a copy of command line */
+>  	*cmdline_p = &command_line[0];
+> -	memcpy(saved_command_line, command_line, COMMAND_LINE_SIZE);
+> +	memcpy(boot_command_line, command_line, COMMAND_LINE_SIZE);
+>  	saved_command_line[COMMAND_LINE_SIZE - 1] = 0;
+>  
+>  	/* setup memory defaults from the user config */
+> -- 
 
-Nice point, not far-fetched, though I don't know whether it's worth
-worrying about or not.  Yes, as things stand, the kernel will
-needlessly write them out to swap: because we're in the habit of
-marking a writable pte as dirty, partly to save the processor (how
-i386-centric am I being?) from having to do that work just after,
-partly because of some race too ancient for me to know anything
-about - do_no_page (though not the function in question here) says:
+Hi Bryan,
 
-	 * This silly early PAGE_DIRTY setting removes a race
-	 * due to the bad i386 page protection. But it's valid
-	 * for other architectures too.
+Patch descriptions should include _why_ a change is being made,
+not just what the change is.
 
-Maybe Nick will decide to not to mark the readfaults as dirty.
-
-Hugh
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
