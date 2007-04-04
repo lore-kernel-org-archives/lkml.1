@@ -1,106 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXDDSjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXDDSjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbXDDSjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbXDDSHa
+	id S932318AbXDDSjn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXDDSHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:07:30 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36349 "EHLO
+	Wed, 4 Apr 2007 14:07:23 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36334 "EHLO
 	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753883AbXDDSHV (ORCPT
+	with ESMTP id S1753907AbXDDSHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:07:21 -0400
+	Wed, 4 Apr 2007 14:07:19 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 14/90] ARM: OMAP: omap2/memory.c compile fixes
-Date: Wed,  4 Apr 2007 14:04:53 -0400
-Message-Id: <11757100011056-git-send-email-tony@atomide.com>
+Subject: [PATCH 16/90] ARM: OMAP: omap2/gpmc updates
+Date: Wed,  4 Apr 2007 14:04:55 -0400
+Message-Id: <11757100063945-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757099942493-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com>
+In-Reply-To: <1175710003925-git-send-email-tony@atomide.com>
+References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: David Brownell <dbrownell@users.sourceforge.net>
 
-Remove some conflicting declarations in omap2/memory.c so that the
-file builds again.
+GPMC updates:
+ - bugfixes: wrong/missing flags, omitted write, wrong test
+ - don't map memory segments starting at zero
+ - improve debug messaging
+ - export gpmc_get_fclk_perio]d() since it's needed to calc timings
+ - expect gpmc_cs_set_timings() caller to have initialized sync vs async
+
+Note that this API is glitchy; likely the best fix would be to add
+a member to "struct gpmc_timings" to hold GPMC_CONFIG1, since that
+holds one key aspect of the GPMC timings (the gpmc_fclk divisor,
+and sync vs. async == whether that divisor matters).
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/memory.c |   40 +++++-----------------------------------
- 1 files changed, 5 insertions(+), 35 deletions(-)
+ arch/arm/mach-omap2/gpmc.c       |   33 ++++++++++++++++++++++-----------
+ include/asm-arm/arch-omap/gpmc.h |    3 ++-
+ 2 files changed, 24 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/memory.c b/arch/arm/mach-omap2/memory.c
-index f173aa8..3e5d8cd 100644
---- a/arch/arm/mach-omap2/memory.c
-+++ b/arch/arm/mach-omap2/memory.c
-@@ -30,37 +30,6 @@
- #include "prcm-regs.h"
- #include "memory.h"
- 
--#define SMS_BASE		0x68008000
--#define SMS_SYSCONFIG		0x010
--
--#define SDRC_BASE		0x68009000
--#define SDRC_SYSCONFIG		0x010
--#define SDRC_SYSSTATUS		0x014
--
--static const u32 sms_base = IO_ADDRESS(SMS_BASE);
--static const u32 sdrc_base = IO_ADDRESS(SDRC_BASE);
--
--
--static inline void sms_write_reg(int idx, u32 val)
--{
--	__raw_writel(val, sms_base + idx);
--}
--
--static inline u32 sms_read_reg(int idx)
--{
--	return __raw_readl(sms_base + idx);
--}
--
--static inline void sdrc_write_reg(int idx, u32 val)
--{
--	__raw_writel(val, sdrc_base + idx);
--}
--
--static inline u32 sdrc_read_reg(int idx)
--{
--	return __raw_readl(sdrc_base + idx);
--}
--
- 
- static struct memory_timings mem_timings;
- 
-@@ -132,18 +101,19 @@ void omap2_init_memory_params(u32 force_lock_to_unlock_mode)
- 	mem_timings.slow_dll_ctrl |= ((1 << 1) | (3 << 8));
+diff --git a/arch/arm/mach-omap2/gpmc.c b/arch/arm/mach-omap2/gpmc.c
+index d8f5782..3236e12 100644
+--- a/arch/arm/mach-omap2/gpmc.c
++++ b/arch/arm/mach-omap2/gpmc.c
+@@ -88,7 +88,7 @@ u32 gpmc_cs_read_reg(int cs, int idx)
  }
  
-+/* turn on smart idle modes for SDRAM scheduler and controller */
- void __init omap2_init_memory(void)
+ /* TODO: Add support for gpmc_fck to clock framework and use it */
+-static unsigned long gpmc_get_fclk_period(void)
++unsigned long gpmc_get_fclk_period(void)
  {
- 	u32 l;
+ 	/* In picoseconds */
+ 	return 1000000000 / ((clk_get_rate(gpmc_l3_clk)) / 1000);
+@@ -120,15 +120,21 @@ static int set_gpmc_timing_reg(int cs, int reg, int st_bit, int end_bit,
+ 	else
+ 		ticks = gpmc_ns_to_ticks(time);
+ 	nr_bits = end_bit - st_bit + 1;
+-	if (ticks >= 1 << nr_bits)
++	if (ticks >= 1 << nr_bits) {
++#ifdef DEBUG
++		printk(KERN_INFO "GPMC CS%d: %-10s* %3d ns, %3d ticks >= %d\n",
++				cs, name, time, ticks, 1 << nr_bits);
++#endif
+ 		return -1;
++	}
  
--	l = sms_read_reg(SMS_SYSCONFIG);
-+	l = SMS_SYSCONFIG;
- 	l &= ~(0x3 << 3);
- 	l |= (0x2 << 3);
--	sms_write_reg(SMS_SYSCONFIG, l);
-+	SMS_SYSCONFIG = l;
+ 	mask = (1 << nr_bits) - 1;
+ 	l = gpmc_cs_read_reg(cs, reg);
+ #ifdef DEBUG
+-	printk(KERN_INFO "GPMC CS%d: %-10s: %d ticks, %3lu ns (was %i ticks)\n",
++	printk(KERN_INFO
++		"GPMC CS%d: %-10s: %3d ticks, %3lu ns (was %3i ticks) %3d ns\n",
+ 	       cs, name, ticks, gpmc_get_fclk_period() * ticks / 1000,
+-	       (l >> st_bit) & mask);
++			(l >> st_bit) & mask, time);
+ #endif
+ 	l &= ~(mask << st_bit);
+ 	l |= ticks << st_bit;
+@@ -157,7 +163,7 @@ int gpmc_cs_calc_divider(int cs, unsigned int sync_clk)
+ 	div = l / gpmc_get_fclk_period();
+ 	if (div > 4)
+ 		return -1;
+-	if (div < 0)
++	if (div <= 0)
+ 		div = 1;
  
--	l = sdrc_read_reg(SDRC_SYSCONFIG);
-+	l = SDRC_SYSCONFIG;
- 	l &= ~(0x3 << 3);
- 	l |= (0x2 << 3);
--	sdrc_write_reg(SDRC_SYSCONFIG, l);
-+	SDRC_SYSCONFIG = l;
+ 	return div;
+@@ -191,14 +197,19 @@ int gpmc_cs_set_timings(int cs, const struct gpmc_timings *t)
  
+ 	GPMC_SET_ONE(GPMC_CS_CONFIG5, 24, 27, page_burst_access);
+ 
++	/* caller is expected to have initialized CONFIG1 to cover
++	 * at least sync vs async
++	 */
++	l = gpmc_cs_read_reg(cs, GPMC_CS_CONFIG1);
++	if (l & (GPMC_CONFIG1_READTYPE_SYNC | GPMC_CONFIG1_WRITETYPE_SYNC)) {
+ #ifdef DEBUG
+-	printk(KERN_INFO "GPMC CS%d CLK period is %lu (div %d)\n",
+-	       cs, gpmc_get_fclk_period(), div);
++		printk(KERN_INFO "GPMC CS%d CLK period is %lu ns (div %d)\n",
++				cs, (div * gpmc_get_fclk_period()) / 1000, div);
+ #endif
+-
+-	l = gpmc_cs_read_reg(cs, GPMC_CS_CONFIG1);
+-	l &= ~0x03;
+-	l |= (div - 1);
++		l &= ~0x03;
++		l |= (div - 1);
++		gpmc_cs_write_reg(cs, GPMC_CS_CONFIG1, l);
++	}
+ 
+ 	return 0;
  }
+diff --git a/include/asm-arm/arch-omap/gpmc.h b/include/asm-arm/arch-omap/gpmc.h
+index 7c03ef6..efbf478 100644
+--- a/include/asm-arm/arch-omap/gpmc.h
++++ b/include/asm-arm/arch-omap/gpmc.h
+@@ -23,9 +23,10 @@
+ #define GPMC_CS_NAND_DATA	0x24
+ 
+ #define GPMC_CONFIG1_WRAPBURST_SUPP     (1 << 31)
+-#define GPMC_CONFIG1_READMULTIPLE_SUPP  (1 << 20)
++#define GPMC_CONFIG1_READMULTIPLE_SUPP  (1 << 30)
+ #define GPMC_CONFIG1_READTYPE_ASYNC     (0 << 29)
+ #define GPMC_CONFIG1_READTYPE_SYNC      (1 << 29)
++#define GPMC_CONFIG1_WRITEMULTIPLE_SUPP (1 << 28)
+ #define GPMC_CONFIG1_WRITETYPE_ASYNC    (0 << 27)
+ #define GPMC_CONFIG1_WRITETYPE_SYNC     (1 << 27)
+ #define GPMC_CONFIG1_CLKACTIVATIONTIME(val) ((val & 3) << 25)
 -- 
 1.4.4.2
 
