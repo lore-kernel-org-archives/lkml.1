@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992581AbXDDEJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992645AbXDDEK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992581AbXDDEJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 00:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934066AbXDDEBm
+	id S2992645AbXDDEK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 00:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992640AbXDDEKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 00:01:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:49610 "EHLO ozlabs.org"
+	Wed, 4 Apr 2007 00:10:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:49618 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934058AbXDDEBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 00:01:39 -0400
+	id S934058AbXDDEBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 00:01:43 -0400
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: <linux-arch@vger.kernel.org>, Linux Memory Management <linux-mm@kvack.org>,
        <linux-kernel@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 04 Apr 2007 14:01:27 +1000
-Subject: [PATCH 2/14] get_unmapped_area handles MAP_FIXED on alpha
+Date: Wed, 04 Apr 2007 14:01:32 +1000
+Subject: [PATCH 11/14] get_unmapped_area handles MAP_FIXED on ramfs (nommu) 
 In-Reply-To: <1175659285.929428.835270667964.qpush@grosgo>
-Message-Id: <20070404040138.19B43DDE3D@ozlabs.org>
+Message-Id: <20070404040143.1EDE6DDEA0@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/alpha/kernel/osf_sys.c |    3 +++
- 1 file changed, 3 insertions(+)
+ fs/ramfs/file-nommu.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Index: linux-cell/arch/alpha/kernel/osf_sys.c
+Index: linux-cell/fs/ramfs/file-nommu.c
 ===================================================================
---- linux-cell.orig/arch/alpha/kernel/osf_sys.c	2007-03-22 14:58:33.000000000 +1100
-+++ linux-cell/arch/alpha/kernel/osf_sys.c	2007-03-22 14:58:44.000000000 +1100
-@@ -1267,6 +1267,9 @@ arch_get_unmapped_area(struct file *filp
- 	if (len > limit)
- 		return -ENOMEM;
+--- linux-cell.orig/fs/ramfs/file-nommu.c	2007-03-22 16:18:27.000000000 +1100
++++ linux-cell/fs/ramfs/file-nommu.c	2007-03-22 16:20:14.000000000 +1100
+@@ -238,7 +238,10 @@ unsigned long ramfs_nommu_get_unmapped_a
+ 	struct page **pages = NULL, **ptr, *page;
+ 	loff_t isize;
  
-+	if (flags & MAP_FIXED)
-+		return addr;
-+
- 	/* First, see if the given suggestion fits.
+-	if (!(flags & MAP_SHARED))
++	/* Deal with MAP_FIXED differently ? Forbid it ? Need help from some nommu
++	 * folks there... --BenH.
++	 */
++	if ((flags & MAP_FIXED) || !(flags & MAP_SHARED))
+ 		return addr;
  
- 	   The OSF/1 loader (/sbin/loader) relies on us returning an
+ 	/* the mapping mustn't extend beyond the EOF */
