@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992994AbXDDQiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993002AbXDDQjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992994AbXDDQiJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992986AbXDDQiJ
+	id S2993002AbXDDQjL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992995AbXDDQjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:38:09 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42784 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992994AbXDDQiH (ORCPT
+	Wed, 4 Apr 2007 12:39:10 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:30570 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992999AbXDDQjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:38:07 -0400
-Date: Wed, 4 Apr 2007 18:38:07 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Rene Herman <rene.herman@gmail.com>, Christoph Hellwig <hch@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-Message-ID: <20070404163807.GO27660@stusta.de>
-References: <46138B4C.2050409@gmail.com> <20070404123311.GA18552@infradead.org> <4613A1F1.2080007@gmail.com> <20070404145726.GD27660@stusta.de> <4613D342.3040501@s5r6.in-berlin.de>
+	Wed, 4 Apr 2007 12:39:08 -0400
+Date: Wed, 4 Apr 2007 18:39:22 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Please pull git390 'for-linus' branch
+Message-ID: <20070404163922.GA31898@skybase>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4613D342.3040501@s5r6.in-berlin.de>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 06:33:06PM +0200, Stefan Richter wrote:
-> Adrian Bunk wrote:
-> > On Wed, Apr 04, 2007 at 03:02:41PM +0200, Rene Herman wrote:
-> >> Given modules with multiple authors, current and non-current, I believe 
-> >> having "modinfo -m" tell the user whom to contact is an avantage.
-> > 
-> > Much bigger problems are:
-> > - Who will maintain this information properly?
-> > - What about modules that are maintained implicitely by the subsystem
-> >   maintainer?
-> > 
-> > And often a user can't be expected to locate the source of a problem, or 
-> > it might not be in a driver but in a subsystem.
-> > 
-> > For vendor kernels, the user should contact the vendor.
-> > For ftp.kernel.org kernels, I don't see any better solution than telling 
-> > people to report problems to linux-kernel or the kernel Bugzilla and 
-> > routing them further from here.
-> 
-> Generelly it has to be kept in mind that there are different contacts
-> for different purposes:
->   - usage problems --> get in touch with the _support_
->   - bug reports --> get in touch with _maintainers_
+Please pull from 'for-linus' branch of
 
-- bug reports against vendor kernels -> get in touch with the _vendor_
-  (the vendor might ship a heavily patched driver in an ancient kernel)
+	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
 
->   - development --> get in touch with maintainers/ kernel hackers/
->     copyright holders...
-> 
-> The Amiga keyboard had a [Help] key, but this is not how it works.
+to receive the following updates:
 
-> Stefan Richter
+ drivers/s390/cio/device_status.c |    8 ++++++++
+ mm/rmap.c                        |    4 ++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-cu
-Adrian
+Cornelia Huck (1):
+      [S390] cio: Fix handling of interrupt for csch().
 
--- 
+Martin Schwidefsky (1):
+      [S390] page_mkclean data corruption.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff --git a/drivers/s390/cio/device_status.c b/drivers/s390/cio/device_status.c
+index 25d99bd..aa96e67 100644
+--- a/drivers/s390/cio/device_status.c
++++ b/drivers/s390/cio/device_status.c
+@@ -221,6 +221,14 @@ ccw_device_accumulate_irb(struct ccw_device *cdev, struct irb *irb)
+ 
+ 	cdev_irb = &cdev->private->irb;
+ 
++	/*
++	 * If the clear function had been performed, all formerly pending
++	 * status at the subchannel has been cleared and we must not pass
++	 * intermediate accumulated status to the device driver.
++	 */
++	if (irb->scsw.fctl & SCSW_FCTL_CLEAR_FUNC)
++		memset(&cdev->private->irb, 0, sizeof(struct irb));
++
+ 	/* Copy bits which are valid only for the start function. */
+ 	if (irb->scsw.fctl & SCSW_FCTL_START_FUNC) {
+ 		/* Copy key. */
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 22ed3f7..b82146e 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -498,9 +498,9 @@ int page_mkclean(struct page *page)
+ 		struct address_space *mapping = page_mapping(page);
+ 		if (mapping)
+ 			ret = page_mkclean_file(mapping, page);
++		if (page_test_and_clear_dirty(page))
++			ret = 1;
+ 	}
+-	if (page_test_and_clear_dirty(page))
+-		ret = 1;
+ 
+ 	return ret;
+ }
