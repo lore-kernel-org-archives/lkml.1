@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992850AbXDDLN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992853AbXDDLQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992850AbXDDLN2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 07:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992852AbXDDLN2
+	id S2992853AbXDDLQA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 07:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992855AbXDDLQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 07:13:28 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:53379 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992850AbXDDLN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 07:13:27 -0400
-To: a.p.zijlstra@chello.nl
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com
-In-reply-to: <1175684461.6483.64.camel@twins> (message from Peter Zijlstra on
-	Wed, 04 Apr 2007 13:01:01 +0200)
-Subject: Re: [PATCH 6/6] mm: per device dirty threshold
-References: <20070403144047.073283598@taijtu.programming.kicks-ass.net>
-	 <20070403144224.709586192@taijtu.programming.kicks-ass.net>
-	 <E1HZ1so-0005q8-00@dorka.pomaz.szeredi.hu> <1175681794.6483.43.camel@twins>
-	 <E1HZ2kU-0005xx-00@dorka.pomaz.szeredi.hu> <1175684461.6483.64.camel@twins>
-Message-Id: <E1HZ3Q9-00062G-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 04 Apr 2007 13:12:57 +0200
+	Wed, 4 Apr 2007 07:16:00 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:38026 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992853AbXDDLP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 07:15:59 -0400
+Date: Wed, 4 Apr 2007 13:21:00 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Christian Kujau <christian@g-house.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+Message-ID: <20070404112100.GA1979@ff.dom.local>
+References: <20070403065810.GA1832@ff.dom.local> <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > so it could be that: scale / cycle > 1
-> > > by a very small amount; however:
-> > 
-> > No, I'm worried about the case when scale is too small.  If the
-> > per-bdi threshold becomes smaller than stat_threshold, then things
-> > won't work, because dirty+writeback will never go below the threshold,
-> > possibly resulting in the deadlock we are trying to avoid.
+On Tue, Apr 03, 2007 at 04:19:46PM +0100, Christian Kujau wrote:
+> On Tue, 3 Apr 2007, Jarek Poplawski wrote:
+> >Did you try with 8139cp instead of 8139too?
 > 
-> /me goes refresh the deadlock details..
-> 
-> A writes to B; A exceeds the dirty limit but writeout is blocked by B
-> because the dirty limit is exceeded, right?
-> 
-> This cannot happen when we decouple the BDI dirty thresholds, even when
-> a threshold is 0.
-> 
-> A write to B; A exceeds A's limit and writes to B, B has limit of 0, the
-> 1 dirty page gets written out (we gain ratio) and life goes on.
-> 
-> Right?
+> Tried that, 8139cp could not be loaded :(
 
-If the limit is zero, then we need the per-bdi dirty+write to go to
-zero, otherwise balance_dirty_pages() loops.  But the per-bdi
-writeback counter is not necessarily updated after the writeback,
-because the per-bdi per-CPU counter may not trip the update of the
-per-bdi counter.
+Sorry for misleading!
 
-Miklos
+> >(Maybe even try some other card to narrow the problem?)
+> >You could also try to test without ehci, if it's possible.
+> 
+> USB has been disabled completely. After booting with 'acpi=off lapic' 
+> the box survived ~30min then locked up again and rebooted.
+
+So, it's a lot sooner than before. (BTW, isn't there anything
+in debug log?) I see both CPUs did interrupt handling again.
+Maybe it's a real locking problem. Here are some more
+suggestions for testing (if you don't find anything better):
+- try without SMP, so: 'acpi=off lapic nosmp'
+- lock debugging turned on as much as possible
+plus maybe for curiosity:
+- different CONFIG_HZ
+- 8139TOO_PIO = y
+
+...
+> IRQ-problems with the Un-Interruptible-Power-Supply
+
+I wouldn't be surprised... 
+
+Cheers,
+Jarek P.
