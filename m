@@ -1,518 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934110AbXDDSOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422716AbXDDSOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934110AbXDDSOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 14:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934107AbXDDSNx
+	id S1422716AbXDDSOc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 14:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422710AbXDDSOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:13:53 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:39435 "EHLO
+	Wed, 4 Apr 2007 14:14:30 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:39993 "EHLO
 	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934079AbXDDSNK (ORCPT
+	with ESMTP id S934106AbXDDSOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:13:10 -0400
+	Wed, 4 Apr 2007 14:14:03 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
-Cc: Imre Deak <imre.deak@solidboot.com>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 68/90] ARM: OMAP: FB sync with N800 tree (support for dynamic SRAM allocations)
-Date: Wed,  4 Apr 2007 14:05:47 -0400
-Message-Id: <11757101533672-git-send-email-tony@atomide.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 79/90] ARM: OMAP: fix H4 dependencies again
+Date: Wed,  4 Apr 2007 14:05:58 -0400
+Message-Id: <11757101862498-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757101513037-git-send-email-tony@atomide.com>
+In-Reply-To: <11757101831883-git-send-email-tony@atomide.com>
 References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com> <11757100092910-git-send-email-tony@atomide.com> <11757100112473-git-send-email-tony@atomide.com> <11757100143517-git-send-email-tony@atomide.com> <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!
  57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <117571004562-git-send-email-tony@atomide.com> <11757100491583-git-send-email-tony@atomide.com> <11757100511172-git-send-email-tony@atomide.com> <1175710059333-git-send-email-tony@atomide.com> <11757100623383-git-send-email-tony@atomide.com> <11757100641006-git-send-email-tony@atomide.com> <11757100661228-git-send-email-tony@atomide.com> <11757100691131-git-send-email-tony@atomide.com> <11757100713004-git-send-email-tony@atomide.com> <11757100752021-git-send-email-tony@atomide.com> <11757100781275-git-send-email-tony@atomide.com> <11757100811771-git-send-email-tony@atomide.com> <11757100821353-git-send-email-tony@atomide.com> <11757100853841-git-send-email-tony@atomide.com> <1175710087578-git-send-email-tony@atomide.com> <11757100911247-git-send-email-tony@atomide.com> <1175710093864-git-send-email-tony@atomide.com> <11757100952384-git-send-email-tony@atomide.com> <11757100982726-g!
  it-send-email-tony@atomide.com> <11757101012787-git-send-email-tony@atomide.com> <1175710103340-git-send-email-tony@atomide.com> <11757101072553-git-send-email-tony@atomide.com> <11757101101180-git-send-email-tony@atomide.com> <11757101123620-git-send-email-tony@atomide.com> <11757101141643-git-send-email-tony@atomide.com> <
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Imre Deak <imre.deak@solidboot.com>
+From: David Brownell <david-b@pacbell.net>
 
-- in addition to fixed FB regions - as passed by the bootloader -
-  allow dynamic allocations
-- do some more checking against overlapping / reserved regions
-- move the FB specific parts out from sram.c to fb.c
+Fix Kconfig sequencing:  the 2430 SDP keeps getting stuffed
+in the middle of H4 dependencies, so the various H4-specific
+config options aren't displayed as depending on H4.
 
-Signed-off-by: Imre Deak <imre.deak@solidboot.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap1/io.c         |    4 +-
- arch/arm/mach-omap2/io.c         |    3 +-
- arch/arm/plat-omap/fb.c          |  271 +++++++++++++++++++++++++++++++++----
- arch/arm/plat-omap/sram.c        |   60 ++-------
- include/asm-arm/arch-omap/sram.h |    3 -
- 5 files changed, 256 insertions(+), 85 deletions(-)
+ arch/arm/mach-omap2/Kconfig |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/io.c b/arch/arm/mach-omap1/io.c
-index fab8b0b..81c4e73 100644
---- a/arch/arm/mach-omap1/io.c
-+++ b/arch/arm/mach-omap1/io.c
-@@ -17,11 +17,11 @@
- #include <asm/io.h>
- #include <asm/arch/mux.h>
- #include <asm/arch/tc.h>
--#include <asm/arch/omapfb.h>
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index 845daa6..60bfa75 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -37,10 +37,6 @@ config MACH_OMAP_H4
+ 	select OMAP_DEBUG_DEVICES
+ 	select GPIOEXPANDER_OMAP
  
- extern int omap1_clk_init(void);
- extern void omap_check_revision(void);
- extern void omap_sram_init(void);
-+extern void omapfb_reserve_sdram(void);
- 
- /*
-  * The machine specific code may provide the extra mapping besides the
-@@ -121,7 +121,7 @@ void __init omap1_map_common_io(void)
- #endif
- 
- 	omap_sram_init();
--	omapfb_reserve_mem();
-+	omapfb_reserve_sdram();
- }
- 
- /*
-diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
-index 4640d9a..c3dafcb 100644
---- a/arch/arm/mach-omap2/io.c
-+++ b/arch/arm/mach-omap2/io.c
-@@ -29,6 +29,7 @@ extern int omap2_clk_init(void);
- extern void omap2_check_revision(void);
- extern void omap2_init_memory(void);
- extern void gpmc_init(void);
-+extern void omapfb_reserve_sdram(void);
- 
- /*
-  * The machine specific code may provide the extra mapping besides the
-@@ -94,7 +95,7 @@ void __init omap2_map_common_io(void)
- 
- 	omap2_check_revision();
- 	omap_sram_init();
--	omapfb_reserve_mem();
-+	omapfb_reserve_sdram();
- }
- 
- void __init omap2_init_common_hw(void)
-diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
-index a302d91..8441e50 100644
---- a/arch/arm/plat-omap/fb.c
-+++ b/arch/arm/plat-omap/fb.c
-@@ -39,6 +39,8 @@
- #if defined(CONFIG_FB_OMAP) || defined(CONFIG_FB_OMAP_MODULE)
- 
- static struct omapfb_platform_data omapfb_config;
-+static int config_invalid;
-+static int configured_regions;
- 
- static u64 omap_fb_dma_mask = ~(u32)0;
- 
-@@ -53,46 +55,240 @@ static struct platform_device omap_fb_device = {
- 	.num_resources = 0,
- };
- 
--/* called from map_io */
--void omapfb_reserve_mem(void)
-+static inline int ranges_overlap(unsigned long start1, unsigned long size1,
-+				 unsigned long start2, unsigned long size2)
- {
--	const struct omap_fbmem_config *fbmem_conf;
--	unsigned long total_size;
-+	return (start1 >= start2 && start1 < start2 + size2) ||
-+	       (start2 >= start1 && start2 < start1 + size1);
-+}
-+
-+static inline int range_included(unsigned long start1, unsigned long size1,
-+				 unsigned long start2, unsigned long size2)
-+{
-+	return start1 >= start2 && start1 + size1 <= start2 + size2;
-+}
-+
-+
-+/* Check if there is an overlapping region. */
-+static int fbmem_region_reserved(unsigned long start, size_t size)
-+{
-+	struct omapfb_mem_region *rg;
- 	int i;
- 
--	if (!omap_fb_sram_valid) {
--		/* FBMEM SRAM configuration was already found to be invalid.
--		 * Ignore the whole configuration block. */
--		omapfb_config.mem_desc.region_cnt = 0;
--		return;
-+	rg = &omapfb_config.mem_desc.region[0];
-+	for (i = 0; i < OMAPFB_PLANE_NUM; i++, rg++) {
-+		if (!rg->paddr)
-+			/* Empty slot. */
-+			continue;
-+		if (ranges_overlap(start, size, rg->paddr, rg->size))
-+			return 1;
- 	}
-+	return 0;
-+}
- 
--	i = 0;
--	total_size = 0;
--	while ((fbmem_conf = omap_get_nr_config(OMAP_TAG_FBMEM,
--				struct omap_fbmem_config, i)) != NULL) {
--		unsigned long start;
--		unsigned long size;
-+/* Get the region_idx`th region from board config/ATAG and convert it to
-+ * our internal format.
-+ */
-+static int get_fbmem_region(int region_idx, struct omapfb_mem_region *rg)
-+{
-+	const struct omap_fbmem_config	*conf;
-+	u32				paddr;
- 
--		if (i == OMAPFB_PLANE_NUM) {
--			printk(KERN_ERR "ignoring extra plane info\n");
-+	conf = omap_get_nr_config(OMAP_TAG_FBMEM,
-+				  struct omap_fbmem_config, region_idx);
-+	if (conf == NULL)
-+		return -ENOENT;
-+
-+	paddr = conf->start;
-+	/* Low bits encode the page allocation mode, if high bits
-+	 * are zero. Otherwise we need a page aligned fixed
-+	 * address.
-+	 */
-+	memset(rg, 0, sizeof(*rg));
-+	rg->type = paddr & ~PAGE_MASK;
-+	rg->paddr = paddr & PAGE_MASK;
-+	rg->size = PAGE_ALIGN(conf->size);
-+	return 0;
-+}
-+
-+static int set_fbmem_region_type(struct omapfb_mem_region *rg, int mem_type,
-+				  unsigned long mem_start,
-+				  unsigned long mem_size)
-+{
-+	/* Check if the configuration specifies the type explicitly.
-+	 * type = 0 && paddr = 0, a default don't care case maps to
-+	 * the SDRAM type.
-+	 */
-+	if (rg->type || (!rg->type && !rg->paddr))
-+		return 0;
-+	if (ranges_overlap(rg->paddr, rg->size, mem_start, mem_size)) {
-+		rg->type = mem_type;
-+		return 0;
-+	}
-+	/* Can't determine it. */
-+	return -1;
-+}
-+
-+static int check_fbmem_region(int region_idx, struct omapfb_mem_region *rg,
-+			      unsigned long start_avail, unsigned size_avail)
-+{
-+	unsigned long	paddr = rg->paddr;
-+	size_t		size = rg->size;
-+
-+	if (rg->type > OMAPFB_MEMTYPE_MAX) {
-+		printk(KERN_ERR
-+			"Invalid start address for FB region %d\n", region_idx);
-+		return -EINVAL;
-+	}
-+
-+	if (!rg->size) {
-+		printk(KERN_ERR "Zero size for FB region %d\n", region_idx);
-+		return -EINVAL;
-+	}
-+
-+	if (!paddr)
-+		/* Allocate this dynamically, leave paddr 0 for now. */
-+		return 0;
-+
-+	/* Fixed region for the given RAM range. Check if it's already
-+	 * reserved by the FB code or someone else.
-+	 */
-+	if (fbmem_region_reserved(paddr, size) ||
-+	    !range_included(paddr, size, start_avail, size_avail)) {
-+		printk(KERN_ERR "Trying to use reserved memory "
-+			"for FB region %d\n", region_idx);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/* Called from map_io. We need to call to this early enough so that we
-+ * can reserve the fixed SDRAM regions before VM could get hold of them.
-+ */
-+void omapfb_reserve_sdram(void)
-+{
-+	struct bootmem_data	*bdata;
-+	unsigned long		sdram_start, sdram_size;
-+	unsigned long		reserved;
-+	int			i;
-+
-+	if (config_invalid)
-+		return;
-+
-+	bdata = NODE_DATA(0)->bdata;
-+	sdram_start = bdata->node_boot_start;
-+	sdram_size = (bdata->node_low_pfn << PAGE_SHIFT) - sdram_start;
-+	reserved = 0;
-+	for (i = 0; ; i++) {
-+		struct omapfb_mem_region	rg;
-+
-+		if (get_fbmem_region(i, &rg) < 0)
- 			break;
-+		if (i == OMAPFB_PLANE_NUM) {
-+			printk(KERN_ERR
-+				"Extraneous FB mem configuration entries\n");
-+			config_invalid = 1;
-+			return;
- 		}
--		start = fbmem_conf->start;
--		size  = fbmem_conf->size;
--		omapfb_config.mem_desc.region[i].paddr = start;
--		omapfb_config.mem_desc.region[i].size = size;
--		if (omap_fb_sram_plane != i && start) {
--			reserve_bootmem(start, size);
--			total_size += size;
-+		/* Check if it's our memory type. */
-+		if (set_fbmem_region_type(&rg, OMAPFB_MEMTYPE_SDRAM,
-+				          sdram_start, sdram_size) < 0 ||
-+		    (rg.type != OMAPFB_MEMTYPE_SDRAM))
-+			continue;
-+		BUG_ON(omapfb_config.mem_desc.region[i].size);
-+		if (check_fbmem_region(i, &rg, sdram_start, sdram_size) < 0) {
-+			config_invalid = 1;
-+			return;
- 		}
--		i++;
-+		if (rg.paddr)
-+			reserve_bootmem(rg.paddr, rg.size);
-+		reserved += rg.size;
-+		omapfb_config.mem_desc.region[i] = rg;
-+		configured_regions++;
- 	}
- 	omapfb_config.mem_desc.region_cnt = i;
--	if (total_size)
-+	if (reserved)
- 		pr_info("Reserving %lu bytes SDRAM for frame buffer\n",
--			 total_size);
-+			 reserved);
-+}
- 
-+/* Called at sram init time, before anything is pushed to the SRAM stack.
-+ * Because of the stack scheme, we will allocate everything from the
-+ * start of the lowest address region to the end of SRAM. This will also
-+ * include padding for page alignment and possible holes between regions.
-+ *
-+ * As opposed to the SDRAM case, we'll also do any dynamic allocations at
-+ * this point, since the driver built as a module would have problem with
-+ * freeing / reallocating the regions.
-+ */
-+unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
-+				  unsigned long sram_vstart,
-+				  unsigned long sram_size,
-+				  unsigned long pstart_avail,
-+				  unsigned long size_avail)
-+{
-+	struct omapfb_mem_region	rg;
-+	unsigned long			pend_avail;
-+	unsigned long			reserved;
-+	int				i;
-+
-+	if (config_invalid)
-+		return 0;
-+
-+	reserved = 0;
-+	pend_avail = pstart_avail + size_avail;
-+	for (i = 0; ; i++) {
-+		if (get_fbmem_region(i, &rg) < 0)
-+			break;
-+		if (i == OMAPFB_PLANE_NUM) {
-+			printk(KERN_ERR
-+				"Extraneous FB mem configuration entries\n");
-+			config_invalid = 1;
-+			return 0;
-+		}
-+
-+		/* Check if it's our memory type. */
-+		if (set_fbmem_region_type(&rg, OMAPFB_MEMTYPE_SRAM,
-+				          sram_pstart, sram_size) < 0 ||
-+		    (rg.type != OMAPFB_MEMTYPE_SRAM))
-+			continue;
-+		BUG_ON(omapfb_config.mem_desc.region[i].size);
-+
-+		if (check_fbmem_region(i, &rg, pstart_avail, size_avail) < 0) {
-+			config_invalid = 1;
-+			return 0;
-+		}
-+
-+		if (!rg.paddr) {
-+			/* Dynamic allocation */
-+			if ((size_avail & PAGE_MASK) < rg.size) {
-+				printk("Not enough SRAM for FB region %d\n",
-+					i);
-+				config_invalid = 1;
-+				return 0;
-+			}
-+			size_avail = (size_avail - rg.size) & PAGE_MASK;
-+			rg.paddr = pstart_avail + size_avail;
-+		}
-+		/* Reserve everything above the start of the region.
-+		 */
-+		if (pend_avail - rg.paddr > reserved)
-+			reserved = pend_avail - rg.paddr;
-+		size_avail = pend_avail - reserved - pstart_avail;
-+
-+		/* We have a kernel mapping for this already, so the
-+		 * driver won't have to make one.
-+		 */
-+		rg.vaddr = (void *)(sram_vstart + rg.paddr - sram_pstart);
-+		omapfb_config.mem_desc.region[i] = rg;
-+		configured_regions++;
-+	}
-+	omapfb_config.mem_desc.region_cnt = i;
-+	if (reserved)
-+		pr_info("Reserving %lu bytes SRAM for frame buffer\n",
-+			 reserved);
-+	return reserved;
- }
- 
- void omapfb_set_ctrl_platform_data(void *data)
-@@ -104,10 +300,19 @@ static inline int omap_init_fb(void)
- {
- 	const struct omap_lcd_config *conf;
- 
-+	if (config_invalid)
-+		return 0;
-+	if (configured_regions != omapfb_config.mem_desc.region_cnt) {
-+		printk(KERN_ERR "Invalid FB mem configuration entries\n");
-+		return 0;
-+	}
- 	conf = omap_get_config(OMAP_TAG_LCD, struct omap_lcd_config);
--	if (conf == NULL)
-+	if (conf == NULL) {
-+		if (configured_regions)
-+			/* FB mem config, but no LCD config? */
-+			printk(KERN_ERR "Missing LCD configuration\n");
- 		return 0;
+-config MACH_OMAP_2430SDP
+-	bool "OMAP 2430 SDP board"
+-	depends on ARCH_OMAP2 && ARCH_OMAP24XX
 -
-+	}
- 	omapfb_config.lcd = *conf;
- 
- 	return platform_device_register(&omap_fb_device);
-@@ -117,7 +322,13 @@ arch_initcall(omap_init_fb);
- 
- #else
- 
--void omapfb_reserve_mem(void) {}
-+void omapfb_reserve_sdram(void) {}
-+unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
-+				  unsigned long sram_vstart,
-+				  unsigned long sram_size,
-+				  unsigned long start_avail,
-+				  unsigned long size_avail) {}
+ config MACH_OMAP_H4_TUSB
+ 	bool "TUSB 6010 EVM board"
+ 	depends on MACH_OMAP_H4
+@@ -78,3 +74,8 @@ config MACH_OMAP2_H4_USB1
+ config MACH_OMAP_APOLLON
+ 	bool "OMAP 2420 Apollon board"
+ 	depends on ARCH_OMAP2 && ARCH_OMAP24XX
 +
- 
- #endif
- 
-diff --git a/arch/arm/plat-omap/sram.c b/arch/arm/plat-omap/sram.c
-index 7e5f887..25ce526 100644
---- a/arch/arm/plat-omap/sram.c
-+++ b/arch/arm/plat-omap/sram.c
-@@ -51,8 +51,11 @@ static unsigned long omap_sram_base;
- static unsigned long omap_sram_size;
- static unsigned long omap_sram_ceil;
- 
--int	omap_fb_sram_plane = -1;
--int	omap_fb_sram_valid;
-+extern unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
-+					 unsigned long sram_vstart,
-+					 unsigned long sram_size,
-+					 unsigned long pstart_avail,
-+					 unsigned long size_avail);
- 
- /* Depending on the target RAMFS firewall setup, the public usable amount of
-  * SRAM varies.  The default accessable size for all device types is 2k. A GP
-@@ -78,45 +81,6 @@ static int is_sram_locked(void)
- 		return 1; /* assume locked with no PPA or security driver */
- }
- 
--static int get_fb_sram_conf(unsigned long start_avail, unsigned size_avail,
--			      unsigned long *start, int *plane_idx)
--{
--	const struct omap_fbmem_config *fbmem_conf;
--	unsigned long size = 0;
--	int i;
--
--	i = 0;
--	*start = 0;
--	*plane_idx = -1;
--	while ((fbmem_conf = omap_get_nr_config(OMAP_TAG_FBMEM,
--				struct omap_fbmem_config, i)) != NULL) {
--		u32 paddr, end;
--
--		paddr = fbmem_conf->start;
--		end = fbmem_conf->start + fbmem_conf->size;
--		if (paddr > omap_sram_start &&
--		    paddr < omap_sram_start + omap_sram_size) {
--			if (*plane_idx != -1 || paddr < start_avail ||
--			    paddr == end ||
--			    end > start_avail + size_avail) {
--				printk(KERN_ERR "invalid FB SRAM configuration");
--				*start = 0;
--				return -1;
--			}
--			*plane_idx = i;
--			*start = fbmem_conf->start;
--			size = fbmem_conf->size;
--		}
--		i++;
--	}
--
--	if (*plane_idx >= 0)
--		pr_info("Reserving %lu bytes SRAM frame buffer "
--			"for plane %d\n", size, *plane_idx);
--
--	return 0;
--}
--
- /*
-  * The amount of SRAM depends on the core type.
-  * Note that we cannot try to test for SRAM here because writes
-@@ -125,7 +89,7 @@ static int get_fb_sram_conf(unsigned long start_avail, unsigned size_avail,
-  */
- void __init omap_detect_sram(void)
- {
--	unsigned long fb_sram_start;
-+	unsigned long reserved;
- 
- 	if (cpu_is_omap24xx()) {
- 		if (is_sram_locked()) {
-@@ -158,13 +122,11 @@ void __init omap_detect_sram(void)
- 			omap_sram_size = 0x4000;
- 		}
- 	}
--	if (get_fb_sram_conf(omap_sram_start + SRAM_BOOTLOADER_SZ,
--			    omap_sram_size - SRAM_BOOTLOADER_SZ,
--			    &fb_sram_start, &omap_fb_sram_plane) == 0)
--		omap_fb_sram_valid = 1;
--	if (omap_fb_sram_valid && omap_fb_sram_plane >= 0)
--		omap_sram_size -= omap_sram_start + omap_sram_size -
--				  fb_sram_start;
-+	reserved = omapfb_reserve_sram(omap_sram_start, omap_sram_base,
-+				       omap_sram_size,
-+				       omap_sram_start + SRAM_BOOTLOADER_SZ,
-+				       omap_sram_size - SRAM_BOOTLOADER_SZ);
-+	omap_sram_size -= reserved;
- 	omap_sram_ceil = omap_sram_base + omap_sram_size;
- }
- 
-diff --git a/include/asm-arm/arch-omap/sram.h b/include/asm-arm/arch-omap/sram.h
-index cc6161d..bb9bb3f 100644
---- a/include/asm-arm/arch-omap/sram.h
-+++ b/include/asm-arm/arch-omap/sram.h
-@@ -20,9 +20,6 @@ extern void omap2_sram_reprogram_sdrc(u32 perf_level, u32 dll_val,
- 				      u32 mem_type);
- extern u32 omap2_set_prcm(u32 dpll_ctrl_val, u32 sdrc_rfr_val, int bypass);
- 
--extern int omap_fb_sram_plane;
--extern int omap_fb_sram_valid;
--
- /* Do not use these */
- extern void sram_reprogram_clock(u32 ckctl, u32 dpllctl);
- extern unsigned long sram_reprogram_clock_sz;
++config MACH_OMAP_2430SDP
++	bool "OMAP 2430 SDP board"
++	depends on ARCH_OMAP2 && ARCH_OMAP24XX
++
 -- 
 1.4.4.2
 
