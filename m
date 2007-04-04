@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767655AbXDFN6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767650AbXDFN6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767655AbXDFN6b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 09:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767652AbXDFN6b
+	id S1767650AbXDFN6y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 09:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767657AbXDFN6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 09:58:31 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43808 "EHLO amd.ucw.cz"
+	Fri, 6 Apr 2007 09:58:54 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43816 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767648AbXDFN6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 09:58:18 -0400
-Date: Wed, 4 Apr 2007 14:01:11 +0200
+	id S1767650AbXDFN6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 09:58:52 -0400
+Date: Wed, 4 Apr 2007 10:01:40 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Tasos Parisinos <t.parisinos@sciensis.com>
-Cc: Andi Kleen <andi@firstfloor.org>, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, indan@nul.nu
-Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
-Message-ID: <20070404120111.GA9474@elf.ucw.cz>
-References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com> <20070402132820.GA28983@one.firstfloor.org> <46111D03.5020905@sciensis.com> <20070403160307.GA5266@ucw.cz> <001501c7769f$74dbada0$0864a8c0@scs1>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Paul LeoNerd Evans <leonerd@leonerd.org.uk>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] vt: Expose system-wide UTF-8 default setting via sysfs
+Message-ID: <20070404080140.GC8256@elf.ucw.cz>
+References: <4611ACCD.5000305@gmail.com> <20070403162051.GB5266@ucw.cz> <20070403163553.GO26707@cel.leo> <1175665163.4519.7.camel@daplas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <001501c7769f$74dbada0$0864a8c0@scs1>
+In-Reply-To: <1175665163.4519.7.camel@daplas>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,13 +30,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >What kind of applications are we talking about here? I'd like to hack
-> >hardware I own.
+> > > HPA is right... this should be fixed in userland. Reset should reset a
+> > > console, and if you want utf-8, do \ec\ewhatever to get it.
+> > 
+> > As I've already said elsewhere, does anything say that "reset" means
+> > that UTF-8 is turned off, or merely reset back to some known state? I
+> > personally would consider that UTF-8 being on is the default, and if
+> > something wants it off it should ask specifically..
+> > 
+> > Consider any other terminal emulator, such as those running on X11; when
+> > they're reset, they know to keep UTF-8 mode turned on, because it said
+> > so in their config, or in the locale. Kernel doesn't really have nice
+> > access to the LANG environment variable, but we can give it something
+> > similar; namely, via a module parameter.
 > 
-> payment systems, EMV terminals, mobile phone applications
+> I agree with Paul.  Reset or RIS is (R)eset to (I)nitial (S)tate,
+> represented as ESC 06/03. "Initial state" is defined in ECMA-48 as the
+> state of the device after it was made operational. It doesn't
+> necessarily mean that the "initial state" is the safest configuration.
+> So, if this "initial state" includes enabling UTF-8, then the device has
+> to go into UTF-8 upon invoking RIS.
 
-I'd like to hack my cell phone, thank you. (Plus, cellphones do not
-contain physical security).
+You could do that... during development series. But this is
+userspace-visible API change, and those are not allowed during stable.
+
+...and having /sysctl configuring inital state for reset is just plain
+ugly.
+
+
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
