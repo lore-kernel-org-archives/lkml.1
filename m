@@ -1,148 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbXDDUFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbXDDUGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbXDDUFn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXDDUFn
+	id S1753264AbXDDUGo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 16:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbXDDUGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 16:05:43 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:31461 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918AbXDDUFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 16:05:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FxdM+TpF8+ba9vsIIu5XgX7bmcIh/i2C16KRK2ue3HCftdermqn0StoJRgJZD0vXf6XKVI1u1ZTEexd5Q0hxiCIpU23TH1TEJ+A8nyCuRCVq/tLYc5woJrujFFcaUlSutjkznvpJzfwFbK8BKJjLskNR6f9ghl3/T0faCXXzN8I=
-Message-ID: <b647ffbd0704041305t2a140369q56cf9f0746b8fd86@mail.gmail.com>
-Date: Wed, 4 Apr 2007 22:05:40 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: [PATCH] [sched] redundant reschedule when set_user_nice() boosts a prio of a task from the "expired" array
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070404141546.GA862@elte.hu>
+	Wed, 4 Apr 2007 16:06:44 -0400
+Received: from vitelus.com ([63.99.9.247]:36962 "EHLO vitelus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752347AbXDDUGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 16:06:42 -0400
+Date: Wed, 4 Apr 2007 13:06:04 -0700
+From: Aaron Lehmann <aaronl@vitelus.com>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jim Paris <jim@jtan.com>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Silent corruption with r8169
+Message-ID: <20070404200603.GX15189@vitelus.com>
+References: <20070401012736.GT15189@vitelus.com> <20070401030315.GA24080@jim.sh> <20070401043905.GV15189@vitelus.com> <p737iswqjq4.fsf@bingen.suse.de> <20070404184504.GB7814@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <b647ffbd0704040704k2e4b3abcyfadc7662dff37f5b@mail.gmail.com>
-	 <20070404141546.GA862@elte.hu>
+In-Reply-To: <20070404184504.GB7814@electric-eye.fr.zoreil.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+On Wed, Apr 04, 2007 at 08:45:04PM +0200, Francois Romieu wrote:
+> > [adding netdev]
+> > [meta-comment: I wish people wouldn't use such unnecessarily broad subjects 
+> > -- how is it the x86-64 port's or AMD's fault when you have broken hardware? 
+> > Would anybody write "Silent corruption on i386" or "Silent corruption 
+> > on Intel" or "Silent corruption on Linux"?]
+> 
+> I hope you feel better now that I changed the subject.
+> 
+> Aaron, I see no clear suspect between 2.6.20.1 and current -git
+> that could explain nor fix a corruption in the r8169 driver.
+> 
+> Can you apply on top of latest 2.6.21-rc5-git the patches available at
+> http://www.fr.zoreil.com/linux/kernel/2.6.x/2.6.21-rc5/r8169-20070402
+> 
+> 000[12]-r8169-foo-bar.patch have been committed a few minutes ago: you
+> should check if they apply or not.
 
-following the conversation on "a redundant reschedule call in set_user_prio()",
-here is a possible approach.
+I'll try to get to testing this, but I'm wondering if people may have
+misunderstood my original post. I don't get any corruption over
+Ethernet; it's just corruption on the filesystem during certain load
+patterns that involve the Realtek ethernet card.
 
-The patch is somewhat intrusive as it even dares to adapt TASK_PREEMPTS_CURR().
-
-Nevertheless, this adaptation seems to be ok with all the current use-cases.
-
-Presupposition: TASK_PREEMPTS_CURR(p, rq) will /never/ be used as "a
-mere prio comparator" - e.g. to make decisions on which array a task
-has to be placed in.
-
-
-=====
-
-o  Make TASK_PREEMPTS_CURR(task, rq) return "true" only if the task's
-prio is higher than the current's one and the task is in the "active"
-array.
-This ensures we don't make redundant resched_task() calls when the
-task is in the "expired" array (as may happen now in set_user_prio(),
-rt_mutex_setprio() and pull_task() ) ;
-
-o  generilise conditions for a call to resched_task() in
-set_user_nice(), rt_mutex_setprio() and sched_setscheduler()
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
---
-
---- linux-2.6.21-rc5/kernel/sched-orig.c        2007-04-04
-18:26:19.000000000 +0200
-+++ linux-2.6.21-rc5/kernel/sched.c     2007-04-04 18:26:43.000000000 +0200
-@@ -168,7 +168,7 @@ unsigned long long __attribute__((weak))
-                (MAX_BONUS / 2 + DELTA((p)) + 1) / MAX_BONUS - 1))
-
- #define TASK_PREEMPTS_CURR(p, rq) \
--       ((p)->prio < (rq)->curr->prio)
-+       (((p)->prio < (rq)->curr->prio) && ((p)->array == (rq)->active))
-
- #define SCALE_PRIO(x, prio) \
-        max(x * (MAX_PRIO - prio) / (MAX_USER_PRIO / 2), MIN_TIMESLICE)
-@@ -3847,13 +3847,13 @@ void rt_mutex_setprio(struct task_struct
-        struct prio_array *array;
-        unsigned long flags;
-        struct rq *rq;
--       int oldprio;
-+       int delta;
-
-        BUG_ON(prio < 0 || prio > MAX_PRIO);
-
-        rq = task_rq_lock(p, &flags);
-
--       oldprio = p->prio;
-+       delta = prio - p->prio;
-        array = p->array;
-        if (array)
-                dequeue_task(p, array);
-@@ -3869,13 +3869,10 @@ void rt_mutex_setprio(struct task_struct
-                enqueue_task(p, array);
-                /*
-                 * Reschedule if we are currently running on this runqueue and
--                * our priority decreased, or if we are not currently running on
--                * this runqueue and our priority is higher than the current's
-+                * our priority decreased, or if our priority became higher
-+                * than the current's.
-                 */
--               if (task_running(rq, p)) {
--                       if (p->prio > oldprio)
--                               resched_task(rq->curr);
--               } else if (TASK_PREEMPTS_CURR(p, rq))
-+               if (TASK_PREEMPTS_CURR(p, rq) || (delta > 0 &&
-task_running(rq, p)))
-                        resched_task(rq->curr);
-        }
-        task_rq_unlock(rq, &flags);
-@@ -3923,10 +3920,11 @@ void set_user_nice(struct task_struct *p
-                enqueue_task(p, array);
-                inc_raw_weighted_load(rq, p);
-                /*
--                * If the task increased its priority or is running and
--                * lowered its priority, then reschedule its CPU:
-+                * Reschedule if we are currently running on this runqueue and
-+                * our priority decreased, or if our priority became higher
-+                * than the current's.
-                 */
--               if (delta < 0 || (delta > 0 && task_running(rq, p)))
-+               if (TASK_PREEMPTS_CURR(p, rq) || (delta > 0 &&
-task_running(rq, p)))
-                        resched_task(rq->curr);
-        }
- out_unlock:
-@@ -4153,13 +4151,10 @@ recheck:
-                __activate_task(p, rq);
-                /*
-                 * Reschedule if we are currently running on this runqueue and
--                * our priority decreased, or if we are not currently running on
--                * this runqueue and our priority is higher than the current's
-+                * our priority decreased, or our priority became higher
-+                * than the current's.
-                 */
--               if (task_running(rq, p)) {
--                       if (p->prio > oldprio)
--                               resched_task(rq->curr);
--               } else if (TASK_PREEMPTS_CURR(p, rq))
-+               if (TASK_PREEMPTS_CURR(p, rq) || (task_running(rq, p)
-&& p->prio > oldprio))
-                        resched_task(rq->curr);
-        }
-        __task_rq_unlock(rq);
-
-=====
-
--- 
-Best regards,
-Dmitry Adamushko
+Aaron
