@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbXDDULQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbXDDULP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbXDDULQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXDDULP
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1753971AbXDDULP (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 4 Apr 2007 16:11:15 -0400
-Received: from homer.mvista.com ([63.81.120.158]:64793 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbXDDULO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXDDULO
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 4 Apr 2007 16:11:14 -0400
-Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
-	tree
-From: Daniel Walker <dwalker@mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tglx@linutronix.de, johnstul@us.ibm.com, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>, heiko.carstens@de.ibm.com
-In-Reply-To: <20070404125853.1cf9b7b7.akpm@linux-foundation.org>
-References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net>
-	 <1175417035.28263.42.camel@localhost.localdomain>
-	 <1175704712.15973.35.camel@imap.mvista.com>
-	 <20070404125853.1cf9b7b7.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 13:10:25 -0700
-Message-Id: <1175717425.15973.61.camel@imap.mvista.com>
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58879
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753971AbXDDULN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 16:11:13 -0400
+Date: Wed, 04 Apr 2007 13:11:11 -0700 (PDT)
+Message-Id: <20070404.131111.62667528.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: npiggin@suse.de, hugh@veritas.com, akpm@linux-foundation.org,
+       linux-mm@kvack.org, tee@sgi.com, holt@sgi.com, andrea@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc] no ZERO_PAGE?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+References: <20070330024048.GG19407@wotan.suse.de>
+	<20070404033726.GE18507@wotan.suse.de>
+	<Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 12:58 -0700, Andrew Morton wrote:
-> On Wed, 04 Apr 2007 09:38:32 -0700
-> Daniel Walker <dwalker@mvista.com> wrote:
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 4 Apr 2007 08:35:30 -0700 (PDT)
+
+> Anyway, I'm not against this, but I can see somebody actually *wanting* 
+> the ZERO page in some cases. I've used the fact for TLB testing, for 
+> example, by just doing a big malloc(), and knowing that the kernel will 
+> re-use the ZERO_PAGE so that I don't get any cache effects (well, at least 
+> not any *physical* cache effects. Virtually indexed cached will still show 
+> effects of it, of course, but I haven't cared).
 > 
-> > On Sun, 2007-04-01 at 10:43 +0200, Thomas Gleixner wrote:
-> > > On Sat, 2007-03-31 at 22:23 -0700, akpm@linux-foundation.org wrote:
-> > > > The patch titled
-> > > >      clocksource: driver initialize list value
-> > > > has been added to the -mm tree.  Its filename is
-> > > >      clocksource-driver-initialize-list-value.patch
-> > > > 
-> > > > *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> > > > 
-> > > > See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> > > > out what to do about this
-> > > > 
-> > > > ------------------------------------------------------
-> > > > Subject: clocksource: driver initialize list value
-> > > > From: Daniel Walker <dwalker@mvista.com>
-> > > > 
-> > > > Update drivers/clocksource/ with list initialization.
-> > > 
-> > > As others pointed out already, can we please have some usefull
-> > > description why this change is necessary ? i.e. that it is a preparatory
-> > > patch to simplify the clocksource registration logic.
-> > > 
-> > > 	tglx
-> > 
-> > I was planning to do it after Andrew release the next -mm then use same
-> > patch names he has and just submit to him.. I'm not sure what the
-> > easiest method is, and I'd rather like to avoid re-submitting to LKML ..
-> 
-> Please just send the updated text.  Telling me the name of the patch
-> into which it is to be pasted is appreciated.
+> That's an example of an app that actually cares about the page allocation 
+> (or, in this case, the lack there-of). Not an important one, but maybe 
+> there are important ones that care?
 
-The following text,
+If we're going to consider this seriously, there is a case I know of.
+Look at flush_dcache_page()'s test for ZERO_PAGE() on sparc64, there
+is an instructive comment:
 
----
-The struct clocksource .list field is now required to be initialized
-before calling clocksource_register().
+	/* Do not bother with the expensive D-cache flush if it
+	 * is merely the zero page.  The 'bigcore' testcase in GDB
+	 * causes this case to run millions of times.
+	 */
+	if (page == ZERO_PAGE(0))
+		return;
 
-This is a prerequisite for simplifying the clocksource
-registration process.
----
+basically what the GDB test case does it mmap() an enormous anonymous
+area, not touch it, then dump core.
 
-Goes into ,
-
-clocksource-arm-initialize-list-value.patch
-clocksource-avr32-initialize-list-value.patch
-clocksource-driver-initialize-list-value.patch
-clocksource-i386-initialize-list-value.patch
-clocksource-mips-initialize-list-value.patch
-clocksource-parisc-initialize-list-value.patch
-clocksource-s390-initialize-list-value.patch
-clocksource-x86_64-initialize-list-value.patch
-
-The patch names are from 2.6.21-rc5-mm4. Heiko, Thomas do either of you
-have any comments on the text being added?
-
-Daniel
-
+As I understand the patch being considered to remove ZERO_PAGE(), this
+kind of core dump will cause a lot of pages to be allocated, probably
+eating up a lot of system time as well as memory.
