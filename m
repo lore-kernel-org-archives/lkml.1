@@ -1,65 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbXDDNUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXDDNZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781AbXDDNUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 09:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXDDNUc
+	id S1753797AbXDDNZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 09:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXDDNZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 09:20:32 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:58907 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753781AbXDDNUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 09:20:31 -0400
-Date: Wed, 4 Apr 2007 14:20:23 +0100 (BST)
-From: Christian Kujau <christian@g-house.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Jarek Poplawski <jarkao2@o2.pl>
-cc: Christian Kujau <christian@g-house.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, malte@g-house.de,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
-In-Reply-To: <20070404112100.GA1979@ff.dom.local>
-Message-ID: <Pine.LNX.4.64.0704041412310.3963@sheep.housecafe.de>
-References: <20070403065810.GA1832@ff.dom.local>
- <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de> <20070404112100.GA1979@ff.dom.local>
+	Wed, 4 Apr 2007 09:25:38 -0400
+Received: from mail35.syd.optusnet.com.au ([211.29.133.51]:32876 "EHLO
+	mail35.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753797AbXDDNZh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 09:25:37 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       ck list <ck@vds.kolivas.org>
+Subject: [PATCH] sched: implement staircase deadline cpu scheduler improvements fix
+Date: Wed, 4 Apr 2007 23:22:05 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org> <200704040831.35225.kernel@kolivas.org> <4612E3C3.6020806@googlemail.com>
+In-Reply-To: <4612E3C3.6020806@googlemail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704042322.06085.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Jarek Poplawski wrote:
-> So, it's a lot sooner than before. (BTW, isn't there anything
-> in debug log?)
+On Wednesday 04 April 2007 09:31, Michal Piotrowski wrote:
+> Con Kolivas napisał(a):
+> > On Wednesday 04 April 2007 08:20, Michal Piotrowski wrote:
+> >> Michal Piotrowski napisał(a):
+> >>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm4
+> >>>/m m-oops
+> >>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-rc5-mm4
+> >>>/m m-config
 
-No, nothing. I've set up remote-syslgging to the other node (node1 
-logging to node2 and vice versa) - nothing :(
+> >> Con, I think that your
+> >> sched-implement-staircase-deadline-cpu-scheduler-staircase-improvements.
+> >>pat ch is causing this oops.
+> >
+> > Thanks for heads up!
 
-> I see both CPUs did interrupt handling again.
+Confirmed offline with Michal that the following patch fixes it. Thanks!
 
-Yes, when booting with 'lapic' both CPUs/cores are handling interrupts 
-again. However, since 'lapic' seems to lead to crashes here, we would be 
-more than happy to just boot with 'noapic' but have 'irqbalance' 
-working. Unfortunately, irqbalance is unable to write to 
-/proc/irq/*/smp_affinity (did not help to disable CONFIG_IRQBALANCE).
+This should also make nice work better in the way the previous patch intended
+it to.
 
-> Maybe it's a real locking problem. Here are some more
-> suggestions for testing (if you don't find anything better):
-> - try without SMP, so: 'acpi=off lapic nosmp'
+---
+Use of memset was bogus. Fix it.
 
-Yeah, we'll see if we still have time for trying this. But I figure this 
-will not be a real (long term) option for us :(
+Fix exiting recalc_task_prio without p->array being updated.
 
-> - lock debugging turned on as much as possible
->   plus maybe for curiosity:
-> - different CONFIG_HZ > - 8139TOO_PIO = y
+Microoptimisation courtesy of Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-Indeed, that's what I too wanted to do.
+Signed-off-by: Con Kolivas <kernel@kolivas.org>
 
-@Malte: any plans for another downtime?
+---
+ kernel/sched.c |   17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-Thanks for your comments!
+Index: linux-2.6.21-rc5-mm4/kernel/sched.c
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/kernel/sched.c	2007-04-04 12:14:29.000000000 +1000
++++ linux-2.6.21-rc5-mm4/kernel/sched.c	2007-04-04 12:49:39.000000000 +1000
+@@ -683,11 +683,13 @@ static void dequeue_task(struct task_str
+  * The task is being queued on a fresh array so it has its entitlement
+  * bitmap cleared.
+  */
+-static inline void task_new_array(struct task_struct *p, struct rq *rq)
++static void task_new_array(struct task_struct *p, struct rq *rq,
++			   struct prio_array *array)
+ {
+ 	bitmap_zero(p->bitmap, PRIO_RANGE);
+ 	p->rotation = rq->prio_rotation;
+ 	p->time_slice = p->quota;
++	p->array = array;
+ }
+ 
+ /* Find the first slot from the relevant prio_matrix entry */
+@@ -709,6 +711,8 @@ static inline int next_entitled_slot(str
+ 	DECLARE_BITMAP(tmp, PRIO_RANGE);
+ 	int search_prio, uprio = USER_PRIO(p->static_prio);
+ 
++	if (!rq->prio_level[uprio])
++		rq->prio_level[uprio] = MAX_RT_PRIO;
+ 	/*
+ 	 * Only priorities equal to the prio_level and above for their
+ 	 * static_prio are acceptable, and only if it's not better than
+@@ -736,11 +740,8 @@ static inline int next_entitled_slot(str
+ 
+ static void queue_expired(struct task_struct *p, struct rq *rq)
+ {
+-	p->array = rq->expired;
+-	task_new_array(p, rq);
++	task_new_array(p, rq, rq->expired);
+ 	p->prio = p->normal_prio = first_prio_slot(p);
+-	p->time_slice = p->quota;
+-	p->rotation = rq->prio_rotation;
+ }
+ 
+ #ifdef CONFIG_SMP
+@@ -800,9 +801,9 @@ static void recalc_task_prio(struct task
+ 			queue_expired(p, rq);
+ 			return;
+ 		} else
+-			task_new_array(p, rq);
++			task_new_array(p, rq, array);
+ 	} else
+-		task_new_array(p, rq);
++		task_new_array(p, rq, array);
+ 
+ 	queue_prio = next_entitled_slot(p, rq);
+ 	if (queue_prio >= MAX_PRIO) {
+@@ -3445,7 +3446,7 @@ EXPORT_SYMBOL(sub_preempt_count);
+ 
+ static inline void reset_prio_levels(struct rq *rq)
+ {
+-	memset(rq->prio_level, MAX_RT_PRIO, ARRAY_SIZE(rq->prio_level));
++	memset(rq->prio_level, 0, sizeof(int) * PRIO_RANGE);
+ }
+ 
+ /*
 
-Christian.
 -- 
-BOFH excuse #265:
-
-The mouse escaped.
+-ck
