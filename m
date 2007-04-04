@@ -1,105 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993037AbXDDTNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993043AbXDDTN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993037AbXDDTNM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 15:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993040AbXDDTNM
+	id S2993043AbXDDTN7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 15:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993044AbXDDTN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 15:13:12 -0400
-Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:36090 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S2993037AbXDDTNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 15:13:08 -0400
-X-AntiVirus: PTMail-AV 0.3-0.90.1
-Subject: Re: 2.6.21-rc5-mm4 -- laptop lid button only triggers suspend on
-	HP dv1240us every other time.
-From: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org
-In-Reply-To: <20070403224420.7dcfe334.akpm@linux-foundation.org>
-References: <a44ae5cd0704032233sa893351le119152668557e72@mail.gmail.com>
-	 <20070403224420.7dcfe334.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=sha1; protocol="application/x-pkcs7-signature"; boundary="=-pAPc+/ttDmvYBfLrB1Ix"
-Date: Wed, 04 Apr 2007 20:13:38 +0100
-Message-Id: <1175714018.15359.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Wed, 4 Apr 2007 15:13:59 -0400
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:48453 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2993043AbXDDTN5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 15:13:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mPbM0KELWCqGV7rWtf5KCNGXyoxydVLt326YEtaJp7xNzJwIrKmN849G7Y+UbAsg1Pp7reslXCiVWfMgXYJho5tE+N86FXaC/+wzfrH1rfMqWxPKHam2iCkTrbk64mWky9v1byqRdIuTfxLzHmDUuIm1wbcWp4Wq9sKPOIq95SU=  ;
+X-YMail-OSG: SuAPF9kVM1mx2M3nLFYqlUJmc6g.ZwqOmVLLZlic101OkVKJfGEYKvA5M1oWU7z7.5PScsUaRw--
+From: David Brownell <david-b@pacbell.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
+Date: Wed, 4 Apr 2007 12:13:52 -0700
+User-Agent: KMail/1.7.1
+Cc: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
+References: <11757099691323-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <20070404120025.4c5548dc.randy.dunlap@oracle.com>
+In-Reply-To: <20070404120025.4c5548dc.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704041213.52777.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 04 April 2007 12:00 pm, Randy Dunlap wrote:
+> On Wed,  4 Apr 2007 14:05:04 -0400 Tony Lindgren wrote:
+> 
+> > +static int __init fpga_init(void)
+> > +{
+> > +	if (machine_is_omap_h4()
+> > +			|| machine_is_omap_h3()
+> > +			|| machine_is_omap_h2()
+> > +			|| machine_is_omap_perseus2()
+> > +			)
+> 
+> Perhaps there is nothing in CodingStyle for if () continuation
+> lines.  Looks like it is needed.  This is ETOOMUCHINDENTATION by
+> at least one tab.  Should be more like:
+> 
+> +	if (machine_is_omap_h4()
+> +	    || machine_is_omap_h3()
+> +	    || machine_is_omap_h2()
+> +	    || machine_is_omap_perseus2())
 
---=-pAPc+/ttDmvYBfLrB1Ix
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+That's clearly wrong -- it uses non-tab characters for indents.
 
-On Tue, 2007-04-03 at 22:44 -0700, Andrew Morton wrote:
-> On Wed, 4 Apr 2007 00:33:36 -0500 "Miles Lane" <miles.lane@gmail.com> wro=
-te:
->=20
-> > This is an old bug.  It has been happening forever, but I'd love to
-> > know how I can help get this tracked down and fixed.
->=20
-> Yes, I've been hitting something like that in the past 3-4 weeks.  We
-> started to diagnose it but I got distracted.
->=20
-> For a start, please review
-> http://www.mail-archive.com/linux-acpi@vger.kernel.org/msg05094.html, the=
-n
-> see if you are able to take it further than I was.
+Which means that unless you think
 
-I had a similar problem with my laptop that loose ACPI events, after
-suspend to disk, on kernels (I don't remember well) works on 2.6.16 or
-15, stops work on 2.6.17 and 2.6.18 and works again on 2.6.19 and 20=20
+	if (this_longthing
+		|| that longthing
+		|| another
+		...)
+		the condition;
 
+is correct (nope!), those additional conditions need more indents.
 
---=20
-S=C3=A9rgio M. B.
+> 
+> (without getting into where the "||" should be placed).
+> 
+> > +		return platform_driver_register(&led_driver);
+> > +	return 0;
+> > +}
+> > +fs_initcall(fpga_init);
+> 
+> fs, eh?
 
---=-pAPc+/ttDmvYBfLrB1Ix
-Content-Type: application/x-pkcs7-signature; name=smime.p7s
-Content-Disposition: attachment; filename=smime.p7s
-Content-Transfer-Encoding: base64
+That basically means "after subsys init and before other drivers", yes?
+For platform level init code, that's a fairly significant category.
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIGVjCCAw8w
-ggJ4oAMCAQICEGne8YrzxxgYAeyxZxmiO+owDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
-JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
-ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA2MTAxMTEwMjAzOVoXDTA3MTAxMTEwMjAz
-OVowSzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEoMCYGCSqGSIb3DQEJARYZc2Vy
-Z2lvQHNlcmdpb21iLm5vLWlwLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAN9R
-ix9koyWSNQDmAHxcSeWXdFO1osqg2yeNgBBl+fz8FLYyROsDGpZMcnOd/Df6tWwMZpMSYDNIksiZ
-5VkCWaWIzIBccHX3wIkqrkcq3v1OcPGW9adXClXSbSZ0Hb4V4+bQ9LMAOjaMlH/dKLVkln6qmbko
-NOxgPotdVxCGcUy1Pqa4dT1zFo5+nIv1NAUNqKpq63X/+3nILNG4JGAvLIL8wcYs0cETGS6vISgd
-YFN/JlIqekWUGGUmc+SJcyyTWjXGN+2G0SDS8K3a9NFCo7a1Y0FyHQxikQRtB9sCcpQCoXiqaWsT
-npSrNJ0Od4w1sHZz09uEdhWKqXEmJsKKwi8CAwEAAaNZMFcwDgYDVR0PAQH/BAQDAgSQMBEGCWCG
-SAGG+EIBAQQEAwIFoDAkBgNVHREEHTAbgRlzZXJnaW9Ac2VyZ2lvbWIubm8taXAub3JnMAwGA1Ud
-EwEB/wQCMAAwDQYJKoZIhvcNAQEFBQADgYEAwVE8/kY82qYG7I2+gW0NhSyn+DR0uAWYbSxB2NgP
-16QOrzXt2HazlXkl2Bc+NKQEqEGKOu5fPPg2GoJ3zDO1Y8GUNGtJH0sX+63RGoUNOAv+bAK1Nxhb
-illDUUCjW3OqA/hRyBwjU9kHJPYhl1EbAUGpAhfENHjkS/S7b1REBLMwggM/MIICqKADAgECAgEN
-MA0GCSqGSIb3DQEBBQUAMIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBDYXBlMRIw
-EAYDVQQHEwlDYXBlIFRvd24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYDVQQLEx9D
-ZXJ0aWZpY2F0aW9uIFNlcnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVyc29uYWwg
-RnJlZW1haWwgQ0ExKzApBgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0ZS5jb20w
-HhcNMDMwNzE3MDAwMDAwWhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMc
-VGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZy
-ZWVtYWlsIElzc3VpbmcgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSmPFVzVftOucqZ
-Wh5owHUEcJ3f6f+jHuy9zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO3cnwK4Vaqj9xVsuv
-PAsH5/EfkTYkKhPPK9Xzgnc9A74r/rsYPge/QIACZNenprufZdHFKlSFD0gEf6e20TxhBEAeZBly
-YLf7AgMBAAGjgZQwgZEwEgYDVR0TAQH/BAgwBgEB/wIBADBDBgNVHR8EPDA6MDigNqA0hjJodHRw
-Oi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlUGVyc29uYWxGcmVlbWFpbENBLmNybDALBgNVHQ8EBAMC
-AQYwKQYDVR0RBCIwIKQeMBwxGjAYBgNVBAMTEVByaXZhdGVMYWJlbDItMTM4MA0GCSqGSIb3DQEB
-BQUAA4GBAEiM0VCD6gsuzA2jZqxnD3+vrL7CF6FDlpSdf0whuPg2H6otnzYvwPQcUCCTcDz9reFh
-YsPZOhl+hLGZGwDFGguCdJ4lUJRix9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo05RAaWzVN
-d+NWIXiC3CEZNd4ksdMdRv9dX2VPMYIB/DCCAfgCAQEwdjBiMQswCQYDVQQGEwJaQTElMCMGA1UE
-ChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFs
-IEZyZWVtYWlsIElzc3VpbmcgQ0ECEGne8YrzxxgYAeyxZxmiO+owCQYFKw4DAhoFAKBdMBgGCSqG
-SIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA3MDQwNDE5MTMzNFowIwYJKoZI
-hvcNAQkEMRYEFLC4OtL/LseHxeCNWBXGjNUqem5SMA0GCSqGSIb3DQEBAQUABIIBAM4nDrpxDKku
-mA0Uw2KTvWaa3upcztPHAPBsGxNQcqkthQyqGGzIiBotdVB0m8p6Giz4OAS5KFtEwbefNHVqxK6r
-N2R36tBVEkMWYgbS9VSE/hHt6+cmDGNnCNWBY/mw4Gz9q3H6Olh/uAGhusUIZp3JYDWbpU8irtS3
-gWAhRjd1RkJFGLQnAXqAZ03hzIRZM7pfF/H+CE3zFw7+xCRtkOgZIkh9+7AXmvSq84OZh78yweCs
-BexvE+4yHJjKcP4hNdwE+SnPVUAK8Op5a7NL5hyKBnSMUkvehiz9u9U3ks0nVRypk5ed3Kmcpu6C
-p56KSRbsH/eWIlP626ab7SRSyPgAAAAAAAA=
-
-
---=-pAPc+/ttDmvYBfLrB1Ix--
-
+- Dave
