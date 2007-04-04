@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966303AbXDDFjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966308AbXDDFlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966303AbXDDFjd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 01:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966307AbXDDFjd
+	id S966308AbXDDFlw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 01:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966313AbXDDFlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 01:39:33 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:24723 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966303AbXDDFjc (ORCPT
+	Wed, 4 Apr 2007 01:41:52 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:55911 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966308AbXDDFlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 01:39:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Jc6n8Ewf6TSwwzmurDQxJg/ZmU+zb1W1b1wamhoygxfV7lTsqOzO1NrY9MA6YL4dBDBLr/hBet6Im14hK4O3/hXn9O4SYzXlStW3jyOYIH97btYoFswrB6m/xUF/zgKgOtsBDGMA7zTXRquJdk1Tdrn7kd0O8aigyVEVUt5V+Cc=
-Subject: Re: [PATCH] vt: Expose system-wide UTF-8 default setting via sysfs
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Paul LeoNerd Evans <leonerd@leonerd.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20070403163553.GO26707@cel.leo>
-References: <4611ACCD.5000305@gmail.com> <20070403162051.GB5266@ucw.cz>
-	 <20070403163553.GO26707@cel.leo>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 13:39:23 +0800
-Message-Id: <1175665163.4519.7.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 4 Apr 2007 01:41:51 -0400
+Message-ID: <46133A5F.5000100@zytor.com>
+Date: Tue, 03 Apr 2007 22:40:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Ulrich Drepper <drepper@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Subject: Re: getting processor numbers
+References: <461286D6.2040407@redhat.com> <Pine.LNX.4.64.0704031152370.23808@alien.or.mcafeemobile.com> <4612ABD7.3000201@redhat.com> <4612F1F0.5070209@zytor.com> <4612F2BF.7080704@goop.org> <4612F394.6040105@zytor.com> <4613330C.1020701@cosmosbay.com> <461334B5.7070607@zytor.com> <46133609.9060402@goop.org>
+In-Reply-To: <46133609.9060402@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-03 at 17:35 +0100, Paul LeoNerd Evans wrote:
-> On Tue, Apr 03, 2007 at 04:20:52PM +0000, Pavel Machek wrote:
-> > HPA is right... this should be fixed in userland. Reset should reset a
-> > console, and if you want utf-8, do \ec\ewhatever to get it.
-> 
-> As I've already said elsewhere, does anything say that "reset" means
-> that UTF-8 is turned off, or merely reset back to some known state? I
-> personally would consider that UTF-8 being on is the default, and if
-> something wants it off it should ask specifically..
-> 
-> Consider any other terminal emulator, such as those running on X11; when
-> they're reset, they know to keep UTF-8 mode turned on, because it said
-> so in their config, or in the locale. Kernel doesn't really have nice
-> access to the LANG environment variable, but we can give it something
-> similar; namely, via a module parameter.
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> Mutable data should be separated from code.  I think any current CPU
+>> will do fine as long as they are in separate 128-byte chunks, but they
+>> need at least that much separation.
+> P4 manual says that if one processor modifies data within 2k of another
+> processor executing code, it will trash the entire trace cache.
 
-I agree with Paul.  Reset or RIS is (R)eset to (I)nitial (S)tate,
-represented as ESC 06/03. "Initial state" is defined in ECMA-48 as the
-state of the device after it was made operational. It doesn't
-necessarily mean that the "initial state" is the safest configuration.
-So, if this "initial state" includes enabling UTF-8, then the device has
-to go into UTF-8 upon invoking RIS.
+Yuck.  Didn't realize the P4 was that sensitive.  OK, so at the least we 
+need a half-page of separation.
 
-Tony
-
+	-hpa
