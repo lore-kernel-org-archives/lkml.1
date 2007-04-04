@@ -1,40 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992843AbXDDLMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992850AbXDDLN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992843AbXDDLMG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 07:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992850AbXDDLMG
+	id S2992850AbXDDLN2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 07:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992852AbXDDLN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 07:12:06 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33435 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992843AbXDDLME (ORCPT
+	Wed, 4 Apr 2007 07:13:28 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:53379 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992850AbXDDLN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 07:12:04 -0400
-Date: Wed, 4 Apr 2007 12:14:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: dwmw2@infradead.org, flar@allandria.com, paulus@samba.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404121434.73d01e7e@the-village.bc.nu>
-In-Reply-To: <20070403.185026.26966290.davem@davemloft.net>
-References: <20070404022828.5c9b97f3@the-village.bc.nu>
-	<Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
-	<20070404024400.56d016e1@the-village.bc.nu>
-	<20070403.185026.26966290.davem@davemloft.net>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Apr 2007 07:13:27 -0400
+To: a.p.zijlstra@chello.nl
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com
+In-reply-to: <1175684461.6483.64.camel@twins> (message from Peter Zijlstra on
+	Wed, 04 Apr 2007 13:01:01 +0200)
+Subject: Re: [PATCH 6/6] mm: per device dirty threshold
+References: <20070403144047.073283598@taijtu.programming.kicks-ass.net>
+	 <20070403144224.709586192@taijtu.programming.kicks-ass.net>
+	 <E1HZ1so-0005q8-00@dorka.pomaz.szeredi.hu> <1175681794.6483.43.camel@twins>
+	 <E1HZ2kU-0005xx-00@dorka.pomaz.szeredi.hu> <1175684461.6483.64.camel@twins>
+Message-Id: <E1HZ3Q9-00062G-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 04 Apr 2007 13:12:57 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you want hierarchy, create it:
+> > > so it could be that: scale / cycle > 1
+> > > by a very small amount; however:
+> > 
+> > No, I'm worried about the case when scale is too small.  If the
+> > per-bdi threshold becomes smaller than stat_threshold, then things
+> > won't work, because dirty+writeback will never go below the threshold,
+> > possibly resulting in the deadlock we are trying to avoid.
 > 
-> /sys/blah/serial/controllerX/portY
+> /me goes refresh the deadlock details..
 > 
-> and keeping them all under the ttyS? major keeps the simple
-> cases working sanely too.
+> A writes to B; A exceeds the dirty limit but writeout is blocked by B
+> because the dirty limit is exceeded, right?
+> 
+> This cannot happen when we decouple the BDI dirty thresholds, even when
+> a threshold is 0.
+> 
+> A write to B; A exceeds A's limit and writes to B, B has limit of 0, the
+> 1 dirty page gets written out (we gain ratio) and life goes on.
+> 
+> Right?
 
-Currently yes you could do that, but that would break all the back
-compatibility.
+If the limit is zero, then we need the per-bdi dirty+write to go to
+zero, otherwise balance_dirty_pages() loops.  But the per-bdi
+writeback counter is not necessarily updated after the writeback,
+because the per-bdi per-CPU counter may not trip the update of the
+per-bdi counter.
+
+Miklos
