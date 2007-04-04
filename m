@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992728AbXDDIHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992732AbXDDIMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992728AbXDDIHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 04:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992729AbXDDIHS
+	id S2992732AbXDDIMN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 04:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992731AbXDDIMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 04:07:18 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:17923 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992728AbXDDIHP (ORCPT
+	Wed, 4 Apr 2007 04:12:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49452
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S2992732AbXDDIML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 04:07:15 -0400
-X-IronPort-AV: i="4.14,369,1170651600"; 
-   d="scan'208"; a="33689456:sNHT24325056"
-Subject: Re: [PATCH] Blackfin arch: add asm-blackfin socket header files
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: bryan.wu@analog.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1175669730.10608.43.camel@roc-desktop>
-References: <1175668088.10608.37.camel@roc-desktop>
-	 <1175669730.10608.43.camel@roc-desktop>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Wed, 04 Apr 2007 16:08:44 +0800
-Message-Id: <1175674124.10608.46.camel@roc-desktop>
+	Wed, 4 Apr 2007 04:12:11 -0400
+Date: Wed, 04 Apr 2007 01:12:08 -0700 (PDT)
+Message-Id: <20070404.011208.120446173.davem@davemloft.net>
+To: dwmw2@infradead.org
+Cc: paulus@samba.org, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1175666635.2932.17.camel@shinybook.infradead.org>
+References: <1175663999.2932.8.camel@shinybook.infradead.org>
+	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+	<1175666635.2932.17.camel@shinybook.infradead.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 14:55 +0800, Wu, Bryan wrote:
-> On Wed, 2007-04-04 at 14:28 +0800, Wu, Bryan wrote:
-> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> > ---
-> >  include/asm-blackfin/socket.h  |   55 ++++++++++++++++++++++++++++++++++++++++
-> >  include/asm-blackfin/sockios.h |   13 +++++++++
-> >  2 files changed, 68 insertions(+), 0 deletions(-)
-> >  create mode 100644 include/asm-blackfin/socket.h
-> >  create mode 100644 include/asm-blackfin/sockios.h
-> > 
-> 
-> Maybe we can add generic header files such as
-> include/asm-generic/socket.h and include/asm-generic/sockios.h.
-> 
-> Cheers,
-> -Bryan
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Wed, 04 Apr 2007 02:03:54 -0400
 
-oops, I screwed up the patch set in my local git-tree. please drop this
-patch and I will send a new one.
+> On Wed, 2007-04-04 at 15:53 +1000, Paul Mackerras wrote:
+> > It 'should' be the case because that is what is easiest for users and
+> > makes most sense from a user's point of view.
+> 
+> I really don't buy that argument.
 
-Sorry for this.
--Bryan
+I do.
+
+David, do this.  Fly to Portland, drive over to Linus's house, once he
+lets you in, tell him to walk up to his computer and run 'cat' on the
+primary serial port.  Do all of this before he reads this thread. :-)
+
+What device name do you think he will type in?
+
+Will he type a different device name on his PowerPC box than he will
+on his x86 systems?
+
+I think he will type /dev/ttyS0 in both cases, and it won't be because
+he knows what kind of serial port controller is in either machine.
+
+It's that simple.
+
+Your ARM example holds zero water because that platform has all kinds
+of weird devices so people there are used to all kinds of non-standard
+conventions and naming.
+
+Try desktop systems that lots of users actually use.  Ask them what
+the serial device file is.  Ask them if they had to know what
+serial controller they have in their computer in order to figure
+that out.
+
+> That's what you get when you abuse device numbers belonging to
+> another driver.
+
+No, it's what you get whan drivers of the same major number do
+not cooperate with minor number allocations.
+
+Add a notion of onboard serial controllers and a properly coordinated
+minor number allocation system for /dev/ttyS0 if you want to solve this.
+
+As it stands your patch is a non-starter because it breaks a user
+visible API, and people's machines won't bootup or have a console
+any longer.  Or, if the powerpc machine is at Alan's house his
+model trains might stop working :-)
