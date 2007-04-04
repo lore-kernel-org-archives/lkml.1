@@ -1,32 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992924AbXDDPaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992944AbXDDPfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992924AbXDDPaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 11:30:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992933AbXDDPaN
+	id S2992944AbXDDPfJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 11:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992933AbXDDPfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 11:30:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57663 "EHLO mx1.suse.de"
+	Wed, 4 Apr 2007 11:35:09 -0400
+Received: from mx2.suse.de ([195.135.220.15]:48196 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992924AbXDDPaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 11:30:11 -0400
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: [2.6 patch] i386/x86_64: make __reserve_evntsel_nmi() static
-References: <20070404152542.GL27660@stusta.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 04 Apr 2007 18:28:44 +0200
-In-Reply-To: <20070404152542.GL27660@stusta.de>
-Message-ID: <p73slbgxfwj.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S2992944AbXDDPfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 11:35:06 -0400
+Date: Wed, 4 Apr 2007 17:34:51 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Dan Aloni <da-x@monatomic.org>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070404153451.GH19587@v2.random>
+References: <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random> <20070404135530.GA29026@localdomain> <20070404141457.GF19587@v2.random> <20070404144421.GA13762@localdomain> <Pine.LNX.4.64.0704041553220.18202@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704041553220.18202@blonde.wat.veritas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> writes:
+On Wed, Apr 04, 2007 at 04:03:15PM +0100, Hugh Dickins wrote:
+> Maybe Nick will decide to not to mark the readfaults as dirty.
 
-> __reserve_evntsel_nmi() can become static.
+I don't like to mark the pte readonly and clean, we'd be still
+optimizing for the current ZERO_PAGE users and even for those it would
+generate a unnecessary page fault if they later write to it. If any
+legitimate ZERO_PAGE user really exists, then we should keep mapping
+the ZERO_PAGE into it and fix the scalability issue associated with
+it, instead of allocating a new page in readonly mode.
 
-It's going to die in .22 anyways, just a temporary .21 kludge.
-
--Andi
+Marking anonymous pages readonly and clean so they can be collected
+w/o swapping still is desiderable for glibc through madvise (madvise
+would later need to be called again before starting using the
+collectable anon pages to store information into it), but that's
+an entirely different topic ;)
