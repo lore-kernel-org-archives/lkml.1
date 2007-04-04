@@ -1,42 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbXDDU76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750848AbXDDVAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbXDDU76 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 16:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbXDDU76
+	id S1750848AbXDDVAO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 17:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbXDDVAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 16:59:58 -0400
-Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:33079 "HELO
-	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751448AbXDDU75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 16:59:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=dlakjfNvinn+daEnyuRUf3dLjuf4Nnwv5mS8M48ILD4BOPIYaFGtd5fLDaf4XYobML+PFSp19Iu7gv47iiEReFZNAeMFfv0Ux0nGAYRKhPd2o0qZ2REX8aqz0Fi2ZWSswpjBiznLMGmNqMCDFlvCtRz0+g6JP+59vyy1BjfHe3M=  ;
-X-YMail-OSG: UyxtNBYVM1nBUrItCPuLGBCDpRhGJwhnaL_70sExzLimcBBQNrfVoOuwKLCV1PT7bx2mimkdLQ--
-From: David Brownell <david-b@pacbell.net>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
-Date: Wed, 4 Apr 2007 13:59:54 -0700
-User-Agent: KMail/1.7.1
-Cc: "Tony Lindgren" <tony@atomide.com>, linux-kernel@vger.kernel.org,
-       "David Brownell" <dbrownell@users.sourceforge.net>
-References: <11757099691323-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <d120d5000704041347n3abec51cxa5859a0a191b38eb@mail.gmail.com>
-In-Reply-To: <d120d5000704041347n3abec51cxa5859a0a191b38eb@mail.gmail.com>
+	Wed, 4 Apr 2007 17:00:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52418 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750848AbXDDVAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 17:00:10 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704041359.54533.david-b@pacbell.net>
+From: Roland McGrath <roland@redhat.com>
+To: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+X-Fcc: ~/Mail/utrace
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jeff Dike <jdike@addtoit.com>
+Subject: Re: [PATCH 1/3] utrace - uml: make UML compile with utrace enabled
+In-Reply-To: Paolo 'Blaisorblade' Giarrusso's message of  Saturday, 31 March 2007 01:08:04 +0200 <20070330230804.19809.55294.stgit@americanbeauty.home.lan>
+X-Windows: simplicity made complex.
+Message-Id: <20070404210003.875C7180064@magilla.sf.frob.com>
+Date: Wed,  4 Apr 2007 14:00:03 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 April 2007 1:47 pm, Dmitry Torokhov wrote:
+Technically those two symbols should not be touched in
+utrace-tracehook-um.patch at all, and patches are still entirely missing
+for the CONFIG_PTRACE=y build to work.  I refrained from excising them from
+the patch just to be anal since I didn't have Jeff's sign-off on that.
+What I'd prefer is to remove utrace_native_view from the current patch and
+leave it out until there is a utrace-reget-um.patch to define it for real.
+
+I will change utrace-tracehook.patch so it does not call arch_ptrace.
+Then there will be no need to leave a definition behind when it's an empty
+stub like in utrace-tracehook-um.patch.  (The only reason I left
+arch_ptrace code around after utrace-trachook.patch on the arch's ported
+before was that it contained historical code that was not fully replaced
+until the utrace-ptrace-compat.patch code, so it's a bit clearer when
+reading one patch at a time.)
+
+Here is what I'll merge into utrace-tracehook.patch now:
+
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -239,7 +239,8 @@ asmlinkage long sys_ptrace(long request,
+ 	if (ret < 0)
+ 		goto out_put_task_struct;
  
-> Do we need that in mainline? Why would you not use led subsystem?
+-	ret = arch_ptrace(child, request, addr, data);
++	/*ret = arch_ptrace(child, request, addr, data);*/
++	ret = -ENOSYS;
+ 	if (ret < 0)
+ 		goto out_put_task_struct;
+ 
 
-There are two LED subsystems, the new/generic one and the original ARM one.
+Here is what I'd merge into utrace-tracehook-um.patch given Jeff's sign-off:
 
-No matter which one you meant, the answer is that it's already using it.  ;)
+diff --git a/arch/um/kernel/ptrace.c b/arch/um/kernel/ptrace.c
+index f66d01c..0000000 100644  
+--- a/arch/um/kernel/ptrace.c
++++ b/arch/um/kernel/ptrace.c
+@@ -16,11 +16,6 @@ void ptrace_disable(struct task_struct *
+ { 
+ }
+ 
+-long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+-{
+-	return -ENOSYS;
+-}
+-
+ static void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
+ 			 int error_code)
+ {
+diff --git a/include/asm-um/tracehook.h b/include/asm-um/tracehook.h
+index 5fc0d1a..0000000 100644  
+--- a/include/asm-um/tracehook.h
++++ b/include/asm-um/tracehook.h
+@@ -53,12 +53,5 @@ static inline void tracehook_abort_sysca
+ 	PT_REGS_SYSCALL_NR(regs) = -1;
+ }
+ 
+-extern const struct utrace_regset_view utrace_um_native;
+-static inline const struct utrace_regset_view *
+-utrace_native_view(struct task_struct *tsk)
+-{
+-	return &utrace_um_native;
+-}
+-
+ 
+ #endif
+
+
+
+Thanks,
+Roland
