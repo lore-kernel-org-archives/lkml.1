@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992847AbXDDKcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992838AbXDDKh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992847AbXDDKcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 06:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992844AbXDDKcS
+	id S2992838AbXDDKh2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 06:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992839AbXDDKh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 06:32:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56917 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992843AbXDDKcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 06:32:16 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1175659331.690672.592289266160.qpush@grosgo> 
-References: <1175659331.690672.592289266160.qpush@grosgo> 
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       Linux Memory Management <linux-mm@kvack.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/14] Pass MAP_FIXED down to get_unmapped_area 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 04 Apr 2007 11:31:55 +0100
-Message-ID: <23370.1175682715@redhat.com>
+	Wed, 4 Apr 2007 06:37:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51998 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992838AbXDDKh1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 06:37:27 -0400
+Date: Wed, 4 Apr 2007 11:36:24 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, ego@in.ibm.com, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com,
+       dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: utrace merge
+Message-ID: <20070404103624.GA509@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, ego@in.ibm.com,
+	paulmck@us.ibm.com, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+	Oleg Nesterov <oleg@tv-sign.ru>, dipankar@in.ibm.com,
+	dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com,
+	Roland McGrath <roland@redhat.com>
+References: <20070402053457.GA9076@in.ibm.com> <20070402061612.GA7072@elte.hu> <20070403120104.GB29308@in.ibm.com> <200704032134.29720.rjw@sisk.pl> <20070403132427.88308b59.akpm@linux-foundation.org> <20070404100644.GC19120@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404100644.GC19120@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, Apr 04, 2007 at 12:06:44PM +0200, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > urgh, I screwed up, sorry.
+> > 
+> > utrace-prep-2 reverts a bit of the underlying tree so that the utrace 
+> > patches (which are against mainline) don't throw a tremendous reject 
+> > which has to be fixed each time I pull Roland's tree.  I'm supposed to 
+> > reapply that change after the utrace patches but forgot.
+> 
+> btw., how about pushing utrace to v2.6.22, is anything big holding that 
+> up? (other than Roland's modesty, which we should gently but firmly 
+> ignore in this case =B-)
 
-> This serie of patches moves the logic to handle MAP_FIXED down to the
-> various arch/driver get_unmapped_area() implementations, and then changes
-> the generic code to always call them. The hugetlbfs hacks then disappear
-> from the generic code.
+a) lots of architecture support
+b) lots of overengineered and obsfucated code
+c) missing public information
 
-This sounds like get_unmapped_area() is now doing more than it says on the
-tin.  As I understand it, it's to be called to locate an unmapped area when
-one wasn't specified by MAP_FIXED, and so shouldn't be called if MAP_FIXED is
-set.
+I've also not gotten any feedback to my ages old review and the issues
+don't seem to be addressed either.
 
-Admittedly, on NOMMU, it's also used to find the location of quasi-memory
-devices such as framebuffers and ramfs files, but that's not a great deviation
-from the original intent.
 
-Perhaps a change of name is in order for the function?
 
-> Since I need to do some special 64K pages mappings for SPEs on cell, I need
-> to work around the first problem at least. I have further patches thus
-> implementing a "slices" layer that handles multiple page sizes through
-> slices of the address space for use by hugetlbfs, the SPE code, and possibly
-> others, but it requires that serie of patches first/
-
-That makes it sound like there should be an "unget" too for when an error
-occurs between ->get_unmapped_area() being called and ->mmap() returning
-successfully.
-
-David
