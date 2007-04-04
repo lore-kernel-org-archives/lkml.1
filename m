@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbXDDQPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXDDQR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752800AbXDDQPU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 12:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbXDDQPU
+	id S1752856AbXDDQR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 12:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbXDDQR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 12:15:20 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:16775 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbXDDQPR (ORCPT
+	Wed, 4 Apr 2007 12:17:27 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:35728 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbXDDQR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 12:15:17 -0400
-Date: Wed, 4 Apr 2007 19:15:15 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070404161515.GB24339@localdomain>
-References: <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704041023040.17341@blonde.wat.veritas.com> <20070404102407.GA529@wotan.suse.de> <20070404122701.GB19587@v2.random> <20070404135530.GA29026@localdomain> <20070404141457.GF19587@v2.random> <20070404144421.GA13762@localdomain> <20070404152717.GG19587@v2.random>
+	Wed, 4 Apr 2007 12:17:26 -0400
+Message-ID: <4613CF6A.2090407@zytor.com>
+Date: Wed, 04 Apr 2007 09:16:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070212)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070404152717.GG19587@v2.random>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
+       dwmw2@infradead.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
+       flar@allandria.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+References: <1175663999.2932.8.camel@shinybook.infradead.org> <17939.15726.114059.679277@cargo.ozlabs.ibm.com> <1175666635.2932.17.camel@shinybook.infradead.org> <20070404.011208.120446173.davem@davemloft.net> <20070404083803.GA13134@flint.arm.linux.org.uk> <20070404122154.GF31973@thunk.org>
+In-Reply-To: <20070404122154.GF31973@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 05:27:17PM +0200, Andrea Arcangeli wrote:
-> On Wed, Apr 04, 2007 at 05:44:21PM +0300, Dan Aloni wrote:
-> > To refine that example, you could replace the file with a large anonymous 
-> > memory pool and a lot of swap space committed to it. In that case - with 
-> > no ZERO_PAGE, would the kernel needlessly swap-out the zeroed pages? 
+Theodore Tso wrote:
 > 
-> Swapout or ram is the same in this context. The point is that it will
-> take 4k either in ram or swap, let's talk about virtual memory without
-> differentiating between ram or swap.
-
-The main difference is that disk-backed swap can create I/O pressure which
-would slow down the swap-outs that are not of zeroed pages (and other I/Os
-on that disk for that matter). For purely-RAM virtual memory the latency 
-incured from managing newly allocated and zeroed pages is neglegible 
-compared to the latencies you get from reading/flushing those pages to 
-disk if you add swap to the picture.
- 
-> > Perhaps it's an example too far-fetched to worth considering...
+> The other thing I would probably do if I were to do it all over again
+> is allow serial devices to be named independent of /dev/ttySx
+> interface, these days probably using /sysfs, so that you could easily
+> query to figure out what serial controllers/cards were on the system,
+> and assign specific controllers/ports to specific /dev/ttySx devices.
+> We could also provide a registration system to allow on-line
+> configuration of non-probeable serial cards attached to primitive
+> buses that don't alllow probing, such as the ISA bus, although perhaps
+> that's much less important in this day and age.
 > 
-> Even if you would read the sparsed file to a malloced space (more
-> commonly that would be tmpfs) using the read syscall, those anon (or
-> tmpfs) pages would be _written_ first, which isn't the case we're
-> discussing here.
-> 
-> You don't know what is on disk, so reading from disk (regardless of
-> what you read, holes, zeros or anything) provides useful information,
-> but you know what is in ram after an anon mmap: just zeros, reading
-> them can't provide useful information to any software.
 
-I agree. The swap I/O case still holds, though: swapping-in the zeroed
-pages that got swapped-out might incur unwanted overhead.
+One option would be to move the 8250-based serial ports, to, say, 
+/dev/ttyN* (for National Semiconductors -- the best I could come up 
+with) and redefine /dev/ttyS* as a serial port multiplexer which maps in 
+all the types, for the ones that really want dynamic mapping.
 
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+Then the ones who want static mapping can still have them.  This would 
+presumably work with early remapping in open(), similar to the way ptmx 
+is done.
+
+Of course, now you have the potential of aliasing, again, which tends to 
+cause all kinds of headaches w.r.t. locking.  From that perspective, it 
+would be better if udev made symlinks, and we made the kernel use some 
+sort of discovery syntax for console= (say, "console=serial0" to hunt 
+down the "first" serial port for some definition thereof.)
+
+	-hpa
