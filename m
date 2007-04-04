@@ -1,109 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934060AbXDDSkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992753AbXDDSkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934060AbXDDSkW (ORCPT <rfc822;w@1wt.eu>);
+	id S2992753AbXDDSkW (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 4 Apr 2007 14:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993017AbXDDSjr
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932330AbXDDSkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 14:39:47 -0400
-Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:36376 "EHLO
-	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbXDDSHY (ORCPT
+	Wed, 4 Apr 2007 14:40:22 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:20927 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993023AbXDDSkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 14:07:24 -0400
-X-ORBL: [67.117.73.34]
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Cc: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 17/90] ARM: OMAP: Enable DSP clocks for McBSP on omap310
-Date: Wed,  4 Apr 2007 14:04:56 -0400
-Message-Id: <11757100092910-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11757100063945-git-send-email-tony@atomide.com>
-References: 11757088953851-git-send-email-tony@atomide.com <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <11757099942493-git-send-email-tony@atomide.com> <11757100011056-git-send-email-tony@atomide.com> <1175710003925-git-send-email-tony@atomide.com> <11757100063945-git-send-email-tony@atomide.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 4 Apr 2007 14:40:04 -0400
+Date: Wed, 4 Apr 2007 11:41:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
+Subject: Re: [PATCH 12/90] ARM: OMAP: Fix apollon boot
+Message-Id: <20070404114147.29bd3872.randy.dunlap@oracle.com>
+In-Reply-To: <1175709988265-git-send-email-tony@atomide.com>
+References: <11757099691323-git-send-email-tony@atomide.com>
+	<11757099743984-git-send-email-tony@atomide.com>
+	<1175709977545-git-send-email-tony@atomide.com>
+	<1175709988265-git-send-email-tony@atomide.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from quoted-printable to 8bit by alpha.home.local id l34Ih9ZJ025732
 
-From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
+On Wed,  4 Apr 2007 14:04:51 -0400 Tony Lindgren wrote:
 
-This patch enables some clock on omap310.
+> From: Kyungmin Park <kyungmin.park@samsung.com>
+> 
+> In previous GPMC patch, there was a typo. Fix typo and add header files for
+> set_irq_type() warnings.
 
-Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+It looks like there's more to this patch than in the description above...
+
+
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  arch/arm/mach-omap2/board-apollon.c |   99 +++++++++++++++++++++++++++++++---
+>  1 files changed, 90 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apollon.c
+> index 878ff91..3bb49c1 100644
+> --- a/arch/arm/mach-omap2/board-apollon.c
+> +++ b/arch/arm/mach-omap2/board-apollon.c
+> @@ -25,6 +25,8 @@
+>  #include <linux/irq.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/delay.h>
+> +#include <linux/leds.h>
+> +#include <linux/irq.h>
+>  
+>  #include <asm/hardware.h>
+>  #include <asm/mach-types.h>
+> @@ -32,10 +34,12 @@
+>  #include <asm/mach/flash.h>
+>  
+>  #include <asm/arch/gpio.h>
+> +#include <asm/arch/led.h>
+>  #include <asm/arch/mux.h>
+>  #include <asm/arch/usb.h>
+>  #include <asm/arch/board.h>
+>  #include <asm/arch/common.h>
+> +#include <asm/arch/gpmc.h>
+>  #include "prcm-regs.h"
+>  
+>  /* LED & Switch macros */
+> @@ -46,6 +50,9 @@
+>  #define SW_UP_GPIO17		17
+>  #define SW_DOWN_GPIO58		58
+>  
+> +#define APOLLON_FLASH_CS	0
+> +#define APOLLON_ETH_CS		1
+> +
+>  static struct mtd_partition apollon_partitions[] = {
+>  	{
+>  		.name		= "X-Loader + U-Boot",
+> @@ -85,10 +92,10 @@ static struct flash_platform_data apollon_flash_data = {
+>  	.nr_parts	= ARRAY_SIZE(apollon_partitions),
+>  };
+>  
+> -static struct resource apollon_flash_resource = {
+> -	.start		= APOLLON_CS0_BASE,
+> -	.end		= APOLLON_CS0_BASE + SZ_128K,
+> -	.flags		= IORESOURCE_MEM,
+> +static struct resource apollon_flash_resource[] = {
+> +	[0] = {
+> +		.flags		= IORESOURCE_MEM,
+> +	},
+>  };
+>  
+>  static struct platform_device apollon_onenand_device = {
+> @@ -97,14 +104,24 @@ static struct platform_device apollon_onenand_device = {
+>  	.dev		= {
+>  		.platform_data	= &apollon_flash_data,
+>  	},
+> -	.num_resources	= ARRAY_SIZE(&apollon_flash_resource),
+> -	.resource	= &apollon_flash_resource,
+> +	.num_resources	= ARRAY_SIZE(apollon_flash_resource),
+> +	.resource	= apollon_flash_resource,
+>  };
+>  
+> +static void __init apollon_flash_init(void)
+> +{
+> +	unsigned long base;
+> +
+> +	if (gpmc_cs_request(APOLLON_FLASH_CS, SZ_128K, &base) < 0) {
+> +		printk(KERN_ERR "Cannot request OneNAND GPMC CS\n");
+> +		return;
+> +	}
+> +	apollon_flash_resource[0].start = base;
+> +	apollon_flash_resource[0].end   = base + SZ_128K - 1;
+> +}
+> +
+>  static struct resource apollon_smc91x_resources[] = {
+>  	[0] = {
+> -		.start	= APOLLON_ETHR_START,		/* Physical */
+> -		.end	= APOLLON_ETHR_START + 0xf,
+>  		.flags  = IORESOURCE_MEM,
+>  	},
+>  	[1] = {
+> @@ -126,14 +143,51 @@ static struct platform_device apollon_lcd_device = {
+>  	.id		= -1,
+>  };
+>  
+> +static struct omap_led_config apollon_led_config[] = {
+> +	{
+> +		.cdev	= {
+> +			.name	= "apollon:led0",
+> +		},
+> +		.gpio	= LED0_GPIO13,
+> +	},
+> +	{
+> +		.cdev	= {
+> +			.name	= "apollon:led1",
+> +		},
+> +		.gpio	= LED1_GPIO14,
+> +	},
+> +	{
+> +		.cdev	= {
+> +			.name	= "apollon:led2",
+> +		},
+> +		.gpio	= LED2_GPIO15,
+> +	},
+> +};
+> +
+> +static struct omap_led_platform_data apollon_led_data = {
+> +	.nr_leds	= ARRAY_SIZE(apollon_led_config),
+> +	.leds		= apollon_led_config,
+> +};
+> +
+> +static struct platform_device apollon_led_device = {
+> +	.name		= "omap-led",
+> +	.id		= -1,
+> +	.dev		= {
+> +		.platform_data	= &apollon_led_data,
+> +	},
+> +};
+> +
+>  static struct platform_device *apollon_devices[] __initdata = {
+>  	&apollon_onenand_device,
+>  	&apollon_smc91x_device,
+>  	&apollon_lcd_device,
+> +	&apollon_led_device,
+>  };
+>  
+>  static inline void __init apollon_init_smc91x(void)
+>  {
+> +	unsigned long base;
+> +
+>  	/* Make sure CS1 timings are correct */
+>  	GPMC_CONFIG1_1 = 0x00011203;
+>  	GPMC_CONFIG2_1 = 0x001f1f01;
+> @@ -141,13 +195,20 @@ static inline void __init apollon_init_smc91x(void)
+>  	GPMC_CONFIG4_1 = 0x1c091c09;
+>  	GPMC_CONFIG5_1 = 0x041f1f1f;
+>  	GPMC_CONFIG6_1 = 0x000004c4;
+> -	GPMC_CONFIG7_1 = 0x00000f40 | (APOLLON_CS1_BASE >> 24);
+> +
+> +	if (gpmc_cs_request(APOLLON_ETH_CS, SZ_16M, &base) < 0) {
+> +		printk(KERN_ERR "Failed to request GPMC CS for smc91x\n");
+> +		return;
+> +	}
+> +	apollon_smc91x_resources[0].start = base + 0x300;
+> +	apollon_smc91x_resources[0].end   = base + 0x30f;
+>  	udelay(100);
+>  
+>  	omap_cfg_reg(W4__24XX_GPIO74);
+>  	if (omap_request_gpio(APOLLON_ETHR_GPIO_IRQ) < 0) {
+>  		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
+>  			APOLLON_ETHR_GPIO_IRQ);
+> +		gpmc_cs_free(APOLLON_ETH_CS);
+>  		return;
+>  	}
+>  	omap_set_gpio_direction(APOLLON_ETHR_GPIO_IRQ, 1);
+> @@ -175,6 +236,13 @@ static struct omap_mmc_config apollon_mmc_config __initdata = {
+>  	},
+>  };
+>  
+> +static struct omap_usb_config apollon_usb_config __initdata = {
+> +	.register_dev	= 1,
+> +	.hmc_mode	= 0x14,	/* 0:dev 1:host1 2:disable */
+> +
+> +	.pins[0]	= 6,
+> +};
+> +
+>  static struct omap_lcd_config apollon_lcd_config __initdata = {
+>  	.ctrl_name	= "internal",
+>  };
+> @@ -182,6 +250,7 @@ static struct omap_lcd_config apollon_lcd_config __initdata = {
+>  static struct omap_board_config_kernel apollon_config[] = {
+>  	{ OMAP_TAG_UART,	&apollon_uart_config },
+>  	{ OMAP_TAG_MMC,		&apollon_mmc_config },
+> +	{ OMAP_TAG_USB,		&apollon_usb_config },
+>  	{ OMAP_TAG_LCD,		&apollon_lcd_config },
+>  };
+>  
+> @@ -250,10 +319,22 @@ static void __init apollon_sw_init(void)
+>  		return;
+>  }
+>  
+> +static void __init apollon_usb_init(void)
+> +{
+> +	/* USB device */
+> +	/* DEVICE_SUSPEND */
+> +	omap_cfg_reg(P21_242X_GPIO12);
+> +	omap_request_gpio(12);
+> +	omap_set_gpio_direction(12, 0);		/* OUT */
+> +	omap_set_gpio_dataout(12, 0);
+> +}
+> +
+>  static void __init omap_apollon_init(void)
+>  {
+>  	apollon_led_init();
+>  	apollon_sw_init();
+> +	apollon_flash_init();
+> +	apollon_usb_init();
+>  
+>  	/* REVISIT: where's the correct place */
+>  	omap_cfg_reg(W19_24XX_SYS_NIRQ);
+> -- 
+
 ---
- arch/arm/mach-omap1/clock.h |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/arch/arm/mach-omap1/clock.h b/arch/arm/mach-omap1/clock.h
-index f7df002..4d6060c 100644
---- a/arch/arm/mach-omap1/clock.h
-+++ b/arch/arm/mach-omap1/clock.h
-@@ -282,7 +282,7 @@ static struct clk arminth_ck16xx = {
- static struct clk dsp_ck = {
- 	.name		= "dsp_ck",
- 	.parent		= &ck_dpll1,
--	.flags		= CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
-+	.flags		= CLOCK_IN_OMAP310 | CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
- 			  RATE_CKCTL,
- 	.enable_reg	= (void __iomem *)ARM_CKCTL,
- 	.enable_bit	= EN_DSPCK,
-@@ -295,7 +295,7 @@ static struct clk dsp_ck = {
- static struct clk dspmmu_ck = {
- 	.name		= "dspmmu_ck",
- 	.parent		= &ck_dpll1,
--	.flags		= CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
-+	.flags		= CLOCK_IN_OMAP310 | CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
- 			  RATE_CKCTL | ALWAYS_ENABLED,
- 	.rate_offset	= CKCTL_DSPMMUDIV_OFFSET,
- 	.recalc		= &omap1_ckctl_recalc,
-@@ -306,7 +306,7 @@ static struct clk dspmmu_ck = {
- static struct clk dspper_ck = {
- 	.name		= "dspper_ck",
- 	.parent		= &ck_dpll1,
--	.flags		= CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
-+	.flags		= CLOCK_IN_OMAP310 | CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
- 			  RATE_CKCTL | VIRTUAL_IO_ADDRESS,
- 	.enable_reg	= (void __iomem *)DSP_IDLECT2,
- 	.enable_bit	= EN_PERCK,
-@@ -320,7 +320,7 @@ static struct clk dspper_ck = {
- static struct clk dspxor_ck = {
- 	.name		= "dspxor_ck",
- 	.parent		= &ck_ref,
--	.flags		= CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
-+	.flags		= CLOCK_IN_OMAP310 | CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
- 			  VIRTUAL_IO_ADDRESS,
- 	.enable_reg	= (void __iomem *)DSP_IDLECT2,
- 	.enable_bit	= EN_XORPCK,
-@@ -332,7 +332,7 @@ static struct clk dspxor_ck = {
- static struct clk dsptim_ck = {
- 	.name		= "dsptim_ck",
- 	.parent		= &ck_ref,
--	.flags		= CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
-+	.flags		= CLOCK_IN_OMAP310 | CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
- 			  VIRTUAL_IO_ADDRESS,
- 	.enable_reg	= (void __iomem *)DSP_IDLECT2,
- 	.enable_bit	= EN_DSPTIMCK,
-@@ -374,7 +374,7 @@ static struct clk arminth_ck1510 = {
- 
- static struct clk tipb_ck = {
- 	/* No-idle controlled by "tc_ck" */
--	.name		= "tibp_ck",
-+	.name		= "tipb_ck",
- 	.parent		= &tc_ck.clk,
- 	.flags		= CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP310 |
- 			  ALWAYS_ENABLED,
-@@ -733,7 +733,7 @@ remains active during MPU idle whenever this is enabled */
- static struct clk i2c_fck = {
- 	.name		= "i2c_fck",
- 	.id		= 1,
--	.flags		= CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
-+	.flags		= CLOCK_IN_OMAP310 | CLOCK_IN_OMAP1510 | CLOCK_IN_OMAP16XX |
- 			  VIRTUAL_CLOCK | CLOCK_NO_IDLE_PARENT |
- 			  ALWAYS_ENABLED,
- 	.parent		= &armxor_ck.clk,
--- 
-1.4.4.2
-
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
