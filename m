@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161098AbXDEDVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161108AbXDEDY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161098AbXDEDVn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 23:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXDEDVm
+	id S1161108AbXDEDY5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 23:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161110AbXDEDY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 23:21:42 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:15692 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161098AbXDEDVl (ORCPT
+	Wed, 4 Apr 2007 23:24:57 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:12882 "EHLO
+	asav16.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161108AbXDEDY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 23:21:41 -0400
-X-IronPort-AV: i="4.14,373,1170651600"; 
-   d="scan'208"; a="33796687:sNHT25921161"
-Subject: Re: [PATCH] blackfin arch: use boot_command_line instead of
-	save_command_line in setup c file
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: bryan.wu@analog.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070404080752.4c2375b2.randy.dunlap@oracle.com>
-References: <1175668103.10608.39.camel@roc-desktop>
-	 <20070404080752.4c2375b2.randy.dunlap@oracle.com>
-Content-Type: text/plain
+	Wed, 4 Apr 2007 23:24:56 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AswMAPkHFEZKhRO4UGdsb2JhbACHNohCAQEq
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: usb hid: reset NumLock
+Date: Wed, 4 Apr 2007 23:24:55 -0400
+User-Agent: KMail/1.9.3
+Cc: Pete Zaitcev <zaitcev@redhat.com>, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, stuart_hayes@dell.com
+References: <20070330105924.01a16dd6.zaitcev@redhat.com> <20070402161225.2866c002.zaitcev@redhat.com> <Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Thu, 05 Apr 2007 11:21:11 +0800
-Message-Id: <1175743271.17315.10.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Disposition: inline
+Message-Id: <200704042324.56345.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 08:07 -0700, Randy Dunlap wrote:
-> On Wed, 04 Apr 2007 14:28:23 +0800 Wu, Bryan wrote:
+On Tuesday 03 April 2007 04:52, Jiri Kosina wrote:
+> On Mon, 2 Apr 2007, Pete Zaitcev wrote:
 > 
-> > 
-> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> > ---
-> >  arch/blackfin/kernel/setup.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
-> > index ce51882..9870c60 100644
-> > --- a/arch/blackfin/kernel/setup.c
-> > +++ b/arch/blackfin/kernel/setup.c
-> > @@ -221,7 +221,7 @@ void __init setup_arch(char **cmdline_p)
-> >  
-> >  	/* Keep a copy of command line */
-> >  	*cmdline_p = &command_line[0];
-> > -	memcpy(saved_command_line, command_line, COMMAND_LINE_SIZE);
-> > +	memcpy(boot_command_line, command_line, COMMAND_LINE_SIZE);
-> >  	saved_command_line[COMMAND_LINE_SIZE - 1] = 0;
-> >  
-> >  	/* setup memory defaults from the user config */
-> > -- 
+> > How about this?
 > 
-> Hi Bryan,
+> Looks quite fine to me.
 > 
-> Patch descriptions should include _why_ a change is being made,
-> not just what the change is.
-> 
+> But in case that Dmitry's patch "Input: add generic suspend and resume for 
+> uinput devices" fixes your issue too, I wouldn't merge it as it won't be 
+> needed. Could you please let me know?
 
-Thanks Randy. I am just confused by the following comments in -mm tree
-init/main.c:
----
-/* Untouched command line saved by arch-specific code. */
-char __initdata boot_command_line[COMMAND_LINE_SIZE];
-/* Untouched saved command line (eg. for /proc) */
-char *saved_command_line;
----
+Unfortunately my patch is crap. We should not be sending events down
+dev->event() until dev->open() has been called because many drivers
+start hardware from there and not ready until then.
 
-And you know, in the 2.6.20.x stable kernel init/main.c:
----
-/* Untouched command line (eg. for /proc) saved by arch-specific code. */
-char saved_command_line[COMMAND_LINE_SIZE];
----
+So it is HID driver responsibility to properly reset leds after all.
 
-So the patch is to move saved_command_line to boot_command_line in
-blackfin arch code. I will resend a new patch about this, because I
-forgot to change :-<
----
--	saved_command_line[COMMAND_LINE_SIZE - 1] = 0;
-+	boot_command_line[COMMAND_LINE_SIZE - 1] = 0;
----
-
-Did I misunderstand about this? So some other arch (ARM/AVR32 ...)
-should be updated, too. 
-
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-
-Thanks again Randy.
-I will follow the rule.
-
--Bryan
+-- 
+Dmitry
