@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbXDEJJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965158AbXDEJ0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965148AbXDEJJa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 05:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965158AbXDEJJa
+	id S965158AbXDEJ0w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 05:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965254AbXDEJ0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 05:09:30 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:65086 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965148AbXDEJJ3 (ORCPT
+	Thu, 5 Apr 2007 05:26:52 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:43581 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965158AbXDEJ0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 05:09:29 -0400
-Date: Thu, 5 Apr 2007 11:11:42 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       viro@zeniv.linux.org.uk
-Subject: Re: [-mm3 PATCH] (Retry) Check the return value of kobject_add and
- etc.
-Message-ID: <20070405111142.4723035f@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070405045410.GA4692@localhost.localdomain>
-References: <2375c9f90704010032r119f4a1eqb24dd611d5ecd943@mail.gmail.com>
-	<20070402130128.707c8c19@gondolin.boeblingen.de.ibm.com>
-	<20070405045410.GA4692@localhost.localdomain>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 05:26:50 -0400
+Date: Thu, 5 Apr 2007 10:26:38 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linux ACPI list <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070405092638.GA30208@srcf.ucam.org>
+References: <200704031741.42273.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704031741.42273.david-b@pacbell.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Apr 2007 12:54:11 +0800,
-WANG Cong <xiyou.wangcong@gmail.com> wrote:
+On Tue, Apr 03, 2007 at 05:41:42PM -0700, David Brownell wrote:
+> This updates /proc/acpi/wakeup to be more informative, primarily by showing
+> the sysfs node associated with each wakeup-enabled device.  Example:
 
-> --- linux-2.6.21-rc5-mm3/fs/partitions/check.c.orig	2007-03-30 21:35:45.000000000 +0800
-> +++ linux-2.6.21-rc5-mm3/fs/partitions/check.c	2007-04-02 21:29:02.000000000 +0800
-> @@ -385,10 +385,18 @@ void add_partition(struct gendisk *disk,
->  	p->kobj.parent = &disk->kobj;
->  	p->kobj.ktype = &ktype_part;
->  	kobject_init(&p->kobj);
-> -	kobject_add(&p->kobj);
-> +	if (kobject_add(&p->kobj)) {
-> +		kfree(p);
-> +		return;
-> +	}
->  	if (!disk->part_uevent_suppress)
->  		kobject_uevent(&p->kobj, KOBJ_ADD);
-> -	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
-> +	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
-> +		kobject_uevent(&p->kobj, KOBJ_REMOVE);
-> +		kobject_del(&p->kobj);
-> +		kfree(p);
+This looks good. 
 
-You should use kobject_put instead of kfree, since someone could have
-(theoretically) obtained a reference on the object after the
-kobject_add. (Or just use kobject_unregister, if the delete uevent
-isn't suppressed anyway.)
+> 	S139	  S4	 disabled  
 
-> +		return;
-> +	}
->  	if (flags & ADDPART_FLAG_WHOLEDISK) {
->  		static struct attribute addpartattr = {
->  			.name = "whole_disk",
-> @@ -396,7 +404,13 @@ void add_partition(struct gendisk *disk,
->  			.owner = THIS_MODULE,
->  		};
-> 
-> -		sysfs_create_file(&p->kobj, &addpartattr);
-> +		if (sysfs_create_file(&p->kobj, &addpartattr)) {
-> +			sysfs_remove_link(&p->kobj, "subsystem");
-> +			kobject_uevent(&p->kobj, KOBJ_REMOVE);
-> +			kobject_del(&p->kobj);
-> +			kfree(p);
+Any idea what this one is? There's the potential for all sorts of weird 
+platform devices to expose wakeup capabilities.
 
-Same here.
+> Eventually this file should be removed, but until then it's almost the only
+> way we have to tell how the relevant ACPI tables are broken (and cope).  In
+> that example, two devices don't actually exist (USB3, S139), one can't issue
+> wakeup events (PCI0), and two seem harmlessly (?) confused (MDM and AUD are
+> the same PCI device, but it's the _modem_ that does wake-on-ring).  
 
-> +			return;
-> +		}
->  	}
->  	partition_sysfs_add_subdir(p);
->  	disk->part[part-1] = p;
-> 
-> 
-> 
+Could the MDM entry be referring to the modem codec on the ac97 or 
+hda bus? 
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
