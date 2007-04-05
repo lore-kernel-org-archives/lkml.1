@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbXDERDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbXDEREh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbXDERDI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 13:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbXDERDI
+	id S1753312AbXDEREh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 13:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbXDEREh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 13:03:08 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57231 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286AbXDERDG (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 13:03:06 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: Your message of "Mon, 02 Apr 2007 22:47:45 PDT."
-             <20070402224745.71a25af7.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175792579_3378P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Thu, 5 Apr 2007 13:04:37 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:38548 "EHLO
+	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753312AbXDEREg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 13:04:36 -0400
+X-BigFish: VP
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Message-ID: <46152CA4.9000601@amd.com>
+Date: Thu, 05 Apr 2007 19:06:44 +0200
+From: "Markus Rechberger" <markus.rechberger@amd.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070304)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>, "Andi Kleen" <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: limit mwait_idle to Intel CPUs
+References: <20070405140045.GN6356@alberich.amd.com>
+ <200704051624.45747.ak@suse.de>
+ <20070405144442.GP6356@alberich.amd.com>
+ <200704051737.17157.ak@suse.de>
+ <20070405162049.GB14326@alberich.amd.com> <46152A04.1010009@zytor.com>
+In-Reply-To: <46152A04.1010009@zytor.com>
+X-OriginalArrivalTime: 05 Apr 2007 17:04:19.0704 (UTC)
+ FILETIME=[735B1780:01C777A4]
+X-WSS-ID: 6A0BF39C3283292455-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1;
+ format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Thu, 05 Apr 2007 13:02:59 -0400
-Message-ID: <7763.1175792579@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175792579_3378P
-Content-Type: text/plain; charset=us-ascii
+H. Peter Anvin wrote:
+> Andreas Herrmann wrote:
+>>
+>> It is not equivalent. Usually users check /proc/cpuinfo for their
+>> CPU features. Deleting that flag is kind of obfuscation.
+>>
+>> I guess some time ago people did not care about their "svm" or "vmx"
+>> flags. Nowadays (e.g. with kvm) some people are quite happy
+>> if one of those strings occurs in /proc/cpuinfo (and they are quite
+>> disappointed if this feature was disabled by BIOS).
+>>
+>
+> What you're saying is that you want it to appear in /proc/cpuinfo for 
+> marketing reasons even though it's not usable.
+>
+> The ones in /proc/cpuinfo are cooked values anyway; there is plenty of 
+> history to that effect.
+>
+> I would agree with Andi that if as far as Linux is concerned mwait is 
+> unusable on AMD Fam10 processors, then the CPU detection code should 
+> turn this bit off on AMD Fam10 processors.
+>
+please see:
 
-On Mon, 02 Apr 2007 22:47:45 PDT, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
+http://kvm.qumranet.com/kvmwiki/FAQ
 
-Am seeing an Oops 'cannot handle kernel paging request' during late
-system startup, hand-copied traceback follows:
+"How can I tell if I have Intel VT or AMD-V?"
 
-avc_has_perm_noaudit+0x2bf/0x506
-avc_has_perm+0x2b/0x5b
-selinux_socket_stream_connect+0x7e/0xc3
-unix_stream_connect+0x202/0x3f3
-sys_connect+0x7e/0xa4
-tracesys+0xde/0xe1
+Markus
 
-I've not identified exactly when it happens, but it's towards the very end of
-handling /etc/rc5.d, it's already up to the S98's.  Odd thing is it only happens
-when I start with RedHat's 'graphical boot', and may be related to the shutdown
-of the X server that's displaying the boot progress preparing to launch the
-X server for gdm logins (as I'm also seeing a hang sometimes when shutting
-down - so it is possibly a "shutting down X server nukes system" bug).
+-- 
+Markus Rechberger
+Operating System Research Center
+AMD Saxony LLC & Co. KG
 
-Figured I'd toss this heads-up in case it rings any bells, while I go do
-the bisection dance on -rc5-mm4 (-mm2 is OK, and -mm3 doesn't boot for me
-for other reasons I didn't chase down before -mm4 came out and fixed it, so
-I have a ways to bisect)
 
---==_Exmh_1175792579_3378P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGFSvDcC3lWbTT17ARAh0KAJ0fxyYF/5iRPpJT4ygvDk9peAVMrgCffXQI
-EeLosdbtp40ekInBR8O5g4o=
-=mR2L
------END PGP SIGNATURE-----
-
---==_Exmh_1175792579_3378P--
