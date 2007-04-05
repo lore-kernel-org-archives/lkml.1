@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965972AbXDEKUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966074AbXDEKfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965972AbXDEKUa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 06:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966017AbXDEKUa
+	id S966074AbXDEKfk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 06:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966077AbXDEKfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 06:20:30 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:42095 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965972AbXDEKU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 06:20:29 -0400
-Date: Thu, 5 Apr 2007 15:49:00 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>, mingo@elte.hu,
-       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
-Subject: Re: [PATCH 2/8] Make process freezer reentrant
-Message-ID: <20070405101900.GA16173@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402053741.GB12962@in.ibm.com> <20070405095301.GB609@tv-sign.ru>
+	Thu, 5 Apr 2007 06:35:40 -0400
+Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:37181 "HELO
+	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S966074AbXDEKfi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 06:35:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=G48h58Pcdnfx2nliDB1KuFdoLZvYvb8ldNKhWQQ1yK8KnfX08A+fxont5oCtlengtXR5XBhaCrMT0FQXftC0Xxii+GbwghabCmcWcrFjcP4xYmwk/iG7lFQbbsuVtSkXx3wJJgeH0hLx59AKUuF7u76MVjFBqUMERmnUo6mPta0=  ;
+X-YMail-OSG: gjLkCbAVM1kJn_hHRlCz01.SL7mEy520TvukGPMeaAiDbPJuYE_hibERnDe0.piW4W9dpld0Cw--
+From: David Brownell <david-b@pacbell.net>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
+Date: Thu, 5 Apr 2007 03:35:35 -0700
+User-Agent: KMail/1.7.1
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linux ACPI list <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200704031741.42273.david-b@pacbell.net> <20070405092638.GA30208@srcf.ucam.org>
+In-Reply-To: <20070405092638.GA30208@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070405095301.GB609@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200704050335.36141.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 05, 2007 at 01:53:01PM +0400, Oleg Nesterov wrote:
-> On 04/02, Gautham R Shenoy wrote:
-> >
-> >  int freeze_processes(unsigned long freeze_event)
-> >  {
-> >  	unsigned int nr_unfrozen;
-> > -
-> > +	int ret = 0;
-> > +	mutex_lock(&freezer_mutex);
-> > +	if (system_freeze_event_mask & freeze_event)
-> > +		goto done;
+On Thursday 05 April 2007 2:26 am, Matthew Garrett wrote:
+> On Tue, Apr 03, 2007 at 05:41:42PM -0700, David Brownell wrote:
+> > This updates /proc/acpi/wakeup to be more informative, primarily by showing
+> > the sysfs node associated with each wakeup-enabled device.  Example:
 > 
-> I am not sure this is correct. Suppose that system_freeze_event_mask == FE_SUSPEND,
-> now freeze_processes(FE_ALL) returns success. Shouldn't we return an error?
+> This looks good. 
 
-Hmm, may be we are getting confused with the word 'reentrant' here.
-The idea behind this API was to freeze the system for one event
-only at any given time.
+Also "good at exposing some puzzling info" ... ;)
 
-However, we can have nested freeze_processes() call for different events.
 
-Something like 
-freeze_processes(FE_SUSPEND);
-
-/* Do something */
-
-	freeze_processes(FE_HOTPLUG_CPU);
-
-	/* hotplug cpus */
-
-	thaw_processes(FE_HOTPLUG_CPU);
-
-/* Do something more */
-
-thaw_processes(FE_SUSPEND);
-
-So ideally no one is supposed to make a call like
-freeze_processes(FE_SUSPEND | FE_HOTPLUG_CPU);
-OR
-freeze_processes(FE_ALL);
-
-I guess I should also put a check for a valid freeze event.
-
+> > 	S139	  S4	 disabled  
 > 
-> Oleg.
-> 
+> Any idea what this one is? There's the potential for all sorts of weird 
+> platform devices to expose wakeup capabilities.
 
-Thanks
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+My guess is Firewire (IEEE 1394); "F193" on a different system (different
+chip vendor) *is* Firewire.  This BIOS seems to have wrongly copied ACPI
+tables from a similar system with a fancier southbridge from the same
+chip vendor.  (ISTR the vendor's reference design used the fancier chip.)
+
+
+> > Eventually this file should be removed, but until then it's almost the only
+> > way we have to tell how the relevant ACPI tables are broken (and cope).  In
+> > that example, two devices don't actually exist (USB3, S139), one can't issue
+> > wakeup events (PCI0), and two seem harmlessly (?) confused (MDM and AUD are
+> > the same PCI device, but it's the _modem_ that does wake-on-ring).  
+> 
+> Could the MDM entry be referring to the modem codec on the ac97 or 
+> hda bus? 
+
+That's my assumption; yes.   Another system lists "AUD0" and "MODM", but
+shows neither as a wakeup device.  As I said, "confused".
+
+- Dave
