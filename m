@@ -1,43 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767258AbXDEW5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767393AbXDEW6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767258AbXDEW5K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 18:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767393AbXDEW5K
+	id S1767393AbXDEW6d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 18:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767400AbXDEW6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 18:57:10 -0400
-Received: from mail.tmr.com ([64.65.253.246]:58625 "EHLO gaimboi.tmr.com"
+	Thu, 5 Apr 2007 18:58:33 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56491 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767258AbXDEW5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 18:57:08 -0400
-Message-ID: <46157F24.3050705@tmr.com>
-Date: Thu, 05 Apr 2007 18:58:44 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [OT] the shortest thread of LKML !
-References: <79489c230703281252s526b3f63vae3dcbb5eaeeb809@mail.gmail.com> <20070328.130210.68157164.davem@davemloft.net> <20070328203346.GA943@1wt.eu>
-In-Reply-To: <20070328203346.GA943@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1767393AbXDEW6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 18:58:32 -0400
+Date: Thu, 5 Apr 2007 15:57:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: root@programming.kicks-ass.net
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       a.p.zijlstra@chello.nl, nikita@clusterfs.com
+Subject: Re: [PATCH 10/12] mm: page_alloc_wait
+Message-Id: <20070405155743.91380f00.akpm@linux-foundation.org>
+In-Reply-To: <20070405174320.129577639@programming.kicks-ass.net>
+References: <20070405174209.498059336@programming.kicks-ass.net>
+	<20070405174320.129577639@programming.kicks-ass.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> On Wed, Mar 28, 2007 at 01:02:10PM -0700, David Miller wrote:
->> Please nobody reply to his posting, I'm shit-canning this thread from
->> the start as it's nothing but flame fodder.
-> 
-> He forgot the most important thing: there are *many* "benevolent dictators",
-> all with their own domain of excellence ;-)
-> 
-> Good catch, David, you're like a spider on a web waiting for the naive
-> intruder !
-> 
-Posted several days too early for April Fool...
+On Thu, 05 Apr 2007 19:42:19 +0200
+root@programming.kicks-ass.net wrote:
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+> Introduce a mechanism to wait on free memory.
+> 
+> Currently congestion_wait() is abused to do this.
+
+Such a very small explanation for such a terrifying change.
+
+> ...
+>
+> --- linux-2.6-mm.orig/mm/vmscan.c	2007-04-05 16:29:46.000000000 +0200
+> +++ linux-2.6-mm/mm/vmscan.c	2007-04-05 16:29:49.000000000 +0200
+> @@ -1436,6 +1436,7 @@ static int kswapd(void *p)
+>  		finish_wait(&pgdat->kswapd_wait, &wait);
+>  
+>  		balance_pgdat(pgdat, order);
+> +		page_alloc_ok();
+>  	}
+>  	return 0;
+>  }
+
+For a start, we don't know that kswapd freed pages which are in a suitable
+zone.  And we don't know that kswapd freed pages which are in a suitable
+cpuset.
+
+congestion_wait() is similarly ignorant of the suitability of the pages,
+but the whole idea behind congestion_wait is that it will throttle page
+allocators to some speed which is proportional to the speed at which the IO
+systems can retire writes - view it as a variable-speed polling operation,
+in which the polling frequency goes up when the IO system gets faster. 
+This patch changes that philosophy fundamentally.  That's worth more than a
+2-line changelog.
+
+Also, there might be situations in which kswapd gets stuck in some dark
+corner.  Perhaps the process which is waiting in the page allocator holds
+filesystem locks which kswapd is blocked on.  Or kswapd might be blocked on
+a particular request queue, or a dead NFS server or something.  The timeout
+will save us, but things will be slow.
+
+There could be other problems too, dunno - this stuff is tricky.  Why are
+you changing it, what problems are being solved, etc?
+
