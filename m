@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161222AbXDEF7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161223AbXDEGCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161222AbXDEF7H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 01:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161223AbXDEF7H
+	id S1161223AbXDEGCU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161224AbXDEGCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 01:59:07 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:41636 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161222AbXDEF7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 01:59:06 -0400
-Message-ID: <46149000.40200@zytor.com>
-Date: Wed, 04 Apr 2007 22:58:24 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Steven Rostedt <rostedt@goodmis.org>, virtualization@lists.osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] Lguest32 print hex on bad reads and writes
-References: <1175714071.9371.31.camel@localhost.localdomain>	<1175742090.12230.630.camel@localhost.localdomain>	<72C854B9-1A7F-44C5-9D62-B6B63F3A6DE7@mac.com>	<1175742848.9371.33.camel@localhost.localdomain> <1175744057.12230.632.camel@localhost.localdomain>
-In-Reply-To: <1175744057.12230.632.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 5 Apr 2007 02:02:20 -0400
+Received: from www.osadl.org ([213.239.205.134]:49361 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161223AbXDEGCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:02:19 -0400
+Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
+	tree
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, johnstul@us.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>, heiko.carstens@de.ibm.com
+In-Reply-To: <1175733279.15973.116.camel@imap.mvista.com>
+References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net>
+	 <1175417035.28263.42.camel@localhost.localdomain>
+	 <1175704712.15973.35.camel@imap.mvista.com>
+	 <20070404125853.1cf9b7b7.akpm@linux-foundation.org>
+	 <1175717425.15973.61.camel@imap.mvista.com>
+	 <20070404203647.GA12563@elte.hu>
+	 <1175719489.15973.66.camel@imap.mvista.com>
+	 <20070404211514.GA18600@elte.hu>
+	 <1175722246.15973.78.camel@imap.mvista.com>
+	 <20070404213404.GA21742@elte.hu>
+	 <1175723954.15973.96.camel@imap.mvista.com>  <46143941.7050702@goop.org>
+	 <1175731253.15973.106.camel@imap.mvista.com>  <461440C9.8040902@goop.org>
+	 <1175733279.15973.116.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 08:02:33 +0200
+Message-Id: <1175752953.28263.374.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Wed, 2007-04-04 at 23:14 -0400, Steven Rostedt wrote:
->> On Wed, 2007-04-04 at 23:06 -0400, Kyle Moffett wrote:
->>
->>>> (Erk, I wonder what I was thinking when I wrote that?) Can I ask  
->>>> for %#x (or 0x%x)?  I'm easily confused.
->>> How about "%p" for pointers?
->> But that would require casting the numbers to pointers.
+On Wed, 2007-04-04 at 17:34 -0700, Daniel Walker wrote:
+> > The fact that a list is used to string together clocksource structures
+> > is an internal detail of the clock subsystem.  It's annoying that there
+> > has to be a list head in the clocksource structure, but at least as a
+> > clocksource implementer I can ignore it, and if it ever gets changed to
+> > something else I can keep ignoring it.  Your change makes it something
+> > that gets pointlessly replicated all over the kernel.
 > 
-> And the kernel's printk doesn't put 0x on pointers anyway, last I
-> checked 8(
-> 
+> It's already been discussed in the past, but the clocksource structure
+> is already very simple.. Adding a list initializer doesn't change
+> anything..
 
-That's really the bug.  Let's fix it.
+And it does not gain anything. 
 
-	-hpa
+So what's the gain of this ? Nine useless entries in the changelog.
+
+	tglx
+
+
