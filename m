@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766555AbXDEXKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767266AbXDEXSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766555AbXDEXKa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 19:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXDEXK3
+	id S1767266AbXDEXSK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 19:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767273AbXDEXSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 19:10:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33818
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753208AbXDEXK2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 19:10:28 -0400
-Date: Thu, 05 Apr 2007 16:10:27 -0700 (PDT)
-Message-Id: <20070405.161027.115909479.davem@davemloft.net>
-To: tony.luck@intel.com
-Cc: clameter@sgi.com, akpm@linux-foundation.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mbligh@google.com, linux-mm@kvack.org,
-       ak@suse.de, hansendc@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 4/4] IA64: SPARSE_VIRTUAL 16M page size support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0153594A@scsmsx411.amr.corp.intel.com>
-References: <20070404230635.20292.81141.sendpatchset@schroedinger.engr.sgi.com>
-	<617E1C2C70743745A92448908E030B2A0153594A@scsmsx411.amr.corp.intel.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 5 Apr 2007 19:18:10 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56797 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767266AbXDEXSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 19:18:08 -0400
+Date: Thu, 5 Apr 2007 16:17:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: root@programming.kicks-ass.net
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       a.p.zijlstra@chello.nl, nikita@clusterfs.com
+Subject: Re: [PATCH 11/12] mm: accurate pageout congestion wait
+Message-Id: <20070405161713.dcd8bed9.akpm@linux-foundation.org>
+In-Reply-To: <20070405174320.373513202@programming.kicks-ass.net>
+References: <20070405174209.498059336@programming.kicks-ass.net>
+	<20070405174320.373513202@programming.kicks-ass.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Luck, Tony" <tony.luck@intel.com>
-Date: Thu, 5 Apr 2007 15:50:02 -0700
+On Thu, 05 Apr 2007 19:42:20 +0200
+root@programming.kicks-ass.net wrote:
 
-> Maybe a granule is not the right unit of allocation ... perhaps 4M
-> would work better (4M/56 ~= 75000 pages ~= 1.1G)?  But if this is
-> too small, then a hard-coded 16M would be better than a granule,
-> because 64M is (IMHO) too big.
+> Only do the congestion wait when we actually encountered congestion.
 
-A 4MB chunk of page structs covers about 512MB of ram (I'm rounding up
-to 64-bytes in my calculations and using an 8K page size, sorry :-).
-So I think that is too small although on the sparc64 side that is the
-biggest I have available on most processor models.
+The name congestion_wait() was accurate back in 2002, but it isn't accurate
+any more, and you got misled.  It does not only wait for a queue to become
+uncongested.
 
-But I do agree that 64MB is way too big and 16MB is a good compromise
-chunk size for this stuff.  That covers about 2GB of ram with the
-above parameters, which should be about right.
+See clear_bdi_congested()'s callers.  As long as the queue is in an
+uncongested state, we deliver wakeups to congestion_wait() blockers on
+every IO completion.  As I said before, it is so that the MM's polling
+operations poll at a higher frequency when the IO system is working faster.
+(It is also to synchronise with end_page_writeback()'s feeding of clean
+pages to us via rotate_reclaimable_page()).
+
+
+
+Page reclaim can get into trouble without any request queue having entered
+a congested state.  For example, think about a machine which has a single
+disk, and the operator has increased that disk's request queue size to
+100,000.  With your patch all the VM's throttling would be bypassed and we
+go into a busy loop and declare OOM instantly.
+
+There are probably other situations in which page reclaim gets into trouble
+without a request queue being congested.
+
+Minor point: bdi_congested() can be arbitrarily expensive - for DM stackups
+it is roughly proportional to the number of subdevices in the device.  We
+need to be careful about how frequently we call it.
+
