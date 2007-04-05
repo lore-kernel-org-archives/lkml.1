@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767312AbXDEVTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767320AbXDEVXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767312AbXDEVTr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 17:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767314AbXDEVTr
+	id S1767320AbXDEVXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 17:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767326AbXDEVXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 17:19:47 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:33248 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767312AbXDEVTr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 17:19:47 -0400
-Message-ID: <461567E5.7080905@zytor.com>
-Date: Thu, 05 Apr 2007 14:19:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: aherrman@arcor.de
-CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       andreas.herrmann3@amd.com
-Subject: Re: [PATCH] x86: limit mwait_idle to Intel CPUs
-References: <20070405211208.GA8126@tweety.malo>
-In-Reply-To: <20070405211208.GA8126@tweety.malo>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 5 Apr 2007 17:23:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44665 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767320AbXDEVXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 17:23:41 -0400
+Date: Thu, 5 Apr 2007 14:22:03 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, stuart_hayes@dell.com, zaitcev@redhat.com
+Subject: Re: usb hid: reset NumLock
+Message-Id: <20070405142203.bb2f0fb5.zaitcev@redhat.com>
+In-Reply-To: <d120d5000704051354q61c5a6b4p9e8005152da4b42e@mail.gmail.com>
+References: <20070330105924.01a16dd6.zaitcev@redhat.com>
+	<20070402161225.2866c002.zaitcev@redhat.com>
+	<Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz>
+	<200704042324.56345.dtor@insightbb.com>
+	<Pine.LNX.4.64.0704051049010.4173@jikos.suse.cz>
+	<20070405133840.0d67303f.zaitcev@redhat.com>
+	<d120d5000704051354q61c5a6b4p9e8005152da4b42e@mail.gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-aherrman@arcor.de wrote:
-> 
->> The ones in /proc/cpuinfo are cooked values anyway; there is plenty of 
->> history to that effect.
-> 
-> I don't know this history. And I don't care.
-> I thought /proc/cpuinfo should show an (almost) complete list
-> of CPU features. If this is not the case it's a pity.
-> 
+On Thu, 5 Apr 2007 16:54:17 -0400, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
 
-It's a list of features which are implemented and working, as far as 
-they make sense.  In other words, it's *Linux* concept of the feature 
-set of the CPU.
+> > On a certain keyboard, when BIOS sets NumLock LED on, it survives the takeover
+> > by Linux and thus confuses users.
+> >
+> > Eating of an increasibly scarce quirk bit is unfortunate. We do it for safety,
+> > given the history of nervous input devices which crash if anything unusual
+> > happens.
 
->> I would agree with Andi that if as far as Linux is concerned mwait is 
->> unusable on AMD Fam10 processors, then the CPU detection code should 
->> turn this bit off on AMD Fam10 processors.
-> 
-> And finally I was not aware that you and Andi think of monitor/mwait
-> as a synonym for Intel's native C-States.
-> 
-> So I guess, what you really want is that for AMD CPUs the
-> monitor-flag (aka native C-state-flag) gets removed.
-> 
-> And if somedays another use case for monitor/mwait appears, the flag
-> has to be reintroduced for AMD CPUs.
-> 
-> Fine with me.
-> The only drawback is that Andi's idea of idle=mwait wouldn't make
-> sense anymore.
+> You know, I would not call turning leds on an off an unusual operation
+> for a keyboard.
 
-Well, if there is use for the AMD implementation of monitor/mwait, then 
-that's a different situation, and probably would call for multiple 
-feature bits.
+Right, but monkeying with them immediately upon initialization may be
+"unusual", meaning "device was tested with one version of Windows and
+shipped, everything else is unusual".
 
-	-hpa
+-- Pete
