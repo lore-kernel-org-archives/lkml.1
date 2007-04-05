@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767378AbXDEWip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767383AbXDEWiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767378AbXDEWip (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 18:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767387AbXDEWip
+	id S1767383AbXDEWiu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 18:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767381AbXDEWiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 18:38:45 -0400
-Received: from dkny.pando.com ([67.99.55.163]:59928 "EHLO dkny.pando.com"
+	Thu, 5 Apr 2007 18:38:50 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56029 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767381AbXDEWio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 18:38:44 -0400
-X-Greylist: delayed 2055 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 18:38:44 EDT
-Message-ID: <4615726B.4080800@pando.com>
-Date: Thu, 05 Apr 2007 18:04:27 -0400
-From: Yaar Schnitman <yaar@pando.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Yaar Schnitman <yaar@pando.com>
-Subject: optimizing sendfile
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1767383AbXDEWit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 18:38:49 -0400
+Date: Thu, 5 Apr 2007 15:37:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: root@programming.kicks-ass.net
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       a.p.zijlstra@chello.nl, nikita@clusterfs.com
+Subject: Re: [PATCH 02/12] mm: scalable bdi statistics counters.
+Message-Id: <20070405153746.3cdb9bcd.akpm@linux-foundation.org>
+In-Reply-To: <20070405174317.854739299@programming.kicks-ass.net>
+References: <20070405174209.498059336@programming.kicks-ass.net>
+	<20070405174317.854739299@programming.kicks-ass.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 05 Apr 2007 19:42:11 +0200
+root@programming.kicks-ass.net wrote:
 
-How can I control the size of the block requests the sendfile() syscall 
-performs
-against the disk?
+> Provide scalable per backing_dev_info statistics counters modeled on the ZVC
+> code.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  block/ll_rw_blk.c           |    1 
+>  drivers/block/rd.c          |    2 
+>  drivers/char/mem.c          |    2 
+>  fs/char_dev.c               |    1 
+>  fs/fuse/inode.c             |    1 
+>  fs/nfs/client.c             |    1 
+>  include/linux/backing-dev.h |   98 +++++++++++++++++++++++++++++++++++++++++
+>  mm/backing-dev.c            |  103 ++++++++++++++++++++++++++++++++++++++++++++
 
-I'm using sendfile (on a 2.6.18 kernel) to copy 1M file chunks into a 
-socket. The
-socket send buffer size is 2MB, and I verify that its empty before 
-making the call.
-Indeed, 1M chunk is being sent, but from iostat, I can tell that the 
-average request
-size is around 128KB. Are there any kernel configuration variables that 
-could change that?
+madness!  Quite duplicative of vmstat.h, yet all this infrastructure
+is still only usable in one specific application.
 
-Help will be appreciated.
+Can we please look at generalising the vmstat.h stuff?
 
+Or, the API in percpu_counter.h appears suitable to this application.
+(The comment at line 6 is a total lie).
