@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767034AbXDEUui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767153AbXDEUyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767034AbXDEUui (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 16:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767147AbXDEUui
+	id S1767153AbXDEUyU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 16:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767222AbXDEUyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 16:50:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60041 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767034AbXDEUuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 16:50:37 -0400
-Date: Thu, 5 Apr 2007 16:50:34 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>
-Cc: Linux kernel <linux-kernel@vger.kernel.org>, venki@gelk.kernelslacker.org
-Subject: Re: Preemption Broken:  centrino_target busted under SMP on 2.6.20.4
-Message-ID: <20070405205034.GB3605@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>,
-	Linux kernel <linux-kernel@vger.kernel.org>, venki
-References: <46155CFF.70701@wolfmountaingroup.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 5 Apr 2007 16:54:20 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:61097 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767153AbXDEUyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 16:54:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KU1ZjAs35oBramDgDGXdEwSxvTMtlsxqlVM3ZmSClIV8lG6crvdyqZf4qske4Ht6j5jrq2BWajDE38w+RSs2LNOhe68odznO0vB5JnkUkTRk3w8fvi0WDetOTB6ACFVqy3gTyk5rIUdlteW2zYVy8m3ucP8QgqDrrm35bq8dcaQ=
+Message-ID: <d120d5000704051354q61c5a6b4p9e8005152da4b42e@mail.gmail.com>
+Date: Thu, 5 Apr 2007 16:54:17 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Pete Zaitcev" <zaitcev@redhat.com>
+Subject: Re: usb hid: reset NumLock
+Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, stuart_hayes@dell.com
+In-Reply-To: <20070405133840.0d67303f.zaitcev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46155CFF.70701@wolfmountaingroup.com>
-User-Agent: Mutt/1.4.2.2i
+References: <20070330105924.01a16dd6.zaitcev@redhat.com>
+	 <20070402161225.2866c002.zaitcev@redhat.com>
+	 <Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz>
+	 <200704042324.56345.dtor@insightbb.com>
+	 <Pine.LNX.4.64.0704051049010.4173@jikos.suse.cz>
+	 <20070405133840.0d67303f.zaitcev@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 05, 2007 at 02:33:03PM -0600, Jeff V. Merkey wrote:
- > 
- > BUG: using smp_processor_id() in preemptible [00000001] code: 
- > kondemand/0/2473
- > caller is centrino_target+0xfb/0x600
- > [<401e3646>] debug_smp_processor_id+0x9e/0xb0
- > [<40112afb>] centrino_target+0xfb/0x600
- > [<40112a00>] centrino_target+0x0/0x600
- > [<40305bd9>] __cpufreq_driver_target+0x5c/0x6b
- > [<f897a537>] do_dbs_timer+0x1bc/0x208 [cpufreq_ondemand]
- > [<40134a46>] run_workqueue+0x85/0x125
- > [<40374f7f>] _spin_lock_irqsave+0x18/0x66
- > [<f897a37b>] do_dbs_timer+0x0/0x208 [cpufreq_ondemand]
- > [<401353fb>] worker_thread+0xf9/0x124
- > [<401213b9>] default_wake_function+0x0/0xc
- > [<40135302>] worker_thread+0x0/0x124
- > [<40137b37>] kthread+0xb0/0xd9
- > [<40137a87>] kthread+0x0/0xd9
- > [<40104b2f>] kernel_thread_helper+0x7/0x10
+On 4/5/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> On a certain keyboard, when BIOS sets NumLock LED on, it survives the takeover
+> by Linux and thus confuses users.
+>
+> Eating of an increasibly scarce quirk bit is unfortunate. We do it for safety,
+> given the history of nervous input devices which crash if anything unusual
+> happens.
+>
 
-Given speedstep-centrino is obsoleted in favour of acpi-cpufreq,
-I'm reluctant to spend too much time turd-polishing.
-This big-hammer diff should fix this..
-
-	Dave
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-index f43b987..824d0a2 100644
---- a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-+++ b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
-@@ -708,6 +708,7 @@ static int centrino_target (struct cpufreq_policy *policy,
- 	saved_mask = current->cpus_allowed;
- 	first_cpu = 1;
- 	cpus_clear(covered_cpus);
-+	preempt_disable();
- 	for_each_cpu_mask(j, online_policy_cpus) {
- 		/*
- 		 * Support for SMP systems.
-@@ -798,6 +799,7 @@ static int centrino_target (struct cpufreq_policy *policy,
- 	}
- 
- migrate_end:
-+	preempt_enable();
- 	set_cpus_allowed(current, saved_mask);
- 	return 0;
- }
+You know, I would not call turning leds on an off an unusual operation
+for a keyboard.
 
 -- 
-http://www.codemonkey.org.uk
+Dmitry
