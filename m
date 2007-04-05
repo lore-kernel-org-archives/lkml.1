@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766991AbXDEOBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766995AbXDEOGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766991AbXDEOBj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 10:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766992AbXDEOBj
+	id S1766995AbXDEOGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 10:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766992AbXDEOGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 10:01:39 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:16290 "EHLO
-	outbound5-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1766991AbXDEOBi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 10:01:38 -0400
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Thu, 5 Apr 2007 16:00:45 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>
-Subject: [PATCH] x86: limit mwait_idle to Intel CPUs
-Message-ID: <20070405140045.GN6356@alberich.amd.com>
-MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 05 Apr 2007 14:00:40.0875 (UTC)
- FILETIME=[CB9F37B0:01C7778A]
-X-WSS-ID: 6A0BDEB22EW3252065-01-01
-Content-Type: text/plain;
- charset=us-ascii
+	Thu, 5 Apr 2007 10:06:35 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:38236 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766995AbXDEOGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 10:06:33 -0400
+Date: Thu, 5 Apr 2007 19:43:21 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, rohitseth@google.com,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       winget@google.com, containers@lists.osdl.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070405141321.GH28414@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <6599ad830704032104hda0c4bu7099c23a86940c76@mail.gmail.com> <20070404051526.GA16562@in.ibm.com> <6599ad830704040000of7f1197ica543e14d290509e@mail.gmail.com> <20070404172643.GA28328@in.ibm.com> <6599ad830704041957y7b81c4ecrd21f4c08b9d7c72d@mail.gmail.com> <20070405063950.GA3435@in.ibm.com> <6599ad830704042348q5675c01ep92679fb3275bafac@mail.gmail.com> <20070405084920.GB20356@in.ibm.com> <6599ad830704050229q1d4d1ef9ved0e58b93aef31ff@mail.gmail.com> <20070405124325.GA13822@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070405124325.GA13822@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 05, 2007 at 06:13:25PM +0530, Srivatsa Vaddagiri wrote:
+> Lets go back to the f_bc example here for a moment. Lets say T1 was in C1 and 
+> opened file f1. f1->f_bc points to C1->beancounter.
+> 
+> T1 moves from C1 -> C2, but f1 is not migrated. 
+> C1->beancounter.count stays at 1 (to account for f1->f_bc).
 
-Commit 991528d7348667924176f3e29addea0675298944
-introduced mwait_idle which is supposed to work
-for Intel CPUs starting with Core Duo.
+Actually C1->beancounter.count should be at 2 (C1->beancounter and
+f1->f_bc are pointing to it).
 
-AMD Fam10 processors won't enter C1 on mwait.
-This patch will enable default_idle for non-Intel
-CPUs even if mwait is supported.
+> File f1 is closed. C1->beancounter.count becomes zero.
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/i386/kernel/process.c   |    4 +++-
- arch/x86_64/kernel/process.c |    3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+C1->beancounter.count should go to 1 ..
 
-diff --git a/arch/i386/kernel/process.c b/arch/i386/kernel/process.c
-index 393a67d..e3067e4 100644
---- a/arch/i386/kernel/process.c
-+++ b/arch/i386/kernel/process.c
-@@ -259,7 +259,9 @@ static void mwait_idle(void)
- 
- void __devinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) &&
-+	    (c->x86_vendor == X86_VENDOR_INTEL)) {
-+
- 		printk("monitor/mwait feature present.\n");
- 		/*
- 		 * Skip, if setup has overridden idle.
-diff --git a/arch/x86_64/kernel/process.c b/arch/x86_64/kernel/process.c
-index d8d5ccc..fed830c 100644
---- a/arch/x86_64/kernel/process.c
-+++ b/arch/x86_64/kernel/process.c
-@@ -271,7 +271,8 @@ static void mwait_idle(void)
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
- 	static int printed;
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) &&
-+	    (c->x86_vendor == X86_VENDOR_INTEL)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
+> Now user issues rmdir C1. If rmdir finds (after taking manage_mutex that
+> is)
+> 
+> 	- zero tasks in C1
+> 	- zero refcount in C1->beancounter
+
+s/zero refcount in C1->beancounter/exactly 1 refcount in C1->beancounter
+
+> why is it not safe to assume that C1->beancounter.count will continue to
+> stay zero?
+
+s/zero/at one
+
+> Basically I am struggling to answer "How can a zero refcount (beancounter) 
+> object go non-zero when zero tasks are attached to it" ..
+
+s/zero/one and s/non-zero/>1
+
+Essentially bc_subsys->can_attach(struct bean_counter *b) can return
+-EBUSY if (atomic_read(&b->count) > 1) ..
+
 -- 
-1.5.0.6
-
-
-
-
+Regards,
+vatsa
