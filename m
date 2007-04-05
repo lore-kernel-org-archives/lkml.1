@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXDECCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbXDECDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752403AbXDECCn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 22:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbXDECCn
+	id S932562AbXDECDw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 22:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbXDECDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 22:02:43 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36193 "EHLO smtps.tip.net.au"
+	Wed, 4 Apr 2007 22:03:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53513 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753043AbXDECCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 22:02:42 -0400
-Date: Thu, 5 Apr 2007 12:02:53 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Don Zickus <dzickus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] allow vmsplice to work in 32-bit mode on ppc64
-Message-Id: <20070405120253.0b0ee501.sfr@canb.auug.org.au>
-In-Reply-To: <20070404172519.GZ11029@redhat.com>
-References: <20070404172519.GZ11029@redhat.com>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	id S932562AbXDECDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 22:03:51 -0400
+Date: Thu, 5 Apr 2007 04:03:47 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, hugh@veritas.com, akpm@linux-foundation.org,
+       linux-mm@kvack.org, tee@sgi.com, holt@sgi.com, andrea@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070405020347.GA11192@wotan.suse.de>
+References: <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org> <20070404.131111.62667528.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404.131111.62667528.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Wed, Apr 04, 2007 at 01:11:11PM -0700, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Wed, 4 Apr 2007 08:35:30 -0700 (PDT)
+> 
+> > Anyway, I'm not against this, but I can see somebody actually *wanting* 
+> > the ZERO page in some cases. I've used the fact for TLB testing, for 
+> > example, by just doing a big malloc(), and knowing that the kernel will 
+> > re-use the ZERO_PAGE so that I don't get any cache effects (well, at least 
+> > not any *physical* cache effects. Virtually indexed cached will still show 
+> > effects of it, of course, but I haven't cared).
+> > 
+> > That's an example of an app that actually cares about the page allocation 
+> > (or, in this case, the lack there-of). Not an important one, but maybe 
+> > there are important ones that care?
+> 
+> If we're going to consider this seriously, there is a case I know of.
+> Look at flush_dcache_page()'s test for ZERO_PAGE() on sparc64, there
+> is an instructive comment:
+> 
+> 	/* Do not bother with the expensive D-cache flush if it
+> 	 * is merely the zero page.  The 'bigcore' testcase in GDB
+> 	 * causes this case to run millions of times.
+> 	 */
+> 	if (page == ZERO_PAGE(0))
+> 		return;
+> 
+> basically what the GDB test case does it mmap() an enormous anonymous
+> area, not touch it, then dump core.
+> 
+> As I understand the patch being considered to remove ZERO_PAGE(), this
+> kind of core dump will cause a lot of pages to be allocated, probably
+> eating up a lot of system time as well as memory.
 
-On Wed, 4 Apr 2007 13:25:19 -0400 Don Zickus <dzickus@redhat.com> wrote:
->
-> Trivial change to pass vmsplice arguments through the compat layer on
-> pp64.
->
-> Signed-off-by: Don Zickus <dzickus@redhat.com>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Yeah. Well it is trivial to leave ZERO_PAGE in get_user_pages, however
+in the longer run it would be nice to get rid of ZERO_PAGE completely
+so we need an alternative.
 
-Obviously noone uses vmsplice from 32bit processes on ppc64 :-)
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGFFjYFdBgD/zoJvwRAkR7AJ4+YRV8R+JXuE6lBZKPBa1rcXlI2ACdGOqK
-4vFm79w+F6OPHElIdAVYuS4=
-=l4Bp
------END PGP SIGNATURE-----
-
---Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX--
+I've been working on a patch for core dumping that can detect unfaulted
+anonymous memory and skip it without doing the ZERO_PAGE comparision.
