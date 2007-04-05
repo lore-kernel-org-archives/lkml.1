@@ -1,73 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161209AbXDEFh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161213AbXDEFl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161209AbXDEFh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 01:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161213AbXDEFh2
+	id S1161213AbXDEFl6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 01:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161216AbXDEFl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 01:37:28 -0400
-Received: from holomorphy.com ([66.93.40.71]:35926 "EHLO holomorphy.com"
+	Thu, 5 Apr 2007 01:41:58 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:46615 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161209AbXDEFh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 01:37:27 -0400
-Date: Wed, 4 Apr 2007 22:37:29 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070405053729.GQ2986@holomorphy.com>
-References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org> <6701.1175724355@turing-police.cc.vt.edu> <Pine.LNX.4.64.0704041724280.6730@woody.linux-foundation.org> <20070405023026.GE11192@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070405023026.GE11192@wotan.suse.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1161213AbXDEFl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 01:41:57 -0400
+Date: Wed, 4 Apr 2007 22:41:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] doc/kernel-parameters: use IA-32 tag instead of i386
+Message-Id: <20070404224152.29062e47.akpm@linux-foundation.org>
+In-Reply-To: <20070404220534.36cd24e9.randy.dunlap@oracle.com>
+References: <20070404220534.36cd24e9.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 05:27:31PM -0700, Linus Torvalds wrote:
->> Good point. In fact, it doesn't need to be a malloc() - I remember people 
->> doing this with Fortran programs and just having an absolutely incredibly 
->> big BSS (with traditional Fortran, dymic memory allocations are just not 
->> done).
+On Wed, 4 Apr 2007 22:05:34 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-On Thu, Apr 05, 2007 at 04:30:26AM +0200, Nick Piggin wrote:
-> Sparse matrices are one thing I worry about. I don't know enough about
-> HPC code to know whether they will be a problem. I know there exist
-> data structures to optimise sparse matrix storage...
+> Use documented tag for "IA-32" (not "i386") to indicate which
+> kernel parameters apply to IA-32.
 
-\begin{admission-against-interest}
+mv arch/i386 arch/ia32 ;)
 
-Sparse matrix code goes to extreme lengths to avoid ever looking at
-substantial numbers of zero floating point matrix and vector entries.
-In extreme cases, hashing and various sorts of heavyweight data
-structures are used to represent highly irregular structures. At various
-times the matrix is not even explicitly formed. Most typical are cases
-like band diagonal matrices where storage is allocated only for the
-nonzero diagonals. The entire purpose of sparse algorithms is to avoid
-examining or even allocating zeros.
-
-The actual phenomenon of concern here is dense matrix code with sparse
-matrix inputs. The matrices will typically not be vast but may span 1MB
-or so of RAM (1024x1024 is 1M*sizeof(double), and various dense matrix
-algorithms target ca. 300x300). Most of the time this will arise from
-the use of dense matrix code as black box solvers called as a library
-by programs not terribly concerned about efficiency until something
-gets explosively inefficient (and maybe not even then), or otherwise
-numerically naive programs. This, however, is arguably the majority of
-the usage cases by end-user invocations, so beware, though not too much.
-
-I'd be more concerned about large hashtables sparsely used for the
-purposes of adjacency detection and other cases where large time vs.
-space tradeoffs are made for probabilistic reasons involving
-collisions.
-
-\end{admission-against-interest}
-
-
--- wli
+Seriously, is there any point in this?  Kernel uses the i386 terminology
+and surely there's no confusion over what that represents.
