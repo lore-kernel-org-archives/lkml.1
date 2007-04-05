@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbXDECDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbXDECSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932562AbXDECDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 22:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbXDECDw
+	id S1753031AbXDECSp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 22:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXDECSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 22:03:52 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53513 "EHLO mx2.suse.de"
+	Wed, 4 Apr 2007 22:18:45 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:54172 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932562AbXDECDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 22:03:51 -0400
-Date: Thu, 5 Apr 2007 04:03:47 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, hugh@veritas.com, akpm@linux-foundation.org,
-       linux-mm@kvack.org, tee@sgi.com, holt@sgi.com, andrea@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070405020347.GA11192@wotan.suse.de>
-References: <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org> <20070404.131111.62667528.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070404.131111.62667528.davem@davemloft.net>
-User-Agent: Mutt/1.5.9i
+	id S1753023AbXDECSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 22:18:44 -0400
+Date: Thu, 5 Apr 2007 04:15:53 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: David Brownell <david-b@pacbell.net>, Tony Lindgren <tony@atomide.com>,
+       linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
+In-Reply-To: <20070404142607.7c0557ae.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.61.0704050359320.22282@yvahk01.tjqt.qr>
+References: <11757099691323-git-send-email-tony@atomide.com>
+ <20070404120025.4c5548dc.randy.dunlap@oracle.com>
+ <Pine.LNX.4.61.0704042205040.22282@yvahk01.tjqt.qr> <200704041351.19313.david-b@pacbell.net>
+ <20070404142607.7c0557ae.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 01:11:11PM -0700, David Miller wrote:
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Wed, 4 Apr 2007 08:35:30 -0700 (PDT)
-> 
-> > Anyway, I'm not against this, but I can see somebody actually *wanting* 
-> > the ZERO page in some cases. I've used the fact for TLB testing, for 
-> > example, by just doing a big malloc(), and knowing that the kernel will 
-> > re-use the ZERO_PAGE so that I don't get any cache effects (well, at least 
-> > not any *physical* cache effects. Virtually indexed cached will still show 
-> > effects of it, of course, but I haven't cared).
-> > 
-> > That's an example of an app that actually cares about the page allocation 
-> > (or, in this case, the lack there-of). Not an important one, but maybe 
-> > there are important ones that care?
-> 
-> If we're going to consider this seriously, there is a case I know of.
-> Look at flush_dcache_page()'s test for ZERO_PAGE() on sparc64, there
-> is an instructive comment:
-> 
-> 	/* Do not bother with the expensive D-cache flush if it
-> 	 * is merely the zero page.  The 'bigcore' testcase in GDB
-> 	 * causes this case to run millions of times.
-> 	 */
-> 	if (page == ZERO_PAGE(0))
-> 		return;
-> 
-> basically what the GDB test case does it mmap() an enormous anonymous
-> area, not touch it, then dump core.
-> 
-> As I understand the patch being considered to remove ZERO_PAGE(), this
-> kind of core dump will cause a lot of pages to be allocated, probably
-> eating up a lot of system time as well as memory.
 
-Yeah. Well it is trivial to leave ZERO_PAGE in get_user_pages, however
-in the longer run it would be nice to get rid of ZERO_PAGE completely
-so we need an alternative.
+On Apr 4 2007 14:26, Randy Dunlap (rd) wrote:
+David Brownell (db) wrote:
+Jan Engelhardt (je) wrote:
+je>>> 
+je>>> My stance, || goes at EOL, and final ) not standalone:
+db>> 
+db>> You are still violating the "only TABs used for indent" rule.
+rd>
+rd>Yes, but CodingStyle is a just set of guidelines and common practices.
+rd>It doesn't cover multi-line if () statements, which is the subject of
+rd>the current controvers^W discussion.
 
-I've been working on a patch for core dumping that can detect unfaulted
-anonymous memory and skip it without doing the ZERO_PAGE comparision.
+s/Yes/No/. The example block I posted does use /^\t+/.
+Mind MUAs/browsers which transform tabs into single-spaces in some cases.
+
+>>> 	if (foo ||
+>>> 	  bar ||
+>>> 	  baz ||
+>>> 	  etc)
+>>> 		do_something;
+
+
+Jan
+-- 
