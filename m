@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965714AbXDEJq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbXDEJuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965714AbXDEJq6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 05:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965927AbXDEJq6
+	id S1752423AbXDEJuG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 05:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbXDEJuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 05:46:58 -0400
-Received: from mail.screens.ru ([213.234.233.54]:57491 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965714AbXDEJq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 05:46:57 -0400
-Date: Thu, 5 Apr 2007 13:46:33 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>, mingo@elte.hu,
-       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
-Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond software suspend
-Message-ID: <20070405094633.GA609@tv-sign.ru>
-References: <20070402053457.GA9076@in.ibm.com> <20070402053705.GA12962@in.ibm.com>
+	Thu, 5 Apr 2007 05:50:06 -0400
+Received: from amsfep19-int.chello.nl ([62.179.120.14]:52455 "EHLO
+	amsfep19-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752423AbXDEJuF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 05:50:05 -0400
+Subject: Re: [patch 2/2] only allow nonlinear vmas for ram backed
+	filesystems
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <E1HZORc-0000UZ-00@dorka.pomaz.szeredi.hu>
+References: <E1HZOHe-0000RL-00@dorka.pomaz.szeredi.hu>
+	 <E1HZOIr-0000Rv-00@dorka.pomaz.szeredi.hu> <1175765760.6483.93.camel@twins>
+	 <E1HZORc-0000UZ-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 11:50:00 +0200
+Message-Id: <1175766600.6483.100.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402053705.GA12962@in.ibm.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/02, Gautham R Shenoy wrote:
->
-> +/*
-> + * Exempt the current process from being frozen for a certain event
-> + */
-> +static inline void freezer_exempt(unsigned long exempt_freeze_event)
-> +{
-> +	if (exempt_freeze_event == FE_NONE)
-> +		current->flags &= ~PF_FE_ALL;
-> +	else
-> +		current->flags |= exempt_freeze_event;
-> +}
+On Thu, 2007-04-05 at 11:39 +0200, Miklos Szeredi wrote:
+> > > +		/*
+> > > +		 * page_mkclean doesn't work on nonlinear vmas, so if dirty
+> > > +		 * pages need to be accounted, emulate with linear vmas.
+> > > +		 */
+> > > +		if (mapping_cap_account_dirty(mapping)) {
+> > 
+> > Perhaps this should read:
+> > 
+> > 		if (vma_wants_writenotify(vma)) {
+> > 
+> 
+> I looked at that, but IIRC vma_wants_writenotify() doesn't work after
+> mmap(), because of the updated protection bits.
 
-So, a kernel_thread should call freezer_exempt(FE_XXX) somewhere at the
-beginning if it doesn't want to be considered as freezeable. But what if
-the freezing is already in progress? In that case freezer_exempt() should
-somehow clear TIF_FREEZE (if exempt_freeze_event doesn't match freeze_event
-parameter of freeze_processes()), otherwise we may hit a nasty bug, much
-worse than a freezing failure (which could be restarted).
+Right, bother, that again. I fudged it in mprotect by setting the pgprot
+bits to what was expected although I had a parametrised version earlier.
+But that was disliked.
 
-try_to_freeze_tasks() succeeds because the task is !freezeable(), the
-task goes to refrigerator (while it should not), thaw_tasks() ignores
-process and it stays frozen.
+> > That way we would even allow read only non-linear mappings of 'real'
+> > filesystem files.
+> 
+> Well, we could do that, but is it really worth the hassle?  The real
+> question is whether anyone would want to use non-linear
+> shared-read-only mappings or not.
 
-Alternatively, we can do a re-check in refrigerator() to fix this race.
-In any case, it looks like freeze_event should be stored in a global var.
+Hmm, yeah, I thought that was the case with that code snippet Andrew
+pulled of the interweb, but on second inspection they do map it writable
+too. I was led astray by the fact that they map the same file twice.
 
-> --- linux-2.6.21-rc5.orig/kernel/sched.c
-> +++ linux-2.6.21-rc5/kernel/sched.c
-> @@ -5057,6 +5057,7 @@ static int migration_thread(void *data)
->  	BUG_ON(rq->migration_thread != current);
->
->  	set_current_state(TASK_INTERRUPTIBLE);
-> +	freezer_exempt(FE_ALL);
-
-This is a real nitpick, but it was hard to me to understand this change.
-Because it looks as if we have a subtle reason to set TASK_INTERRUPTIBLE
-before freezer_exempt(). Unless I missed something, I'd suggest to move
-freezer_exempt() up, before set_current_state().
-
-The same for apm_mainloop().
-
-Oleg.
+Oh well, lets just keep the patch as is then.
 
