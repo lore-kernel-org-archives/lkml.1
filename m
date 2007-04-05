@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767222AbXDEU6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767304AbXDEVA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767222AbXDEU6P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 16:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767282AbXDEU6P
+	id S1767304AbXDEVA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 17:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767309AbXDEVA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 16:58:15 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51634 "EHLO smtp.osdl.org"
+	Thu, 5 Apr 2007 17:00:59 -0400
+Received: from gw.goop.org ([64.81.55.164]:34072 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767222AbXDEU6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 16:58:14 -0400
-Date: Thu, 5 Apr 2007 13:57:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Robin Holt <holt@sgi.com>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-In-Reply-To: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
-Message-ID: <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
+	id S1767304AbXDEVA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 17:00:58 -0400
+Message-ID: <46156366.70206@goop.org>
+Date: Thu, 05 Apr 2007 14:00:22 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@suse.de>
+CC: Benjamin LaHaise <bcrl@kvack.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: What protects cpu_tlbstate?
+References: <4615518A.4070003@goop.org> <200704052228.36590.ak@suse.de>
+In-Reply-To: <200704052228.36590.ak@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> The interrupts can only happen when the other CPU is already lazy
+> and enter_lazy_tlb would be a nop then.  The flushers itself are
+> synchronized by the page_table_lock or the mm semaphore.
+>
+> Against switch_mm it tries to protect with ordering.
+>
+> wmb()s are not needed on x86 (ok minus errata on ppro and
+> VIA magic mode but which is UP only). That would leave some rmb()s,
+> but I don't see any place they would be needed. 
+>   
 
+Hm, I was more wondering about simple compiler reordering.  Does the
+relative order of setting and reading cpu_tlbstate.state, active_mm and
+the mm->cpu_vm_mask matter?
 
-On Thu, 5 Apr 2007, Robin Holt wrote:
-> 
-> For testing, Jack Steiner create the following patch.  All it does
-> is moves tasks which are transitioning to the zombie state from where
-> they are in the children list to the head of the list.  In this way,
-> they will be the first found and reaping does speed up.  We will still
-> do a full scan of the list once the rearranged tasks are all removed.
-> This does not seem to be a significant problem.
-
-I'd almost prefer to just put the zombie children on a separate list. I 
-wonder how painful that would be..
-
-That would still make it expensive for people who use WUNTRACED to get 
-stopped children (since they'd have to look at all lists), but maybe 
-that's not a big deal.
-
-Another thing we could do is to just make sure that kernel threads simply 
-don't end up as children of init. That whole thing is silly, they're 
-really not children of the user-space init anyway. Comments?
-
-		Linus
+    J
