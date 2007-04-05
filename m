@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767344AbXDEVkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767335AbXDEVmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767344AbXDEVkN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 17:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767349AbXDEVkN
+	id S1767335AbXDEVmU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 17:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767349AbXDEVmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 17:40:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51466 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767344AbXDEVkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 17:40:09 -0400
-Message-ID: <46156CA9.3060105@redhat.com>
-Date: Thu, 05 Apr 2007 17:39:53 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jakub Jelinek <jakub@redhat.com>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com>	<461357C4.4010403@yahoo.com.au>	<46154226.6080300@redhat.com> <20070405140723.8477e314.akpm@linux-foundation.org>
-In-Reply-To: <20070405140723.8477e314.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 5 Apr 2007 17:42:20 -0400
+Received: from anchor-post-36.mail.demon.net ([194.217.242.86]:3037 "EHLO
+	anchor-post-36.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767335AbXDEVmT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 17:42:19 -0400
+Subject: Re: [PATCH 01/01] New FBDev driver for Intel Vermilion Range
+From: Alan Hourihane <alanh@fairlite.demon.co.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200704052138.08897.arnd@arndb.de>
+References: <1175769886.10382.29.camel@localhost>
+	 <200704052138.08897.arnd@arndb.de>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 22:42:16 +0100
+Message-Id: <1175809336.10105.54.camel@jetpack.demon.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-
-> #if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
-
-> I wonder which way you're using, and whether using the other way changes
-> things.
-
-I'm using the default Fedora config file, which has
-NR_CPUS defined to 64 and CONFIG_SPLIT_PTLOCK_CPUS
-to 4, so I am using the split locks.
-
-However, I suspect that each 512kB malloced area
-will share one page table lock with 4 others, so
-some contention is to be expected.
-
->> For more real world workloads, like the MySQL sysbench one,
->> I still suspect that your patch would improve things.
->>
->> Time to move back to debugging other stuff, though.
->>
->> Andrew, it would be nice if our patches could cook in -mm
->> for a while.  Want me to change anything before submitting?
+On Thu, 2007-04-05 at 21:38 +0200, Arnd Bergmann wrote:
+> On Thursday 05 April 2007, Alan Hourihane wrote:
+> > @@ -0,0 +1,405 @@
+> > +/*  
+> > + * Copyright (c) Intel Corp. 2007.
+> > + * All Rights Reserved.
+> > + *
 > 
-> umm.  I took a quick squint at a patch from you this morning and it looked
-> OK to me.  Please send the finalish thing when it is fully baked and
-> performance-tested in the various regions of operation, thanks.
+> Saying 'All Rights Reserved' is usually considered the opposite of
+> licensing your code as GPL. I suppose you need to remove that.
 
-Will do.
+Arnd, 
 
-Ulrich has a test version of glibc available that
-uses MADV_DONTNEED for free(3), that should test
-this thing nicely.
+Thanks for your comments, and I'll review and make appropriate changes
+as you've suggested.
 
-I'll run some tests with that when I get the
-time, hopefully next week.
+As for the above, I've noticed that drivers/video/epson1355fb.c also has
+this wording and is under the GPL. 
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Alan.
+
