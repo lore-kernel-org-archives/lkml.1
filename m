@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767122AbXDEP5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767130AbXDEP54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767122AbXDEP5I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767125AbXDEP5E
+	id S1767130AbXDEP54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767131AbXDEP54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:57:04 -0400
-Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:42189 "EHLO
-	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767123AbXDEP46 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:56:58 -0400
-X-Greylist: delayed 118695 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 11:56:58 EDT
-Date: Thu, 5 Apr 2007 17:56:52 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, Torben Mathiasen <torben@kernel.org>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-       device@lanana.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
- optionally.
-In-Reply-To: <1175784435.2719.18.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.64.0704051732460.17664@anakin>
-References: <1175666635.2932.17.camel@shinybook.infradead.org>
- <17939.17962.248566.886449@cargo.ozlabs.ibm.com> <1175696383.2774.24.camel@shinybook.infradead.org>
- <20070405.233101.106261123.anemo@mba.ocn.ne.jp> <1175784435.2719.18.camel@shinybook.infradead.org>
+	Thu, 5 Apr 2007 11:57:56 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:42927 "EHLO
+	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767126AbXDEP5y convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 11:57:54 -0400
+X-BigFish: VP
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Warning: unable to open an initial console.
+Date: Thu, 5 Apr 2007 08:57:49 -0700
+In-Reply-To: <a8e1da0704031853q3f36570ey864cf18126c90f4@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Warning: unable to open an initial console.
+Thread-Index: Acd2XB/uTqkIYdnSQUu2w7/6K3+RRABPeBsQ
+References: <20070402190458.0EDD039005F@mail42-fra.bigfish.com> <20070402224923.GA11208@tuatara.stupidest.org> <20070402232012.6716E64781D@mail78-cpk.bigfish.com> <a8e1da0704021834q7911fb56oa0f3f23651ee6be2@mail.gmail.com> <20070403183532.0EE676CC6F2@mail138-cpk.bigfish.com> <a8e1da0704031853q3f36570ey864cf18126c90f4@mail.gmail.com>
+From: "Tom Strader" <tom.strader@xilinx.com>
+To: "young dave" <hidave.darkstar@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 05 Apr 2007 15:57:50.0489 (UTC) FILETIME=[29993090:01C7779B]
+Message-Id: <20070405155751.5C30ACD005F@mail79-sin.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Apr 2007, David Woodhouse wrote:
-> On Thu, 2007-04-05 at 23:31 +0900, Atsushi Nemoto wrote
-> > Is major 204 minor 192 already allocated?
-> 
-> Of course. The reason it took so long to provide this patch after the
-> 'pmac_zilog doesn't load' bug got reported was because I was waiting for
-> the new allocation.
+The problem appears to be that the uart driver is not assigning the
+port.  In uart_get() located in drivers/serial/serial_core.c the code
+tries to access state->port but it does not appear to exist.  Where is
+the port supposed to get added/setup?  Should this happen in the driver
+init or does the kernel add the ports to the driver after init?
 
-What about the moratorium on newly assigned numbers?
-What about using a dynamically allocated number?
+Uart_get knows the correct driver name drv->driver_name = "PXA serial"
+and drv->dev_name = "ttyS", but the drv->state->port does not exist.
+Where should the port be added?  The port info exists in
+drivers/serial/pxa.c but I cant find where its initialized.  Any help
+would be great.
+Thanks,
+Tom
 
-Gr{oetje,eeting}s,
+-----Original Message-----
+From: young dave [mailto:hidave.darkstar@gmail.com] 
+Sent: Tuesday, April 03, 2007 6:54 PM
+To: Tom Strader
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Warning: unable to open an initial console.
 
-						Geert
+Hi;
+The errno "-6" is defined as:
+#define ENXIO            6      /* No such device or address*/
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+You can try to retrieve the rootfs and add the necessary device file
+to it, then reflash the rootfs.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I'm Sorry, I  have no embedded environment to test.
+
+Regards
+dave
+
+
