@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767299AbXDEUkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767134AbXDEUnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767299AbXDEUkf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 16:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767301AbXDEUkf
+	id S1767134AbXDEUnN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 16:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767301AbXDEUnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 16:40:35 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:47205 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767299AbXDEUkd (ORCPT
+	Thu, 5 Apr 2007 16:43:13 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:57932 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767134AbXDEUnL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 16:40:33 -0400
-Subject: [PATCH] Lguest launcher, child starving parent
-From: Steven Rostedt <rostedt@goodmis.org>
-To: virtualization@lists.osdl.org,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 16:40:20 -0400
-Message-Id: <1175805620.24675.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Thu, 5 Apr 2007 16:43:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cHYDIBv+srwuFci/Y+CFnVTIdkiQsPgvB0TG58MPLX4gNjSvG6Nq2vUAT0um9AzJXbXz0DHcdoGF8gRqaeRBA74bb5ymtBhiACn5wWLlj2qkGVGgmTiFfsVLSwkZsKHNkeN2GLIHHPkeGJFS8uKP1vrx4jYTwqb85CxcEKlVIqE=
+Message-ID: <a36005b50704051343s369b5bfgc07835df751fffb3@mail.gmail.com>
+Date: Thu, 5 Apr 2007 13:43:09 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: [PATCH] FUTEX : new PRIVATE futexes
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Dave Jones" <davej@redhat.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>,
+       "Ravikiran G Thirumalai" <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       "pravin b shelar" <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070405194942.1414c030.dada1@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20060808070708.GA3931@localhost.localdomain>
+	 <200608090826.28249.dada1@cosmosbay.com>
+	 <200608090843.52893.dada1@cosmosbay.com>
+	 <200703152010.35614.dada1@cosmosbay.com>
+	 <a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
+	 <20070405194942.1414c030.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber noticed long delays between hitting a key, and seeing data come
-up on the virtual console.  Looking into this, I found that the
-wake_parent routine that reads from all devices was actually starving
-out the parent after sending the parent a signal to wake up.
+On 4/5/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+>> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> ---
+>  include/linux/futex.h |   45 +++++-
+>  kernel/futex.c        |  294 +++++++++++++++++++++++++---------------
+>  2 files changed, 230 insertions(+), 109 deletions(-)
 
-The thing is, the child which takes the console input is recognized by
-the scheduler as an interactive process.  The parent, doesn't do so
-much, so it is recognized more as a CPU hog. So the child easily gets a
-higher priority than the parent.
+I cannot vouch for the whole code but the concept is very sound and
+definitely along the way the specification allows it:
 
-So when the child receives data from the console, it sends a signal to
-the parent and then does another select.  The problem is that the select
-doesn't actually read from the device, and will return immediately since
-their is still data pending until it is read.  But it's the parent that
-reads the data.  So the child actually starves the parent from reading
-the data by spinning and waiting for it to read the data.
-
-The fix I implemented was to have the child wait for a response from the
-parent before going on. Since there was already communication between
-the parent and child via a pipe, I used that. This time, the data
-returned by the pipe is either everything went fine (fd == -1) or the
-device should be ignored (fd >= 0).
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6-lguest/Documentation/lguest/lguest.c
-===================================================================
---- linux-2.6-lguest.orig/Documentation/lguest/lguest.c	2007-04-05 16:13:08.000000000 -0400
-+++ linux-2.6-lguest/Documentation/lguest/lguest.c	2007-04-05 16:16:31.000000000 -0400
-@@ -328,15 +328,15 @@ static void wake_parent(int pipefd, stru
- 
- 	for (;;) {
- 		fd_set rfds = devices->infds;
-+		int ignorefd;
- 
- 		select(devices->max_infd+1, &rfds, NULL, NULL, NULL);
--		if (FD_ISSET(pipefd, &rfds)) {
--			int ignorefd;
--			if (read(pipefd, &ignorefd, sizeof(ignorefd)) == 0)
--				exit(0);
--			FD_CLR(ignorefd, &devices->infds);
--		}
- 		kill(getppid(), SIGUSR1);
-+		/* wait for parent response */
-+		if (read(pipefd, &ignorefd, sizeof(ignorefd)) == 0)
-+			exit(0);
-+		if (ignorefd >= 0)
-+			FD_CLR(ignorefd, &devices->infds);
- 	}
- }
- 
-@@ -594,6 +594,7 @@ static void handle_output(int fd, unsign
- static void handle_input(int fd, int childfd, struct device_list *devices)
- {
- 	struct timeval poll = { .tv_sec = 0, .tv_usec = 0 };
-+	int fdok = -1;
- 
- 	for (;;) {
- 		struct device *i;
-@@ -608,7 +609,9 @@ static void handle_input(int fd, int chi
- 					FD_CLR(i->fd, &devices->infds);
- 					/* Tell child to ignore it too... */
- 					write(childfd, &i->fd, sizeof(i->fd));
--				}
-+				} else
-+					/* Tell child to continue */
-+					write(childfd, &fdok, sizeof(fdok));
- 			}
- 		}
- 	}
-
-
+Acked-by: Ulrich Drepper <drepper@redhat.com>
