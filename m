@@ -1,410 +1,951 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbXDEA4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbXDEA4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751608AbXDEA4E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 20:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbXDEA4E
+	id S1752962AbXDEA4z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 20:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbXDEA4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:56:04 -0400
-Received: from web32511.mail.mud.yahoo.com ([68.142.207.221]:31347 "HELO
-	web32511.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751608AbXDEA4A (ORCPT
+	Wed, 4 Apr 2007 20:56:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:31591 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752960AbXDEA4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:56:00 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Apr 2007 20:56:00 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=zMdMzji0LgpET7QrLuHj7UTytVxY/W+DEig75DyrHBO5MUqFP7OnAUicip6KIHIUzZ8TQmrXF1vCC7SN43n53g0NiiKloR5MX0hE1XIYDEJNvqQMs5M9FbgbyVjk/Mid2iCD4kG0mvGTYTH5aiREUkCJWSaldZ1mtA6X2gy1FDw=;
-X-YMail-OSG: cJJGUs4VM1kaNCOAwQnMappBMzhsHQnFoNF3qvCxSMQnbRH6GfqnjYX56tyKsqEbiCDCS.5PS8yV5RtG6EfkW.IqtBRVVPRlmW8wcIqzL45C6uWiQxYdI7j4TsO196b9VwuhM8eXexW3TC30JnVFcXWUJg--
-Date: Wed, 4 Apr 2007 17:49:19 -0700 (PDT)
-From: Pat <patchu1@yahoo.com>
-Subject: Invalid operand: kernel BUG at mm/rmap.c:434! and arch/i386/mm/highmem.c:42!)
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <214905.55943.qm@web32511.mail.mud.yahoo.com>
+	Wed, 4 Apr 2007 20:56:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=CP4TYqExALDO9R8YDrumR+MFiy4l7LJPfBvlkbqxKoUx9Vi92CqRIhZkffZtD84M3DLbfKSIip5c5loy53tGnf6O/DUDkl+ZlrzjuzH29v6aW+aosktF+UUiDy2iyQDkU6W9Lkbr9FSmceHoUelRi6dslpTHgcPHnKEKRhGgK8s=
+Subject: Re: 2.6.21-rc5-mm4
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070402224745.71a25af7.akpm@linux-foundation.org>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 08:56:38 +0800
+Message-Id: <1175734598.4378.5.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm running kernel 2.6.9-22.ELsmp on dual Xeon
-servers. I've received kernel panics occasionally in
-the past, but they are more frequent now as the load
-on the system has increased. Below is a capture of the
-kernel panic. 
+On Mon, 2007-04-02 at 22:47 -0700, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
+> 
+> - The oops in git-net.patch has been fixed, so that tree has been restored. 
+>   It is huge.
+> 
+> - Added the device-mapper development tree to the -mm lineup (Alasdair
+>   Kergon).  It is a quilt tree, living at
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/.
+> 
+> - Added davidel's signalfd stuff.
+> 
+> 
+> 
 
-If anything below screams it's coming from a certain
-source (defective RAM? Bad application or device
-driver?), please let me know as I'm pulling what
-little hair I have left out on this one. Suggestions
-on what to try would be greatly appreciated. Thanks! 
+I see this tracing (from the lock-dependency validator?) for several -mm
+versions.  This is from a Silan ethernet card (CONFIG_SC92031).
+
+00:0b.0 Ethernet controller: Hangzhou Silan Microelectronics Co., Ltd.
+Unknown device 2031 (rev 01)
+
+Other than the tracing, I'm not having any problems.
+
+Tony
+
+======================================================
+[ INFO: soft-safe -> soft-unsafe lock order detected ]
+2.6.21-rc5-mm4-default #44
+------------------------------------------------------
+ip/3036 [HC0[0]:SC0[2]:HE1:SE0] is trying to acquire:
+ (&priv->lock){--..}, at: [<d886ad22>] sc92031_set_multicast_list
++0x14/0x2d [sc92031]
+
+and this task is already holding:
+ (&dev->_xmit_lock){-...}, at: [<c02568b3>] dev_mc_upload+0x14/0x3a
+which would create a new lock dependency:
+ (&dev->_xmit_lock){-...} -> (&priv->lock){--..}
+
+but this new dependency connects a soft-irq-safe lock:
+ (&mc->mca_lock){-+..}
+... which became soft-irq-safe at:
+  [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+  [<c012fdd9>] lock_acquire+0x68/0x82
+  [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+  [<d8c53833>] mld_ifc_timer_expire+0x15b/0x21d [ipv6]
+  [<c011cbd6>] run_timer_softirq+0xf1/0x14e
+  [<c011a5a6>] __do_softirq+0x46/0x9c
+  [<c011a629>] do_softirq+0x2d/0x46
+  [<c011a9d5>] irq_exit+0x3b/0x6b
+  [<c01057f0>] do_IRQ+0x5e/0x76
+  [<c0103f16>] common_interrupt+0x2e/0x34
+  [<c02ab3b9>] error_code+0x71/0x78
+  [<ffffffff>] 0xffffffff
+
+to a soft-irq-unsafe lock:
+ (&priv->lock){--..}
+... which became soft-irq-unsafe at:
+...  [<c012f649>] __lock_acquire+0x46b/0xb93
+  [<c012fdd9>] lock_acquire+0x68/0x82
+  [<c02aaeed>] _spin_lock+0x2b/0x38
+  [<d886b729>] sc92031_open+0xcc/0x16f [sc92031]
+  [<c02549e7>] dev_open+0x33/0x6e
+  [<c025337f>] dev_change_flags+0x57/0x10b
+  [<c028b237>] devinet_ioctl+0x235/0x546
+  [<c028b837>] inet_ioctl+0x89/0xaa
+  [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+  [<c0170a70>] do_ioctl+0x1c/0x53
+  [<c0170c93>] vfs_ioctl+0x1ec/0x203
+  [<c0170cf3>] sys_ioctl+0x49/0x62
+  [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+  [<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+2 locks held by ip/3036:
+ #0:  (rtnl_mutex){--..}, at: [<c02a9ea5>] mutex_lock+0x24/0x28
+ #1:  (&dev->_xmit_lock){-...}, at: [<c02568b3>] dev_mc_upload+0x14/0x3a
+
+the soft-irq-safe lock's dependencies:
+-> (&mc->mca_lock){-+..} ops: 9 {
+   initial-use  at:
+                        [<c012f664>] __lock_acquire+0x486/0xb93
+                        [<c012fdd9>] lock_acquire+0x68/0x82
+                        [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+                        [<d8c53983>] igmp6_group_added+0x1b/0x120 [ipv6]
+                        [<d8c54175>] ipv6_dev_mc_inc+0x2f9/0x346 [ipv6]
+                        [<d8c42f7f>] ipv6_add_dev+0x232/0x240 [ipv6]
+                        [<d8c1430b>] ____versions+0x1e8b/0xfffff9c8
+[x_tables]
+                        [<d8c141d4>] ____versions+0x1d54/0xfffff9c8
+[x_tables]
+                        [<c01365eb>] sys_init_module+0x1252/0x138f
+                        [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                        [<ffffffff>] 0xffffffff
+   in-softirq-W at:
+                        [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+                        [<c012fdd9>] lock_acquire+0x68/0x82
+                        [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+                        [<d8c53833>] mld_ifc_timer_expire+0x15b/0x21d
+[ipv6]
+                        [<c011cbd6>] run_timer_softirq+0xf1/0x14e
+                        [<c011a5a6>] __do_softirq+0x46/0x9c
+                        [<c011a629>] do_softirq+0x2d/0x46
+                        [<c011a9d5>] irq_exit+0x3b/0x6b
+                        [<c01057f0>] do_IRQ+0x5e/0x76
+                        [<c0103f16>] common_interrupt+0x2e/0x34
+                        [<c02ab3b9>] error_code+0x71/0x78
+                        [<ffffffff>] 0xffffffff
+   hardirq-on-W at:
+                        [<c012f61f>] __lock_acquire+0x441/0xb93
+                        [<c012fdd9>] lock_acquire+0x68/0x82
+                        [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+                        [<d8c53983>] igmp6_group_added+0x1b/0x120 [ipv6]
+                        [<d8c54175>] ipv6_dev_mc_inc+0x2f9/0x346 [ipv6]
+                        [<d8c42f7f>] ipv6_add_dev+0x232/0x240 [ipv6]
+                        [<d8c1430b>] ____versions+0x1e8b/0xfffff9c8
+[x_tables]
+                        [<d8c141d4>] ____versions+0x1d54/0xfffff9c8
+[x_tables]
+                        [<c01365eb>] sys_init_module+0x1252/0x138f
+                        [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                        [<ffffffff>] 0xffffffff
+ }
+ ... key      at: [<d8c75bbc>] __key.29988+0x0/0xfffe9535 [ipv6]
+ -> (&dev->_xmit_lock){-...} ops: 18 {
+    initial-use  at:
+                          [<c012f664>] __lock_acquire+0x486/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+                          [<c02568b3>] dev_mc_upload+0x14/0x3a
+                          [<c0253359>] dev_change_flags+0x31/0x10b
+                          [<c028b237>] devinet_ioctl+0x235/0x546
+                          [<c028b837>] inet_ioctl+0x89/0xaa
+                          [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+                          [<c0170a70>] do_ioctl+0x1c/0x53
+                          [<c0170c93>] vfs_ioctl+0x1ec/0x203
+                          [<c0170cf3>] sys_ioctl+0x49/0x62
+                          [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                          [<ffffffff>] 0xffffffff
+    hardirq-on-W at:
+                          [<c012f61f>] __lock_acquire+0x441/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+                          [<c02568b3>] dev_mc_upload+0x14/0x3a
+                          [<c0253359>] dev_change_flags+0x31/0x10b
+                          [<c028b237>] devinet_ioctl+0x235/0x546
+                          [<c028b837>] inet_ioctl+0x89/0xaa
+                          [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+                          [<c0170a70>] do_ioctl+0x1c/0x53
+                          [<c0170c93>] vfs_ioctl+0x1ec/0x203
+                          [<c0170cf3>] sys_ioctl+0x49/0x62
+                          [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                          [<ffffffff>] 0xffffffff
+  }
+  ... key      at: [<c05f0788>] __key.29726+0x0/0x8
+  -> (&rp->lock){++..} ops: 55 {
+     initial-use  at:
+                            [<c012f664>] __lock_acquire+0x486/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                            [<d88a810a>] rhine_get_stats+0x2d/0x9d
+[via_rhine]
+                            [<c025ab78>] rtnl_fill_ifinfo+0x2ea/0x432
+                            [<c025b0d7>] rtmsg_ifinfo+0x63/0xe0
+                            [<c025b18f>] rtnetlink_event+0x3b/0x3f
+                            [<c012020a>] notifier_call_chain+0x2b/0x4a
+                            [<c0120294>] __raw_notifier_call_chain
++0x19/0x1f
+                            [<c01202b4>] raw_notifier_call_chain
++0x1a/0x1c
+                            [<c025304c>] register_netdevice+0x2e0/0x2ea
+                            [<c0254284>] register_netdev+0x40/0x4d
+                            [<d88a7c8c>] rhine_init_one+0x495/0x652
+[via_rhine]
+                            [<c01d5951>] pci_device_probe+0x3c/0x61
+                            [<c0223684>] driver_probe_device+0xe8/0x168
+                            [<c0223831>] __driver_attach+0x77/0xb1
+                            [<c0222b5a>] bus_for_each_dev+0x3a/0x5f
+                            [<c02234c7>] driver_attach+0x19/0x1b
+                            [<c0222e7f>] bus_add_driver+0x76/0x17e
+                            [<c0223a60>] driver_register+0x79/0x7f
+                            [<c01d5ac6>] __pci_register_driver+0x5c/0x8c
+                            [<d883c06c>] __ksymtab_ac97_bus_type
++0x0/0xfffffff6 [ac97_bus]
+                            [<c01365eb>] sys_init_module+0x1252/0x138f
+                            [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                            [<ffffffff>] 0xffffffff
+     in-hardirq-W at:
+                            [<c012f58e>] __lock_acquire+0x3b0/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02aaeed>] _spin_lock+0x2b/0x38
+                            [<d88a6b56>] rhine_interrupt+0x16a/0x696
+[via_rhine]
+                            [<c0142d2e>] handle_IRQ_event+0x1a/0x48
+                            [<c014403e>] handle_level_irq+0x7c/0xc6
+                            [<c01057eb>] do_IRQ+0x59/0x76
+                            [<c0103f16>] common_interrupt+0x2e/0x34
+                            [<c0123db9>] rcu_process_callbacks+0x15/0x26
+                            [<c011a682>] tasklet_action+0x40/0x6c
+                            [<c011a5a6>] __do_softirq+0x46/0x9c
+                            [<c011a629>] do_softirq+0x2d/0x46
+                            [<c011a9d5>] irq_exit+0x3b/0x6b
+                            [<c01057f0>] do_IRQ+0x5e/0x76
+                            [<c0103f16>] common_interrupt+0x2e/0x34
+                            [<c02ab3b9>] error_code+0x71/0x78
+                            [<ffffffff>] 0xffffffff
+     in-softirq-W at:
+                            [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02ab158>] _spin_lock_irq+0x31/0x3e
+                            [<d88a8614>] rhine_start_tx+0x1ad/0x244
+[via_rhine]
+                            [<c0253b4c>] dev_hard_start_xmit+0x216/0x274
+                            [<c02606dc>] __qdisc_run+0xca/0x17f
+                            [<c0255766>] dev_queue_xmit+0x155/0x26b
+                            [<d8c52c05>] mld_sendpack+0x1f7/0x335 [ipv6]
+                            [<d8c538ce>] mld_ifc_timer_expire
++0x1f6/0x21d [ipv6]
+                            [<c011cbd6>] run_timer_softirq+0xf1/0x14e
+                            [<c011a5a6>] __do_softirq+0x46/0x9c
+                            [<c011a629>] do_softirq+0x2d/0x46
+                            [<c011a9d5>] irq_exit+0x3b/0x6b
+                            [<c01057f0>] do_IRQ+0x5e/0x76
+                            [<c0103f16>] common_interrupt+0x2e/0x34
+                            [<c02ab3b9>] error_code+0x71/0x78
+                            [<ffffffff>] 0xffffffff
+   }
+   ... key      at: [<d88ac180>] __key.21685+0x0/0xffffc5fa [via_rhine]
+  ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02ab158>] _spin_lock_irq+0x31/0x3e
+   [<d88a8614>] rhine_start_tx+0x1ad/0x244 [via_rhine]
+   [<c0253b4c>] dev_hard_start_xmit+0x216/0x274
+   [<c02606dc>] __qdisc_run+0xca/0x17f
+   [<c0255766>] dev_queue_xmit+0x155/0x26b
+   [<d8c52c05>] mld_sendpack+0x1f7/0x335 [ipv6]
+   [<d8c538ce>] mld_ifc_timer_expire+0x1f6/0x21d [ipv6]
+   [<c011cbd6>] run_timer_softirq+0xf1/0x14e
+   [<c011a5a6>] __do_softirq+0x46/0x9c
+   [<c011a629>] do_softirq+0x2d/0x46
+   [<c011a9d5>] irq_exit+0x3b/0x6b
+   [<c01057f0>] do_IRQ+0x5e/0x76
+   [<c0103f16>] common_interrupt+0x2e/0x34
+   [<c02ab3b9>] error_code+0x71/0x78
+   [<ffffffff>] 0xffffffff
+
+ ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+   [<c02569c5>] dev_mc_add+0x33/0x141
+   [<d8c539c0>] igmp6_group_added+0x58/0x120 [ipv6]
+   [<d8c54175>] ipv6_dev_mc_inc+0x2f9/0x346 [ipv6]
+   [<d8c42f7f>] ipv6_add_dev+0x232/0x240 [ipv6]
+   [<d8c43503>] addrconf_notify+0x47/0x7d0 [ipv6]
+   [<c0253ddc>] register_netdevice_notifier+0x35/0x5f
+   [<d8c14336>] ____versions+0x1eb6/0xfffff9c8 [x_tables]
+   [<d8c141d4>] ____versions+0x1d54/0xfffff9c8 [x_tables]
+   [<c01365eb>] sys_init_module+0x1252/0x138f
+   [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+   [<ffffffff>] 0xffffffff
+
+ -> (&parent->list_lock){++..} ops: 14182 {
+    initial-use  at:
+                          [<c012f664>] __lock_acquire+0x486/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02aaeed>] _spin_lock+0x2b/0x38
+                          [<c01637a4>] cache_alloc_refill+0x4f/0x44f
+                          [<c0163d52>] kmem_cache_zalloc+0x50/0x97
+                          [<c01643cc>] kmem_cache_create+0x166/0x447
+                          [<c039804a>] kmem_cache_init+0x160/0x3c7
+                          [<c0388ab4>] start_kernel+0x217/0x38d
+                          [<00000000>] 0x0
+                          [<ffffffff>] 0xffffffff
+    in-hardirq-W at:
+                          [<c012f58e>] __lock_acquire+0x3b0/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02aaeed>] _spin_lock+0x2b/0x38
+                          [<c01630e3>] cache_flusharray+0x22/0xa5
+                          [<c0163254>] kmem_cache_free+0x62/0x8e
+                          [<c014c6cb>] mempool_free_slab+0x11/0x13
+                          [<c014c731>] mempool_free+0x64/0x6c
+                          [<c0185212>] bio_free+0x2d/0x31
+                          [<c0185227>] bio_fs_destructor+0x11/0x13
+                          [<c018534c>] bio_put+0x28/0x2a
+                          [<c01839f2>] end_bio_bh_io_sync+0x39/0x3f
+                          [<c018527c>] bio_endio+0x53/0x5b
+                          [<c01b49fa>] __end_that_request_first
++0xcf/0x35d
+                          [<c01b4ca3>] end_that_request_first+0xe/0x10
+                          [<d895ec75>] ide_end_request+0x87/0xd1
+[ide_core]
+                          [<d8965d80>] ide_dma_intr+0x58/0x98 [ide_core]
+                          [<d895f7fe>] ide_intr+0x16b/0x1cf [ide_core]
+                          [<c0142d2e>] handle_IRQ_event+0x1a/0x48
+                          [<c014403e>] handle_level_irq+0x7c/0xc6
+                          [<c01057eb>] do_IRQ+0x59/0x76
+                          [<c0103f16>] common_interrupt+0x2e/0x34
+                          [<c010239b>] cpu_idle+0x44/0x5e
+                          [<c0101110>] rest_init+0x21/0x25
+                          [<c0388c22>] start_kernel+0x385/0x38d
+                          [<00000000>] 0x0
+                          [<ffffffff>] 0xffffffff
+    in-softirq-W at:
+                          [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02aaeed>] _spin_lock+0x2b/0x38
+                          [<c01630e3>] cache_flusharray+0x22/0xa5
+                          [<c01631c4>] kfree+0x5e/0x8c
+                          [<c0114875>] free_task+0x11/0x21
+                          [<c01160c3>] __put_task_struct+0x10f/0x118
+                          [<c01178cd>] delayed_put_task_struct+0x3e/0x45
+                          [<c0123d3b>] __rcu_process_callbacks
++0x103/0x16c
+                          [<c0123db9>] rcu_process_callbacks+0x15/0x26
+                          [<c011a682>] tasklet_action+0x40/0x6c
+                          [<c011a5a6>] __do_softirq+0x46/0x9c
+                          [<c011a629>] do_softirq+0x2d/0x46
+                          [<c011a9d5>] irq_exit+0x3b/0x6b
+                          [<c01057f0>] do_IRQ+0x5e/0x76
+                          [<c0103f16>] common_interrupt+0x2e/0x34
+                          [<c01ed01e>] acpi_ps_alloc_op+0x5b/0x98
+                          [<c01ecc85>] acpi_ps_parse_loop+0x6d9/0x714
+                          [<c01ebf86>] acpi_ps_parse_aml+0x68/0x246
+                          [<c01ed236>] acpi_ps_execute_method
++0x11f/0x1c1
+                          [<c01ea44c>] acpi_ns_evaluate+0xa0/0x100
+                          [<c01efba8>] acpi_ut_evaluate_object
++0x52/0x18c
+                          [<c01e226e>] acpi_ev_match_prw_and_gpe
++0x1f/0xbe
+                          [<c01eb6b9>] acpi_ns_walk_namespace+0xf9/0x114
+                          [<c01e2216>] acpi_ev_initialize_gpe_block
++0x4d/0x86
+                          [<c01dfe20>] acpi_ev_install_fadt_gpes
++0x27/0x47
+                          [<c01f0ace>] acpi_enable_subsystem+0x83/0x8f
+                          [<c039af8c>] acpi_init+0x57/0x1cd
+                          [<c038872c>] kernel_init+0xb9/0x22a
+                          [<c0104007>] kernel_thread_helper+0x7/0x10
+                          [<ffffffff>] 0xffffffff
+  }
+  ... key      at: [<c05e5a88>] __key.17030+0x0/0x8
+  -> (&zone->lock){++..} ops: 6654 {
+     initial-use  at:
+                            [<c012f664>] __lock_acquire+0x486/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02aaeed>] _spin_lock+0x2b/0x38
+                            [<c014dbc8>] free_pages_bulk+0x1a/0x195
+                            [<c014de55>] free_hot_cold_page+0x112/0x156
+                            [<c014dee4>] free_hot_page+0xd/0xf
+                            [<c014df1e>] __free_pages+0x38/0x4a
+                            [<c03977a4>] __free_pages_bootmem+0x61/0x65
+                            [<c0395fb4>] free_all_bootmem_core
++0xd6/0x147
+                            [<c0396035>] free_all_bootmem+0x10/0x12
+                            [<c0393631>] mem_init+0x2a/0x2d0
+                            [<c0388aaf>] start_kernel+0x212/0x38d
+                            [<00000000>] 0x0
+                            [<ffffffff>] 0xffffffff
+     in-hardirq-W at:
+                            [<c012f58e>] __lock_acquire+0x3b0/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02aaeed>] _spin_lock+0x2b/0x38
+                            [<c014dbc8>] free_pages_bulk+0x1a/0x195
+                            [<c014de55>] free_hot_cold_page+0x112/0x156
+                            [<c014dee4>] free_hot_page+0xd/0xf
+                            [<c014df1e>] __free_pages+0x38/0x4a
+                            [<c014df50>] free_pages+0x20/0x22
+                            [<c0163060>] kmem_freepages+0x9c/0xa4
+                            [<c016331e>] slab_destroy+0x61/0x79
+                            [<c01633ed>] free_block+0xb7/0xf4
+                            [<c0163138>] cache_flusharray+0x77/0xa5
+                            [<c0163254>] kmem_cache_free+0x62/0x8e
+                            [<c014c6cb>] mempool_free_slab+0x11/0x13
+                            [<c014c731>] mempool_free+0x64/0x6c
+                            [<c0185212>] bio_free+0x2d/0x31
+                            [<c0185227>] bio_fs_destructor+0x11/0x13
+                            [<c018534c>] bio_put+0x28/0x2a
+                            [<c01839f2>] end_bio_bh_io_sync+0x39/0x3f
+                            [<c018527c>] bio_endio+0x53/0x5b
+                            [<c01b49fa>] __end_that_request_first
++0xcf/0x35d
+                            [<c01b4ca3>] end_that_request_first+0xe/0x10
+                            [<d895ec75>] ide_end_request+0x87/0xd1
+[ide_core]
+                            [<d8965d80>] ide_dma_intr+0x58/0x98
+[ide_core]
+                            [<d895f7fe>] ide_intr+0x16b/0x1cf [ide_core]
+                            [<c0142d2e>] handle_IRQ_event+0x1a/0x48
+                            [<c014403e>] handle_level_irq+0x7c/0xc6
+                            [<c01057eb>] do_IRQ+0x59/0x76
+                            [<c0103f16>] common_interrupt+0x2e/0x34
+                            [<c010239b>] cpu_idle+0x44/0x5e
+                            [<c0101110>] rest_init+0x21/0x25
+                            [<c0388c22>] start_kernel+0x385/0x38d
+                            [<00000000>] 0x0
+                            [<ffffffff>] 0xffffffff
+     in-softirq-W at:
+                            [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02aaeed>] _spin_lock+0x2b/0x38
+                            [<c014da1c>] __free_pages_ok+0xf6/0x278
+                            [<c014df29>] __free_pages+0x43/0x4a
+                            [<c014df50>] free_pages+0x20/0x22
+                            [<c0163060>] kmem_freepages+0x9c/0xa4
+                            [<c016331e>] slab_destroy+0x61/0x79
+                            [<c01633ed>] free_block+0xb7/0xf4
+                            [<c0163138>] cache_flusharray+0x77/0xa5
+                            [<c01631c4>] kfree+0x5e/0x8c
+                            [<c0114875>] free_task+0x11/0x21
+                            [<c01160c3>] __put_task_struct+0x10f/0x118
+                            [<c01178cd>] delayed_put_task_struct
++0x3e/0x45
+                            [<c0123d3b>] __rcu_process_callbacks
++0x103/0x16c
+                            [<c0123db9>] rcu_process_callbacks+0x15/0x26
+                            [<c011a682>] tasklet_action+0x40/0x6c
+                            [<c011a5a6>] __do_softirq+0x46/0x9c
+                            [<c011a629>] do_softirq+0x2d/0x46
+                            [<c011a9d5>] irq_exit+0x3b/0x6b
+                            [<c01057f0>] do_IRQ+0x5e/0x76
+                            [<c0103f16>] common_interrupt+0x2e/0x34
+                            [<c02a9e79>] __mutex_lock_slowpath
++0x238/0x240
+                            [<c02a9ea5>] mutex_lock+0x24/0x28
+                            [<c016c7b2>] do_lookup+0x69/0x13d
+                            [<c016e6d6>] __link_path_walk+0x814/0xc69
+                            [<c016eb74>] link_path_walk+0x49/0xbc
+                            [<c016ee96>] do_path_lookup+0x18a/0x1dc
+                            [<c016f822>] __path_lookup_intent_open
++0x44/0x75
+                            [<c016f8c6>] path_lookup_open+0x21/0x27
+                            [<c0169bc9>] open_exec+0x27/0xa5
+                            [<c016aeaa>] do_execve+0x36/0x1f1
+                            [<c01021a3>] sys_execve+0x2e/0x50
+                            [<c0103d34>] syscall_call+0x7/0xb
+                            [<ffffffff>] 0xffffffff
+   }
+   ... key      at: [<c05de598>] __key.20983+0x0/0x8
+  ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02aaeed>] _spin_lock+0x2b/0x38
+   [<c014da1c>] __free_pages_ok+0xf6/0x278
+   [<c014df29>] __free_pages+0x43/0x4a
+   [<c014df50>] free_pages+0x20/0x22
+   [<c0163060>] kmem_freepages+0x9c/0xa4
+   [<c016331e>] slab_destroy+0x61/0x79
+   [<c01633ed>] free_block+0xb7/0xf4
+   [<c0163138>] cache_flusharray+0x77/0xa5
+   [<c01631c4>] kfree+0x5e/0x8c
+   [<c0114875>] free_task+0x11/0x21
+   [<c01160c3>] __put_task_struct+0x10f/0x118
+   [<c01178cd>] delayed_put_task_struct+0x3e/0x45
+   [<c0123d3b>] __rcu_process_callbacks+0x103/0x16c
+   [<c0123db9>] rcu_process_callbacks+0x15/0x26
+   [<c011a682>] tasklet_action+0x40/0x6c
+   [<c011a5a6>] __do_softirq+0x46/0x9c
+   [<c011a629>] do_softirq+0x2d/0x46
+   [<c011a9d5>] irq_exit+0x3b/0x6b
+   [<c01057f0>] do_IRQ+0x5e/0x76
+   [<c0103f16>] common_interrupt+0x2e/0x34
+   [<c02a9e79>] __mutex_lock_slowpath+0x238/0x240
+   [<c02a9ea5>] mutex_lock+0x24/0x28
+   [<c016c7b2>] do_lookup+0x69/0x13d
+   [<c016e6d6>] __link_path_walk+0x814/0xc69
+   [<c016eb74>] link_path_walk+0x49/0xbc
+   [<c016ee96>] do_path_lookup+0x18a/0x1dc
+   [<c016f822>] __path_lookup_intent_open+0x44/0x75
+   [<c016f8c6>] path_lookup_open+0x21/0x27
+   [<c0169bc9>] open_exec+0x27/0xa5
+   [<c016aeaa>] do_execve+0x36/0x1f1
+   [<c01021a3>] sys_execve+0x2e/0x50
+   [<c0103d34>] syscall_call+0x7/0xb
+   [<ffffffff>] 0xffffffff
+
+  -> (pgd_lock){....} ops: 119 {
+     initial-use  at:
+                            [<c012f664>] __lock_acquire+0x486/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                            [<c0110d8a>] pgd_ctor+0x25/0x7d
+                            [<c0163aee>] cache_alloc_refill+0x399/0x44f
+                            [<c016372d>] kmem_cache_alloc+0x50/0x78
+                            [<c0110d1f>] pgd_alloc+0x15/0x17
+                            [<c0114691>] mm_init+0xa6/0xcd
+                            [<c0115bbd>] mm_alloc+0x2e/0x32
+                            [<c016aedd>] do_execve+0x69/0x1f1
+                            [<c01021a3>] sys_execve+0x2e/0x50
+                            [<c0103d34>] syscall_call+0x7/0xb
+                            [<ffffffff>] 0xffffffff
+   }
+   ... key      at: [<c0361cfc>] pgd_lock+0x1c/0x40
+  ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+   [<c0110d34>] pgd_dtor+0x13/0x44
+   [<c01632f0>] slab_destroy+0x33/0x79
+   [<c01633ed>] free_block+0xb7/0xf4
+   [<c0163138>] cache_flusharray+0x77/0xa5
+   [<c0163254>] kmem_cache_free+0x62/0x8e
+   [<c0110d08>] pgd_free+0x12/0x14
+   [<c011477d>] __mmdrop+0x1c/0x33
+   [<c02a8dce>] __sched_text_start+0x546/0x59f
+   [<c01188da>] do_wait+0x90e/0xa04
+   [<c0118a00>] sys_wait4+0x30/0x32
+   [<c0118a29>] sys_waitpid+0x27/0x29
+   [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+   [<ffffffff>] 0xffffffff
+
+ ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02aaeed>] _spin_lock+0x2b/0x38
+   [<c01637a4>] cache_alloc_refill+0x4f/0x44f
+   [<c0163c19>] __kmalloc+0x75/0x9a
+   [<c024f856>] __alloc_skb+0x6b/0x11b
+   [<c024c162>] sock_alloc_send_skb+0x7c/0x1a9
+   [<d8c52299>] mld_newpack+0x5d/0x172 [ipv6]
+   [<d8c523d2>] add_grhead+0x24/0xa4 [ipv6]
+   [<d8c53072>] add_grec+0x32f/0x35a [ipv6]
+   [<d8c5389f>] mld_ifc_timer_expire+0x1c7/0x21d [ipv6]
+   [<c011cbd6>] run_timer_softirq+0xf1/0x14e
+   [<c011a5a6>] __do_softirq+0x46/0x9c
+   [<c011a629>] do_softirq+0x2d/0x46
+   [<c011a9d5>] irq_exit+0x3b/0x6b
+   [<c01057f0>] do_IRQ+0x5e/0x76
+   [<c0103f16>] common_interrupt+0x2e/0x34
+   [<c02ab3b9>] error_code+0x71/0x78
+   [<ffffffff>] 0xffffffff
 
 
-------------[ cut here ]------------
-kernel BUG at mm/rmap.c:434!
-invalid operand: 0000 [#1]
-SMP 
-Modules linked in: fusedriver(U) md5 ipv6 parport_pc
-lp parport autofs4 i2c_dev i2c_core sunrpc
-dm_multipath button battery ac uhci_hcd ehci_hcd e1000
-floppy dm_snapshot dm_zero dm_mirror ext3 jbd dm_mod
-3w_9xxx(U) sd_mod scsi_mod
-CPU:    5
-EIP:    0060:[<c01518c6>]    Not tainted VLI
-EFLAGS: 00010202   (2.6.9-22.ELsmp) 
-EIP is at page_add_anon_rmap+0xe/0x66
-eax: 40000964   ebx: c1800040   ecx: 090a100c   edx:
-e5b5a544
-esi: d1837e8c   edi: fff25508   ebp: c1800040   esp:
-cf12ae40
-ds: 007b   es: 007b   ss: 0068
-Process check-enqueued- (pid: 17602,
-threadinfo=cf12a000 task=f57577b0)
-Stack: 40002067 80000000 c014d034 fff29000 40002025
-80000000 00000163 e5b5a544 
-       f35b9080 00000000 fff25508 fff25508 090a100c
-c014d0e2 cc5a2240 00000001 
-       090a100c ffffffff ffffffff 00000000 00000000
-80000000 00000000 00000000 
-Call Trace:
- [<c014d034>] do_anonymous_page+0x19c/0x1db
- [<c014d0e2>] do_no_page+0x6f/0x2f9
- [<c014d503>] handle_mm_fault+0xbd/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e58e>] vma_adjust+0x286/0x2d6
- [<c014e762>] vma_merge+0xe1/0x165
- [<c011d3d5>] finish_task_switch+0x30/0x66
- [<c02cf368>] schedule+0x844/0x87a
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
-Code: 83 7b 10 00 74 0b 89 ca 89 d8 e8 fb fe ff ff 01
-c6 89 d8 e8 ac df fe ff 5b 89 f0 5e c3 56 53 89 c3 8b
-00 8b 72 44 f6 c4 08 74 08 <0f> 0b b2 01 ce 52 2e c0
-85 f6 75 08 0f 0b b3 01 ce 52 2e c0 8b 
- <0>Fatal exception: panic in 5 seconds
-bad: scheduling while atomic!
- [<c02ceb51>] schedule+0x2d/0x87a
- [<c020a293>] poke_blanked_console+0x3d/0x9a
- [<c02096a5>] vt_console_print+0x294/0x2a5
- [<c0129715>] __mod_timer+0x101/0x10b
- [<c02cf8a0>] schedule_timeout+0xd3/0xee
- [<c0129fba>] process_timeout+0x0/0x5
- [<c0122320>] printk+0xe/0x11
- [<c0106092>] die+0x15a/0x16b
- [<c01063f5>] do_invalid_op+0xcf/0xf2
- [<f88aa3d6>] ext3_get_inode_loc+0x4f/0x226 [ext3]
- [<c01518c6>] page_add_anon_rmap+0xe/0x66
- [<c011e5b5>] __wake_up+0x29/0x3c
- [<c0142c1b>] __rmqueue+0xc1/0x10c
- [<c0142cc1>] rmqueue_bulk+0x5b/0x65
- [<c0106326>] do_invalid_op+0x0/0xf2
- [<c02d1bab>] error_code+0x2f/0x38
- [<c01518c6>] page_add_anon_rmap+0xe/0x66
- [<c014d034>] do_anonymous_page+0x19c/0x1db
- [<c014d0e2>] do_no_page+0x6f/0x2f9
- [<c014d503>] handle_mm_fault+0xbd/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e58e>] vma_adjust+0x286/0x2d6
- [<c014e762>] vma_merge+0xe1/0x165
- [<c011d3d5>] finish_task_switch+0x30/0x66
- [<c02cf368>] schedule+0x844/0x87a
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
-------------[ cut here ]------------
-kernel BUG at arch/i386/mm/highmem.c:42!
-invalid operand: 0000 [#2]
-SMP 
-Modules linked in: fusedriver(U) md5 ipv6 parport_pc
-lp parport autofs4 i2c_dev i2c_core sunrpc
-dm_multipath button battery ac uhci_hcd ehci_hcd e1000
-floppy dm_snapshot dm_zero dm_mirror ext3 jbd dm_mod
-3w_9xxx(U) sd_mod scsi_mod
-CPU:    5
-EIP:    0060:[<c011c6e6>]    Not tainted VLI
-EFLAGS: 00010286   (2.6.9-22.ELsmp) 
-EIP is at kmap_atomic+0x73/0x178
-eax: c000a928   ebx: 80000000   ecx: 90b52163   edx:
-000000c4
-esi: f467a380   edi: d898bbe8   ebp: c000af48   esp:
-eee66e7c
-ds: 007b   es: 007b   ss: 0068
-Process search_pe (pid: 17511, threadinfo=eee66000
-task=f511e030)
-Stack: 00000001 00000000 f5646900 00000001 00000000
-00000000 00000000 00000000 
-       00000000 fff25000 c182d280 e19cb630 f467a380
-d898bbe8 00000c00 c014b006 
-       e19cb630 e19cb630 e19cb630 f467a3b0 d898bbe8
-afb80004 c014d4d1 f3aae22c 
-Call Trace:
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e7d7>] vma_merge+0x156/0x165
- [<c014ec91>] do_mmap_pgoff+0x3cd/0x666
- [<c014ee2c>] do_mmap_pgoff+0x568/0x666
- [<c010b67f>] sys_mmap2+0x7e/0xaf
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c02d007b>] __lock_text_end+0x11a/0x100f
-Code: c8 40 c0 01 c2 8d 42 16 c1 e0 0c 29 c1 89 4c 24
-24 8d 04 d5 00 00 00 00 89 e9 29 c1 89 c8 8b 09 8b 58
-04 85 c9 75 04 85 db 74 08 <0f> 0b 2a 00 04 27 2e c0
-8b 5c 24 28 8b 0d 78 29 32 c0 8b 03 89 
- <0>Fatal exception: panic in 5 seconds
-bad: scheduling while atomic!
- [<c02ceb51>] schedule+0x2d/0x87a
- [<c020a293>] poke_blanked_console+0x3d/0x9a
- [<c02096a5>] vt_console_print+0x294/0x2a5
- [<c0129715>] __mod_timer+0x101/0x10b
- [<c02cf8a0>] schedule_timeout+0xd3/0xee
- [<c0129fba>] process_timeout+0x0/0x5
- [<c0122320>] printk+0xe/0x11
- [<c0106092>] die+0x15a/0x16b
- [<c01063f5>] do_invalid_op+0xcf/0xf2
- [<c011ffbe>] autoremove_wake_function+0xd/0x2d
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c011e5b5>] __wake_up+0x29/0x3c
- [<c0278dc3>] __kfree_skb+0xf4/0xf7
- [<c02cbcad>] unix_stream_recvmsg+0x2cc/0x39d
- [<c0106326>] do_invalid_op+0x0/0xf2
- [<c02d1bab>] error_code+0x2f/0x38
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e7d7>] vma_merge+0x156/0x165
- [<c014ec91>] do_mmap_pgoff+0x3cd/0x666
- [<c014ee2c>] do_mmap_pgoff+0x568/0x666
- [<c010b67f>] sys_mmap2+0x7e/0xaf
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c02d007b>] __lock_text_end+0x11a/0x100f
-------------[ cut here ]------------
-kernel BUG at arch/i386/mm/highmem.c:42!
-invalid operand: 0000 [#3]
-SMP 
-Modules linked in: fusedriver(U) md5 ipv6 parport_pc
-lp parport autofs4 i2c_dev i2c_core sunrpc
-dm_multipath button battery ac uhci_hcd ehci_hcd e1000
-floppy dm_snapshot dm_zero dm_mirror ext3 jbd dm_mod
-3w_9xxx(U) sd_mod scsi_mod
-CPU:    5
-EIP:    0060:[<c011c6e6>]    Not tainted VLI
-EFLAGS: 00010286   (2.6.9-22.ELsmp) 
-EIP is at kmap_atomic+0x73/0x178
-eax: c000a928   ebx: 80000000   ecx: 90b52163   edx:
-000000c4
-esi: f5634080   edi: f4c3ddf8   ebp: c000af48   esp:
-f560edd0
-ds: 007b   es: 007b   ss: 0068
-Process irqbalance (pid: 2543, threadinfo=f560e000
-task=f4ec8330)
-Stack: f7ee1e00 c3802ab8 00000000 e0f6a4b4 f778f478
-e0f6a474 e0f6a474 00000000 
-       00000000 fff25000 c35d96c0 f7f10ef0 f5634080
-f4c3ddf8 00000ff8 c014b006 
-       f7f10ef0 f7f10ef0 f7f10ef0 f56340b0 f4c3ddf8
-b7fff000 c014d4d1 f54de90c 
-Call Trace:
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c016dbc8>] dput+0x34/0x1a7
- [<c0166050>] link_path_walk+0x94/0xbe
- [<c02cf8a7>] schedule_timeout+0xda/0xee
- [<c01c0f8d>] vsnprintf+0x448/0x488
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c01c1c8a>] __copy_to_user_ll+0x30/0x46
- [<c0173e13>] seq_read+0x24a/0x2c2
- [<c0159c61>] vfs_read+0xb6/0xe2
- [<c0159e74>] sys_read+0x3c/0x62
- [<c02d10cf>] syscall_call+0x7/0xb
-Code: c8 40 c0 01 c2 8d 42 16 c1 e0 0c 29 c1 89 4c 24
-24 8d 04 d5 00 00 00 00 89 e9 29 c1 89 c8 8b 09 8b 58
-04 85 c9 75 04 85 db 74 08 <0f> 0b 2a 00 04 27 2e c0
-8b 5c 24 28 8b 0d 78 29 32 c0 8b 03 89 
- <0>Fatal exception: panic in 5 seconds
-bad: scheduling while atomic!
- [<c02ceb51>] schedule+0x2d/0x87a
- [<c020a293>] poke_blanked_console+0x3d/0x9a
- [<c02096a5>] vt_console_print+0x294/0x2a5
- [<c0129715>] __mod_timer+0x101/0x10b
- [<c02cf8a0>] schedule_timeout+0xd3/0xee
- [<c0129fba>] process_timeout+0x0/0x5
- [<c0122320>] printk+0xe/0x11
- [<c0106092>] die+0x15a/0x16b
- [<c01063f5>] do_invalid_op+0xcf/0xf2
- [<c0142c1b>] __rmqueue+0xc1/0x10c
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c0142cc1>] rmqueue_bulk+0x5b/0x65
- [<c0143050>] buffered_rmqueue+0x17d/0x1a5
- [<c0106326>] do_invalid_op+0x0/0xf2
- [<c02d1bab>] error_code+0x2f/0x38
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c016dbc8>] dput+0x34/0x1a7
- [<c0166050>] link_path_walk+0x94/0xbe
- [<c02cf8a7>] schedule_timeout+0xda/0xee
- [<c01c0f8d>] vsnprintf+0x448/0x488
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c01c1c8a>] __copy_to_user_ll+0x30/0x46
- [<c0173e13>] seq_read+0x24a/0x2c2
- [<c0159c61>] vfs_read+0xb6/0xe2
- [<c0159e74>] sys_read+0x3c/0x62
- [<c02d10cf>] syscall_call+0x7/0xb
-------------[ cut here ]------------
-kernel BUG at arch/i386/mm/highmem.c:42!
-invalid operand: 0000 [#4]
-SMP 
-Modules linked in: fusedriver(U) md5 ipv6 parport_pc
-lp parport autofs4 i2c_dev i2c_core sunrpc
-dm_multipath button battery ac uhci_hcd ehci_hcd e1000
-floppy dm_snapshot dm_zero dm_mirror ext3 jbd dm_mod
-3w_9xxx(U) sd_mod scsi_mod
-CPU:    5
-EIP:    0060:[<c011c6e6>]    Not tainted VLI
-EFLAGS: 00010286   (2.6.9-22.ELsmp) 
-EIP is at kmap_atomic+0x73/0x178
-eax: c000a928   ebx: 80000000   ecx: 90b52163   edx:
-000000c4
-esi: f56a5980   edi: c847cbe8   ebp: c000af48   esp:
-d8236e7c
-ds: 007b   es: 007b   ss: 0068
-Process search_pe (pid: 17600, threadinfo=d8236000
-task=f3a95930)
-Stack: 00000001 00000000 ce89ea80 00000001 00000000
-00000000 00000000 00000000 
-       00000000 fff25000 c3202bc0 f7f10b30 f56a5980
-c847cbe8 00000c00 c014b006 
-       f7f10b30 f7f10b30 f7f10b30 f56a59b0 c847cbe8
-afb80004 c014d4d1 f3a68a6c 
-Call Trace:
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e7d7>] vma_merge+0x156/0x165
- [<c014ec91>] do_mmap_pgoff+0x3cd/0x666
- [<c014ee2c>] do_mmap_pgoff+0x568/0x666
- [<c010b67f>] sys_mmap2+0x7e/0xaf
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c02d007b>] __lock_text_end+0x11a/0x100f
-Code: c8 40 c0 01 c2 8d 42 16 c1 e0 0c 29 c1 89 4c 24
-24 8d 04 d5 00 00 00 00 89 e9 29 c1 89 c8 8b 09 8b 58
-04 85 c9 75 04 85 db 74 08 <0f> 0b 2a 00 04 27 2e c0
-8b 5c 24 28 8b 0d 78 29 32 c0 8b 03 89 
- <0>Fatal exception: panic in 5 seconds
-bad: scheduling while atomic!
- [<c02ceb51>] schedule+0x2d/0x87a
- [<c020a293>] poke_blanked_console+0x3d/0x9a
- [<c02096a5>] vt_console_print+0x294/0x2a5
- [<c0129715>] __mod_timer+0x101/0x10b
- [<c02cf8a0>] schedule_timeout+0xd3/0xee
- [<c0129fba>] process_timeout+0x0/0x5
- [<c0122320>] printk+0xe/0x11
- [<c0106092>] die+0x15a/0x16b
- [<c01063f5>] do_invalid_op+0xcf/0xf2
- [<c011ffbe>] autoremove_wake_function+0xd/0x2d
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c011e5b5>] __wake_up+0x29/0x3c
- [<c0278dc3>] __kfree_skb+0xf4/0xf7
- [<c02cbcad>] unix_stream_recvmsg+0x2cc/0x39d
- [<c0106326>] do_invalid_op+0x0/0xf2
- [<c02d1bab>] error_code+0x2f/0x38
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e7d7>] vma_merge+0x156/0x165
- [<c014ec91>] do_mmap_pgoff+0x3cd/0x666
- [<c014ee2c>] do_mmap_pgoff+0x568/0x666
- [<c010b67f>] sys_mmap2+0x7e/0xaf
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c02d007b>] __lock_text_end+0x11a/0x100f
-------------[ cut here ]------------
-kernel BUG at arch/i386/mm/highmem.c:42!
-invalid operand: 0000 [#5]
-SMP 
-Modules linked in: fusedriver(U) md5 ipv6 parport_pc
-lp parport autofs4 i2c_dev i2c_core sunrpc
-dm_multipath button battery ac uhci_hcd ehci_hcd e1000
-floppy dm_snapshot dm_zero dm_mirror ext3 jbd dm_mod
-3w_9xxx(U) sd_mod scsi_mod
-CPU:    5
-EIP:    0060:[<c011c6e6>]    Not tainted VLI
-EFLAGS: 00010286   (2.6.9-22.ELsmp) 
-EIP is at kmap_atomic+0x73/0x178
-eax: c000a928   ebx: 80000000   ecx: 90b52163   edx:
-000000c4
-esi: f4705380   edi: f4d065a8   ebp: c000af48   esp:
-f55eee7c
-ds: 007b   es: 007b   ss: 0068
-Process mysqld (pid: 2882, threadinfo=f55ee000
-task=f56c7230)
-Stack: 00000057 00000000 f5754b80 00000057 00000001
-c0140263 00000000 00000000 
-       00000000 fff25000 c295d2a0 f7f10550 f4705380
-f4d065a8 000002f8 c014b006 
-       f7f10550 f7f10550 f7f10550 f47053b0 f4d065a8
-96a5f004 c014d4d1 f3a8f7ac 
-Call Trace:
- [<c0140263>] __generic_file_aio_read+0x19f/0x1bd
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e1e9>] __vma_link+0x59/0x66
- [<c014e23a>] vma_link+0x44/0xbc
- [<c014ee2c>] do_mmap_pgoff+0x568/0x666
- [<c010b67f>] sys_mmap2+0x7e/0xaf
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c02d007b>] __lock_text_end+0x11a/0x100f
-Code: c8 40 c0 01 c2 8d 42 16 c1 e0 0c 29 c1 89 4c 24
-24 8d 04 d5 00 00 00 00 89 e9 29 c1 89 c8 8b 09 8b 58
-04 85 c9 75 04 85 db 74 08 <0f> 0b 2a 00 04 27 2e c0
-8b 5c 24 28 8b 0d 78 29 32 c0 8b 03 89 
- <0>Fatal exception: panic in 5 seconds
-bad: scheduling while atomic!
- [<c02ceb51>] schedule+0x2d/0x87a
- [<c020a293>] poke_blanked_console+0x3d/0x9a
- [<c02096a5>] vt_console_print+0x294/0x2a5
- [<c0129715>] __mod_timer+0x101/0x10b
- [<c02cf8a0>] schedule_timeout+0xd3/0xee
- [<c0129fba>] process_timeout+0x0/0x5
- [<c0122320>] printk+0xe/0x11
- [<c0106092>] die+0x15a/0x16b
- [<c01063f5>] do_invalid_op+0xcf/0xf2
- [<c011ffbe>] autoremove_wake_function+0xd/0x2d
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c011e5b5>] __wake_up+0x29/0x3c
- [<c0278dc3>] __kfree_skb+0xf4/0xf7
- [<c02cbcad>] unix_stream_recvmsg+0x2cc/0x39d
- [<c0106326>] do_invalid_op+0x0/0xf2
- [<c02d1bab>] error_code+0x2f/0x38
- [<c011c6e6>] kmap_atomic+0x73/0x178
- [<c0140263>] __generic_file_aio_read+0x19f/0x1bd
- [<c014b006>] pte_alloc_map+0xd9/0xe2
- [<c014d4d1>] handle_mm_fault+0x8b/0x175
- [<c011addb>] do_page_fault+0x1ae/0x5c6
- [<c014e1e9>] __vma_link+0x59/0x66
- [<c014e23a>] vma_link+0x44/0xbc
- [<c014ee2c>] do_mmap_pgoff+0x568/0x666
- [<c010b67f>] sys_mmap2+0x7e/0xaf
- [<c011ac2d>] do_page_fault+0x0/0x5c6
- [<c02d1bab>] error_code+0x2f/0x38
- [<c02d007b>] __lock_text_end+0x11a/0x100f
-Kernel panic - not syncing: Fatal exception
- 
+the soft-irq-unsafe lock's dependencies:
+-> (&priv->lock){--..} ops: 2 {
+   initial-use  at:
+                        [<c012f664>] __lock_acquire+0x486/0xb93
+                        [<c012fdd9>] lock_acquire+0x68/0x82
+                        [<c02aaeed>] _spin_lock+0x2b/0x38
+                        [<d886b729>] sc92031_open+0xcc/0x16f [sc92031]
+                        [<c02549e7>] dev_open+0x33/0x6e
+                        [<c025337f>] dev_change_flags+0x57/0x10b
+                        [<c028b237>] devinet_ioctl+0x235/0x546
+                        [<c028b837>] inet_ioctl+0x89/0xaa
+                        [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+                        [<c0170a70>] do_ioctl+0x1c/0x53
+                        [<c0170c93>] vfs_ioctl+0x1ec/0x203
+                        [<c0170cf3>] sys_ioctl+0x49/0x62
+                        [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                        [<ffffffff>] 0xffffffff
+   softirq-on-W at:
+                        [<c012f649>] __lock_acquire+0x46b/0xb93
+                        [<c012fdd9>] lock_acquire+0x68/0x82
+                        [<c02aaeed>] _spin_lock+0x2b/0x38
+                        [<d886b729>] sc92031_open+0xcc/0x16f [sc92031]
+                        [<c02549e7>] dev_open+0x33/0x6e
+                        [<c025337f>] dev_change_flags+0x57/0x10b
+                        [<c028b237>] devinet_ioctl+0x235/0x546
+                        [<c028b837>] inet_ioctl+0x89/0xaa
+                        [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+                        [<c0170a70>] do_ioctl+0x1c/0x53
+                        [<c0170c93>] vfs_ioctl+0x1ec/0x203
+                        [<c0170cf3>] sys_ioctl+0x49/0x62
+                        [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                        [<ffffffff>] 0xffffffff
+   hardirq-on-W at:
+                        [<c012f61f>] __lock_acquire+0x441/0xb93
+                        [<c012fdd9>] lock_acquire+0x68/0x82
+                        [<c02aaeed>] _spin_lock+0x2b/0x38
+                        [<d886b729>] sc92031_open+0xcc/0x16f [sc92031]
+                        [<c02549e7>] dev_open+0x33/0x6e
+                        [<c025337f>] dev_change_flags+0x57/0x10b
+                        [<c028b237>] devinet_ioctl+0x235/0x546
+                        [<c028b837>] inet_ioctl+0x89/0xaa
+                        [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+                        [<c0170a70>] do_ioctl+0x1c/0x53
+                        [<c0170c93>] vfs_ioctl+0x1ec/0x203
+                        [<c0170cf3>] sys_ioctl+0x49/0x62
+                        [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                        [<ffffffff>] 0xffffffff
+ }
+ ... key      at: [<d886e180>] __key.22056+0x0/0xffffd670 [sc92031]
+ -> (lweventlist_lock){....} ops: 1 {
+    initial-use  at:
+                          [<c012f664>] __lock_acquire+0x486/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                          [<c025c17a>] linkwatch_fire_event+0x58/0xae
+                          [<c02605e3>] netif_carrier_off+0x1a/0x1c
+                          [<d886a650>] _sc92031_reset+0x1a5/0x1dd
+[sc92031]
+                          [<d886b730>] sc92031_open+0xd3/0x16f [sc92031]
+                          [<c02549e7>] dev_open+0x33/0x6e
+                          [<c025337f>] dev_change_flags+0x57/0x10b
+                          [<c028b237>] devinet_ioctl+0x235/0x546
+                          [<c028b837>] inet_ioctl+0x89/0xaa
+                          [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+                          [<c0170a70>] do_ioctl+0x1c/0x53
+                          [<c0170c93>] vfs_ioctl+0x1ec/0x203
+                          [<c0170cf3>] sys_ioctl+0x49/0x62
+                          [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                          [<ffffffff>] 0xffffffff
+  }
+  ... key      at: [<c037a19c>] lweventlist_lock+0x1c/0x28
+ ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+   [<c025c17a>] linkwatch_fire_event+0x58/0xae
+   [<c02605e3>] netif_carrier_off+0x1a/0x1c
+   [<d886a650>] _sc92031_reset+0x1a5/0x1dd [sc92031]
+   [<d886b730>] sc92031_open+0xd3/0x16f [sc92031]
+   [<c02549e7>] dev_open+0x33/0x6e
+   [<c025337f>] dev_change_flags+0x57/0x10b
+   [<c028b237>] devinet_ioctl+0x235/0x546
+   [<c028b837>] inet_ioctl+0x89/0xaa
+   [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+   [<c0170a70>] do_ioctl+0x1c/0x53
+   [<c0170c93>] vfs_ioctl+0x1ec/0x203
+   [<c0170cf3>] sys_ioctl+0x49/0x62
+   [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+   [<ffffffff>] 0xffffffff
+
+ -> (&cwq->lock){++..} ops: 8986 {
+    initial-use  at:
+                          [<c012f664>] __lock_acquire+0x486/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                          [<c0123109>] __queue_work+0x12/0x33
+                          [<c0123152>] queue_work+0x28/0x33
+                          [<c012293e>] call_usermodehelper_keys
++0xc5/0xea
+                          [<c01bf6ca>] kobject_uevent_env+0x3d3/0x42b
+                          [<c01bf72f>] kobject_uevent+0xd/0x12
+                          [<c022184a>] device_add+0x32f/0x518
+                          [<c0221a48>] device_register+0x15/0x19
+                          [<c0221faa>] device_create+0x77/0x99
+                          [<c039e0d0>] vtconsole_class_init+0x71/0xb5
+                          [<c038872c>] kernel_init+0xb9/0x22a
+                          [<c0104007>] kernel_thread_helper+0x7/0x10
+                          [<ffffffff>] 0xffffffff
+    in-hardirq-W at:
+                          [<c012f58e>] __lock_acquire+0x3b0/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                          [<c0123109>] __queue_work+0x12/0x33
+                          [<c0123152>] queue_work+0x28/0x33
+                          [<c012316f>] schedule_work+0x12/0x14
+                          [<c0229e72>] schedule_bh+0x15/0x17
+                          [<c0229ff8>] floppy_interrupt+0x168/0x192
+                          [<c022d014>] floppy_hardint+0x1c/0xbc
+                          [<c0142d2e>] handle_IRQ_event+0x1a/0x48
+                          [<c014403e>] handle_level_irq+0x7c/0xc6
+                          [<c01057eb>] do_IRQ+0x59/0x76
+                          [<c0103f16>] common_interrupt+0x2e/0x34
+                          [<c010239b>] cpu_idle+0x44/0x5e
+                          [<c0101110>] rest_init+0x21/0x25
+                          [<c0388c22>] start_kernel+0x385/0x38d
+                          [<00000000>] 0x0
+                          [<ffffffff>] 0xffffffff
+    in-softirq-W at:
+                          [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                          [<c0123109>] __queue_work+0x12/0x33
+                          [<c01234b5>] delayed_work_timer_fn+0x17/0x19
+                          [<c011cbd6>] run_timer_softirq+0xf1/0x14e
+                          [<c011a5a6>] __do_softirq+0x46/0x9c
+                          [<c011a629>] do_softirq+0x2d/0x46
+                          [<c011a9d5>] irq_exit+0x3b/0x6b
+                          [<c01057f0>] do_IRQ+0x5e/0x76
+                          [<c0103f16>] common_interrupt+0x2e/0x34
+                          [<c010239b>] cpu_idle+0x44/0x5e
+                          [<c0101110>] rest_init+0x21/0x25
+                          [<c0388c22>] start_kernel+0x385/0x38d
+                          [<00000000>] 0x0
+                          [<ffffffff>] 0xffffffff
+  }
+  ... key      at: [<c03e22e0>] __key.10619+0x0/0x8
+  -> (&q->lock){++..} ops: 54469 {
+     initial-use  at:
+                            [<c012f664>] __lock_acquire+0x486/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02ab158>] _spin_lock_irq+0x31/0x3e
+                            [<c02a8fb9>] wait_for_completion+0x29/0xaf
+                            [<c012599d>] keventd_create_kthread
++0x32/0x62
+                            [<c0125a30>] kthread_create+0x63/0x9e
+                            [<c0394848>] cpu_callback+0x35/0x7a
+                            [<c03948a4>] spawn_ksoftirqd+0x17/0x37
+                            [<c03886ac>] kernel_init+0x39/0x22a
+                            [<c0104007>] kernel_thread_helper+0x7/0x10
+                            [<ffffffff>] 0xffffffff
+     in-hardirq-W at:
+                            [<c012f58e>] __lock_acquire+0x3b0/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                            [<c0112ae3>] __wake_up+0x15/0x42
+                            [<c0122d39>] insert_work+0x64/0x6b
+                            [<c0123119>] __queue_work+0x22/0x33
+                            [<c0123152>] queue_work+0x28/0x33
+                            [<c012316f>] schedule_work+0x12/0x14
+                            [<c0229e72>] schedule_bh+0x15/0x17
+                            [<c0229ff8>] floppy_interrupt+0x168/0x192
+                            [<c022d014>] floppy_hardint+0x1c/0xbc
+                            [<c0142d2e>] handle_IRQ_event+0x1a/0x48
+                            [<c014403e>] handle_level_irq+0x7c/0xc6
+                            [<c01057eb>] do_IRQ+0x59/0x76
+                            [<c0103f16>] common_interrupt+0x2e/0x34
+                            [<c010239b>] cpu_idle+0x44/0x5e
+                            [<c0101110>] rest_init+0x21/0x25
+                            [<c0388c22>] start_kernel+0x385/0x38d
+                            [<00000000>] 0x0
+                            [<ffffffff>] 0xffffffff
+     in-softirq-W at:
+                            [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+                            [<c012fdd9>] lock_acquire+0x68/0x82
+                            [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                            [<c0112a4f>] complete+0x15/0x4a
+                            [<c0123b65>] wakeme_after_rcu+0xe/0x10
+                            [<c0123d3b>] __rcu_process_callbacks
++0x103/0x16c
+                            [<c0123db9>] rcu_process_callbacks+0x15/0x26
+                            [<c011a682>] tasklet_action+0x40/0x6c
+                            [<c011a5a6>] __do_softirq+0x46/0x9c
+                            [<c011a629>] do_softirq+0x2d/0x46
+                            [<c011a9d5>] irq_exit+0x3b/0x6b
+                            [<c01057f0>] do_IRQ+0x5e/0x76
+                            [<c0103f16>] common_interrupt+0x2e/0x34
+                            [<c010239b>] cpu_idle+0x44/0x5e
+                            [<c0101110>] rest_init+0x21/0x25
+                            [<c0388c22>] start_kernel+0x385/0x38d
+                            [<00000000>] 0x0
+                            [<ffffffff>] 0xffffffff
+   }
+   ... key      at: [<c03e271c>] __key.14042+0x0/0x8
+   -> (&rq->rq_lock_key){++..} ops: 67981 {
+      initial-use  at:
+                              [<c012f664>] __lock_acquire+0x486/0xb93
+                              [<c012fdd9>] lock_acquire+0x68/0x82
+                              [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                              [<c0393e8d>] init_idle+0x5c/0x86
+                              [<c03940cb>] sched_init+0x214/0x21c
+                              [<c038897a>] start_kernel+0xdd/0x38d
+                              [<00000000>] 0x0
+                              [<ffffffff>] 0xffffffff
+      in-hardirq-W at:
+                              [<c012f58e>] __lock_acquire+0x3b0/0xb93
+                              [<c012fdd9>] lock_acquire+0x68/0x82
+                              [<c02aaeed>] _spin_lock+0x2b/0x38
+                              [<c0114195>] scheduler_tick+0x8e/0xbd
+                              [<c011d1bf>] update_process_times
++0x4f/0x5a
+                              [<c012bf0d>] tick_periodic+0x69/0x75
+                              [<c012bf2b>] tick_handle_periodic
++0x12/0x63
+                              [<c01066d9>] timer_interrupt+0x11/0x18
+                              [<c0142d2e>] handle_IRQ_event+0x1a/0x48
+                              [<c014403e>] handle_level_irq+0x7c/0xc6
+                              [<c01057eb>] do_IRQ+0x59/0x76
+                              [<c0103f16>] common_interrupt+0x2e/0x34
+                              [<c038f206>] request_standard_resources
++0x75/0x2fc
+                              [<c038872c>] kernel_init+0xb9/0x22a
+                              [<c0104007>] kernel_thread_helper+0x7/0x10
+                              [<ffffffff>] 0xffffffff
+      in-softirq-W at:
+                              [<c012f5b5>] __lock_acquire+0x3d7/0xb93
+                              [<c012fdd9>] lock_acquire+0x68/0x82
+                              [<c02aaeed>] _spin_lock+0x2b/0x38
+                              [<c0113260>] task_rq_lock+0x1a/0x21
+                              [<c0113944>] try_to_wake_up+0x18/0xa0
+                              [<c01139da>] default_wake_function
++0xe/0x10
+                              [<c01127f0>] __wake_up_common+0x32/0x55
+                              [<c0112a73>] complete+0x39/0x4a
+                              [<c0123b65>] wakeme_after_rcu+0xe/0x10
+                              [<c0123d3b>] __rcu_process_callbacks
++0x103/0x16c
+                              [<c0123db9>] rcu_process_callbacks
++0x15/0x26
+                              [<c011a682>] tasklet_action+0x40/0x6c
+                              [<c011a5a6>] __do_softirq+0x46/0x9c
+                              [<c011a629>] do_softirq+0x2d/0x46
+                              [<c011a9d5>] irq_exit+0x3b/0x6b
+                              [<c01057f0>] do_IRQ+0x5e/0x76
+                              [<c0103f16>] common_interrupt+0x2e/0x34
+                              [<c010239b>] cpu_idle+0x44/0x5e
+                              [<c0101110>] rest_init+0x21/0x25
+                              [<c0388c22>] start_kernel+0x385/0x38d
+                              [<00000000>] 0x0
+                              [<ffffffff>] 0xffffffff
+    }
+    ... key      at: [<c03bfd38>] per_cpu__runqueues+0x9f8/0xa00
+   ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02aaeed>] _spin_lock+0x2b/0x38
+   [<c0113260>] task_rq_lock+0x1a/0x21
+   [<c0113944>] try_to_wake_up+0x18/0xa0
+   [<c01139da>] default_wake_function+0xe/0x10
+   [<c01127f0>] __wake_up_common+0x32/0x55
+   [<c0112a73>] complete+0x39/0x4a
+   [<c0125af2>] kthread+0x87/0xcd
+   [<c0104007>] kernel_thread_helper+0x7/0x10
+   [<ffffffff>] 0xffffffff
+
+  ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+   [<c0112ae3>] __wake_up+0x15/0x42
+   [<c0122d39>] insert_work+0x64/0x6b
+   [<c0123119>] __queue_work+0x22/0x33
+   [<c0123152>] queue_work+0x28/0x33
+   [<c012293e>] call_usermodehelper_keys+0xc5/0xea
+   [<c01bf6ca>] kobject_uevent_env+0x3d3/0x42b
+   [<c01bf72f>] kobject_uevent+0xd/0x12
+   [<c022184a>] device_add+0x32f/0x518
+   [<c0221a48>] device_register+0x15/0x19
+   [<c0221faa>] device_create+0x77/0x99
+   [<c039e0d0>] vtconsole_class_init+0x71/0xb5
+   [<c038872c>] kernel_init+0xb9/0x22a
+   [<c0104007>] kernel_thread_helper+0x7/0x10
+   [<ffffffff>] 0xffffffff
+
+ ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+   [<c0123109>] __queue_work+0x12/0x33
+   [<c0123152>] queue_work+0x28/0x33
+   [<c0123315>] queue_delayed_work+0xf/0x22
+   [<c012333c>] schedule_delayed_work+0x14/0x16
+   [<c025c1cb>] linkwatch_fire_event+0xa9/0xae
+   [<c02605e3>] netif_carrier_off+0x1a/0x1c
+   [<d886a650>] _sc92031_reset+0x1a5/0x1dd [sc92031]
+   [<d886b730>] sc92031_open+0xd3/0x16f [sc92031]
+   [<c02549e7>] dev_open+0x33/0x6e
+   [<c025337f>] dev_change_flags+0x57/0x10b
+   [<c028b237>] devinet_ioctl+0x235/0x546
+   [<c028b837>] inet_ioctl+0x89/0xaa
+   [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+   [<c0170a70>] do_ioctl+0x1c/0x53
+   [<c0170c93>] vfs_ioctl+0x1ec/0x203
+   [<c0170cf3>] sys_ioctl+0x49/0x62
+   [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+   [<ffffffff>] 0xffffffff
+
+ -> (ratelimit_lock){....} ops: 1 {
+    initial-use  at:
+                          [<c012f664>] __lock_acquire+0x486/0xb93
+                          [<c012fdd9>] lock_acquire+0x68/0x82
+                          [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+                          [<c0116ec8>] __printk_ratelimit+0x1d/0xa5
+                          [<c0116f66>] printk_ratelimit+0x16/0x18
+                          [<d886a489>] _sc92031_check_media+0x160/0x182
+[sc92031]
+                          [<d886a660>] _sc92031_reset+0x1b5/0x1dd
+[sc92031]
+                          [<d886b730>] sc92031_open+0xd3/0x16f [sc92031]
+                          [<c02549e7>] dev_open+0x33/0x6e
+                          [<c025337f>] dev_change_flags+0x57/0x10b
+                          [<c028b237>] devinet_ioctl+0x235/0x546
+                          [<c028b837>] inet_ioctl+0x89/0xaa
+                          [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+                          [<c0170a70>] do_ioctl+0x1c/0x53
+                          [<c0170c93>] vfs_ioctl+0x1ec/0x203
+                          [<c0170cf3>] sys_ioctl+0x49/0x62
+                          [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+                          [<ffffffff>] 0xffffffff
+  }
+  ... key      at: [<c03620dc>] ratelimit_lock.21472+0x1c/0x28
+ ... acquired at:
+   [<c012fbc6>] __lock_acquire+0x9e8/0xb93
+   [<c012fdd9>] lock_acquire+0x68/0x82
+   [<c02ab22b>] _spin_lock_irqsave+0x34/0x44
+   [<c0116ec8>] __printk_ratelimit+0x1d/0xa5
+   [<c0116f66>] printk_ratelimit+0x16/0x18
+   [<d886a489>] _sc92031_check_media+0x160/0x182 [sc92031]
+   [<d886a660>] _sc92031_reset+0x1b5/0x1dd [sc92031]
+   [<d886b730>] sc92031_open+0xd3/0x16f [sc92031]
+   [<c02549e7>] dev_open+0x33/0x6e
+   [<c025337f>] dev_change_flags+0x57/0x10b
+   [<c028b237>] devinet_ioctl+0x235/0x546
+   [<c028b837>] inet_ioctl+0x89/0xaa
+   [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+   [<c0170a70>] do_ioctl+0x1c/0x53
+   [<c0170c93>] vfs_ioctl+0x1ec/0x203
+   [<c0170cf3>] sys_ioctl+0x49/0x62
+   [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+   [<ffffffff>] 0xffffffff
 
 
- 
-____________________________________________________________________________________
-Never miss an email again!
-Yahoo! Toolbar alerts you the instant new Mail arrives.
-http://tools.search.yahoo.com/toolbar/features/mail/
+stack backtrace:
+ [<c010433c>] show_trace_log_lvl+0x1a/0x30
+ [<c0104e92>] show_trace+0x12/0x14
+ [<c0104eeb>] dump_stack+0x16/0x18
+ [<c012f13b>] check_usage+0x25a/0x264
+ [<c012fb28>] __lock_acquire+0x94a/0xb93
+ [<c012fdd9>] lock_acquire+0x68/0x82
+ [<c02aaf2a>] _spin_lock_bh+0x30/0x3d
+ [<d886ad22>] sc92031_set_multicast_list+0x14/0x2d [sc92031]
+ [<c025677e>] __dev_mc_upload+0x26/0x28
+ [<c02568c4>] dev_mc_upload+0x25/0x3a
+ [<c0254a02>] dev_open+0x4e/0x6e
+ [<c025337f>] dev_change_flags+0x57/0x10b
+ [<c028b237>] devinet_ioctl+0x235/0x546
+ [<c028b837>] inet_ioctl+0x89/0xaa
+ [<c0249cd1>] sock_ioctl+0x1ac/0x1ca
+ [<c0170a70>] do_ioctl+0x1c/0x53
+ [<c0170c93>] vfs_ioctl+0x1ec/0x203
+ [<c0170cf3>] sys_ioctl+0x49/0x62
+ [<c0103ca8>] sysenter_past_esp+0x5d/0x99
+ =======================
+
+
+
