@@ -1,134 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992617AbXDEMP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766966AbXDEMVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992617AbXDEMP7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 08:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992698AbXDEMP6
+	id S1766966AbXDEMVN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 08:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766961AbXDEMVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 08:15:58 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:46883 "EHLO e1.ny.us.ibm.com"
+	Thu, 5 Apr 2007 08:21:13 -0400
+Received: from mail.screens.ru ([213.234.233.54]:57670 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992617AbXDEMP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 08:15:57 -0400
-Date: Thu, 5 Apr 2007 17:44:23 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>, mingo@elte.hu,
-       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
-Subject: Re: [PATCH 3/8] Use process freezer for cpu-hotplug
-Message-ID: <20070405121423.GC16173@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402053824.GC12962@in.ibm.com> <20070405105356.GA713@tv-sign.ru>
-MIME-Version: 1.0
+	id S1766966AbXDEMVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 08:21:12 -0400
+Date: Thu, 5 Apr 2007 16:20:05 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       mingo@elte.hu, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH 7/8] Clean up workqueue.c with respect to the freezer based cpu-hotplug
+Message-ID: <20070405122005.GC755@tv-sign.ru>
+References: <20070402053457.GA9076@in.ibm.com> <20070402054206.GG12962@in.ibm.com> <20070403114729.GA776@tv-sign.ru> <20070403135919.GB32444@in.ibm.com> <20070403150336.GA850@tv-sign.ru> <20070403171820.GA8646@in.ibm.com> <20070404152828.GA416@tv-sign.ru> <20070404174948.GB28328@in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070405105356.GA713@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20070404174948.GB28328@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 05, 2007 at 02:53:56PM +0400, Oleg Nesterov wrote:
-> On 04/02, Gautham R Shenoy wrote:
-> >
-> > +	if (freeze_processes(FE_HOTPLUG_CPU)) {
-> > +		thaw_processes(FE_HOTPLUG_CPU);
-> > +		return -EBUSY;
-> > +	}
+On 04/04, Srivatsa Vaddagiri wrote:
+>
+> On Wed, Apr 04, 2007 at 07:28:28PM +0400, Oleg Nesterov wrote:
+> > 
+> > 	worker_thread:
+> > 
+> > 		for (;;) {
+> > 			try_to_freeze();
+> > 
+> > 			prepare_to_wait();
+> > 			if (...)
+> > 				schedule();
+> > 			finish_wait();
+> > 		}
+> > 
+> > This is racy, we can miss freeze_process()->signal_wake_up() if it happens
+> > between try_to_freeze() and prepare_to_wait(). We have to check TIF_FREEZE
+> > before entering schedule() if we want to fix this race.
 > 
-> Off-topic. This is a common pattern. Perhaps it makes sense to
-> introduce a try_to_freeze_or_thaw_and_return_an_error() helper.
-
-Not a bad idea.
+> Yes that needs a fix as well. Oh dear, freezer is so fragile to break!
 > 
-> > @@ -161,10 +141,13 @@ static int _cpu_down(unsigned int cpu)
-> >  					    hcpu) == NOTIFY_BAD)
-> >  			BUG();
-> >
-> > -		if (IS_ERR(p)) {
-> > +		set_cpus_allowed(current, old_allowed);
-> > +
-> > +		if (IS_ERR(p))
-> >  			err = PTR_ERR(p);
-> > -			goto out_allowed;
-> > -		}
-> > +		else
-> > +			err = kthread_stop(p);
-> > +
-> >  		goto out_thread;
-> >  	}
+> > Should we? I don't know. This will uglify the code, and the probability
+> > of this race is very low.
 > 
-> Why this change? We are doing kthread_stop() + set_cpus_allowed() on
-> return. Imho,
-> 
-> 		if (IS_ERR(p))
-> 			goto out_allowed;
-> 		goto out_thread;
-> 
-> looks a bit better. Yes we need a couple of error labels at the end.
+> Would be nice to fix IMO. Atleast serves to show "how to make your code
+> freezer friendly".
 
-Yes, that looks feasible and nice. But I remember making this change for
-some subtle reason which I cannot recollect now.
+This is funny. I "noticed" this race a long ago, when the ->freezeable flag
+was introduced. However, looking at 2.6.20 I see that the patch was correct,
+and this race was in fact introduced by me in
 
-> 
-> > --- linux-2.6.21-rc5.orig/kernel/softlockup.c
-> > +++ linux-2.6.21-rc5/kernel/softlockup.c
-> > @@ -147,6 +147,7 @@ cpu_callback(struct notifier_block *nfb,
-> >  	case CPU_DEAD:
-> >  		p = per_cpu(watchdog_task, hotcpu);
-> >  		per_cpu(watchdog_task, hotcpu) = NULL;
-> > +		thaw_process(p);
-> >  		kthread_stop(p);
-> 
-> As it was already discussed, this is racy. As Srivatsa (imho rightly)
-> suggested, kthread_stop(p) should thaw process itself. This also allows
-> us to kill at least some of wait_for_die loops.
-> 
+	[PATCH 1/1] workqueue: don't migrate pending works from the dead CPU
+	http://marc.info/?l=linux-kernel&m=117062192709871
 
-Well, in this case this is not racy. Remember, we're doing a
-thaw_process(p) in CPU_DEAD where p *is* frozen for cpu hotplug. So
-the where we might call a freeze_process(p) after we do a thaw_process
-doesn't seem to be feasible.
+I'll send a fix on weekend.
 
-But I agree, we should definitely all thaw_process within kthread_stop.
+Oleg.
 
-> However, the change in kthread_stop(p) in not enough to close the race.
-> We can check kthread_should_stop() in refrigerator(), this looks like
-> a most simple approach for now.
-> 
-
-Why the check kthread_should_stop() refrigerator() ?
-As vatsa mentioned, we would be doing 
-
-task_lock(p);
-freezer_exempt(p, FE_ALL); /* Doesn't exist as of now, but we can work
-				it out */
-thaw_process(p);
-task_unlock(p);
-
-wait_for_completion();
-
-So we are serializing the whole thing with task_lock() right?
-
-> Alternatively, Srivatsa suggests to introduce a new task_lock() protected
-> task_struct->freezer_state (so we can reliably set FE_ALL). Surely this is
-> more poweful, but needs more changes. I am not sure. Perhaps we can do
-> this later.
-
-This needs an extra field! We're supposed to be miserly when it comes to
-adding new fields to task_struct, now aren't we :-)
-> 
-> In any case, imho "try3" should add thaw_process() to kthread_stop().
-> Gautham, Srivatsa, do you agree?
-> 
-
-Completely. Working on it now.
-> Oleg.
-> 
-
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
