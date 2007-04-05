@@ -1,109 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945994AbXDEGxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945985AbXDEGxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945994AbXDEGxG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945985AbXDEGxG
+	id S1945985AbXDEGxZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946000AbXDEGxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:53:06 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:53195 "EHLO e5.ny.us.ibm.com"
+	Thu, 5 Apr 2007 02:53:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:47081 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945994AbXDEGxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:53:04 -0400
-Date: Thu, 5 Apr 2007 12:30:33 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: "Paul Jackson" <pj@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Balbir Singh" <balbir@in.ibm.com>
-Subject: Re: [PATCH] Fix race between attach_task and cpuset_exit
-Message-ID: <20070405070033.GB3435@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070325164746.GI11794@in.ibm.com> <20070325125025.b6e8f0d4.pj@sgi.com> <20070326115506.GL11794@in.ibm.com> <6599ad830704042255t5c126a0cj86d644cb8174e177@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830704042255t5c126a0cj86d644cb8174e177@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	id S1945985AbXDEGxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:53:22 -0400
+Message-ID: <46149CC9.2070903@goop.org>
+Date: Wed, 04 Apr 2007 23:52:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@waste.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 20/20] Add apply_to_page_range() which applies a function
+ to a pte range.
+References: <20070404191151.009821039@goop.org> <20070404191206.675793431@goop.org> <20070405044133.GE4892@waste.org>
+In-Reply-To: <20070405044133.GE4892@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 10:55:01PM -0700, Paul Menage wrote:
-> >@@ -1257,8 +1260,8 @@ static int attach_task(struct cpuset *cs
-> >
-> >        put_task_struct(tsk);
-> >        synchronize_rcu();
-> >-       if (atomic_dec_and_test(&oldcs->count))
-> >-               check_for_release(oldcs, ppathbuf);
-> >+       if (oldcs_to_be_released)
-> >+               check_for_release(oldcs_to_be_released, ppathbuf);
-> >        return 0;
-> > }
-> 
-> Is this part of the patch necessary? If we're adding a task_lock() in
-> cpuset_exit(), then the problem that Vatsa described (both
-> cpuset_attach_task() and cpuset_exit() decrementing the same cpuset
-> count, and cpuset_attach_task() incrementing the count on a cpuset
-> that the task doesn't eventually end up in) go away, since only one
-> thread will retrieve the old value of the task's cpuset in order to
-> decrement its count.
+Matt Mackall wrote:
+>> +/*
+>> + * Scan a region of virtual memory, filling in page tables as necessary
+>> + * and calling a provided function on each leaf page table.
+>> + */
+>>     
+>
+> But I'm not sure what the use case is that wants filling in the page
+> table..? If both modes really make sense, perhaps a flag could unify
+> these differences.
+>   
 
-You *have* to drop/inc the refcount inside the task_lock, otherwise it is
-racy.
+Well, two reasons:
 
-	task_lock(T1);
-	old_cs = T1->cputset (C1)
-	atomic_inc(&C2->count);
-	T1->cputset = C2;
-	task_unlock();
+One is the general one that if you're traversing ptes then they need to
+exist to traverse them (for example, if you're creating new mappings). 
+Obviously if you want to just visit existing mappings, then
+instantiating new pagetable is not the right thing to do (and I could
+make use of this too).
 
-	...
+The other is that there are various places in the Xen hypervisor API
+where you pass in a reference to pte entry for the hypervisor to put
+mappings into, and the rest of the pagetable needs to exist.  The Xen
+code uses the side-effect of apply_to_page_range() to create pagetable
+for these calls.
 
-	synchronize_rcu();
+>> +typedef int (*pte_fn_t)(pte_t *pte, struct page *pmd_page, unsigned long addr,
+>> +			void *data);
+>>     
+>
+> I'd gotten the impression that these sorts of typedefs were out of
+> fashion.
+>   
 
-	if (atomic_dec_and_test(&C1->count))
-		check_for_release(..)
+In general yes, but for function pointers the syntax is so clumsy that I
+think typedefs are OK.
 
-is incorrect. For ex: T1's refcount on C1 may have already been dropped
-by now in cpuset_exit() and dropping the refcount again can lead to
-negative refcounts. 
-		.
-> > void cpuset_exit(struct task_struct *tsk)
-> > {
-> >        struct cpuset *cs;
-> >+       struct cpuset *oldcs_to_be_released = NULL;
-> >
-> >+       task_lock(tsk);
-> >        cs = tsk->cpuset;
-> >        tsk->cpuset = &top_cpuset;      /* the_top_cpuset_hack - see above 
-> >        */
-> >+       if (atomic_dec_and_test(&cs->count))
-> >+               oldcs_to_be_released = cs;
-> >+       task_unlock(tsk);
-> >
-> 
-> I think this is still racy - at this point we're holding a reference
-> on a cpuset that could have a zero count,
+>> +static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+>> +				     unsigned long addr, unsigned long end,
+>> +				     pte_fn_t fn, void *data)
+>> +{
+>> +	pte_t *pte;
+>> +	int err;
+>> +	struct page *pmd_page;
+>> +	spinlock_t *ptl;
+>> +
+>> +	pte = (mm == &init_mm) ?
+>> +		pte_alloc_kernel(pmd, addr) :
+>> +		pte_alloc_map_lock(mm, pmd, addr, &ptl);
+>> +	if (!pte)
+>> +		return -ENOMEM;
+>>     
+>
+> Seems a bit awkward to pass mm all the way down the tree just for this
+> quirk. Which is a bit awkward as it means that whether or not a lock
+> is held in the callback is context dependent.
+>   
 
-How's that possible? That you have a zero-refcount cpuset with non empty
-tasks in it?
+Well, it would need mm for just pte_alloc_map_lock() anyway.
 
-> and we don't hold
-> manage_mutex or callback_mutex. So a concurrent rmdir could zap the
-> directory and free the cpuset.
+> smaps, clear_ref, and my pagemap code all use the callback at the
+> pmd_range level, which a) localizes the pte-level locking concerns
+> with the user b) amortizes the indirection overhead and c)
+> (unfortunately) makes the user a bit more complex.
+>
+> We should try to measure whether (b) actually makes a difference.
+>   
 
-I don't think that is possible. Can you explain?
+I'll need to look closely at your code again.  It would be nice to have
+one pagewalker.
 
-> Shouldn't we just put a task_lock()/task_unlock() around these lines
-> and leave everything else as-is?
-> 
-> 	task_lock(tsk);
-> 	cs = tsk->cpuset;
-> 	tsk->cpuset = &top_cpuset;	/* the_top_cpuset_hack - see above */
-> 	task_unlock(tsk)
-
-If we don't drop refcount inside task_lock() it makes it racy with
-attach_task(). 'cs' derived above may not be the right cpuset to drop
-refcount on later in cpuset_exit.
-
--- 
-Regards,
-vatsa
+    J
