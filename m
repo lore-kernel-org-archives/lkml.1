@@ -1,51 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946055AbXDEHv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946057AbXDEH4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946055AbXDEHv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 03:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946057AbXDEHv6
+	id S1946057AbXDEH4Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 03:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946059AbXDEH4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 03:51:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55564 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946055AbXDEHv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 03:51:57 -0400
-Date: Thu, 5 Apr 2007 09:51:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       johnstul@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       heiko.carstens@de.ibm.com
-Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm tree
-Message-ID: <20070405075101.GA14199@elte.hu>
-References: <20070404203647.GA12563@elte.hu> <1175719489.15973.66.camel@imap.mvista.com> <20070404211514.GA18600@elte.hu> <1175722246.15973.78.camel@imap.mvista.com> <20070404213404.GA21742@elte.hu> <1175723954.15973.96.camel@imap.mvista.com> <46143941.7050702@goop.org> <1175731253.15973.106.camel@imap.mvista.com> <461440C9.8040902@goop.org> <1175733279.15973.116.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1175733279.15973.116.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 5 Apr 2007 03:56:24 -0400
+Received: from sghqmaxdr.chevron.com ([203.127.203.102]:14950 "EHLO
+	sghqmaxdr.chevron.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946057AbXDEH4X convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 03:56:23 -0400
+X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 03:56:22 EDT
+X-IronPort-AV: i="4.14,374,1170604800"; 
+   d="scan'208"; a="963218:sNHT31496297"
+X-CVX-Departure: Verified
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: [patch 1/2] Relocate VDSO ELF headers to match mapped	location with COMPAT_VDSO
+Date: Thu, 5 Apr 2007 14:45:56 +0700
+Message-ID: <8646EB4D6B054F4E8AB083CA829C4C810107364E@iddrintx1.iddri.chevrontexaco.net>
+In-Reply-To: <4614A5DA.9050700@goop.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 1/2] Relocate VDSO ELF headers to match mapped	location with COMPAT_VDSO
+Thread-Index: Acd3VPd2d1PEdr1sSf+kK4jysxWqsgAAQlkQ
+References: <20070405045825.511024444@goop.org> <20070405045843.333498131@goop.org> <4614BD10.76E4.0078.0@novell.com> <4614A5DA.9050700@goop.org>
+From: "Raharjo, Cahyo \(cahr\)" <Cahyo.Raharjo@chevron.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Jan Beulich" <jbeulich@novell.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       <virtualization@lists.osdl.org>, "Roland McGrath" <roland@redhat.com>,
+       "Andi Kleen" <ak@suse.de>, "lkml" <linux-kernel@vger.kernel.org>,
+       "Zachary Amsden" <zach@vmware.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+X-OriginalArrivalTime: 05 Apr 2007 07:45:58.0810 (UTC) FILETIME=[734457A0:01C77756]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear All,
+In this few days, I got emails from this list. I tried to exclude thru
+majordomo, but it failed.
+Kindly need your help to exclude me from this list.
 
-* Daniel Walker <dwalker@mvista.com> wrote:
 
-> [...] Adding a list initializer doesn't change anything..
+Thank You, 
+CR
 
-Daniel, you are still in denial. OF COURSE it changes something: it adds 
-a line of code to a driver, where that line was not needed before. 
-That's against the fundamental task of a driver model: TO KEEP THINGS 
-SIMPLE. Yes, this concept includes single-line changes as well.
 
-yes, a single line might not sound much, but it's exactly one line more 
-than necessary.
+-----Original Message-----
+From: linux-kernel-owner@vger.kernel.org
+[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Jeremy
+Fitzhardinge
+Sent: Thursday, April 05, 2007 2:32 PM
+To: Jan Beulich
+Cc: Ingo Molnar; Andrew Morton; virtualization@lists.osdl.org; Roland
+McGrath; Andi Kleen; lkml; Zachary Amsden; Eric W. Biederman
+Subject: Re: [patch 1/2] Relocate VDSO ELF headers to match mapped
+location with COMPAT_VDSO
 
-	Ingo
+Jan Beulich wrote:
+> While there's a certain level of control on what DT_* may appear in 
+> the vDSO, not even considering other than the above types seems 
+> fragile to me. Since future additions to the set are supposedly 
+> following a fixed scheme (distinguishing pointers and values via the 
+> low bit when below OLD_DT_LOOS, and using sub-ranges when between 
+> DT_HIOS and OLD_DT_HIOS), at least also handling those would seem like
+
+> a good idea, as would warning about unrecognized types.
+>   
+
+I wasn't aware of this scheme.  Where is it documented?
+
+> Also, even though it shouldn't matter for the final result, if doing 
+> things spec-conforming here you should use d_un.d_ptr.
+>   
+
+Yes, I've already fixed that.
+
+> In addition to Roland's remarks about missing symbol table relocation,
+
+> I would also assume section headers, if present, should be relocated.
+>   
+
+Yes, I suppose that's easy enough to add.
+
+    J
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+in the body of a message to majordomo@vger.kernel.org More majordomo
+info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
