@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbXDEM1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750735AbXDEMem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753076AbXDEM1G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 08:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXDEM1G
+	id S1750735AbXDEMem (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 08:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbXDEMem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 08:27:06 -0400
-Received: from [59.42.214.131] ([59.42.214.131]:4120 "HELO www.anyka.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1766969AbXDEM1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 08:27:05 -0400
-X-Greylist: delayed 1899 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 08:27:04 EDT
-From: "qingxiaoming" <qing_xiaoming@anyka.com>
+	Thu, 5 Apr 2007 08:34:42 -0400
+Received: from khc.piap.pl ([195.187.100.11]:35007 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbXDEMel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 08:34:41 -0400
 To: <linux-kernel@vger.kernel.org>
-Subject: Not Initialize the shrinker->list after kmalloc() in mm/vmscan.c(V2.6.12)?
-Date: Thu, 5 Apr 2007 19:55:01 +0800
-Message-ID: <003801c77779$3df8c450$160710ac@qingxiaoming>
+Subject: RFC: initramfs unpack point and rules
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 05 Apr 2007 14:34:39 +0200
+Message-ID: <m3ejmzdmow.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1896
-Thread-Index: Acd2s3qD1Rbm572/T7a0C6VDdoQJSQAwq5+QAADBaHA=
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all:
-I am reading the function set_shrinker() in mm/vmscan.c of V2.6.12, and I
-have a question about the not initialization of list_head,
+Hi,
 
-/*
- * Add a shrinker callback to be called from the vm
- */
-struct shrinker *set_shrinker(int seeks, shrinker_t theshrinker)
-{
-        struct shrinker *shrinker;
+I recently got a BSOD bootup problem with external initramfs (it's
+ARM but it seems it doesn't matter).
 
-        shrinker = kmalloc(sizeof(*shrinker), GFP_KERNEL);
-        if (shrinker) {
-	        shrinker->shrinker = theshrinker;
-	        shrinker->seeks = seeks;
-	        shrinker->nr = 0;
-	        down_write(&shrinker_rwsem);
-	        list_add_tail(&shrinker->list, &shrinker_list);
-	        up_write(&shrinker_rwsem);
-	}
-	return shrinker;
-}
+--------------------------------------------------------------------------
 
-As above, the shrinker is allocated from kmalloc, coming from slab
-allocator,the list in shrinker is not initialized, directly list_add_tail()
-to shrinker_list, don't need to INIT_LIST_HEAD(shrinker->list)?
+First problem: initramfs is unpacked way before console drivers
+are initialized, so you aren't going to see the panic():
 
-Thanks,
-Best Regards!
-Xiaoming.Qing
+init/initramfs.c:static int __init populate_rootfs(void)
+...
+		printk(KERN_INFO "Unpacking initramfs...");
+		err = unpack_to_rootfs((char *)initrd_start,
+			initrd_end - initrd_start, 0);
+		if (err)
+			panic(err);
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		printk(" done\n");
+		free_initrd();
+
+I wonder why is initramfs unpacked that early, before most drivers?
+I'd expect it much later in the boot sequence, just before userspace
+and initial devices (/dev/console etc) are needed. Should it be moved
+there? populate_rootfs() unpacks both builtin and external initramfs.
 
 
+--------------------------------------------------------------------------
+
+Second problem:
+RedBoot> exec -r 0x800000 -s 8000000 -c "console=ttyS0,115200"      
+
+Using base address 0x00030000 and length 0x001eea08
+Uncompressing Linux...............................done, booting the kernel.
+[nothing then]
+
+Obviously I didn't want to specify the exact size and expected inflate
+to determine it by itself. I think a valid gzipped cpio image, followed
+by some junk, should not be a problem here. Currently, unpack_to_rootfs()
+does the job but returns "bad gzip magic numbers" error message - I think
+I should change it to return that message only for first initramfs header
+and return a success if some junk is spotted after a valid end of
+compressed data.
+
+Opinions?
+-- 
+Krzysztof Halasa
