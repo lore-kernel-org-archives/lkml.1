@@ -1,209 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbXDEQro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbXDEQul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbXDEQro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 12:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXDEQro
+	id S1753258AbXDEQul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 12:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXDEQul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 12:47:44 -0400
-Received: from lucidpixels.com ([75.144.35.66]:51491 "EHLO lucidpixels.com"
+	Thu, 5 Apr 2007 12:50:41 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51843 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752928AbXDEQrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 12:47:42 -0400
-Date: Thu, 5 Apr 2007 12:47:40 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Kernel 2.6.20.4: Software RAID 5: ata13.00: (irq_stat 0x00020002,
- failed to transmit command FIS)
-Message-ID: <Pine.LNX.4.64.0704051243080.3810@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1753258AbXDEQuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 12:50:39 -0400
+Date: Thu, 5 Apr 2007 22:27:52 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, containers@lists.osdl.org,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       mbligh@google.com, winget@google.com, rohitseth@google.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070405165752.GA13687@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070403173048.GL2456@in.ibm.com> <6599ad830704031030n2311bcd7hca9f34e64c66337f@mail.gmail.com> <20070403175101.GN2456@in.ibm.com> <6599ad830704031049v7fad0a83q3c24211cf44d71d6@mail.gmail.com> <20070404030756.GA9008@in.ibm.com> <6599ad830704032104hda0c4bu7099c23a86940c76@mail.gmail.com> <20070404051526.GA16562@in.ibm.com> <6599ad830704040000of7f1197ica543e14d290509e@mail.gmail.com> <20070404172643.GA28328@in.ibm.com> <6599ad830704041157m22f62077tbc41dbc064385838@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830704041157m22f62077tbc41dbc064385838@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Had a quick question, this is the first time I have seen this happen, and 
-it was not even under during heavy I/O, hardly anything was going on with 
-the box at the time.
+On Wed, Apr 04, 2007 at 11:57:18AM -0700, Paul Menage wrote:
+> > Very true. That's a bug and can be rectified. Atm however in my patch
+> > stack, I have dropped this whole find_nsproxy() and instead create a new
+> > nsproxy whenever tasks move ..Not the best I agree on long run.
+> 
+> Or even short term, I think - although it won't hurt too much for
+> cases where a single process enters a container and all children stay
+> in the container, it'll hurt a lot in cases where you ever move the
+> contents of one container into another. (Possibly in an orthogonal
+> hierarchy).
+> 
+> BTW, what does rcfs do if a subsystem is registered when there are
+> already mounted hierarchies? It looks as though it leaves the relevant
+> pointers as NULLs.
 
-Any idea what could have caused this?  I am running a badblocks test right 
-now, but so far the disk looks OK.
+The approach I am on currently doesnt deal with dynamically loaded
+modules ..Partly because it allows subsystem ids to be compile-time
+decided and also init_nsproxy.ctlr_data[] can be initialised to default
+values at compile time itself.
 
-[369143.916093] ata13.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-[369143.916100] ata13.00: (irq_stat 0x00020002, failed to transmit command FIS)
-[369143.916107] ata13.00: cmd ca/00:00:97:1a:d5/00:00:00:00:00/e9 tag 0 cdb 0x0 data 131072 out
-[369143.916109]          res 93/37:00:00:00:00/00:00:40:00:93/00 Emask 0x12 (ATA bus error)
-[369143.916116] ata13: hard resetting port
-[369146.145915] ata13: softreset failed (port not ready)
-[369146.145922] ata13: follow-up softreset failed, retrying in 5 secs
-[369151.146035] ata13: hard resetting port
-[369153.376736] ata13: softreset failed (port not ready)
-[369153.376743] ata13: follow-up softreset failed, retrying in 5 secs
-[369158.376664] ata13: hard resetting port
-[369160.608025] ata13: softreset failed (port not ready)
-[369160.608033] ata13: reset failed, giving up
-[369160.608036] ata13.00: disabled
-[369160.608043] ata13: EH pending after completion, repeating EH (cnt=4)
-[369160.718365] ata13: exception Emask 0x10 SAct 0x0 SErr 0x4050000 action 0x6 frozen
-[369160.718370] ata13: (irq_stat 0x00060002, failed to transmit command FIS)
-[369161.238432] ata13: waiting for device to spin up (8 secs)
-[369168.715610] ata13: hard resetting port
-[369170.946658] ata13: softreset failed (port not ready)
-[369170.946666] ata13: follow-up softreset failed, retrying in 5 secs
-[369175.946249] ata13: hard resetting port
-[369178.167644] ata13: softreset failed (port not ready)
-[369178.167651] ata13: follow-up softreset failed, retrying in 5 secs
-[369183.167742] ata13: hard resetting port
-[369185.398497] ata13: softreset failed (port not ready)
-[369185.398504] ata13: reset failed, giving up
-[369185.398522] sd 12:0:0:0: SCSI error: return code = 0x08000002
-[369185.398526] sdl: Current [descriptor]: sense key: Aborted Command
-[369185.398532]     Additional sense: Scsi parity error
-[369185.398539] Descriptor sense data with sense descriptors (in hex):
-[369185.398544]         72 0b 47 00 00 00 00 0c 00 0a 80 00 00 00 00 00 
-[369185.398572]         00 00 00 00 
-[369185.398581] end_request: I/O error, dev sdl, sector 164960919
-[369185.398586] raid5: Disk failure on sdl1, disabling device. Operation continuing on 3 devices
-[369185.398617] sd 12:0:0:0: rejecting I/O to offline device
-[369185.398625] ata13: EH complete
-[369185.398635] ata13.00: detaching (SCSI 12:0:0:0)
-[369185.398676] sd 12:0:0:0: SCSI error: return code = 0x00010000
-[369185.398680] end_request: I/O error, dev sdl, sector 164961175
-[369185.398702] raid5:md3: read error not correctable (sector 164962304 on sdl1).
-[369185.398707] raid5:md3: read error not correctable (sector 164962312 on sdl1).
-[369185.398711] raid5:md3: read error not correctable (sector 164962320 on sdl1).
-[369185.398716] raid5:md3: read error not correctable (sector 164962328 on sdl1).
-[369185.398760] Synchronizing SCSI cache for disk sdl: 
-[369185.398784] FAILED
-[369185.398785]   status = 0, message = 00, host = 4, driver = 00
-[369185.398786]   <3>scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404619] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404641] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404662] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404682] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404686] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404691] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404712] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404732] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404753] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404774] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404794] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404815] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404844] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404863] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404882] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404900] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404918] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404937] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.404956] scsi 12:0:0:0: rejecting I/O to dead device
-[369185.413938] RAID5 conf printout:
-[369185.413944]  --- rd:4 wd:3
-[369185.413948]  disk 0, o:1, dev:sdi1
-[369185.413950]  disk 1, o:1, dev:sdj1
-[369185.413953]  disk 2, o:0, dev:sdl1
-[369185.413956]  disk 3, o:1, dev:sdg1
-[369185.418873] RAID5 conf printout:
-[369185.418878]  --- rd:4 wd:3
-[369185.418881]  disk 0, o:1, dev:sdi1
-[369185.418884]  disk 1, o:1, dev:sdj1
-[369185.418887]  disk 3, o:1, dev:sdg1
+For ex: init_nsproxy.ctlr_data[CPUSET_ID] can be set to &top_cpuset
+at compile time.
 
-Relevant SMART data:
+If there is demand later, I agree we need to address the shortcoming you
+point out ..
 
-SMART Attributes Data Structure revision number: 16
-Vendor Specific SMART Attributes with Thresholds:
-ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED 
-WHEN_FAILED RAW_VALUE
-   1 Raw_Read_Error_Rate     0x000b   200   200   051    Pre-fail  Always 
--       0
-   3 Spin_Up_Time            0x0007   192   165   021    Pre-fail  Always 
--       3441
-   4 Start_Stop_Count        0x0032   100   100   040    Old_age   Always 
--       34
-   5 Reallocated_Sector_Ct   0x0033   200   200   140    Pre-fail  Always 
--       0
-   7 Seek_Error_Rate         0x000a   200   200   051    Old_age   Always 
--       0
-   9 Power_On_Hours          0x0032   098   098   000    Old_age   Always 
--       1988
-  10 Spin_Retry_Count        0x0012   100   253   051    Old_age   Always 
--       0
-  11 Calibration_Retry_Count 0x0012   100   253   051    Old_age   Always 
--       0
-  12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always 
--       34
-194 Temperature_Celsius     0x0022   120   107   000    Old_age   Always 
--       27
-196 Reallocated_Event_Count 0x0032   200   200   000    Old_age   Always 
--       0
-197 Current_Pending_Sector  0x0012   200   200   000    Old_age   Always 
--       0
-198 Offline_Uncorrectable   0x0012   200   200   000    Old_age   Always 
--       0
-199 UDMA_CRC_Error_Count    0x000a   200   253   000    Old_age   Always 
--       1
-200 Multi_Zone_Error_Rate   0x0008   200   200   051    Old_age   Offline 
--       0
+> I think you're only right if you're going to overload the nsproxy
+> count field as the total refcount, rather than the number of tasks. If
+> you do that then you risk having to allocate way more memory than you
+> need in any routine that tries to allocate an array with one pointer
+> per task in the container (e.g. when reading the tasks file, or moving
+> a task into a new cpuset). My patch separates out the refcounts from
+> the tasks counts for exactly that reason - there's a per-subsys_state
+> refcount which can be cheaply manipulated via the subsystem. (I have a
+> version with lower locking requirements that I've not yet posted).
 
-SMART Error Log Version: 1
-No Errors Logged
+We have been thr' this in a diff thread. I trust we have discussed all
+that need to be discussed here? 
 
-SMART Self-test log structure revision number 1
-Num  Test_Description    Status                  Remaining 
-LifeTime(hours)  LBA_of_first_error
-# 1  Short offline       Completed without error       00%      1977 
--
-# 2  Short offline       Completed without error       00%      1954 
--
-# 3  Short offline       Completed without error       00%      1931 
--
-# 4  Short offline       Completed without error       00%      1908 
--
-# 5  Short offline       Completed without error       00%      1861 
--
-# 6  Short offline       Completed without error       00%      1814 
--
-# 7  Short offline       Completed without error       00%      1791 
--
-# 8  Short offline       Completed without error       00%      1768 
--
-# 9  Short offline       Completed without error       00%      1745 
--
-#10  Short offline       Completed without error       00%      1698 
--
-#11  Short offline       Completed without error       00%      1651 
--
-#12  Short offline       Completed without error       00%      1628 
--
-#13  Short offline       Completed without error       00%      1605 
--
-#14  Short offline       Completed without error       00%      1581 
--
-#15  Short offline       Completed without error       00%      1535 
--
-#16  Short offline       Completed without error       00%      1488 
--
-#17  Short offline       Completed without error       00%      1464 
--
-#18  Short offline       Completed without error       00%      1441 
--
-#19  Short offline       Completed without error       00%      1418 
--
-#20  Short offline       Completed without error       00%      1372 
--
-#21  Short offline       Completed without error       00%      1326 
--
+> > Again note that I am not hell-bent on avoiding a container-like object
+> > to store shared state of a group.  My main desire was to avoid additional
+> > pointer in task_struct and reuse nsproxy if possible. If the grand scheme of
+> > things requires a 'struct container' object in addition to reusing ->nsproxy,
+> > to store shared state like 'notify_on_release', 'hierarchical information'
+> > then I have absolutely no objection.
+>
+> OK, but at that point you're basically back at my patches, but using
+> nsproxy rather than container_group.
 
-SMART Selective self-test log data structure revision number 1
-  SPAN  MIN_LBA  MAX_LBA  CURRENT_TEST_STATUS
-     1        0        0  Not_testing
-     2        0        0  Not_testing
-     3        0        0  Not_testing
-     4        0        0  Not_testing
-     5        0        0  Not_testing
-Selective self-test flags (0x0):
-   After scanning selected spans, do NOT read-scan remainder of disk.
-If Selective self-test is pending on power-up, resume after 0 minute 
-delay.
+Ok ..by posting rcfs patches, I didn't mean to introduce a "yours" and
+"mine" rift ..honestly.  In fact you would notice that they have your
+(sole) copyright still on them! It took me just two days to convert over the
+patches to use nsproxy and come up with the rcfs patches and obviously I
+couldnt have done that without your excellent patches to start with.
 
+So if there is is larger interest in using nsproxy at some point, I hope
+they serve as some reference patches to do the conversion. I would go ahead
+and post what I have now (which incorporates several bug fixes) which 
+could be used as you deem necessary at a later point if/when considering 
+moving to nsproxy.
 
+> > Why would it mean duplicating code? A generic function which takes a
+> > dentry pointer and returns its vfs path will avoid this code
+> > duplication?
+> 
+> It's still adding boilerplate (extra pointers, extra /proc files,
+> logic to hook them together) to every subsystem that needs this, that
+> could be avoided. But I guess this aspect of it isn't a huge issue.
+
+I agree that is not a big issue now (considering there are larger things
+to go after!).
+
+> > > > Did you mean to say "when the number of aggregators sharing the same
+> > > > container object are more" ?
+> > >
+> > > Yes. Although having thought about the possibility of null groupings
+> > > that I described above, I'm no longer convinced that argument is
+> > > valid.
+> >
+> > I think the null grouping as defined so far is very fuzzy ..How would
+> > the kernel use this grouping, which would require reserving N pointers
+> > in 'struct container_group'/'struct nsproxy'?
+> 
+> The kernel wouldn't use it, other than to act as an inescapable task
+> grouping whose members could always be easily listed from userspace.
+
+I am still trying to come to terms with this null groupings and how they
+would be used in real life.
+
+	- Can you list a real world use of it?
+
+	- If they are "inescapable" task groups, how does the first task enter
+	  such a group, using just the filesystem interface?
+
+	- If there is no real kernel use for such groups, can this be
+	  implemented in userspace (user ids, session ids etc)
+
+	- If userspace soln is not feasible, why would you want such null
+	  groupings in multiple hierarchies and not in one hierarchy?
+	  If having them in one hierarchy satisfies the requirements,
+	  then we could create empty cpusets at top level (or at an 
+	  appropriate subcpuset level) and use them as null groups?
+	  By defining permissionss of the null-group cpuset directories,
+   	  we could restrict movement of tasks across groups ?
+
+-- 
+Regards,
+vatsa
