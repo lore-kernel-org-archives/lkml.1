@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767097AbXDEPh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767106AbXDEPkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767097AbXDEPh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767098AbXDEPh2
+	id S1767106AbXDEPkJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767104AbXDEPkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:37:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38612 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767097AbXDEPh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:37:27 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH] x86: limit mwait_idle to Intel CPUs
-Date: Thu, 5 Apr 2007 17:37:17 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <20070405140045.GN6356@alberich.amd.com> <200704051624.45747.ak@suse.de> <20070405144442.GP6356@alberich.amd.com>
-In-Reply-To: <20070405144442.GP6356@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 5 Apr 2007 11:40:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:20754 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767106AbXDEPkH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 11:40:07 -0400
+Date: Thu, 5 Apr 2007 08:41:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk
+Cc: lkml <linux-kernel@vger.kernel.org>, hpa@zytor.com
+Subject: Re: [PATCH] doc/kernel-parameters: use IA-32 tag instead of i386
+Message-Id: <20070405084155.e00687a4.randy.dunlap@oracle.com>
+In-Reply-To: <20070404224152.29062e47.akpm@linux-foundation.org>
+References: <20070404220534.36cd24e9.randy.dunlap@oracle.com>
+	<20070404224152.29062e47.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704051737.17157.ak@suse.de>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Apr 2007 22:41:52 -0700 Andrew Morton wrote:
 
-> > > This patch will enable default_idle for non-Intel
-> > > CPUs even if mwait is supported.
-> > 
-> > It would be better to clear MONITOR/MWAIT in the AMD specific
-> > CPU initialize code than add workarounds everywhere else.
+> On Wed, 4 Apr 2007 22:05:34 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> Why is that?
-> MONITOR/MWAIT is usable.
+> > Use documented tag for "IA-32" (not "i386") to indicate which
+> > kernel parameters apply to IA-32.
+> 
+> mv arch/i386 arch/ia32 ;)
+> 
+> Seriously, is there any point in this?  Kernel uses the i386 terminology
+> and surely there's no confusion over what that represents.
 
-If it doesn't save power it's not usable imho.
+Just that Documentation/kernel-parameters.txt explains what
+"IA-32" means when it is used on kernel parameter descriptions:
 
-> And I think this should 
-> be indicated by cpuinfo.
-> It's just inappropriate to use it in pm_idle.
+	IA-32	IA-32 aka i386 architecture is enabled.
 
-There are no other users anyways and user space can't use it.
-Ok in theory you could add a X86_FEATURE_MWAIT_DOESNT_SAVE_POWER
-and check that, but just clearing it seems simpler and equivalent.
+Our docs need some work.  No news there.
 
-What would perhaps make sense is to add a idle=mwait command
-line option for this though. So that the benchmarkers who currently
-use idle=poll could migrate to idle=mwait. That option would need
-to check the real cpuid bit of course again, but that should be
-easy enough.
+hpa wrote:
+| We call this architecture "i386" everywhere else.  I think it makes more 
+| sense to change the documented tag to "i386", especially with Intel 
+| sometimes calling x86-64 "IA-32e".
 
--Andi
+Sounds reasonable.
 
+Alan wrote:
+| NAK. IA-32 is an Intel specific term, and I believe a protected mark at
+| that.
+
+OMG, quick, please send a patch for Documentation/kernel-parameters.txt.
+(big ;)
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
