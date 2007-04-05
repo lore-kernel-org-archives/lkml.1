@@ -1,72 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767236AbXDET02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767247AbXDET2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767236AbXDET02 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 15:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767245AbXDET02
+	id S1767247AbXDET2I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 15:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767232AbXDET2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 15:26:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36714 "EHLO hera.kernel.org"
+	Thu, 5 Apr 2007 15:28:08 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:48951 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767236AbXDET01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 15:26:27 -0400
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: IRQ splitting
-Date: Thu, 5 Apr 2007 12:23:41 -0700
-Organization: OSDL
-Message-ID: <20070405122341.482f5e26@freekitty>
-References: <fa.21iotKLTgoLpkKhrbSxrjy5v7hM@ifi.uio.no>
-	<46150913.4000406@shaw.ca>
+	id S1767248AbXDET2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 15:28:05 -0400
+Date: Thu, 5 Apr 2007 12:27:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: preemption and rwsems (was: Re: missing madvise functionality)
+Message-Id: <20070405122724.b1712aa6.akpm@linux-foundation.org>
+In-Reply-To: <19526.1175777338@redhat.com>
+References: <20070404160006.8d81a533.akpm@linux-foundation.org>
+	<46128051.9000609@redhat.com>
+	<p73648dz5oa.fsf@bingen.suse.de>
+	<46128CC2.9090809@redhat.com>
+	<20070403172841.GB23689@one.firstfloor.org>
+	<20070403125903.3e8577f4.akpm@linux-foundation.org>
+	<4612B645.7030902@redhat.com>
+	<20070403202937.GE355@devserv.devel.redhat.com>
+	<19526.1175777338@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Trace: build.pdx.osdl.net 1175801104 27345 10.8.0.202 (5 Apr 2007 19:25:04 GMT)
-X-Complaints-To: abuse@osdl.org
-NNTP-Posting-Date: Thu, 5 Apr 2007 19:25:04 +0000 (UTC)
-X-Newsreader: Sylpheed-Claws 2.5.0-rc3 (GTK+ 2.10.6; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Apr 2007 08:34:59 -0600
-Robert Hancock <hancockr@shaw.ca> wrote:
+On Thu, 05 Apr 2007 13:48:58 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-> Jan Engelhardt wrote:
-> > Hello list,
-> > 
-> > 
-> > 
-> > let's take the following /proc/interrupts dump (CPU2,CPU3 trimmed)...
-> > 
-> >            CPU0       CPU1
-> >   0:   37041766   37038991  IO-APIC-edge  timer
-> >   1:         10          2  IO-APIC-edge  i8042
-> >   8:          0          0  IO-APIC-edge  rtc
-> >   9:          0          0  IO-APIC-level  acpi
-> >  12:        114          0  IO-APIC-edge  i8042
-> >  14:      25219    5800049  IO-APIC-edge  ide0
-> > 201:     260381     238454  IO-APIC-level  aacraid
-> > 209:          0          0  IO-APIC-level  ohci_hcd:usb1
-> > 217:          0          0  IO-APIC-level  ehci_hcd:usb2
-> > 225:   57531742          0  IO-APIC-level  eth0,radeon@pci:0000:03:00.0
-> > 233:         26          0  IO-APIC-level  eth1
-> > NMI:       1661       1397
-> > LOC:  147579966  147579949
-> > ERR:          0
-> > MIS:          0
-> > 
-> > My question is whether it is possible that eth0's interrupts go to CPU0
-> > and radeon's to CPU1, and if so, how I would enable that. Alternatively,
-> > is it possible to just move eth0 or radeon to a different interrupt?
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Generally (at least in APIC mode) the IRQ assignments are based on 
-> hard-wired interrupt lines on the board. In this case, the slots that 
-> the Radeon and eth0 card are in likely share a physical interrupt line 
-> and there is no way to separate them in software. You can try moving the 
->   card(s) to different slots..
+> > 
+> > What we effectively have is 32 threads on a single CPU all doing
+> > 
+> > 	for (ever) {
+> > 		down_write()
+> > 		up_write()
+> > 		down_read()
+> > 		up_read();
+> > 	}
 > 
+> That's not quite so.  In that test program, most loops do two d/u writes and
+> then a slew of d/u reads with virtually no delay between them.  One of the
+> write-locked periods possibly lasts a relatively long time (it frees a bunch
+> of pages), and the read-locked periods last a potentially long time (have to
+> allocate a page).
 
-If the radeon and/or the Ethernet driver support MSI, that would split
-out the IRQ's as well.
+Whatever.  I think it is still the case that the queueing behaviour of
+rwsems causes us to get into this abababababab scenario.  And a single,
+sole, solitary cond_resched() is sufficient to trigger the whole process
+happening, and once it has started, it is sustained.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+> If they weren't, you'd have to expect writer starvation in this situation.  As
+> it is, you're guaranteed progress on all threads.
+> 
+> > CONFIG_PREEMPT_VOLUNTARY=y
+> 
+> Which means the periods of lock-holding can be extended by preemption of the
+> lock holder(s), making the whole situation that much worse.  You have to
+> remember, you *can* be preempted whilst you hold a semaphore, rwsem or mutex.
+
+Of course - the same thing happens with CONFIG_PREEMPT=y.
+
+> > I run it all on a single CPU under `taskset -c 0' on the 8-way and it still
+> > causes 160,000 context switches per second and takes 9.5 seconds (after
+> > s/100000/1000).
+> 
+> How about if you have a UP kernel?  (ie: spinlocks -> nops)
+
+dunno.
+
+> > the context switch rate falls to zilch and total runtime falls to 6.4
+> > seconds.
+> 
+> I presume you don't mean literally zero.
+
+I do.  At least, I was unable to discern any increase in the context-switch
+column in the `vmstat 1' output.
+
+> > If that cond_resched() was not there, none of this would ever happen - each
+> > thread merrily chugs away doing its ups and downs until it expires its
+> > timeslice.  Interesting, in a sad sort of way.
+> 
+> The trouble is, I think, that you spend so much more time holding (or
+> attempting to hold) locks than not, and preemption just exacerbates things.
+
+No.  Preemption *triggers* things.  We're talking about an increase in
+context switch rate by a factor of at least 10,000.  Something changed in a
+fundamental way.
+
+> I suspect that the reason the problem doesn't seem so obvious when you've got
+> 8 CPUs crunching their way through at once is probably because you can make
+> progress on several read loops simultaneously fast enough that the preemption
+> is lost in the things having to stop to give everyone writelocks.
+
+The context switch rate is enormous on SMP on all kernel configs.  Perhaps
+a better way of looking at it is to observe that the special case of a
+single processor running a non-preemptible kernel simply got lucky.
+
+> But short of recording the lock sequence, I don't think there's anyway to find
+> out for sure.  printk probably won't cut it as a recording mechanism because
+> its overheads are too great.
+
+I think any code sequence which does
+
+	for ( ; ; ) {
+		down_write()
+		up_write()
+		down_read()
+		up_read()
+	}
+
+is vulnerable to the artifact which I described.
+
+
+I don't think we can (or should) do anything about it at the lock
+implementation level.  It's more a matter of being aware of the possible
+failure modes of rwsems, and being more careful to avoid that situation in
+the code which uses rwsems.  And, of course, being careful about when and
+where we use rwsems as opposed to other types of locks.
+
