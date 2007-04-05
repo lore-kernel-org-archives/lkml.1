@@ -1,342 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965883AbXDEJeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965816AbXDEJgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965883AbXDEJeN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 05:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965816AbXDEJeN
+	id S965816AbXDEJgG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 05:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965275AbXDEJgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 05:34:13 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:53058 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965641AbXDEJeK (ORCPT
+	Thu, 5 Apr 2007 05:36:05 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:26293 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965816AbXDEJgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 05:34:10 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: fix for dlpar and sysfs entries
-Date: Thu, 5 Apr 2007 11:22:28 +0200
-User-Agent: KMail/1.8.2
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 5 Apr 2007 05:36:04 -0400
+Subject: Re: [patch 2/2] only allow nonlinear vmas for ram backed
+	filesystems
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <E1HZOIr-0000Rv-00@dorka.pomaz.szeredi.hu>
+References: <E1HZOHe-0000RL-00@dorka.pomaz.szeredi.hu>
+	 <E1HZOIr-0000Rv-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 11:36:00 +0200
+Message-Id: <1175765760.6483.93.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704051122.28428.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes:
-- dlpar fix: 
-	certain resources may only be allocated when first
-	logical port is available, and must be removed when
-	last logical port has been removed
+On Thu, 2007-04-05 at 11:30 +0200, Miklos Szeredi wrote:
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> page_mkclean() doesn't re-protect ptes for non-linear mappings, so a
+> later re-dirty through such a mapping will not generate a fault,
+> PG_dirty will not reflect the dirty state and the dirty count will be
+> skewed.  This implies that msync() is also currently broken for
+> nonlinear mappings.
+> 
+> Peter Zijlstra writes:
+> > In order to make page_mkclean() work for nonlinear vmas we need to do a
+> > full pte scan for each invocation (we could perhaps only scan 1 in n
+> > times to try and limit the damage) and that hurts. This will basically
+> > render it useless.
+> > 
+> > The other solution is adding rmap information to nonlinear vmas but
+> > doubling the memory overhead for nonlinear mappings was not deemed a
+> > good idea.
+> 
+> The easiest solution is to emulate remap_file_pages on non-linear
+> mappings with simple mmap() for non ram-backed filesystems.
+> Applications continue to work (albeit slower), as long as the number
+> of remappings remain below the maximum vma count.
+> 
+> However all currently known real uses of non-linear mappings are for
+> ram backed filesystems, which this patch doesn't affect.
+> 
+> William Lee Irwin III writes:
+> > It's used for > 3GB files on tmpfs and also ramfs, sometimes
+> > substantially larger than 3GB.
+> > 
+> > It's not used for the database proper. It's used for the buffer pool,
+> > which is the in-core destination and source of direct I/O, the on-disk
+> > source and destination of the I/O being the database.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> 
+> Index: linux/mm/fremap.c
+> ===================================================================
+> --- linux.orig/mm/fremap.c	2007-04-05 11:18:21.000000000 +0200
+> +++ linux/mm/fremap.c	2007-04-05 11:18:25.000000000 +0200
+> @@ -181,6 +181,24 @@ asmlinkage long sys_remap_file_pages(uns
+>  			goto retry;
+>  		}
+>  		mapping = vma->vm_file->f_mapping;
+> +		/*
+> +		 * page_mkclean doesn't work on nonlinear vmas, so if dirty
+> +		 * pages need to be accounted, emulate with linear vmas.
+> +		 */
+> +		if (mapping_cap_account_dirty(mapping)) {
 
-- sysfs entries:
-	create symbolic link from each logical port to ehea driver
+Perhaps this should read:
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
----
+		if (vma_wants_writenotify(vma)) {
 
+That way we would even allow read only non-linear mappings of 'real'
+filesystem files.
 
-This patch applies on top of the netdev upstream branch for 2.6.22
+> +			unsigned long addr;
+> +
+> +			flags &= MAP_NONBLOCK;
+> +			addr = mmap_region(vma->vm_file, start, size, flags,
+> +					   vma->vm_flags, pgoff, 1);
+> +			if (IS_ERR_VALUE(addr))
+> +				err = addr;
+> +			else {
+> +				BUG_ON(addr != start);
+> +				err = 0;
+> +			}
+> +			goto out;
+> +		}
+>  		spin_lock(&mapping->i_mmap_lock);
+>  		flush_dcache_mmap_lock(mapping);
+>  		vma->vm_flags |= VM_NONLINEAR;
 
-
-
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 1405d0b..173994d 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -39,7 +39,7 @@ #include <asm/abs_addr.h>
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0055"
-+#define DRV_VERSION	"EHEA_0056"
- 
- #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
- 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index a36a023..f9f3133 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -78,6 +78,28 @@ MODULE_PARM_DESC(sq_entries, " Number of
- 		 __MODULE_STRING(EHEA_DEF_ENTRIES_SQ) ")");
- MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 1 ");
- 
-+static int port_name_cnt = 0;
-+
-+static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
-+                                        const struct of_device_id *id);
-+
-+static int __devexit ehea_remove(struct ibmebus_dev *dev);
-+
-+static struct of_device_id ehea_device_table[] = {
-+	{
-+		.name = "lhea",
-+		.compatible = "IBM,lhea",
-+	},
-+	{},
-+};
-+
-+static struct ibmebus_driver ehea_driver = {
-+	.name = "ehea",
-+	.id_table = ehea_device_table,
-+	.probe = ehea_probe_adapter,
-+	.remove = ehea_remove,
-+};
-+
- void ehea_dump(void *adr, int len, char *msg) {
- 	int x;
- 	unsigned char *deb = adr;
-@@ -2108,6 +2130,28 @@ static int ehea_clean_all_portres(struct
- 	return ret;
- }
- 
-+static void ehea_remove_adapter_mr (struct ehea_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i=0; i < EHEA_MAX_PORTS; i++)
-+		if (adapter->port[i])
-+			return;
-+
-+	ehea_rem_mr(&adapter->mr);
-+}
-+
-+static int ehea_add_adapter_mr (struct ehea_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i=0; i < EHEA_MAX_PORTS; i++)
-+		if (adapter->port[i])
-+			return 0;
-+
-+	return ehea_reg_kernel_mr(adapter, &adapter->mr);
-+}
-+
- static int ehea_up(struct net_device *dev)
- {
- 	int ret, i;
-@@ -2361,6 +2405,34 @@ static void __devinit logical_port_relea
- 	of_node_put(port->ofdev.node);
- }
- 
-+static int ehea_driver_sysfs_add(struct device *dev,
-+                                 struct device_driver *driver)
-+{
-+	int ret;
-+
-+	ret = sysfs_create_link(&driver->kobj, &dev->kobj,
-+				kobject_name(&dev->kobj));
-+	if (ret == 0) {
-+		ret = sysfs_create_link(&dev->kobj, &driver->kobj,
-+					"driver");
-+		if (ret)
-+			sysfs_remove_link(&driver->kobj,
-+					  kobject_name(&dev->kobj));
-+	}
-+	return ret;
-+}
-+
-+static void ehea_driver_sysfs_remove(struct device *dev,
-+                                     struct device_driver *driver)
-+{
-+	struct device_driver *drv = driver;
-+
-+	if (drv) {
-+		sysfs_remove_link(&drv->kobj, kobject_name(&dev->kobj));
-+		sysfs_remove_link(&dev->kobj, "driver");
-+	}
-+}
-+
- static struct device *ehea_register_port(struct ehea_port *port,
- 					 struct device_node *dn)
- {
-@@ -2368,8 +2440,9 @@ static struct device *ehea_register_port
- 
- 	port->ofdev.node = of_node_get(dn);
- 	port->ofdev.dev.parent = &port->adapter->ebus_dev->ofdev.dev;
-+	port->ofdev.dev.bus = &ibmebus_bus_type;
- 
--	sprintf(port->ofdev.dev.bus_id, "port%d", port->logical_port_id);
-+	sprintf(port->ofdev.dev.bus_id, "port%d", port_name_cnt++);
- 	port->ofdev.dev.release = logical_port_release;
- 
- 	ret = of_device_register(&port->ofdev);
-@@ -2384,8 +2457,16 @@ static struct device *ehea_register_port
- 		goto out_unreg_of_dev;
- 	}
- 
-+	ret = ehea_driver_sysfs_add(&port->ofdev.dev, &ehea_driver.driver);
-+	if (ret) {
-+		ehea_error("failed to register sysfs driver link");
-+		goto out_rem_dev_file;
-+	}
-+
- 	return &port->ofdev.dev;
- 
-+out_rem_dev_file:
-+	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
- out_unreg_of_dev:
- 	of_device_unregister(&port->ofdev);
- out:
-@@ -2394,6 +2475,7 @@ out:
- 
- static void ehea_unregister_port(struct ehea_port *port)
- {
-+	ehea_driver_sysfs_remove(&port->ofdev.dev, &ehea_driver.driver);
- 	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
- 	of_device_unregister(&port->ofdev);
- }
-@@ -2520,7 +2602,6 @@ static int ehea_setup_ports(struct ehea_
- 	struct device_node *eth_dn = NULL;
- 
- 	u32 *dn_log_port_id;
--	int port_setup_ok = 0;
- 	int i = 0;
- 
- 	lhea_dn = adapter->ebus_dev->ofdev.node;
-@@ -2534,6 +2615,12 @@ static int ehea_setup_ports(struct ehea_
- 			continue;
- 		}
- 
-+		if (ehea_add_adapter_mr(adapter)) {
-+			ehea_error("creating MR failed");
-+			of_node_put(eth_dn);
-+			return -EIO;
-+		}
-+
- 		adapter->port[i] = ehea_setup_single_port(adapter,
- 							  *dn_log_port_id,
- 							  eth_dn);
-@@ -2541,18 +2628,13 @@ static int ehea_setup_ports(struct ehea_
- 			ehea_info("%s -> logical port id #%d",
- 				  adapter->port[i]->netdev->name,
- 				  *dn_log_port_id);
-+		else
-+			ehea_remove_adapter_mr(adapter);
-+
- 		i++;
- 	};
- 
--	/* Check for succesfully set up ports */
--	for (i = 0; i < EHEA_MAX_PORTS; i++)
--		if (adapter->port[i])
--			port_setup_ok++;
--
--	if (port_setup_ok)
--		return 0;	/* At least some ports are setup correctly */
--
--	return -EINVAL;
-+	return 0;
- }
- 
- static struct device_node *ehea_get_eth_dn(struct ehea_adapter *adapter,
-@@ -2604,6 +2686,11 @@ static ssize_t ehea_probe_port(struct de
- 		return -EINVAL;
- 	}
- 
-+	if (ehea_add_adapter_mr(adapter)) {
-+		ehea_error("creating MR failed");
-+		return -EIO;
-+	}
-+
- 	port = ehea_setup_single_port(adapter, logical_port_id, eth_dn);
- 
- 	of_node_put(eth_dn);
-@@ -2617,8 +2704,10 @@ static ssize_t ehea_probe_port(struct de
- 
- 		ehea_info("added %s (logical port id=%d)", port->netdev->name,
- 			  logical_port_id);
--	} else
-+	} else {
-+		ehea_remove_adapter_mr(adapter);
- 		return -EIO;
-+	}
- 
- 	return (ssize_t) count;
- }
-@@ -2653,6 +2742,8 @@ static ssize_t ehea_remove_port(struct d
- 		return -EINVAL;
- 	}
- 
-+	ehea_remove_adapter_mr(adapter);
-+
- 	return (ssize_t) count;
- }
- 
-@@ -2713,18 +2804,13 @@ static int __devinit ehea_probe_adapter(
- 
- 	dev->ofdev.dev.driver_data = adapter;
- 
--	ret = ehea_reg_kernel_mr(adapter, &adapter->mr);
--	if (ret) {
--		dev_err(&dev->ofdev.dev, "reg_mr_adapter failed\n");
--		goto out_free_ad;
--	}
- 
- 	/* initialize adapter and ports */
- 	/* get adapter properties */
- 	ret = ehea_sense_adapter_attr(adapter);
- 	if (ret) {
- 		dev_err(&dev->ofdev.dev, "sense_adapter_attr failed: %d", ret);
--		goto out_free_res;
-+		goto out_free_ad;
- 	}
- 
- 	adapter->neq = ehea_create_eq(adapter,
-@@ -2732,7 +2818,7 @@ static int __devinit ehea_probe_adapter(
- 	if (!adapter->neq) {
- 		ret = -EIO;
- 		dev_err(&dev->ofdev.dev, "NEQ creation failed");
--		goto out_free_res;
-+		goto out_free_ad;
- 	}
- 
- 	tasklet_init(&adapter->neq_tasklet, ehea_neq_tasklet,
-@@ -2777,9 +2863,6 @@ out_free_irq:
- out_kill_eq:
- 	ehea_destroy_eq(adapter->neq);
- 
--out_free_res:
--	ehea_rem_mr(&adapter->mr);
--
- out_free_ad:
- 	kfree(adapter);
- out:
-@@ -2805,7 +2888,7 @@ static int __devexit ehea_remove(struct 
- 	tasklet_kill(&adapter->neq_tasklet);
- 
- 	ehea_destroy_eq(adapter->neq);
--	ehea_rem_mr(&adapter->mr);
-+	ehea_remove_adapter_mr(adapter);
- 	kfree(adapter);
- 	return 0;
- }
-@@ -2838,21 +2921,6 @@ static int check_module_parm(void)
- 	return ret;
- }
- 
--static struct of_device_id ehea_device_table[] = {
--	{
--		.name = "lhea",
--		.compatible = "IBM,lhea",
--	},
--	{},
--};
--
--static struct ibmebus_driver ehea_driver = {
--	.name = "ehea",
--	.id_table = ehea_device_table,
--	.probe = ehea_probe_adapter,
--	.remove = ehea_remove,
--};
--
- int __init ehea_module_init(void)
- {
- 	int ret;
