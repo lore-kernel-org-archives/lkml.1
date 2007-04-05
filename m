@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946045AbXDEHjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946049AbXDEHqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946045AbXDEHjj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 03:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946048AbXDEHjj
+	id S1946049AbXDEHqO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 03:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946054AbXDEHqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 03:39:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56300 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946045AbXDEHji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 03:39:38 -0400
-Message-ID: <4614A7B1.60808@redhat.com>
-Date: Thu, 05 Apr 2007 03:39:29 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <4614A5CC.5080508@redhat.com>
-In-Reply-To: <4614A5CC.5080508@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 5 Apr 2007 03:46:14 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:50998
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1946049AbXDEHqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 03:46:13 -0400
+Message-Id: <4614C598.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Thu, 05 Apr 2007 08:47:04 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       <virtualization@lists.osdl.org>, "Roland McGrath" <roland@redhat.com>,
+       "Andi Kleen" <ak@suse.de>, "lkml" <linux-kernel@vger.kernel.org>,
+       "Zachary Amsden" <zach@vmware.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch 1/2] Relocate VDSO ELF headers to match mapped
+	location with COMPAT_VDSO
+References: <20070405045825.511024444@goop.org>
+ <20070405045843.333498131@goop.org> <4614BD10.76E4.0078.0@novell.com>
+ <4614A5DA.9050700@goop.org>
+In-Reply-To: <4614A5DA.9050700@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
+>>> Jeremy Fitzhardinge <jeremy@goop.org> 05.04.07 09:31 >>>
+>Jan Beulich wrote:
+>> While there's a certain level of control on what DT_* may appear in the
+>> vDSO, not even considering other than the above types seems fragile to
+>> me. Since future additions to the set are supposedly following a fixed
+>> scheme (distinguishing pointers and values via the low bit when below
+>> OLD_DT_LOOS, and using sub-ranges when between DT_HIOS and
+>> OLD_DT_HIOS), at least also handling those would seem like a good
+>> idea, as would warning about unrecognized types.
+>
+>I wasn't aware of this scheme.  Where is it documented?
 
-> MADV_DONTNEED, unpatched, 1000 loops
-> 
-> real    0m13.672s
-> user    0m1.217s
-> sys     0m45.712s
-> 
-> 
-> MADV_DONTNEED, with patch, 1000 loops
-> 
-> real    0m4.169s
-> user    0m2.033s
-> sys     0m3.224s
+Regarding the low bit part, quoting from working gABI chapter 5: "To make
+it simpler for tools to interpret the contents of dynamic section entries, the
+value of each tag, except for those in two special compatibility ranges, will
+determine the interpretation of the d_un union. A tag whose value is an
+even number indicates a dynamic section entry that uses d_ptr. A tag
+whose value is an odd number indicates a dynamic section entry that uses
+d_val or that uses neither d_ptr nor d_val. Tags whose values are less
+than the special value DT_ENCODING and tags whose values fall between
+DT_HIOS and DT_LOPROC do not follow these rules."
 
-I just noticed something fun with these numbers.
+Regarding the OS range, all I can point you to is binutils' include/elf/common.h.
 
-Without the patch, the system (a quad core CPU) is 10% idle.
-
-With the patch, it is 66% idle - presumably I need Nick's
-mmap_sem patch.
-
-However, despite being 66% idle, the test still runs over
-3 times as fast!
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Jan
