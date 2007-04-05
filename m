@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXDEGKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945891AbXDEGPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161228AbXDEGKP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161232AbXDEGKP
+	id S1945891AbXDEGPA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161232AbXDEGPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:10:15 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:47893 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161228AbXDEGKN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:10:13 -0400
-Message-ID: <461492A5.1030905@cosmosbay.com>
-Date: Thu, 05 Apr 2007 08:09:41 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com>	<20070403144948.fe8eede6.akpm@linux-foundation.org>	<4612DCC6.7000504@cosmosbay.com>	<46130BC8.9050905@yahoo.com.au>	<1175675146.6483.26.camel@twins>	<461367F6.10705@yahoo.com.au>	<20070404113447.17ccbefa.dada1@cosmosbay.com>	<46137882.6050708@yahoo.com.au> <20070404135458.4f1a7059.dada1@cosmosbay.com> <4614585F.1050200@yahoo.com.au>
-In-Reply-To: <4614585F.1050200@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 05 Apr 2007 08:09:50 +0200 (CEST)
+	Thu, 5 Apr 2007 02:15:00 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:42345 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161216AbXDEGO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:14:59 -0400
+Date: Thu, 5 Apr 2007 08:20:00 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Christian Kujau <christian@g-house.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, malte@g-house.de,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+Message-ID: <20070405062000.GA1717@ff.dom.local>
+References: <20070403065810.GA1832@ff.dom.local> <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de> <20070404112100.GA1979@ff.dom.local> <Pine.LNX.4.64.0704041412310.3963@sheep.housecafe.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704041412310.3963@sheep.housecafe.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin a écrit :
-> Eric Dumazet wrote:
-> >> This was not a working patch, just to throw the idea, since the
->> answers I got showed I was not understood.
->>
->> In this case, find_extend_vma() should of course have one struct 
->> vm_area_cache * argument, like find_vma()
->>
->> One single cache on one mm is not scalable. oprofile badly hits it on 
->> a dual cpu config.
+On Wed, Apr 04, 2007 at 02:20:23PM +0100, Christian Kujau wrote:
+> On Wed, 4 Apr 2007, Jarek Poplawski wrote:
+> >So, it's a lot sooner than before. (BTW, isn't there anything
+> >in debug log?)
 > 
-> Oh, what sort of workload are you using to show this? The only reason 
-> that I
-> didn't submit my thread cache patches was that I didn't show a big enough
-> improvement.
+> No, nothing. I've set up remote-syslgging to the other node (node1 
+> logging to node2 and vice versa) - nothing :(
 > 
+> >I see both CPUs did interrupt handling again.
+> 
+> Yes, when booting with 'lapic' both CPUs/cores are handling interrupts 
+> again. However, since 'lapic' seems to lead to crashes here, we would be 
+> more than happy to just boot with 'noapic' but have 'irqbalance' 
+> working. Unfortunately, irqbalance is unable to write to 
+> /proc/irq/*/smp_affinity (did not help to disable CONFIG_IRQBALANCE).
 
-Database workload, where the user multi threaded app is constantly accessing 
-GBytes of data, so L2 cache hit is very small. If you want to oprofile it, 
-with say a CPU_CLK_UNHALTED:5000 event, then find_vma() is in the top 5.
+I hope you are right, but maybe it's not lapic's fault?
+Probably the fastest way to know would be to try with
+some other card, yet.
 
-Each time oprofile has an NMI, it calls find_vma(EIP/RIP) and blows out the 
-target process cache (usually plugged on the data vma containing user land 
-futexes). Event with private futexes, it will probably be plugged on the brk() 
-vma.
+> >Maybe it's a real locking problem. Here are some more
+> >suggestions for testing (if you don't find anything better):
+> >- try without SMP, so: 'acpi=off lapic nosmp'
 
+BTW, I'm not sure acpi should be turned off with any
+modern hardware. Did you tried to compile with
+CONFIG_ACPI = y, all other acpi options off, and maybe
+to tweak only with 'pci=...' boot parameter?
+
+Regards,
+Jarek P.
