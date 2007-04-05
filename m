@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767652AbXDFN7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767657AbXDFN7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767652AbXDFN7L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 09:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767649AbXDFN7K
+	id S1767657AbXDFN7U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 09:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767658AbXDFN7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 09:59:10 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43858 "EHLO amd.ucw.cz"
+	Fri, 6 Apr 2007 09:59:20 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43852 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767656AbXDFN7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 09:59:05 -0400
-Date: Thu, 5 Apr 2007 10:48:50 +0200
+	id S1767657AbXDFN7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 09:59:13 -0400
+Date: Thu, 5 Apr 2007 11:04:01 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: Harald Welte <laforge@openmoko.org>, openmoko-kernel@lists.openmoko.org,
-       kernel list <linux-kernel@vger.kernel.org>, patches@arm.linux.org.uk
-Subject: basic support for neo1973
-Message-ID: <20070405084850.GA11008@elf.ucw.cz>
+       kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net
+Cc: Russell King <rmk@arm.linux.org.uk>
+Subject: backlight support for fic1973
+Message-ID: <20070405090401.GA11126@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,61 +24,62 @@ User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds very basic support for fic1973 (aka gta01, aka
-openmoko). With this patch applied, I can boot the kernel and actually
-see the messages.
+This adds support for backlight on Fic1973 phone. I removed some
+#ifdefs from Harald's version, and simple, non-PWM mode is no longer
+supported. I do not think it was too useful besides for debugging.
 
 From: Harald Welte <laforge@openmoko.org>
 Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-PATCH FOLLOWS
-KernelVersion: 2.6.21-rc5-git
-
-diff --git a/arch/arm/mach-s3c2410/Kconfig b/arch/arm/mach-s3c2410/Kconfig
-index d4b013b..9f2a874 100644
---- a/arch/arm/mach-s3c2410/Kconfig
-+++ b/arch/arm/mach-s3c2410/Kconfig
-@@ -109,5 +109,11 @@ config MACH_QT2410
- 	help
- 	   Say Y here if you are using the Armzone QT2410
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 47d15b5..e0be3aa 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -48,6 +48,14 @@ config BACKLIGHT_LOCOMO
+ 	  If you have a Sharp Zaurus SL-5500 (Collie) or SL-5600 (Poodle) say y to
+ 	  enable the LCD/backlight driver.
  
-+config MACH_GTA01
-+	bool "FIC Neo1973 GSM Phone"
-+	select CPU_S3C2410
++config BACKLIGHT_GTA01
++	tristate "FIC GTA01 Backlight Driver"
++	depends on BACKLIGHT_CLASS_DEVICE && MACH_GTA01
++	default y
 +	help
-+	   Say Y here if you are using the FIC Neo1973 GSM Phone
++	  If you have a FIC GTA01 say y to enable the backlight driver.
 +
- endmenu
- 
-diff --git a/arch/arm/mach-s3c2410/Makefile b/arch/arm/mach-s3c2410/Makefile
-index 9a3d3d2..71b82d8 100644
---- a/arch/arm/mach-s3c2410/Makefile
-+++ b/arch/arm/mach-s3c2410/Makefile
-@@ -29,3 +29,5 @@ obj-$(CONFIG_MACH_AML_M5900)	+= mach-aml
- obj-$(CONFIG_BAST_PC104_IRQ)	+= bast-irq.o
- obj-$(CONFIG_MACH_VR1000)	+= mach-vr1000.o usb-simtec.o
- obj-$(CONFIG_MACH_QT2410)	+= mach-qt2410.o
-+obj-$(CONFIG_MACH_GTA01)	+= mach-gta01.o
 +
-diff --git a/arch/arm/mach-s3c2410/mach-gta01.c b/arch/arm/mach-s3c2410/mach-gta01.c
+ config BACKLIGHT_HP680
+ 	tristate "HP Jornada 680 Backlight Driver"
+ 	depends on BACKLIGHT_CLASS_DEVICE && SH_HP6XX
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 0c3ce46..55cdf6d 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -3,6 +3,7 @@ # Backlight & LCD drivers
+ obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
+ obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
+ obj-$(CONFIG_BACKLIGHT_CORGI)	+= corgi_bl.o
++obj-$(CONFIG_BACKLIGHT_GTA01)	+= gta01_bl.o
+ obj-$(CONFIG_BACKLIGHT_HP680)	+= hp680_bl.o
+ obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
+ obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
+diff --git a/drivers/video/backlight/gta01_bl.c b/drivers/video/backlight/gta01_bl.c
 new file mode 100644
-index 0000000..c9b4837
+index 0000000..c0feee5
 --- /dev/null
-+++ b/arch/arm/mach-s3c2410/mach-gta01.c
-@@ -0,0 +1,358 @@
++++ b/drivers/video/backlight/gta01_bl.c
+@@ -0,0 +1,265 @@
 +/*
-+ * linux/arch/arm/mach-s3c2410/mach-gta01.c
-+ *
-+ * S3C2410 Machine Support for the FIC GTA01 (Neo1973)
++ *  Backlight Driver for FIC GTA01 (Neo1973) GSM Phone
 + *
 + * Copyright (C) 2006-2007 by OpenMoko, Inc.
 + * Author: Harald Welte <laforge@openmoko.org>
 + * All rights reserved.
 + *
++ *  based on corgi_cl.c, Copyright (c) 2004-2006 Richard Purdie
++ *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
++ * published by the Free Software Foundation, version 2.
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -91,338 +93,246 @@ index 0000000..c9b4837
 + *
 + */
 +
++#include <linux/module.h>
 +#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/interrupt.h>
-+#include <linux/list.h>
-+#include <linux/timer.h>
 +#include <linux/init.h>
-+#include <linux/workqueue.h>
 +#include <linux/platform_device.h>
-+#include <linux/serial_core.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/spi_bitbang.h>
-+#include <linux/mmc/protocol.h>
++#include <linux/mutex.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/clk.h>
 +
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/nand_ecc.h>
-+#include <linux/mtd/partitions.h>
-+
-+#include <asm/mach/arch.h>
-+#include <asm/mach/map.h>
-+#include <asm/mach/irq.h>
-+
-+#include <asm/hardware.h>
-+#include <asm/io.h>
-+#include <asm/irq.h>
-+#include <asm/mach-types.h>
-+
-+#include <asm/arch/regs-serial.h>
-+#include <asm/arch/regs-gpio.h>
-+#include <asm/arch/fb.h>
-+#include <asm/arch/udc.h>
-+#include <asm/arch/nand.h>
-+#include <asm/arch/spi.h>
-+#include <asm/arch/spi-gpio.h>
-+#include <asm/arch/usb-control.h>
-+
++#include <asm/arch/hardware.h>
++#include <asm/arch/regs-timer.h>
 +#include <asm/arch/gta01.h>
 +
-+#include <asm/plat-s3c24xx/clock.h>
-+#include <asm/plat-s3c24xx/devs.h>
-+#include <asm/plat-s3c24xx/cpu.h>
++static struct backlight_properties gta01bl_prop;
++static struct backlight_device *gta01_backlight_device;
++static struct gta01bl_machinfo *bl_machinfo;
 +
-+static struct map_desc gta01_iodesc[] __initdata = {
-+	{
-+		.virtual	= 0xe0000000,
-+		.pfn		= __phys_to_pfn(S3C2410_CS3+0x01000000),
-+		.length		= SZ_1M,
-+		.type		= MT_DEVICE
-+	},
++static unsigned long gta01bl_flags;
++
++struct gta01bl_data {
++	int intensity;
++	struct mutex mutex;
++	struct clk *clk;
 +};
 +
-+#define UCON S3C2410_UCON_DEFAULT
-+#define ULCON S3C2410_LCON_CS8 | S3C2410_LCON_PNONE | S3C2410_LCON_STOPB
-+#define UFCON S3C2410_UFCON_RXTRIG8 | S3C2410_UFCON_FIFOMODE
++static struct gta01bl_data gta01bl;
 +
-+static struct s3c2410_uartcfg gta01_uartcfgs[] = {
-+	[0] = {
-+		.hwport	     = 0,
-+		.flags	     = 0,
-+		.ucon	     = UCON,
-+		.ulcon	     = ULCON,
-+		.ufcon	     = UFCON,
-+	},
-+	[1] = {
-+		.hwport	     = 1,
-+		.flags	     = 0,
-+		.ucon	     = UCON,
-+		.ulcon	     = ULCON,
-+		.ufcon	     = UFCON,
-+	},
-+};
++#define GTA01BL_SUSPENDED     0x01
++#define GTA01BL_BATTLOW       0x02
 +
-+/* LCD driver info */
++#define GTA01BL_FREQ	400
 +
++/* On the GTA01 / Neo1973, we use a 50 or 66MHz PCLK, which gives
++ * us a 6.25..8.25MHz DIV8 clock, which is further divided by a
++ * prescaler of 4, resulting in a 1.56..2.06MHz tick.  This results in a
++ * minimum frequency of 24..31Hz.  At 400Hz, we need to set the count
++ * to something like 3906..5156, providing us a way sufficient resolution
++ * for display brightness adjustment. */
 +
-+/* Configuration for 480x640 toppoly TD028TTEC1 */
-+static struct s3c2410fb_mach_info gta01_lcd_cfg __initdata = {
-+	.regs	= {
-+		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
-+				  S3C2410_LCDCON1_TFT |
-+				  S3C2410_LCDCON1_CLKVAL(0x01),	/* HCLK/4 */
-+
-+		.lcdcon2	= S3C2410_LCDCON2_VBPD(1) |	/* 2 */
-+				  S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
-+				  S3C2410_LCDCON2_VFPD(15) |	/* 16 */
-+				  S3C2410_LCDCON2_VSPW(1),	/* 2 */
-+
-+		.lcdcon3	= S3C2410_LCDCON3_HBPD(7) |	/* 8 */
-+				  S3C2410_LCDCON3_HOZVAL(479) |	/* 480 */
-+				  S3C2410_LCDCON3_HFPD(103),	/* 104 */
-+
-+		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
-+				  S3C2410_LCDCON4_HSPW(7),	/* 8 */
-+
-+		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
-+				  S3C2410_LCDCON5_INVVLINE |
-+				  S3C2410_LCDCON5_INVVFRAME |
-+				  S3C2410_LCDCON5_PWREN |
-+				  S3C2410_LCDCON5_HWSWP,
-+	},
-+
-+	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
-+	.type		= S3C2410_LCDCON1_TFT,
-+
-+	.width		= 480,
-+	.height		= 640,
-+
-+	.xres		= {
-+		.min	= 240,
-+		.max	= 480,
-+		.defval	= 480,
-+	},
-+
-+	.yres		= {
-+		.min	= 320,
-+		.max	= 640,
-+		.defval = 640,
-+	},
-+
-+	.bpp		= {
-+		.min	= 1,
-+		.max	= 16,
-+		.defval = 16,
-+	},
-+};
-+static struct platform_device *gta01_devices[] __initdata = {
-+	&s3c_device_lcd,
-+};
-+
-+static struct s3c24xx_board gta01_board __initdata = {
-+	.devices       = gta01_devices,
-+	.devices_count = ARRAY_SIZE(gta01_devices)
-+};
-+
-+static struct mtd_partition gta01_nand_part[] = {
-+	[0] = {
-+		.name	= "U-Boot",
-+		.size	= 0x30000,
-+		.offset	= 0,
-+	},
-+	[1] = {
-+		.name	= "U-Boot environment",
-+		.offset = 0x30000,
-+		.size	= 0x4000,
-+	},
-+	[2] = {
-+		.name	= "kernel",
-+		.offset = 0x34000,
-+		.size	= SZ_2M,
-+	},
-+	[3] = {
-+		.name	= "initrd",
-+		.offset	= 0x234000,
-+		.size	= SZ_4M,
-+	},
-+	[4] = {
-+		.name	= "jffs2",
-+		.offset = 0x634000,
-+		.size	= 0x39cc000,
-+	},
-+};
-+
-+static struct s3c2410_nand_set gta01_nand_sets[] = {
-+	[0] = {
-+		.name		= "NAND",
-+		.nr_chips	= 1,
-+		.nr_partitions	= ARRAY_SIZE(gta01_nand_part),
-+		.partitions	= gta01_nand_part,
-+	},
-+};
-+
-+/* choose a set of timings which should suit most 512Mbit
-+ * chips and beyond.
-+ */
-+
-+static struct s3c2410_platform_nand gta01_nand_info = {
-+	.tacls		= 20,
-+	.twrph0		= 60,
-+	.twrph1		= 20,
-+	.nr_sets	= ARRAY_SIZE(gta01_nand_sets),
-+	.sets		= gta01_nand_sets,
-+};
-+
-+static unsigned int mmc_millivolts[] = {
-+	[MMC_VDD_145_150]	= 1500,
-+	[MMC_VDD_150_155]	= 1500,
-+	[MMC_VDD_155_160]	= 1600,
-+	[MMC_VDD_160_165]	= 1600,
-+	[MMC_VDD_165_170]	= 1700,
-+	[MMC_VDD_17_18]		= 1800,
-+	[MMC_VDD_18_19]		= 1900,
-+	[MMC_VDD_19_20]		= 2000,
-+	[MMC_VDD_20_21]		= 2100,
-+	[MMC_VDD_21_22]		= 2200,
-+	[MMC_VDD_22_23]		= 2300,
-+	[MMC_VDD_23_24]		= 2400,
-+	[MMC_VDD_24_25]		= 2500,
-+	[MMC_VDD_25_26]		= 2600,
-+	[MMC_VDD_26_27]		= 2700,
-+	[MMC_VDD_27_28]		= 2800,
-+	[MMC_VDD_28_29]		= 2900,
-+	[MMC_VDD_29_30]		= 3000,
-+	[MMC_VDD_30_31]		= 3100,
-+	[MMC_VDD_31_32]		= 3200,
-+	[MMC_VDD_32_33]		= 3300,
-+};
-+
-+static void gta01_mmc_set_power(unsigned short vdd)
++static int gta01bl_send_intensity(struct backlight_device *bd)
 +{
-+	/* FIXME: set GTA01_GPIO_SDMMC_ON on GTA01v4 */
-+}
++	int intensity = bd->props.brightness;
 +
-+static void gta01_udc_command(enum s3c2410_udc_cmd_e cmd)
-+{
-+	printk(KERN_DEBUG "%s(%d)\n", __func__, cmd);
++	if (bd->props.power != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (bd->props.fb_blank != FB_BLANK_UNBLANK)
++		intensity = 0;
++	if (gta01bl_flags & GTA01BL_SUSPENDED)
++		intensity = 0;
++	if (gta01bl_flags & GTA01BL_BATTLOW)
++		intensity &= bl_machinfo->limit_mask;
 +
-+	switch (cmd) {
-+	case S3C2410_UDC_P_ENABLE:
-+		s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 1);
-+		break;
-+	case S3C2410_UDC_P_DISABLE:
-+		s3c2410_gpio_setpin(GTA01_GPIO_USB_PULLUP, 0);
-+		break;
-+	case S3C2410_UDC_P_RESET:
-+		/* FIXME! */
-+		break;
-+	default:
-+		break;
++ 	mutex_lock(&gta01bl.mutex);
++	if (intensity == bd->props.max_brightness) {
++		s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 1);
++		s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
++	} else  {
++		__raw_writel(intensity & 0xffff, S3C2410_TCMPB(0));
++		s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPB0_TOUT0);
 +	}
++	mutex_unlock(&gta01bl.mutex);
++
++	gta01bl.intensity = intensity;
++
++	return 0;
 +}
 +
-+static struct gta01bl_machinfo backlight_machinfo = {
-+	.default_intensity	= 1,
-+	.max_intensity		= 1,
-+	.limit_mask		= 1,
-+};
-+
-+static struct resource gta01_bl_resources[] = {
-+	[0] = {
-+		.start	= GTA01_GPIO_BACKLIGHT,
-+		.end	= GTA01_GPIO_BACKLIGHT,
-+	},
-+};
-+
-+struct platform_device gta01_bl_dev = {
-+	.name 		= "gta01-bl",
-+	.num_resources	= ARRAY_SIZE(gta01_bl_resources),
-+	.resource	= gta01_bl_resources,
-+	.dev		= {
-+		.platform_data = &backlight_machinfo,
-+	},
-+};
-+
-+static struct resource gta01_button_resources[] = {
-+	[0] = {
-+		.start = GTA01_GPIO_AUX_KEY,
-+		.end   = GTA01_GPIO_AUX_KEY,
-+	},
-+	[1] = {
-+		.start = GTA01_GPIO_HOLD_KEY,
-+		.end   = GTA01_GPIO_HOLD_KEY,
-+	},
-+	[2] = {
-+		.start = GTA01_GPIO_JACK_INSERT,
-+		.end   = GTA01_GPIO_JACK_INSERT,
-+	},
-+};
-+
-+struct platform_device gta01_button_dev = {
-+	.name		="gta01-button",
-+	.num_resources	= ARRAY_SIZE(gta01_button_resources),
-+	.resource	= gta01_button_resources,
-+};
-+
-+static struct platform_device gta01_pm_gsm_dev = {
-+	.name		="gta01-pm-gsm",
-+};
-+
-+/* USB */
-+static struct s3c2410_hcd_info gta01_usb_info = {
-+	.port[0]	= {
-+		.flags	= S3C_HCDFLG_USED,
-+	},
-+	.port[1]	= {
-+		.flags	= 0,
-+	},
-+};
-+
-+static void __init gta01_map_io(void)
++static void gta01bl_init_hw(void)
 +{
-+	s3c24xx_init_io(gta01_iodesc, ARRAY_SIZE(gta01_iodesc));
-+	s3c24xx_init_clocks(12*1000*1000);
-+	s3c24xx_init_uarts(gta01_uartcfgs, ARRAY_SIZE(gta01_uartcfgs));
-+	s3c24xx_set_board(&gta01_board);
++	unsigned long tcon, tcfg0, tcfg1, tcnt, pclk;
++
++	pclk = clk_get_rate(gta01bl.clk);
++
++	tcon = __raw_readl(S3C2410_TCON);
++	tcfg1 = __raw_readl(S3C2410_TCFG1);
++	tcfg0 = __raw_readl(S3C2410_TCFG0);
++
++	tcfg1 &= ~S3C2410_TCFG1_MUX0_MASK;
++	tcfg1 |= S3C2410_TCFG1_MUX0_DIV8;
++
++	tcfg0 &= ~S3C2410_TCFG_PRESCALER0_MASK;
++	tcfg0 |= (4 - 1);
++
++	tcnt = (pclk / 32) / GTA01BL_FREQ;
++	tcnt--;
++
++	__raw_writel(tcfg1, S3C2410_TCFG1);
++	__raw_writel(tcfg0, S3C2410_TCFG0);
++
++	/* ensure timer is stopped */
++
++	tcon &= 0xffffff00;
++	tcon |= S3C2410_TCON_T0RELOAD;
++	tcon |= S3C2410_TCON_T0MANUALUPD;
++
++	__raw_writel(tcnt, S3C2410_TCNTB(0));
++	__raw_writel(tcnt, S3C2410_TCMPB(0));
++	__raw_writel(tcon, S3C2410_TCON);
++
++	/* start the timer */
++	tcon |= S3C2410_TCON_T0START;
++	tcon &= ~S3C2410_TCON_T0MANUALUPD;
++	__raw_writel(tcon, S3C2410_TCON);
++
++	gta01bl_prop.max_brightness = tcnt;
 +}
 +
-+static void __init gta01_machine_init(void)
++#ifdef CONFIG_PM
++static int gta01bl_suspend(struct platform_device *dev, pm_message_t state)
 +{
-+	s3c_device_usb.dev.platform_data = &gta01_usb_info;
-+	s3c_device_nand.dev.platform_data = &gta01_nand_info;
++	gta01bl_flags |= GTA01BL_SUSPENDED;
++	gta01bl_send_intensity(gta01_backlight_device);
++	return 0;
++}
 +
-+	s3c24xx_fb_set_platdata(&gta01_lcd_cfg);
++static int gta01bl_resume(struct platform_device *dev)
++{
++	mutex_lock(&gta01bl.mutex);
++	gta01bl_init_hw();
++	mutex_unlock(&gta01bl.mutex);
 +
-+	/* Set LCD_RESET / XRES to high */
-+	s3c2410_gpio_cfgpin(S3C2410_GPC6, S3C2410_GPIO_OUTPUT);
-+	s3c2410_gpio_setpin(S3C2410_GPC6, 1);
-+
-+#ifdef SPI_HARD
++	gta01bl_flags &= ~GTA01BL_SUSPENDED;
++	gta01bl_send_intensity(gta01_backlight_device);
++	return 0;
++}
 +#else
-+	/* SPI chip select is gpio output */
-+	s3c2410_gpio_cfgpin(S3C2410_GPG3, S3C2410_GPIO_OUTPUT);
-+	s3c2410_gpio_setpin(S3C2410_GPG3, 1);
-+
++#define gta01bl_suspend	NULL
++#define gta01bl_resume	NULL
 +#endif
-+	platform_device_register(&gta01_bl_dev);
-+	platform_device_register(&gta01_button_dev);
-+	platform_device_register(&gta01_pm_gsm_dev);
 +
-+	s3c2410_pm_init();
++static int gta01bl_get_intensity(struct backlight_device *bd)
++{
++	return gta01bl.intensity;
 +}
 +
-+MACHINE_START(GTA01, "GTA01")
-+	.phys_io	= S3C2410_PA_UART,
-+	.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
-+	.boot_params	= S3C2410_SDRAM_PA + 0x100,
-+	.map_io		= gta01_map_io,
-+	.init_irq	= s3c24xx_init_irq,
-+	.init_machine	= gta01_machine_init,
-+	.timer		= &s3c24xx_timer,
-+MACHINE_END
++static int gta01bl_set_intensity(struct backlight_device *bd)
++{
++	gta01bl_send_intensity(gta01_backlight_device);
++	return 0;
++}
++
++/*
++ * Called when the battery is low to limit the backlight intensity.
++ * If limit==0 clear any limit, otherwise limit the intensity
++ */
++void gta01bl_limit_intensity(int limit)
++{
++	if (limit)
++		gta01bl_flags |= GTA01BL_BATTLOW;
++	else
++		gta01bl_flags &= ~GTA01BL_BATTLOW;
++	gta01bl_send_intensity(gta01_backlight_device);
++}
++EXPORT_SYMBOL(gta01bl_limit_intensity);
 +
 +
++static struct backlight_ops gta01bl_ops = {
++	.get_brightness = gta01bl_get_intensity,
++	.update_status  = gta01bl_set_intensity,
++};
++
++static int __init gta01bl_probe(struct platform_device *pdev)
++{
++	struct gta01bl_machinfo *machinfo = pdev->dev.platform_data;
++
++	/* use s3c_device_timer0 for PWM */
++	gta01bl.clk = clk_get(NULL, "timers");
++	if (IS_ERR(gta01bl.clk))
++		return PTR_ERR(gta01bl.clk);
++
++	clk_enable(gta01bl.clk);
++
++	gta01bl_init_hw();
++	mutex_init(&gta01bl.mutex);
++
++	if (!machinfo->limit_mask)
++		machinfo->limit_mask = -1;
++
++	gta01_backlight_device = backlight_device_register("gta01-bl",
++							   &pdev->dev, NULL,
++							   &gta01bl_ops);
++	if (IS_ERR(gta01_backlight_device))
++		return PTR_ERR(gta01_backlight_device);
++
++	gta01_backlight_device->props.power = FB_BLANK_UNBLANK;
++	gta01_backlight_device->props.brightness = gta01bl_prop.max_brightness;
++	gta01bl_send_intensity(gta01_backlight_device);
++
++	printk("GTA01 Backlight Driver Initialized.\n");
++	return 0;
++}
++
++static int gta01bl_remove(struct platform_device *dev)
++{
++	unsigned long tcon;
++
++	/* stop this timer */
++	tcon = __raw_readl(S3C2410_TCON);
++	tcon &= 0xffffff00;
++	__raw_writel(tcon, S3C2410_TCON);
++
++	clk_disable(gta01bl.clk);
++	clk_put(gta01bl.clk);
++
++	backlight_device_unregister(gta01_backlight_device);
++	mutex_destroy(&gta01bl.mutex);
++
++	printk("GTA01 Backlight Driver Unloaded, constant backlight\n");
++	s3c2410_gpio_cfgpin(GTA01_GPIO_BACKLIGHT, S3C2410_GPIO_OUTPUT);
++	s3c2410_gpio_setpin(GTA01_GPIO_BACKLIGHT, 1);
++
++	return 0;
++}
++
++static struct platform_driver gta01bl_driver = {
++	.probe		= gta01bl_probe,
++	.remove		= gta01bl_remove,
++	.suspend	= gta01bl_suspend,
++	.resume		= gta01bl_resume,
++	.driver		= {
++		.name	= "gta01-bl",
++	},
++};
++
++static int __init gta01bl_init(void)
++{
++	return platform_driver_register(&gta01bl_driver);
++}
++
++static void __exit gta01bl_exit(void)
++{
++	platform_driver_unregister(&gta01bl_driver);
++}
++
++module_init(gta01bl_init);
++module_exit(gta01bl_exit);
++
++MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
++MODULE_DESCRIPTION("FIC GTA01 (Neo1973) Backlight Driver");
++MODULE_LICENSE("GPL");
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
