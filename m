@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946057AbXDEH4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946064AbXDEIBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946057AbXDEH4Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 03:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946059AbXDEH4Y
+	id S1946064AbXDEIBL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 04:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946059AbXDEIBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 03:56:24 -0400
-Received: from sghqmaxdr.chevron.com ([203.127.203.102]:14950 "EHLO
-	sghqmaxdr.chevron.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946057AbXDEH4X convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 03:56:23 -0400
-X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 03:56:22 EDT
-X-IronPort-AV: i="4.14,374,1170604800"; 
-   d="scan'208"; a="963218:sNHT31496297"
-X-CVX-Departure: Verified
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [patch 1/2] Relocate VDSO ELF headers to match mapped	location with COMPAT_VDSO
-Date: Thu, 5 Apr 2007 14:45:56 +0700
-Message-ID: <8646EB4D6B054F4E8AB083CA829C4C810107364E@iddrintx1.iddri.chevrontexaco.net>
-In-Reply-To: <4614A5DA.9050700@goop.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 1/2] Relocate VDSO ELF headers to match mapped	location with COMPAT_VDSO
-Thread-Index: Acd3VPd2d1PEdr1sSf+kK4jysxWqsgAAQlkQ
-References: <20070405045825.511024444@goop.org> <20070405045843.333498131@goop.org> <4614BD10.76E4.0078.0@novell.com> <4614A5DA.9050700@goop.org>
-From: "Raharjo, Cahyo \(cahr\)" <Cahyo.Raharjo@chevron.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Jan Beulich" <jbeulich@novell.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <virtualization@lists.osdl.org>, "Roland McGrath" <roland@redhat.com>,
-       "Andi Kleen" <ak@suse.de>, "lkml" <linux-kernel@vger.kernel.org>,
-       "Zachary Amsden" <zach@vmware.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-X-OriginalArrivalTime: 05 Apr 2007 07:45:58.0810 (UTC) FILETIME=[734457A0:01C77756]
+	Thu, 5 Apr 2007 04:01:11 -0400
+Received: from mga01.intel.com ([192.55.52.88]:43558 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946064AbXDEIBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 04:01:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,375,1170662400"; 
+   d="scan'208"; a="225113043:sNHT22931153"
+Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
+From: Zhang Rui <rui.zhang@intel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger" <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200704031741.42273.david-b@pacbell.net>
+References: <200704031741.42273.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 15:59:55 +0800
+Message-Id: <1175759995.23121.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All,
-In this few days, I got emails from this list. I tried to exclude thru
-majordomo, but it failed.
-Kindly need your help to exclude me from this list.
+On Wed, 2007-04-04 at 08:41 +0800, David Brownell wrote:
+> This updates /proc/acpi/wakeup to be more informative, primarily by
+> showing
+> the sysfs node associated with each wakeup-enabled device.  Example:
+> 
+>         Device  S-state   Status   Sysfs node
+>         PCI0      S4     disabled  no-bus:pci0000:00
+>         PS2M      S4     disabled  pnp:00:05
+>         PS2K      S4     disabled  pnp:00:06
+>         UAR1      S4     disabled  pnp:00:08
+>         USB1      S3     disabled  pci:0000:00:03.0
+>         USB2      S3     disabled  pci:0000:00:03.1
+>         USB3      S3     disabled 
+>         USB4      S3     disabled  pci:0000:00:03.3
+>         S139      S4     disabled 
+>         LAN       S4     disabled  pci:0000:00:04.0
+>         MDM       S4     disabled 
+>         AUD       S4     disabled  pci:0000:00:02.7
+>         SLPB      S4    *enabled  
+> 
+> Eventually this file should be removed, but until then it's almost the
+> only
+> way we have to tell how the relevant ACPI tables are broken (and
+> cope).  In
+> that example, two devices don't actually exist (USB3, S139), one can't
+> issue
+> wakeup events (PCI0), and two seem harmlessly (?) confused (MDM and
+> AUD are
+> the same PCI device, but it's the _modem_ that does wake-on-ring). 
+> 
+Well, ACPI can't find the sysfs node for all the wakeup-enabled devices.
+In fact, only pci and pnp devices can be found now.
+ACPI needs the ability to distinguish all the physical devices, i.e. map
+ACPI device to physical device nodes in sysfs, which I mentioned before.
 
-
-Thank You, 
-CR
-
-
------Original Message-----
-From: linux-kernel-owner@vger.kernel.org
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Jeremy
-Fitzhardinge
-Sent: Thursday, April 05, 2007 2:32 PM
-To: Jan Beulich
-Cc: Ingo Molnar; Andrew Morton; virtualization@lists.osdl.org; Roland
-McGrath; Andi Kleen; lkml; Zachary Amsden; Eric W. Biederman
-Subject: Re: [patch 1/2] Relocate VDSO ELF headers to match mapped
-location with COMPAT_VDSO
-
-Jan Beulich wrote:
-> While there's a certain level of control on what DT_* may appear in 
-> the vDSO, not even considering other than the above types seems 
-> fragile to me. Since future additions to the set are supposedly 
-> following a fixed scheme (distinguishing pointers and values via the 
-> low bit when below OLD_DT_LOOS, and using sub-ranges when between 
-> DT_HIOS and OLD_DT_HIOS), at least also handling those would seem like
-
-> a good idea, as would warning about unrecognized types.
->   
-
-I wasn't aware of this scheme.  Where is it documented?
-
-> Also, even though it shouldn't matter for the final result, if doing 
-> things spec-conforming here you should use d_un.d_ptr.
->   
-
-Yes, I've already fixed that.
-
-> In addition to Roland's remarks about missing symbol table relocation,
-
-> I would also assume section headers, if present, should be relocated.
->   
-
-Yes, I suppose that's easy enough to add.
-
-    J
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in the body of a message to majordomo@vger.kernel.org More majordomo
-info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Thanks,
+Rui
