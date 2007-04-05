@@ -1,65 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767272AbXDETwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767259AbXDETzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767272AbXDETwU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 15:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767273AbXDETwT
+	id S1767259AbXDETzt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 15:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767273AbXDETzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 15:52:19 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:59736 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767272AbXDETwS (ORCPT
+	Thu, 5 Apr 2007 15:55:49 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:45987 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767259AbXDETzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 15:52:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=k2+Kn2X5R6iv4Q1kxETIiEK2JsmwPiSrTsgsvXDbDcSBYjZY6ZBiiiB4akpY8aKW6UA5av7neEfa8dA01aPrJUdIyL/2RNs+Oq747X0NpEQ+iIPX0LLuAqAoSKs9UUDbWxfXhOaJVmpiWSad1JDEf8zaRKJl/CbOYGsZ4qMC4fU=
-Message-ID: <a71293c20704051252o1a338353v22b68c5bb783963a@mail.gmail.com>
-Date: Thu, 5 Apr 2007 15:52:17 -0400
-From: "Stephen Evanchik" <evanchsa@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: AHCI exception, ext3 journal aborted on a VIA K8M890 / VT8251
-In-Reply-To: <461139D5.1040705@redhat.com>
+	Thu, 5 Apr 2007 15:55:48 -0400
+From: Kevin Corry <kevcorry@us.ibm.com>
+Organization: IBM
+To: linuxppc-dev@ozlabs.org
+Subject: Questions about porting perfmon2 to powerpc
+Date: Thu, 5 Apr 2007 14:55:33 -0500
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Carl Love <carll@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a71293c20704011539ob1a86cbr7af70e37d678b1a6@mail.gmail.com>
-	 <461139D5.1040705@redhat.com>
+Message-Id: <200704051455.34600.kevcorry@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-n 4/2/07, Chuck Ebbert <cebbert@redhat.com> wrote:
-> Stephen Evanchik wrote:
-> > My hardware components are the following:
-> >
-> > Motherboard: A8V-VM Socket 939 VIA K8M890 / VT8251
-> > CPU: Opteron 165 dual core
-> > Harddisk: SATA 1.5Gbps WD 160GB drive
-> >
-> > Most relevant snippet from dmesg, (you can see a longer version below):
-> >
-> > ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> > ata1.00: cmd ca/00:08:c5:b6:03/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096
-> > out
-> >        res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> > ata1: soft resetting port
-> > ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > ata1.00: qc timeout (cmd 0xec)
-> > ata1.00: failed to IDENTIFY (I/O error, err_mask=0x104)
-> > ata1.00: revalidation failed (errno=-5)
-> > ata1: failed to recover some devices, retrying in 5 secs
-> > ata1: hard resetting port
-> >
+Hello,
 
-I have tested 2.6.20, 2.6.20.5, 2.6.21-rc5 and all exhibit the same behavior.
+Carl Love and I have been working on getting the latest perfmon2 patches 
+(http://perfmon2.sourceforge.net/) working on Cell, and on powerpc in 
+general. We've come up with some powerpc-specific questions and we're hoping 
+to get some opinions from the powerpc kernel developers.
 
->
-> We are testing fixes, but can only build test kernels for FC6. I think
-> this may be fixed by patches I submitted for 2.6.20.5.
->
+First, the stock 2.6.20 kernel has a prototype in include/linux/smp.h for a 
+function called smp_call_function_single(). However, this routine is only 
+implemented on i386, x86_64, ia64, and mips. Perfmon2 apparently needs to 
+call this to run a function on a specific CPU. Powerpc provides an 
+smp_call_function() routine to run a function on all active CPUs, so I used 
+that as a basis to add an smp_call_function_single() routine. I've included 
+the patch below and was wondering if it looked like a sane approach.
 
-I still see the above problem from 2.6.19-rc1 to 2.6.21-rc5.
+Next, we ran into a problem related to Perfmon2 initialization and sysfs. The 
+problem turned out to be that the powerpc version of topology_init() is 
+defined as an __initcall() routine, but Perfmon2's initialization is done as 
+a subsys_initcall() routine. Thus, Perfmon2 tries to initialize its sysfs 
+information before some of the powerpc cpu information has been initialized. 
+However, on all other architectures, topology_init() is defined as a 
+subsys_initcall() routine, so this problem was not seen on any other 
+platforms. Changing the powerpc version of topology_init() to a 
+subsys_initcall() seems to have fixed the bug. However, I'm not sure if that 
+is going to cause problems elsewhere in the powerpc code. I've included the 
+patch below (after the smp-call-function-single patch). Does anyone know if 
+this change is safe, or if there was a specific reason that topology_init() 
+was left as an __initcall() on powerpc?
+
+Thanks for your help!
+-- 
+Kevin Corry
+kevcorry@us.ibm.com
+http://www.ibm.com/linux/
 
 
-Stephen
+===================================================================
+Add an smp_call_function_single() to the powerpc architecture. This is mostly
+a copy of smp_call_function(), but with minor modifications to call only the
+specified CPU.
+
+Index: linux-2.6.20-perfmon/arch/powerpc/kernel/smp.c
+===================================================================
+--- linux-2.6.20-perfmon.orig/arch/powerpc/kernel/smp.c
++++ linux-2.6.20-perfmon/arch/powerpc/kernel/smp.c
+@@ -287,6 +287,92 @@ int smp_call_function (void (*func) (voi
+ 
+ EXPORT_SYMBOL(smp_call_function);
+ 
++/*
++ * This function sends a 'generic call function' IPI to the specified CPU.
++ *
++ * [SUMMARY] Run a function on the specified CPUs.
++ * <func> The function to run. This must be fast and non-blocking.
++ * <info> An arbitrary pointer to pass to the function.
++ * <nonatomic> currently unused.
++ * <wait> If true, wait (atomically) until function has completed on the
++ * other CPU.
++ * [RETURNS] 0 on success, else a negative status code. Does not return until
++ * remote CPU is nearly ready to execute <<func>> or are or has executed.
++ *
++ * You must not call this function with disabled interrupts or from a
++ * hardware interrupt handler or from a bottom half handler.
++ */
++int smp_call_function_single(int cpuid, void (*func)(void *info), void *info,
++			     int nonatomic, int wait)
++{
++	struct call_data_struct data;
++	int ret = -1, cpus = 1, me;
++	u64 timeout;
++
++	/* Can deadlock when called with interrupts disabled */
++	WARN_ON(irqs_disabled());
++
++	if (unlikely(smp_ops == NULL))
++		return -1;
++
++	me = get_cpu(); /* prevent preemption and reschedule on another processor */
++	if (cpuid == me) {
++		printk(KERN_INFO "%s: trying to call self\n", __FUNCTION__);
++		put_cpu();
++		return -EBUSY;
++	}
++
++	data.func = func;
++	data.info = info;
++	atomic_set(&data.started, 0);
++	data.wait = wait;
++	if (wait)
++		atomic_set(&data.finished, 0);
++
++	spin_lock(&call_lock);
++
++	call_data = &data;
++	smp_wmb();
++	/* Send a message to the specified CPU and wait for it to respond */
++	smp_ops->message_pass(cpuid, PPC_MSG_CALL_FUNCTION);
++
++	timeout = get_tb() + (u64) SMP_CALL_TIMEOUT * tb_ticks_per_sec;
++
++	/* Wait for response */
++	while (atomic_read(&data.started) != cpus) {
++		HMT_low();
++		if (get_tb() >= timeout) {
++			printk("%s on cpu %d: cpu %d not responding\n",
++			       __FUNCTION__, smp_processor_id(), cpuid);
++			debugger(NULL);
++			goto out;
++		}
++	}
++
++	if (wait) {
++		while (atomic_read(&data.finished) != cpus) {
++			HMT_low();
++			if (get_tb() >= timeout) {
++				printk("%s on cpu %d: cpu %d not finishing\n",
++				       __FUNCTION__, smp_processor_id(), cpuid);
++				debugger(NULL);
++				goto out;
++			}
++		}
++	}
++
++	ret = 0;
++
++ out:
++	call_data = NULL;
++	HMT_medium();
++	spin_unlock(&call_lock);
++	put_cpu();
++	return ret;
++}
++
++EXPORT_SYMBOL(smp_call_function_single);
++
+ void smp_call_function_interrupt(void)
+ {
+ 	void (*func) (void *info);
+
+===================================================================
+Change the powerpc version of topology_init() from an __initcall to
+a subsys_initcall to match all other architectures.
+ 
+Index: linux-2.6.20-perfmon/arch/powerpc/kernel/sysfs.c
+===================================================================
+--- linux-2.6.20-perfmon.orig/arch/powerpc/kernel/sysfs.c
++++ linux-2.6.20-perfmon/arch/powerpc/kernel/sysfs.c
+@@ -455,4 +455,4 @@ static int __init topology_init(void)
+ 
+ 	return 0;
+ }
+-__initcall(topology_init);
++subsys_initcall(topology_init);
+
+===================================================================
