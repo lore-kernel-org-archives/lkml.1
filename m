@@ -1,121 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767425AbXDEXgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767432AbXDEXnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767425AbXDEXgj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 19:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbXDEXgj
+	id S1767432AbXDEXnK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 19:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767438AbXDEXnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 19:36:39 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34291 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753209AbXDEXgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 19:36:38 -0400
-Message-ID: <46158793.9010608@vmware.com>
-Date: Thu, 05 Apr 2007 16:34:43 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Bugfix for VMI paravirt ops
-References: <46158674.5090709@vmware.com>
-In-Reply-To: <46158674.5090709@vmware.com>
-Content-Type: multipart/mixed;
- boundary="------------090003060907090101030201"
+	Thu, 5 Apr 2007 19:43:10 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:57582 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767432AbXDEXnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 19:43:08 -0400
+Date: Thu, 5 Apr 2007 16:43:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Make page->private usable in compound pages V1
+Message-Id: <20070405164300.a5d24329.akpm@linux-foundation.org>
+In-Reply-To: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090003060907090101030201
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu,  5 Apr 2007 15:36:51 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-Zachary Amsden wrote:
-> I noticed this never got applied.  There was some feedback which I did 
-> not include in this patch because I think it is inappropriate to touch 
-> code outside vmi.c at this point for 2.6.21.  Please apply; this patch 
-> is needed as a bugfix in 2.6.21.  An updated version for 2.6.22 will 
-> come later which has a nicer interface.
->
+> If we add a new flag so that we can distinguish between the
+> first page and the tail pages then we can avoid to use page->private
+> in the first page. page->private == page for the first page, so there
+> is no real information in there.
+> 
+> Freeing up page->private makes the use of compound pages more transparent.
+> They become more usable like real pages. Right now we have to be careful f.e.
+> if we are going beyond PAGE_SIZE allocations in the slab on i386 because we
+> can then no longer use the private field. This is one of the issues that
+> cause us not to support debugging for page size slabs in SLAB.
+> 
+> Having page->private available for SLUB would allow more meta information
+> in the page struct. I can probably avoid the 16 bit ints that I have in
+> there right now.
+> 
+> Also if page->private is available then a compound page may be equipped
+> with buffer heads. This may free up the way for filesystems to support
+> larger blocks than page size.
+> 
+> We add PageTail as an alias of PageReclaim. Compound pages cannot
+> currently be reclaimed. Because of the alias one needs to check
+> PageCompound first.
 
-Erm, stale patch, sorry.  This one instead.
+So slub is using compound pages so that it can locate the head page in
+higher-order pages, whereas slab uses per-object (or per-order-0-page?)
+metadata for that?
 
+I see four instances of
 
-
---------------090003060907090101030201
-Content-Type: text/plain;
- name="vmi-lazy-mmu-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="vmi-lazy-mmu-fix.patch"
-
-Critical bugfix; when using software RAID, potentially USB or AIO in
-highmem configurations, drivers are allowed to use kmap_atomic from
-interrupt context.  This is incompatible with the current implementation
-of lazy MMU mode, and means the kmap will silently fail, causing either
-memory corruption or kernel panics.
-
-The fix is to disable interrupts on the CPU when entering a lazy MMU
-state; this is totally safe, as preemption is already disabled, and
-lazy update state can neither be nested nor overlapping.  Thus per-cpu
-variables to track the state and flags can be used to disable interrupts
-during this critical region.
-
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-
-diff -r eee69881b2f9 arch/i386/kernel/vmi.c
---- a/arch/i386/kernel/vmi.c	Thu Apr 05 16:20:18 2007 -0700
-+++ b/arch/i386/kernel/vmi.c	Thu Apr 05 16:31:12 2007 -0700
-@@ -69,6 +69,7 @@ static struct {
- 	void (*flush_tlb)(int);
- 	void (*set_initial_ap_state)(int, int);
- 	void (*halt)(void);
-+  	void (*set_lazy_mode)(int mode);
- } vmi_ops;
- 
- /*
-@@ -545,6 +546,31 @@ vmi_startup_ipi_hook(int phys_apicid, un
- }
- #endif
- 
-+static void vmi_set_lazy_mode(int new_mode)
-+{
-+	static DEFINE_PER_CPU(int, mode);
-+	static DEFINE_PER_CPU(unsigned long, flags);
-+	int cpu = smp_processor_id();
++	page = virt_to_page(p);
 +
-+	if (!vmi_ops.set_lazy_mode)
-+		return;
-+
-+	/*
-+	 * Modes do not nest or overlap, so we can simply disable
-+	 * irqs when entering a mode and re-enable when leaving.
-+	 */
-+	BUG_ON(per_cpu(mode, cpu) && new_mode);
-+	BUG_ON(!new_mode && !per_cpu(mode, cpu));
-+	
-+	if (new_mode)
-+		local_irq_save(per_cpu(flags, cpu));
-+	else
-+		local_irq_restore(per_cpu(flags, cpu));
-+
-+	vmi_ops.set_lazy_mode(new_mode);
-+	per_cpu(mode, cpu) = new_mode;
-+}
-+
- static inline int __init check_vmi_rom(struct vrom_header *rom)
- {
- 	struct pci_header *pci;
-@@ -769,7 +795,7 @@ static inline int __init activate_vmi(vo
- 	para_wrap(load_esp0, vmi_load_esp0, set_kernel_stack, UpdateKernelStack);
- 	para_fill(set_iopl_mask, SetIOPLMask);
- 	para_fill(io_delay, IODelay);
--	para_fill(set_lazy_mode, SetLazyMode);
-+	para_wrap(set_lazy_mode, vmi_set_lazy_mode, set_lazy_mode, SetLazyMode);
- 
- 	/* user and kernel flush are just handled with different flags to FlushTLB */
- 	para_wrap(flush_tlb_user, vmi_flush_tlb_user, flush_tlb, FlushTLB);
++	if (unlikely(PageCompound(page)))
++		page = page->first_page;
 
---------------090003060907090101030201--
+A new virt_to_head_page() is needed.
+
+
+Sigh.  We're seeing rather a lot of churn to accommodate slub.  Do we
+actually have any justification for all this?  If we end up deciding to
+merge slub and to deprecate then remove slab, what would our reasons have
+been?
