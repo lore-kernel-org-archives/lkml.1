@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767217AbXDESzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767208AbXDES6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767217AbXDESzU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 14:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767221AbXDESzU
+	id S1767208AbXDES6T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 14:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767222AbXDES6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 14:55:20 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:54375 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767217AbXDESzT (ORCPT
+	Thu, 5 Apr 2007 14:58:18 -0400
+Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:3045 "EHLO
+	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767208AbXDES6S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 14:55:19 -0400
-X-AuditID: d80ac287-91523bb000000c42-71-46154616be7a 
-Date: Thu, 5 Apr 2007 19:54:58 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Pat <patchu1@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Invalid operand: kernel BUG at mm/rmap.c:434! and
- arch/i386/mm/highmem.c:42!)
-In-Reply-To: <702654.55872.qm@web32508.mail.mud.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0704051949280.20591@blonde.wat.veritas.com>
-References: <702654.55872.qm@web32508.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 05 Apr 2007 18:55:17.0895 (UTC) FILETIME=[F3F26970:01C777B3]
-X-Brightmail-Tracker: AAAAAA==
+	Thu, 5 Apr 2007 14:58:18 -0400
+Subject: Re: [PATCH 01/01] New FBDev driver for Intel Vermilion Range
+From: Alan Hourihane <alanh@fairlite.demon.co.uk>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <8776.1175794703@turing-police.cc.vt.edu>
+References: <1175769886.10382.29.camel@localhost>
+	 <8776.1175794703@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 19:58:13 +0100
+Message-Id: <1175799493.10105.40.camel@jetpack.demon.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Apr 2007, Pat wrote:
-> Yes, there is a specific app which seems to be related
-> to the kernel panic. 
+On Thu, 2007-04-05 at 13:38 -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 05 Apr 2007 11:44:46 BST, Alan Hourihane said:
 > 
-> We use a few third party drivers on the system, so my
-> initial suspicions were on: 3w_9xxx(U) which is the
-> RAID card driver and fusedriver(U) which is a hardware
-> PCI card driver. 
+> > Attached is a patch against 2.6.21-rc5 which adds the Intel Vermilion
+> > Range support.
 > 
-> The app which is kernel panicing is the only
-> application which makes use of the fusedriver. I'd
-> like to confirm my suspicions on the driver. Do you
-> have any suggestions on how I could trace the kernel
-> panic to that specific driver?
+> One non-technical question here...
+> 
+> > +config FB_VERMILION
+> > +	tristate "Vermilion support"
+> > +	depends on FB && PCI && X86
+> > +	select FB_MODE_HELPERS
+> > +	select FB_CFB_FILLRECT
+> > +	select FB_CFB_COPYAREA
+> > +	select FB_CFB_IMAGEBLIT
+> > +	help
+> > +	  This driver supports the Vermilion Range chipset
+> 
+> Is 'Vermillion' the project codename, or the name that end users will actually
+> see when hardware ships?  Most of the Intel graphics chopsets have been
+> named things like i810, i925, and so on - if the user-visible name is known,
+> that should probably be reflected in the 'tristate' string and help
+> text (FB_VERMILLION in the code is fine by be though).
 
-Indeed, yes, get its source and look to see what it's doing
-with PageReserved - or mail it to me privately and I'll take
-a look.  But my Google for fusedriver didn't show anything,
-and clearly it has nothing to do with the FUSE filesystems.
+I've asked the question and the part number would be...
 
-Hugh
+LE80578
+
+So, if that desperately needs changing let me know and I'll submit
+another patch, or maybe someone can make the tweak for me.
+
+Thanks,
+
+Alan.
+
