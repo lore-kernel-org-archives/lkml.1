@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964778AbXDEDeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXDEDwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964778AbXDEDeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 23:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964780AbXDEDeU
+	id S964784AbXDEDwR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 23:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964828AbXDEDwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 23:34:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:60086 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964778AbXDEDeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 23:34:19 -0400
-Subject: Re: [PATCH] Lguest32 print hex on bad reads and writes
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, virtualization@lists.osdl.org,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1175742848.9371.33.camel@localhost.localdomain>
-References: <1175714071.9371.31.camel@localhost.localdomain>
-	 <1175742090.12230.630.camel@localhost.localdomain>
-	 <72C854B9-1A7F-44C5-9D62-B6B63F3A6DE7@mac.com>
-	 <1175742848.9371.33.camel@localhost.localdomain>
+	Wed, 4 Apr 2007 23:52:17 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:12169 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964784AbXDEDwQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 23:52:16 -0400
+X-IronPort-AV: i="4.14,373,1170651600"; 
+   d="scan'208"; a="33798568:sNHT23833313"
+Subject: [PATCH] blackfin arch: use boot_command_line instead of
+	saved_command_line in setup c file
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1175743271.17315.10.camel@roc-desktop>
+References: <1175668103.10608.39.camel@roc-desktop>
+	 <20070404080752.4c2375b2.randy.dunlap@oracle.com>
+	 <1175743271.17315.10.camel@roc-desktop>
 Content-Type: text/plain
-Date: Thu, 05 Apr 2007 13:34:17 +1000
-Message-Id: <1175744057.12230.632.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Thu, 05 Apr 2007 11:53:58 +0800
+Message-Id: <1175745238.17315.18.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-04 at 23:14 -0400, Steven Rostedt wrote:
-> On Wed, 2007-04-04 at 23:06 -0400, Kyle Moffett wrote:
-> 
-> > > (Erk, I wonder what I was thinking when I wrote that?) Can I ask  
-> > > for %#x (or 0x%x)?  I'm easily confused.
-> > 
-> > How about "%p" for pointers?
-> 
-> But that would require casting the numbers to pointers.
+[PATCH] blackfin arch
+As boot_command_line is added in init/main.c for arch-specific boot
+command line, replace old saved_command_line to boot_command_line for
+right boot command passing in -mm tree.
 
-And the kernel's printk doesn't put 0x on pointers anyway, last I
-checked 8(
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+---
+ arch/blackfin/kernel/setup.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Rusty.
-
+diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
+index ce51882..7d24229 100644
+--- a/arch/blackfin/kernel/setup.c
++++ b/arch/blackfin/kernel/setup.c
+@@ -221,8 +221,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	/* Keep a copy of command line */
+ 	*cmdline_p = &command_line[0];
+-	memcpy(saved_command_line, command_line, COMMAND_LINE_SIZE);
+-	saved_command_line[COMMAND_LINE_SIZE - 1] = 0;
++	memcpy(boot_command_line, command_line, COMMAND_LINE_SIZE);
++	boot_command_line[COMMAND_LINE_SIZE - 1] = 0;
+ 
+ 	/* setup memory defaults from the user config */
+ 	physical_mem_end = 0;
+-- 
+1.5.0.5
 
