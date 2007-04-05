@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767421AbXDEXb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767425AbXDEXgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767421AbXDEXb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 19:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767422AbXDEXb5
+	id S1767425AbXDEXgj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 19:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbXDEXgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 19:31:57 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:59807 "EHLO
+	Thu, 5 Apr 2007 19:36:39 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34291 "EHLO
 	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767421AbXDEXb4 (ORCPT
+	by vger.kernel.org with ESMTP id S1753209AbXDEXgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 19:31:56 -0400
-Message-ID: <46158674.5090709@vmware.com>
-Date: Thu, 05 Apr 2007 16:29:56 -0700
+	Thu, 5 Apr 2007 19:36:38 -0400
+Message-ID: <46158793.9010608@vmware.com>
+Date: Thu, 05 Apr 2007 16:34:43 -0700
 From: Zachary Amsden <zach@vmware.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+To: Zachary Amsden <zach@vmware.com>
+CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@osdl.org>
-Subject: [PATCH] Bugfix for VMI paravirt ops
+Subject: Re: [PATCH] Bugfix for VMI paravirt ops
+References: <46158674.5090709@vmware.com>
+In-Reply-To: <46158674.5090709@vmware.com>
 Content-Type: multipart/mixed;
- boundary="------------020302040607040003080605"
+ boundary="------------090003060907090101030201"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------020302040607040003080605
+--------------090003060907090101030201
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-I noticed this never got applied.  There was some feedback which I did 
-not include in this patch because I think it is inappropriate to touch 
-code outside vmi.c at this point for 2.6.21.  Please apply; this patch 
-is needed as a bugfix in 2.6.21.  An updated version for 2.6.22 will 
-come later which has a nicer interface.
+Zachary Amsden wrote:
+> I noticed this never got applied.  There was some feedback which I did 
+> not include in this patch because I think it is inappropriate to touch 
+> code outside vmi.c at this point for 2.6.21.  Please apply; this patch 
+> is needed as a bugfix in 2.6.21.  An updated version for 2.6.22 will 
+> come later which has a nicer interface.
+>
 
-Zach
+Erm, stale patch, sorry.  This one instead.
 
---------------020302040607040003080605
+
+
+--------------090003060907090101030201
 Content-Type: text/plain;
  name="vmi-lazy-mmu-fix.patch"
 Content-Transfer-Encoding: 7bit
@@ -58,19 +65,18 @@ during this critical region.
 
 Signed-off-by: Zachary Amsden <zach@vmware.com>
 
-Index: ubuntu-2.6.20/arch/i386/kernel/vmi.c
-===================================================================
---- ubuntu-2.6.20.orig/arch/i386/kernel/vmi.c	2007-03-29 21:17:47.000000000 -0700
-+++ ubuntu-2.6.20/arch/i386/kernel/vmi.c	2007-03-30 00:01:20.000000000 -0700
-@@ -69,6 +69,7 @@
- 	void (fastcall *flush_tlb)(int);
- 	void (fastcall *set_initial_ap_state)(int, int);
- 	void (fastcall *halt)(void);
-+ 	void (fastcall *set_lazy_mode)(int mode);
+diff -r eee69881b2f9 arch/i386/kernel/vmi.c
+--- a/arch/i386/kernel/vmi.c	Thu Apr 05 16:20:18 2007 -0700
++++ b/arch/i386/kernel/vmi.c	Thu Apr 05 16:31:12 2007 -0700
+@@ -69,6 +69,7 @@ static struct {
+ 	void (*flush_tlb)(int);
+ 	void (*set_initial_ap_state)(int, int);
+ 	void (*halt)(void);
++  	void (*set_lazy_mode)(int mode);
  } vmi_ops;
-  
- /* XXX move this to alternative.h */
-@@ -577,6 +578,31 @@
+ 
+ /*
+@@ -545,6 +546,31 @@ vmi_startup_ipi_hook(int phys_apicid, un
  }
  #endif
  
@@ -102,7 +108,7 @@ Index: ubuntu-2.6.20/arch/i386/kernel/vmi.c
  static inline int __init check_vmi_rom(struct vrom_header *rom)
  {
  	struct pci_header *pci;
-@@ -806,7 +832,7 @@
+@@ -769,7 +795,7 @@ static inline int __init activate_vmi(vo
  	para_wrap(load_esp0, vmi_load_esp0, set_kernel_stack, UpdateKernelStack);
  	para_fill(set_iopl_mask, SetIOPLMask);
  	para_fill(io_delay, IODelay);
@@ -112,4 +118,4 @@ Index: ubuntu-2.6.20/arch/i386/kernel/vmi.c
  	/* user and kernel flush are just handled with different flags to FlushTLB */
  	para_wrap(flush_tlb_user, vmi_flush_tlb_user, flush_tlb, FlushTLB);
 
---------------020302040607040003080605--
+--------------090003060907090101030201--
