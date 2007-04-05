@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767387AbXDEW4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767258AbXDEW5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767387AbXDEW4H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 18:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767402AbXDEW4H
+	id S1767258AbXDEW5K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 18:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767393AbXDEW5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 18:56:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:51386 "EHLO ozlabs.org"
+	Thu, 5 Apr 2007 18:57:10 -0400
+Received: from mail.tmr.com ([64.65.253.246]:58625 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767387AbXDEW4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 18:56:06 -0400
+	id S1767258AbXDEW5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 18:57:08 -0400
+Message-ID: <46157F24.3050705@tmr.com>
+Date: Thu, 05 Apr 2007 18:58:44 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [OT] the shortest thread of LKML !
+References: <79489c230703281252s526b3f63vae3dcbb5eaeeb809@mail.gmail.com> <20070328.130210.68157164.davem@davemloft.net> <20070328203346.GA943@1wt.eu>
+In-Reply-To: <20070328203346.GA943@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <17941.32261.914571.136583@cargo.ozlabs.ibm.com>
-Date: Fri, 6 Apr 2007 08:53:57 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Brad Boyer <flar@allandria.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
-	optionally.
-In-Reply-To: <1175777154.2719.14.camel@shinybook.infradead.org>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
-	<20070403212928.GA12951@cynthia.pants.nu>
-	<20070404022544.59b022a6@the-village.bc.nu>
-	<17939.10130.687893.167511@cargo.ozlabs.ibm.com>
-	<1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<17939.17962.248566.886449@cargo.ozlabs.ibm.com>
-	<1175696383.2774.24.camel@shinybook.infradead.org>
-	<17940.14667.503535.507564@cargo.ozlabs.ibm.com>
-	<1175777154.2719.14.camel@shinybook.infradead.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse writes:
+Willy Tarreau wrote:
+> On Wed, Mar 28, 2007 at 01:02:10PM -0700, David Miller wrote:
+>> Please nobody reply to his posting, I'm shit-canning this thread from
+>> the start as it's nothing but flame fodder.
+> 
+> He forgot the most important thing: there are *many* "benevolent dictators",
+> all with their own domain of excellence ;-)
+> 
+> Good catch, David, you're like a spider on a web waiting for the naive
+> intruder !
+> 
+Posted several days too early for April Fool...
 
-> Of course, the _numbers_ might change -- a given port might no longer be
-> ttyS0 but ttyS1. But we're happy to overlook that one even though the
-> effect on the user is identical, right?
-
-Why would the numbers be prone to change, any more than they are
-already?
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
