@@ -1,41 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965724AbXDEJaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXDEJaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965724AbXDEJaM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 05:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965275AbXDEJaM
+	id S965483AbXDEJaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 05:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965275AbXDEJaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 05:30:12 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:42576 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965584AbXDEJaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 05:30:05 -0400
-X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 05:30:04 EDT
-Message-ID: <4614B388.7050002@gandalf.sssup.it>
-Date: Thu, 05 Apr 2007 10:30:00 +0200
-From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: vfb module
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 05:30:10 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:34118 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965483AbXDEJaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 05:30:04 -0400
+To: akpm@linux-foundation.org
+CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [patch 1/2] split mmap
+Message-Id: <E1HZOHe-0000RL-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 05 Apr 2007 11:29:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I changed a little bit the vfb module to be used as a frame buffer in 
-memory. I would like to use the mmap over the virtual framebuffer. I 
-added a few line:
-I allocated the buffer using
-videomemory=(void *)__get_free_pages(GFP_KERNEL, 
-get_order(PAGE_ALIGN(videomemorysize)));
+Resending this non-linear-fix mini-series, unchaged but with updated
+description.
 
-and fixed the framebuffer info structure:
+----
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-vfb_fix.smem_start = virt_to_phys(videomemory);
-vfb_fix.smem_len = videomemorysize;
+This is a straightforward split of do_mmap_pgoff() into two functions:
 
-What is the virtual frame buffer meant for?
+ - do_mmap_pgoff() checks the parameters, and calculates the vma
+   flags.  Then it calls
 
-Regards Michael
+ - mmap_region(), which does the actual mapping
 
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+
+Index: linux/mm/mmap.c
+===================================================================
+--- linux.orig/mm/mmap.c	2007-04-04 19:34:36.000000000 +0200
++++ linux/mm/mmap.c	2007-04-05 10:51:01.000000000 +0200
+@@ -893,14 +893,11 @@ unsigned long do_mmap_pgoff(struct file 
+ 			unsigned long flags, unsigned long pgoff)
+ {
+ 	struct mm_struct * mm = current->mm;
+-	struct vm_area_struct * vma, * prev;
+ 	struct inode *inode;
+ 	unsigned int vm_flags;
+-	int correct_wcount = 0;
+ 	int error;
+-	struct rb_node ** rb_link, * rb_parent;
+ 	int accountable = 1;
+-	unsigned long charged = 0, reqprot = prot;
++	unsigned long reqprot = prot;
+ 
+ 	/*
+ 	 * Does the application expect PROT_READ to imply PROT_EXEC?
+@@ -1025,7 +1022,25 @@ unsigned long do_mmap_pgoff(struct file 
+ 	error = security_file_mmap(file, reqprot, prot, flags);
+ 	if (error)
+ 		return error;
+-		
++
++	return mmap_region(file, addr, len, flags, vm_flags, pgoff,
++			   accountable);
++}
++EXPORT_SYMBOL(do_mmap_pgoff);
++
++unsigned long mmap_region(struct file *file, unsigned long addr,
++			  unsigned long len, unsigned long flags,
++			  unsigned int vm_flags, unsigned long pgoff,
++			  int accountable)
++{
++	struct mm_struct *mm = current->mm;
++	struct vm_area_struct *vma, *prev;
++	int correct_wcount = 0;
++	int error;
++	struct rb_node **rb_link, *rb_parent;
++	unsigned long charged = 0;
++	struct inode *inode =  file ? file->f_path.dentry->d_inode : NULL;
++
+ 	/* Clear old maps */
+ 	error = -ENOMEM;
+ munmap_back:
+@@ -1174,8 +1189,6 @@ unacct_error:
+ 	return error;
+ }
+ 
+-EXPORT_SYMBOL(do_mmap_pgoff);
+-
+ /* Get an address range which is currently unmapped.
+  * For shmat() with addr=0.
+  *
+Index: linux/include/linux/mm.h
+===================================================================
+--- linux.orig/include/linux/mm.h	2007-04-04 19:34:35.000000000 +0200
++++ linux/include/linux/mm.h	2007-04-05 10:51:01.000000000 +0200
+@@ -1074,6 +1074,10 @@ extern unsigned long get_unmapped_area(s
+ extern unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 	unsigned long len, unsigned long prot,
+ 	unsigned long flag, unsigned long pgoff);
++extern unsigned long mmap_region(struct file *file, unsigned long addr,
++	unsigned long len, unsigned long flags,
++	unsigned int vm_flags, unsigned long pgoff,
++	int accountable);
+ 
+ static inline unsigned long do_mmap(struct file *file, unsigned long addr,
+ 	unsigned long len, unsigned long prot,
