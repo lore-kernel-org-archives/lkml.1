@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767045AbXDEPSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767048AbXDEPS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767045AbXDEPSp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767051AbXDEPSp
+	id S1767048AbXDEPS5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767047AbXDEPS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:18:45 -0400
-Received: from nlpi043.sbcis.sbc.com ([207.115.36.72]:26878 "EHLO
-	nlpi043.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767045AbXDEPSo (ORCPT
+	Thu, 5 Apr 2007 11:18:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52471 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767040AbXDEPSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:18:44 -0400
-X-ORBL: [67.117.73.34]
-Date: Thu, 5 Apr 2007 11:17:48 -0400
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 56/90] ARM: OMAP: Make board-palmz71 compile again
-Message-ID: <20070405151746.GL24297@atomide.com>
-References: <11757100952384-git-send-email-tony@atomide.com> <11757100982726-git-send-email-tony@atomide.com> <11757101012787-git-send-email-tony@atomide.com> <1175710103340-git-send-email-tony@atomide.com> <11757101072553-git-send-email-tony@atomide.com> <11757101101180-git-send-email-tony@atomide.com> <11757101123620-git-send-email-tony@atomide.com> <11757101141643-git-send-email-tony@atomide.com> <11757101164151-git-send-email-tony@atomide.com> <11757101181993-git-send-email-tony@atomide.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="EemXnrF2ob+xzFeB"
-Content-Disposition: inline
-In-Reply-To: <11757101181993-git-send-email-tony@atomide.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 5 Apr 2007 11:18:55 -0400
+Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
+	optionally.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: torben@kernel.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
+       flar@allandria.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, device@lanana.org
+In-Reply-To: <20070406.000913.28784231.anemo@mba.ocn.ne.jp>
+References: <1175696383.2774.24.camel@shinybook.infradead.org>
+	 <20070405.233101.106261123.anemo@mba.ocn.ne.jp>
+	 <1175784435.2719.18.camel@shinybook.infradead.org>
+	 <20070406.000913.28784231.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 11:18:12 -0400
+Message-Id: <1175786292.2719.23.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---EemXnrF2ob+xzFeB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-* Tony Lindgren <tony@atomide.com> [070404 14:11]:
-> From: Dirk Behme <dirk.behme_at_gmail.com>
+On Fri, 2007-04-06 at 00:09 +0900, Atsushi Nemoto wrote:
 > 
-> ARM: OMAP: Fix compilation issues in board-palmz71.c
+> What I did is just send a patch includeing devices.txt changes to
+> lkml, device@lanana.org, and some others.
 > 
-> Signed-off-by: Dirk Behme <dirk.behme_at_gmail.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> Maybe I should have sent "request" (not patch) mail to
+> device@lanana.org first?
 
-Fixed email address on this one too.
+Well, that's what it says right underneath the line in devices.txt which
+says:
+	**** DEVICE DRIVERS AUTHORS PLEASE READ THIS ****
 
-Tony
+It goes on to say...
 
---EemXnrF2ob+xzFeB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0056-ARM-OMAP-Make-board-palmz71-compile-again.txt"
+"Third, please don't assume that the distributed version of the list is
+up to date.  Due to the number of registrations I have to maintain it
+in "batch mode", so there is likely additional registrations that
+haven't been listed yet."
 
->From bf43a7b96d16f581bf5d4a382288c8e83ddabede Mon Sep 17 00:00:00 2001
-From: Dirk Behme <dirk.behme@gmail.com>
-Date: Thu, 25 Jan 2007 16:30:11 -0800
-Subject: [PATCH 56/90] ARM: OMAP: Make board-palmz71 compile again
-
-ARM: OMAP: Fix compilation issues in board-palmz71.c
-
-Signed-off-by: Dirk Behme <dirk.behme@gmail.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap1/board-palmz71.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/mach-omap1/board-palmz71.c b/arch/arm/mach-omap1/board-palmz71.c
-index b1ef1be..6a53f12 100644
---- a/arch/arm/mach-omap1/board-palmz71.c
-+++ b/arch/arm/mach-omap1/board-palmz71.c
-@@ -260,7 +260,6 @@ static struct spi_board_info __initdata palmz71_boardinfo[] = { {
- 				* 26	/* command + data + overhead */,
- 	.bus_num	= 2,
- 	.chip_select	= 0,
--	}
- } };
- 
- static struct omap_usb_config palmz71_usb_config __initdata = {
-@@ -295,7 +294,7 @@ static struct omap_board_config_kernel palmz71_config[] = {
- };
- 
- static irqreturn_t
--palmz71_powercable(int irq, void *dev_id, struct pt_regs *regs)
-+palmz71_powercable(int irq, void *dev_id)
- {
- 	if (omap_get_gpio_datain(PALMZ71_USBDETECT_GPIO)) {
- 		printk(KERN_INFO "PM: Power cable connected\n");
-@@ -347,7 +346,7 @@ palmz71_gpio_setup(int early)
- 				"palmz71-cable", 0))
- 			printk(KERN_ERR
- 			       "IRQ request for power cable failed!\n");
--		palmz71_powercable(OMAP_GPIO_IRQ(PALMZ71_USBDETECT_GPIO), 0, 0);
-+		palmz71_powercable(OMAP_GPIO_IRQ(PALMZ71_USBDETECT_GPIO), 0);
- 	}
- }
- 
 -- 
-1.4.4.2
+dwmw2
 
-
---EemXnrF2ob+xzFeB--
