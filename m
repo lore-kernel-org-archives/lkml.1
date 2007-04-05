@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767008AbXDEOgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767012AbXDEOil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767008AbXDEOgj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 10:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767005AbXDEOgj
+	id S1767012AbXDEOil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 10:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767015AbXDEOil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 10:36:39 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:18878 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767008AbXDEOgi (ORCPT
+	Thu, 5 Apr 2007 10:38:41 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:51909 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767012AbXDEOik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 10:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kQvfHP31hU+TY7RvKwqg0h9EtwYxd/VfmyCYVHRchaYnAxuJpcw1OBucF13SK3tCEUCaRFBH67iAs/eCtS4kmFULY1FnNgv9bje/DvkIT1+btCNXDPnBVUaqPCskBuTW6/0Lmst89wvfXeP3oYF9VBLLY4tLBYB49N1BZ4a14L0=
-Message-ID: <26d2cb010704050736y775b6b09g67fd40344cd2208d@mail.gmail.com>
-Date: Fri, 6 Apr 2007 00:36:36 +1000
-From: "leon zadorin" <leonleon77@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: "no hz"/"dynamic tick" option and TC/TBF (token bucket filter) behaviour...
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 10:38:40 -0400
+Date: Thu, 5 Apr 2007 20:16:09 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, rohitseth@google.com,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       mbligh@google.com, winget@google.com, containers@lists.osdl.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Message-ID: <20070405144609.GJ28414@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070404051526.GA16562@in.ibm.com> <6599ad830704040000of7f1197ica543e14d290509e@mail.gmail.com> <20070404172643.GA28328@in.ibm.com> <6599ad830704041957y7b81c4ecrd21f4c08b9d7c72d@mail.gmail.com> <20070405063950.GA3435@in.ibm.com> <6599ad830704042348q5675c01ep92679fb3275bafac@mail.gmail.com> <20070405084920.GB20356@in.ibm.com> <6599ad830704050229q1d4d1ef9ved0e58b93aef31ff@mail.gmail.com> <20070405124325.GA13822@in.ibm.com> <6599ad830704050713h34752b1cted9dbe1ff7ab8bec@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <6599ad830704050713h34752b1cted9dbe1ff7ab8bec@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, Apr 05, 2007 at 07:13:37AM -0700, Paul Menage wrote:
+> > ns should have a refcount of 1 to begin with.
+> 
+> Right - that's my point, you're effectively passing the initial
+> refcount of the nsproxy to the container directory's d_fsdata
+> reference.
 
-two questions for you:
+sure ..
 
- 1) the "no hertz" or "dynamic tick" feature in the kernel - which (if
-any) kernel releases use it as a default option?
+> > Basically I am struggling to answer "How can a zero refcount (beancounter)
+> > object go non-zero when zero tasks are attached to it" ..
+> 
+> In that case, I think you're fine. Your last posted patches didn't
+> provide a way to check for that, though, as far as I could see.
 
- 2) for kernels which do have the aforementioned option enabled: how
-does this affect the "tc" (traffic control) utility and the Token
-Bucket Filter (tbf) queueing discipline (traffic-smoothing)
-behhaviour?
+Yes, the last patch I posted is very primitive considering all the
+discussions we had ..For ex: attach_task() in the last patch has more
+bugs [apart from the exit race I found recently with cpusets/containers]
+Each time I stopped and stared at attach_task() I could find a bug ..
 
- For example, the TBF doco suggests that due to the whole fixed Hz
-thing in the kernel (e.g. 100Hz) the maximum rate of the TBF would
-actually be limited to say 1mbit on Intel arch (with the default
-mtu... but if mtu is incleased, so is the burstiness of the traffic
-which is what TBF is trying to prevent in my deployment scenarios).
-...
-
- So what about the kernels which use this "dyna tick" option - in such
-a kernel, will there be an interrupt generated (e.g. at microsec.
-precision on most platforms) for every packet's send time (e.g. say at
-TBF's rate is at 25Mbps and one sends out 1KB data packets... will
-there be  an interrput generated every... 300 microseconds?)...
-
- I guess I am asking this as it will be have consequences on what to
-set the "mtu/minburst" values for tbf running with "no hertz"
-feature... I am developing this "bursty" traffic, DV/HDV transmission
-application (over UDP) and need to smooth frames as big as 400KB in
-size no to be sent out at "wire" speed... (ideally they need to be
-sent out "as smooth as possible")
-
- I know that there is a PSP (Precise Software Pacer) developed by
-GridMPI people, but it would be nicer to get this sort of thing done
-with the "default" kernel's disciplines (as PSP is a kernel module
-which needs to be compiled [a process that uses "/opt" directory and
-requires exactly matched iproute2 sources, etc... - in other words not
-an explicitly standard and "stright-forward" process for the end-user
-to follow] which adds more complexity to end-users' installation... as
-well as PSP not supporting TCP segmentation offloading meaning that
-other apps running on the same machine will not get the benefit of TCP
-offloading processing)...
-
- Kind regards
- Leon.
+-- 
+Regards,
+vatsa
