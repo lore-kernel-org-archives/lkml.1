@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbXDEObJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbXDEOb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753113AbXDEObJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 10:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbXDEObI
+	id S1753011AbXDEOb7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 10:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXDEOb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 10:31:08 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:64531 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753113AbXDEObG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 10:31:06 -0400
-Date: Thu, 05 Apr 2007 23:31:01 +0900 (JST)
-Message-Id: <20070405.233101.106261123.anemo@mba.ocn.ne.jp>
-To: dwmw2@infradead.org
-Cc: paulus@samba.org, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       device@lanana.org
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
- optionally.
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <1175696383.2774.24.camel@shinybook.infradead.org>
-References: <1175666635.2932.17.camel@shinybook.infradead.org>
-	<17939.17962.248566.886449@cargo.ozlabs.ibm.com>
-	<1175696383.2774.24.camel@shinybook.infradead.org>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 5 Apr 2007 10:31:59 -0400
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:33915 "EHLO
+	outbound4-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753011AbXDEOb6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 10:31:58 -0400
+X-BigFish: VP
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Message-ID: <461508C2.9000207@amd.com>
+Date: Thu, 05 Apr 2007 16:33:38 +0200
+From: "Markus Rechberger" <markus.rechberger@amd.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070304)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+cc: "Adrian Bunk" <bunk@stusta.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Fr??d??ric Riss" <frederic.riss@gmail.com>,
+       "Tino Keitel" <tino.keitel@gmx.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, "Soeren Sonnenburg" <kernel@nn7.de>,
+       "Ingo Molnar" <mingo@elte.hu>, "Tejun Heo" <htejun@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Jeff Chua" <jeff.chua.linux@gmail.com>, maximlevitsky@gmail.com,
+       cijoml@volny.cz
+Subject: Re: [4/4] 2.6.21-rc5: known regressions (v2)
+X-OriginalArrivalTime: 05 Apr 2007 14:31:26.0250 (UTC)
+ FILETIME=[178D18A0:01C7778F]
+X-WSS-ID: 6A0BD7C82EW3255660-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1;
+ format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 10:19:43 -0400, David Woodhouse <dwmw2@infradead.org> wrote:
-> +#ifdef CONFIG_SERIAL_PMACZILOG_TTYS
-> +#define PMACZILOG_MAJOR		TTY_MAJOR
-> +#define PMACZILOG_MINOR		64
-> +#define PMACZILOG_NAME		"ttyS"
-> +#else
-> +#define PMACZILOG_MAJOR		204
-> +#define PMACZILOG_MINOR		192
-> +#define PMACZILOG_NAME		"ttyPZ"
-> +#endif
+Subject    : USB: Oops when changing DVB-T adapter
+References : http://lkml.org/lkml/2007/3/9/212
+Submitter  : CIJOML <cijoml@volny.cz>
+Status     : unknown
 
-Is major 204 minor 192 already allocated?
+regarding this one there's a fix available for unplugging dvb devices 
+when they're in still in use.
+The problem was that the filehandle was still open and the fops 
+structure got deallocated immediatelly when a device got unplugged.
 
-Few weeks ago, I sent a patch to allocate 192...199 for other serial
-driver (Subject: [PATCH 2.6.21-rc3] serial: Allocate minor device
-numbers for serial_txx9 driver):
+http://mcentral.de/hg/~mrec/v4l-dvb-stable/ (the last 3 patches)
 
-http://lkml.org/lkml/2007/3/13/246
+Markus
 
-And it is already in -mm tree since 2.6.21-rc4-mm1.  I just CC-ed the
-patch to device@lanana.org, but I really do not know how "master"
-devices.txt updated finally.  If I should take some further action to
-lanana.org or someone, please let me know.  Thank you.
 
----
-Atsushi Nemoto
+On 4/1/07, Michael S. Tsirkin <mst@dev.mellanox.co.il> wrote:
+ > > Subject    : after resume: X hangs after drawing a couple of windows
+ > >              workaround: clocksource=acpi_pm
+ > > References : http://lkml.org/lkml/2007/3/8/117
+ > >              http://lkml.org/lkml/2007/3/25/20
+ > >              http://lkml.org/lkml/2007/3/26/151
+ > > Submitter  : Michael S. Tsirkin <mst@mellanox.co.il>
+ > > Handled-By : Thomas Gleixner <tglx@linutronix.de>
+ > > Status     : problem is being debugged
+ >
+ > Seems to be resolved with 399afa4fc9238fbae42116cf25a54671c0e8f56e.
+ > Thanks Maxim!
+ >
+ >
+ > --
+ > MST
+ > -
+ > To unsubscribe from this list: send the line "unsubscribe 
+linux-kernel" in
+ > the body of a message to majordomo@vger.kernel.org
+ > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ > Please read the FAQ at  http://www.tux.org/lkml/
+ >
+
+
+-- 
+Markus Rechberger
+
+-- 
+Markus Rechberger
+Operating System Research Center
+AMD Saxony LLC & Co. KG
+
+
+
