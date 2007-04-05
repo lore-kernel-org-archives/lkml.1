@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767180AbXDESTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767190AbXDESTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767180AbXDESTF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 14:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767192AbXDESTF
+	id S1767190AbXDESTR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 14:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767192AbXDESTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 14:19:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43412 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767180AbXDESTD (ORCPT
+	Thu, 5 Apr 2007 14:19:17 -0400
+Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:47175 "HELO
+	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1767190AbXDESTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 14:19:03 -0400
-Date: Thu, 5 Apr 2007 11:19:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc5-mm4 (SLUB)
-In-Reply-To: <1175786199.13125.3.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0704051118250.9800@schroedinger.engr.sgi.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> 
- <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com> 
- <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com> 
- <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031638570.12109@schroedinger.engr.sgi.com> 
- <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031653060.12109@schroedinger.engr.sgi.com> 
- <1175698437.6185.21.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704040946370.24640@schroedinger.engr.sgi.com> 
- <1175709755.6185.34.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704041103060.26866@schroedinger.engr.sgi.com> 
- <Pine.LNX.4.64.0704041120250.793@schroedinger.engr.sgi.com> 
- <1175727185.5019.8.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704041556530.11769@schroedinger.engr.sgi.com> 
- <1175730157.5019.19.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704041730470.22161@schroedinger.engr.sgi.com> 
- <1175741046.13125.0.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704042127230.14168@schroedinger.engr.sgi.com>
- <1175786199.13125.3.camel@dyn9047017100.beaverton.ibm.com>
+	Thu, 5 Apr 2007 14:19:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=QCCTUvzDFbwin9GR0cH5q/nXZCWi5QwOBKtOXr97WR+GWGFCvJP7xiJTR9vKtVKpYAexKEah8NJ0lFzMmvc5vHfJJqbTTrf6dvAOjgqXougXrwau2TFgX8cebb+/aSwAy9SxWxLqVmiXqvssNmol7YKcOZBK9DsyV0xfVdsuZPY=  ;
+X-YMail-OSG: ihyN86oVM1nlnFE7w0nuFtb.7zyRlPTLGtatifdAd7fN.TTdAGvftIyHGvJfg5UqUB77.Lfvbw--
+From: David Brownell <david-b@pacbell.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
+Date: Thu, 5 Apr 2007 11:19:11 -0700
+User-Agent: KMail/1.7.1
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Tony Lindgren <tony@atomide.com>,
+       linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+References: <11757099691323-git-send-email-tony@atomide.com> <Pine.LNX.4.61.0704050359320.22282@yvahk01.tjqt.qr> <46147888.2080507@oracle.com>
+In-Reply-To: <46147888.2080507@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704051119.11944.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Apr 2007, Badari Pulavarty wrote:
+On Wednesday 04 April 2007 9:18 pm, Randy Dunlap wrote:
 
-> On Wed, 2007-04-04 at 21:29 -0700, Christoph Lameter wrote:
-> > Here is a patch that adds validation (only for cpuslabs and partial 
-> > slabs but thats where the action is). Apply this patch
-> > and then do
-> > 
-> > echo 1 >/sys/slab/<cache-to-check>/validate
-> > 
-> > I suggest to boot with full debugging and then run this on the ACPI slabs.
-> 
-> Did this and didn't trigger any problems.
+> I don't think it's a MUA thing.  I think David is talking about the
+> spaces after the ^\t that are used for indenting immediately under
+> the "if".
 
-Duh. Must have been in the full slabs. Maybe I should add a tracking of 
-full slabs for the debug case. Would also enable leak detection.
+Exactly.
+
+	if (There was a young lady named Bright
+		Whose speed was far faster than light) {
+		She set out one day
+		in a relative way
+	}
+	And returned on the previous night
+
+obeys the only-ident-by-tabs rule, as does
+
+	if (To control chain reactions, your odds
+			Improve if you've got cadmium rods) {
+		In your fission reactor
+		Their lack is a factor
+	}
+	In screams of "A meltdown! Ye gods!"
+
+Now, the former makes it hard to tell what's condition vs consequent.
+(Or whatever the correct technical term is in cases like these.)
+
+- Dave
+
+
