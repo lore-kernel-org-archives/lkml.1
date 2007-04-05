@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945958AbXDEGrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945961AbXDEGsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945958AbXDEGrE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945962AbXDEGrE
+	id S1945961AbXDEGsg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945962AbXDEGsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:47:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:44189 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945958AbXDEGrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:47:03 -0400
-Message-ID: <46149B45.2070502@goop.org>
-Date: Wed, 04 Apr 2007 23:46:29 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 5 Apr 2007 02:48:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:61678 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945961AbXDEGsf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:48:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=BTy5cuVsX0c+Sf8HUPNRWeXb9j+eNPKWRFfwb2tD1BbA7Bi4Er2AIeE14RYu4Gb264ZyjH9oy+c2D44fC+RbC3lxFKbk/Fz+j6yBYcZ/jNTqlNAVxm40TnUydjze36XVgdwKZgvRBeR+G67yE6XwaXPLaIFpm2elNGe93wscN+E=
+Message-ID: <46149B77.1030607@gmail.com>
+Date: Thu, 05 Apr 2007 14:47:19 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>, Jan Beulich <JBeulich@novell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 1/2] Relocate VDSO ELF headers to match mapped location
- with COMPAT_VDSO
-References: <20070405063152.9227D180064@magilla.sf.frob.com>
-In-Reply-To: <20070405063152.9227D180064@magilla.sf.frob.com>
+To: Li Yu <raise.sail@gmail.com>
+CC: Dmitry Torokhov <dtor@insightbb.com>, yanghong@ccoss.com.cn,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       hongzhiyi@ccoss.com.cn, Jiri Kosina <jkosina@suse.cz>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [RFC] HID bus design overview.
+References: <200703051532096508636@gmail.com>	<Pine.LNX.4.64.0704031053140.3808@jikos.suse.cz>	<46145026.3050305@gmail.com>	<200704042309.19344.dtor@insightbb.com> <4614890E.4030908@gmail.com>
+In-Reply-To: <4614890E.4030908@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
-> The patch looks nice and clean.  However, it does not relocate the symbol
-> table(s) values.  I thought that was done in an earlier version of this I
-> saw, but I might be misremembering.  Though not fatal, this is a regression
-> from the previous CONFIG_COMPAT_VDSO behavior.  It will show up in things
-> like __kernel_* name display in backtraces.
-
-Hm, OK.  It does, but I wasn't sure if it would matter.  It should be
-fairly simple to fix up.
-
->   If with your other patch
-> CONFIG_COMPAT_VDSO will become other than a rarely-used compatibility
-> option, then this should be fixed.  Note that with your second patch this
-> will also break the symbol values in the randomly-located vma vdso;
-> non-ancient glibc doesn't care if the vdso isn't mapped where its phdrs
-> say, but everything does still care that the symbol tables in an ELF file
-> use addresses matching the phdrs in the same file.
+Dmitry Torokhov wrote:
+>>> +int hid_open(struct hid_device *hid)
+>>> +{
+>>> +	struct hid_transport *tl;
+>>> +	int ret;
+>>> +
+>>> +	if (hid->driver->open)
+>>> +		return hid->driver->open(hid);
+>>> +	ret = 0;
+>>> +	spin_lock(&hid_lock);
+>>> +	tl =  hid_transports[hid->bus];
+>>> +	if (tl->open)
+>>> +		ret = tl->open(hid);
+>>> +	spin_unlock(&hid_lock);
+>>> +	return ret;
+>>> +}
+>>>     
+>>>       
+>> Spinlock is not the best choise here, I'd expect most ->open()
+>> implementation wait on some IO.
+>>
+>>   
+>>     
+> Yes, I agree! Also, there have another code access hid_transports[]
+> without spin it!
+>
 >   
+I think I found out the resolve means for this: using the refcnt of
+hid_transport->module,
+so we can read access hid_transports[] safely without any lock protection.
 
-I did the second patch because I could, and to see if it would provoke
-some comment.  But effectively removing a kernel config option seems
-like a good idea to me.
 
-    J
+
+
+
+
