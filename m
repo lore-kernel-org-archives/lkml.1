@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767228AbXDETHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767231AbXDETLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767228AbXDETHZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 15:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767222AbXDETHZ
+	id S1767231AbXDETLk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 15:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767236AbXDETLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 15:07:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59821 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Apr 2007 15:11:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42986 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767218AbXDETHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 15:07:24 -0400
-Date: Thu, 5 Apr 2007 21:07:14 +0200
+	id S1767231AbXDETLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 15:11:39 -0400
+Date: Thu, 5 Apr 2007 21:11:29 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Masayuki Nakagawa <nakagawa.msy@ncos.nec.co.jp>
-Cc: linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 2.6.21-rc5-rt12] IPV6: Flag bit of ebitmask is not set in __inet6_hash.
-Message-ID: <20070405190714.GB22092@elte.hu>
-References: <461543B5.6080605@ncos.nec.co.jp>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: preemption and rwsems (was: Re: missing madvise functionality)
+Message-ID: <20070405191129.GC22092@elte.hu>
+References: <20070404160006.8d81a533.akpm@linux-foundation.org> <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <19526.1175777338@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <461543B5.6080605@ncos.nec.co.jp>
+In-Reply-To: <19526.1175777338@redhat.com>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -34,15 +37,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Masayuki Nakagawa <nakagawa.msy@ncos.nec.co.jp> wrote:
+* David Howells <dhowells@redhat.com> wrote:
 
-> I found an issue with -rt patch. It is that netstat doesn't show IPv6 
-> sockets in ESTABLISHED state. This issue happens because a flag bit of 
-> ebitmask is not set when the IPv6 socket connection is established.
-> 
-> The fix is to set the flag bit in __inet6_hash().
+> But short of recording the lock sequence, I don't think there's anyway 
+> to find out for sure.  printk probably won't cut it as a recording 
+> mechanism because its overheads are too great.
 
-thanks. I'm wondering, should this fix be done in mainline too? -rt12 is 
-based on Linus' -git kernel from yesterday.
+getting a good trace of it is easy: pick up the latest -rt kernel from:
+
+	http://redhat.com/~mingo/realtime-preempt/
+
+enable EVENT_TRACING in that kernel, run the workload 
+and do:
+
+	scripts/trace-it > to-ingo.txt
+
+and send me the output. It will be large but interesting. That should 
+get us a whole lot closer to what happens. A (much!) more finegrained 
+result would be to also enable FUNCTION_TRACING and to do:
+
+	echo 1 > /proc/sys/kernel/mcount_enabled
+
+before running trace-it.
 
 	Ingo
+
