@@ -1,46 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766997AbXDEOY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767011AbXDEOZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766997AbXDEOY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 10:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767009AbXDEOY6
+	id S1767011AbXDEOZj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 10:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767008AbXDEOZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 10:24:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57451 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766997AbXDEOY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 10:24:57 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH] x86: limit mwait_idle to Intel CPUs
-Date: Thu, 5 Apr 2007 16:24:45 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <20070405140045.GN6356@alberich.amd.com>
-In-Reply-To: <20070405140045.GN6356@alberich.amd.com>
+	Thu, 5 Apr 2007 10:25:38 -0400
+Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:7224 "EHLO
+	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767011AbXDEOZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 10:25:37 -0400
+X-ORBL: [67.117.73.34]
+Date: Thu, 5 Apr 2007 10:24:57 -0400
+From: Tony Lindgren <tony@atomide.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
+Subject: Re: [PATCH 12/90] ARM: OMAP: Fix apollon boot
+Message-ID: <20070405142454.GG24297@atomide.com>
+References: <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <20070404114147.29bd3872.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="wxDdMuZNg1r63Hyj"
 Content-Disposition: inline
-Message-Id: <200704051624.45747.ak@suse.de>
+In-Reply-To: <20070404114147.29bd3872.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 April 2007 16:00:45 Andreas Herrmann wrote:
+
+--wxDdMuZNg1r63Hyj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+* Randy Dunlap <randy.dunlap@oracle.com> [070404 14:40]:
+> On Wed,  4 Apr 2007 14:04:51 -0400 Tony Lindgren wrote:
 > 
-> Commit 991528d7348667924176f3e29addea0675298944
-> introduced mwait_idle which is supposed to work
-> for Intel CPUs starting with Core Duo.
+> > From: Kyungmin Park <kyungmin.park@samsung.com>
+> > 
+> > In previous GPMC patch, there was a typo. Fix typo and add header files for
+> > set_irq_type() warnings.
 > 
-> AMD Fam10 processors won't enter C1 on mwait.
+> It looks like there's more to this patch than in the description above...
 
-Unfortunate. Will this be fixed?
+Here's the updated patch with proper description.
 
-> This patch will enable default_idle for non-Intel
-> CPUs even if mwait is supported.
+Tony
 
-It would be better to clear MONITOR/MWAIT in the AMD specific
-CPU initialize code than add workarounds everywhere else.
+--wxDdMuZNg1r63Hyj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0012-ARM-OMAP-Fix-apollon-boot.txt"
 
--Andi
+>From 1d55cd14f22cfd19279abaac48678c9c9bc29505 Mon Sep 17 00:00:00 2001
+From: Kyungmin Park <kyungmin.park@samsung.com>
+Date: Wed, 6 Dec 2006 17:13:53 -0800
+Subject: [PATCH 12/90] ARM: OMAP: Board Apollon update, fix boot
+
+Update Apollon board init to initialize NAND, USB,
+and LEDs. Also configure GPMC memory for smc91x Ethernet.
+
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-apollon.c |   99 +++++++++++++++++++++++++++++++---
+ 1 files changed, 90 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apollon.c
+index 878ff91..3bb49c1 100644
+--- a/arch/arm/mach-omap2/board-apollon.c
++++ b/arch/arm/mach-omap2/board-apollon.c
+@@ -25,6 +25,8 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/delay.h>
++#include <linux/leds.h>
++#include <linux/irq.h>
+ 
+ #include <asm/hardware.h>
+ #include <asm/mach-types.h>
+@@ -32,10 +34,12 @@
+ #include <asm/mach/flash.h>
+ 
+ #include <asm/arch/gpio.h>
++#include <asm/arch/led.h>
+ #include <asm/arch/mux.h>
+ #include <asm/arch/usb.h>
+ #include <asm/arch/board.h>
+ #include <asm/arch/common.h>
++#include <asm/arch/gpmc.h>
+ #include "prcm-regs.h"
+ 
+ /* LED & Switch macros */
+@@ -46,6 +50,9 @@
+ #define SW_UP_GPIO17		17
+ #define SW_DOWN_GPIO58		58
+ 
++#define APOLLON_FLASH_CS	0
++#define APOLLON_ETH_CS		1
++
+ static struct mtd_partition apollon_partitions[] = {
+ 	{
+ 		.name		= "X-Loader + U-Boot",
+@@ -85,10 +92,10 @@ static struct flash_platform_data apollon_flash_data = {
+ 	.nr_parts	= ARRAY_SIZE(apollon_partitions),
+ };
+ 
+-static struct resource apollon_flash_resource = {
+-	.start		= APOLLON_CS0_BASE,
+-	.end		= APOLLON_CS0_BASE + SZ_128K,
+-	.flags		= IORESOURCE_MEM,
++static struct resource apollon_flash_resource[] = {
++	[0] = {
++		.flags		= IORESOURCE_MEM,
++	},
+ };
+ 
+ static struct platform_device apollon_onenand_device = {
+@@ -97,14 +104,24 @@ static struct platform_device apollon_onenand_device = {
+ 	.dev		= {
+ 		.platform_data	= &apollon_flash_data,
+ 	},
+-	.num_resources	= ARRAY_SIZE(&apollon_flash_resource),
+-	.resource	= &apollon_flash_resource,
++	.num_resources	= ARRAY_SIZE(apollon_flash_resource),
++	.resource	= apollon_flash_resource,
+ };
+ 
++static void __init apollon_flash_init(void)
++{
++	unsigned long base;
++
++	if (gpmc_cs_request(APOLLON_FLASH_CS, SZ_128K, &base) < 0) {
++		printk(KERN_ERR "Cannot request OneNAND GPMC CS\n");
++		return;
++	}
++	apollon_flash_resource[0].start = base;
++	apollon_flash_resource[0].end   = base + SZ_128K - 1;
++}
++
+ static struct resource apollon_smc91x_resources[] = {
+ 	[0] = {
+-		.start	= APOLLON_ETHR_START,		/* Physical */
+-		.end	= APOLLON_ETHR_START + 0xf,
+ 		.flags  = IORESOURCE_MEM,
+ 	},
+ 	[1] = {
+@@ -126,14 +143,51 @@ static struct platform_device apollon_lcd_device = {
+ 	.id		= -1,
+ };
+ 
++static struct omap_led_config apollon_led_config[] = {
++	{
++		.cdev	= {
++			.name	= "apollon:led0",
++		},
++		.gpio	= LED0_GPIO13,
++	},
++	{
++		.cdev	= {
++			.name	= "apollon:led1",
++		},
++		.gpio	= LED1_GPIO14,
++	},
++	{
++		.cdev	= {
++			.name	= "apollon:led2",
++		},
++		.gpio	= LED2_GPIO15,
++	},
++};
++
++static struct omap_led_platform_data apollon_led_data = {
++	.nr_leds	= ARRAY_SIZE(apollon_led_config),
++	.leds		= apollon_led_config,
++};
++
++static struct platform_device apollon_led_device = {
++	.name		= "omap-led",
++	.id		= -1,
++	.dev		= {
++		.platform_data	= &apollon_led_data,
++	},
++};
++
+ static struct platform_device *apollon_devices[] __initdata = {
+ 	&apollon_onenand_device,
+ 	&apollon_smc91x_device,
+ 	&apollon_lcd_device,
++	&apollon_led_device,
+ };
+ 
+ static inline void __init apollon_init_smc91x(void)
+ {
++	unsigned long base;
++
+ 	/* Make sure CS1 timings are correct */
+ 	GPMC_CONFIG1_1 = 0x00011203;
+ 	GPMC_CONFIG2_1 = 0x001f1f01;
+@@ -141,13 +195,20 @@ static inline void __init apollon_init_smc91x(void)
+ 	GPMC_CONFIG4_1 = 0x1c091c09;
+ 	GPMC_CONFIG5_1 = 0x041f1f1f;
+ 	GPMC_CONFIG6_1 = 0x000004c4;
+-	GPMC_CONFIG7_1 = 0x00000f40 | (APOLLON_CS1_BASE >> 24);
++
++	if (gpmc_cs_request(APOLLON_ETH_CS, SZ_16M, &base) < 0) {
++		printk(KERN_ERR "Failed to request GPMC CS for smc91x\n");
++		return;
++	}
++	apollon_smc91x_resources[0].start = base + 0x300;
++	apollon_smc91x_resources[0].end   = base + 0x30f;
+ 	udelay(100);
+ 
+ 	omap_cfg_reg(W4__24XX_GPIO74);
+ 	if (omap_request_gpio(APOLLON_ETHR_GPIO_IRQ) < 0) {
+ 		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
+ 			APOLLON_ETHR_GPIO_IRQ);
++		gpmc_cs_free(APOLLON_ETH_CS);
+ 		return;
+ 	}
+ 	omap_set_gpio_direction(APOLLON_ETHR_GPIO_IRQ, 1);
+@@ -175,6 +236,13 @@ static struct omap_mmc_config apollon_mmc_config __initdata = {
+ 	},
+ };
+ 
++static struct omap_usb_config apollon_usb_config __initdata = {
++	.register_dev	= 1,
++	.hmc_mode	= 0x14,	/* 0:dev 1:host1 2:disable */
++
++	.pins[0]	= 6,
++};
++
+ static struct omap_lcd_config apollon_lcd_config __initdata = {
+ 	.ctrl_name	= "internal",
+ };
+@@ -182,6 +250,7 @@ static struct omap_lcd_config apollon_lcd_config __initdata = {
+ static struct omap_board_config_kernel apollon_config[] = {
+ 	{ OMAP_TAG_UART,	&apollon_uart_config },
+ 	{ OMAP_TAG_MMC,		&apollon_mmc_config },
++	{ OMAP_TAG_USB,		&apollon_usb_config },
+ 	{ OMAP_TAG_LCD,		&apollon_lcd_config },
+ };
+ 
+@@ -250,10 +319,22 @@ static void __init apollon_sw_init(void)
+ 		return;
+ }
+ 
++static void __init apollon_usb_init(void)
++{
++	/* USB device */
++	/* DEVICE_SUSPEND */
++	omap_cfg_reg(P21_242X_GPIO12);
++	omap_request_gpio(12);
++	omap_set_gpio_direction(12, 0);		/* OUT */
++	omap_set_gpio_dataout(12, 0);
++}
++
+ static void __init omap_apollon_init(void)
+ {
+ 	apollon_led_init();
+ 	apollon_sw_init();
++	apollon_flash_init();
++	apollon_usb_init();
+ 
+ 	/* REVISIT: where's the correct place */
+ 	omap_cfg_reg(W19_24XX_SYS_NIRQ);
+-- 
+1.4.4.2
+
+
+--wxDdMuZNg1r63Hyj--
