@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946043AbXDEHcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946023AbXDEHeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946043AbXDEHcG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 03:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946045AbXDEHcG
+	id S1946023AbXDEHeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 03:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946044AbXDEHeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 03:32:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:33734 "EHLO mail.goop.org"
+	Thu, 5 Apr 2007 03:34:22 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:35239 "EHLO relay4.usu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946043AbXDEHcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 03:32:02 -0400
-Message-ID: <4614A5DA.9050700@goop.org>
-Date: Thu, 05 Apr 2007 00:31:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1946023AbXDEHeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 03:34:21 -0400
+Message-ID: <4614A692.5020605@ums.usu.ru>
+Date: Thu, 05 Apr 2007 13:34:42 +0600
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, Roland McGrath <roland@redhat.com>,
-       Andi Kleen <ak@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 1/2] Relocate VDSO ELF headers to match mapped	location
- with COMPAT_VDSO
-References: <20070405045825.511024444@goop.org> <20070405045843.333498131@goop.org> <4614BD10.76E4.0078.0@novell.com>
-In-Reply-To: <4614BD10.76E4.0078.0@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: lepton <ytht.net@gmail.com>, lkm <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] 2.6.20.4 fix kernel panic on corrupted reiserfs directory
+References: <20070405064140.GA19620@router.lepton.home>
+In-Reply-To: <20070405064140.GA19620@router.lepton.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> While there's a certain level of control on what DT_* may appear in the
-> vDSO, not even considering other than the above types seems fragile to
-> me. Since future additions to the set are supposedly following a fixed
-> scheme (distinguishing pointers and values via the low bit when below
-> OLD_DT_LOOS, and using sub-ranges when between DT_HIOS and
-> OLD_DT_HIOS), at least also handling those would seem like a good
-> idea, as would warning about unrecognized types.
->   
+lepton wrote:
+> Hi,
+>   When reading corrupted reiserfs directory data, d_reclen
+>   could be a negative number, then memcpy will overflow
+>   kernel stack. This can lead to kernel panic.
+>   The following patch adds a sanity check. (against 2.6.20.4)
 
-I wasn't aware of this scheme.  Where is it documented?
+Is it possible to get a large positive number here due to other fs 
+corruption and bypass your sanity check? If I read the code correctly, this 
+would still oops in the "if" statement just below the part you patched.
 
-> Also, even though it shouldn't matter for the final result, if doing things
-> spec-conforming here you should use d_un.d_ptr.
->   
-
-Yes, I've already fixed that.
-
-> In addition to Roland's remarks about missing symbol table relocation, I
-> would also assume section headers, if present, should be relocated.
->   
-
-Yes, I suppose that's easy enough to add.
-
-    J
+> Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+> 
+> diff -pru linux-2.6/fs/reiserfs/dir.c linux-2.6-lepton/fs/reiserfs/dir.c
+> --- linux-2.6/fs/reiserfs/dir.c	2007-02-20 14:34:32.000000000 +0800
+> +++ linux-2.6-lepton/fs/reiserfs/dir.c	2007-04-05 14:35:58.000000000 +0800
+> @@ -121,6 +121,11 @@ static int reiserfs_readdir(struct file 
+>  					/* it is hidden entry */
+>  					continue;
+>  				d_reclen = entry_length(bh, ih, entry_num);
+> +				if (d_reclen < 0) {
+> +					pathrelse(&path_to_entry);
+> +					ret = -EIO;
+> +					goto out;
+> +				}
+>  				d_name = B_I_DEH_ENTRY_FILE_NAME(bh, ih, deh);
+>  				if (!d_name[d_reclen - 1])
+>  					d_reclen = strlen(d_name);
+> O
