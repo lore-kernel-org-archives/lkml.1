@@ -1,63 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945974AbXDEGyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1160998AbXDEHCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945974AbXDEGyl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946000AbXDEGyk
+	id S1160998AbXDEHCE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 03:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161219AbXDEHCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:54:40 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:34604 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945974AbXDEGyk (ORCPT
+	Thu, 5 Apr 2007 03:02:04 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24478 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1160998AbXDEHCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:54:40 -0400
-Message-ID: <46149D13.4000108@cosmosbay.com>
-Date: Thu, 05 Apr 2007 08:54:11 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Thu, 5 Apr 2007 03:02:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=wUf5tOBMMFBiPtO4qkg96RQ+EF9eUc3q8EDlZQ19CepEKE86eCzVS4J3Qfz+FgSPU
+	1Wt2zoMmYDABnpisKBzFw==
+Message-ID: <6599ad830704050001n50d9fa2bw4167c1fa16aa618f@mail.gmail.com>
+Date: Thu, 5 Apr 2007 00:01:53 -0700
+From: "Paul Menage" <menage@google.com>
+To: vatsa@in.ibm.com
+Subject: Re: [PATCH] Fix race between attach_task and cpuset_exit
+Cc: "Paul Jackson" <pj@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Balbir Singh" <balbir@in.ibm.com>
+In-Reply-To: <20070405070033.GB3435@in.ibm.com>
 MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com>	<20070403144948.fe8eede6.akpm@linux-foundation.org>	<4612DCC6.7000504@cosmosbay.com>	<46130BC8.9050905@yahoo.com.au>	<1175675146.6483.26.camel@twins>	<461367F6.10705@yahoo.com.au>	<20070404113447.17ccbefa.dada1@cosmosbay.com>	<46137882.6050708@yahoo.com.au> <20070404135458.4f1a7059.dada1@cosmosbay.com> <4614585F.1050200@yahoo.com.au> <461492A5.1030905@cosmosbay.com> <461494FE.1040403@redhat.com>
-In-Reply-To: <461494FE.1040403@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 05 Apr 2007 08:54:22 +0200 (CEST)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070325164746.GI11794@in.ibm.com>
+	 <20070325125025.b6e8f0d4.pj@sgi.com>
+	 <20070326115506.GL11794@in.ibm.com>
+	 <6599ad830704042255t5c126a0cj86d644cb8174e177@mail.gmail.com>
+	 <20070405070033.GB3435@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper a écrit :
-> Eric Dumazet wrote:
->> Database workload, where the user multi threaded app is constantly
->> accessing GBytes of data, so L2 cache hit is very small. If you want to
->> oprofile it, with say a CPU_CLK_UNHALTED:5000 event, then find_vma() is
->> in the top 5.
-> 
-> We did have a workload with lots of Java and databases at some point
-> when many VMAs were the issue.  I brought this up here one, maybe two
-> years ago and I think Blaisorblade went on and looked into avoiding VMA
-> splits by having mprotect() not split VMAs and instead store the flags
-> in the page table somewhere.  I don't remember the details.
-> 
-> Nothing came out of this but if this is possible it would be yet another
-> way to avoid mmap_sem locking, right?
-> 
+On 4/5/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+> On Wed, Apr 04, 2007 at 10:55:01PM -0700, Paul Menage wrote:
+> > >@@ -1257,8 +1260,8 @@ static int attach_task(struct cpuset *cs
+> > >
+> > >        put_task_struct(tsk);
+> > >        synchronize_rcu();
+> > >-       if (atomic_dec_and_test(&oldcs->count))
+> > >-               check_for_release(oldcs, ppathbuf);
+> > >+       if (oldcs_to_be_released)
+> > >+               check_for_release(oldcs_to_be_released, ppathbuf);
+> > >        return 0;
+> > > }
+> >
+> > Is this part of the patch necessary? If we're adding a task_lock() in
+> > cpuset_exit(), then the problem that Vatsa described (both
+> > cpuset_attach_task() and cpuset_exit() decrementing the same cpuset
+> > count, and cpuset_attach_task() incrementing the count on a cpuset
+> > that the task doesn't eventually end up in) go away, since only one
+> > thread will retrieve the old value of the task's cpuset in order to
+> > decrement its count.
+>
+> You *have* to drop/inc the refcount inside the task_lock, otherwise it is
+> racy.
+>
+>         task_lock(T1);
+>         old_cs = T1->cputset (C1)
+>         atomic_inc(&C2->count);
+>         T1->cputset = C2;
+>         task_unlock();
+>
+>         ...
+>
+>         synchronize_rcu();
+>
+>         if (atomic_dec_and_test(&C1->count))
+>                 check_for_release(..)
+>
+> is incorrect. For ex: T1's refcount on C1 may have already been dropped
+> by now in cpuset_exit() and dropping the refcount again can lead to
+> negative refcounts.
 
-I was speaking about oprofile needs, that may interfere with target process 
-needs, since oprofile calls find_vma() on the target process mm and thus zap 
-its mmap_cache.
+I don't see how that could happen. Assuming we add the
+task_lock()/task_unlock() in cpuset_exit(), then only one of the two
+threads (either cpuset_exit() or attach_task() ) can copy C1 from
+T1->cpuset and replace it with something new, and hence only one of
+them can drop the refcount.
 
-oprofile is yet another mmap_sem user, but also a mmap_cache destroyer.
+>                 .
+> > > void cpuset_exit(struct task_struct *tsk)
+> > > {
+> > >        struct cpuset *cs;
+> > >+       struct cpuset *oldcs_to_be_released = NULL;
+> > >
+> > >+       task_lock(tsk);
+> > >        cs = tsk->cpuset;
+> > >        tsk->cpuset = &top_cpuset;      /* the_top_cpuset_hack - see above
+> > >        */
+> > >+       if (atomic_dec_and_test(&cs->count))
+> > >+               oldcs_to_be_released = cs;
+> > >+       task_unlock(tsk);
+> > >
+> >
+> > I think this is still racy - at this point we're holding a reference
+> > on a cpuset that could have a zero count,
+>
+> How's that possible? That you have a zero-refcount cpuset with non empty
+> tasks in it?
 
-We could at least have a separate cache, only for oprofile.
+If this is the last task in cs, then cs->count will be 1. We remove
+this task from cs, and decrement its count to 0. Then another cpu does
+cpuset_rmdir(), takes manage_mutex, sees that the count is 0, cleans
+up the cpuset, drops the dentry, and the cpuset gets freed. Then we
+get to run again, and we dereference an invalid cpuset.
 
-If done correctly we might avoid taking mmap_sem when the same vm_area_struct 
-contains EIP/RIP snapshots.
+>
+> > Shouldn't we just put a task_lock()/task_unlock() around these lines
+> > and leave everything else as-is?
+> >
+> >       task_lock(tsk);
+> >       cs = tsk->cpuset;
+> >       tsk->cpuset = &top_cpuset;      /* the_top_cpuset_hack - see above */
+> >       task_unlock(tsk)
+>
+> If we don't drop refcount inside task_lock() it makes it racy with
+> attach_task(). 'cs' derived above may not be the right cpuset to drop
+> refcount on later in cpuset_exit.
 
+How so? If we're holding task_lock(tsk) then we're atomic with respect
+to the code in attach_task that reads the old cpuset and puts in a new
+one. Only the thread that actually reads the value and replaces it
+will get to drop the old value.
 
+Paul
