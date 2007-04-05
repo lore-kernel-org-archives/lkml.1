@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767302AbXDEU35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767300AbXDEUax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767302AbXDEU35 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 16:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767300AbXDEU3p
+	id S1767300AbXDEUax (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 16:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767303AbXDEUaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 16:29:45 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:54288 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbXDEU31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 16:29:27 -0400
-Date: Thu, 5 Apr 2007 16:24:53 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 3/4] UML - Dump registers on ptrace or wait failure
-Message-ID: <20070405202453.GA8934@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Thu, 5 Apr 2007 16:30:21 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57598 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767299AbXDEUaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 16:30:13 -0400
+Message-ID: <46155C50.8000003@garzik.org>
+Date: Thu, 05 Apr 2007 16:30:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Jan-Benedict Glaw <jbglaw@lug-owl.de>, akpm@osdl.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kyle@canonical.com
+Subject: Re: [PATCH] HPA support: Revised patch
+References: <20070405141352.12fddb6e@the-village.bc.nu>	<20070405192421.GB5131@lug-owl.de> <20070405211804.1f64e515@the-village.bc.nu>
+In-Reply-To: <20070405211804.1f64e515@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a register dump if handle_trap fails.
-Abstract out ptrace_dump_regs since it now has two callers.
+Alan Cox wrote:
+>>> +static int ata_ignore_hpa = 0;
+>>> +module_param_named(ignore_hpa, ata_ignore_hpa, int, 0644);
+>>> +MODULE_PARM_DESC(ignore_hpa, "Ignore HPA (0=off 1=on)");
+>>> +
+>>>  static int ata_probe_timeout = ATA_TMOUT_INTERNAL / HZ;
+>>>  module_param(ata_probe_timeout, int, 0444);
+>>>  MODULE_PARM_DESC(ata_probe_timeout, "Set ATA probing timeout (seconds)");
+>> For ignore_hpa, it would be nice to not go through inverse logic and
+>> fix the help text a bit (0=honor HPA, 1=ignore HPA).
+> 
+> Umm.. how about  "preserve_hpa" ?
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/os-Linux/skas/process.c |   37 +++++++++++++++++++++++++------------
- 1 file changed, 25 insertions(+), 12 deletions(-)
+I think he meant fix the help text?
 
-Index: linux-2.6.21-mm/arch/um/os-Linux/skas/process.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/skas/process.c	2007-04-05 12:38:43.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/skas/process.c	2007-04-05 12:39:12.000000000 -0400
-@@ -44,6 +44,22 @@ int is_skas_winch(int pid, int fd, void 
- 	return(1);
- }
- 
-+static int ptrace_dump_regs(int pid)
-+{
-+        unsigned long regs[MAX_REG_NR];
-+        int i;
-+
-+        if(ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
-+                return -errno;
-+        else {
-+                printk("Stub registers -\n");
-+                for(i = 0; i < ARRAY_SIZE(regs); i++)
-+                        printk("\t%d - %lx\n", i, regs[i]);
-+        }
-+
-+        return 0;
-+}
-+
- void wait_stub_done(int pid, int sig, char * fname)
- {
- 	int n, status, err;
-@@ -67,18 +83,10 @@ void wait_stub_done(int pid, int sig, ch
- 
- 	if((n < 0) || !WIFSTOPPED(status) ||
- 	   (WSTOPSIG(status) != SIGUSR1 && WSTOPSIG(status) != SIGTRAP)){
--		unsigned long regs[MAX_REG_NR];
--
--		if(ptrace(PTRACE_GETREGS, pid, 0, regs) < 0)
-+		err = ptrace_dump_regs(pid);
-+		if(err)
- 			printk("Failed to get registers from stub, "
--			       "errno = %d\n", errno);
--		else {
--			int i;
--
--			printk("Stub registers -\n");
--			for(i = 0; i < ARRAY_SIZE(regs); i++)
--				printk("\t%d - %lx\n", i, regs[i]);
--		}
-+			       "errno = %d\n", -err);
- 		panic("%s : failed to wait for SIGUSR1/SIGTRAP, "
- 		      "pid = %d, n = %d, errno = %d, status = 0x%x\n",
- 		      fname, pid, n, errno, status);
-@@ -142,9 +150,14 @@ static void handle_trap(int pid, union u
- 
- 		CATCH_EINTR(err = waitpid(pid, &status, WUNTRACED));
- 		if((err < 0) || !WIFSTOPPED(status) ||
--		   (WSTOPSIG(status) != SIGTRAP + 0x80))
-+		   (WSTOPSIG(status) != SIGTRAP + 0x80)){
-+                        err = ptrace_dump_regs(pid);
-+                        if(err)
-+                                printk("Failed to get registers from process, "
-+                                       "errno = %d\n", -err);
- 			panic("handle_trap - failed to wait at end of syscall, "
- 			      "errno = %d, status = %d\n", errno, status);
-+                }
- 	}
- 
- 	handle_syscall(regs);
+Regardless, it should be "ignore_hpa" as you have it now, though I feel 
+the help text requires additional human brain parsing, and could be more 
+clear.
+
+	Jeff
+
+
+
