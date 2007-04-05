@@ -1,562 +1,403 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767109AbXDEPkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767107AbXDEPrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767109AbXDEPkx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767104AbXDEPkx
+	id S1767107AbXDEPrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766972AbXDEPrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:40:53 -0400
-Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:61012 "EHLO
-	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767109AbXDEPkv (ORCPT
+	Thu, 5 Apr 2007 11:47:00 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53606 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767107AbXDEPq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:40:51 -0400
-X-ORBL: [67.117.73.34]
-Date: Thu, 5 Apr 2007 11:39:59 -0400
-From: Tony Lindgren <tony@atomide.com>
+	Thu, 5 Apr 2007 11:46:58 -0400
+Date: Thu, 5 Apr 2007 16:49:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Imre Deak <imre.deak@solidboot.com>
-Subject: Re: [PATCH 68/90] ARM: OMAP: FB sync with N800 tree (support for dynamic SRAM allocations)
-Message-ID: <20070405153956.GP24297@atomide.com>
-References: <11757100952384-git-send-email-tony@atomide.com> <11757100982726-g!it-send-email-tony@atomide.com> <11757101012787-git-send-email-tony@atomide.com> <1175710103340-git-send-email-tony@atomide.com> <11757101072553-git-send-email-tony@atomide.com> <11757101101180-git-send-email-tony@atomide.com> <11757101123620-git-send-email-tony@atomide.com> <11757101141643-git-send-email-tony@atomide.com> <11757101533672-git-send-email-tony@atomide.com> <20070404135254.9233a2db.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="5mZBmBd1ZkdwT1ny"
-Content-Disposition: inline
-In-Reply-To: <20070404135254.9233a2db.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, hpa@zytor.com
+Subject: Re: [PATCH] doc/kernel-parameters: use IA-32 tag instead of i386
+Message-ID: <20070405164935.607adfc6@the-village.bc.nu>
+In-Reply-To: <20070405084155.e00687a4.randy.dunlap@oracle.com>
+References: <20070404220534.36cd24e9.randy.dunlap@oracle.com>
+	<20070404224152.29062e47.akpm@linux-foundation.org>
+	<20070405084155.e00687a4.randy.dunlap@oracle.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---5mZBmBd1ZkdwT1ny
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-* Randy Dunlap <randy.dunlap@oracle.com> [070404 16:52]:
-> On Wed,  4 Apr 2007 14:05:47 -0400 Tony Lindgren wrote:
+> Alan wrote:
+> | NAK. IA-32 is an Intel specific term, and I believe a protected mark at
+> | that.
 > 
-> Referring to multiple places in this patch, please use the preferred
-> kernel "long comment" style as documented in
-> Documentation/CodingStyle, Ch. 8, Commenting:
-> 
-> The preferred style for long (multi-line) comments is:
-> 
-> 	/*
-> 	 * This is the preferred style for multi-line
-> 	 * comments in the Linux kernel source code.
-> 	 * Please use it consistently.
-> 	 *
-> 	 * Description:  A column of asterisks on the left side,
-> 	 * with beginning and ending almost-blank lines.
-> 	 */
+> OMG, quick, please send a patch for Documentation/kernel-parameters.txt.
+> (big ;)
 
-Following is an updated patch.
 
-Tony
+Its a lot simpler to use sed. Can't find IA32 as a mark, seems the Itanic
+one was but not that. X86-32 is more consistent and not Intel specific so
+one search and waste later (plus a line move)
 
---5mZBmBd1ZkdwT1ny
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0068-ARM-OMAP-FB-sync-with-N800-tree-support-for-dynamic-SRAM-allocations.txt"
+Signed-off-by: Alan Cox <alan@redhat.com> [not that a mechanistic conversion has any rights associated with it]
 
->From 0d3fe2ccf1090670ee52f39b28d3f615dcd0f891 Mon Sep 17 00:00:00 2001
-From: Imre Deak <imre.deak@solidboot.com>
-Date: Tue, 6 Mar 2007 03:16:36 -0800
-Subject: [PATCH 68/90] ARM: OMAP: FB sync with N800 tree (support for dynamic SRAM allocations)
+--- Documentation/kernel-parameters.txt~	2007-04-05 16:30:30.817515360 +0100
++++ Documentation/kernel-parameters.txt	2007-04-05 16:30:30.824514296 +0100
+@@ -41,7 +41,6 @@
+ 	EIDE	EIDE/ATAPI support is enabled.
+ 	FB	The frame buffer device is enabled.
+ 	HW	Appropriate hardware is enabled.
+-	IA-32	IA-32 aka i386 architecture is enabled.
+ 	IA-64	IA-64 architecture is enabled.
+ 	IOSCHED	More than one I/O scheduler is enabled.
+ 	IP_PNP	IP DHCP, BOOTP, or RARP is enabled.
+@@ -91,6 +90,7 @@
+ 	VT	Virtual terminal support is enabled.
+ 	WDT	Watchdog support is enabled.
+ 	XT	IBM PC/XT MFM hard disk support is enabled.
++	X86-32	X86-32, aka i386 architecture is enabled.
+ 	X86-64	X86-64 architecture is enabled.
+ 			More X86-64 boot options can be found in
+ 			Documentation/x86_64/boot-options.txt .
+@@ -202,7 +202,7 @@
+ 			override platform specific driver.
+ 			See also Documentation/acpi-hotkey.txt.
+ 
+-	acpi_pm_good	[IA-32,X86-64]
++	acpi_pm_good	[X86-32,X86-64]
+ 			Override the pmtimer bug detection: force the kernel
+ 			to assume that this machine's pmtimer latches its value
+ 			and always returns good values.
+@@ -336,7 +336,7 @@
+ 
+ 	c101=		[NET] Moxa C101 synchronous serial card
+ 
+-	cachesize=	[BUGS=IA-32] Override level 2 CPU cache size detection.
++	cachesize=	[BUGS=X86-32] Override level 2 CPU cache size detection.
+ 			Sometimes CPU hardware bugs make them report the cache
+ 			size incorrectly. The kernel will attempt work arounds
+ 			to fix known problems, but for some CPUs it is not
+@@ -359,7 +359,7 @@
+ 			Value can be changed at runtime via
+ 				/selinux/checkreqprot.
+ 
+-	clock=		[BUGS=IA-32, HW] gettimeofday clocksource override.
++	clock=		[BUGS=X86-32, HW] gettimeofday clocksource override.
+ 			[Deprecated]
+ 			Forces specified clocksource (if available) to be used
+ 			when calculating gettimeofday(). If specified
+@@ -377,7 +377,7 @@
+ 			over the 8254 in addition to over the IO-APIC. The
+ 			kernel tries to set a sensible default.
+ 
+-	hpet=		[IA-32,HPET] option to disable HPET and use PIT.
++	hpet=		[X86-32,HPET] option to disable HPET and use PIT.
+ 			Format: disable
+ 
+ 	cm206=		[HW,CD]
+@@ -486,7 +486,7 @@
+ 
+ 	dtc3181e=	[HW,SCSI]
+ 
+-	earlyprintk=	[IA-32,X86-64,SH]
++	earlyprintk=	[X86-32,X86-64,SH]
+ 			earlyprintk=vga
+ 			earlyprintk=serial[,ttySn[,baudrate]]
+ 
+@@ -524,7 +524,7 @@
+ 	eisa_irq_edge=	[PARISC,HW]
+ 			See header of drivers/parisc/eisa.c.
+ 
+-	elanfreq=	[IA-32]
++	elanfreq=	[X86-32]
+ 			See comment before function elanfreq_setup() in
+ 			arch/i386/kernel/cpu/cpufreq/elanfreq.c.
+ 
+@@ -533,7 +533,7 @@
+ 			See Documentation/block/as-iosched.txt and
+ 			Documentation/block/deadline-iosched.txt for details.
+ 
+-	elfcorehdr=	[IA-32, X86_64]
++	elfcorehdr=	[X86-32, X86_64]
+ 			Specifies physical address of start of kernel core
+ 			image elf header. Generally kexec loader will
+ 			pass this option to capture kernel.
+@@ -618,7 +618,7 @@
+ 	hisax=		[HW,ISDN]
+ 			See Documentation/isdn/README.HiSax.
+ 
+-	hugepages=	[HW,IA-32,IA-64] Maximal number of HugeTLB pages.
++	hugepages=	[HW,X86-32,IA-64] Maximal number of HugeTLB pages.
+ 
+ 	i8042.direct	[HW] Put keyboard port into non-translated mode
+ 	i8042.dumbkbd	[HW] Pretend that controller can only read data from
+@@ -763,7 +763,7 @@
+ 	js=		[HW,JOY] Analog joystick
+ 			See Documentation/input/joystick.txt.
+ 
+-	kernelcore=nn[KMG]	[KNL,IA-32,IA-64,PPC,X86-64] This parameter
++	kernelcore=nn[KMG]	[KNL,X86-32,IA-64,PPC,X86-64] This parameter
+ 			specifies the amount of memory usable by the kernel
+ 			for non-movable allocations.  The requested amount is
+ 			spread evenly throughout all nodes in the system. The
+@@ -781,15 +781,15 @@
+ 
+ 	keepinitrd	[HW,ARM]
+ 
+-	kstack=N	[IA-32,X86-64] Print N words from the kernel stack
++	kstack=N	[X86-32,X86-64] Print N words from the kernel stack
+ 			in oops dumps.
+ 
+ 	l2cr=		[PPC]
+ 
+-	lapic		[IA-32,APIC] Enable the local APIC even if BIOS
++	lapic		[X86-32,APIC] Enable the local APIC even if BIOS
+ 			disabled it.
+ 
+-	lapic_timer_c2_ok	[IA-32,x86-64,APIC] trust the local apic timer in
++	lapic_timer_c2_ok	[X86-32,x86-64,APIC] trust the local apic timer in
+ 			C2 power state.
+ 
+ 	lasi=		[HW,SCSI] PARISC LASI driver for the 53c700 chip
+@@ -903,7 +903,7 @@
+ 			[SCSI] Maximum number of LUNs received.
+ 			Should be between 1 and 16384.
+ 
+-	mca-pentium	[BUGS=IA-32]
++	mca-pentium	[BUGS=X86-32]
+ 
+ 	mcatest=	[IA-64]
+ 
+@@ -912,7 +912,7 @@
+ 
+ 	mcdx=		[HW,CD]
+ 
+-	mce		[IA-32] Machine Check Exception
++	mce		[X86-32] Machine Check Exception
+ 
+ 	md=		[HW] RAID subsystems devices and level
+ 			See Documentation/md.txt.
+@@ -924,14 +924,14 @@
+ 	mem=nn[KMG]	[KNL,BOOT] Force usage of a specific amount of memory
+ 			Amount of memory to be used when the kernel is not able
+ 			to see the whole system memory or for test.
+-			[IA-32] Use together with memmap= to avoid physical
++			[X86-32] Use together with memmap= to avoid physical
+ 			address space collisions. Without memmap= PCI devices
+ 			could be placed at addresses belonging to unused RAM.
+ 
+-	mem=nopentium	[BUGS=IA-32] Disable usage of 4MB pages for kernel
++	mem=nopentium	[BUGS=X86-32] Disable usage of 4MB pages for kernel
+ 			memory.
+ 
+-	memmap=exactmap	[KNL,IA-32,X86_64] Enable setting of an exact
++	memmap=exactmap	[KNL,X86-32,X86_64] Enable setting of an exact
+ 			E820 memory map, as specified by the user.
+ 			Such memmap=exactmap lines can be constructed based on
+ 			BIOS output or other requirements. See the memmap=nn@ss
+@@ -1060,9 +1060,9 @@
+ 			[NFS] set the maximum lifetime for idmapper cache
+ 			entries.
+ 
+-	nmi_watchdog=	[KNL,BUGS=IA-32] Debugging features for SMP kernels
++	nmi_watchdog=	[KNL,BUGS=X86-32] Debugging features for SMP kernels
+ 
+-	no387		[BUGS=IA-32] Tells the kernel to use the 387 maths
++	no387		[BUGS=X86-32] Tells the kernel to use the 387 maths
+ 			emulation library even if a 387 maths coprocessor
+ 			is present.
+ 
+@@ -1093,17 +1093,17 @@
+ 
+ 	noexec		[IA-64]
+ 
+-	noexec		[IA-32,X86-64]
++	noexec		[X86-32,X86-64]
+ 			noexec=on: enable non-executable mappings (default)
+ 			noexec=off: disable nn-executable mappings
+ 
+-	nofxsr		[BUGS=IA-32] Disables x86 floating point extended
++	nofxsr		[BUGS=X86-32] Disables x86 floating point extended
+ 			register save and restore. The kernel will only save
+ 			legacy floating-point registers on task switch.
+ 
+ 	nohlt		[BUGS=ARM]
+ 
+-	no-hlt		[BUGS=IA-32] Tells the kernel that the hlt
++	no-hlt		[BUGS=X86-32] Tells the kernel that the hlt
+ 			instruction doesn't work correctly and not to
+ 			use it.
+ 
+@@ -1118,12 +1118,12 @@
+ 			Valid arguments: on, off
+ 			Default: on
+ 
+-	noirqbalance	[IA-32,SMP,KNL] Disable kernel irq balancing
++	noirqbalance	[X86-32,SMP,KNL] Disable kernel irq balancing
+ 
+-	noirqdebug	[IA-32] Disables the code which attempts to detect and
++	noirqdebug	[X86-32] Disables the code which attempts to detect and
+ 			disable unhandled interrupt sources.
+ 
+-	no_timer_check	[IA-32,X86_64,APIC] Disables the code which tests for
++	no_timer_check	[X86-32,X86_64,APIC] Disables the code which tests for
+ 			broken timer IRQ sources.
+ 
+ 	noisapnp	[ISAPNP] Disables ISA PnP code.
+@@ -1133,16 +1133,16 @@
+ 
+ 	nointroute	[IA-64]
+ 
+-	nolapic		[IA-32,APIC] Do not enable or use the local APIC.
++	nolapic		[X86-32,APIC] Do not enable or use the local APIC.
+ 
+-	nolapic_timer	[IA-32,APIC] Do not use the local APIC timer.
++	nolapic_timer	[X86-32,APIC] Do not use the local APIC timer.
+ 
+ 	noltlbs		[PPC] Do not use large page/tlb entries for kernel
+ 			lowmem mapping on PPC40x.
+ 
+ 	nomca		[IA-64] Disable machine check abort handling
+ 
+-	nomce		[IA-32] Machine Check Exception
++	nomce		[X86-32] Machine Check Exception
+ 
+ 	noresidual	[PPC] Don't use residual data on PReP machines.
+ 
+@@ -1155,13 +1155,13 @@
+ 
+ 	nosbagart	[IA-64]
+ 
+-	nosep		[BUGS=IA-32] Disables x86 SYSENTER/SYSEXIT support.
++	nosep		[BUGS=X86-32] Disables x86 SYSENTER/SYSEXIT support.
+ 
+ 	nosmp		[SMP] Tells an SMP kernel to act as a UP kernel.
+ 
+ 	nosync		[HW,M68K] Disables sync negotiation for all devices.
+ 
+-	notsc		[BUGS=IA-32] Disable Time Stamp Counter
++	notsc		[BUGS=X86-32] Disable Time Stamp Counter
+ 
+ 	nousb		[USB] Disable the USB subsystem
+ 
+@@ -1232,28 +1232,28 @@
+ 			See also Documentation/paride.txt.
+ 
+ 	pci=option[,option...]	[PCI] various PCI subsystem options:
+-		off		[IA-32] don't probe for the PCI bus
+-		bios		[IA-32] force use of PCI BIOS, don't access
++		off		[X86-32] don't probe for the PCI bus
++		bios		[X86-32] force use of PCI BIOS, don't access
+ 				the hardware directly. Use this if your machine
+ 				has a non-standard PCI host bridge.
+-		nobios		[IA-32] disallow use of PCI BIOS, only direct
++		nobios		[X86-32] disallow use of PCI BIOS, only direct
+ 				hardware access methods are allowed. Use this
+ 				if you experience crashes upon bootup and you
+ 				suspect they are caused by the BIOS.
+-		conf1		[IA-32] Force use of PCI Configuration
++		conf1		[X86-32] Force use of PCI Configuration
+ 				Mechanism 1.
+-		conf2		[IA-32] Force use of PCI Configuration
++		conf2		[X86-32] Force use of PCI Configuration
+ 				Mechanism 2.
+-		nommconf	[IA-32,X86_64] Disable use of MMCONFIG for PCI
++		nommconf	[X86-32,X86_64] Disable use of MMCONFIG for PCI
+ 				Configuration
+ 		nomsi		[MSI] If the PCI_MSI kernel config parameter is
+ 				enabled, this kernel boot option can be used to
+ 				disable the use of MSI interrupts system-wide.
+-		nosort		[IA-32] Don't sort PCI devices according to
++		nosort		[X86-32] Don't sort PCI devices according to
+ 				order given by the PCI BIOS. This sorting is
+ 				done to get a device order compatible with
+ 				older kernels.
+-		biosirq		[IA-32] Use PCI BIOS calls to get the interrupt
++		biosirq		[X86-32] Use PCI BIOS calls to get the interrupt
+ 				routing table. These calls are known to be buggy
+ 				on several machines and they hang the machine
+ 				when used, but on other computers it's the only
+@@ -1261,32 +1261,32 @@
+ 				this option if the kernel is unable to allocate
+ 				IRQs or discover secondary PCI buses on your
+ 				motherboard.
+-		rom		[IA-32] Assign address space to expansion ROMs.
++		rom		[X86-32] Assign address space to expansion ROMs.
+ 				Use with caution as certain devices share
+ 				address decoders between ROMs and other
+ 				resources.
+-		irqmask=0xMMMM	[IA-32] Set a bit mask of IRQs allowed to be
++		irqmask=0xMMMM	[X86-32] Set a bit mask of IRQs allowed to be
+ 				assigned automatically to PCI devices. You can
+ 				make the kernel exclude IRQs of your ISA cards
+ 				this way.
+-		pirqaddr=0xAAAAA	[IA-32] Specify the physical address
++		pirqaddr=0xAAAAA	[X86-32] Specify the physical address
+ 				of the PIRQ table (normally generated
+ 				by the BIOS) if it is outside the
+ 				F0000h-100000h range.
+-		lastbus=N	[IA-32] Scan all buses thru bus #N. Can be
++		lastbus=N	[X86-32] Scan all buses thru bus #N. Can be
+ 				useful if the kernel is unable to find your
+ 				secondary buses and you want to tell it
+ 				explicitly which ones they are.
+-		assign-busses	[IA-32] Always assign all PCI bus
++		assign-busses	[X86-32] Always assign all PCI bus
+ 				numbers ourselves, overriding
+ 				whatever the firmware may have done.
+-		usepirqmask	[IA-32] Honor the possible IRQ mask stored
++		usepirqmask	[X86-32] Honor the possible IRQ mask stored
+ 				in the BIOS $PIR table. This is needed on
+ 				some systems with broken BIOSes, notably
+ 				some HP Pavilion N5400 and Omnibook XE3
+ 				notebooks. This will have no effect if ACPI
+ 				IRQ routing is enabled.
+-		noacpi		[IA-32] Do not use ACPI for IRQ routing
++		noacpi		[X86-32] Do not use ACPI for IRQ routing
+ 				or for PCI scanning.
+ 		routeirq	Do IRQ routing for all PCI devices.
+ 				This is normally done in pci_enable_device(),
+@@ -1432,13 +1432,13 @@
+ 			Run specified binary instead of /init from the ramdisk,
+ 			used for early userspace startup. See initrd.
+ 
+-	reboot=		[BUGS=IA-32,BUGS=ARM,BUGS=IA-64] Rebooting mode
++	reboot=		[BUGS=X86-32,BUGS=ARM,BUGS=IA-64] Rebooting mode
+ 			Format: <reboot_mode>[,<reboot_mode2>[,...]]
+ 			See arch/*/kernel/reboot.c or arch/*/kernel/process.c			
+ 
+ 	reserve=	[KNL,BUGS] Force the kernel to ignore some iomem area
+ 
+-	reservetop=	[IA-32]
++	reservetop=	[X86-32]
+ 			Format: nn[KMG]
+ 			Reserves a hole at the top of the kernel virtual
+ 			address space.
+@@ -1530,7 +1530,7 @@
+                         Value can be changed at runtime via
+                         /selinux/compat_net.
+ 
+-	serialnumber	[BUGS=IA-32]
++	serialnumber	[BUGS=X86-32]
+ 
+ 	sg_def_reserved_size=	[SCSI]
+ 
+@@ -1809,14 +1809,14 @@
+ 	usbhid.mousepoll=
+ 			[USBHID] The interval which mice are to be polled at.
+ 
+-	vdso=		[IA-32,SH]
++	vdso=		[X86-32,SH]
+ 			vdso=1: enable VDSO (default)
+ 			vdso=0: disable VDSO mapping
+ 
+ 	video=		[FB] Frame buffer configuration
+ 			See Documentation/fb/modedb.txt.
+ 
+-	vga=		[BOOT,IA-32] Select a particular video mode
++	vga=		[BOOT,X86-32] Select a particular video mode
+ 			See Documentation/i386/boot.txt and
+ 			Documentation/svga.txt.
+ 			Use vga=ask for menu.
 
-- in addition to fixed FB regions - as passed by the bootloader -
-  allow dynamic allocations
-- do some more checking against overlapping / reserved regions
-- move the FB specific parts out from sram.c to fb.c
-
-Signed-off-by: Imre Deak <imre.deak@solidboot.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap1/io.c         |    4 +-
- arch/arm/mach-omap2/io.c         |    3 +-
- arch/arm/plat-omap/fb.c          |  271 +++++++++++++++++++++++++++++++++----
- arch/arm/plat-omap/sram.c        |   60 ++-------
- include/asm-arm/arch-omap/sram.h |    3 -
- 5 files changed, 256 insertions(+), 85 deletions(-)
-
-Index: linux-2.6/arch/arm/mach-omap1/io.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-omap1/io.c	2007-04-05 11:26:20.000000000 -0400
-+++ linux-2.6/arch/arm/mach-omap1/io.c	2007-04-05 11:32:44.000000000 -0400
-@@ -17,11 +17,11 @@
- #include <asm/io.h>
- #include <asm/arch/mux.h>
- #include <asm/arch/tc.h>
--#include <asm/arch/omapfb.h>
- 
- extern int omap1_clk_init(void);
- extern void omap_check_revision(void);
- extern void omap_sram_init(void);
-+extern void omapfb_reserve_sdram(void);
- 
- /*
-  * The machine specific code may provide the extra mapping besides the
-@@ -121,7 +121,7 @@ void __init omap1_map_common_io(void)
- #endif
- 
- 	omap_sram_init();
--	omapfb_reserve_mem();
-+	omapfb_reserve_sdram();
- }
- 
- /*
-Index: linux-2.6/arch/arm/mach-omap2/io.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-omap2/io.c	2007-04-05 11:32:44.000000000 -0400
-+++ linux-2.6/arch/arm/mach-omap2/io.c	2007-04-05 11:32:44.000000000 -0400
-@@ -29,6 +29,7 @@ extern int omap2_clk_init(void);
- extern void omap2_check_revision(void);
- extern void omap2_init_memory(void);
- extern void gpmc_init(void);
-+extern void omapfb_reserve_sdram(void);
- 
- /*
-  * The machine specific code may provide the extra mapping besides the
-@@ -94,7 +95,7 @@ void __init omap2_map_common_io(void)
- 
- 	omap2_check_revision();
- 	omap_sram_init();
--	omapfb_reserve_mem();
-+	omapfb_reserve_sdram();
- }
- 
- void __init omap2_init_common_hw(void)
-Index: linux-2.6/arch/arm/plat-omap/fb.c
-===================================================================
---- linux-2.6.orig/arch/arm/plat-omap/fb.c	2007-04-05 11:32:44.000000000 -0400
-+++ linux-2.6/arch/arm/plat-omap/fb.c	2007-04-05 11:38:16.000000000 -0400
-@@ -39,6 +39,8 @@
- #if defined(CONFIG_FB_OMAP) || defined(CONFIG_FB_OMAP_MODULE)
- 
- static struct omapfb_platform_data omapfb_config;
-+static int config_invalid;
-+static int configured_regions;
- 
- static u64 omap_fb_dma_mask = ~(u32)0;
- 
-@@ -53,46 +55,246 @@ static struct platform_device omap_fb_de
- 	.num_resources = 0,
- };
- 
--/* called from map_io */
--void omapfb_reserve_mem(void)
-+static inline int ranges_overlap(unsigned long start1, unsigned long size1,
-+				 unsigned long start2, unsigned long size2)
- {
--	const struct omap_fbmem_config *fbmem_conf;
--	unsigned long total_size;
-+	return (start1 >= start2 && start1 < start2 + size2) ||
-+	       (start2 >= start1 && start2 < start1 + size1);
-+}
-+
-+static inline int range_included(unsigned long start1, unsigned long size1,
-+				 unsigned long start2, unsigned long size2)
-+{
-+	return start1 >= start2 && start1 + size1 <= start2 + size2;
-+}
-+
-+
-+/* Check if there is an overlapping region. */
-+static int fbmem_region_reserved(unsigned long start, size_t size)
-+{
-+	struct omapfb_mem_region *rg;
- 	int i;
- 
--	if (!omap_fb_sram_valid) {
--		/* FBMEM SRAM configuration was already found to be invalid.
--		 * Ignore the whole configuration block. */
--		omapfb_config.mem_desc.region_cnt = 0;
--		return;
-+	rg = &omapfb_config.mem_desc.region[0];
-+	for (i = 0; i < OMAPFB_PLANE_NUM; i++, rg++) {
-+		if (!rg->paddr)
-+			/* Empty slot. */
-+			continue;
-+		if (ranges_overlap(start, size, rg->paddr, rg->size))
-+			return 1;
- 	}
-+	return 0;
-+}
- 
--	i = 0;
--	total_size = 0;
--	while ((fbmem_conf = omap_get_nr_config(OMAP_TAG_FBMEM,
--				struct omap_fbmem_config, i)) != NULL) {
--		unsigned long start;
--		unsigned long size;
-+/*
-+ * Get the region_idx`th region from board config/ATAG and convert it to
-+ * our internal format.
-+ */
-+static int get_fbmem_region(int region_idx, struct omapfb_mem_region *rg)
-+{
-+	const struct omap_fbmem_config	*conf;
-+	u32				paddr;
- 
--		if (i == OMAPFB_PLANE_NUM) {
--			printk(KERN_ERR "ignoring extra plane info\n");
-+	conf = omap_get_nr_config(OMAP_TAG_FBMEM,
-+				  struct omap_fbmem_config, region_idx);
-+	if (conf == NULL)
-+		return -ENOENT;
-+
-+	paddr = conf->start;
-+	/*
-+	 * Low bits encode the page allocation mode, if high bits
-+	 * are zero. Otherwise we need a page aligned fixed
-+	 * address.
-+	 */
-+	memset(rg, 0, sizeof(*rg));
-+	rg->type = paddr & ~PAGE_MASK;
-+	rg->paddr = paddr & PAGE_MASK;
-+	rg->size = PAGE_ALIGN(conf->size);
-+	return 0;
-+}
-+
-+static int set_fbmem_region_type(struct omapfb_mem_region *rg, int mem_type,
-+				  unsigned long mem_start,
-+				  unsigned long mem_size)
-+{
-+	/*
-+	 * Check if the configuration specifies the type explicitly.
-+	 * type = 0 && paddr = 0, a default don't care case maps to
-+	 * the SDRAM type.
-+	 */
-+	if (rg->type || (!rg->type && !rg->paddr))
-+		return 0;
-+	if (ranges_overlap(rg->paddr, rg->size, mem_start, mem_size)) {
-+		rg->type = mem_type;
-+		return 0;
-+	}
-+	/* Can't determine it. */
-+	return -1;
-+}
-+
-+static int check_fbmem_region(int region_idx, struct omapfb_mem_region *rg,
-+			      unsigned long start_avail, unsigned size_avail)
-+{
-+	unsigned long	paddr = rg->paddr;
-+	size_t		size = rg->size;
-+
-+	if (rg->type > OMAPFB_MEMTYPE_MAX) {
-+		printk(KERN_ERR
-+			"Invalid start address for FB region %d\n", region_idx);
-+		return -EINVAL;
-+	}
-+
-+	if (!rg->size) {
-+		printk(KERN_ERR "Zero size for FB region %d\n", region_idx);
-+		return -EINVAL;
-+	}
-+
-+	if (!paddr)
-+		/* Allocate this dynamically, leave paddr 0 for now. */
-+		return 0;
-+
-+	/*
-+	 * Fixed region for the given RAM range. Check if it's already
-+	 * reserved by the FB code or someone else.
-+	 */
-+	if (fbmem_region_reserved(paddr, size) ||
-+	    !range_included(paddr, size, start_avail, size_avail)) {
-+		printk(KERN_ERR "Trying to use reserved memory "
-+			"for FB region %d\n", region_idx);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * Called from map_io. We need to call to this early enough so that we
-+ * can reserve the fixed SDRAM regions before VM could get hold of them.
-+ */
-+void omapfb_reserve_sdram(void)
-+{
-+	struct bootmem_data	*bdata;
-+	unsigned long		sdram_start, sdram_size;
-+	unsigned long		reserved;
-+	int			i;
-+
-+	if (config_invalid)
-+		return;
-+
-+	bdata = NODE_DATA(0)->bdata;
-+	sdram_start = bdata->node_boot_start;
-+	sdram_size = (bdata->node_low_pfn << PAGE_SHIFT) - sdram_start;
-+	reserved = 0;
-+	for (i = 0; ; i++) {
-+		struct omapfb_mem_region	rg;
-+
-+		if (get_fbmem_region(i, &rg) < 0)
- 			break;
-+		if (i == OMAPFB_PLANE_NUM) {
-+			printk(KERN_ERR
-+				"Extraneous FB mem configuration entries\n");
-+			config_invalid = 1;
-+			return;
- 		}
--		start = fbmem_conf->start;
--		size  = fbmem_conf->size;
--		omapfb_config.mem_desc.region[i].paddr = start;
--		omapfb_config.mem_desc.region[i].size = size;
--		if (omap_fb_sram_plane != i && start) {
--			reserve_bootmem(start, size);
--			total_size += size;
-+		/* Check if it's our memory type. */
-+		if (set_fbmem_region_type(&rg, OMAPFB_MEMTYPE_SDRAM,
-+				          sdram_start, sdram_size) < 0 ||
-+		    (rg.type != OMAPFB_MEMTYPE_SDRAM))
-+			continue;
-+		BUG_ON(omapfb_config.mem_desc.region[i].size);
-+		if (check_fbmem_region(i, &rg, sdram_start, sdram_size) < 0) {
-+			config_invalid = 1;
-+			return;
- 		}
--		i++;
-+		if (rg.paddr)
-+			reserve_bootmem(rg.paddr, rg.size);
-+		reserved += rg.size;
-+		omapfb_config.mem_desc.region[i] = rg;
-+		configured_regions++;
- 	}
- 	omapfb_config.mem_desc.region_cnt = i;
--	if (total_size)
-+	if (reserved)
- 		pr_info("Reserving %lu bytes SDRAM for frame buffer\n",
--			 total_size);
-+			 reserved);
-+}
-+
-+/*
-+ * Called at sram init time, before anything is pushed to the SRAM stack.
-+ * Because of the stack scheme, we will allocate everything from the
-+ * start of the lowest address region to the end of SRAM. This will also
-+ * include padding for page alignment and possible holes between regions.
-+ *
-+ * As opposed to the SDRAM case, we'll also do any dynamic allocations at
-+ * this point, since the driver built as a module would have problem with
-+ * freeing / reallocating the regions.
-+ */
-+unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
-+				  unsigned long sram_vstart,
-+				  unsigned long sram_size,
-+				  unsigned long pstart_avail,
-+				  unsigned long size_avail)
-+{
-+	struct omapfb_mem_region	rg;
-+	unsigned long			pend_avail;
-+	unsigned long			reserved;
-+	int				i;
-+
-+	if (config_invalid)
-+		return 0;
-+
-+	reserved = 0;
-+	pend_avail = pstart_avail + size_avail;
-+	for (i = 0; ; i++) {
-+		if (get_fbmem_region(i, &rg) < 0)
-+			break;
-+		if (i == OMAPFB_PLANE_NUM) {
-+			printk(KERN_ERR
-+				"Extraneous FB mem configuration entries\n");
-+			config_invalid = 1;
-+			return 0;
-+		}
-+
-+		/* Check if it's our memory type. */
-+		if (set_fbmem_region_type(&rg, OMAPFB_MEMTYPE_SRAM,
-+				          sram_pstart, sram_size) < 0 ||
-+		    (rg.type != OMAPFB_MEMTYPE_SRAM))
-+			continue;
-+		BUG_ON(omapfb_config.mem_desc.region[i].size);
-+
-+		if (check_fbmem_region(i, &rg, pstart_avail, size_avail) < 0) {
-+			config_invalid = 1;
-+			return 0;
-+		}
- 
-+		if (!rg.paddr) {
-+			/* Dynamic allocation */
-+			if ((size_avail & PAGE_MASK) < rg.size) {
-+				printk("Not enough SRAM for FB region %d\n",
-+					i);
-+				config_invalid = 1;
-+				return 0;
-+			}
-+			size_avail = (size_avail - rg.size) & PAGE_MASK;
-+			rg.paddr = pstart_avail + size_avail;
-+		}
-+		/* Reserve everything above the start of the region. */
-+		if (pend_avail - rg.paddr > reserved)
-+			reserved = pend_avail - rg.paddr;
-+		size_avail = pend_avail - reserved - pstart_avail;
-+
-+		/*
-+		 * We have a kernel mapping for this already, so the
-+		 * driver won't have to make one.
-+		 */
-+		rg.vaddr = (void *)(sram_vstart + rg.paddr - sram_pstart);
-+		omapfb_config.mem_desc.region[i] = rg;
-+		configured_regions++;
-+	}
-+	omapfb_config.mem_desc.region_cnt = i;
-+	if (reserved)
-+		pr_info("Reserving %lu bytes SRAM for frame buffer\n",
-+			 reserved);
-+	return reserved;
- }
- 
- void omapfb_set_ctrl_platform_data(void *data)
-@@ -104,10 +306,19 @@ static inline int omap_init_fb(void)
- {
- 	const struct omap_lcd_config *conf;
- 
-+	if (config_invalid)
-+		return 0;
-+	if (configured_regions != omapfb_config.mem_desc.region_cnt) {
-+		printk(KERN_ERR "Invalid FB mem configuration entries\n");
-+		return 0;
-+	}
- 	conf = omap_get_config(OMAP_TAG_LCD, struct omap_lcd_config);
--	if (conf == NULL)
-+	if (conf == NULL) {
-+		if (configured_regions)
-+			/* FB mem config, but no LCD config? */
-+			printk(KERN_ERR "Missing LCD configuration\n");
- 		return 0;
--
-+	}
- 	omapfb_config.lcd = *conf;
- 
- 	return platform_device_register(&omap_fb_device);
-@@ -117,7 +328,13 @@ arch_initcall(omap_init_fb);
- 
- #else
- 
--void omapfb_reserve_mem(void) {}
-+void omapfb_reserve_sdram(void) {}
-+unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
-+				  unsigned long sram_vstart,
-+				  unsigned long sram_size,
-+				  unsigned long start_avail,
-+				  unsigned long size_avail) {}
-+
- 
- #endif
- 
-Index: linux-2.6/arch/arm/plat-omap/sram.c
-===================================================================
---- linux-2.6.orig/arch/arm/plat-omap/sram.c	2007-04-05 11:32:44.000000000 -0400
-+++ linux-2.6/arch/arm/plat-omap/sram.c	2007-04-05 11:35:01.000000000 -0400
-@@ -51,10 +51,14 @@ static unsigned long omap_sram_base;
- static unsigned long omap_sram_size;
- static unsigned long omap_sram_ceil;
- 
--int	omap_fb_sram_plane = -1;
--int	omap_fb_sram_valid;
-+extern unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
-+					 unsigned long sram_vstart,
-+					 unsigned long sram_size,
-+					 unsigned long pstart_avail,
-+					 unsigned long size_avail);
- 
--/* Depending on the target RAMFS firewall setup, the public usable amount of
-+/*
-+ * Depending on the target RAMFS firewall setup, the public usable amount of
-  * SRAM varies.  The default accessable size for all device types is 2k. A GP
-  * device allows ARM11 but not other initators for full size. This
-  * functionality seems ok until some nice security API happens.
-@@ -78,45 +82,6 @@ static int is_sram_locked(void)
- 		return 1; /* assume locked with no PPA or security driver */
- }
- 
--static int get_fb_sram_conf(unsigned long start_avail, unsigned size_avail,
--			      unsigned long *start, int *plane_idx)
--{
--	const struct omap_fbmem_config *fbmem_conf;
--	unsigned long size = 0;
--	int i;
--
--	i = 0;
--	*start = 0;
--	*plane_idx = -1;
--	while ((fbmem_conf = omap_get_nr_config(OMAP_TAG_FBMEM,
--				struct omap_fbmem_config, i)) != NULL) {
--		u32 paddr, end;
--
--		paddr = fbmem_conf->start;
--		end = fbmem_conf->start + fbmem_conf->size;
--		if (paddr > omap_sram_start &&
--		    paddr < omap_sram_start + omap_sram_size) {
--			if (*plane_idx != -1 || paddr < start_avail ||
--			    paddr == end ||
--			    end > start_avail + size_avail) {
--				printk(KERN_ERR "invalid FB SRAM configuration");
--				*start = 0;
--				return -1;
--			}
--			*plane_idx = i;
--			*start = fbmem_conf->start;
--			size = fbmem_conf->size;
--		}
--		i++;
--	}
--
--	if (*plane_idx >= 0)
--		pr_info("Reserving %lu bytes SRAM frame buffer "
--			"for plane %d\n", size, *plane_idx);
--
--	return 0;
--}
--
- /*
-  * The amount of SRAM depends on the core type.
-  * Note that we cannot try to test for SRAM here because writes
-@@ -125,7 +90,7 @@ static int get_fb_sram_conf(unsigned lon
-  */
- void __init omap_detect_sram(void)
- {
--	unsigned long fb_sram_start;
-+	unsigned long reserved;
- 
- 	if (cpu_is_omap24xx()) {
- 		if (is_sram_locked()) {
-@@ -158,13 +123,11 @@ void __init omap_detect_sram(void)
- 			omap_sram_size = 0x4000;
- 		}
- 	}
--	if (get_fb_sram_conf(omap_sram_start + SRAM_BOOTLOADER_SZ,
--			    omap_sram_size - SRAM_BOOTLOADER_SZ,
--			    &fb_sram_start, &omap_fb_sram_plane) == 0)
--		omap_fb_sram_valid = 1;
--	if (omap_fb_sram_valid && omap_fb_sram_plane >= 0)
--		omap_sram_size -= omap_sram_start + omap_sram_size -
--				  fb_sram_start;
-+	reserved = omapfb_reserve_sram(omap_sram_start, omap_sram_base,
-+				       omap_sram_size,
-+				       omap_sram_start + SRAM_BOOTLOADER_SZ,
-+				       omap_sram_size - SRAM_BOOTLOADER_SZ);
-+	omap_sram_size -= reserved;
- 	omap_sram_ceil = omap_sram_base + omap_sram_size;
- }
- 
-Index: linux-2.6/include/asm-arm/arch-omap/sram.h
-===================================================================
---- linux-2.6.orig/include/asm-arm/arch-omap/sram.h	2007-04-05 11:32:44.000000000 -0400
-+++ linux-2.6/include/asm-arm/arch-omap/sram.h	2007-04-05 11:32:44.000000000 -0400
-@@ -20,9 +20,6 @@ extern void omap2_sram_reprogram_sdrc(u3
- 				      u32 mem_type);
- extern u32 omap2_set_prcm(u32 dpll_ctrl_val, u32 sdrc_rfr_val, int bypass);
- 
--extern int omap_fb_sram_plane;
--extern int omap_fb_sram_valid;
--
- /* Do not use these */
- extern void sram_reprogram_clock(u32 ckctl, u32 dpllctl);
- extern unsigned long sram_reprogram_clock_sz;
-
---5mZBmBd1ZkdwT1ny--
