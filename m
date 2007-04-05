@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767104AbXDEPrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766695AbXDEPsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767104AbXDEPrj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767118AbXDEPrj
+	id S1766695AbXDEPsf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767116AbXDEPsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:47:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45941 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767104AbXDEPrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:47:37 -0400
-Message-ID: <46151A05.3050505@redhat.com>
-Date: Thu, 05 Apr 2007 11:47:17 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Thu, 5 Apr 2007 11:48:35 -0400
+Received: from nlpi043.sbcis.sbc.com ([207.115.36.72]:48298 "EHLO
+	nlpi043.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766695AbXDEPse (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 11:48:34 -0400
+X-ORBL: [67.117.73.34]
+Date: Thu, 5 Apr 2007 11:47:13 -0400
+From: Tony Lindgren <tony@atomide.com>
+To: Jarkko Nikula <jarkko.nikula@nokia.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 84/90] ARM: OMAP: Update changed TSC2301 config names in N800 board files
+Message-ID: <20070405154711.GQ24297@atomide.com>
+References: <11757100952384-git-send-email-tony@atomide.com> <11757100982726-g!it-send-email-tony@atomide.com> <11757101012787-git-send-email-tony@atomide.com> <1175710103340-git-send-email-tony@atomide.com> <11757101072553-git-send-email-tony@atomide.com> <11757101101180-git-send-email-tony@atomide.com> <11757101123620-git-send-email-tony@atomide.com> <11757101141643-git-send-email-tony@atomide.com> <11757102001091-git-send-email-tony@atomide.com> <20070405091048.1fc32212.jarkko.nikula@nokia.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com>	<4614A5CC.5080508@redhat.com>	<4614A7B1.60808@redhat.com> <20070405013225.4135b76d.akpm@linux-foundation.org>
-In-Reply-To: <20070405013225.4135b76d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="FnOKg9Ah4tDwTfQS"
+Content-Disposition: inline
+In-Reply-To: <20070405091048.1fc32212.jarkko.nikula@nokia.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 05 Apr 2007 03:39:29 -0400 Rik van Riel <riel@redhat.com> wrote:
+
+--FnOKg9Ah4tDwTfQS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+* Jarkko Nikula <jarkko.nikula@nokia.com> [070405 02:12]:
+> On Wed,  4 Apr 2007 14:06:03 -0400
+> "ext Tony Lindgren" <tony@atomide.com> wrote:
 > 
->> Rik van Riel wrote:
->>
->>> MADV_DONTNEED, unpatched, 1000 loops
->>>
->>> real    0m13.672s
->>> user    0m1.217s
->>> sys     0m45.712s
->>>
->>>
->>> MADV_DONTNEED, with patch, 1000 loops
->>>
->>> real    0m4.169s
->>> user    0m2.033s
->>> sys     0m3.224s
->> I just noticed something fun with these numbers.
->>
->> Without the patch, the system (a quad core CPU) is 10% idle.
->>
->> With the patch, it is 66% idle - presumably I need Nick's
->> mmap_sem patch.
->>
->> However, despite being 66% idle, the test still runs over
->> 3 times as fast!
-> 
-> Please quote the context switch rate when testing this stuff (I use vmstat 1).
-> I've seen it vary by a factor of 10,000 depending upon what's happening.
+> > From: Jarkko Nikula <jarkko.nikula@nokia.com>
+> > 
+> > Signed-off-by: Jarkko Nikula <jarkko.nikula@nokia.com>
+> > Signed-off-by: Tony Lindgren <tony@atomide.com>
+> > ---
+> >  arch/arm/mach-omap2/board-n800-audio.c |    2 +-
+> >  arch/arm/mach-omap2/board-n800.c       |    2 +-
+> >  2 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> Tony, I don't think so that we would like to use that one even it
+> was accidentally pushed into linux-omap tree and corrected later on
+> with another patch?
 
-About context switches 14000 per second.
+Yeah, let's leave out unnecessary back and forth changes :)
 
-I'll go compile in Nick's patch to see if that makes
-things go faster.  I expect it will.
+> Below is the patch which fits better here. We don't want to change
+> CONFIG_SPI_TSC2301_AUDIO -> CONFIG_SND_SOC_TSC2301 until there is
+> real SOC driver for TSC2301 audio.
 
-procs -----------memory---------- ---swap-- -----io---- --system-- 
------cpu------
-  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy 
-id wa st
-  1  0      0 965232 250024 370848    0    0     0     0 1026 13914 13 
-21 67  0  0
-  1  0      0 965232 250024 370848    0    0     0     0 1018 14654 12 
-20 68  0  0
-  1  0      0 965232 250024 370848    0    0     0     0 1023 14006 12 
-21 67  0  0
+Thanks, I've refreshed it.
 
+Tony
 
+--FnOKg9Ah4tDwTfQS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0084-ARM-OMAP-Update-changed-TSC2301-config-names-in-N800-board-files.txt"
+
+>From 9c775cb960d0243e2d8ffa9492fe58e63ea7cbda Mon Sep 17 00:00:00 2001
+From: Jarkko Nikula <jarkko.nikula@nokia.com>
+Date: Thu, 5 Apr 2007 08:48:43 +0300
+Subject: [PATCH] ARM: OMAP: Update TSC2301 touchscreen config name in N800 board file
+
+Update TSC2301 touchscreen config name in N800 board file
+
+Signed-off-by: Jarkko Nikula <jarkko.nikula@nokia.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+
+---
+ arch/arm/mach-omap2/board-n800.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-n800.c b/arch/arm/mach-omap2/board-n800.c
+index 69e5d36..bb805cf 100644
+--- a/arch/arm/mach-omap2/board-n800.c
++++ b/arch/arm/mach-omap2/board-n800.c
+@@ -409,7 +409,7 @@ static struct platform_device n800_keypad_led_device = {
+ };
+ #endif
+ 
+-#if defined(CONFIG_SPI_TSC2301_TOUCHSCREEN)
++#if defined(CONFIG_TOUCHSCREEN_TSC2301)
+ static void __init n800_ts_set_config(void)
+ {
+ 	const struct omap_lcd_config *conf;
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+1.4.4.4
+
+--FnOKg9Ah4tDwTfQS--
