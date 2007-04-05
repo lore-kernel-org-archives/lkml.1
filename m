@@ -1,139 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbXDEQul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbXDEQwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbXDEQul (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 12:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXDEQul
+	id S1753284AbXDEQwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 12:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbXDEQwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 12:50:41 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51843 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753258AbXDEQuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 12:50:39 -0400
-Date: Thu, 5 Apr 2007 22:27:52 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, containers@lists.osdl.org,
-       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       mbligh@google.com, winget@google.com, rohitseth@google.com,
-       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
-Message-ID: <20070405165752.GA13687@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070403173048.GL2456@in.ibm.com> <6599ad830704031030n2311bcd7hca9f34e64c66337f@mail.gmail.com> <20070403175101.GN2456@in.ibm.com> <6599ad830704031049v7fad0a83q3c24211cf44d71d6@mail.gmail.com> <20070404030756.GA9008@in.ibm.com> <6599ad830704032104hda0c4bu7099c23a86940c76@mail.gmail.com> <20070404051526.GA16562@in.ibm.com> <6599ad830704040000of7f1197ica543e14d290509e@mail.gmail.com> <20070404172643.GA28328@in.ibm.com> <6599ad830704041157m22f62077tbc41dbc064385838@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830704041157m22f62077tbc41dbc064385838@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Thu, 5 Apr 2007 12:52:44 -0400
+Received: from dsl-63-249-106-23.cruzio.com ([63.249.106.23]:33998 "EHLO
+	cichlid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753284AbXDEQwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 12:52:42 -0400
+X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 12:52:41 EDT
+Date: Thu, 5 Apr 2007 09:45:11 -0700
+From: Andrew Burgess <aab@cichlid.com>
+Message-Id: <200704051645.l35GjB1p014806@cichlid.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10
+Cc: aab@cichlid.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 11:57:18AM -0700, Paul Menage wrote:
-> > Very true. That's a bug and can be rectified. Atm however in my patch
-> > stack, I have dropped this whole find_nsproxy() and instead create a new
-> > nsproxy whenever tasks move ..Not the best I agree on long run.
-> 
-> Or even short term, I think - although it won't hurt too much for
-> cases where a single process enters a container and all children stay
-> in the container, it'll hurt a lot in cases where you ever move the
-> contents of one container into another. (Possibly in an orthogonal
-> hierarchy).
-> 
-> BTW, what does rcfs do if a subsystem is registered when there are
-> already mounted hierarchies? It looks as though it leaves the relevant
-> pointers as NULLs.
+The machine is x86_64 SMP. I also got the oops in the Fedora kernels: 
+2.6.20-1.2933.fc6 and 2.6.20-1.3017.fc7. The system isn't locked solid but 
+it seems anything touching the scsi disks hangs. I also twice got this early 
+in the boot and it stopped booting.
 
-The approach I am on currently doesnt deal with dynamically loaded
-modules ..Partly because it allows subsystem ids to be compile-time
-decided and also init_nsproxy.ctlr_data[] can be initialised to default
-values at compile time itself.
+Anything I can do to help just ask.
 
-For ex: init_nsproxy.ctlr_data[CPUSET_ID] can be set to &top_cpuset
-at compile time.
+The backtrace claims my kernel is tainted due to a machine check execption
+but I can find no message in the logs using 'egrep -i 'mce|machine|check|exception'. 
+It only claims the kernels that I compile are tainted, not the Fedora ones.
 
-If there is demand later, I agree we need to address the shortcoming you
-point out ..
+root@athlon:log # (zcat messages.2.gz messages.1.gz ; cat messages)|grep -i taint
+Mar 28 02:38:48 cichlid kernel: Pid: 393, comm: scsi_eh_0 Not tainted 2.6.20-1.2933.fc6 #1
+Mar 28 02:38:55 cichlid kernel: Pid: 395, comm: scsi_eh_2 Not tainted 2.6.20-1.2933.fc6 #1
+Mar 28 08:56:05 cichlid kernel: Pid: 384, comm: scsi_eh_4 Not tainted 2.6.20-1.3017.fc7 #1
+Apr  1 00:30:18 cichlid kernel: Pid: 386, comm: scsi_eh_1 Tainted: G   M   2.6.21-rc5-git6-1 #1
+Apr  2 15:51:24 cichlid kernel: Pid: 386, comm: scsi_eh_1 Tainted: G   M   2.6.21-rc5-git7-1 #1
+Apr  2 18:20:13 cichlid kernel: Pid: 388, comm: scsi_eh_1 Tainted: G   M   2.6.21-rc5-git7-4 #4
+Apr  4 15:27:53 cichlid kernel: Pid: 386, comm: scsi_eh_1 Not tainted 2.6.21-rc5-git9-1 #1
+Apr  5 04:00:08 cichlid kernel: Pid: 386, comm: scsi_eh_0 Tainted: G   M 2.6.21-rc5-git10-1-slab-debug #1
+Apr  5 04:00:08 cichlid kernel: Pid: 390, comm: scsi_eh_2 Tainted: G   M 2.6.21-rc5-git10-1-slab-debug #1
+Apr  5 08:25:41 cichlid kernel: Pid: 386, comm: scsi_eh_0 Tainted: G   M 2.6.21-rc5-git10-1-slab-debug #1
 
-> I think you're only right if you're going to overload the nsproxy
-> count field as the total refcount, rather than the number of tasks. If
-> you do that then you risk having to allocate way more memory than you
-> need in any routine that tries to allocate an array with one pointer
-> per task in the container (e.g. when reading the tasks file, or moving
-> a task into a new cpuset). My patch separates out the refcounts from
-> the tasks counts for exactly that reason - there's a per-subsys_state
-> refcount which can be cheaply manipulated via the subsystem. (I have a
-> version with lower locking requirements that I've not yet posted).
+The Oops seems to be the memcpy in scsi_send_eh_cmnd. The BUG appears to be in the oops handler 
+itself. Earlier oopsen happened in kfree so I turned on slab debugging. 
 
-We have been thr' this in a diff thread. I trust we have discussed all
-that need to be discussed here? 
+Apr  5 03:45:16 cichlid kernel: 3w-xxxx: scsi2: Command failed: status = 0xc7, flags = 0x7f, unit #4.
+Apr  5 03:45:20 cichlid kernel: 3w-xxxx: scsi2: Command failed: status = 0xc7, flags = 0x80, unit #4.
+Apr  5 03:47:20 cichlid kernel: 3w-xxxx: scsi0: Command failed: status = 0xc7, flags = 0x80, unit #0.
+Apr  5 03:47:20 cichlid kernel: 3w-xxxx: scsi0: Command failed: status = 0xc7, flags = 0x80, unit #1.
+Apr  5 04:00:08 cichlid kernel: 3w-xxxx: scsi0: Command failed: status = 0xc7, flags = 0x80, unit #0.
+Apr  5 04:00:08 cichlid kernel: BUG: using smp_processor_id() in preemptible [00000001] code: scsi_eh_0/386
+Apr  5 04:00:08 cichlid kernel: caller is oops_begin+0xc/0x80
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: Call Trace:
+Apr  5 04:00:08 cichlid kernel:  [debug_smp_processor_id+181/208] debug_smp_processor_id+0xb5/0xd0
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8034de35>] debug_smp_processor_id+0xb5/0xd0
+Apr  5 04:00:08 cichlid kernel:  [oops_begin+12/128] oops_begin+0xc/0x80
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80272dbc>] oops_begin+0xc/0x80
+Apr  5 04:00:08 cichlid kernel:  [die+41/112] die+0x29/0x70
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80273559>] die+0x29/0x70
+Apr  5 04:00:08 cichlid kernel:  [do_general_protection+284/304] do_general_protection+0x11c/0x130
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8027437c>] do_general_protection+0x11c/0x130
+Apr  5 04:00:08 cichlid kernel:  [error_exit+0/150] error_exit+0x0/0x96
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026ef7d>] error_exit+0x0/0x96
+Apr  5 04:00:08 cichlid kernel:  [memcpy_c+11/32] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026a7cb>] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel:  [_end+123674792/2126102956] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88055efc>] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [thread_return+230/301] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026b699>] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [_end+123678124/2126102956] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88056c00>] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [keventd_create_kthread+0/144] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff802a21c0>] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [kthread+218/272] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237b1a>] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid kernel:  [child_rip+10/18] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268ea8>] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [schedule_tail+124/240] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8022b90c>] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [restore_args+0/48] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268590>] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [kthread+0/272] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237a40>] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [child_rip+0/18] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268e9e>] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: general protection fault: 0000 [1] PREEMPT SMP 
+Apr  5 04:00:08 cichlid kernel: CPU 1 
+Apr  5 04:00:08 cichlid kernel: Modules linked in: dm_multipath multipath linear raid456 xor raid1 md_mod act_police sch_ingress sch_sfq sch_cbq ipt_TOS cls_u32 sch_htb ipt_MASQUERADE ipt_LOG xt_multiport nf_nat_ftp nf_conntrack_ftp iptable_mangle iptable_nat nf_nat emi26 w83627hf hwmon_vid i2c_isa sunrpc ipt_REJECT xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables x_tables freq_table sr_mod loop dm_mirror dm_mod video thermal sbs processor i2c_ec fan dock button battery asus_acpi ac parport_pc lp parport floppy nvram snd_usb_audio snd_ice1712 snd_ice17xx_ak4xxx snd_via82xx sg gameport snd_seq_dummy pcspkr snd_ak4xxx_adda snd_cs8427 snd_via82xx_modem snd_seq_oss snd_ac97_codec sata_via snd_i2c snd_seq_midi_event snd_seq skge i2c_viapro snd_mpu401_uart i2c_core k8temp ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd_page_alloc dsbr100 snd_usb_lib snd_rawmidi compat_ioctl32 snd_seq_device videodev v4l2_common v4l1_compat snd_hwdep snd!
+  soundcore sisusbvga ftdi_sio usb_stor
+Apr  5 04:00:08 cichlid kernel: ge serio_raw emi62 usbserial asix usbnet ata_piix 3w_xxxx ata_generic pata_via libata sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+Apr  5 04:00:08 cichlid kernel: Pid: 386, comm: scsi_eh_0 Tainted: G   M   2.6.21-rc5-git10-1-slab-debug #1
+Apr  5 04:00:08 cichlid kernel: RIP: 0010:[memcpy_c+11/32]  [memcpy_c+11/32] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel: RIP: 0010:[<ffffffff8026a7cb>]  [<ffffffff8026a7cb>] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel: RSP: 0000:ffff8100beebbce8  EFLAGS: 00010246
+Apr  5 04:00:08 cichlid kernel: RAX: ffff8100b4978140 RBX: 0000000000002003 RCX: 000000000000000c
+Apr  5 04:00:08 cichlid kernel: RDX: 0000000000000000 RSI: 6ddaa59200000000 RDI: ffff8100b4978140
+Apr  5 04:00:08 cichlid kernel: RBP: ffff8100beebbe20 R08: 0000000000000002 R09: 0000000000000001
+Apr  5 04:00:08 cichlid kernel: R10: 0000000000000000 R11: 00000000ffffffff R12: ffff8100b4978140
+Apr  5 04:00:08 cichlid kernel: R13: ffffffff8807a1ce R14: ffff8100b4978058 R15: ffff8100beebc000
+Apr  5 04:00:08 cichlid kernel: FS:  00002b615f4dc240(0000) GS:ffff8100bffae4c8(0000) knlGS:00000000f795eb90
+Apr  5 04:00:08 cichlid kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+Apr  5 04:00:08 cichlid kernel: CR2: 00002b615f4b9000 CR3: 00000000a25ad000 CR4: 00000000000006e0
+Apr  5 04:00:08 cichlid kernel: Process scsi_eh_0 (pid: 386, threadinfo ffff8100beeba000, task ffff8100bedd0100)
+Apr  5 04:00:08 cichlid kernel: Stack:  ffffffff88055efc 0000271000000001 ffff8100b49780b4 ffff8100bef94508
+Apr  5 04:00:08 cichlid kernel:  0000000200000002 000010000a240001 ffff810013404c78 0000000000000000
+Apr  5 04:00:08 cichlid kernel:  ffff810000000001 ffffffffdead4ead ffffffffffffffff 0000000000000000
+Apr  5 04:00:08 cichlid kernel: Call Trace:
+Apr  5 04:00:08 cichlid kernel:  [_end+123674792/2126102956] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88055efc>] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [thread_return+230/301] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026b699>] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [_end+123678124/2126102956] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88056c00>] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [keventd_create_kthread+0/144] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff802a21c0>] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [kthread+218/272] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237b1a>] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid autoblacklist[9591]: src= proto= srcport= destport= srcname= destportname= srcportname= icmptype= icmpcode=
+Apr  5 04:00:08 cichlid kernel:  [child_rip+10/18] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268ea8>] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [schedule_tail+124/240] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8022b90c>] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [restore_args+0/48] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268590>] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [kthread+0/272] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237a40>] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [child_rip+0/18] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268e9e>] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: Code: f3 48 a5 89 d1 f3 a4 c3 66 0f 1f 44 00 00 0f 1f 80 00 00 00 
+Apr  5 04:00:08 cichlid kernel: RIP  [memcpy_c+11/32] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel: RIP  [<ffffffff8026a7cb>] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel:  RSP <ffff8100beebbce8>
+Apr  5 04:00:08 cichlid kernel: 3w-xxxx: scsi2: Command failed: status = 0xc7, flags = 0x80, unit #7.
+Apr  5 04:00:08 cichlid kernel: BUG: using smp_processor_id() in preemptible [00000001] code: scsi_eh_2/390
+Apr  5 04:00:08 cichlid kernel: caller is oops_begin+0xc/0x80
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: Call Trace:
+Apr  5 04:00:08 cichlid kernel:  [debug_smp_processor_id+181/208] debug_smp_processor_id+0xb5/0xd0
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8034de35>] debug_smp_processor_id+0xb5/0xd0
+Apr  5 04:00:08 cichlid kernel:  [oops_begin+12/128] oops_begin+0xc/0x80
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80272dbc>] oops_begin+0xc/0x80
+Apr  5 04:00:08 cichlid kernel:  [die+41/112] die+0x29/0x70
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80273559>] die+0x29/0x70
+Apr  5 04:00:08 cichlid kernel:  [do_general_protection+284/304] do_general_protection+0x11c/0x130
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8027437c>] do_general_protection+0x11c/0x130
+Apr  5 04:00:08 cichlid kernel:  [error_exit+0/150] error_exit+0x0/0x96
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026ef7d>] error_exit+0x0/0x96
+Apr  5 04:00:08 cichlid kernel:  [memcpy_c+11/32] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026a7cb>] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel:  [_end+123674792/2126102956] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88055efc>] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [thread_return+230/301] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026b699>] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [_end+123678124/2126102956] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88056c00>] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [keventd_create_kthread+0/144] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff802a21c0>] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [kthread+218/272] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237b1a>] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid kernel:  [child_rip+10/18] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268ea8>] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [schedule_tail+124/240] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8022b90c>] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [restore_args+0/48] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268590>] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [kthread+0/272] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237a40>] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [child_rip+0/18] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268e9e>] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: general protection fault: 0000 [2] PREEMPT SMP 
+Apr  5 04:00:08 cichlid kernel: CPU 1 
+Apr  5 04:00:08 cichlid kernel: Modules linked in: dm_multipath multipath linear raid456 xor raid1 md_mod act_police sch_ingress sch_sfq sch_cbq ipt_TOS cls_u32 sch_htb ipt_MASQUERADE ipt_LOG xt_multiport nf_nat_ftp nf_conntrack_ftp iptable_mangle iptable_nat nf_nat emi26 w83627hf hwmon_vid i2c_isa sunrpc ipt_REJECT xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables x_tables freq_table sr_mod loop dm_mirror dm_mod video thermal sbs processor i2c_ec fan dock button battery asus_acpi ac parport_pc lp parport floppy nvram snd_usb_audio snd_ice1712 snd_ice17xx_ak4xxx snd_via82xx sg gameport snd_seq_dummy pcspkr snd_ak4xxx_adda snd_cs8427 snd_via82xx_modem snd_seq_oss snd_ac97_codec sata_via snd_i2c snd_seq_midi_event snd_seq skge i2c_viapro snd_mpu401_uart i2c_core k8temp ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd_page_alloc dsbr100 snd_usb_lib snd_rawmidi compat_ioctl32 snd_seq_device videodev v4l2_common v4l1_compat snd_hwdep snd!
+  soundcore sisusbvga ftdi_sio usb_stor
+Apr  5 04:00:08 cichlid kernel: ge serio_raw emi62 usbserial asix usbnet ata_piix 3w_xxxx ata_generic pata_via libata sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+Apr  5 04:00:08 cichlid kernel: Pid: 390, comm: scsi_eh_2 Tainted: G   M   2.6.21-rc5-git10-1-slab-debug #1
+Apr  5 04:00:08 cichlid kernel: RIP: 0010:[memcpy_c+11/32]  [memcpy_c+11/32] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel: RIP: 0010:[<ffffffff8026a7cb>]  [<ffffffff8026a7cb>] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel: RSP: 0018:ffff8100be867ce8  EFLAGS: 00010246
+Apr  5 04:00:08 cichlid kernel: RAX: ffff8100b4978300 RBX: 0000000000002003 RCX: 000000000000000c
+Apr  5 04:00:08 cichlid kernel: RDX: 0000000000000000 RSI: 6ddaa59200000000 RDI: ffff8100b4978300
+Apr  5 04:00:08 cichlid kernel: RBP: ffff8100be867e20 R08: 0000000000000002 R09: 0000000000000001
+Apr  5 04:00:08 cichlid kernel: R10: 0000000000000000 R11: 00000000ffffffff R12: ffff8100b4978300
+Apr  5 04:00:08 cichlid kernel: R13: ffffffff8807a1ce R14: ffff8100b4978218 R15: ffff8100be868000
+Apr  5 04:00:08 cichlid kernel: FS:  00002b8ea24623b0(0000) GS:ffff8100bffae4c8(0000) knlGS:00000000f7ba0b90
+Apr  5 04:00:08 cichlid kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+Apr  5 04:00:08 cichlid kernel: CR2: 00002b8ea5956000 CR3: 00000000a5f17000 CR4: 00000000000006e0
+Apr  5 04:00:08 cichlid kernel: Process scsi_eh_2 (pid: 390, threadinfo ffff8100be866000, task ffff810037d480c0)
+Apr  5 04:00:08 cichlid kernel: Stack:  ffffffff88055efc 0000271000000001 ffff8100b4978274 ffff8100bee470f8
+Apr  5 04:00:08 cichlid kernel:  0000000200000002 000010000a7f0001 ffff810064cd7ea8 0000000000000000
+Apr  5 04:00:08 cichlid kernel:  ffff810000000001 ffffffffdead4ead ffffffffffffffff 0000000000000000
+Apr  5 04:00:08 cichlid kernel: Call Trace:
+Apr  5 04:00:08 cichlid kernel:  [_end+123674792/2126102956] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88055efc>] :scsi_mod:scsi_send_eh_cmnd+0x3fc/0x480
+Apr  5 04:00:08 cichlid kernel:  [thread_return+230/301] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8026b699>] thread_return+0xe6/0x12d
+Apr  5 04:00:08 cichlid kernel:  [_end+123678124/2126102956] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff88056c00>] :scsi_mod:scsi_error_handler+0x0/0x540
+Apr  5 04:00:08 cichlid kernel:  [keventd_create_kthread+0/144] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff802a21c0>] keventd_create_kthread+0x0/0x90
+Apr  5 04:00:08 cichlid kernel:  [kthread+218/272] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237b1a>] kthread+0xda/0x110
+Apr  5 04:00:08 cichlid kernel:  [child_rip+10/18] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268ea8>] child_rip+0xa/0x12
+Apr  5 04:00:08 cichlid kernel:  [schedule_tail+124/240] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff8022b90c>] schedule_tail+0x7c/0xf0
+Apr  5 04:00:08 cichlid kernel:  [restore_args+0/48] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268590>] restore_args+0x0/0x30
+Apr  5 04:00:08 cichlid kernel:  [kthread+0/272] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80237a40>] kthread+0x0/0x110
+Apr  5 04:00:08 cichlid kernel:  [child_rip+0/18] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel:  [<ffffffff80268e9e>] child_rip+0x0/0x12
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: 
+Apr  5 04:00:08 cichlid kernel: Code: f3 48 a5 89 d1 f3 a4 c3 66 0f 1f 44 00 00 0f 1f 80 00 00 00 
+Apr  5 04:00:08 cichlid kernel: RIP  [memcpy_c+11/32] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel: RIP  [<ffffffff8026a7cb>] memcpy_c+0xb/0x20
+Apr  5 04:00:08 cichlid kernel:  RSP <ffff8100be867ce8>
+Apr  5 04:00:08 cichlid kernel: 3w-xxxx: scsi0: AEN: ERROR: Drive error: Port #0.
 
-> > Again note that I am not hell-bent on avoiding a container-like object
-> > to store shared state of a group.  My main desire was to avoid additional
-> > pointer in task_struct and reuse nsproxy if possible. If the grand scheme of
-> > things requires a 'struct container' object in addition to reusing ->nsproxy,
-> > to store shared state like 'notify_on_release', 'hierarchical information'
-> > then I have absolutely no objection.
->
-> OK, but at that point you're basically back at my patches, but using
-> nsproxy rather than container_group.
 
-Ok ..by posting rcfs patches, I didn't mean to introduce a "yours" and
-"mine" rift ..honestly.  In fact you would notice that they have your
-(sole) copyright still on them! It took me just two days to convert over the
-patches to use nsproxy and come up with the rcfs patches and obviously I
-couldnt have done that without your excellent patches to start with.
-
-So if there is is larger interest in using nsproxy at some point, I hope
-they serve as some reference patches to do the conversion. I would go ahead
-and post what I have now (which incorporates several bug fixes) which 
-could be used as you deem necessary at a later point if/when considering 
-moving to nsproxy.
-
-> > Why would it mean duplicating code? A generic function which takes a
-> > dentry pointer and returns its vfs path will avoid this code
-> > duplication?
-> 
-> It's still adding boilerplate (extra pointers, extra /proc files,
-> logic to hook them together) to every subsystem that needs this, that
-> could be avoided. But I guess this aspect of it isn't a huge issue.
-
-I agree that is not a big issue now (considering there are larger things
-to go after!).
-
-> > > > Did you mean to say "when the number of aggregators sharing the same
-> > > > container object are more" ?
-> > >
-> > > Yes. Although having thought about the possibility of null groupings
-> > > that I described above, I'm no longer convinced that argument is
-> > > valid.
-> >
-> > I think the null grouping as defined so far is very fuzzy ..How would
-> > the kernel use this grouping, which would require reserving N pointers
-> > in 'struct container_group'/'struct nsproxy'?
-> 
-> The kernel wouldn't use it, other than to act as an inescapable task
-> grouping whose members could always be easily listed from userspace.
-
-I am still trying to come to terms with this null groupings and how they
-would be used in real life.
-
-	- Can you list a real world use of it?
-
-	- If they are "inescapable" task groups, how does the first task enter
-	  such a group, using just the filesystem interface?
-
-	- If there is no real kernel use for such groups, can this be
-	  implemented in userspace (user ids, session ids etc)
-
-	- If userspace soln is not feasible, why would you want such null
-	  groupings in multiple hierarchies and not in one hierarchy?
-	  If having them in one hierarchy satisfies the requirements,
-	  then we could create empty cpusets at top level (or at an 
-	  appropriate subcpuset level) and use them as null groups?
-	  By defining permissionss of the null-group cpuset directories,
-   	  we could restrict movement of tasks across groups ?
-
--- 
-Regards,
-vatsa
