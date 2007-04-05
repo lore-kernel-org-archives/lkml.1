@@ -1,53 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767031AbXDEPJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767042AbXDEPQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767031AbXDEPJV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767033AbXDEPJV
+	id S1767042AbXDEPQi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767043AbXDEPQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:09:21 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:50780 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767023AbXDEPJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:09:20 -0400
-Date: Fri, 06 Apr 2007 00:09:13 +0900 (JST)
-Message-Id: <20070406.000913.28784231.anemo@mba.ocn.ne.jp>
-To: dwmw2@infradead.org
-Cc: torben@kernel.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
-       flar@allandria.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, device@lanana.org
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
- optionally.
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <1175784435.2719.18.camel@shinybook.infradead.org>
-References: <1175696383.2774.24.camel@shinybook.infradead.org>
-	<20070405.233101.106261123.anemo@mba.ocn.ne.jp>
-	<1175784435.2719.18.camel@shinybook.infradead.org>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 5 Apr 2007 11:16:38 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:36996 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767042AbXDEPQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 11:16:36 -0400
+Subject: Re: 2.6.21-rc5-mm4 (SLUB)
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704042127230.14168@schroedinger.engr.sgi.com>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+	 <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com>
+	 <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com>
+	 <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704031638570.12109@schroedinger.engr.sgi.com>
+	 <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704031653060.12109@schroedinger.engr.sgi.com>
+	 <1175698437.6185.21.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704040946370.24640@schroedinger.engr.sgi.com>
+	 <1175709755.6185.34.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704041103060.26866@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0704041120250.793@schroedinger.engr.sgi.com>
+	 <1175727185.5019.8.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704041556530.11769@schroedinger.engr.sgi.com>
+	 <1175730157.5019.19.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704041730470.22161@schroedinger.engr.sgi.com>
+	 <1175741046.13125.0.camel@dyn9047017100.beaverton.ibm.com>
+	 <Pine.LNX.4.64.0704042127230.14168@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 08:16:39 -0700
+Message-Id: <1175786199.13125.3.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Apr 2007 10:47:15 -0400, David Woodhouse <dwmw2@infradead.org> wrote:
-> > Is major 204 minor 192 already allocated?
+On Wed, 2007-04-04 at 21:29 -0700, Christoph Lameter wrote:
+> Here is a patch that adds validation (only for cpuslabs and partial 
+> slabs but thats where the action is). Apply this patch
+> and then do
 > 
-> Of course. The reason it took so long to provide this patch after the
-> 'pmac_zilog doesn't load' bug got reported was because I was waiting for
-> the new allocation.
+> echo 1 >/sys/slab/<cache-to-check>/validate
 > 
-> > Few weeks ago, I sent a patch to allocate 192...199 for other serial
-> > driver 
-> 
-> Were those numbers assigned to you or did you just make them up?
+> I suggest to boot with full debugging and then run this on the ACPI slabs.
 
-What I did is just send a patch includeing devices.txt changes to
-lkml, device@lanana.org, and some others.
+Did this and didn't trigger any problems.
 
-Maybe I should have sent "request" (not patch) mail to
-device@lanana.org first?
+(Just to be clear, booted with "slub_debug" with all the patches
+applied).
 
----
-Atsushi Nemoto
+--- Validating slabcache 'Acpi-Namespace'
+--- Checked 0 slabs in 'Acpi-Namespace'
+--- Validating slabcache 'Acpi-Operand'
+--- Checked 5 slabs in 'Acpi-Operand'
+--- Validating slabcache 'Acpi-Parse'
+--- Checked 0 slabs in 'Acpi-Parse'
+--- Validating slabcache 'Acpi-ParseExt'
+--- Checked 0 slabs in 'Acpi-ParseExt'
+--- Validating slabcache 'Acpi-State'
+--- Checked 0 slabs in 'Acpi-State'
+--- Validating slabcache 'Acpi-Namespace'
+--- Checked 0 slabs in 'Acpi-Namespace'
+--- Validating slabcache 'Acpi-Operand'
+--- Checked 5 slabs in 'Acpi-Operand'
+--- Validating slabcache 'Acpi-Parse'
+--- Checked 0 slabs in 'Acpi-Parse'
+--- Validating slabcache 'Acpi-ParseExt'
+--- Checked 0 slabs in 'Acpi-ParseExt'
+--- Validating slabcache 'Acpi-State'
+--- Checked 0 slabs in 'Acpi-State'
+--- Validating slabcache 'RAW'
+--- Checked 1 slabs in 'RAW'
+--- Validating slabcache 'RAWv6'
+--- Checked 1 slabs in 'RAWv6'
+--- Validating slabcache 'TCP'
+--- Checked 3 slabs in 'TCP'
+--- Validating slabcache 'TCPv6'
+--- Checked 4 slabs in 'TCPv6'
+--- Validating slabcache 'UDP-Lite'
+--- Checked 0 slabs in 'UDP-Lite'
+--- Validating slabcache 'UDP'
+--- Checked 2 slabs in 'UDP'
+--- Validating slabcache 'UDPLITEv6'
+--- Checked 0 slabs in 'UDPLITEv6'
+--- Validating slabcache 'UDPv6'
+--- Checked 0 slabs in 'UDPv6'
+--- Validating slabcache 'UNIX'
+--- Checked 4 slabs in 'UNIX'
+--- Validating slabcache 'anon_vma'
+--- Checked 12 slabs in 'anon_vma'
+--- Validating slabcache 'arp_cache'
+--- Checked 2 slabs in 'arp_cache'
+--- Validating slabcache 'bdev_cache'
+--- Checked 3 slabs in 'bdev_cache'
+--- Validating slabcache 'bio'
+--- Checked 0 slabs in 'bio'
+--- Validating slabcache 'biovec-1'
+--- Checked 1 slabs in 'biovec-1'
+--- Validating slabcache 'biovec-128'
+--- Checked 1 slabs in 'biovec-128'
+--- Validating slabcache 'biovec-16'
+--- Checked 1 slabs in 'biovec-16'
+--- Validating slabcache 'biovec-256'
+--- Checked 1 slabs in 'biovec-256'
+--- Validating slabcache 'biovec-4'
+--- Checked 1 slabs in 'biovec-4'
+--- Validating slabcache 'biovec-64'
+--- Checked 1 slabs in 'biovec-64'
+--- Validating slabcache 'blkdev_ioc'
+--- Checked 4 slabs in 'blkdev_ioc'
+--- Validating slabcache 'blkdev_queue'
+--- Checked 1 slabs in 'blkdev_queue'
+--- Validating slabcache 'blkdev_requests'
+--- Checked 2 slabs in 'blkdev_requests'
+--- Validating slabcache 'buffer_head'
+--- Checked 4 slabs in 'buffer_head'
+--- Validating slabcache 'cfq_ioc_pool'
+--- Checked 4 slabs in 'cfq_ioc_pool'
+--- Validating slabcache 'cfq_pool'
+--- Checked 4 slabs in 'cfq_pool'
+--- Validating slabcache 'configfs_dir_cache'
+--- Checked 0 slabs in 'configfs_dir_cache'
+--- Validating slabcache 'dentry_cache'
+--- Checked 5 slabs in 'dentry_cache'
+--- Validating slabcache 'dm_io'
+--- Checked 0 slabs in 'dm_io'
+--- Validating slabcache 'dm_tio'
+--- Checked 0 slabs in 'dm_tio'
+--- Validating slabcache 'dnotify_cache'
+--- Checked 1 slabs in 'dnotify_cache'
+--- Validating slabcache 'dquot'
+--- Checked 0 slabs in 'dquot'
+--- Validating slabcache 'eventpoll_epi'
+--- Checked 1 slabs in 'eventpoll_epi'
+--- Validating slabcache 'eventpoll_pwq'
+--- Checked 1 slabs in 'eventpoll_pwq'
+--- Validating slabcache 'ext2_inode_cache'
+--- Checked 0 slabs in 'ext2_inode_cache'
+--- Validating slabcache 'ext2_xattr'
+--- Checked 0 slabs in 'ext2_xattr'
+--- Validating slabcache 'ext3_inode_cache'
+--- Checked 0 slabs in 'ext3_inode_cache'
+--- Validating slabcache 'ext3_xattr'
+--- Checked 0 slabs in 'ext3_xattr'
+--- Validating slabcache 'fasync_cache'
+--- Checked 0 slabs in 'fasync_cache'
+--- Validating slabcache 'fib6_nodes'
+--- Checked 1 slabs in 'fib6_nodes'
+--- Validating slabcache 'file_lock_cache'
+--- Checked 2 slabs in 'file_lock_cache'
+--- Validating slabcache 'files_cache'
+--- Checked 10 slabs in 'files_cache'
+--- Validating slabcache 'filp'
+--- Checked 35 slabs in 'filp'
+--- Validating slabcache 'flow_cache'
+--- Checked 0 slabs in 'flow_cache'
+--- Validating slabcache 'fs_cache'
+--- Checked 5 slabs in 'fs_cache'
+--- Validating slabcache 'hugetlbfs_inode_cache'
+--- Checked 1 slabs in 'hugetlbfs_inode_cache'
+--- Validating slabcache 'idr_layer_cache'
+--- Checked 2 slabs in 'idr_layer_cache'
+--- Validating slabcache 'inet_peer_cache'
+--- Checked 0 slabs in 'inet_peer_cache'
+--- Validating slabcache 'inode_cache'
+--- Checked 8 slabs in 'inode_cache'
+--- Validating slabcache 'inotify_event_cache'
+--- Checked 0 slabs in 'inotify_event_cache'
+--- Validating slabcache 'inotify_watch_cache'
+--- Checked 1 slabs in 'inotify_watch_cache'
+--- Validating slabcache 'ip6_dst_cache'
+--- Checked 1 slabs in 'ip6_dst_cache'
+--- Validating slabcache 'ip_dst_cache'
+--- Checked 3 slabs in 'ip_dst_cache'
+--- Validating slabcache 'ip_fib_alias'
+--- Checked 3 slabs in 'ip_fib_alias'
+--- Validating slabcache 'ip_fib_hash'
+--- Checked 3 slabs in 'ip_fib_hash'
+--- Validating slabcache 'ip_mrt_cache'
+--- Checked 0 slabs in 'ip_mrt_cache'
+--- Validating slabcache 'isofs_inode_cache'
+--- Checked 0 slabs in 'isofs_inode_cache'
+--- Validating slabcache 'journal_handle'
+--- Checked 0 slabs in 'journal_handle'
+--- Validating slabcache 'journal_head'
+--- Checked 0 slabs in 'journal_head'
+--- Validating slabcache 'kiocb'
+--- Checked 0 slabs in 'kiocb'
+--- Validating slabcache 'kioctx'
+--- Checked 0 slabs in 'kioctx'
+--- Validating slabcache 'kmalloc-1024'
+--- Checked 7 slabs in 'kmalloc-1024'
+--- Validating slabcache 'kmalloc-128'
+--- Checked 9 slabs in 'kmalloc-128'
+--- Validating slabcache 'kmalloc-131072'
+--- Checked 0 slabs in 'kmalloc-131072'
+--- Validating slabcache 'kmalloc-16'
+--- Checked 7 slabs in 'kmalloc-16'
+--- Validating slabcache 'kmalloc-16384'
+--- Checked 2 slabs in 'kmalloc-16384'
+--- Validating slabcache 'kmalloc-192'
+--- Checked 4 slabs in 'kmalloc-192'
+--- Validating slabcache 'kmalloc-2048'
+--- Checked 17 slabs in 'kmalloc-2048'
+--- Validating slabcache 'kmalloc-256'
+--- Checked 5 slabs in 'kmalloc-256'
+--- Validating slabcache 'kmalloc-262144'
+--- Checked 0 slabs in 'kmalloc-262144'
+--- Validating slabcache 'kmalloc-32'
+--- Checked 7 slabs in 'kmalloc-32'
+--- Validating slabcache 'kmalloc-32768'
+--- Checked 2 slabs in 'kmalloc-32768'
+--- Validating slabcache 'kmalloc-4096'
+--- Checked 5 slabs in 'kmalloc-4096'
+--- Validating slabcache 'kmalloc-512'
+--- Checked 9 slabs in 'kmalloc-512'
+--- Validating slabcache 'kmalloc-64'
+--- Checked 9 slabs in 'kmalloc-64'
+--- Validating slabcache 'kmalloc-65536'
+--- Checked 1 slabs in 'kmalloc-65536'
+--- Validating slabcache 'kmalloc-8'
+--- Checked 6 slabs in 'kmalloc-8'
+--- Validating slabcache 'kmalloc-8192'
+--- Checked 3 slabs in 'kmalloc-8192'
+--- Validating slabcache 'kmalloc-96'
+--- Checked 7 slabs in 'kmalloc-96'
+--- Validating slabcache 'kmem_cache_node'
+--- Checked 6 slabs in 'kmem_cache_node'
+--- Validating slabcache 'minix_inode_cache'
+--- Checked 0 slabs in 'minix_inode_cache'
+--- Validating slabcache 'mm_struct'
+--- Checked 6 slabs in 'mm_struct'
+--- Validating slabcache 'mnt_cache'
+--- Checked 3 slabs in 'mnt_cache'
+--- Validating slabcache 'mqueue_inode_cache'
+--- Checked 1 slabs in 'mqueue_inode_cache'
+--- Validating slabcache 'names_cache'
+--- Checked 0 slabs in 'names_cache'
+--- Validating slabcache 'ndisc_cache'
+--- Checked 1 slabs in 'ndisc_cache'
+--- Validating slabcache 'nfs_direct_cache'
+--- Checked 0 slabs in 'nfs_direct_cache'
+--- Validating slabcache 'nfs_inode_cache'
+--- Checked 0 slabs in 'nfs_inode_cache'
+--- Validating slabcache 'nfs_page'
+--- Checked 0 slabs in 'nfs_page'
+--- Validating slabcache 'nfs_read_data'
+--- Checked 1 slabs in 'nfs_read_data'
+--- Validating slabcache 'nfs_write_data'
+--- Checked 0 slabs in 'nfs_write_data'
+--- Validating slabcache 'numa_policy'
+--- Checked 0 slabs in 'numa_policy'
+--- Validating slabcache 'pid'
+--- Checked 8 slabs in 'pid'
+--- Validating slabcache 'posix_timers_cache'
+--- Checked 0 slabs in 'posix_timers_cache'
+--- Validating slabcache 'proc_inode_cache'
+--- Checked 26 slabs in 'proc_inode_cache'
+--- Validating slabcache 'radix_tree_node'
+--- Checked 5 slabs in 'radix_tree_node'
+--- Validating slabcache 'reiser_inode_cache'
+--- Checked 5 slabs in 'reiser_inode_cache'
+--- Validating slabcache 'request_sock_TCP'
+--- Checked 0 slabs in 'request_sock_TCP'
+--- Validating slabcache 'request_sock_TCPv6'
+--- Checked 0 slabs in 'request_sock_TCPv6'
+--- Validating slabcache 'revoke_record'
+--- Checked 0 slabs in 'revoke_record'
+--- Validating slabcache 'revoke_table'
+--- Checked 0 slabs in 'revoke_table'
+--- Validating slabcache 'revokefs_inode_cache'
+--- Checked 1 slabs in 'revokefs_inode_cache'
+--- Validating slabcache 'rpc_buffers'
+--- Checked 1 slabs in 'rpc_buffers'
+--- Validating slabcache 'rpc_inode_cache'
+--- Checked 0 slabs in 'rpc_inode_cache'
+--- Validating slabcache 'rpc_tasks'
+--- Checked 1 slabs in 'rpc_tasks'
+--- Validating slabcache 'secpath_cache'
+--- Checked 0 slabs in 'secpath_cache'
+--- Validating slabcache 'shared_policy_node'
+--- Checked 0 slabs in 'shared_policy_node'
+--- Validating slabcache 'shmem_inode_cache'
+--- Checked 5 slabs in 'shmem_inode_cache'
+--- Validating slabcache 'sighand_cache'
+--- Checked 7 slabs in 'sighand_cache'
+--- Validating slabcache 'signal_cache'
+--- Checked 7 slabs in 'signal_cache'
+--- Validating slabcache 'sigqueue'
+--- Checked 0 slabs in 'sigqueue'
+--- Validating slabcache 'skbuff_fclone_cache'
+--- Checked 0 slabs in 'skbuff_fclone_cache'
+--- Validating slabcache 'skbuff_head_cache'
+--- Checked 16 slabs in 'skbuff_head_cache'
+--- Validating slabcache 'sock_inode_cache'
+--- Checked 5 slabs in 'sock_inode_cache'
+--- Validating slabcache 'sysfs_dir_cache'
+--- Checked 7 slabs in 'sysfs_dir_cache'
+--- Validating slabcache 'task_struct'
+--- Checked 12 slabs in 'task_struct'
+--- Validating slabcache 'tcp_bind_bucket'
+--- Checked 4 slabs in 'tcp_bind_bucket'
+--- Validating slabcache 'tw_sock_TCP'
+--- Checked 0 slabs in 'tw_sock_TCP'
+--- Validating slabcache 'tw_sock_TCPv6'
+--- Checked 0 slabs in 'tw_sock_TCPv6'
+--- Validating slabcache 'uid_cache'
+--- Checked 2 slabs in 'uid_cache'
+--- Validating slabcache 'utrace_cache'
+--- Checked 0 slabs in 'utrace_cache'
+--- Validating slabcache 'utrace_engine_cache'
+--- Checked 0 slabs in 'utrace_engine_cache'
+--- Validating slabcache 'vm_area_struct'
+--- Checked 28 slabs in 'vm_area_struct'
+--- Validating slabcache 'xfrm_dst_cache'
+--- Checked 0 slabs in 'xfrm_dst_cache'
+
+
+
+
