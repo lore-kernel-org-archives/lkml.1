@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992486AbXDEMIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992572AbXDEMKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992486AbXDEMIL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 08:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992572AbXDEMIL
+	id S2992572AbXDEMKS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 08:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992577AbXDEMKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 08:08:11 -0400
-Received: from mail.screens.ru ([213.234.233.54]:35485 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992486AbXDEMIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 08:08:09 -0400
-Date: Thu, 5 Apr 2007 16:08:02 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>, mingo@elte.hu,
-       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
-Subject: Re: [PATCH 5/8] __cpu_up: use singlethreaded workqueue
-Message-ID: <20070405120802.GB755@tv-sign.ru>
-References: <20070402053457.GA9076@in.ibm.com> <20070402054017.GE12962@in.ibm.com>
+	Thu, 5 Apr 2007 08:10:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35332 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S2992572AbXDEMKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 08:10:16 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18ZH44rvX0Za+F/jOzvvplCYUo/wpfoIfpQz2p5MM
+	ffESe7JarLQZV7
+Subject: Re: [test] sched: SD-latest versus Mike's latest
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+In-Reply-To: <20070405115447.GA24138@elte.hu>
+References: <200703290237.38777.kernel@kolivas.org>
+	 <200703290944.45888.kernel@kolivas.org>
+	 <1175147455.6430.91.camel@Homer.simpson.net>
+	 <200704031237.21946.kernel@kolivas.org>
+	 <1175578270.6342.12.camel@Homer.simpson.net>
+	 <20070403060109.GA6708@elte.hu>
+	 <1175770950.6609.16.camel@Homer.simpson.net>
+	 <20070405115447.GA24138@elte.hu>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 14:10:12 +0200
+Message-Id: <1175775012.6609.31.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070402054017.GE12962@in.ibm.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/02, Gautham R Shenoy wrote:
->
-> Currently i386 and x86_64 __cpu_up uses the services of the kevents
-> workqueue to bring the cpu up. Change this and use kthread workqueue
-> instead which is single_threaded and won't be frozen during
-> CPU_HOTPLUG.
->
-> [...snip...]
->
-> +void kthreadwq_queue_work(struct work_struct *work)
-> +{
-> +	queue_work(helper_wq, work);
-> +}
-> +
-> +int kthreadwq_up()
-> +{
-> +	return (helper_wq != NULL);
-> +}
+On Thu, 2007-04-05 at 13:54 +0200, Ingo Molnar wrote:
 
-Off-topic question: can't kernel/kmod.c use this workqueue too instead
-of its own khelper_wq?
+> here's some test results, comparing SD-latest to Mike's-latest:
+> 
+> re-testing the weak points of the vanilla scheduler + Mike's:
+> 
+>  - thud.c:    this workload has almost unnoticeable effect
+>  - fiftyp.c:  noticeable, but alot better than previously!
 
-Oleg.
+Hmm.  Here fiftyp.c is utterly harmless.  If you have a second, can you
+send me a top snapshot?  If you're running many of them, it can take a
+bit for the throttle to catch them all.
+
+	-Mike
 
