@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXDEIot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXDEIuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964988AbXDEIot (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 04:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965030AbXDEIot
+	id S964868AbXDEIuW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 04:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965084AbXDEIuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 04:44:49 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37017 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964988AbXDEIop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 04:44:45 -0400
-Date: Thu, 5 Apr 2007 10:50:23 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Pete Zaitcev <zaitcev@redhat.com>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, stuart_hayes@dell.com
-Subject: Re: usb hid: reset NumLock
-In-Reply-To: <200704042324.56345.dtor@insightbb.com>
-Message-ID: <Pine.LNX.4.64.0704051049010.4173@jikos.suse.cz>
-References: <20070330105924.01a16dd6.zaitcev@redhat.com>
- <20070402161225.2866c002.zaitcev@redhat.com> <Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz>
- <200704042324.56345.dtor@insightbb.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Apr 2007 04:50:22 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3714 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964868AbXDEIuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 04:50:21 -0400
+Date: Thu, 5 Apr 2007 09:50:03 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Paul Mackerras <paulus@samba.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, flar@allandria.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070405085003.GA22362@flint.arm.linux.org.uk>
+Mail-Followup-To: Paul Mackerras <paulus@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>, Theodore Tso <tytso@mit.edu>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+	flar@allandria.com, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+References: <17939.15726.114059.679277@cargo.ozlabs.ibm.com> <1175666635.2932.17.camel@shinybook.infradead.org> <20070404.011208.120446173.davem@davemloft.net> <20070404083803.GA13134@flint.arm.linux.org.uk> <20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com> <20070404174153.GI31973@thunk.org> <20070404181531.GA9388@flint.arm.linux.org.uk> <1175716215.2774.52.camel@shinybook.infradead.org> <17940.37291.211960.566580@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17940.37291.211960.566580@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Dmitry Torokhov wrote:
+On Thu, Apr 05, 2007 at 04:05:31PM +1000, Paul Mackerras wrote:
+> David Woodhouse writes:
+> 
+> > And you always will be. The amount of pain involved in implementing
+> > this, just so that people can call their serial port 'ttyS0', is _far_
+> > more than it's worth. It could be done, but it's a completely pointless
+> > waste of time and effort. 
+> 
+> Avoiding breaking userspace is a completely pointless waste of time
+> and effort?  Linux is ready for the desktop?  Suuuure it is...
 
-> Unfortunately my patch is crap. We should not be sending events down 
-> dev->event() until dev->open() has been called because many drivers 
-> start hardware from there and not ready until then. So it is HID driver 
-> responsibility to properly reset leds after all.
+And what contribution to achieving the goal of having a single namespace
+does the above comment provide?
 
-Pete, could you please resend your patch, with proper metadata, we need to 
-merge your one then.
+Look, this is what I'm complaining about.  There's lots of talk on this
+issue.  There's been lots and lots of talk on this issue in the past as
+well.  I've raised the technical issues in this thread several times and
+so far been ignored every time.
 
-Thanks,
+If as much effort went into trying to resolve the technical problems as
+has gone into whinging about it in this thread, maybe the goal would be
+a little closer?
+
+I'm sorry if you find this message offensive.  I find filling my mailbox
+with 80ish messages of whinging utterly unproductive and equally offensive
+especially given my past input on serial issues.
 
 -- 
-Jiri Kosina
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
