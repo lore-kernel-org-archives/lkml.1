@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965896AbXDEJkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965275AbXDEJpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965896AbXDEJkS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 05:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965913AbXDEJkS
+	id S965275AbXDEJpT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 05:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965913AbXDEJpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 05:40:18 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:37139 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965896AbXDEJkR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 05:40:17 -0400
-To: a.p.zijlstra@chello.nl
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-reply-to: <1175765760.6483.93.camel@twins> (message from Peter Zijlstra on
-	Thu, 05 Apr 2007 11:36:00 +0200)
-Subject: Re: [patch 2/2] only allow nonlinear vmas for ram backed
-	filesystems
-References: <E1HZOHe-0000RL-00@dorka.pomaz.szeredi.hu>
-	 <E1HZOIr-0000Rv-00@dorka.pomaz.szeredi.hu> <1175765760.6483.93.camel@twins>
-Message-Id: <E1HZORc-0000UZ-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Apr 2007 11:39:52 +0200
+	Thu, 5 Apr 2007 05:45:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41274 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965275AbXDEJpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 05:45:16 -0400
+Date: Thu, 5 Apr 2007 05:45:04 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+Message-ID: <20070405094504.GM355@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <4614A5CC.5080508@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4614A5CC.5080508@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +		/*
-> > +		 * page_mkclean doesn't work on nonlinear vmas, so if dirty
-> > +		 * pages need to be accounted, emulate with linear vmas.
-> > +		 */
-> > +		if (mapping_cap_account_dirty(mapping)) {
+On Thu, Apr 05, 2007 at 03:31:24AM -0400, Rik van Riel wrote:
+> >My guess is that all the page zeroing is pretty expensive as well and
+> >takes significant time, but I haven't profiled it.
 > 
-> Perhaps this should read:
-> 
-> 		if (vma_wants_writenotify(vma)) {
-> 
+> With the attached patch (Andrew, I'll change the details around
+> if you want - I just wanted something to test now), your test
+> case run time went down considerably.
 
-I looked at that, but IIRC vma_wants_writenotify() doesn't work after
-mmap(), because of the updated protection bits.
+Thanks.
 
-> That way we would even allow read only non-linear mappings of 'real'
-> filesystem files.
+--- linux-2.6.20.noarch/mm/madvise.c.madvise	2007-04-03 21:53:47.000000000 -0400
++++ linux-2.6.20.noarch/mm/madvise.c	2007-04-04 23:48:34.000000000 -0400
+@@ -142,8 +142,12 @@ static long madvise_dontneed(struct vm_a
+ 			.last_index = ULONG_MAX,
+ 		};
+ 		zap_page_range(vma, start, end - start, &details);
+-	} else
+-		zap_page_range(vma, start, end - start, NULL);
++	} else {
++		struct zap_details details = {
++			.madv_free = 1,
++		};
++		zap_page_range(vma, start, end - start, &details);
++	}
+ 	return 0;
+ }
+ 
+@@ -209,7 +213,9 @@ madvise_vma(struct vm_area_struct *vma, 
+ 		error = madvise_willneed(vma, prev, start, end);
+ 		break;
+ 
++	/* FIXME: POSIX says that MADV_DONTNEED cannot throw away data. */
+ 	case MADV_DONTNEED:
++	case MADV_FREE:
+ 		error = madvise_dontneed(vma, prev, start, end);
+ 		break;
+ 
+I think you should only use the new behavior for madvise MADV_FREE, not for
+MADV_DONTNEED.  The current MADV_DONTNEED behavior (which conflicts with
+POSIX POSIX_MADV_DONTNEED, but that doesn't matter since what glibc
+maps posix_madvise POSIX_MADV_DONTNEED in madvise call if anything doesn't
+have to be MADV_DONTNEED, but can be anything else) is apparently documented
+in Linux man pages:
+       MADV_DONTNEED
+              Do not expect access in the near future.  (For the time being, the application is finished with  the
+              given  range, so the kernel can free resources associated with it.)  Subsequent accesses of pages in
+              this range will succeed, but will result either in re-loading of the memory contents from the under-
+              lying mapped file (see mmap()) or zero-fill-on-demand pages for mappings without an underlying file.
+so it wouldn't surprise me if something relied on zero filling.
+So IMHO madv_free in details should be only set if MADV_FREE.
 
-Well, we could do that, but is it really worth the hassle?  The real
-question is whether anyone would want to use non-linear
-shared-read-only mappings or not.
+Also, I think MADV_FREE shouldn't do anything at all (i.e. don't call
+zap_page_range, but don't fail either) for shared or file backed vmas,
+only for private anon memory it should do something.  After all, it
+is just an optimization and it makes sense only for private anon mappings.
 
-Thanks,
-Miklos
+	Jakub
