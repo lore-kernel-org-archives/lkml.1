@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767153AbXDEUyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767222AbXDEU6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767153AbXDEUyU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 16:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767222AbXDEUyU
+	id S1767222AbXDEU6P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 16:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767282AbXDEU6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 16:54:20 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:61097 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767153AbXDEUyT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 16:54:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KU1ZjAs35oBramDgDGXdEwSxvTMtlsxqlVM3ZmSClIV8lG6crvdyqZf4qske4Ht6j5jrq2BWajDE38w+RSs2LNOhe68odznO0vB5JnkUkTRk3w8fvi0WDetOTB6ACFVqy3gTyk5rIUdlteW2zYVy8m3ucP8QgqDrrm35bq8dcaQ=
-Message-ID: <d120d5000704051354q61c5a6b4p9e8005152da4b42e@mail.gmail.com>
-Date: Thu, 5 Apr 2007 16:54:17 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Subject: Re: usb hid: reset NumLock
-Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, stuart_hayes@dell.com
-In-Reply-To: <20070405133840.0d67303f.zaitcev@redhat.com>
+	Thu, 5 Apr 2007 16:58:15 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:51634 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767222AbXDEU6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 16:58:14 -0400
+Date: Thu, 5 Apr 2007 13:57:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Robin Holt <holt@sgi.com>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+In-Reply-To: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070330105924.01a16dd6.zaitcev@redhat.com>
-	 <20070402161225.2866c002.zaitcev@redhat.com>
-	 <Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz>
-	 <200704042324.56345.dtor@insightbb.com>
-	 <Pine.LNX.4.64.0704051049010.4173@jikos.suse.cz>
-	 <20070405133840.0d67303f.zaitcev@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/5/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
-> On a certain keyboard, when BIOS sets NumLock LED on, it survives the takeover
-> by Linux and thus confuses users.
->
-> Eating of an increasibly scarce quirk bit is unfortunate. We do it for safety,
-> given the history of nervous input devices which crash if anything unusual
-> happens.
->
 
-You know, I would not call turning leds on an off an unusual operation
-for a keyboard.
 
--- 
-Dmitry
+On Thu, 5 Apr 2007, Robin Holt wrote:
+> 
+> For testing, Jack Steiner create the following patch.  All it does
+> is moves tasks which are transitioning to the zombie state from where
+> they are in the children list to the head of the list.  In this way,
+> they will be the first found and reaping does speed up.  We will still
+> do a full scan of the list once the rearranged tasks are all removed.
+> This does not seem to be a significant problem.
+
+I'd almost prefer to just put the zombie children on a separate list. I 
+wonder how painful that would be..
+
+That would still make it expensive for people who use WUNTRACED to get 
+stopped children (since they'd have to look at all lists), but maybe 
+that's not a big deal.
+
+Another thing we could do is to just make sure that kernel threads simply 
+don't end up as children of init. That whole thing is silly, they're 
+really not children of the user-space init anyway. Comments?
+
+		Linus
