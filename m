@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161182AbXDEFF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161199AbXDEFXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161182AbXDEFF4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 01:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161184AbXDEFF4
+	id S1161199AbXDEFXs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 01:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161200AbXDEFXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 01:05:56 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:31822 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161182AbXDEFFy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 01:05:54 -0400
-Date: Wed, 4 Apr 2007 22:05:34 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] doc/kernel-parameters: use IA-32 tag instead of i386
-Message-Id: <20070404220534.36cd24e9.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Thu, 5 Apr 2007 01:23:48 -0400
+Received: from ns1.suse.de ([195.135.220.2]:52388 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161199AbXDEFXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 01:23:47 -0400
+Date: Thu, 5 Apr 2007 07:23:36 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, npiggin@suse.de, hugh@veritas.com,
+       akpm@linux-foundation.org, linux-mm@kvack.org, tee@sgi.com,
+       holt@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070405052336.GQ19587@v2.random>
+References: <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org> <20070404.131111.62667528.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404.131111.62667528.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, Apr 04, 2007 at 01:11:11PM -0700, David S. Miller wrote:
+> If we're going to consider this seriously, there is a case I know of.
+> Look at flush_dcache_page()'s test for ZERO_PAGE() on sparc64, there
+> is an instructive comment:
+> 
+> 	/* Do not bother with the expensive D-cache flush if it
+> 	 * is merely the zero page.  The 'bigcore' testcase in GDB
+> 	 * causes this case to run millions of times.
+> 	 */
+> 	if (page == ZERO_PAGE(0))
+> 		return;
+> 
+> basically what the GDB test case does it mmap() an enormous anonymous
+> area, not touch it, then dump core.
+> 
+> As I understand the patch being considered to remove ZERO_PAGE(), this
+> kind of core dump will cause a lot of pages to be allocated, probably
+> eating up a lot of system time as well as memory.
 
-Use documented tag for "IA-32" (not "i386") to indicate which
-kernel parameters apply to IA-32.
+Well, if we leave the zero page in because there may be too many apps
+to optimize, we still have to fix the zero page handling. Current code
+is far from ideal. Currently the zero page scales worse than
+no-zero-page, at the very least all the page count/mapcount
+increase/decrease at every map-in/zap must be dropped from memory.c,
+otherwise two totally unrelated gdb running at the same time (or gdb
+at the same time of fortran, or two unrelated fortran apps) will badly
+trash over the zero page reference counting.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/kernel-parameters.txt |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- linux-2621-rc5g12.orig/Documentation/kernel-parameters.txt
-+++ linux-2621-rc5g12/Documentation/kernel-parameters.txt
-@@ -126,7 +126,7 @@ and is between 256 and 4096 characters. 
- 			See header of drivers/scsi/53c7xx.c.
- 			See also Documentation/scsi/ncr53c7xx.txt.
- 
--	acpi=		[HW,ACPI,X86-64,i386]
-+	acpi=		[HW,ACPI,X86-64,IA-32]
- 			Advanced Configuration and Power Interface
- 			Format: { force | off | ht | strict | noirq }
- 			force -- enable ACPI if default was off
-@@ -207,13 +207,13 @@ and is between 256 and 4096 characters. 
- 			to assume that this machine's pmtimer latches its value
- 			and always returns good values.
- 
--	enable_timer_pin_1 [i386,x86-64]
-+	enable_timer_pin_1 [IA-32,x86-64]
- 			Enable PIN 1 of APIC timer
- 			Can be useful to work around chipset bugs
- 			(in particular on some ATI chipsets).
- 			The kernel tries to set a reasonable default.
- 
--	disable_timer_pin_1 [i386,x86-64]
-+	disable_timer_pin_1 [IA-32,x86-64]
- 			Disable PIN 1 of APIC timer
- 			Can be useful to work around chipset bugs.
- 
-@@ -266,7 +266,7 @@ and is between 256 and 4096 characters. 
- 			not play well with APC CPU idle - disable it if you have
- 			APC and your system crashes randomly.
- 
--	apic=		[APIC,i386] Change the output verbosity whilst booting
-+	apic=		[APIC,IA-32] Change the output verbosity whilst booting
- 			Format: { quiet (default) | verbose | debug }
- 			Change the amount of debugging information output
- 			when initialising the APIC and IO-APIC components.
+Besides the backwards compatibility argument with gdb or similar apps
+I doubt the zero page is a really worthwhile optimization and I guess
+we'd be better off if it never existed.
