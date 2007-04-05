@@ -1,269 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767011AbXDEOZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXDEO2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767011AbXDEOZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 10:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767008AbXDEOZi
+	id S1751366AbXDEO2m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 10:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbXDEO2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 10:25:38 -0400
-Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:7224 "EHLO
-	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767011AbXDEOZh (ORCPT
+	Thu, 5 Apr 2007 10:28:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:15430 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbXDEO2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 10:25:37 -0400
-X-ORBL: [67.117.73.34]
-Date: Thu, 5 Apr 2007 10:24:57 -0400
-From: Tony Lindgren <tony@atomide.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
-Subject: Re: [PATCH 12/90] ARM: OMAP: Fix apollon boot
-Message-ID: <20070405142454.GG24297@atomide.com>
-References: <11757099691323-git-send-email-tony@atomide.com> <11757099743984-git-send-email-tony@atomide.com> <1175709977545-git-send-email-tony@atomide.com> <1175709988265-git-send-email-tony@atomide.com> <20070404114147.29bd3872.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="wxDdMuZNg1r63Hyj"
+	Thu, 5 Apr 2007 10:28:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=eqbimMybfSEYNcwjUkXtStY6RvSFZPQGk5ujcwJbuDdwrdx7D49ge7Nok+9/Lm3quCYyBaLn6JggvRWcpekbN6kw1K+3x3tPKd3Uwcvmhcnw9qeoD57KJclCNzhsFV8xF2qb3vlCO1kwiX6Dlru4RtKD1b7V1JLigWM3WnbDbP4=
+Date: Thu, 5 Apr 2007 19:59:55 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org, linux-fsdevel@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Subject: [KJ][PATCH]ROUND_UP macro cleanup in fs/(select|compat|readdir).c
+Message-ID: <20070405142955.GA10638@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070404114147.29bd3872.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ROUND_UP macro cleanup use,ALIGN or DIV_ROUND_UP where ever appropriate.
 
---wxDdMuZNg1r63Hyj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-* Randy Dunlap <randy.dunlap@oracle.com> [070404 14:40]:
-> On Wed,  4 Apr 2007 14:04:51 -0400 Tony Lindgren wrote:
-> 
-> > From: Kyungmin Park <kyungmin.park@samsung.com>
-> > 
-> > In previous GPMC patch, there was a typo. Fix typo and add header files for
-> > set_irq_type() warnings.
-> 
-> It looks like there's more to this patch than in the description above...
-
-Here's the updated patch with proper description.
-
-Tony
-
---wxDdMuZNg1r63Hyj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0012-ARM-OMAP-Fix-apollon-boot.txt"
-
->From 1d55cd14f22cfd19279abaac48678c9c9bc29505 Mon Sep 17 00:00:00 2001
-From: Kyungmin Park <kyungmin.park@samsung.com>
-Date: Wed, 6 Dec 2006 17:13:53 -0800
-Subject: [PATCH 12/90] ARM: OMAP: Board Apollon update, fix boot
-
-Update Apollon board init to initialize NAND, USB,
-and LEDs. Also configure GPMC memory for smc91x Ethernet.
-
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/board-apollon.c |   99 +++++++++++++++++++++++++++++++---
- 1 files changed, 90 insertions(+), 9 deletions(-)
+ compat.c  |   20 ++++++++------------
+ readdir.c |    8 +++-----
+ select.c  |    8 ++++----
+ 3 files changed, 15 insertions(+), 21 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-apollon.c b/arch/arm/mach-omap2/board-apollon.c
-index 878ff91..3bb49c1 100644
---- a/arch/arm/mach-omap2/board-apollon.c
-+++ b/arch/arm/mach-omap2/board-apollon.c
-@@ -25,6 +25,8 @@
- #include <linux/irq.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/leds.h>
-+#include <linux/irq.h>
+diff --git a/fs/compat.c b/fs/compat.c
+index 040a8be..0e7559a 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -15,6 +15,7 @@
+  *  published by the Free Software Foundation.
+  */
  
- #include <asm/hardware.h>
- #include <asm/mach-types.h>
-@@ -32,10 +34,12 @@
- #include <asm/mach/flash.h>
- 
- #include <asm/arch/gpio.h>
-+#include <asm/arch/led.h>
- #include <asm/arch/mux.h>
- #include <asm/arch/usb.h>
- #include <asm/arch/board.h>
- #include <asm/arch/common.h>
-+#include <asm/arch/gpmc.h>
- #include "prcm-regs.h"
- 
- /* LED & Switch macros */
-@@ -46,6 +50,9 @@
- #define SW_UP_GPIO17		17
- #define SW_DOWN_GPIO58		58
- 
-+#define APOLLON_FLASH_CS	0
-+#define APOLLON_ETH_CS		1
-+
- static struct mtd_partition apollon_partitions[] = {
- 	{
- 		.name		= "X-Loader + U-Boot",
-@@ -85,10 +92,10 @@ static struct flash_platform_data apollon_flash_data = {
- 	.nr_parts	= ARRAY_SIZE(apollon_partitions),
- };
- 
--static struct resource apollon_flash_resource = {
--	.start		= APOLLON_CS0_BASE,
--	.end		= APOLLON_CS0_BASE + SZ_128K,
--	.flags		= IORESOURCE_MEM,
-+static struct resource apollon_flash_resource[] = {
-+	[0] = {
-+		.flags		= IORESOURCE_MEM,
-+	},
- };
- 
- static struct platform_device apollon_onenand_device = {
-@@ -97,14 +104,24 @@ static struct platform_device apollon_onenand_device = {
- 	.dev		= {
- 		.platform_data	= &apollon_flash_data,
- 	},
--	.num_resources	= ARRAY_SIZE(&apollon_flash_resource),
--	.resource	= &apollon_flash_resource,
-+	.num_resources	= ARRAY_SIZE(apollon_flash_resource),
-+	.resource	= apollon_flash_resource,
- };
- 
-+static void __init apollon_flash_init(void)
-+{
-+	unsigned long base;
-+
-+	if (gpmc_cs_request(APOLLON_FLASH_CS, SZ_128K, &base) < 0) {
-+		printk(KERN_ERR "Cannot request OneNAND GPMC CS\n");
-+		return;
-+	}
-+	apollon_flash_resource[0].start = base;
-+	apollon_flash_resource[0].end   = base + SZ_128K - 1;
-+}
-+
- static struct resource apollon_smc91x_resources[] = {
- 	[0] = {
--		.start	= APOLLON_ETHR_START,		/* Physical */
--		.end	= APOLLON_ETHR_START + 0xf,
- 		.flags  = IORESOURCE_MEM,
- 	},
- 	[1] = {
-@@ -126,14 +143,51 @@ static struct platform_device apollon_lcd_device = {
- 	.id		= -1,
- };
- 
-+static struct omap_led_config apollon_led_config[] = {
-+	{
-+		.cdev	= {
-+			.name	= "apollon:led0",
-+		},
-+		.gpio	= LED0_GPIO13,
-+	},
-+	{
-+		.cdev	= {
-+			.name	= "apollon:led1",
-+		},
-+		.gpio	= LED1_GPIO14,
-+	},
-+	{
-+		.cdev	= {
-+			.name	= "apollon:led2",
-+		},
-+		.gpio	= LED2_GPIO15,
-+	},
-+};
-+
-+static struct omap_led_platform_data apollon_led_data = {
-+	.nr_leds	= ARRAY_SIZE(apollon_led_config),
-+	.leds		= apollon_led_config,
-+};
-+
-+static struct platform_device apollon_led_device = {
-+	.name		= "omap-led",
-+	.id		= -1,
-+	.dev		= {
-+		.platform_data	= &apollon_led_data,
-+	},
-+};
-+
- static struct platform_device *apollon_devices[] __initdata = {
- 	&apollon_onenand_device,
- 	&apollon_smc91x_device,
- 	&apollon_lcd_device,
-+	&apollon_led_device,
- };
- 
- static inline void __init apollon_init_smc91x(void)
- {
-+	unsigned long base;
-+
- 	/* Make sure CS1 timings are correct */
- 	GPMC_CONFIG1_1 = 0x00011203;
- 	GPMC_CONFIG2_1 = 0x001f1f01;
-@@ -141,13 +195,20 @@ static inline void __init apollon_init_smc91x(void)
- 	GPMC_CONFIG4_1 = 0x1c091c09;
- 	GPMC_CONFIG5_1 = 0x041f1f1f;
- 	GPMC_CONFIG6_1 = 0x000004c4;
--	GPMC_CONFIG7_1 = 0x00000f40 | (APOLLON_CS1_BASE >> 24);
-+
-+	if (gpmc_cs_request(APOLLON_ETH_CS, SZ_16M, &base) < 0) {
-+		printk(KERN_ERR "Failed to request GPMC CS for smc91x\n");
-+		return;
-+	}
-+	apollon_smc91x_resources[0].start = base + 0x300;
-+	apollon_smc91x_resources[0].end   = base + 0x30f;
- 	udelay(100);
- 
- 	omap_cfg_reg(W4__24XX_GPIO74);
- 	if (omap_request_gpio(APOLLON_ETHR_GPIO_IRQ) < 0) {
- 		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
- 			APOLLON_ETHR_GPIO_IRQ);
-+		gpmc_cs_free(APOLLON_ETH_CS);
- 		return;
- 	}
- 	omap_set_gpio_direction(APOLLON_ETHR_GPIO_IRQ, 1);
-@@ -175,6 +236,13 @@ static struct omap_mmc_config apollon_mmc_config __initdata = {
- 	},
- };
- 
-+static struct omap_usb_config apollon_usb_config __initdata = {
-+	.register_dev	= 1,
-+	.hmc_mode	= 0x14,	/* 0:dev 1:host1 2:disable */
-+
-+	.pins[0]	= 6,
-+};
-+
- static struct omap_lcd_config apollon_lcd_config __initdata = {
- 	.ctrl_name	= "internal",
- };
-@@ -182,6 +250,7 @@ static struct omap_lcd_config apollon_lcd_config __initdata = {
- static struct omap_board_config_kernel apollon_config[] = {
- 	{ OMAP_TAG_UART,	&apollon_uart_config },
- 	{ OMAP_TAG_MMC,		&apollon_mmc_config },
-+	{ OMAP_TAG_USB,		&apollon_usb_config },
- 	{ OMAP_TAG_LCD,		&apollon_lcd_config },
- };
- 
-@@ -250,10 +319,22 @@ static void __init apollon_sw_init(void)
- 		return;
++#include <linux/kernel.h>
+ #include <linux/linkage.h>
+ #include <linux/compat.h>
+ #include <linux/errno.h>
+@@ -901,8 +902,6 @@ asmlinkage long compat_sys_mount(char __user * dev_name, char __user * dir_name,
  }
  
-+static void __init apollon_usb_init(void)
-+{
-+	/* USB device */
-+	/* DEVICE_SUSPEND */
-+	omap_cfg_reg(P21_242X_GPIO12);
-+	omap_request_gpio(12);
-+	omap_set_gpio_direction(12, 0);		/* OUT */
-+	omap_set_gpio_dataout(12, 0);
-+}
-+
- static void __init omap_apollon_init(void)
- {
- 	apollon_led_init();
- 	apollon_sw_init();
-+	apollon_flash_init();
-+	apollon_usb_init();
+ #define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+-#define COMPAT_ROUND_UP(x) (((x)+sizeof(compat_long_t)-1) & \
+-				~(sizeof(compat_long_t)-1))
  
- 	/* REVISIT: where's the correct place */
- 	omap_cfg_reg(W19_24XX_SYS_NIRQ);
+ struct compat_old_linux_dirent {
+ 	compat_ulong_t	d_ino;
+@@ -990,7 +989,7 @@ static int compat_filldir(void *__buf, const char *name, int namlen,
+ 	struct compat_linux_dirent __user * dirent;
+ 	struct compat_getdents_callback *buf = __buf;
+ 	compat_ulong_t d_ino;
+-	int reclen = COMPAT_ROUND_UP(NAME_OFFSET(dirent) + namlen + 2);
++	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 2, sizeof(compat_long_t));
+ 
+ 	buf->error = -EINVAL;	/* only used if we fail.. */
+ 	if (reclen > buf->count)
+@@ -1065,7 +1064,6 @@ out:
+ }
+ 
+ #ifndef __ARCH_OMIT_COMPAT_SYS_GETDENTS64
+-#define COMPAT_ROUND_UP64(x) (((x)+sizeof(u64)-1) & ~(sizeof(u64)-1))
+ 
+ struct compat_getdents_callback64 {
+ 	struct linux_dirent64 __user *current_dir;
+@@ -1080,7 +1078,7 @@ static int compat_filldir64(void * __buf, const char * name, int namlen, loff_t
+ 	struct linux_dirent64 __user *dirent;
+ 	struct compat_getdents_callback64 *buf = __buf;
+ 	int jj = NAME_OFFSET(dirent);
+-	int reclen = COMPAT_ROUND_UP64(jj + namlen + 1);
++	int reclen = ALIGN(jj + namlen + 1, sizeof(u64));
+ 	u64 off;
+ 
+ 	buf->error = -EINVAL;	/* only used if we fail.. */
+@@ -1593,8 +1591,6 @@ out_ret:
+ 
+ #define __COMPAT_NFDBITS       (8 * sizeof(compat_ulong_t))
+ 
+-#define ROUND_UP(x,y) (((x)+(y)-1)/(y))
+-
+ /*
+  * Ooo, nasty.  We need here to frob 32-bit unsigned longs to
+  * 64-bit unsigned longs.
+@@ -1603,7 +1599,7 @@ static
+ int compat_get_fd_set(unsigned long nr, compat_ulong_t __user *ufdset,
+ 			unsigned long *fdset)
+ {
+-	nr = ROUND_UP(nr, __COMPAT_NFDBITS);
++	nr = DIV_ROUND_UP(nr, __COMPAT_NFDBITS);
+ 	if (ufdset) {
+ 		unsigned long odd;
+ 
+@@ -1637,7 +1633,7 @@ int compat_set_fd_set(unsigned long nr, compat_ulong_t __user *ufdset,
+ 		      unsigned long *fdset)
+ {
+ 	unsigned long odd;
+-	nr = ROUND_UP(nr, __COMPAT_NFDBITS);
++	nr = DIV_ROUND_UP(nr, __COMPAT_NFDBITS);
+ 
+ 	if (!ufdset)
+ 		return 0;
+@@ -1759,7 +1755,7 @@ asmlinkage long compat_sys_select(int n, compat_ulong_t __user *inp,
+ 		if ((u64)tv.tv_sec >= (u64)MAX_INT64_SECONDS)
+ 			timeout = -1;	/* infinite */
+ 		else {
+-			timeout = ROUND_UP(tv.tv_usec, 1000000/HZ);
++			timeout = DIV_ROUND_UP(tv.tv_usec, 1000000/HZ);
+ 			timeout += tv.tv_sec * HZ;
+ 		}
+ 	}
+@@ -1827,7 +1823,7 @@ asmlinkage long compat_sys_pselect7(int n, compat_ulong_t __user *inp,
+ 	do {
+ 		if (tsp) {
+ 			if ((unsigned long)ts.tv_sec < MAX_SELECT_SECONDS) {
+-				timeout = ROUND_UP(ts.tv_nsec, 1000000000/HZ);
++				timeout = DIV_ROUND_UP(ts.tv_nsec, 1000000000/HZ);
+ 				timeout += ts.tv_sec * (unsigned long)HZ;
+ 				ts.tv_sec = 0;
+ 				ts.tv_nsec = 0;
+@@ -1923,7 +1919,7 @@ asmlinkage long compat_sys_ppoll(struct pollfd __user *ufds,
+ 		/* We assume that ts.tv_sec is always lower than
+ 		   the number of seconds that can be expressed in
+ 		   an s64. Otherwise the compiler bitches at us */
+-		timeout = ROUND_UP(ts.tv_nsec, 1000000000/HZ);
++		timeout = DIV_ROUND_UP(ts.tv_nsec, 1000000000/HZ);
+ 		timeout += ts.tv_sec * HZ;
+ 	}
+ 
+diff --git a/fs/readdir.c b/fs/readdir.c
+index f39f5b3..9e1cead 100644
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -4,6 +4,7 @@
+  *  Copyright (C) 1995  Linus Torvalds
+  */
+ 
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/time.h>
+ #include <linux/mm.h>
+@@ -52,7 +53,6 @@ EXPORT_SYMBOL(vfs_readdir);
+  * case (the low-level handlers don't need to care about this).
+  */
+ #define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+-#define ROUND_UP(x) (((x)+sizeof(long)-1) & ~(sizeof(long)-1))
+ 
+ #ifdef __ARCH_WANT_OLD_READDIR
+ 
+@@ -147,7 +147,7 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
+ 	struct linux_dirent __user * dirent;
+ 	struct getdents_callback * buf = (struct getdents_callback *) __buf;
+ 	unsigned long d_ino;
+-	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 2);
++	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 2, sizeof(long));
+ 
+ 	buf->error = -EINVAL;	/* only used if we fail.. */
+ 	if (reclen > buf->count)
+@@ -220,8 +220,6 @@ out:
+ 	return error;
+ }
+ 
+-#define ROUND_UP64(x) (((x)+sizeof(u64)-1) & ~(sizeof(u64)-1))
+-
+ struct getdents_callback64 {
+ 	struct linux_dirent64 __user * current_dir;
+ 	struct linux_dirent64 __user * previous;
+@@ -234,7 +232,7 @@ static int filldir64(void * __buf, const char * name, int namlen, loff_t offset,
+ {
+ 	struct linux_dirent64 __user *dirent;
+ 	struct getdents_callback64 * buf = (struct getdents_callback64 *) __buf;
+-	int reclen = ROUND_UP64(NAME_OFFSET(dirent) + namlen + 1);
++	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(u64));
+ 
+ 	buf->error = -EINVAL;	/* only used if we fail.. */
+ 	if (reclen > buf->count)
+diff --git a/fs/select.c b/fs/select.c
+index fe0893a..23e326a 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -14,6 +14,7 @@
+  *     of fds to overcome nfds < 16390 descriptors limit (Tigran Aivazian).
+  */
+ 
++#include <linux/kernel.h>
+ #include <linux/syscalls.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
+@@ -26,7 +27,6 @@
+ 
+ #include <asm/uaccess.h>
+ 
+-#define ROUND_UP(x,y) (((x)+(y)-1)/(y))
+ #define DEFAULT_POLLMASK (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM)
+ 
+ struct poll_table_page {
+@@ -399,7 +399,7 @@ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+ 		if ((u64)tv.tv_sec >= (u64)MAX_INT64_SECONDS)
+ 			timeout = -1;	/* infinite */
+ 		else {
+-			timeout = ROUND_UP(tv.tv_usec, USEC_PER_SEC/HZ);
++			timeout = DIV_ROUND_UP(tv.tv_usec, USEC_PER_SEC/HZ);
+ 			timeout += tv.tv_sec * HZ;
+ 		}
+ 	}
+@@ -454,7 +454,7 @@ asmlinkage long sys_pselect7(int n, fd_set __user *inp, fd_set __user *outp,
+ 		if ((u64)ts.tv_sec >= (u64)MAX_INT64_SECONDS)
+ 			timeout = -1;	/* infinite */
+ 		else {
+-			timeout = ROUND_UP(ts.tv_nsec, NSEC_PER_SEC/HZ);
++			timeout = DIV_ROUND_UP(ts.tv_nsec, NSEC_PER_SEC/HZ);
+ 			timeout += ts.tv_sec * HZ;
+ 		}
+ 	}
+@@ -776,7 +776,7 @@ asmlinkage long sys_ppoll(struct pollfd __user *ufds, unsigned int nfds,
+ 		if ((u64)ts.tv_sec >= (u64)MAX_INT64_SECONDS)
+ 			timeout = -1;	/* infinite */
+ 		else {
+-			timeout = ROUND_UP(ts.tv_nsec, NSEC_PER_SEC/HZ);
++			timeout = DIV_ROUND_UP(ts.tv_nsec, NSEC_PER_SEC/HZ);
+ 			timeout += ts.tv_sec * HZ;
+ 		}
+ 	}
 -- 
-1.4.4.2
-
-
---wxDdMuZNg1r63Hyj--
+Milind Arun Choudhary
