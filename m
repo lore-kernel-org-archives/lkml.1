@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767400AbXDEW76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767415AbXDEXEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767400AbXDEW76 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 18:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767403AbXDEW76
+	id S1767415AbXDEXEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 19:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767406AbXDEXEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 18:59:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49187 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767400AbXDEW75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 18:59:57 -0400
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
-	optionally.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Brad Boyer <flar@allandria.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <17941.32261.914571.136583@cargo.ozlabs.ibm.com>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	 <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	 <1175642916.10567.24.camel@shinybook.infradead.org>
-	 <20070403212928.GA12951@cynthia.pants.nu>
-	 <20070404022544.59b022a6@the-village.bc.nu>
-	 <17939.10130.687893.167511@cargo.ozlabs.ibm.com>
-	 <1175663999.2932.8.camel@shinybook.infradead.org>
-	 <17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	 <1175666635.2932.17.camel@shinybook.infradead.org>
-	 <17939.17962.248566.886449@cargo.ozlabs.ibm.com>
-	 <1175696383.2774.24.camel@shinybook.infradead.org>
-	 <17940.14667.503535.507564@cargo.ozlabs.ibm.com>
-	 <1175777154.2719.14.camel@shinybook.infradead.org>
-	 <17941.32261.914571.136583@cargo.ozlabs.ibm.com>
+	Thu, 5 Apr 2007 19:04:24 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47579 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767266AbXDEXEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 19:04:23 -0400
+Subject: Re: Questions about porting perfmon2 to powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kevin Corry <kevcorry@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+       Carl Love <carll@us.ibm.com>
+In-Reply-To: <200704051455.34600.kevcorry@us.ibm.com>
+References: <200704051455.34600.kevcorry@us.ibm.com>
 Content-Type: text/plain
-Date: Thu, 05 Apr 2007 18:59:19 -0400
-Message-Id: <1175813960.2764.21.camel@shinybook.infradead.org>
+Date: Fri, 06 Apr 2007 09:04:02 +1000
+Message-Id: <1175814243.30879.146.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-10.fc7.dwmw2.1) 
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-06 at 08:53 +1000, Paul Mackerras wrote:
-> Why would the numbers be prone to change, any more than they are
-> already?
+On Thu, 2007-04-05 at 14:55 -0500, Kevin Corry wrote:
+> Hello,
+> 
+> Carl Love and I have been working on getting the latest perfmon2 patches 
+> (http://perfmon2.sourceforge.net/) working on Cell, and on powerpc in 
+> general. We've come up with some powerpc-specific questions and we're hoping 
+> to get some opinions from the powerpc kernel developers.
+> 
+> First, the stock 2.6.20 kernel has a prototype in include/linux/smp.h for a 
+> function called smp_call_function_single(). However, this routine is only 
+> implemented on i386, x86_64, ia64, and mips. Perfmon2 apparently needs to 
+> call this to run a function on a specific CPU. Powerpc provides an 
+> smp_call_function() routine to run a function on all active CPUs, so I used 
+> that as a basis to add an smp_call_function_single() routine. I've included 
+> the patch below and was wondering if it looked like a sane approach.
 
-Because now 8250 ports can actually coexist with Zilog ports. Before my
-fix, it was strictly one or the other.
+We should do better... it will require some backend work for the various
+supported PICs though. I've always wanted to look into doing a
+smp_call_function_cpumask in fact :-)
 
--- 
-dwmw2
+> Next, we ran into a problem related to Perfmon2 initialization and sysfs. The 
+> problem turned out to be that the powerpc version of topology_init() is 
+> defined as an __initcall() routine, but Perfmon2's initialization is done as 
+> a subsys_initcall() routine. Thus, Perfmon2 tries to initialize its sysfs 
+> information before some of the powerpc cpu information has been initialized. 
+> However, on all other architectures, topology_init() is defined as a 
+> subsys_initcall() routine, so this problem was not seen on any other 
+> platforms. Changing the powerpc version of topology_init() to a 
+> subsys_initcall() seems to have fixed the bug. However, I'm not sure if that 
+> is going to cause problems elsewhere in the powerpc code. I've included the 
+> patch below (after the smp-call-function-single patch). Does anyone know if 
+> this change is safe, or if there was a specific reason that topology_init() 
+> was left as an __initcall() on powerpc?
+
+It would make sense to follow what other archs do. Note that if both
+perfmon and topology_init are subsys_initcall, that is on the same
+level, it's still a bit hairy to expect one to be called before the
+other...
+
+Ben.
+
 
