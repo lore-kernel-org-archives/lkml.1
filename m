@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbXDEAke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXDEAnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbXDEAke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 20:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932418AbXDEAke
+	id S932386AbXDEAnl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 20:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbXDEAnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:40:34 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55307 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932442AbXDEAkd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:40:33 -0400
-Date: Wed, 4 Apr 2007 17:40:31 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [i386] Use page allocator to allocate threadinfo structure
-Message-ID: <Pine.LNX.4.64.0704041734270.22851@schroedinger.engr.sgi.com>
+	Wed, 4 Apr 2007 20:43:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:36116 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932386AbXDEAnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 20:43:40 -0400
+Message-ID: <46144621.20407@goop.org>
+Date: Wed, 04 Apr 2007 17:43:13 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Zachary Amsden <zach@vmware.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 07/20] Allow paravirt backend to choose kernel PMD sharing
+References: <20070404191151.009821039@goop.org> <20070404191205.392155702@goop.org> <Pine.LNX.4.64.0704041729300.22161@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0704041729300.22161@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i386 uses kmalloc to allocate the threadinfo structure assuming that the 
-allocations result in a page sized aligned allocation. That has worked so 
-far because SLAB exempts page sized slabs from debugging and aligns them 
-in special ways that goes beyond the restrictions imposed by 
-KMALLOC_ARCH_MINALIGN valid for other slabs in the kmalloc array.
+Christoph Lameter wrote:
+> Acked-by: Christoph Lameter <clameter@sgi.com>
+>
+> for all thats worth since I am not a i386 specialist.
+>
+> How much of the issues with page struct sharing between slab and arch code 
+> does this address?
+>   
 
-SLUB also works fine without debugging since page sized allocations neatly 
-align at page boundaries. However, if debugging is switched on then SLUB 
-will extend the slab with debug information. The resulting slab is not 
-longer of page size. It will only be aligned following the requirements 
-imposed by KMALLOC_ARCH_MINALIGN. As a result the threadinfo 
-structure may not be page aligned which makes i386 fail to boot with
-SLUB debug on.
+I haven't been following that thread as closely as I should be, so I
+don't have an answer.  I guess the interesting thing in this patch is
+that it only uses the pmd cache for usermode pmds (which are
+pre-zeroed), and normal page allocations for kernel pmds.  Also, if the
+kernel pmds are unshared, the pgds are page-sized, so its not really
+making good use of the pgd cache.
 
-Replace the calls to kmalloc with calls into the page allocator.
-
-An alternate solution may be to create a custom slab cache where the 
-alignment is set to PAGE_SIZE. That would allow slub debugging to be 
-applied to the threadinfo structure.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6.21-rc5-mm4/include/asm-i386/thread_info.h
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/include/asm-i386/thread_info.h	2007-04-03 23:48:34.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/include/asm-i386/thread_info.h	2007-04-04 17:33:41.000000000 -0700
-@@ -95,12 +95,14 @@ static inline struct thread_info *curren
- 
- /* thread information allocation */
- #ifdef CONFIG_DEBUG_STACK_USAGE
--#define alloc_thread_info(tsk) kzalloc(THREAD_SIZE, GFP_KERNEL)
-+#define alloc_thread_info(tsk) ((struct thread_info *) \
-+	__get_free_pages(GFP_KERNEL| __GFP_ZERO, get_order(THREAD_SIZE)))
- #else
--#define alloc_thread_info(tsk) kmalloc(THREAD_SIZE, GFP_KERNEL)
-+#define alloc_thread_info(tsk) ((struct thread_info *) \
-+	__get_free_pages(GFP_KERNEL, get_order(THREAD_SIZE)))
- #endif
- 
--#define free_thread_info(info)	kfree(info)
-+#define free_thread_info(info)	free_pages((unsigned long)(info), get_order(THREAD_SIZE))
- 
- #else /* !__ASSEMBLY__ */
- 
+    J
