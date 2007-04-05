@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767208AbXDES6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767201AbXDETFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767208AbXDES6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 14:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767222AbXDES6S
+	id S1767201AbXDETFk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 15:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767218AbXDETFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 14:58:18 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:3045 "EHLO
-	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767208AbXDES6S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 14:58:18 -0400
-Subject: Re: [PATCH 01/01] New FBDev driver for Intel Vermilion Range
-From: Alan Hourihane <alanh@fairlite.demon.co.uk>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <8776.1175794703@turing-police.cc.vt.edu>
-References: <1175769886.10382.29.camel@localhost>
-	 <8776.1175794703@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 19:58:13 +0100
-Message-Id: <1175799493.10105.40.camel@jetpack.demon.co.uk>
+	Thu, 5 Apr 2007 15:05:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59675 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767201AbXDETFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 15:05:38 -0400
+Date: Thu, 5 Apr 2007 21:05:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Mike Galbraith <efault@gmx.de>, linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+Subject: Re: [test] sched: SD-latest versus Mike's latest
+Message-ID: <20070405190522.GA22092@elte.hu>
+References: <200703290237.38777.kernel@kolivas.org> <1175770950.6609.16.camel@Homer.simpson.net> <20070405115447.GA24138@elte.hu> <200704060208.47327.kernel@kolivas.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704060208.47327.kernel@kolivas.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 13:38 -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 05 Apr 2007 11:44:46 BST, Alan Hourihane said:
+
+* Con Kolivas <kernel@kolivas.org> wrote:
+
+> Nice -10 on mainline ruins the latency of nice 0 tasks unlike SD. New 
+> scheduling class just for X? Sounds like a very complicated 
+> userspace-changing way to just do the equivalent of "nice -n -10" 
+> obfuscated.
+
+i think you are missing the point. We _do not know in advance_ whether X 
+should be prioritized or not. It's the behavior of X that determines it. 
+When X is reniced to -10 it fixes a few corner cases, but it breaks many 
+other cases. We found that out time and time again.
+
+btw., the tests i've done were not with X but using a shell prompt.
+
+> > re-testing the weak points of SD:
+> >
+> >  - hackbench: still unusable under such type of high load - no 
+> >  improvement.
 > 
-> > Attached is a patch against 2.6.21-rc5 which adds the Intel Vermilion
-> > Range support.
+> Load of 160. Is proportional slowdown bad?
+
+this is relative to how mainline+Mike's handles it. Users wont really 
+care about the why's, they'll only see the slowdown.
+
+> >  - make -j: still less interactive than Mike's - no improvement.
 > 
-> One non-technical question here...
-> 
-> > +config FB_VERMILION
-> > +	tristate "Vermilion support"
-> > +	depends on FB && PCI && X86
-> > +	select FB_MODE_HELPERS
-> > +	select FB_CFB_FILLRECT
-> > +	select FB_CFB_COPYAREA
-> > +	select FB_CFB_IMAGEBLIT
-> > +	help
-> > +	  This driver supports the Vermilion Range chipset
-> 
-> Is 'Vermillion' the project codename, or the name that end users will actually
-> see when hardware ships?  Most of the Intel graphics chopsets have been
-> named things like i810, i925, and so on - if the user-visible name is known,
-> that should probably be reflected in the 'tristate' string and help
-> text (FB_VERMILLION in the code is fine by be though).
+> Depends on how big your job number vs cpu is. The better the 
+> throttling gets with mainline the better SD gets in this comparison. 
+> At equal fairness mainline does not have the low latency interactivity 
+> SD has.
 
-I've asked the question and the part number would be...
+i often run make jobs with -j200 or larger, and SD gets worse than even 
+mainline much sooner than that.
 
-LE80578
-
-So, if that desperately needs changing let me know and I'll submit
-another patch, or maybe someone can make the tweak for me.
-
-Thanks,
-
-Alan.
-
+	Ingo
