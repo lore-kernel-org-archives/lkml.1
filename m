@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767401AbXDEWuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767392AbXDEWvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767401AbXDEWuI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 18:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767400AbXDEWuI
+	id S1767392AbXDEWvp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 18:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767399AbXDEWvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 18:50:08 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29853 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767230AbXDEWuF convert rfc822-to-8bit (ORCPT
+	Thu, 5 Apr 2007 18:51:45 -0400
+Received: from mail-in-04.arcor-online.net ([151.189.21.44]:59572 "EHLO
+	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767392AbXDEWvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 18:50:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,379,1170662400"; 
-   d="scan'208"; a="222692776:sNHT19713218"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 5 Apr 2007 18:51:44 -0400
+Date: Fri, 6 Apr 2007 00:51:41 +0200
+From: Andreas Herrmann <aherrman@arcor.de>
+To: Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org, andreas.herrmann3@amd.com
+Subject: [PATCH RFC] x86: clear X86_FEATURE_MWAIT for AMD Fam10 CPU
+Message-ID: <20070405225141.GA9112@tweety.malo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 4/4] IA64: SPARSE_VIRTUAL 16M page size support
-Date: Thu, 5 Apr 2007 15:50:02 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A0153594A@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070404230635.20292.81141.sendpatchset@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 4/4] IA64: SPARSE_VIRTUAL 16M page size support
-Thread-Index: Acd3FF5/BsJk0PFxSY+smnBbyaPx1wAvjnpQ
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Christoph Lameter" <clameter@sgi.com>, <akpm@linux-foundation.org>
-Cc: <linux-ia64@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Martin Bligh" <mbligh@google.com>, <linux-mm@kvack.org>,
-       "Andi Kleen" <ak@suse.de>, "Dave Hansen" <hansendc@us.ibm.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-X-OriginalArrivalTime: 05 Apr 2007 22:50:02.0996 (UTC) FILETIME=[BF524340:01C777D4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This implements granule page sized vmemmap support for IA64.
+Hi,
 
-Christoph,
+I send this as RFC because I won't manage it to test it
+before end of Easter but want to have a consensus about
+how the final patch should look like.
 
-Your calculations here are all based on a granule size of 16M, but
-it is possible to configure 64M granules.
+Andi,
+what do you finally prefer?
 
-With current sizeof(struct page) == 56, a 16M page will hold enough
-page structures for about 4.5G of physical space (assuming 16K pages),
-so a 64M page would cover 18G.
+(1) Something like the attached patch or
+(2) a version which keeps to the MWAIT flag for Fam10 but
+    introduces an X86_FEATURE_MWAIT_DOESNT_SAVE_POWER as you
+    suggested.
 
-4.5G is possibly a bit wasteful (for a system with only a handful
-of GBytes per node, and nodes that are not physically contiguous).
-18G is definitely going to result in lots of wasted page structs
-(that refer to non-existant physical memory around the edges of
-each node).
+An idle=mwait kernel parameter could (and should) be introduced
+with both alternatives.
 
-Maybe a granule is not the right unit of allocation ... perhaps 4M
-would work better (4M/56 ~= 75000 pages ~= 1.1G)?  But if this is
-too small, then a hard-coded 16M would be better than a granule,
-because 64M is (IMHO) too big.
+Meanwhile I think it would suffice to do (1) and issue another
+cpuid if idle=mwait was used to select mwait_idle.
 
--Tony
 
-P.S. This patch breaks the build for tiger_defconfig, zx1_defconfig
-etc.  But you may have fit on the "grand-unified theory" of mem_map
-management ... so if the benchmarks come in favourably we could
-drop all the other CONFIG options.
+Regards,
+
+Andreas
+
+--
+
+
+diff --git a/arch/i386/kernel/cpu/amd.c b/arch/i386/kernel/cpu/amd.c
+index 2d47db4..4e01262 100644
+--- a/arch/i386/kernel/cpu/amd.c
++++ b/arch/i386/kernel/cpu/amd.c
+@@ -228,6 +228,9 @@ #define CBAR_KEY	(0X000000CB)
+ 	}
+ 
+ 	switch (c->x86) {
++	case 16:
++		clear_bit(X86_FEATURE_MWAIT, c->x86_capability);
++		break;
+ 	case 15:
+ 		set_bit(X86_FEATURE_K8, c->x86_capability);
+ 		break;
+diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
+index 3d98b69..f53ee6c 100644
+--- a/arch/x86_64/kernel/setup.c
++++ b/arch/x86_64/kernel/setup.c
+@@ -583,6 +583,10 @@ #endif
+ 	if (c->x86 == 15 && ((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58))
+ 		set_bit(X86_FEATURE_REP_GOOD, &c->x86_capability);
+ 
++	/* disable use of mwait on idle */
++	if (c->x86 == 16)
++		clear_bit(X86_FEATURE_MWAIT, c->x86_capability);
++
+ 	/* Enable workaround for FXSAVE leak */
+ 	if (c->x86 >= 6)
+ 		set_bit(X86_FEATURE_FXSAVE_LEAK, &c->x86_capability);
+
