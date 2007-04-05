@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767346AbXDEViJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767344AbXDEVkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767346AbXDEViJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 17:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767329AbXDEViI
+	id S1767344AbXDEVkN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 17:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767349AbXDEVkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 17:38:08 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:57604 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767348AbXDEViH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 17:38:07 -0400
-Subject: Re: [PATCH] timekeeping: drop irq-context clocksource polling
-From: john stultz <johnstul@us.ibm.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu
-In-Reply-To: <1175808567.15973.137.camel@imap.mvista.com>
-References: <20070405210316.785839431@mvista.com>
-	 <1175808319.28526.26.camel@localhost>
-	 <1175808567.15973.137.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 14:38:02 -0700
-Message-Id: <1175809082.28526.28.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Thu, 5 Apr 2007 17:40:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51466 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767344AbXDEVkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 17:40:09 -0400
+Message-ID: <46156CA9.3060105@redhat.com>
+Date: Thu, 05 Apr 2007 17:39:53 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jakub Jelinek <jakub@redhat.com>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>	<461357C4.4010403@yahoo.com.au>	<46154226.6080300@redhat.com> <20070405140723.8477e314.akpm@linux-foundation.org>
+In-Reply-To: <20070405140723.8477e314.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 14:29 -0700, Daniel Walker wrote:
-> On Thu, 2007-04-05 at 14:25 -0700, john stultz wrote:
-> > On Thu, 2007-04-05 at 14:03 -0700, Daniel Walker wrote:
-> > > Before this change the timekeeping code would poll the clocksource
-> > > list every interrupt. This changes that so the clocksource list is
-> > > only checked when there has been and update, and no longer checks
-> > > in interrupt context.
-> > > 
-> > > This also has a few small space and line cleanups.
-> > > 
-> > > Boot tested on i386, compile tested on x86_64 .. However, I couldn't
-> > > find a !GENERIC_TIME that compiled without this change so it's untested..
-> > > 
-> > > Signed-Off-By: Daniel Walker <dwalker@mvista.com>
-> > 
-> > Err.. I think you need to be holding a write on the xtime_lock (as is
-> > done before calling update_wall_time()) when changing the clocksource.
+Andrew Morton wrote:
+
+> #if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
+
+> I wonder which way you're using, and whether using the other way changes
+> things.
+
+I'm using the default Fedora config file, which has
+NR_CPUS defined to 64 and CONFIG_SPLIT_PTLOCK_CPUS
+to 4, so I am using the split locks.
+
+However, I suspect that each 512kB malloced area
+will share one page table lock with 4 others, so
+some contention is to be expected.
+
+>> For more real world workloads, like the MySQL sysbench one,
+>> I still suspect that your patch would improve things.
+>>
+>> Time to move back to debugging other stuff, though.
+>>
+>> Andrew, it would be nice if our patches could cook in -mm
+>> for a while.  Want me to change anything before submitting?
 > 
-> I added a write_seqlock_irqsave() on xtime_lock in
-> change_clocksource() .. Did I need more (different) protection than
-> that?
+> umm.  I took a quick squint at a patch from you this morning and it looked
+> OK to me.  Please send the finalish thing when it is fully baked and
+> performance-tested in the various regions of operation, thanks.
 
-Nope. You're ok there. I just missed it and then I tried to cancel my
-mail from being sent, but apparently it still got out. whoops! :)
+Will do.
 
--john
+Ulrich has a test version of glibc available that
+uses MADV_DONTNEED for free(3), that should test
+this thing nicely.
 
+I'll run some tests with that when I get the
+time, hopefully next week.
 
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
