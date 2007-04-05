@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXDEL0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992502AbXDELbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbXDEL0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 07:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992504AbXDEL0T
+	id S2992502AbXDELbQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 07:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992511AbXDELbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 07:26:19 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:39366 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbXDEL0R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 07:26:17 -0400
-Date: Thu, 5 Apr 2007 16:56:19 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Jakub Jelinek <jakub@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: Interface for the new fallocate() system call
-Message-ID: <20070405112619.GA19982@amitarora.in.ibm.com>
-References: <20070117094658.GA17390@amitarora.in.ibm.com> <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com>
+	Thu, 5 Apr 2007 07:31:15 -0400
+Received: from mail.screens.ru ([213.234.233.54]:39203 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992502AbXDELbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 07:31:15 -0400
+Date: Thu, 5 Apr 2007 15:30:55 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>, mingo@elte.hu,
+       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond software suspend
+Message-ID: <20070405113055.GA729@tv-sign.ru>
+References: <20070402053457.GA9076@in.ibm.com> <20070402053705.GA12962@in.ibm.com> <20070405094633.GA609@tv-sign.ru> <20070405105923.GB16173@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070330071417.GI355@devserv.devel.redhat.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070405105923.GB16173@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 30, 2007 at 02:14:17AM -0500, Jakub Jelinek wrote:
-> Wouldn't
-> int fallocate(loff_t offset, loff_t len, int fd, int mode)
-> work on both s390 and ppc/arm?  glibc will certainly wrap it and
-> reorder the arguments as needed, so there is no need to keep fd first.
- 
-This should work on all the platforms. The only concern I can think of
-here is the convention being followed till now, where all the entities on
-which the action has to be performed by the kernel (say fd, file/device
-name, pid etc.) is the first argument of the system call. If we can live
-with the small exception here, fine.
+On 04/05, Gautham R Shenoy wrote:
+>
+> On Thu, Apr 05, 2007 at 01:46:33PM +0400, Oleg Nesterov wrote:
+> > 
+> > > --- linux-2.6.21-rc5.orig/kernel/sched.c
+> > > +++ linux-2.6.21-rc5/kernel/sched.c
+> > > @@ -5057,6 +5057,7 @@ static int migration_thread(void *data)
+> > >  	BUG_ON(rq->migration_thread != current);
+> > >
+> > >  	set_current_state(TASK_INTERRUPTIBLE);
+> > > +	freezer_exempt(FE_ALL);
+> > 
+> > This is a real nitpick, but it was hard to me to understand this change.
+> > Because it looks as if we have a subtle reason to set TASK_INTERRUPTIBLE
+> > before freezer_exempt(). Unless I missed something, I'd suggest to move
+> > freezer_exempt() up, before set_current_state().
+> > 
+> > The same for apm_mainloop().
+> 
+> Ok, no subtle reasons for freezer_exempt()ing after set_current_state().
+> So no problems changing the order. But (just curious), is there any specific
+> problem with this particular order ?
 
-Or else, we may have to implement the 
+No, no, it was just a nitpick :) May be this is just me, but when I see the
+code like
 
-  int fd, int mode, loff_t offset, loff_t len
+	set_current_state(TASK_XXX);
+	something_which_doesnt_need_TASK_XXX();
 
-as the layout of arguments here. I think only s390 will have a problem
-with this, and we can think of a workaround for it (may be similar to
-what ARM did to implement sync_file_range() system call)   :
+, I can't read the code further, trying to understand where I was wrong
+and why do we need to change task->state here.
 
-asmlinkage long sys_s390_fallocate(int fd, loff_t offset, loff_t len, int mode)
-{
-        return sys_fallocate(fd, offset, len, mode);
-}
+Oleg.
 
-
-To me both the approaches look slightly unconventional. But, we need to
-compromise somewhere to make things work on all the platforms.
-
-Any thoughts on which one of the above should we finalize on ?
-
-Thanks!
---
-Regards,
-Amit Arora
