@@ -1,102 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945973AbXDEGsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945962AbXDEGtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945973AbXDEGsy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945967AbXDEGsy
+	id S1945962AbXDEGtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945967AbXDEGtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:48:54 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:24947 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945974AbXDEGsw (ORCPT
+	Thu, 5 Apr 2007 02:49:17 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24272 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945962AbXDEGtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:48:52 -0400
-X-Greylist: delayed 2175 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Apr 2007 02:48:51 EDT
-Date: Thu, 5 Apr 2007 09:10:48 +0300
-From: Jarkko Nikula <jarkko.nikula@nokia.com>
-To: "ext Tony Lindgren" <tony@atomide.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 84/90] ARM: OMAP: Update changed TSC2301 config names in
- N800 board files
-Message-Id: <20070405091048.1fc32212.jarkko.nikula@nokia.com>
-In-Reply-To: <11757102001091-git-send-email-tony@atomide.com>
-References: <11757099691323-git-send-email-tony@atomide.com>
-	<11757100713004-git-send-email-tony@atomide.com>
-	<11757100752021-git-send-email-tony@atomide.com>
-	<11757100781275-git-send-email-tony@atomide.com>
-	<11757100811771-git-send-email-tony@atomide.com>
-	<11757100821353-git-send-email-tony@atomide.com>
-	<11757100853841-git-send-email-tony@atomide.com>
-	<1175710087578-git-send-email-tony@atomide.com>
-	<11757100911247-git-send-email-tony@atomide.com>
-	<1175710093864-git-send-email-tony@atomide.com>
-	<11757100952384-git-send-email-tony@atomide.com>
-	<11757100982726-g!
- it-send-email-tony@atomide.com>
-	<11757101012787-git-send-email-tony@atomide.com>
-	<1175710103340-git-send-email-tony@atomide.com>
-	<11757101072553-git-send-email-tony@atomide.com>
-	<11757101101180-git-send-email-tony@atomide.com>
-	<11757101123620-git-send-email-tony@atomide.com>
-	<11757101141643-git-send-email-tony@atomide.com>
-	<11757102001091-git-send-email-tony@atomide.com>
-Organization: Nokia-M/Helsinki
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 5 Apr 2007 02:49:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=RtJHttziZP5avHV2uQvKvJBxgoQXxHJXCBbW+ohN9aSbthyAvRV64CJdlYakw+fcM
+	L2PufxxL/AtpP8pLIhktQ==
+Message-ID: <6599ad830704042348q5675c01ep92679fb3275bafac@mail.gmail.com>
+Date: Wed, 4 Apr 2007 23:48:57 -0700
+From: "Paul Menage" <menage@google.com>
+To: vatsa@in.ibm.com
+Subject: Re: [ckrm-tech] [PATCH 7/7] containers (V7): Container interface to nsproxy subsystem
+Cc: sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, xemul@sw.ru, rohitseth@google.com,
+       pj@sgi.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+       mbligh@google.com, winget@google.com, containers@lists.osdl.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, dev@sw.ru, devel@openvz.org
+In-Reply-To: <20070405063950.GA3435@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Apr 2007 06:11:41.0794 (UTC) FILETIME=[476C3420:01C77749]
-X-eXpurgate-Category: 1/0
-X-eXpurgate-ID: 149371::070405091215-56EAABB0-32024B64/0-0/0-1
-X-Nokia-AV: Clean
+Content-Disposition: inline
+References: <20070403173048.GL2456@in.ibm.com>
+	 <20070403175101.GN2456@in.ibm.com>
+	 <6599ad830704031049v7fad0a83q3c24211cf44d71d6@mail.gmail.com>
+	 <20070404030756.GA9008@in.ibm.com>
+	 <6599ad830704032104hda0c4bu7099c23a86940c76@mail.gmail.com>
+	 <20070404051526.GA16562@in.ibm.com>
+	 <6599ad830704040000of7f1197ica543e14d290509e@mail.gmail.com>
+	 <20070404172643.GA28328@in.ibm.com>
+	 <6599ad830704041957y7b81c4ecrd21f4c08b9d7c72d@mail.gmail.com>
+	 <20070405063950.GA3435@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  4 Apr 2007 14:06:03 -0400
-"ext Tony Lindgren" <tony@atomide.com> wrote:
+On 4/4/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+> On Wed, Apr 04, 2007 at 07:57:40PM -0700, Paul Menage wrote:
+> > >Firstly, this is not a unique problem introduced by using ->nsproxy.
+> > >Secondly we have discussed this to some extent before
+> > >(http://lkml.org/lkml/2007/2/13/122). Essentially if we see zero tasks
+> > >sharing a resource object pointed to by ->nsproxy, then we can't be
+> > >racing with a function like bc_file_charge(), which simplifies the
+> > >problem quite a bit. In other words, seeing zero tasks in xxx_rmdir()
+> > >after taking manage_mutex is permission to kill nsproxy and associated
+> > >objects. Correct me if I am wrong here.
+>
+> Let me clarify first that I wasn't proposing an extra ref count in
+> nsproxy to account for non-task references to a resource object pointed
+> to by nsproxy (say nsproxy->ctlr_data[BC_ID]). Refcounts needed
+> on beancounter because a non-task object is pointing to it (like struct
+> file) will be put in the beancounter itself.
+>
+> What I did want to say was this (sorry about the verbose rant):
+>
+>         mount -t container -obeancounter none /dev/bean
+>         mkdir /dev/bean/foo
+>         echo some_pid > /dev/bean/foo
+>
+> Associated with foo is a beancounter object A1 which contains (among other
+> things) max files that can be opened by tasks in foo. Also upon
+> successful file open, file->f_bc will point to A1.
+>
+> Now lets say that someone is doing
+>
+>         rmdir /dev/bean/foo
+>
+> while will lead us to xxx_rmdir() doing this:
+>
+>         mutex_lock(&manage_mutex);
+>
+>         count = rcfs_task_count(foo's dentry);
+>
+> rcfs_task_count will essentially return number of tasks pointing to A1
+> thr' their nsproxy->ctlr_data[BC_ID].
 
-> From: Jarkko Nikula <jarkko.nikula@nokia.com>
-> 
-> Signed-off-by: Jarkko Nikula <jarkko.nikula@nokia.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  arch/arm/mach-omap2/board-n800-audio.c |    2 +-
->  arch/arm/mach-omap2/board-n800.c       |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-Tony, I don't think so that we would like to use that one even it
-was accidentally pushed into linux-omap tree and corrected later on
-with another patch?
+One small issue with the (last posted) version of your patch is that
+it doesn't take into account the refcounts from the directories
+themselves - I think you probably need to subtract one for each active
+subsystem.
 
-Below is the patch which fits better here. We don't want to change
-CONFIG_SPI_TSC2301_AUDIO -> CONFIG_SND_SOC_TSC2301 until there is
-real SOC driver for TSC2301 audio.
+>
+> IF (note that /if/ again) the count returned is zero, then my point was
+> we can destroy nsproxy behind foo and also B1, not worrying about a
+> 'struct file' still pointing to B1. This stems from the fact that you
+> cannot have a task's file->f_bc pointing to B1 w/o the task itself
+> pointing to B1 also (task->nsproxy->ctlr_data[BC_ID] == B1). I also
+> assume f_bc will get migrated with its owner task across beancounters
+> (which seems reasonable to me atleast from 'struct file' context).
 
+I don't think that's a reasonable assumption. A task can have
+thousands of file handles open - having to scan and move every file
+that the task has open would make a move operation incredibly
+expensive. Additionally, tasks can share many of those file handles
+with other tasks. So what happens if one task that has a file open
+moves out of the container, but another stays behind? It's cleaner and
+more efficient, and conceptually desirable, IMO, just to keep the file
+associated with the container.
 
--- 
-Jarkko
+>
+> OT : In your posting of beancounter patches on top of containers, f_bc
+> isnt being migrated upon task movements. Is that on intention?
 
-=========	CUT HERE
-From: Jarkko Nikula <jarkko.nikula@nokia.com>
-Date: Thu, 5 Apr 2007 08:48:43 +0300
-Subject: [PATCH] ARM: OMAP: Update TSC2301 touchscreen config name in N800 board file
+Yes.
 
-Signed-off-by: Jarkko Nikula <jarkko.nikula@nokia.com>
----
- arch/arm/mach-omap2/board-n800.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> > OK, I've managed to reconstruct my reasoning  remembered why it's
+> > important to have the refcounts associated with the subsystems, and
+> > why the simple use of the nsproxy count doesn't work.
+>
+> I didn't mean to have non-task objects add refcounts to nsproxy. See
+> above.
+>
+> > 1) Assume the system has a single task T, and two subsystems, A and B
+> >
+> > 2) Mount hierarchy H1, with subsystem A and root subsystem state A0,
+> > and hierarchy H2 with subsystem B and root subsystem state B0. Both
+> > H1/ and H2/ share a single nsproxy N0, with refcount 3 (including the
+> > reference from T), pointing at A0 and B0.
+>
+> Why refcount 3? I can only be 1 (from T) ..
 
-diff --git a/arch/arm/mach-omap2/board-n800.c b/arch/arm/mach-omap2/board-n800.c
-index 69e5d36..bb805cf 100644
---- a/arch/arm/mach-omap2/board-n800.c
-+++ b/arch/arm/mach-omap2/board-n800.c
-@@ -409,7 +409,7 @@ static struct platform_device n800_keypad_led_device = {
- };
- #endif
- 
--#if defined(CONFIG_SPI_TSC2301_TOUCHSCREEN)
-+#if defined(CONFIG_TOUCHSCREEN_TSC2301)
- static void __init n800_ts_set_config(void)
- {
- 	const struct omap_lcd_config *conf;
--- 
-1.4.4.4
+Plus the refcounts from the two filesystem roots.
+
+>
+> > 3) Create directory H1/foo, which creates subsystem state A1 (nsproxy
+> > N1, refcount 1, pointing at A1 and B0)
+>
+> right. At this point A1.count should be 1 (because N1 is pointing to it)
+>
+> > 4) Create directory H2/bar, which creates subsystem state B1 (nsproxy
+> > N2, refcount 1, pointing at A0 and B1)
+>
+> right. B1.count = 1 also.
+>
+> > 5) Move T into H1/foo/tasks and then H2/bar/tasks. It ends up with
+> > nsproxy N3, refcount 1, pointing at A1 and B1.
+>
+> right. A1.count = 2 (N1, N3) and B1.count = 2 (N2, N3)
+>
+> > 6) T creates an object that is charged to A1 and hence needs to take a
+> > reference on A1 in order to uncharge it later when it's released. So
+> > N3 now has a refcount of 2
+>
+> no ..N3 can continue to have 1 while A1.count becomes 3 (N1, N3 and
+> file->f_bc)
+>
+> > 7) Move T back to H1/tasks and H2/tasks; assume it picks up nsproxy N0
+> > again; N3 has a refcount of 1 now. (Assume that the object created in
+> > step 6 isn't one that's practical/desirable to relocate when the task
+> > that created it moves to a different container)
+>
+> The object was created by the task, so I would expect it should get
+> migrated too to the new task's context (which should be true in case of
+> f_bc atleast?). Can you give a practical example where you want to
+> migrate the task and not the object it created?
+
+I gave one above, for files; others could include pages (do you want
+to have to migrate every page when a task switches container? what
+about shared pages?)
+
+Obviously this fundamental difference of opinion means that we're
+going to end up disagreeing on whether the scenario I presented is a
+problem or not ...
+
+>
+> Anyway, coming down to the impact of all this for a nsproxy based
+> solution, I would imagine this is what will happen when T moves back to
+> H1/tasks and H2/tasks:
+>
+>         - N3.count becomes zero
+>         - We invoke free_nsproxy(N3), which drops refcounts on
+>           all objects it is pointing to i.e
+>
+>         free_nsproxy()
+>         {
+>                 if (N3->mnt_ns)
+>                         put_mnt_ns(N3->mnt_ns);
+>                 ...
+>                 if (N3->ctlr_data[BC_ID])
+>                         put_bc(N3->ctlr_data[BC_ID]);
+>         }
+>
+> put/get_bc() manages refcounts on beancounters. It will drop A1.count to 2
+> (if f_bc wasnt migrated) and not finding it zero will not destroy A1.
+>
+> Essentially, in the nsproxy based approach, I am having individual
+> controllers maintain their own refcount mechanism (just like mnt_ns or
+> uts_ns are doing today).
+
+The problem with that is that (given the assumption that some
+subsystems might not want to migrate objects) you can then end up with
+a subsystem state object that has refcounts on it from active objects
+like files, but which is unreachable via any container filesystem
+mechanism. Better IMO to be able to fail the rmdir() in that situation
+so that the subsystem object remains accessible (so you can see where
+the resources are being used up).
+
+Paul
