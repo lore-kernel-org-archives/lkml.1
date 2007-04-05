@@ -1,91 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965860AbXDEJbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965865AbXDEJcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965860AbXDEJbW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 05:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965816AbXDEJbW
+	id S965865AbXDEJcD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 05:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965816AbXDEJcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 05:31:22 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:39451 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965860AbXDEJbU (ORCPT
+	Thu, 5 Apr 2007 05:32:03 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:2718
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965641AbXDEJcA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 05:31:20 -0400
-To: akpm@linux-foundation.org
-CC: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-reply-to: <E1HZOHe-0000RL-00@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Thu, 05 Apr 2007 11:29:34 +0200)
-Subject: [patch 2/2] only allow nonlinear vmas for ram backed filesystems
-References: <E1HZOHe-0000RL-00@dorka.pomaz.szeredi.hu>
-Message-Id: <E1HZOIr-0000Rv-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 05 Apr 2007 11:30:49 +0200
+	Thu, 5 Apr 2007 05:32:00 -0400
+Message-Id: <4614DE61.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Thu, 05 Apr 2007 10:32:49 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux-kernel@vger.kernel.org>, <discuss@x86-64.org>
+Subject: change_page_attr() and global_flush_tlb()
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Looking at both the i386 and x86-64 implementations I fail to understand why
+there is an explicit requirement on calling global_flush_tlb() after
+change_page_attr(), yet actual TLB flushing will not normally happen (on i386
+it will happen if the CPU doesn't support clflush, but if it does, or on x86-64,
+the flushing depends on the list of deferred pages being non-empty, which
+can only happen when a large page gets re-combined). Is it assumed that
+the callers additionally call tlb_flush_all() (I think none of them do)?
 
-page_mkclean() doesn't re-protect ptes for non-linear mappings, so a
-later re-dirty through such a mapping will not generate a fault,
-PG_dirty will not reflect the dirty state and the dirty count will be
-skewed.  This implies that msync() is also currently broken for
-nonlinear mappings.
+Further, change_page_attr()'s reference counting in a split large page's
+page table appears to imply that attributes are only changed from or back to
+the reference attributes, but not from one kind of non-default ones to the
+same or another set of non-default ones (otherwise the reference count
+will never again drop to zero), and also not from default to default (i.e. the
+caller trying to revert attributes to normal not knowing what state they are
+currently in) - this would BUG() if the large page was already reverted, or
+screw the reference count otherwise. Is all of this intentional? I think it
+will need to be changed as a prerequisite to supporting on-the-fly attribute
+changes in the SMP alternatives code, which was requested as a follow-up
+to the tightening of the CONFIG_DEBUG_RODATA effects.
 
-Peter Zijlstra writes:
-> In order to make page_mkclean() work for nonlinear vmas we need to do a
-> full pte scan for each invocation (we could perhaps only scan 1 in n
-> times to try and limit the damage) and that hurts. This will basically
-> render it useless.
-> 
-> The other solution is adding rmap information to nonlinear vmas but
-> doubling the memory overhead for nonlinear mappings was not deemed a
-> good idea.
+Finally, at least for the kernel image range it would seem to me that it might
+be beneficial to recombine mappings into large ones even when the
+attributes are not at their default anymore, but consistent across an entire
+2Mb/4Mb range (i.e. after write-protecting .text). At the same time I wonder,
+though, whether it wouldn't be safer to remove execute permission from
+anything but .text along with write-protecting read-only regions under
+CONFIG_DEBUG_RODATA.
 
-The easiest solution is to emulate remap_file_pages on non-linear
-mappings with simple mmap() for non ram-backed filesystems.
-Applications continue to work (albeit slower), as long as the number
-of remappings remain below the maximum vma count.
-
-However all currently known real uses of non-linear mappings are for
-ram backed filesystems, which this patch doesn't affect.
-
-William Lee Irwin III writes:
-> It's used for > 3GB files on tmpfs and also ramfs, sometimes
-> substantially larger than 3GB.
-> 
-> It's not used for the database proper. It's used for the buffer pool,
-> which is the in-core destination and source of direct I/O, the on-disk
-> source and destination of the I/O being the database.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-
-Index: linux/mm/fremap.c
-===================================================================
---- linux.orig/mm/fremap.c	2007-04-05 11:18:21.000000000 +0200
-+++ linux/mm/fremap.c	2007-04-05 11:18:25.000000000 +0200
-@@ -181,6 +181,24 @@ asmlinkage long sys_remap_file_pages(uns
- 			goto retry;
- 		}
- 		mapping = vma->vm_file->f_mapping;
-+		/*
-+		 * page_mkclean doesn't work on nonlinear vmas, so if dirty
-+		 * pages need to be accounted, emulate with linear vmas.
-+		 */
-+		if (mapping_cap_account_dirty(mapping)) {
-+			unsigned long addr;
-+
-+			flags &= MAP_NONBLOCK;
-+			addr = mmap_region(vma->vm_file, start, size, flags,
-+					   vma->vm_flags, pgoff, 1);
-+			if (IS_ERR_VALUE(addr))
-+				err = addr;
-+			else {
-+				BUG_ON(addr != start);
-+				err = 0;
-+			}
-+			goto out;
-+		}
- 		spin_lock(&mapping->i_mmap_lock);
- 		flush_dcache_mmap_lock(mapping);
- 		vma->vm_flags |= VM_NONLINEAR;
+Thanks for any insight,
+Jan
