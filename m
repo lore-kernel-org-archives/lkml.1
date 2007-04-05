@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945985AbXDEGxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945974AbXDEGyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945985AbXDEGxZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946000AbXDEGxZ
+	id S1945974AbXDEGyl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946000AbXDEGyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:53:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:47081 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945985AbXDEGxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:53:22 -0400
-Message-ID: <46149CC9.2070903@goop.org>
-Date: Wed, 04 Apr 2007 23:52:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 5 Apr 2007 02:54:40 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:34604 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945974AbXDEGyk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:54:40 -0400
+Message-ID: <46149D13.4000108@cosmosbay.com>
+Date: Thu, 05 Apr 2007 08:54:11 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@waste.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 20/20] Add apply_to_page_range() which applies a function
- to a pte range.
-References: <20070404191151.009821039@goop.org> <20070404191206.675793431@goop.org> <20070405044133.GE4892@waste.org>
-In-Reply-To: <20070405044133.GE4892@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com>	<20070403144948.fe8eede6.akpm@linux-foundation.org>	<4612DCC6.7000504@cosmosbay.com>	<46130BC8.9050905@yahoo.com.au>	<1175675146.6483.26.camel@twins>	<461367F6.10705@yahoo.com.au>	<20070404113447.17ccbefa.dada1@cosmosbay.com>	<46137882.6050708@yahoo.com.au> <20070404135458.4f1a7059.dada1@cosmosbay.com> <4614585F.1050200@yahoo.com.au> <461492A5.1030905@cosmosbay.com> <461494FE.1040403@redhat.com>
+In-Reply-To: <461494FE.1040403@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 05 Apr 2007 08:54:22 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
->> +/*
->> + * Scan a region of virtual memory, filling in page tables as necessary
->> + * and calling a provided function on each leaf page table.
->> + */
->>     
->
-> But I'm not sure what the use case is that wants filling in the page
-> table..? If both modes really make sense, perhaps a flag could unify
-> these differences.
->   
+Ulrich Drepper a écrit :
+> Eric Dumazet wrote:
+>> Database workload, where the user multi threaded app is constantly
+>> accessing GBytes of data, so L2 cache hit is very small. If you want to
+>> oprofile it, with say a CPU_CLK_UNHALTED:5000 event, then find_vma() is
+>> in the top 5.
+> 
+> We did have a workload with lots of Java and databases at some point
+> when many VMAs were the issue.  I brought this up here one, maybe two
+> years ago and I think Blaisorblade went on and looked into avoiding VMA
+> splits by having mprotect() not split VMAs and instead store the flags
+> in the page table somewhere.  I don't remember the details.
+> 
+> Nothing came out of this but if this is possible it would be yet another
+> way to avoid mmap_sem locking, right?
+> 
 
-Well, two reasons:
+I was speaking about oprofile needs, that may interfere with target process 
+needs, since oprofile calls find_vma() on the target process mm and thus zap 
+its mmap_cache.
 
-One is the general one that if you're traversing ptes then they need to
-exist to traverse them (for example, if you're creating new mappings). 
-Obviously if you want to just visit existing mappings, then
-instantiating new pagetable is not the right thing to do (and I could
-make use of this too).
+oprofile is yet another mmap_sem user, but also a mmap_cache destroyer.
 
-The other is that there are various places in the Xen hypervisor API
-where you pass in a reference to pte entry for the hypervisor to put
-mappings into, and the rest of the pagetable needs to exist.  The Xen
-code uses the side-effect of apply_to_page_range() to create pagetable
-for these calls.
+We could at least have a separate cache, only for oprofile.
 
->> +typedef int (*pte_fn_t)(pte_t *pte, struct page *pmd_page, unsigned long addr,
->> +			void *data);
->>     
->
-> I'd gotten the impression that these sorts of typedefs were out of
-> fashion.
->   
+If done correctly we might avoid taking mmap_sem when the same vm_area_struct 
+contains EIP/RIP snapshots.
 
-In general yes, but for function pointers the syntax is so clumsy that I
-think typedefs are OK.
 
->> +static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
->> +				     unsigned long addr, unsigned long end,
->> +				     pte_fn_t fn, void *data)
->> +{
->> +	pte_t *pte;
->> +	int err;
->> +	struct page *pmd_page;
->> +	spinlock_t *ptl;
->> +
->> +	pte = (mm == &init_mm) ?
->> +		pte_alloc_kernel(pmd, addr) :
->> +		pte_alloc_map_lock(mm, pmd, addr, &ptl);
->> +	if (!pte)
->> +		return -ENOMEM;
->>     
->
-> Seems a bit awkward to pass mm all the way down the tree just for this
-> quirk. Which is a bit awkward as it means that whether or not a lock
-> is held in the callback is context dependent.
->   
-
-Well, it would need mm for just pte_alloc_map_lock() anyway.
-
-> smaps, clear_ref, and my pagemap code all use the callback at the
-> pmd_range level, which a) localizes the pte-level locking concerns
-> with the user b) amortizes the indirection overhead and c)
-> (unfortunately) makes the user a bit more complex.
->
-> We should try to measure whether (b) actually makes a difference.
->   
-
-I'll need to look closely at your code again.  It would be nice to have
-one pagewalker.
-
-    J
