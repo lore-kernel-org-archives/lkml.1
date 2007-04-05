@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946023AbXDEHeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946045AbXDEHjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946023AbXDEHeW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 03:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946044AbXDEHeW
+	id S1946045AbXDEHjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 03:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946048AbXDEHjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 03:34:22 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:35239 "EHLO relay4.usu.ru"
+	Thu, 5 Apr 2007 03:39:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56300 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946023AbXDEHeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 03:34:21 -0400
-Message-ID: <4614A692.5020605@ums.usu.ru>
-Date: Thu, 05 Apr 2007 13:34:42 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.9 (X11/20061220)
+	id S1946045AbXDEHji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 03:39:38 -0400
+Message-ID: <4614A7B1.60808@redhat.com>
+Date: Thu, 05 Apr 2007 03:39:29 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-To: lepton <ytht.net@gmail.com>, lkm <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.6.20.4 fix kernel panic on corrupted reiserfs directory
-References: <20070405064140.GA19620@router.lepton.home>
-In-Reply-To: <20070405064140.GA19620@router.lepton.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rik van Riel <riel@redhat.com>
+CC: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <4614A5CC.5080508@redhat.com>
+In-Reply-To: <4614A5CC.5080508@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lepton wrote:
-> Hi,
->   When reading corrupted reiserfs directory data, d_reclen
->   could be a negative number, then memcpy will overflow
->   kernel stack. This can lead to kernel panic.
->   The following patch adds a sanity check. (against 2.6.20.4)
+Rik van Riel wrote:
 
-Is it possible to get a large positive number here due to other fs 
-corruption and bypass your sanity check? If I read the code correctly, this 
-would still oops in the "if" statement just below the part you patched.
-
-> Signed-off-by: Lepton Wu <ytht.net@gmail.com>
+> MADV_DONTNEED, unpatched, 1000 loops
 > 
-> diff -pru linux-2.6/fs/reiserfs/dir.c linux-2.6-lepton/fs/reiserfs/dir.c
-> --- linux-2.6/fs/reiserfs/dir.c	2007-02-20 14:34:32.000000000 +0800
-> +++ linux-2.6-lepton/fs/reiserfs/dir.c	2007-04-05 14:35:58.000000000 +0800
-> @@ -121,6 +121,11 @@ static int reiserfs_readdir(struct file 
->  					/* it is hidden entry */
->  					continue;
->  				d_reclen = entry_length(bh, ih, entry_num);
-> +				if (d_reclen < 0) {
-> +					pathrelse(&path_to_entry);
-> +					ret = -EIO;
-> +					goto out;
-> +				}
->  				d_name = B_I_DEH_ENTRY_FILE_NAME(bh, ih, deh);
->  				if (!d_name[d_reclen - 1])
->  					d_reclen = strlen(d_name);
-> O
+> real    0m13.672s
+> user    0m1.217s
+> sys     0m45.712s
+> 
+> 
+> MADV_DONTNEED, with patch, 1000 loops
+> 
+> real    0m4.169s
+> user    0m2.033s
+> sys     0m3.224s
+
+I just noticed something fun with these numbers.
+
+Without the patch, the system (a quad core CPU) is 10% idle.
+
+With the patch, it is 66% idle - presumably I need Nick's
+mmap_sem patch.
+
+However, despite being 66% idle, the test still runs over
+3 times as fast!
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
