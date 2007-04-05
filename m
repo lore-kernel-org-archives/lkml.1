@@ -1,134 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767232AbXDEUkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767299AbXDEUkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767232AbXDEUkS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 16:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767301AbXDEUkR
+	id S1767299AbXDEUkf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 16:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767301AbXDEUkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 16:40:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56068 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767232AbXDEUkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 16:40:15 -0400
-Date: Thu, 5 Apr 2007 13:38:40 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dmitry Torokhov <dtor@insightbb.com>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       stuart_hayes@dell.com, zaitcev@redhat.com
-Subject: Re: usb hid: reset NumLock
-Message-Id: <20070405133840.0d67303f.zaitcev@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0704051049010.4173@jikos.suse.cz>
-References: <20070330105924.01a16dd6.zaitcev@redhat.com>
-	<20070402161225.2866c002.zaitcev@redhat.com>
-	<Pine.LNX.4.64.0704031046320.3808@jikos.suse.cz>
-	<200704042324.56345.dtor@insightbb.com>
-	<Pine.LNX.4.64.0704051049010.4173@jikos.suse.cz>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+	Thu, 5 Apr 2007 16:40:35 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:47205 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767299AbXDEUkd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 16:40:33 -0400
+Subject: [PATCH] Lguest launcher, child starving parent
+From: Steven Rostedt <rostedt@goodmis.org>
+To: virtualization@lists.osdl.org,
+       Glauber de Oliveira Costa <glommer@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 16:40:20 -0400
+Message-Id: <1175805620.24675.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On a certain keyboard, when BIOS sets NumLock LED on, it survives the takeover
-by Linux and thus confuses users.
+Glauber noticed long delays between hitting a key, and seeing data come
+up on the virtual console.  Looking into this, I found that the
+wake_parent routine that reads from all devices was actually starving
+out the parent after sending the parent a signal to wake up.
 
-Eating of an increasibly scarce quirk bit is unfortunate. We do it for safety,
-given the history of nervous input devices which crash if anything unusual
-happens.
+The thing is, the child which takes the console input is recognized by
+the scheduler as an interactive process.  The parent, doesn't do so
+much, so it is recognized more as a CPU hog. So the child easily gets a
+higher priority than the parent.
 
-Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+So when the child receives data from the console, it sends a signal to
+the parent and then does another select.  The problem is that the select
+doesn't actually read from the device, and will return immediately since
+their is still data pending until it is read.  But it's the parent that
+reads the data.  So the child actually starves the parent from reading
+the data by spinning and waiting for it to read the data.
 
----
+The fix I implemented was to have the child wait for a response from the
+parent before going on. Since there was already communication between
+the parent and child via a pipe, I used that. This time, the data
+returned by the pipe is either everything went fine (fd == -1) or the
+device should be ignored (fd >= 0).
 
-diff --git a/drivers/usb/input/hid-core.c b/drivers/usb/input/hid-core.c
-index 827a75a..23b1e70 100644
---- a/drivers/usb/input/hid-core.c
-+++ b/drivers/usb/input/hid-core.c
-@@ -545,6 +545,45 @@ void usbhid_init_reports(struct hid_device *hid)
- 		warn("timeout initializing reports");
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+Index: linux-2.6-lguest/Documentation/lguest/lguest.c
+===================================================================
+--- linux-2.6-lguest.orig/Documentation/lguest/lguest.c	2007-04-05 16:13:08.000000000 -0400
++++ linux-2.6-lguest/Documentation/lguest/lguest.c	2007-04-05 16:16:31.000000000 -0400
+@@ -328,15 +328,15 @@ static void wake_parent(int pipefd, stru
+ 
+ 	for (;;) {
+ 		fd_set rfds = devices->infds;
++		int ignorefd;
+ 
+ 		select(devices->max_infd+1, &rfds, NULL, NULL, NULL);
+-		if (FD_ISSET(pipefd, &rfds)) {
+-			int ignorefd;
+-			if (read(pipefd, &ignorefd, sizeof(ignorefd)) == 0)
+-				exit(0);
+-			FD_CLR(ignorefd, &devices->infds);
+-		}
+ 		kill(getppid(), SIGUSR1);
++		/* wait for parent response */
++		if (read(pipefd, &ignorefd, sizeof(ignorefd)) == 0)
++			exit(0);
++		if (ignorefd >= 0)
++			FD_CLR(ignorefd, &devices->infds);
+ 	}
  }
  
-+/*
-+ * Reset LEDs which BIOS might have left on. For now, just NumLock (0x01).
-+ */
-+
-+static int hid_find_field_early(struct hid_device *hid, unsigned int page,
-+    unsigned int hid_code, struct hid_field **pfield)
-+{
-+	struct hid_report *report;
-+	struct hid_field *field;
-+	struct hid_usage *usage;
-+	int i, j;
-+
-+	list_for_each_entry(report, &hid->report_enum[HID_OUTPUT_REPORT].report_list, list) {
-+		for (i = 0; i < report->maxfield; i++) {
-+			field = report->field[i];
-+			for (j = 0; j < field->maxusage; j++) {
-+				usage = &field->usage[j];
-+				if ((usage->hid & HID_USAGE_PAGE) == page &&
-+				    (usage->hid & 0xFFFF) == hid_code) {
-+					*pfield = field;
-+					return j;
-+				}
-+			}
-+		}
-+	}
-+	return -1;
-+}
-+
-+static void usbhid_set_leds(struct hid_device *hid)
-+{
-+	struct hid_field *field;
-+	int offset;
-+
-+	if ((offset = hid_find_field_early(hid, HID_UP_LED, 0x01, &field)) != -1) {
-+		hid_set_field(field, offset, 0);
-+		usbhid_submit_report(hid, field->report, USB_DIR_OUT);
-+	}
-+}
-+
- #define USB_VENDOR_ID_GTCO		0x078c
- #define USB_DEVICE_ID_GTCO_90		0x0090
- #define USB_DEVICE_ID_GTCO_100		0x0100
-@@ -765,6 +804,9 @@ void usbhid_init_reports(struct hid_device *hid)
- #define USB_VENDOR_ID_SONY			0x054c
- #define USB_DEVICE_ID_SONY_PS3_CONTROLLER	0x0268
+@@ -594,6 +594,7 @@ static void handle_output(int fd, unsign
+ static void handle_input(int fd, int childfd, struct device_list *devices)
+ {
+ 	struct timeval poll = { .tv_sec = 0, .tv_usec = 0 };
++	int fdok = -1;
  
-+#define USB_VENDOR_ID_DELL		0x413c
-+#define USB_DEVICE_ID_DELL_W7658	0x2005
-+
- /*
-  * Alphabetically sorted blacklist by quirk type.
-  */
-@@ -947,6 +989,8 @@ static const struct hid_blacklist {
- 
- 	{ USB_VENDOR_ID_CIDC, 0x0103, HID_QUIRK_IGNORE },
- 
-+	{ USB_VENDOR_ID_DELL, USB_DEVICE_ID_DELL_W7658, HID_QUIRK_RESET_LEDS },
-+
- 	{ 0, 0 }
- };
- 
-@@ -1334,6 +1378,8 @@ static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 
- 	usbhid_init_reports(hid);
- 	hid_dump_device(hid);
-+	if (hid->quirks & HID_QUIRK_RESET_LEDS)
-+		usbhid_set_leds(hid);
- 
- 	if (!hidinput_connect(hid))
- 		hid->claimed |= HID_CLAIMED_INPUT;
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 8c97d4d..3e8dcb0 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -269,6 +269,7 @@ struct hid_item {
- #define HID_QUIRK_SONY_PS3_CONTROLLER		0x00080000
- #define HID_QUIRK_LOGITECH_S510_DESCRIPTOR	0x00100000
- #define HID_QUIRK_DUPLICATE_USAGES		0x00200000
-+#define HID_QUIRK_RESET_LEDS			0x00400000
- 
- /*
-  * This is the global environment of the parser. This information is
+ 	for (;;) {
+ 		struct device *i;
+@@ -608,7 +609,9 @@ static void handle_input(int fd, int chi
+ 					FD_CLR(i->fd, &devices->infds);
+ 					/* Tell child to ignore it too... */
+ 					write(childfd, &i->fd, sizeof(i->fd));
+-				}
++				} else
++					/* Tell child to continue */
++					write(childfd, &fdok, sizeof(fdok));
+ 			}
+ 		}
+ 	}
+
+
