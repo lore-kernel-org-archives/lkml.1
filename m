@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766961AbXDEMnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766969AbXDEMqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766961AbXDEMnY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 08:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766964AbXDEMnY
+	id S1766969AbXDEMqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 08:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766970AbXDEMqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 08:43:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49533 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766961AbXDEMnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 08:43:23 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: discuss@x86-64.org
-Subject: Re: [discuss] change_page_attr() and global_flush_tlb()
-Date: Thu, 5 Apr 2007 14:43:12 +0200
-User-Agent: KMail/1.9.6
-Cc: "Jan Beulich" <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-References: <4614DE61.76E4.0078.0@novell.com>
-In-Reply-To: <4614DE61.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 5 Apr 2007 08:46:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35959 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766969AbXDEMqd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 08:46:33 -0400
+Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
+	optionally.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Brad Boyer <flar@allandria.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <17940.14667.503535.507564@cargo.ozlabs.ibm.com>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	 <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	 <1175642916.10567.24.camel@shinybook.infradead.org>
+	 <20070403212928.GA12951@cynthia.pants.nu>
+	 <20070404022544.59b022a6@the-village.bc.nu>
+	 <17939.10130.687893.167511@cargo.ozlabs.ibm.com>
+	 <1175663999.2932.8.camel@shinybook.infradead.org>
+	 <17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+	 <1175666635.2932.17.camel@shinybook.infradead.org>
+	 <17939.17962.248566.886449@cargo.ozlabs.ibm.com>
+	 <1175696383.2774.24.camel@shinybook.infradead.org>
+	 <17940.14667.503535.507564@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 08:45:53 -0400
+Message-Id: <1175777154.2719.14.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704051443.12505.ak@suse.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 April 2007 11:32:49 Jan Beulich wrote:
-> Looking at both the i386 and x86-64 implementations I fail to understand why
-> there is an explicit requirement on calling global_flush_tlb() after
-> change_page_attr(), yet actual TLB flushing will not normally happen (on i386
-> it will happen if the CPU doesn't support clflush, but if it does, or on x86-64,
-> the flushing depends on the list of deferred pages being non-empty, which
-> can only happen when a large page gets re-combined). Is it assumed that
-> the callers additionally call tlb_flush_all() (I think none of them do)?
+On Thu, 2007-04-05 at 09:48 +1000, Paul Mackerras wrote:
+> David Woodhouse writes:
+> 
+> > OK, how about a config option to preserve the old behaviour...
+> 
+> Well, that's a start but it doesn't provide a migration path.
+> 
+> Is it possible to have the pmac_zilog ports registered both with the
+> new number and with the old number (assuming it's not already taken)?
+> That way people can move over gradually.
 
-Not sure I understand the question? global_flush_tlb is perhaps a little
-misnamed, but it only flushes the pages changed in change_page_attr.
-This works because it uses INVLPG which should ignore the G bits,
-so not additional global flush is needed.
+The new option was intended to provide a way to retain the old behaviour
+for systems where the kernel is updated but userspace must remain
+unchanged (for some reason I can't quite imagine right now).
 
-Linus wanted it done this two step way because he was worried about too 
-many IPIs. I guess it doesn't make too much difference though because near all
-callers only change single pages. The flush could be probably folded
-back into c_p_a().
+For _migration_, I think we can handle it better in userspace.
 
-BTW we know the sequence for doing this is not quite as recommended
-by Intel (TODO item) but afaik the TLB flushing works. 
+Anyone who builds their own kernel can also manage to change one or two
+scripts or configuration files which currently refer to ttyS0. The only
+case where the question of migration really holds any water is for
+distributions.
 
-> Further, change_page_attr()'s reference counting in a split large page's
-> page table appears to imply that attributes are only changed from or back to
-> the reference attributes, but not from one kind of non-default ones to the
-> same or another set of non-default ones (otherwise the reference count
-> will never again drop to zero), > and also not from default to default (i.e. the 
-> caller trying to revert attributes to normal not knowing what state they are
-> currently in) - this would BUG() if the large page was already reverted, or
-> screw the reference count otherwise. Is all of this intentional? I think it
-> will need to be changed as a prerequisite to supporting on-the-fly attribute
-> changes in the SMP alternatives code, which was requested as a follow-up
-> to the tightening of the CONFIG_DEBUG_RODATA effects.
+In Fedora, pmac_zilog has never worked -- the module always failed to
+load because 8250 was built-in. So it's an easy choice there -- we just
+switch over and it's fixed.
 
-The reference count is just to count pages that have a non default attribute
-in the PMD range so that we know when to revert to a large page.
+Other distributions which change over to the fixed behaviour, if they
+want 8250 and z8530 ports to co-exist, can provide a udev rule which
+creates a symlink from ttySn->ttyPZ0 for backwards compatibility.
 
-Originally attribute was only the caching attribute, but later changed
-to include NX and RW for slab (but that area was always a bit hackish
-and might have some bugs)
+Of course, the _numbers_ might change -- a given port might no longer be
+ttyS0 but ttyS1. But we're happy to overlook that one even though the
+effect on the user is identical, right?
 
-For non default to another non default changes the count should not change.
+That doesn't address the fact that the 'console=' kernel command line
+argument needs changes. But in general, users who are that non-technical
+don't use serial consoles, and those who do can cope with this.
 
-If it doesn't work this way that would be a bug.
+I think perhaps we should add this new config option to the
+feature-removal-schedule right now, and take it out after a year or so.
+That should be plenty of time for people to upgrade.
 
-> Finally, at least for the kernel image range it would seem to me that it might
-> be beneficial to recombine mappings into large ones even when the
-> attributes are not at their default anymore, but consistent across an entire
-> 2Mb/4Mb range (i.e. after write-protecting .text). At the same time I wonder,
-> though, whether it wouldn't be safer to remove execute permission from
-> anything but .text along with write-protecting read-only regions under
-> CONFIG_DEBUG_RODATA.
+-- 
+dwmw2
 
-Yes I guess that would be a useful optimization.  Just getting
-the reference counting right with that might be tricky.
-
-At least the i386 code will probably change significantly soon as I clean 
-up the GB page patches, which require some restructuring in c_p_a().
-
--Andi
