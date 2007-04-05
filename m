@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766984AbXDENv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766986AbXDENyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766984AbXDENv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 09:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766983AbXDENv5
+	id S1766986AbXDENyB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 09:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766988AbXDENyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 09:51:57 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:14743
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1766984AbXDENv4 (ORCPT
+	Thu, 5 Apr 2007 09:54:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:28127 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766986AbXDENx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 09:51:56 -0400
-Message-Id: <46151B4F.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Thu, 05 Apr 2007 14:52:47 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <discuss@x86-64.org>
-Subject: Re: [discuss] change_page_attr() and global_flush_tlb()
-References: <4614DE61.76E4.0078.0@novell.com>
- <200704051443.12505.ak@suse.de>
-In-Reply-To: <200704051443.12505.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 09:53:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=nhw6SZQpRc2W9woO+vTPnyfoh6RCs40DPwCQrm9MTE87rnfxH9mMzHcDQvAwbDdspigEtobG8LK+9UJ5LxwyxQZn1ALgRZ3Lv51Klm36/N6Ccy00LzmxqAGEyD0QPmuPPVDeuH9yinlTr5A4yXR0cAh4WYQjBMsJbR/oDDMGgIU=
+Date: Thu, 5 Apr 2007 15:53:50 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, perex@suse.cz
+Subject: [-mm patch] pcm_native: lockdep warning when launching jack
+Message-ID: <20070405135350.GB1917@slug>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070402224745.71a25af7.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andi Kleen <ak@suse.de> 05.04.07 14:43 >>>
->On Thursday 05 April 2007 11:32:49 Jan Beulich wrote:
->> Looking at both the i386 and x86-64 implementations I fail to understand why
->> there is an explicit requirement on calling global_flush_tlb() after
->> change_page_attr(), yet actual TLB flushing will not normally happen (on i386
->> it will happen if the CPU doesn't support clflush, but if it does, or on x86-64,
->> the flushing depends on the list of deferred pages being non-empty, which
->> can only happen when a large page gets re-combined). Is it assumed that
->> the callers additionally call tlb_flush_all() (I think none of them do)?
->
->Not sure I understand the question? global_flush_tlb is perhaps a little
->misnamed, but it only flushes the pages changed in change_page_attr.
->This works because it uses INVLPG which should ignore the G bits,
->so not additional global flush is needed.
+On Mon, Apr 02, 2007 at 10:47:45PM -0700, Andrew Morton wrote:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc5/2.6.21-rc5-mm4/
+> 
+Hi,
 
-That is the point - I don't see this invlpg. If you look at x86-64's
-global_flush_tlb(), then you will note that it passes the list of pages grabbed
-from deferred_pages. If that list has no entries, no single __flush_tlb_one
-will be called, and the only place entries are added to this list is in
-save_page(), which in turn only gets called if page_private(kpte_page) is
-zero (i.e. the page was just reverted back to a big one).
+When launching "jackd -d alsa", lockdep issues the following warning:
+[39701.405086] =============================================
+[39701.405093] [ INFO: possible recursive locking detected ]
+[39701.405107] 2.6.21-rc5-mm4 #2
+[39701.405109] ---------------------------------------------
+[39701.405112] jackd/17366 is trying to acquire lock:
+[39701.405114]  (&substream->self_group.lock){....}, at: [<c034d3c0>] snd_pcm_action_group+0x90/0x240
+[39701.405131]
+[39701.405131] but task is already holding lock:
+[39701.405134]  (&substream->self_group.lock){....}, at: [<c034d63f>] snd_pcm_action_lock_irq+0x3f/0xb0
+[39701.405141]
+[39701.405142] other info that might help us debug this:
+[39701.405145] 3 locks held by jackd/17366:
+[39701.405147]  #0:  (snd_pcm_link_rwlock){....}, at: [<c034d627>] snd_pcm_action_lock_irq+0x27/0xb0
+[39701.405155]  #1:  (&substream->group->lock){....}, at: [<c034d638>] snd_pcm_action_lock_irq+0x38/0xb0
+[39701.405163]  #2:  (&substream->self_group.lock){....}, at: [<c034d63f>] snd_pcm_action_lock_irq+0x3f/0xb0
+[39701.405171]
+[39701.405171] stack backtrace:
+[39701.405174]  [<c0103b8a>] show_trace_log_lvl+0x1a/0x30
+[39701.405179]  [<c0104912>] show_trace+0x12/0x20
+[39701.405183]  [<c01049c6>] dump_stack+0x16/0x20
+[39701.405187]  [<c013b980>] __lock_acquire+0xbd0/0x1040
+[39701.405193]  [<c013be60>] lock_acquire+0x70/0x90
+[39701.405197]  [<c0407846>] _spin_lock+0x36/0x50
+[39701.405203]  [<c034d3c0>] snd_pcm_action_group+0x90/0x240
+[39701.405207]  [<c034d653>] snd_pcm_action_lock_irq+0x53/0xb0
+[39701.405211]  [<c035046f>] snd_pcm_common_ioctl1+0x35f/0xfb0
+[39701.405215]  [<c0351544>] snd_pcm_playback_ioctl1+0x34/0x420
+[39701.405219]  [<c03519f3>] snd_pcm_playback_ioctl+0x43/0x50
+[39701.405223]  [<c017ecc8>] do_ioctl+0x28/0x80
+[39701.405229]  [<c017ed77>] vfs_ioctl+0x57/0x290
+[39701.405233]  [<c017efe9>] sys_ioctl+0x39/0x60
+[39701.405237]  [<c0102bf4>] sysenter_past_esp+0x5d/0x99
+[39701.405240]  =======================
 
-This is also hardened by the fact that the flushing and the freeing of pages
-happens walking the same list, hence only pages being freed get flushed.
+The attached lockdep annotation silences the warning.
+Regards,
+Frederik
 
-Am I missing something here?
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
 
->> Further, change_page_attr()'s reference counting in a split large page's
->> page table appears to imply that attributes are only changed from or back to
->> the reference attributes, but not from one kind of non-default ones to the
->> same or another set of non-default ones (otherwise the reference count
->> will never again drop to zero), > and also not from default to default (i.e. the 
->> caller trying to revert attributes to normal not knowing what state they are
->> currently in) - this would BUG() if the large page was already reverted, or
->> screw the reference count otherwise. Is all of this intentional? I think it
->> will need to be changed as a prerequisite to supporting on-the-fly attribute
->> changes in the SMP alternatives code, which was requested as a follow-up
->> to the tightening of the CONFIG_DEBUG_RODATA effects.
->
->The reference count is just to count pages that have a non default attribute
->in the PMD range so that we know when to revert to a large page.
->
->For non default to another non default changes the count should not change.
-
-That is what it should be, but it also gets bumped when a page already had
-non-default attributes, because the increment just depends on
-pgprot_val(prot) != pgprot_val(ref_prot) (but specifically not on the
-attributes the page had before the change).
-
-Jan
+--- 2.6.21-rc5-mm3/sound/core/pcm_native.c	2007-03-30 21:41:18.000000000 +0200
++++ 2.6.21-rc5-mm4/sound/core/pcm_native.c	2007-04-05 15:01:19.000000000 +0200
+@@ -718,7 +718,8 @@ static int snd_pcm_action_group(struct a
+ 
+ 	snd_pcm_group_for_each_entry(s, substream) {
+ 		if (do_lock && s != substream)
+-			spin_lock(&s->self_group.lock);
++			spin_lock_nested(&s->self_group.lock,
++					 SINGLE_DEPTH_NESTING);
+ 		res = ops->pre_action(s, state);
+ 		if (res < 0)
+ 			goto _unlock;
