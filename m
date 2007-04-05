@@ -1,115 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161143AbXDEEfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161149AbXDEEsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161143AbXDEEfF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 00:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXDEEfF
+	id S1161149AbXDEEsF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 00:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161152AbXDEEsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 00:35:05 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48652 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161143AbXDEEfD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 00:35:03 -0400
-Date: Wed, 4 Apr 2007 21:36:32 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] various drivers PCI must_checks
-Message-Id: <20070404213632.fae3fcb7.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 5 Apr 2007 00:48:05 -0400
+Received: from mail.suse.de ([195.135.220.2]:50612 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161149AbXDEEsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 00:48:04 -0400
+Date: Thu, 5 Apr 2007 06:47:56 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070405044756.GJ11192@wotan.suse.de>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, Apr 04, 2007 at 08:35:30AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 4 Apr 2007, Nick Piggin wrote:
+> > 
+> > Shall I do a more complete patchset and ask Andrew to give it a
+> > run in -mm?
+> 
+> Do this trivial one first. See how it fares.
 
-Check PCI interface function results in parport, serial, & video drivers.
+OK.
 
-drivers/parport/parport_serial.c:402: warning: ignoring return value of 'pci_enable_device', declared with attribute warn_unused_result
-drivers/serial/8250_pci.c:1826: warning: ignoring return value of 'pci_enable_device', declared with attribute warn_unused_result
-drivers/video/s3fb.c:1078: warning: ignoring return value of 'pci_enable_device', declared with attribute warn_unused_result
+> Although I don't know how much -mm will do for it. There is certainly not 
+> going to be any correctness problems, afaik, just *performance* problems. 
+> Does anybody do any performance testing on -mm?
+> 
+> That said, talking about correctness/performance problems:
+> 
+> > +	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+> > +	if (likely(!pte_none(*page_table))) {
+> >  		inc_mm_counter(mm, anon_rss);
+> >  		lru_cache_add_active(page);
+> >  		page_add_new_anon_rmap(page, vma, address);
+> 
+> Isn't that test the wrong way around?
+> 
+> Shouldn't it be
+> 
+> 	if (likely(pte_none(*page_table))) {
+> 
+> without any logical negation? Was this patch tested?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/parport/parport_serial.c |    8 +++++++-
- drivers/serial/8250_pci.c        |   10 +++++++++-
- drivers/video/s3fb.c             |    9 ++++++++-
- 3 files changed, 24 insertions(+), 3 deletions(-)
+Yeah, untested of course. I'm having problems booting my normal test box,
+so the main point of the patch was to generate some discussion (which
+worked! ;)).
 
---- linux-2.6.21-rc5-mm4.orig/drivers/parport/parport_serial.c
-+++ linux-2.6.21-rc5-mm4/drivers/parport/parport_serial.c
-@@ -392,6 +392,7 @@ static int parport_serial_pci_suspend(st
- static int parport_serial_pci_resume(struct pci_dev *dev)
- {
- 	struct parport_serial_private *priv = pci_get_drvdata(dev);
-+	int err;
- 
- 	pci_set_power_state(dev, PCI_D0);
- 	pci_restore_state(dev);
-@@ -399,7 +400,12 @@ static int parport_serial_pci_resume(str
- 	/*
- 	 * The device may have been disabled.  Re-enable it.
- 	 */
--	pci_enable_device(dev);
-+	err = pci_enable_device(dev);
-+	if (err) {
-+		printk(KERN_ERR "parport_serial: %s: error enabling "
-+			"device for resume (%d)\n", pci_name(dev), err);
-+		return err;
-+	}
- 
- 	if (priv->serial)
- 		pciserial_resume_ports(priv->serial);
---- linux-2.6.21-rc5-mm4.orig/drivers/serial/8250_pci.c
-+++ linux-2.6.21-rc5-mm4/drivers/serial/8250_pci.c
-@@ -1820,10 +1820,18 @@ static int pciserial_resume_one(struct p
- 	pci_restore_state(dev);
- 
- 	if (priv) {
-+		int err;
-+
- 		/*
- 		 * The device may have been disabled.  Re-enable it.
- 		 */
--		pci_enable_device(dev);
-+		err = pci_enable_device(dev);
-+		if (err) {
-+			printk(KERN_ERR "8250_pci: %s: error %d "
-+				"enabling device for resume\n",
-+				pci_name(dev), err);
-+			return err;
-+		}
- 
- 		pciserial_resume_ports(priv);
- 	}
---- linux-2.6.21-rc5-mm4.orig/drivers/video/s3fb.c
-+++ linux-2.6.21-rc5-mm4/drivers/video/s3fb.c
-@@ -1061,6 +1061,7 @@ static int s3_pci_resume(struct pci_dev*
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct s3fb_info *par = info->par;
-+	int err;
- 
- 	dev_info(&(dev->dev), "resume\n");
- 
-@@ -1075,7 +1076,13 @@ static int s3_pci_resume(struct pci_dev*
- 
- 	pci_set_power_state(dev, PCI_D0);
- 	pci_restore_state(dev);
--	pci_enable_device(dev);
-+	err = pci_enable_device(dev);
-+	if (err) {
-+		mutex_unlock(&(par->open_lock));
-+		release_console_sem();
-+		dev_err(&(dev->dev), "error %d enabling device for resume\n", err);
-+		return err;
-+	}
- 	pci_set_master(dev);
- 
- 	s3fb_set_par(info);
+Thanks,
+Nick
+
