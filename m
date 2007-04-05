@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161227AbXDEGFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXDEGKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161227AbXDEGFo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161228AbXDEGFo
+	id S1161228AbXDEGKP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161232AbXDEGKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:05:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:49381 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161227AbXDEGFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:05:43 -0400
+	Thu, 5 Apr 2007 02:10:15 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:47893 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161228AbXDEGKN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:10:13 -0400
+Message-ID: <461492A5.1030905@cosmosbay.com>
+Date: Thu, 05 Apr 2007 08:09:41 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17940.37291.211960.566580@cargo.ozlabs.ibm.com>
-Date: Thu, 5 Apr 2007 16:05:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Theodore Tso <tytso@mit.edu>,
-       "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk, flar@allandria.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <1175716215.2774.52.camel@shinybook.infradead.org>
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404122154.GF31973@thunk.org>
-	<4613CF6A.2090407@zytor.com>
-	<20070404174153.GI31973@thunk.org>
-	<20070404181531.GA9388@flint.arm.linux.org.uk>
-	<1175716215.2774.52.camel@shinybook.infradead.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com>	<p73648dz5oa.fsf@bingen.suse.de>	<46128CC2.9090809@redhat.com>	<20070403172841.GB23689@one.firstfloor.org>	<20070403125903.3e8577f4.akpm@linux-foundation.org>	<4612B645.7030902@redhat.com>	<20070403202937.GE355@devserv.devel.redhat.com>	<20070403144948.fe8eede6.akpm@linux-foundation.org>	<4612DCC6.7000504@cosmosbay.com>	<46130BC8.9050905@yahoo.com.au>	<1175675146.6483.26.camel@twins>	<461367F6.10705@yahoo.com.au>	<20070404113447.17ccbefa.dada1@cosmosbay.com>	<46137882.6050708@yahoo.com.au> <20070404135458.4f1a7059.dada1@cosmosbay.com> <4614585F.1050200@yahoo.com.au>
+In-Reply-To: <4614585F.1050200@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 05 Apr 2007 08:09:50 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse writes:
+Nick Piggin a écrit :
+> Eric Dumazet wrote:
+> >> This was not a working patch, just to throw the idea, since the
+>> answers I got showed I was not understood.
+>>
+>> In this case, find_extend_vma() should of course have one struct 
+>> vm_area_cache * argument, like find_vma()
+>>
+>> One single cache on one mm is not scalable. oprofile badly hits it on 
+>> a dual cpu config.
+> 
+> Oh, what sort of workload are you using to show this? The only reason 
+> that I
+> didn't submit my thread cache patches was that I didn't show a big enough
+> improvement.
+> 
 
-> And you always will be. The amount of pain involved in implementing
-> this, just so that people can call their serial port 'ttyS0', is _far_
-> more than it's worth. It could be done, but it's a completely pointless
-> waste of time and effort. 
+Database workload, where the user multi threaded app is constantly accessing 
+GBytes of data, so L2 cache hit is very small. If you want to oprofile it, 
+with say a CPU_CLK_UNHALTED:5000 event, then find_vma() is in the top 5.
 
-Avoiding breaking userspace is a completely pointless waste of time
-and effort?  Linux is ready for the desktop?  Suuuure it is...
+Each time oprofile has an NMI, it calls find_vma(EIP/RIP) and blows out the 
+target process cache (usually plugged on the data vma containing user land 
+futexes). Event with private futexes, it will probably be plugged on the brk() 
+vma.
 
-Paul.
