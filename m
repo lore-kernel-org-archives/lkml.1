@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992456AbXDELMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992481AbXDELNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992456AbXDELMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 07:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992481AbXDELMj
+	id S2992481AbXDELNX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 07:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992486AbXDELNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 07:12:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52563 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S2992456AbXDELMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 07:12:38 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18oAfc8iDUoSU0qjVk0fLSvZ8kHp+8tWlLQxSJ6oE
-	4dlJ42WaZEB5gu
-Subject: Re: [PATCH] sched: staircase deadline misc fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Con Kolivas <kernel@kolivas.org>,
-       linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-In-Reply-To: <20070405110911.GA14803@elte.hu>
-References: <200703290237.38777.kernel@kolivas.org>
-	 <200703290944.45888.kernel@kolivas.org>
-	 <1175147455.6430.91.camel@Homer.simpson.net>
-	 <200704031237.21946.kernel@kolivas.org>
-	 <1175578270.6342.12.camel@Homer.simpson.net>
-	 <20070403060109.GA6708@elte.hu>
-	 <1175770950.6609.16.camel@Homer.simpson.net>
-	 <20070405110911.GA14803@elte.hu>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 13:12:35 +0200
-Message-Id: <1175771555.6609.17.camel@Homer.simpson.net>
+	Thu, 5 Apr 2007 07:13:23 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37066 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992481AbXDELNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 07:13:22 -0400
+Date: Thu, 5 Apr 2007 13:14:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc5-mm4
+Message-ID: <20070405111407.GA11705@uranus.ravnborg.org>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org> <24083.1175650554@turing-police.cc.vt.edu> <20070403192004.986b44ec.randy.dunlap@oracle.com> <4963.1175654767@turing-police.cc.vt.edu> <46131D86.4070607@oracle.com> <10023.1175709308@turing-police.cc.vt.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <10023.1175709308@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 13:09 +0200, Ingo Molnar wrote:
-> find a whitespace fix below.
+On Wed, Apr 04, 2007 at 01:55:08PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 03 Apr 2007 20:37:42 PDT, Randy Dunlap said:
+> >
+> > Good luck.  But the symbols are there.  Just use left/right arrow keys
+> > to scroll the display left/right and you can see them.  Now if you just
+> > had that indicator to tell you that you Need to scroll to see more text...
 > 
-> 	Ingo
+> Exactly. :)  I had the incredible bad luck that the line got cut off at the
+> end of a CONFIG_ symbol that made sense - if it had showed up *half* a symbol,
+> I'd have gone investigating. ;) (Even a '>' or '<' saying data offscreen to
+> right or left would be sufficient, if somebody wants a small but productive
+> kernel (config system actually) task to hack on.)
 > 
-> Index: linux/kernel/sched.c
-> ===================================================================
-> --- linux.orig/kernel/sched.c
-> +++ linux/kernel/sched.c
-> @@ -1034,7 +1034,7 @@ static int recalc_task_prio(struct task_
->  	/*
->  	 * Migration timestamp adjustment may induce negative time.
->  	 * Ignore unquantifiable values as well as SCHED_BATCH tasks.
-> -	 */ 
-> +	 */
->  	if (now < p->timestamp || batch_task(p))
->  		sleep_time = 0;
->  
+> I'd code it myself, but I have an SL8500 to install, and need to figure out
+> how my laptop made it into the bag this morning still up and running (I hit
+> the power button, it seemed to power down - blank screen, power light off,
+> but syslog msgs prove it was up and running for another 4 hours before it
+> shut down on a thermal check...)
 
-Thanks.
+If you do not find time to do it try to ping me in a week or so.
+Should be trivial to do but away from my dev box atm.
 
-(dang, i need to find that fifty "make it red" thingie for vi again)
-
-	-Mike
-
+   Sam
