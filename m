@@ -1,93 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766974AbXDEMtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766977AbXDENHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766974AbXDEMtb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 08:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766973AbXDEMtb
+	id S1766977AbXDENHM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 09:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766975AbXDENHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 08:49:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45958 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766972AbXDEMt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 08:49:29 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070404160006.8d81a533.akpm@linux-foundation.org> 
-References: <20070404160006.8d81a533.akpm@linux-foundation.org>  <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: preemption and rwsems (was: Re: missing madvise functionality) 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Thu, 05 Apr 2007 13:48:58 +0100
-Message-ID: <19526.1175777338@redhat.com>
+	Thu, 5 Apr 2007 09:07:12 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45349 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766977AbXDENHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 09:07:11 -0400
+Date: Thu, 5 Apr 2007 14:09:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] pcmcia: irq probe can be done without risking an IRQ storm
+Message-ID: <20070405140936.46fb6ba4@the-village.bc.nu>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Nowdays you can ask for an IRQ to be allocated but not enabled, when
+PCMCIA was written this was not true and this feature is thus not used
 
-> 
-> What we effectively have is 32 threads on a single CPU all doing
-> 
-> 	for (ever) {
-> 		down_write()
-> 		up_write()
-> 		down_read()
-> 		up_read();
-> 	}
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-That's not quite so.  In that test program, most loops do two d/u writes and
-then a slew of d/u reads with virtually no delay between them.  One of the
-write-locked periods possibly lasts a relatively long time (it frees a bunch
-of pages), and the read-locked periods last a potentially long time (have to
-allocate a page).
-
-Though, to be fair, as long as you've got way more than 16MB of RAM, the
-memory stuff shouldn't take too long, but the locks will be being held for a
-long time compared to the periods when you're not holding a lock of any sort.
-
-> and rwsems are "fair".
-
-If they weren't, you'd have to expect writer starvation in this situation.  As
-it is, you're guaranteed progress on all threads.
-
-> CONFIG_PREEMPT_VOLUNTARY=y
-
-Which means the periods of lock-holding can be extended by preemption of the
-lock holder(s), making the whole situation that much worse.  You have to
-remember, you *can* be preempted whilst you hold a semaphore, rwsem or mutex.
-
-> I run it all on a single CPU under `taskset -c 0' on the 8-way and it still
-> causes 160,000 context switches per second and takes 9.5 seconds (after
-> s/100000/1000).
-
-How about if you have a UP kernel?  (ie: spinlocks -> nops)
-
-> the context switch rate falls to zilch and total runtime falls to 6.4
-> seconds.
-
-I presume you don't mean literally zero.
-
-> If that cond_resched() was not there, none of this would ever happen - each
-> thread merrily chugs away doing its ups and downs until it expires its
-> timeslice.  Interesting, in a sad sort of way.
-
-The trouble is, I think, that you spend so much more time holding (or
-attempting to hold) locks than not, and preemption just exacerbates things.
-
-I suspect that the reason the problem doesn't seem so obvious when you've got
-8 CPUs crunching their way through at once is probably because you can make
-progress on several read loops simultaneously fast enough that the preemption
-is lost in the things having to stop to give everyone writelocks.
-
-But short of recording the lock sequence, I don't think there's anyway to find
-out for sure.  printk probably won't cut it as a recording mechanism because
-its overheads are too great.
-
-David
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c linux-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c
+--- linux.vanilla-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c	2007-04-03 16:52:14.000000000 +0100
++++ linux-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c	2007-04-03 17:10:42.000000000 +0100
+@@ -810,8 +810,11 @@
+ 		type = IRQF_SHARED;
+ 	if (req->Attributes & IRQ_TYPE_DYNAMIC_SHARING)
+ 		type = IRQF_SHARED;	
+ #ifdef CONFIG_PCMCIA_PROBE
++	if (!(req->Attributes & IRQ_HANDLE_PRESENT))
++		type |= IRQ_NOAUTOEN;
++
+ 	if (s->irq.AssignedIRQ != 0) {
+ 		/* If the interrupt is already assigned, it must be the same */
+ 		irq = s->irq.AssignedIRQ;
