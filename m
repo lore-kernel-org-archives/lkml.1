@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767190AbXDESTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767181AbXDESUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767190AbXDESTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 14:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767192AbXDESTR
+	id S1767181AbXDESUh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 14:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767189AbXDESUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 14:19:17 -0400
-Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:47175 "HELO
-	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1767190AbXDESTP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 14:19:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=QCCTUvzDFbwin9GR0cH5q/nXZCWi5QwOBKtOXr97WR+GWGFCvJP7xiJTR9vKtVKpYAexKEah8NJ0lFzMmvc5vHfJJqbTTrf6dvAOjgqXougXrwau2TFgX8cebb+/aSwAy9SxWxLqVmiXqvssNmol7YKcOZBK9DsyV0xfVdsuZPY=  ;
-X-YMail-OSG: ihyN86oVM1nlnFE7w0nuFtb.7zyRlPTLGtatifdAd7fN.TTdAGvftIyHGvJfg5UqUB77.Lfvbw--
-From: David Brownell <david-b@pacbell.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
-Date: Thu, 5 Apr 2007 11:19:11 -0700
-User-Agent: KMail/1.7.1
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Tony Lindgren <tony@atomide.com>,
-       linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>
-References: <11757099691323-git-send-email-tony@atomide.com> <Pine.LNX.4.61.0704050359320.22282@yvahk01.tjqt.qr> <46147888.2080507@oracle.com>
-In-Reply-To: <46147888.2080507@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 5 Apr 2007 14:20:37 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:59211 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767181AbXDESUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 14:20:36 -0400
+Subject: 2.6.21-rc5-mm4: ia64:  scheduling while atomic - utrace?
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: roland@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 05 Apr 2007 14:20:29 -0400
+Message-Id: <1175797229.5335.22.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704051119.11944.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 April 2007 9:18 pm, Randy Dunlap wrote:
+Running a 'usex -e' load [http://people.redhat.com/~anderson/usex/] on
+2.6.21-rc5-mm4 on ia64, I see the following:
 
-> I don't think it's a MUA thing.  I think David is talking about the
-> spaces after the ^\t that are used for indenting immediately under
-> the "if".
+BUG: scheduling while atomic: strace/0x40000001/20162
 
-Exactly.
+Call Trace:
+ [<a000000100014ec0>] show_stack+0x80/0xa0
+                                sp=e000076042dc7610 bsp=e000076042dc1260
+ [<a000000100014f10>] dump_stack+0x30/0x60
+                                sp=e000076042dc77e0 bsp=e000076042dc1248
+ [<a0000001006f76e0>] schedule+0x1d00/0x22a0
+                                sp=e000076042dc77e0 bsp=e000076042dc1108
+ [<a000000100099750>] __cond_resched+0x50/0xa0
+                                sp=e000076042dc7800 bsp=e000076042dc10e8
+ [<a0000001006f8e30>] cond_resched+0xb0/0xe0
+                                sp=e000076042dc7800 bsp=e000076042dc10d0
+ [<a0000001001561d0>] get_user_pages+0x1b0/0x7c0
+                                sp=e000076042dc7800 bsp=e000076042dc1028
+ [<a0000001001568a0>] access_process_vm+0xc0/0x440
+                                sp=e000076042dc7820 bsp=e000076042dc0f78
+ [<a00000010002fcc0>] ia64_sync_user_rbs+0x80/0x100
+                                sp=e000076042dc7830 bsp=e000076042dc0f38
+ [<a00000010002fdf0>] do_gpregs_writeback+0xb0/0xe0
+                                sp=e000076042dc7840 bsp=e000076042dc0f10
+ [<a00000010000cad0>] unw_init_running+0x70/0xa0
+                                sp=e000076042dc7850 bsp=e000076042dc0ee8
+ [<a00000010002ed70>] do_regset_call+0x110/0x140
+                                sp=e000076042dc7c30 bsp=e000076042dc0e88
+ [<a00000010002eea0>] gpregs_writeback+0x40/0x60
+                                sp=e000076042dc7e30 bsp=e000076042dc0e60
+ [<a000000100123900>] ptrace_report+0xe0/0x1e0
+                                sp=e000076042dc7e30 bsp=e000076042dc0e28
+ [<a000000100123aa0>] ptrace_report_syscall+0xa0/0xe0
+                                sp=e000076042dc7e30 bsp=e000076042dc0e00
+ [<a000000100123b10>] ptrace_report_syscall_exit+0x30/0x60
+                                sp=e000076042dc7e30 bsp=e000076042dc0dc8
+ [<a000000100122cb0>] utrace_report_syscall+0xf0/0x540
+                                sp=e000076042dc7e30 bsp=e000076042dc0d48
+ [<a000000100031800>] syscall_trace_leave+0x60/0xc0
+                                sp=e000076042dc7e30 bsp=e000076042dc0cf0
+ [<a00000010000c1c0>] ia64_trace_syscall+0x100/0x110
+                                sp=e000076042dc7e30 bsp=e000076042dc0cf0
 
-	if (There was a young lady named Bright
-		Whose speed was far faster than light) {
-		She set out one day
-		in a relative way
-	}
-	And returned on the previous night
+Looks like get_ptrace_state(), called from ptrace_report_syscall calls
+rcu_read_lock() which disables preemption.  Corresponding
+rcu_read_unlock() will be from put_ptrace_state() from ptrace_report()
+at end of report.  However, ia64 needs to sync register backing store,
+and this requires access to process vm.  get_user_pages' use of
+cond_sched() is tripping the "scheduling while atomic" bug.
 
-obeys the only-ident-by-tabs rule, as does
+May be related to:
 
-	if (To control chain reactions, your odds
-			Improve if you've got cadmium rods) {
-		In your fission reactor
-		Their lack is a factor
-	}
-	In screams of "A meltdown! Ye gods!"
+	http://marc.info/?a=102883379600003&r=1&w=4
 
-Now, the former makes it hard to tell what's condition vs consequent.
-(Or whatever the correct technical term is in cases like these.)
 
-- Dave
-
+Lee
 
