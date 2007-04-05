@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767026AbXDEOsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767016AbXDEOss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767026AbXDEOsE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 10:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767016AbXDEOsE
+	id S1767016AbXDEOss (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 10:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767025AbXDEOss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 10:48:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41296 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767024AbXDEOsB (ORCPT
+	Thu, 5 Apr 2007 10:48:48 -0400
+Received: from stinky.trash.net ([213.144.137.162]:52602 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767016AbXDEOsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 10:48:01 -0400
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
-	optionally.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, Torben Mathiasen <torben@kernel.org>
-Cc: paulus@samba.org, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       device@lanana.org
-In-Reply-To: <20070405.233101.106261123.anemo@mba.ocn.ne.jp>
-References: <1175666635.2932.17.camel@shinybook.infradead.org>
-	 <17939.17962.248566.886449@cargo.ozlabs.ibm.com>
-	 <1175696383.2774.24.camel@shinybook.infradead.org>
-	 <20070405.233101.106261123.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 10:47:15 -0400
-Message-Id: <1175784435.2719.18.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
+	Thu, 5 Apr 2007 10:48:47 -0400
+Message-ID: <46150C49.4050800@trash.net>
+Date: Thu, 05 Apr 2007 16:48:41 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: leon zadorin <leonleon77@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: "no hz"/"dynamic tick" option and TC/TBF (token bucket filter)
+ behaviour...
+References: <26d2cb010704050736y775b6b09g67fd40344cd2208d@mail.gmail.com>
+In-Reply-To: <26d2cb010704050736y775b6b09g67fd40344cd2208d@mail.gmail.com>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 23:31 +0900, Atsushi Nemoto wrote
-> Is major 204 minor 192 already allocated?
+leon zadorin wrote:
+> 2) for kernels which do have the aforementioned option enabled: how
+> does this affect the "tc" (traffic control) utility and the Token
+> Bucket Filter (tbf) queueing discipline (traffic-smoothing)
+> behhaviour?
+> 
+> For example, the TBF doco suggests that due to the whole fixed Hz
+> thing in the kernel (e.g. 100Hz) the maximum rate of the TBF would
+> actually be limited to say 1mbit on Intel arch (with the default
+> mtu... but if mtu is incleased, so is the burstiness of the traffic
+> which is what TBF is trying to prevent in my deployment scenarios).
+> ...
+> 
+> So what about the kernels which use this "dyna tick" option - in such
+> a kernel, will there be an interrupt generated (e.g. at microsec.
+> precision on most platforms) for every packet's send time (e.g. say at
+> TBF's rate is at 25Mbps and one sends out 1KB data packets... will
+> there be  an interrput generated every... 300 microseconds?)...
 
-Of course. The reason it took so long to provide this patch after the
-'pmac_zilog doesn't load' bug got reported was because I was waiting for
-the new allocation.
 
-> Few weeks ago, I sent a patch to allocate 192...199 for other serial
-> driver 
-
-Were those numbers assigned to you or did you just make them up?
-
--- 
-dwmw2
+No, it doesn't affect the timer resolution. net-2.6.22 includes
+patches that switch all qdiscs to hrtimers, which allows to use
+much smaller burst rates.
 
