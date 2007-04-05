@@ -1,104 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767149AbXDEVHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767301AbXDEVHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767149AbXDEVHk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 17:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767301AbXDEVHk
+	id S1767301AbXDEVHn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 17:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767315AbXDEVHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 17:07:40 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:51920 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767149AbXDEVHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 17:07:38 -0400
-Date: Thu, 5 Apr 2007 14:07:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jakub Jelinek <jakub@redhat.com>,
-       Linux Memory Management <linux-mm@kvack.org>
-Subject: Re: missing madvise functionality
-Message-Id: <20070405140723.8477e314.akpm@linux-foundation.org>
-In-Reply-To: <46154226.6080300@redhat.com>
-References: <46128051.9000609@redhat.com>
-	<461357C4.4010403@yahoo.com.au>
-	<46154226.6080300@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 17:07:43 -0400
+Received: from homer.mvista.com ([63.81.120.158]:24561 "EHLO
+	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767164AbXDEVHl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 17:07:41 -0400
+Message-Id: <20070405210316.785839431@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 05 Apr 2007 14:03:16 -0700
+From: Daniel Walker <dwalker@mvista.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, johnstul@us.ibm.com, mingo@elte.hu
+Subject: [PATCH] timekeeping: drop irq-context clocksource polling
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Apr 2007 14:38:30 -0400
-Rik van Riel <riel@redhat.com> wrote:
+Before this change the timekeeping code would poll the clocksource
+list every interrupt. This changes that so the clocksource list is
+only checked when there has been and update, and no longer checks
+in interrupt context.
 
-> Nick Piggin wrote:
-> 
-> > Oh, also: something like this patch would help out MADV_DONTNEED, as it
-> > means it can run concurrently with page faults. I think the locking will
-> > work (but needs forward porting).
-> 
-> Ironically, your patch decreases throughput on my quad core
-> test system, with Jakub's test case.
-> 
-> MADV_DONTNEED, my patch, 10000 loops  (14k context switches/second)
-> 
-> real    0m34.890s
-> user    0m17.256s
-> sys     0m29.797s
-> 
-> 
-> MADV_DONTNEED, my patch & your patch, 10000 loops  (50 context 
-> switches/second)
-> 
-> real    1m8.321s
-> user    0m20.840s
-> sys     1m55.677s
-> 
-> I suspect it's moving the contention onto the page table lock,
-> in zap_pte_range().  I guess that the thread private memory
-> areas must be living right next to each other, in the same
-> page table lock regions :)
+This also has a few small space and line cleanups.
 
-Remember that we have two different ways of doing that locking:
+Boot tested on i386, compile tested on x86_64 .. However, I couldn't
+find a !GENERIC_TIME that compiled without this change so it's untested..
 
+Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
-#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
-/*
- * We tuck a spinlock to guard each pagetable page into its struct page,
- * at page->private, with BUILD_BUG_ON to make sure that this will not
- * overflow into the next struct page (as it might with DEBUG_SPINLOCK).
- * When freeing, reset page->mapping so free_pages_check won't complain.
- */
-#define __pte_lockptr(page)	&((page)->ptl)
-#define pte_lock_init(_page)	do {					\
-	spin_lock_init(__pte_lockptr(_page));				\
-} while (0)
-#define pte_lock_deinit(page)	((page)->mapping = NULL)
-#define pte_lockptr(mm, pmd)	({(void)(mm); __pte_lockptr(pmd_page(*(pmd)));})
-#else
-/*
- * We use mm->page_table_lock to guard all pagetable pages of the mm.
- */
-#define pte_lock_init(page)	do {} while (0)
-#define pte_lock_deinit(page)	do {} while (0)
-#define pte_lockptr(mm, pmd)	({(void)(pmd); &(mm)->page_table_lock;})
-#endif /* NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS */
+---
+ include/linux/timekeeping.h |   10 ++++++++++
+ kernel/time/clocksource.c   |    7 +++++++
+ kernel/time/timekeeping.c   |   17 ++++++++---------
+ 3 files changed, 25 insertions(+), 9 deletions(-)
 
+Index: linux-2.6.20/include/linux/timekeeping.h
+===================================================================
+--- /dev/null
++++ linux-2.6.20/include/linux/timekeeping.h
+@@ -0,0 +1,10 @@
++#ifndef _LINUX_TIMEKEEPING_H
++#define _LINUX_TIMEKEEPING_H
++
++#ifdef CONFIG_GENERIC_TIME
++extern void timekeeping_change_clocksource(void);
++#else
++static inline void timekeeping_change_clocksource(void) { }
++#endif
++
++#endif
+Index: linux-2.6.20/kernel/time/clocksource.c
+===================================================================
+--- linux-2.6.20.orig/kernel/time/clocksource.c
++++ linux-2.6.20/kernel/time/clocksource.c
+@@ -30,6 +30,7 @@
+ #include <linux/module.h>
+ #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+ #include <linux/tick.h>
++#include <linux/timekeeping.h>
+ 
+ /* XXX - Would like a better way for initializing curr_clocksource */
+ extern struct clocksource clocksource_jiffies;
+@@ -279,6 +280,8 @@ int clocksource_register(struct clocksou
+ 
+ 	clocksource_check_watchdog(c);
+ 
++	timekeeping_change_clocksource();
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(clocksource_register);
+@@ -297,6 +300,8 @@ void clocksource_change_rating(struct cl
+ 	clocksource_enqueue(cs);
+ 	next_clocksource = select_clocksource();
+ 	spin_unlock_irqrestore(&clocksource_lock, flags);
++
++	timekeeping_change_clocksource();
+ }
+ 
+ #ifdef CONFIG_SYSFS
+@@ -374,6 +379,8 @@ static ssize_t sysfs_override_clocksourc
+ 
+ 	spin_unlock_irq(&clocksource_lock);
+ 
++	timekeeping_change_clocksource();
++
+ 	return ret;
+ }
+ 
+Index: linux-2.6.20/kernel/time/timekeeping.c
+===================================================================
+--- linux-2.6.20.orig/kernel/time/timekeeping.c
++++ linux-2.6.20/kernel/time/timekeeping.c
+@@ -18,7 +18,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/time.h>
+ #include <linux/tick.h>
+-
++#include <linux/timekeeping.h>
+ 
+ /*
+  * This read-write spinlock protects us from races in SMP while
+@@ -42,10 +42,8 @@ struct timespec wall_to_monotonic __attr
+ 
+ EXPORT_SYMBOL(xtime);
+ 
+-
+ static struct clocksource *clock; /* pointer to current clocksource */
+ 
+-
+ #ifdef CONFIG_GENERIC_TIME
+ /**
+  * __get_nsec_offset - Returns nanoseconds since last call to periodic_hook
+@@ -168,9 +166,10 @@ EXPORT_SYMBOL(do_settimeofday);
+  *
+  * Accumulates current time interval and initializes new clocksource
+  */
+-static void change_clocksource(void)
++void timekeeping_change_clocksource(void)
+ {
+ 	struct clocksource *new;
++	unsigned long flags;
+ 	cycle_t now;
+ 	u64 nsec;
+ 
+@@ -179,8 +178,10 @@ static void change_clocksource(void)
+ 	if (clock == new)
+ 		return;
+ 
++	write_seqlock_irqsave(&xtime_lock, flags);
++
+ 	now = clocksource_read(new);
+-	nsec =  __get_nsec_offset();
++	nsec = __get_nsec_offset();
+ 	timespec_add_ns(&xtime, nsec);
+ 
+ 	clock = new;
+@@ -192,11 +193,11 @@ static void change_clocksource(void)
+ 
+ 	tick_clock_notify();
+ 
++	write_sequnlock_irqrestore(&xtime_lock, flags);
++
+ 	printk(KERN_INFO "Time: %s clocksource has been installed.\n",
+ 	       clock->name);
+ }
+-#else
+-static inline void change_clocksource(void) { }
+ #endif
+ 
+ /**
+@@ -470,7 +471,5 @@ void update_wall_time(void)
+ 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+ 
+-	/* check to see if there is a new clocksource to use */
+-	change_clocksource();
+ 	update_vsyscall(&xtime, clock);
+ }
+-- 
 
-I wonder which way you're using, and whether using the other way changes
-things.
-
-
-> For more real world workloads, like the MySQL sysbench one,
-> I still suspect that your patch would improve things.
-> 
-> Time to move back to debugging other stuff, though.
-> 
-> Andrew, it would be nice if our patches could cook in -mm
-> for a while.  Want me to change anything before submitting?
-
-umm.  I took a quick squint at a patch from you this morning and it looked
-OK to me.  Please send the finalish thing when it is fully baked and
-performance-tested in the various regions of operation, thanks.
-
+-- 
