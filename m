@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766969AbXDEMqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766974AbXDEMtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766969AbXDEMqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 08:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766970AbXDEMqf
+	id S1766974AbXDEMtb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 08:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766973AbXDEMtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 08:46:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35959 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766969AbXDEMqd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 08:46:33 -0400
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
-	optionally.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Brad Boyer <flar@allandria.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <17940.14667.503535.507564@cargo.ozlabs.ibm.com>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	 <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	 <1175642916.10567.24.camel@shinybook.infradead.org>
-	 <20070403212928.GA12951@cynthia.pants.nu>
-	 <20070404022544.59b022a6@the-village.bc.nu>
-	 <17939.10130.687893.167511@cargo.ozlabs.ibm.com>
-	 <1175663999.2932.8.camel@shinybook.infradead.org>
-	 <17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	 <1175666635.2932.17.camel@shinybook.infradead.org>
-	 <17939.17962.248566.886449@cargo.ozlabs.ibm.com>
-	 <1175696383.2774.24.camel@shinybook.infradead.org>
-	 <17940.14667.503535.507564@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 08:45:53 -0400
-Message-Id: <1175777154.2719.14.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 5 Apr 2007 08:49:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45958 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766972AbXDEMt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 08:49:29 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070404160006.8d81a533.akpm@linux-foundation.org> 
+References: <20070404160006.8d81a533.akpm@linux-foundation.org>  <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> 
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: preemption and rwsems (was: Re: missing madvise functionality) 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Thu, 05 Apr 2007 13:48:58 +0100
+Message-ID: <19526.1175777338@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 09:48 +1000, Paul Mackerras wrote:
-> David Woodhouse writes:
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
 > 
-> > OK, how about a config option to preserve the old behaviour...
+> What we effectively have is 32 threads on a single CPU all doing
 > 
-> Well, that's a start but it doesn't provide a migration path.
-> 
-> Is it possible to have the pmac_zilog ports registered both with the
-> new number and with the old number (assuming it's not already taken)?
-> That way people can move over gradually.
+> 	for (ever) {
+> 		down_write()
+> 		up_write()
+> 		down_read()
+> 		up_read();
+> 	}
 
-The new option was intended to provide a way to retain the old behaviour
-for systems where the kernel is updated but userspace must remain
-unchanged (for some reason I can't quite imagine right now).
+That's not quite so.  In that test program, most loops do two d/u writes and
+then a slew of d/u reads with virtually no delay between them.  One of the
+write-locked periods possibly lasts a relatively long time (it frees a bunch
+of pages), and the read-locked periods last a potentially long time (have to
+allocate a page).
 
-For _migration_, I think we can handle it better in userspace.
+Though, to be fair, as long as you've got way more than 16MB of RAM, the
+memory stuff shouldn't take too long, but the locks will be being held for a
+long time compared to the periods when you're not holding a lock of any sort.
 
-Anyone who builds their own kernel can also manage to change one or two
-scripts or configuration files which currently refer to ttyS0. The only
-case where the question of migration really holds any water is for
-distributions.
+> and rwsems are "fair".
 
-In Fedora, pmac_zilog has never worked -- the module always failed to
-load because 8250 was built-in. So it's an easy choice there -- we just
-switch over and it's fixed.
+If they weren't, you'd have to expect writer starvation in this situation.  As
+it is, you're guaranteed progress on all threads.
 
-Other distributions which change over to the fixed behaviour, if they
-want 8250 and z8530 ports to co-exist, can provide a udev rule which
-creates a symlink from ttySn->ttyPZ0 for backwards compatibility.
+> CONFIG_PREEMPT_VOLUNTARY=y
 
-Of course, the _numbers_ might change -- a given port might no longer be
-ttyS0 but ttyS1. But we're happy to overlook that one even though the
-effect on the user is identical, right?
+Which means the periods of lock-holding can be extended by preemption of the
+lock holder(s), making the whole situation that much worse.  You have to
+remember, you *can* be preempted whilst you hold a semaphore, rwsem or mutex.
 
-That doesn't address the fact that the 'console=' kernel command line
-argument needs changes. But in general, users who are that non-technical
-don't use serial consoles, and those who do can cope with this.
+> I run it all on a single CPU under `taskset -c 0' on the 8-way and it still
+> causes 160,000 context switches per second and takes 9.5 seconds (after
+> s/100000/1000).
 
-I think perhaps we should add this new config option to the
-feature-removal-schedule right now, and take it out after a year or so.
-That should be plenty of time for people to upgrade.
+How about if you have a UP kernel?  (ie: spinlocks -> nops)
 
--- 
-dwmw2
+> the context switch rate falls to zilch and total runtime falls to 6.4
+> seconds.
 
+I presume you don't mean literally zero.
+
+> If that cond_resched() was not there, none of this would ever happen - each
+> thread merrily chugs away doing its ups and downs until it expires its
+> timeslice.  Interesting, in a sad sort of way.
+
+The trouble is, I think, that you spend so much more time holding (or
+attempting to hold) locks than not, and preemption just exacerbates things.
+
+I suspect that the reason the problem doesn't seem so obvious when you've got
+8 CPUs crunching their way through at once is probably because you can make
+progress on several read loops simultaneously fast enough that the preemption
+is lost in the things having to stop to give everyone writelocks.
+
+But short of recording the lock sequence, I don't think there's anyway to find
+out for sure.  printk probably won't cut it as a recording mechanism because
+its overheads are too great.
+
+David
