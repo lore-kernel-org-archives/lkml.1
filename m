@@ -1,58 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992513AbXDELg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766946AbXDELlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992513AbXDELg3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 07:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992516AbXDELg2
+	id S1766946AbXDELlc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 07:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766948AbXDELlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 07:36:28 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:27537 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992513AbXDELg2 (ORCPT
+	Thu, 5 Apr 2007 07:41:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33437 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766832AbXDELla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 07:36:28 -0400
-Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
-	tree
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       johnstul@us.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       heiko.carstens@de.ibm.com
-In-Reply-To: <20070405075101.GA14199@elte.hu>
-References: <20070404203647.GA12563@elte.hu>
-	 <1175719489.15973.66.camel@imap.mvista.com>
-	 <20070404211514.GA18600@elte.hu>
-	 <1175722246.15973.78.camel@imap.mvista.com>
-	 <20070404213404.GA21742@elte.hu>
-	 <1175723954.15973.96.camel@imap.mvista.com> <46143941.7050702@goop.org>
-	 <1175731253.15973.106.camel@imap.mvista.com> <461440C9.8040902@goop.org>
-	 <1175733279.15973.116.camel@imap.mvista.com>
-	 <20070405075101.GA14199@elte.hu>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 04:35:15 -0700
-Message-Id: <1175772915.15973.125.camel@imap.mvista.com>
+	Thu, 5 Apr 2007 07:41:30 -0400
+Date: Thu, 5 Apr 2007 13:41:27 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Aaron Lehmann <aaronl@vitelus.com>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, Andi Kleen <andi@firstfloor.org>,
+       Jim Paris <jim@jtan.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Silent corruption with r8169
+Message-ID: <20070405114127.GA19143@one.firstfloor.org>
+References: <20070401012736.GT15189@vitelus.com> <20070401030315.GA24080@jim.sh> <20070401043905.GV15189@vitelus.com> <p737iswqjq4.fsf@bingen.suse.de> <20070404184504.GB7814@electric-eye.fr.zoreil.com> <20070404200603.GX15189@vitelus.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070404200603.GX15189@vitelus.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 09:51 +0200, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > [...] Adding a list initializer doesn't change anything..
-> 
-> Daniel, you are still in denial. OF COURSE it changes something: it adds 
-> a line of code to a driver, where that line was not needed before. 
-> That's against the fundamental task of a driver model: TO KEEP THINGS 
-> SIMPLE. Yes, this concept includes single-line changes as well.
+> I'll try to get to testing this, but I'm wondering if people may have
+> misunderstood my original post. I don't get any corruption over
+> Ethernet; it's just corruption on the filesystem during certain load
+> patterns that involve the Realtek ethernet card.
 
-If that's a fundemental rule then we need to expand our horizons to
-something a little more flexible .. I understand what your saying, I do,
-but it doesn't apply to this change or clocksources . The reason I think
-that is because the potential is ~100 drivers or less, once you reach a
-critical mass of drivers there's few if any to be added .. So from my
-perspective there no reason to overly simplify the structure..
+When disabling hardware checksums helps then you know the corruption
+is on the Ethernetside. Otherwise it's somewhere else.
 
-Daniel
-
+-Andi
