@@ -1,103 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766981AbXDENJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbXDENLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766981AbXDENJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 09:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766980AbXDENJ5
+	id S1753089AbXDENLM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 09:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXDENLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 09:09:57 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:39734 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766981AbXDENJ4 (ORCPT
+	Thu, 5 Apr 2007 09:11:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45356 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753091AbXDENLJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 09:09:56 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Thu, 5 Apr 2007 09:09:00 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Make include/asm-generic/ioctl.h extensible.
-Message-ID: <Pine.LNX.4.64.0704050904310.28249@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 5 Apr 2007 09:11:09 -0400
+Date: Thu, 5 Apr 2007 14:13:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kyle@canonical.com
+Subject: [PATCH] HPA support: Revised patch
+Message-ID: <20070405141352.12fddb6e@the-village.bc.nu>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This one should fix the problems with slave devices and the Macintosh hang
 
-Add a small number of preprocessor directives to
-include/asm-generic/ioctl.h so that individual architectures need only
-override a small number of values, if any, before including the
-generic version.
-
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-
----
-
-  i'll take one more crack at this -- the patch below will allow
-almost all of the arch-specific ioctl.h header files to be replaced by
-a small number of preprocessor directives, followed by including the
-asm-generic version.
-
-  and, no, i don't want to include those other header file changes in
-this patch.  this patch should go in first, followed by each of the
-others on an arch-by-arch basis.
-
-
-
-diff --git a/include/asm-generic/ioctl.h b/include/asm-generic/ioctl.h
-index cd02729..e035e6d 100644
---- a/include/asm-generic/ioctl.h
-+++ b/include/asm-generic/ioctl.h
-@@ -21,8 +21,15 @@
-  */
- #define _IOC_NRBITS	8
- #define _IOC_TYPEBITS	8
--#define _IOC_SIZEBITS	14
--#define _IOC_DIRBITS	2
-+/*
-+ *  Let any architecture override either of the following.
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc5-mm4/drivers/ata/libata-core.c linux-2.6.21-rc5-mm4/drivers/ata/libata-core.c
+--- linux.vanilla-2.6.21-rc5-mm4/drivers/ata/libata-core.c	2007-04-03 16:56:32.000000000 +0100
++++ linux-2.6.21-rc5-mm4/drivers/ata/libata-core.c	2007-04-03 17:08:28.000000000 +0100
+@@ -90,6 +90,10 @@
+ module_param_named(fua, libata_fua, int, 0444);
+ MODULE_PARM_DESC(fua, "FUA support (0=off, 1=on)");
+ 
++static int ata_ignore_hpa = 0;
++module_param_named(ignore_hpa, ata_ignore_hpa, int, 0644);
++MODULE_PARM_DESC(ignore_hpa, "Ignore HPA (0=off 1=on)");
++
+ static int ata_probe_timeout = ATA_TMOUT_INTERNAL / HZ;
+ module_param(ata_probe_timeout, int, 0444);
+ MODULE_PARM_DESC(ata_probe_timeout, "Set ATA probing timeout (seconds)");
+@@ -809,6 +813,202 @@
+ 	*p = '\0';
+ }
+ 
++static u64 ata_tf_to_lba48(struct ata_taskfile *tf)
++{
++	u64 sectors = 0;
++
++	sectors |= ((u64)(tf->hob_lbah & 0xff)) << 40;
++	sectors |= ((u64)(tf->hob_lbam & 0xff)) << 32;
++	sectors |= (tf->hob_lbal & 0xff) << 24;
++	sectors |= (tf->lbah & 0xff) << 16;
++	sectors |= (tf->lbam & 0xff) << 8;
++	sectors |= (tf->lbal & 0xff);
++
++	return ++sectors;
++}
++
++static u64 ata_tf_to_lba(struct ata_taskfile *tf)
++{
++	u64 sectors = 0;
++
++	sectors |= (tf->device & 0x0f) << 24;
++	sectors |= (tf->lbah & 0xff) << 16;
++	sectors |= (tf->lbam & 0xff) << 8;
++	sectors |= (tf->lbal & 0xff);
++
++	return ++sectors;
++}
++
++/**
++ *	ata_read_native_max_address_ext	-	LBA48 native max query
++ *	@dev: Device to query
++ *
++ *	Performa an LBA48 size query upon the device in question. Return the
++ *	actual LBA48 size or zero if the command fails.
 + */
-+#ifndef _IOC_SIZEBITS
-+# define _IOC_SIZEBITS	14
-+#endif
-+#ifndef _IOC_DIRBITS
-+# define _IOC_DIRBITS	2
-+#endif
-
- #define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)
- #define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)
-@@ -35,11 +42,17 @@
- #define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)
-
- /*
-- * Direction bits.
-+ * Direction bits, which any architecture can choose to override.
-  */
--#define _IOC_NONE	0U
--#define _IOC_WRITE	1U
--#define _IOC_READ	2U
-+#ifndef _IOC_NONE
-+# define _IOC_NONE	0U
-+#endif
-+#ifndef _IOC_WRITE
-+# define _IOC_WRITE	1U
-+#endif
-+#ifndef _IOC_READ
-+# define _IOC_READ	2U
-+#endif
-
- #define _IOC(dir,type,nr,size) \
- 	(((dir)  << _IOC_DIRSHIFT) | \
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
++
++static u64 ata_read_native_max_address_ext(struct ata_device *dev)
++{
++	unsigned int err;
++	struct ata_taskfile tf;
++
++	ata_tf_init(dev, &tf);
++
++	tf.command = ATA_CMD_READ_NATIVE_MAX_EXT;
++	tf.flags |= ATA_TFLAG_DEVICE | ATA_TFLAG_LBA48 | ATA_TFLAG_ISADDR;
++	tf.protocol |= ATA_PROT_NODATA;
++	tf.device |= 0x40;
++
++	err = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
++	if (err)
++		return 0;
++
++	return ata_tf_to_lba48(&tf);
++}
++
++/**
++ *	ata_read_native_max_address	-	LBA28 native max query
++ *	@dev: Device to query
++ *
++ *	Performa an LBA28 size query upon the device in question. Return the
++ *	actual LBA28 size or zero if the command fails.
++ */
++
++static u64 ata_read_native_max_address(struct ata_device *dev)
++{
++	unsigned int err;
++	struct ata_taskfile tf;
++
++	ata_tf_init(dev, &tf);
++
++	tf.command = ATA_CMD_READ_NATIVE_MAX;
++	tf.flags |= ATA_TFLAG_DEVICE | ATA_TFLAG_ISADDR;
++	tf.protocol |= ATA_PROT_NODATA;
++	tf.device |= 0x40;
++
++	err = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
++	if (err)
++		return 0;
++
++	return ata_tf_to_lba(&tf);
++}
++
++/**
++ *	ata_set_native_max_address_ext	-	LBA48 native max set
++ *	@dev: Device to query
++ *
++ *	Perform an LBA48 size set max upon the device in question. Return the
++ *	actual LBA48 size or zero if the command fails.
++ */
++
++static u64 ata_set_native_max_address_ext(struct ata_device *dev, u64 new_sectors)
++{
++	unsigned int err;
++	struct ata_taskfile tf;
++
++	new_sectors--;
++
++	ata_tf_init(dev, &tf);
++
++	tf.command = ATA_CMD_SET_MAX_EXT;
++	tf.flags |= ATA_TFLAG_DEVICE | ATA_TFLAG_LBA48 | ATA_TFLAG_ISADDR;
++	tf.protocol |= ATA_PROT_NODATA;
++	tf.device |= 0x40;
++
++	tf.lbal = (new_sectors >> 0) & 0xff;
++	tf.lbam = (new_sectors >> 8) & 0xff;
++	tf.lbah = (new_sectors >> 16) & 0xff;
++
++	tf.hob_lbal = (new_sectors >> 24) & 0xff;
++	tf.hob_lbam = (new_sectors >> 32) & 0xff;
++	tf.hob_lbah = (new_sectors >> 40) & 0xff;
++
++	err = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
++	if (err)
++		return 0;
++
++	return ata_tf_to_lba48(&tf);
++}
++
++/**
++ *	ata_set_native_max_address	-	LBA28 native max set
++ *	@dev: Device to query
++ *
++ *	Perform an LBA28 size set max upon the device in question. Return the
++ *	actual LBA28 size or zero if the command fails.
++ */
++
++static u64 ata_set_native_max_address(struct ata_device *dev, u64 new_sectors)
++{
++	unsigned int err;
++	struct ata_taskfile tf;
++
++	new_sectors--;
++
++	ata_tf_init(dev, &tf);
++
++	tf.command = ATA_CMD_SET_MAX;
++	tf.flags |= ATA_TFLAG_DEVICE | ATA_TFLAG_ISADDR;
++	tf.protocol |= ATA_PROT_NODATA;
++
++	tf.lbal = (new_sectors >> 0) & 0xff;
++	tf.lbam = (new_sectors >> 8) & 0xff;
++	tf.lbah = (new_sectors >> 16) & 0xff;
++	tf.device |= ((new_sectors >> 24) & 0x0f) | 0x40;
++
++	err = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
++	if (err)
++		return 0;
++
++	return ata_tf_to_lba(&tf);
++}
++
++/**
++ *	ata_hpa_resize		-	Resize a device with an HPA set
++ *	@dev: Device to resize
++ *
++ *	Read the size of an LBA28 or LBA48 disk with HPA features and resize
++ *	it if required to the full size of the media. The caller must check
++ *	the drive has the HPA feature set enabled.
++ */
++
++static u64 ata_hpa_resize(struct ata_device *dev)
++{
++	u64 sectors = dev->n_sectors;
++	u64 hpa_sectors;
++	
++	if (ata_id_has_lba48(dev->id))
++		hpa_sectors = ata_read_native_max_address_ext(dev);
++	else
++		hpa_sectors = ata_read_native_max_address(dev);
++
++	/* if no hpa, both should be equal */
++	ata_dev_printk(dev, KERN_INFO, "%s 1: sectors = %lld, hpa_sectors = %lld\n",
++		__FUNCTION__, sectors, hpa_sectors);
++
++	if (hpa_sectors > sectors) {
++		ata_dev_printk(dev, KERN_INFO,
++			"Host Protected Area detected:\n"
++			"\tcurrent size: %lld sectors\n"
++			"\tnative size: %lld sectors\n",
++			sectors, hpa_sectors);
++
++		if (ata_ignore_hpa) {
++			if (ata_id_has_lba48(dev->id))
++				hpa_sectors = ata_set_native_max_address_ext(dev, hpa_sectors);
++			else
++				hpa_sectors = ata_set_native_max_address(dev, hpa_sectors);
++
++			if (hpa_sectors) {
++				ata_dev_printk(dev, KERN_INFO,
++					"native size increased to %lld sectors\n", hpa_sectors);
++				return hpa_sectors;
++			}
++		}
++	}
++	return sectors;
++}
++
+ static u64 ata_id_n_sectors(const u16 *id)
+ {
+ 	if (ata_id_has_lba(id)) {
+@@ -1659,6 +1859,7 @@
+ 			snprintf(revbuf, 7, "ATA-%d",  ata_id_major_version(id));
+ 
+ 		dev->n_sectors = ata_id_n_sectors(id);
++		dev->n_sectors_boot = dev->n_sectors;
+ 
+ 		/* SCSI only uses 4-char revisions, dump full 8 chars from ATA */
+ 		ata_id_c_string(dev->id, fwrevbuf, ATA_ID_FW_REV,
+@@ -1685,6 +1886,9 @@
+ 					dev->flags |= ATA_DFLAG_FLUSH_EXT;
+ 			}
+ 
++			if (ata_id_hpa_enabled(dev->id))
++				dev->n_sectors = ata_hpa_resize(dev);
++
+ 			/* config NCQ */
+ 			ata_dev_config_ncq(dev, ncq_desc, sizeof(ncq_desc));
+ 
+@@ -3335,6 +3546,11 @@
+ 			       "%llu != %llu\n",
+ 			       (unsigned long long)dev->n_sectors,
+ 			       (unsigned long long)new_n_sectors);
++		/* Are we the boot time size - if so we appear to be the
++		   same disk at this point and our HPA got reapplied */
++		if (ata_ignore_hpa && dev->n_sectors_boot == new_n_sectors 
++		    && ata_id_hpa_enabled(new_id))
++			return 1;
+ 		return 0;
+ 	}
+ 
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc5-mm4/include/linux/ata.h linux-2.6.21-rc5-mm4/include/linux/ata.h
+--- linux.vanilla-2.6.21-rc5-mm4/include/linux/ata.h	2007-04-03 16:52:31.000000000 +0100
++++ linux-2.6.21-rc5-mm4/include/linux/ata.h	2007-04-03 17:11:03.000000000 +0100
+@@ -158,6 +158,8 @@
+ 	ATA_CMD_INIT_DEV_PARAMS	= 0x91,
+ 	ATA_CMD_READ_NATIVE_MAX	= 0xF8,
+ 	ATA_CMD_READ_NATIVE_MAX_EXT = 0x27,
++	ATA_CMD_SET_MAX		= 0xF9,
++	ATA_CMD_SET_MAX_EXT	= 0x37,
+ 	ATA_CMD_READ_LOG_EXT	= 0x2f,
+ 
+ 	/* READ_LOG_EXT pages */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc5-mm4/include/linux/libata.h linux-2.6.21-rc5-mm4/include/linux/libata.h
+--- linux.vanilla-2.6.21-rc5-mm4/include/linux/libata.h	2007-04-03 16:56:34.000000000 +0100
++++ linux-2.6.21-rc5-mm4/include/linux/libata.h	2007-04-03 17:11:03.000000000 +0100
+@@ -470,6 +470,7 @@
+ 	struct scsi_device	*sdev;		/* attached SCSI device */
+ 	/* n_sector is used as CLEAR_OFFSET, read comment above CLEAR_OFFSET */
+ 	u64			n_sectors;	/* size of device, if ATA */
++	u64			n_sectors_boot;	/* size of ATA device at startup */
+ 	unsigned int		class;		/* ATA_DEV_xxx */
+ 	u16			id[ATA_ID_WORDS]; /* IDENTIFY xxx DEVICE data */
+ 	u8			pio_mode;
