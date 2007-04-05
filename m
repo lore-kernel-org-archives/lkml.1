@@ -1,117 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbXDEQaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbXDEQcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189AbXDEQaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 12:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXDEQaL
+	id S1753196AbXDEQcA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 12:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXDEQcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 12:30:11 -0400
-Received: from bay0-omc3-s39.bay0.hotmail.com ([65.54.246.239]:35932 "EHLO
-	bay0-omc3-s39.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753189AbXDEQaI (ORCPT
+	Thu, 5 Apr 2007 12:32:00 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:2663 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753196AbXDEQb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 12:30:08 -0400
-Message-ID: <BAY113-DAV11F86E1B1E91A799AB05E9B9650@phx.gbl>
-X-Originating-IP: [128.100.5.117]
-X-Originating-Email: [gonwg@hotmail.com]
-From: "Michael" <gonwg@hotmail.com>
-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <BAY113-DAV124C8565330DC6C51B2B09B9660@phx.gbl> <Pine.LNX.4.61.0704041246010.5035@chaos.analogic.com>
-Subject: Re: set up new kernel with grub
-Date: Thu, 5 Apr 2007 12:28:03 -0500
+	Thu, 5 Apr 2007 12:31:59 -0400
+To: Tony Lindgren <tony@atomide.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/90] Post 2.6.21 OMAP update
+X-Message-Flag: Warning: May contain useful information
+References: <11757088774110-git-send-email-tony@atomide.com>
+	<20070404182728.GK29129@atomide.com>
+	<20070404113925.da221efc.randy.dunlap@oracle.com>
+	<20070404184455.GL29129@atomide.com>
+	<20070404224448.0ff60ed2@the-village.bc.nu>
+	<20070405132144.GC24297@atomide.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 05 Apr 2007 09:31:57 -0700
+In-Reply-To: <20070405132144.GC24297@atomide.com> (Tony Lindgren's message of "Thu, 5 Apr 2007 09:21:48 -0400")
+Message-ID: <adar6qybx4y.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	format=flowed	reply-type=original
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2869
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2962
-X-OriginalArrivalTime: 05 Apr 2007 16:30:07.0867 (UTC) FILETIME=[AC5D9CB0:01C7779F]
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 05 Apr 2007 16:31:57.0902 (UTC) FILETIME=[EDF39EE0:01C7779F]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Dick,
+ > > It would be enormously helpful if instead we got say 15 small patch sets
+ > > which are independant so that a query or NAK means 14 sets get applied
+ > > this time around not zero.
+ > 
+ > I was thinking about merging the patches together more, but the end result
+ > would not be very readable, and we would lose the original author info.
+ > 
+ > Also trying to do this 15 small patches at time would make it hard
+ > to have it all integrated within the two week merge window.
 
-Your steps work beautifully. Thanks.
+I think you misunderstood the suggestion.  The idea is that you leave
+the patches basically as-is (modulo any small tweaks required by
+reordering), but rather than one 90-patch series, you divide the
+patches up into independent subsets.  Maybe something like
 
-If you could explain a little about what happens in each step, that 
-would be even better.
+ - basic OMAP fixes for bugs in core support
+ - Palm platform stuff
+ - ...other platform stuff
+ - new features
 
-> # cd /usr/src/linux-2.6.20.3
-> If your current kernel is 2.6.20.3, edit the Makefile to
-> add some character after "EXTRAVERSION" as EXTRAVERSION= 3x
-> # cp .config ..
-> # make distclean
-> # cp ../.config .
-> # make oldconfig
-> # make
-> # make modules_install
-> # make install
+etc.  then it's easier for people to review the stuff they're
+interested in, and it's easier for at least some of the subsets to get
+applied (which reduces your backlog).
 
-
-Regards,
-
-Mike
-
-
------ Original Message ----- 
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Michael" <gonwg@hotmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Sent: Wednesday, April 04, 2007 10:53 AM
-Subject: Re: set up new kernel with grub
-
-
->
-> On Wed, 4 Apr 2007, Michael wrote:
->
->> Hi,
->>
->> I compiled a new kernel: 2.6.20.3, and hope to test it without 
->> removing
->> my old kernel.
->
-> You don't need to remove your old kernel. Log in as root.
->
-> # cd /usr/src/linux-2.6.20.3
-> If your current kernel is 2.6.20.3, edit the Makefile to
-> add some character after "EXTRAVERSION" as EXTRAVERSION= 3x
-> # cp .config ..
-> # make distclean
-> # cp ../.config .
-> # make oldconfig
-> # make
-> # make modules_install
-> # make install
->
-> The result will put the new kernel in the GRUB menu so you can
-> always go back to the old one if the new one doesn't work.
->
-> Cheers,
-> Dick Johnson
-> Penguin : Linux version 2.6.16.24 on an i686 machine (5592.65 
-> BogoMips).
-> New book: http://www.AbominableFirebug.com/
-> _
-> 
->
-> ****************************************************************
-> The information transmitted in this message is confidential and may be 
-> privileged.  Any review, retransmission, dissemination, or other use 
-> of this information by persons or entities other than the intended 
-> recipient is prohibited.  If you are not the intended recipient, 
-> please notify Analogic Corporation immediately - by replying to this 
-> message or by sending an email to DeliveryErrors@analogic.com - and 
-> destroy all copies of this information, including any attachments, 
-> without reading or disclosing them.
->
-> Thank you.
-> -
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+ - R.
