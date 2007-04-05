@@ -1,55 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965865AbXDEJcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965883AbXDEJeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965865AbXDEJcD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 05:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965816AbXDEJcD
+	id S965883AbXDEJeN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 05:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965816AbXDEJeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 05:32:03 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:2718
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965641AbXDEJcA (ORCPT
+	Thu, 5 Apr 2007 05:34:13 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:53058 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965641AbXDEJeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 05:32:00 -0400
-Message-Id: <4614DE61.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Thu, 05 Apr 2007 10:32:49 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <linux-kernel@vger.kernel.org>, <discuss@x86-64.org>
-Subject: change_page_attr() and global_flush_tlb()
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 5 Apr 2007 05:34:10 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] ehea: fix for dlpar and sysfs entries
+Date: Thu, 5 Apr 2007 11:22:28 +0200
+User-Agent: KMail/1.8.2
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200704051122.28428.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looking at both the i386 and x86-64 implementations I fail to understand why
-there is an explicit requirement on calling global_flush_tlb() after
-change_page_attr(), yet actual TLB flushing will not normally happen (on i386
-it will happen if the CPU doesn't support clflush, but if it does, or on x86-64,
-the flushing depends on the list of deferred pages being non-empty, which
-can only happen when a large page gets re-combined). Is it assumed that
-the callers additionally call tlb_flush_all() (I think none of them do)?
+This patch includes:
+- dlpar fix: 
+	certain resources may only be allocated when first
+	logical port is available, and must be removed when
+	last logical port has been removed
 
-Further, change_page_attr()'s reference counting in a split large page's
-page table appears to imply that attributes are only changed from or back to
-the reference attributes, but not from one kind of non-default ones to the
-same or another set of non-default ones (otherwise the reference count
-will never again drop to zero), and also not from default to default (i.e. the
-caller trying to revert attributes to normal not knowing what state they are
-currently in) - this would BUG() if the large page was already reverted, or
-screw the reference count otherwise. Is all of this intentional? I think it
-will need to be changed as a prerequisite to supporting on-the-fly attribute
-changes in the SMP alternatives code, which was requested as a follow-up
-to the tightening of the CONFIG_DEBUG_RODATA effects.
+- sysfs entries:
+	create symbolic link from each logical port to ehea driver
 
-Finally, at least for the kernel image range it would seem to me that it might
-be beneficial to recombine mappings into large ones even when the
-attributes are not at their default anymore, but consistent across an entire
-2Mb/4Mb range (i.e. after write-protecting .text). At the same time I wonder,
-though, whether it wouldn't be safer to remove execute permission from
-anything but .text along with write-protecting read-only regions under
-CONFIG_DEBUG_RODATA.
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+---
 
-Thanks for any insight,
-Jan
+
+This patch applies on top of the netdev upstream branch for 2.6.22
+
+
+
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 1405d0b..173994d 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@ #include <asm/abs_addr.h>
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0055"
++#define DRV_VERSION	"EHEA_0056"
+ 
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index a36a023..f9f3133 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -78,6 +78,28 @@ MODULE_PARM_DESC(sq_entries, " Number of
+ 		 __MODULE_STRING(EHEA_DEF_ENTRIES_SQ) ")");
+ MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 1 ");
+ 
++static int port_name_cnt = 0;
++
++static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
++                                        const struct of_device_id *id);
++
++static int __devexit ehea_remove(struct ibmebus_dev *dev);
++
++static struct of_device_id ehea_device_table[] = {
++	{
++		.name = "lhea",
++		.compatible = "IBM,lhea",
++	},
++	{},
++};
++
++static struct ibmebus_driver ehea_driver = {
++	.name = "ehea",
++	.id_table = ehea_device_table,
++	.probe = ehea_probe_adapter,
++	.remove = ehea_remove,
++};
++
+ void ehea_dump(void *adr, int len, char *msg) {
+ 	int x;
+ 	unsigned char *deb = adr;
+@@ -2108,6 +2130,28 @@ static int ehea_clean_all_portres(struct
+ 	return ret;
+ }
+ 
++static void ehea_remove_adapter_mr (struct ehea_adapter *adapter)
++{
++	int i;
++
++	for (i=0; i < EHEA_MAX_PORTS; i++)
++		if (adapter->port[i])
++			return;
++
++	ehea_rem_mr(&adapter->mr);
++}
++
++static int ehea_add_adapter_mr (struct ehea_adapter *adapter)
++{
++	int i;
++
++	for (i=0; i < EHEA_MAX_PORTS; i++)
++		if (adapter->port[i])
++			return 0;
++
++	return ehea_reg_kernel_mr(adapter, &adapter->mr);
++}
++
+ static int ehea_up(struct net_device *dev)
+ {
+ 	int ret, i;
+@@ -2361,6 +2405,34 @@ static void __devinit logical_port_relea
+ 	of_node_put(port->ofdev.node);
+ }
+ 
++static int ehea_driver_sysfs_add(struct device *dev,
++                                 struct device_driver *driver)
++{
++	int ret;
++
++	ret = sysfs_create_link(&driver->kobj, &dev->kobj,
++				kobject_name(&dev->kobj));
++	if (ret == 0) {
++		ret = sysfs_create_link(&dev->kobj, &driver->kobj,
++					"driver");
++		if (ret)
++			sysfs_remove_link(&driver->kobj,
++					  kobject_name(&dev->kobj));
++	}
++	return ret;
++}
++
++static void ehea_driver_sysfs_remove(struct device *dev,
++                                     struct device_driver *driver)
++{
++	struct device_driver *drv = driver;
++
++	if (drv) {
++		sysfs_remove_link(&drv->kobj, kobject_name(&dev->kobj));
++		sysfs_remove_link(&dev->kobj, "driver");
++	}
++}
++
+ static struct device *ehea_register_port(struct ehea_port *port,
+ 					 struct device_node *dn)
+ {
+@@ -2368,8 +2440,9 @@ static struct device *ehea_register_port
+ 
+ 	port->ofdev.node = of_node_get(dn);
+ 	port->ofdev.dev.parent = &port->adapter->ebus_dev->ofdev.dev;
++	port->ofdev.dev.bus = &ibmebus_bus_type;
+ 
+-	sprintf(port->ofdev.dev.bus_id, "port%d", port->logical_port_id);
++	sprintf(port->ofdev.dev.bus_id, "port%d", port_name_cnt++);
+ 	port->ofdev.dev.release = logical_port_release;
+ 
+ 	ret = of_device_register(&port->ofdev);
+@@ -2384,8 +2457,16 @@ static struct device *ehea_register_port
+ 		goto out_unreg_of_dev;
+ 	}
+ 
++	ret = ehea_driver_sysfs_add(&port->ofdev.dev, &ehea_driver.driver);
++	if (ret) {
++		ehea_error("failed to register sysfs driver link");
++		goto out_rem_dev_file;
++	}
++
+ 	return &port->ofdev.dev;
+ 
++out_rem_dev_file:
++	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
+ out_unreg_of_dev:
+ 	of_device_unregister(&port->ofdev);
+ out:
+@@ -2394,6 +2475,7 @@ out:
+ 
+ static void ehea_unregister_port(struct ehea_port *port)
+ {
++	ehea_driver_sysfs_remove(&port->ofdev.dev, &ehea_driver.driver);
+ 	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
+ 	of_device_unregister(&port->ofdev);
+ }
+@@ -2520,7 +2602,6 @@ static int ehea_setup_ports(struct ehea_
+ 	struct device_node *eth_dn = NULL;
+ 
+ 	u32 *dn_log_port_id;
+-	int port_setup_ok = 0;
+ 	int i = 0;
+ 
+ 	lhea_dn = adapter->ebus_dev->ofdev.node;
+@@ -2534,6 +2615,12 @@ static int ehea_setup_ports(struct ehea_
+ 			continue;
+ 		}
+ 
++		if (ehea_add_adapter_mr(adapter)) {
++			ehea_error("creating MR failed");
++			of_node_put(eth_dn);
++			return -EIO;
++		}
++
+ 		adapter->port[i] = ehea_setup_single_port(adapter,
+ 							  *dn_log_port_id,
+ 							  eth_dn);
+@@ -2541,18 +2628,13 @@ static int ehea_setup_ports(struct ehea_
+ 			ehea_info("%s -> logical port id #%d",
+ 				  adapter->port[i]->netdev->name,
+ 				  *dn_log_port_id);
++		else
++			ehea_remove_adapter_mr(adapter);
++
+ 		i++;
+ 	};
+ 
+-	/* Check for succesfully set up ports */
+-	for (i = 0; i < EHEA_MAX_PORTS; i++)
+-		if (adapter->port[i])
+-			port_setup_ok++;
+-
+-	if (port_setup_ok)
+-		return 0;	/* At least some ports are setup correctly */
+-
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ static struct device_node *ehea_get_eth_dn(struct ehea_adapter *adapter,
+@@ -2604,6 +2686,11 @@ static ssize_t ehea_probe_port(struct de
+ 		return -EINVAL;
+ 	}
+ 
++	if (ehea_add_adapter_mr(adapter)) {
++		ehea_error("creating MR failed");
++		return -EIO;
++	}
++
+ 	port = ehea_setup_single_port(adapter, logical_port_id, eth_dn);
+ 
+ 	of_node_put(eth_dn);
+@@ -2617,8 +2704,10 @@ static ssize_t ehea_probe_port(struct de
+ 
+ 		ehea_info("added %s (logical port id=%d)", port->netdev->name,
+ 			  logical_port_id);
+-	} else
++	} else {
++		ehea_remove_adapter_mr(adapter);
+ 		return -EIO;
++	}
+ 
+ 	return (ssize_t) count;
+ }
+@@ -2653,6 +2742,8 @@ static ssize_t ehea_remove_port(struct d
+ 		return -EINVAL;
+ 	}
+ 
++	ehea_remove_adapter_mr(adapter);
++
+ 	return (ssize_t) count;
+ }
+ 
+@@ -2713,18 +2804,13 @@ static int __devinit ehea_probe_adapter(
+ 
+ 	dev->ofdev.dev.driver_data = adapter;
+ 
+-	ret = ehea_reg_kernel_mr(adapter, &adapter->mr);
+-	if (ret) {
+-		dev_err(&dev->ofdev.dev, "reg_mr_adapter failed\n");
+-		goto out_free_ad;
+-	}
+ 
+ 	/* initialize adapter and ports */
+ 	/* get adapter properties */
+ 	ret = ehea_sense_adapter_attr(adapter);
+ 	if (ret) {
+ 		dev_err(&dev->ofdev.dev, "sense_adapter_attr failed: %d", ret);
+-		goto out_free_res;
++		goto out_free_ad;
+ 	}
+ 
+ 	adapter->neq = ehea_create_eq(adapter,
+@@ -2732,7 +2818,7 @@ static int __devinit ehea_probe_adapter(
+ 	if (!adapter->neq) {
+ 		ret = -EIO;
+ 		dev_err(&dev->ofdev.dev, "NEQ creation failed");
+-		goto out_free_res;
++		goto out_free_ad;
+ 	}
+ 
+ 	tasklet_init(&adapter->neq_tasklet, ehea_neq_tasklet,
+@@ -2777,9 +2863,6 @@ out_free_irq:
+ out_kill_eq:
+ 	ehea_destroy_eq(adapter->neq);
+ 
+-out_free_res:
+-	ehea_rem_mr(&adapter->mr);
+-
+ out_free_ad:
+ 	kfree(adapter);
+ out:
+@@ -2805,7 +2888,7 @@ static int __devexit ehea_remove(struct 
+ 	tasklet_kill(&adapter->neq_tasklet);
+ 
+ 	ehea_destroy_eq(adapter->neq);
+-	ehea_rem_mr(&adapter->mr);
++	ehea_remove_adapter_mr(adapter);
+ 	kfree(adapter);
+ 	return 0;
+ }
+@@ -2838,21 +2921,6 @@ static int check_module_parm(void)
+ 	return ret;
+ }
+ 
+-static struct of_device_id ehea_device_table[] = {
+-	{
+-		.name = "lhea",
+-		.compatible = "IBM,lhea",
+-	},
+-	{},
+-};
+-
+-static struct ibmebus_driver ehea_driver = {
+-	.name = "ehea",
+-	.id_table = ehea_device_table,
+-	.probe = ehea_probe_adapter,
+-	.remove = ehea_remove,
+-};
+-
+ int __init ehea_module_init(void)
+ {
+ 	int ret;
