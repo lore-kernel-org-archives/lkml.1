@@ -1,43 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014AbXDEBab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbXDEBca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753014AbXDEBab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 21:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbXDEBab
+	id S1752987AbXDEBca (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 21:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXDEBca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 21:30:31 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:40415 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753010AbXDEBaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 21:30:30 -0400
-Date: Wed, 4 Apr 2007 18:29:56 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, virtualization@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 07/20] Allow paravirt backend to choose kernel PMD sharing
-Message-ID: <20070405012956.GM19575@sequoia.sous-sol.org>
-References: <20070404191151.009821039@goop.org> <20070404191205.392155702@goop.org> <Pine.LNX.4.64.0704041729300.22161@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704041729300.22161@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 4 Apr 2007 21:32:30 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:24295 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752987AbXDEBc2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 21:32:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=J7BRG2cMz/I2/nnCtAVppw7Ywpur5tBPNj6tU6bAPwJp3wUwZmt4BecrIfS18uUUgP0TSswWDYIlwa0L8yj4Nzndxg9cxe2wIDs2N5OgT9IePoL25yXTcp67J51kx+/Hj3SxfmXUB1yhmoFXr2sZ9lIp1iZLQOGgZgpcdvTstH0=  ;
+X-YMail-OSG: ZRY_D7kVM1mYyCf71Mb3TSod.8czZP4x4wqJfLF5mcrupMkZ
+Message-ID: <461451A2.8020708@yahoo.com.au>
+Date: Thu, 05 Apr 2007 11:32:18 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/13] maps: Move the page walker code to lib/
+References: <7.486631555@selenic.com> <461320C9.5030601@yahoo.com.au> <20070404050857.GU4892@waste.org> <46133CC0.505@yahoo.com.au> <20070404214828.GA4892@waste.org>
+In-Reply-To: <20070404214828.GA4892@waste.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> Acked-by: Christoph Lameter <clameter@sgi.com>
+Matt Mackall wrote:
+> On Wed, Apr 04, 2007 at 03:50:56PM +1000, Nick Piggin wrote:
 > 
-> for all thats worth since I am not a i386 specialist.
+>>Matt Mackall wrote:
+>>
+>>>On Wed, Apr 04, 2007 at 01:51:37PM +1000, Nick Piggin wrote:
+>>>
+>>>
+>>>>Matt Mackall wrote:
+>>>>
+>>>>
+>>>>>Move the page walker code to lib/
+>>>>>
+>>>>>This lets it get shared outside of proc/ and linked in only when
+>>>>>needed.
+>>>>
+>>>>I think it would be better in mm/.
+>>>
+>>>
+>>>I originally was looking at putting it in mm/memory.c and possibly
+>>
+>>Just put it in its own file in mm/ rather than its own file in lib.
+>>lib should be for almost-standalone stuff, IMO (ie. only using basic
+>>kernel functionality).
 > 
-> How much of the issues with page struct sharing between slab and arch code 
-> does this address?
+> 
+> Arguably that's what lib/ should be for, but it's currently largely
 
-I think the answer is 'none yet.'  It uses page sized slab and still
-needs pgd_list, for example.  But the mm_list chaining should work too,
-so it shouldn't make things any worse.
+I disagree. There is code everywhere that exists to provide some
+functionality via an API to other parts of the kernel. You don't
+think mm/page_alloc.c should go in lib/?
 
-thanks,
--chris
+> used to avoid linking in unused code without adding more hair to
+> Kconfig. Which is what I'm trying to do here.
+
+Well if you're doing a nice big reorganisation and jumble, then
+why would you worry about a few lines in Kconfig?
+
+>>Apart from these users outside mm/, I don't see much point in converting
+>>things over. The page table walking API we have now is neat and simple.
+>>It takes a few lines of code, but is it a big problem?
+> 
+> 
+> I don't think it really qualifies as either neat or simple. It may be
+> about as neat as walking a heterogenous tree with an inconsistent
+> naming scheme can be, but it's still a headache. A maze of twisty
+> little passages, all slightly different.
+
+All page table range walking code should be the same.
+It is a simple template to use to walk a range of ptes. It is
+a headache outside mm/, sure, but not because of its incredible
+complexity.
+
+-- 
+SUSE Labs, Novell Inc.
