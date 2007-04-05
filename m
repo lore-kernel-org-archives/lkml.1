@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767054AbXDEP3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767052AbXDEPaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767054AbXDEP3A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767056AbXDEP3A
+	id S1767052AbXDEPaO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767060AbXDEPaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:29:00 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50275 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1767054AbXDEP27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:28:59 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+3CoB+96K3Sgb60PixE8MOAz0yqRPn1vejYSvpQ3
-	stoDRf6lgrdlFR
-Subject: Re: [PATCH] sched: staircase deadline misc fixes
-From: Mike Galbraith <efault@gmx.de>
-To: Johannes Stezenbach <js@linuxtv.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-In-Reply-To: <20070405131835.GA19959@linuxtv.org>
-References: <200703290237.38777.kernel@kolivas.org>
-	 <200703290944.45888.kernel@kolivas.org>
-	 <1175147455.6430.91.camel@Homer.simpson.net>
-	 <200704031237.21946.kernel@kolivas.org>
-	 <1175578270.6342.12.camel@Homer.simpson.net>
-	 <20070403060109.GA6708@elte.hu>
-	 <1175770950.6609.16.camel@Homer.simpson.net>
-	 <20070405110911.GA14803@elte.hu>
-	 <1175771555.6609.17.camel@Homer.simpson.net>
-	 <20070405131835.GA19959@linuxtv.org>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 17:28:52 +0200
-Message-Id: <1175786932.6471.14.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Thu, 5 Apr 2007 11:30:14 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:37301 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767050AbXDEPaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 11:30:11 -0400
+Message-ID: <4615160A.4090506@cfl.rr.com>
+Date: Thu, 05 Apr 2007 11:30:18 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Mark Lord <lkml@rtr.ca>
+CC: Chris Snook <csnook@redhat.com>, Paa Paa <paapaa125@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Lower HD transfer rate with NCQ enabled?
+References: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl> <46128175.2090506@redhat.com> <4612852C.2030801@rtr.ca> <4612A854.1070702@cfl.rr.com> <4613C612.5040600@rtr.ca>
+In-Reply-To: <4613C612.5040600@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-OriginalArrivalTime: 05 Apr 2007 15:30:20.0225 (UTC) FILETIME=[51F6E310:01C77797]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15098.000
+X-TM-AS-Result: No--6.396900-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 15:18 +0200, Johannes Stezenbach wrote:
-> On Thu, Apr 05, 2007, Mike Galbraith wrote:
-> > 
-> > (dang, i need to find that fifty "make it red" thingie for vi again)
-                              ^(spiffy;)
-> 
-> put "let c_space_errors=1" in .vimrc
+Mark Lord wrote:
+> The drive firmware readahead is inherently *way* more effective than
+> other forms, and without it, sequential read performance really suffers.
+> Regardless of how software tries to compensate.
 
-Thanks.
+Why?  As the platter spins under the head, the drive can either read or 
+ignore the data.  As long as it keeps reading the track, it can't go any 
+faster.  Whether in response to its own readahead or to the request 
+queue from the host, either way it should read the data.  If its own 
+readahead is faster, then either the host must not be properly 
+performing readahead and keeping the drive request queue filled with 
+sequential requests, or the drive firmware must be broken and decides to 
+ignore the data as it passes under the head, and instead go back to pick 
+it up on the next rotation.
 
-I received this link via private mail, and think it's worth posting.
-Who knows, it may save Maintainers an antacid tablet or two.
+> This is mostly a problem with the WD Raptor drive, and some other WD 
+> drives.
+> I have not yet encountered/noticed the problem with other brands.
 
-http://www.pixelbeat.org/settings/.vimrc
+Sounds like this is a serious bug in the WD firmware.
 
-	-Mike
-
-(may eventually get tired of the colors, but for now they're cooler than
-the plain black and white i'm used to, _and_ has "make it glow" feature)
 
