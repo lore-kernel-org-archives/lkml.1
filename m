@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbXDEQYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbXDEQ1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153AbXDEQYm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 12:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXDEQYl
+	id S1753156AbXDEQ1B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 12:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXDEQ1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 12:24:41 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39153 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbXDEQYk (ORCPT
+	Thu, 5 Apr 2007 12:27:01 -0400
+Received: from bay0-omc3-s37.bay0.hotmail.com ([65.54.246.237]:52966 "EHLO
+	bay0-omc3-s37.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753156AbXDEQ1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 12:24:40 -0400
-Date: Thu, 5 Apr 2007 09:25:20 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kyle@canonical.com
-Subject: Re: [PATCH] HPA support: Revised patch
-Message-Id: <20070405092520.9bad0c45.randy.dunlap@oracle.com>
-In-Reply-To: <20070405141352.12fddb6e@the-village.bc.nu>
-References: <20070405141352.12fddb6e@the-village.bc.nu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 5 Apr 2007 12:27:00 -0400
+Message-ID: <BAY20-F1927988DDB55A274D2DAAFF9650@phx.gbl>
+X-Originating-IP: [88.114.147.249]
+X-Originating-Email: [paapaa125@hotmail.com]
+From: "Paa Paa" <paapaa125@hotmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Lower HD transfer rate with NCQ enabled?
+Date: Thu, 05 Apr 2007 16:26:59 +0000
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; format=flowed
+X-OriginalArrivalTime: 05 Apr 2007 16:26:59.0813 (UTC) FILETIME=[3C46D950:01C7779F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Apr 2007 14:13:52 +0100 Alan Cox wrote:
+Mark Lord wrote:
+>>>This is mostly a problem with the WD Raptor drive, and some other WD 
+>>>drives.
+>>>I have not yet encountered/noticed the problem with other brands.
+>>
+>>Sounds like this is a serious bug in the WD firmware.
+>
+>For personal systems, yes.  For servers, probably not a bug.
 
-> This one should fix the problems with slave devices and the Macintosh hang
+In my case the choice of IO scheduler affected the result of "hdparm -t" 
+significantly. With Deadline I got identical result with NCQ and wihout NCQ. 
+It was only with CFQ when I got worse results with NCQ than without it.
 
-s/Performa/Perform/g
+What might be the reason CFQ+NCQ gived so much worse throughput with "hdparm 
+-t"?
 
-> +/**
-> + *	ata_read_native_max_address_ext	-	LBA48 native max query
-> + *	@dev: Device to query
-> + *
-> + *	Performa an LBA48 size query upon the device in question. Return the
-> + *	actual LBA48 size or zero if the command fails.
-> + */
-> +
-> +static u64 ata_read_native_max_address_ext(struct ata_device *dev)
-> +{
-> +}
-> +
-> +/**
-> + *	ata_read_native_max_address	-	LBA28 native max query
-> + *	@dev: Device to query
-> + *
-> + *	Performa an LBA28 size query upon the device in question. Return the
-> + *	actual LBA28 size or zero if the command fails.
-> + */
-> +
-> +static u64 ata_read_native_max_address(struct ata_device *dev)
-> +{
-> +}
+_________________________________________________________________
+Express yourself instantly with MSN Messenger! Download today it's FREE! 
+http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/
 
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
