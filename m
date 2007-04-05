@@ -1,68 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161149AbXDEEsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161158AbXDEEvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161149AbXDEEsF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 00:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161152AbXDEEsF
+	id S1161158AbXDEEvW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 00:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161161AbXDEEvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 00:48:05 -0400
-Received: from mail.suse.de ([195.135.220.2]:50612 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161149AbXDEEsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 00:48:04 -0400
-Date: Thu, 5 Apr 2007 06:47:56 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
-       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] no ZERO_PAGE?
-Message-ID: <20070405044756.GJ11192@wotan.suse.de>
-References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
+	Thu, 5 Apr 2007 00:51:22 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:30893 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161158AbXDEEvV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 00:51:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ExRd/IIK+vE08dRRT8WU9iwdS+CFYbhCrf/1+m6LJC0Y3/I6jtRCbkJ+gNacm54Peyq73fd3ohTRIgdLFtBlr5SyMyE29gqsuhAQWHiF3JVkir5Xh1G2oCGw6pXMxJ/O7Ec2geBcjbTER1mQ3YYRFxaihl2Pv33M2Yv1c5EK3t4=
+Date: Thu, 5 Apr 2007 12:54:11 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       viro@zeniv.linux.org.uk
+Subject: Re: [-mm3 PATCH] (Retry) Check the return value of kobject_add and etc.
+Message-ID: <20070405045410.GA4692@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Cornelia Huck <cornelia.huck@de.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, viro@zeniv.linux.org.uk
+References: <2375c9f90704010032r119f4a1eqb24dd611d5ecd943@mail.gmail.com> <20070402130128.707c8c19@gondolin.boeblingen.de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070402130128.707c8c19@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 08:35:30AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 4 Apr 2007, Nick Piggin wrote:
-> > 
-> > Shall I do a more complete patchset and ask Andrew to give it a
-> > run in -mm?
-> 
-> Do this trivial one first. See how it fares.
+On Mon, Apr 02, 2007 at 01:01:28PM +0200, Cornelia Huck wrote:
+>On Sun, 1 Apr 2007 15:32:34 +0800,
+>"Cong WANG" <xiyou.wangcong@gmail.com> wrote:
+>
+>> --- linux-2.6.21-rc5-mm3/fs/partitions/check.c.orig	2007-03-30
+>> 21:35:45.000000000 +0800
+>> +++ linux-2.6.21-rc5-mm3/fs/partitions/check.c	2007-03-30
+>> 21:49:53.000000000 +0800
+>> @@ -385,10 +385,16 @@ void add_partition(struct gendisk *disk,
+>>  	p->kobj.parent = &disk->kobj;
+>>  	p->kobj.ktype = &ktype_part;
+>>  	kobject_init(&p->kobj);
+>> -	kobject_add(&p->kobj);
+>> +	if (kobject_add(&p->kobj)) {
+>> +		kfree(p);
+>> +		return;
+>> +	}
+>>  	if (!disk->part_uevent_suppress)
+>>  		kobject_uevent(&p->kobj, KOBJ_ADD);
+>> -	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
+>> +	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
+>> +		kfree(p);
+>> +		return;
+>> +	}
+>
+>You need to properly undo whatever you did before. You're missing a
+>KOBJ_DEL uevent and a kobject_del here.
+>
+>>  	if (flags & ADDPART_FLAG_WHOLEDISK) {
+>>  		static struct attribute addpartattr = {
+>>  			.name = "whole_disk",
+>> @@ -396,7 +402,10 @@ void add_partition(struct gendisk *disk,
+>>  			.owner = THIS_MODULE,
+>>  		};
+>> 
+>> -		sysfs_create_file(&p->kobj, &addpartattr);
+>> +		if (sysfs_create_file(&p->kobj, &addpartattr)) {
+>> +			kfree(p);
+>> +			return;
+>> +		}
+>
+>Also here.
 
-OK.
+Sorry for my delay. My mutt sucked these days. ;-(
 
-> Although I don't know how much -mm will do for it. There is certainly not 
-> going to be any correctness problems, afaik, just *performance* problems. 
-> Does anybody do any performance testing on -mm?
-> 
-> That said, talking about correctness/performance problems:
-> 
-> > +	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
-> > +	if (likely(!pte_none(*page_table))) {
-> >  		inc_mm_counter(mm, anon_rss);
-> >  		lru_cache_add_active(page);
-> >  		page_add_new_anon_rmap(page, vma, address);
-> 
-> Isn't that test the wrong way around?
-> 
-> Shouldn't it be
-> 
-> 	if (likely(pte_none(*page_table))) {
-> 
-> without any logical negation? Was this patch tested?
+OK. Thanks for your point. I make the patch again and is it OK now?
+I find -mm4 still has these warnings when compile this file. It is not fixed yet, and the following patch can also be applied to -mm4.
 
-Yeah, untested of course. I'm having problems booting my normal test box,
-so the main point of the patch was to generate some discussion (which
-worked! ;)).
+----
 
-Thanks,
-Nick
+--- linux-2.6.21-rc5-mm3/fs/partitions/check.c.orig	2007-03-30 21:35:45.000000000 +0800
++++ linux-2.6.21-rc5-mm3/fs/partitions/check.c	2007-04-02 21:29:02.000000000 +0800
+@@ -385,10 +385,18 @@ void add_partition(struct gendisk *disk,
+ 	p->kobj.parent = &disk->kobj;
+ 	p->kobj.ktype = &ktype_part;
+ 	kobject_init(&p->kobj);
+-	kobject_add(&p->kobj);
++	if (kobject_add(&p->kobj)) {
++		kfree(p);
++		return;
++	}
+ 	if (!disk->part_uevent_suppress)
+ 		kobject_uevent(&p->kobj, KOBJ_ADD);
+-	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
++	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
++		kobject_uevent(&p->kobj, KOBJ_REMOVE);
++		kobject_del(&p->kobj);
++		kfree(p);
++		return;
++	}
+ 	if (flags & ADDPART_FLAG_WHOLEDISK) {
+ 		static struct attribute addpartattr = {
+ 			.name = "whole_disk",
+@@ -396,7 +404,13 @@ void add_partition(struct gendisk *disk,
+ 			.owner = THIS_MODULE,
+ 		};
+ 
+-		sysfs_create_file(&p->kobj, &addpartattr);
++		if (sysfs_create_file(&p->kobj, &addpartattr)) {
++			sysfs_remove_link(&p->kobj, "subsystem");
++			kobject_uevent(&p->kobj, KOBJ_REMOVE);
++			kobject_del(&p->kobj);
++			kfree(p);
++			return;
++		}
+ 	}
+ 	partition_sysfs_add_subdir(p);
+ 	disk->part[part-1] = p;
+
+
 
