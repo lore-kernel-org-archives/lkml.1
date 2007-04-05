@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945922AbXDEGWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945925AbXDEGcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945922AbXDEGWA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 02:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945941AbXDEGWA
+	id S1945925AbXDEGcD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 02:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945930AbXDEGcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 02:22:00 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:51914 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945922AbXDEGV7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 02:21:59 -0400
-Message-ID: <46149576.9080401@zytor.com>
-Date: Wed, 04 Apr 2007 23:21:42 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 5 Apr 2007 02:32:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33773 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945925AbXDEGcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 02:32:00 -0400
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] doc/kernel-parameters: use IA-32 tag instead of i386
-References: <20070404220534.36cd24e9.randy.dunlap@oracle.com>
-In-Reply-To: <20070404220534.36cd24e9.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+X-Fcc: ~/Mail/linus
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>, "Jan Beulich" <JBeulich@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/2] Relocate VDSO ELF headers to match mapped location with COMPAT_VDSO
+In-Reply-To: Jeremy Fitzhardinge's message of  Wednesday, 4 April 2007 21:58:26 -0700 <20070405045843.333498131@goop.org>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20070405063152.9227D180064@magilla.sf.frob.com>
+Date: Wed,  4 Apr 2007 23:31:52 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Use documented tag for "IA-32" (not "i386") to indicate which
-> kernel parameters apply to IA-32.
-> 
+The patch looks nice and clean.  However, it does not relocate the symbol
+table(s) values.  I thought that was done in an earlier version of this I
+saw, but I might be misremembering.  Though not fatal, this is a regression
+from the previous CONFIG_COMPAT_VDSO behavior.  It will show up in things
+like __kernel_* name display in backtraces.  If with your other patch
+CONFIG_COMPAT_VDSO will become other than a rarely-used compatibility
+option, then this should be fixed.  Note that with your second patch this
+will also break the symbol values in the randomly-located vma vdso;
+non-ancient glibc doesn't care if the vdso isn't mapped where its phdrs
+say, but everything does still care that the symbol tables in an ELF file
+use addresses matching the phdrs in the same file.
 
-We call this architecture "i386" everywhere else.  I think it makes more 
-sense to change the documented tag to "i386", especially with Intel 
-sometimes calling x86-64 "IA-32e".
 
-	-hpa
+Thanks,
+Roland
