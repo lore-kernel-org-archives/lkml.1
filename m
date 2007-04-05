@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbXDECSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbXDECac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753031AbXDECSp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 22:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXDECSp
+	id S1753047AbXDECac (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 22:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXDECac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 22:18:45 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:54172 "EHLO tmailer.gwdg.de"
+	Wed, 4 Apr 2007 22:30:32 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44238 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753023AbXDECSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 22:18:44 -0400
-Date: Thu, 5 Apr 2007 04:15:53 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: David Brownell <david-b@pacbell.net>, Tony Lindgren <tony@atomide.com>,
-       linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 25/90] ARM: OMAP: h4 must have blinky leds!!
-In-Reply-To: <20070404142607.7c0557ae.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.61.0704050359320.22282@yvahk01.tjqt.qr>
-References: <11757099691323-git-send-email-tony@atomide.com>
- <20070404120025.4c5548dc.randy.dunlap@oracle.com>
- <Pine.LNX.4.61.0704042205040.22282@yvahk01.tjqt.qr> <200704041351.19313.david-b@pacbell.net>
- <20070404142607.7c0557ae.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1752546AbXDECab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Apr 2007 22:30:31 -0400
+Date: Thu, 5 Apr 2007 04:30:26 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, tee@sgi.com,
+       holt@sgi.com, Andrea Arcangeli <andrea@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] no ZERO_PAGE?
+Message-ID: <20070405023026.GE11192@wotan.suse.de>
+References: <20070329075805.GA6852@wotan.suse.de> <Pine.LNX.4.64.0703291324090.21577@blonde.wat.veritas.com> <20070330024048.GG19407@wotan.suse.de> <20070404033726.GE18507@wotan.suse.de> <Pine.LNX.4.64.0704040830500.6730@woody.linux-foundation.org> <6701.1175724355@turing-police.cc.vt.edu> <Pine.LNX.4.64.0704041724280.6730@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704041724280.6730@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 04, 2007 at 05:27:31PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 4 Apr 2007, Valdis.Kletnieks@vt.edu wrote:
+> > 
+> > I'd not be surprised if there's sparse-matrix code out there that wants to
+> > malloc a *huge* array (like a 1025x1025 array of numbers) that then only
+> > actually *writes* to several hundred locations, and relies on the fact that
+> > all the untouched pages read back all-zeros.
+> 
+> Good point. In fact, it doesn't need to be a malloc() - I remember people 
+> doing this with Fortran programs and just having an absolutely incredibly 
+> big BSS (with traditional Fortran, dymic memory allocations are just not 
+> done).
 
-On Apr 4 2007 14:26, Randy Dunlap (rd) wrote:
-David Brownell (db) wrote:
-Jan Engelhardt (je) wrote:
-je>>> 
-je>>> My stance, || goes at EOL, and final ) not standalone:
-db>> 
-db>> You are still violating the "only TABs used for indent" rule.
-rd>
-rd>Yes, but CodingStyle is a just set of guidelines and common practices.
-rd>It doesn't cover multi-line if () statements, which is the subject of
-rd>the current controvers^W discussion.
+Sparse matrices are one thing I worry about. I don't know enough about
+HPC code to know whether they will be a problem. I know there exist
+data structures to optimise sparse matrix storage...
 
-s/Yes/No/. The example block I posted does use /^\t+/.
-Mind MUAs/browsers which transform tabs into single-spaces in some cases.
-
->>> 	if (foo ||
->>> 	  bar ||
->>> 	  baz ||
->>> 	  etc)
->>> 		do_something;
-
-
-Jan
--- 
