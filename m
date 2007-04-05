@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932359AbXDEAbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbXDEAf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932359AbXDEAbS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Apr 2007 20:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932375AbXDEAbS
+	id S932431AbXDEAf3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Apr 2007 20:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbXDEAf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Apr 2007 20:31:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35724 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932359AbXDEAbQ (ORCPT
+	Wed, 4 Apr 2007 20:35:29 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:20189 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932431AbXDEAf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Apr 2007 20:31:16 -0400
-Date: Wed, 4 Apr 2007 17:31:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Badari Pulavarty <pbadari@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc5-mm4 (SLUB)
-In-Reply-To: <1175730157.5019.19.camel@dyn9047017100.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0704041730470.22161@schroedinger.engr.sgi.com>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> 
- <1175637332.6185.4.camel@dyn9047017100.beaverton.ibm.com> 
- <1175642398.6185.9.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031626020.12109@schroedinger.engr.sgi.com> 
- <1175643507.6185.12.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031638570.12109@schroedinger.engr.sgi.com> 
- <1175644314.6185.18.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704031653060.12109@schroedinger.engr.sgi.com> 
- <1175698437.6185.21.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704040946370.24640@schroedinger.engr.sgi.com> 
- <1175709755.6185.34.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704041103060.26866@schroedinger.engr.sgi.com> 
- <Pine.LNX.4.64.0704041120250.793@schroedinger.engr.sgi.com> 
- <1175727185.5019.8.camel@dyn9047017100.beaverton.ibm.com> 
- <Pine.LNX.4.64.0704041556530.11769@schroedinger.engr.sgi.com>
- <1175730157.5019.19.camel@dyn9047017100.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Apr 2007 20:35:28 -0400
+Subject: Re: + clocksource-driver-initialize-list-value.patch added to -mm
+	tree
+From: Daniel Walker <dwalker@mvista.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       tglx@linutronix.de, johnstul@us.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>, heiko.carstens@de.ibm.com
+In-Reply-To: <461440C9.8040902@goop.org>
+References: <200704010523.l315NXJP004063@shell0.pdx.osdl.net>
+	 <1175417035.28263.42.camel@localhost.localdomain>
+	 <1175704712.15973.35.camel@imap.mvista.com>
+	 <20070404125853.1cf9b7b7.akpm@linux-foundation.org>
+	 <1175717425.15973.61.camel@imap.mvista.com>
+	 <20070404203647.GA12563@elte.hu>
+	 <1175719489.15973.66.camel@imap.mvista.com>
+	 <20070404211514.GA18600@elte.hu>
+	 <1175722246.15973.78.camel@imap.mvista.com>
+	 <20070404213404.GA21742@elte.hu>
+	 <1175723954.15973.96.camel@imap.mvista.com>  <46143941.7050702@goop.org>
+	 <1175731253.15973.106.camel@imap.mvista.com>  <461440C9.8040902@goop.org>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 17:34:39 -0700
+Message-Id: <1175733279.15973.116.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Apr 2007, Badari Pulavarty wrote:
-
-> On Wed, 2007-04-04 at 15:59 -0700, Christoph Lameter wrote:
-> > On Wed, 4 Apr 2007, Badari Pulavarty wrote:
-> > 
-> > > Here is the slub_debug=FU output with the above patch.
-> > 
-> > Hmmm... Looks like the object is actually free. Someone writes beyond the 
-> > end of the earlier object. Setting Z should check overwrites but it 
-> > switched off merging. So set
-> > 
-> > slub_debug = FZ
-> > 
-> > Analoguos to the last patch you would need to take out redzoning from 
-> > the flags that stop merging. Then rerun. Maybe we can track it down this 
-> > way.
+On Wed, 2007-04-04 at 17:20 -0700, Jeremy Fitzhardinge wrote:
+> Daniel Walker wrote:
+> > Setting CLOCK_SOURCE_IS_CONTINUOUS is largely administration , do you
+> > know what that flag means?
+> >   
 > 
-> Hmm.. I did that and machine boots fine, with absolutely no
-> debug messages :(
+> Sure, but at least it has something to do with clocks and time.
+> 
+> > list values and list initialization are hardly internal details , they
+> > are commonly used all over the kernel.
+> >   
+> 
+> The fact that a list is used to string together clocksource structures
+> is an internal detail of the clock subsystem.  It's annoying that there
+> has to be a list head in the clocksource structure, but at least as a
+> clocksource implementer I can ignore it, and if it ever gets changed to
+> something else I can keep ignoring it.  Your change makes it something
+> that gets pointlessly replicated all over the kernel.
 
-Were the slabs merged? Look at /sys/slab and see if there are any symlinks 
-there.
+It's already been discussed in the past, but the clocksource structure
+is already very simple.. Adding a list initializer doesn't change
+anything..
+
+Daniel
 
