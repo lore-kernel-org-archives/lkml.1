@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767048AbXDEPS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767047AbXDEPTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767048AbXDEPS5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 11:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767047AbXDEPS5
+	id S1767047AbXDEPTs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 11:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767040AbXDEPTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 11:18:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52471 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767040AbXDEPSz (ORCPT
+	Thu, 5 Apr 2007 11:19:48 -0400
+Received: from nlpi043.sbcis.sbc.com ([207.115.36.72]:27563 "EHLO
+	nlpi043.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767047AbXDEPTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 11:18:55 -0400
-Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
-	optionally.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: torben@kernel.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
-       flar@allandria.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, device@lanana.org
-In-Reply-To: <20070406.000913.28784231.anemo@mba.ocn.ne.jp>
-References: <1175696383.2774.24.camel@shinybook.infradead.org>
-	 <20070405.233101.106261123.anemo@mba.ocn.ne.jp>
-	 <1175784435.2719.18.camel@shinybook.infradead.org>
-	 <20070406.000913.28784231.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 11:18:12 -0400
-Message-Id: <1175786292.2719.23.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-7.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 5 Apr 2007 11:19:45 -0400
+X-ORBL: [67.117.73.34]
+Date: Thu, 5 Apr 2007 11:18:39 -0400
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 64/90] ARM: OMAP: Fix warning in pm.c
+Message-ID: <20070405151838.GM24297@atomide.com>
+References: <11757101164151-git-send-email-tony@atomide.com> <11757101181993-git-send-email-tony@atomide.com> <11757101233966-git-send-email-tony@atomide.com> <11757101252580-git-send-email-tony@atomide.com> <1175710128235-git-send-email-tony@atomide.com> <11757101303810-git-send-email-tony@atomide.com> <11757101333782-git-send-email-tony@atomide.com> <11757101352361-git-send-email-tony@atomide.com> <11757101391215-git-send-email-tony@atomide.com> <1175710142747-git-send-email-tony@atomide.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="v2/QI0iRXglpx0hK"
+Content-Disposition: inline
+In-Reply-To: <1175710142747-git-send-email-tony@atomide.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-06 at 00:09 +0900, Atsushi Nemoto wrote:
+
+--v2/QI0iRXglpx0hK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+* Tony Lindgren <tony@atomide.com> [070404 14:12]:
+> From: Dirk Behme <dirk.behme_at_gmail.com>
 > 
-> What I did is just send a patch includeing devices.txt changes to
-> lkml, device@lanana.org, and some others.
+> ARM: OMAP2: Fix warning in pm.c:
 > 
-> Maybe I should have sent "request" (not patch) mail to
-> device@lanana.org first?
+> arch/arm/mach-omap2/pm.c: In function 'omap2_pm_init':
+> arch/arm/mach-omap2/pm.c:854: warning: ignoring return value
+> of 'subsys_create_file', declared with attribute
+> warn_unused_result
+> 
+> Signed-off-by: Dirk Behme <dirk.behme_at_gmail.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-Well, that's what it says right underneath the line in devices.txt which
-says:
-	**** DEVICE DRIVERS AUTHORS PLEASE READ THIS ****
+Fixed email address on this one too.
 
-It goes on to say...
+Tony
 
-"Third, please don't assume that the distributed version of the list is
-up to date.  Due to the number of registrations I have to maintain it
-in "batch mode", so there is likely additional registrations that
-haven't been listed yet."
+--v2/QI0iRXglpx0hK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0064-ARM-OMAP-Fix-warning-in-pm.c.txt"
 
+>From cbb4d20b1d564259e705919aa1431f8f92895c1e Mon Sep 17 00:00:00 2001
+From: Dirk Behme <dirk.behme@gmail.com>
+Date: Fri, 26 Jan 2007 13:32:30 -0800
+Subject: [PATCH 64/90] ARM: OMAP: Fix warning in pm.c
+
+ARM: OMAP2: Fix warning in pm.c:
+
+arch/arm/mach-omap2/pm.c: In function 'omap2_pm_init':
+arch/arm/mach-omap2/pm.c:854: warning: ignoring return value
+of 'subsys_create_file', declared with attribute
+warn_unused_result
+
+Signed-off-by: Dirk Behme <dirk.behme@gmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/pm.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
+index 1034eb9..27d7f85 100644
+--- a/arch/arm/mach-omap2/pm.c
++++ b/arch/arm/mach-omap2/pm.c
+@@ -851,7 +851,9 @@ int __init omap2_pm_init(void)
+ 	pm_set_ops(&omap_pm_ops);
+ 	pm_idle = omap2_pm_idle;
+ 
+-	subsys_create_file(&power_subsys, &sleep_while_idle_attr);
++	l = subsys_create_file(&power_subsys, &sleep_while_idle_attr);
++	if (l)
++		printk(KERN_ERR "subsys_create_file failed: %d\n", l);
+ 
+ 	return 0;
+ }
 -- 
-dwmw2
+1.4.4.2
 
+
+--v2/QI0iRXglpx0hK--
