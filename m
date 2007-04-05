@@ -1,971 +1,385 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767171AbXDERya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767151AbXDESC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767171AbXDERya (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 13:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767174AbXDERya
+	id S1767151AbXDESC3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 14:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767175AbXDESC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 13:54:30 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:52956 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767171AbXDERy1 convert rfc822-to-8bit (ORCPT
+	Thu, 5 Apr 2007 14:02:29 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:27347 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1767151AbXDESC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 13:54:27 -0400
-Date: Thu, 5 Apr 2007 19:49:42 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: "Ulrich Drepper" <drepper@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>,
-       "Ravikiran G Thirumalai" <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       "pravin b shelar" <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] FUTEX : new PRIVATE futexes
-Message-Id: <20070405194942.1414c030.dada1@cosmosbay.com>
-In-Reply-To: <a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
-References: <20060808070708.GA3931@localhost.localdomain>
-	<200608090826.28249.dada1@cosmosbay.com>
-	<200608090843.52893.dada1@cosmosbay.com>
-	<200703152010.35614.dada1@cosmosbay.com>
-	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 5 Apr 2007 14:02:27 -0400
+Message-Id: <20070405174319.316472692@programming.kicks-ass.net>
+References: <20070405174209.498059336@programming.kicks-ass.net>
+User-Agent: quilt/0.45-1
+Date: Thu, 05 Apr 2007 19:42:16 +0200
+From: root@programming.kicks-ass.net
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com
+Subject: [PATCH 07/12] mm: per device dirty threshold
+Content-Disposition: inline; filename=writeback-balance-per-backing_dev.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all
+Scale writeback cache per backing device, proportional to its writeout speed.
 
-I'm pleased to present this patch which improves linux futexes performance and 
-scalability, merely avoiding taking mmap_sem rwlock.
+akpm sayeth:
+> Which problem are we trying to solve here?  afaik our two uppermost
+> problems are:
+> 
+> a) Heavy write to queue A causes light writer to queue B to blok for a long
+> time in balance_dirty_pages().  Even if the devices have the same speed.  
 
-Ulrich agreed with the API and said glibc work could start as soon
-as he gets a Fedora kernel with it :)
+This one; esp when not the same speed. The - my usb stick makes my
+computer suck - problem. But even on similar speed, the separation of
+device should avoid blocking dev B when dev A is being throttled.
 
-Andrew, could we get this in mm as well ? This version is against 2.6.21-rc5-mm4
-(so supports 64bit futexes)
+The writeout speed is measure dynamically, so when it doesn't have
+anything to write out for a while its writeback cache size goes to 0.
 
-In this third version I dropped the NUMA optims and process private hash table,
-to let new API come in and be tested.
+Conversely, when starting up it will in the beginning act almost
+synchronous but will quickly build up a 'fair' share of the writeback
+cache.
 
-Thank you
+> b) heavy write to device A causes light write to device A to block for a
+> long time in balance_dirty_pages(), occasionally.  Harder to fix.
 
-[PATCH] FUTEX : new PRIVATE futexes
-
-Analysis of current linux futex code :
---------------------------------------
-
-A central hash table futex_queues[] holds all contexts (futex_q) of waiting 
-threads.
-Each futex_wait()/futex_wait() has to obtain a spinlock on a hash slot to 
-perform lookups or insert/deletion of a futex_q.
-
-When a futex_wait() is done, calling thread has to :
+This will indeed take more. I've thought about it though. But one
+quickly ends up with per task state.
 
 
-1) - Obtain a read lock on mmap_sem to be able to validate the user pointer
-     (calling find_vma()). This validation tells us if the futex uses
-     an inode based store (mapped file), or mm based store (anonymous mem)
+How it all works:
 
-2) - compute a hash key
+We pick a 2^n value based on the total vm size to act as a period -
+vm_cycle_shift. This period measures 'time' in writeout events.
 
-3) - Atomic increment of reference counter on an inode or a mm_struct
+Each writeout increases time and adds to a per bdi counter. This counter is 
+halved when a period expires. So per bdi speed is:
 
-4) - lock part of futex_queues[] hash table
+  0.5 * (previous cycle speed) + this cycle's events.
 
-5) - perform the test on value of futex.
-                (rollback is value != expected_value, returns EWOULDBLOCK)
-        (various loops if test triggers mm faults)
-
-6) queue the context into hash table, release the lock got in 4)
-
-7) - release the read_lock on mmap_sem
-
-   <block>
-
-8) Eventually unqueue the context (but rarely, as this part
- may be done by the futex_wake())
-
-Futexes were designed to improve scalability but current implementation
-has various problems :
-
-- Central hashtable :
- This means scalability problems if many processes/threads want to use
- futexes at the same time.
- This means NUMA unbalance because this hashtable is located on one node.
-
-- Using mmap_sem on every futex() syscall :
-
- Even if mmap_sem is a rw_semaphore, up_read()/down_read() are doing atomic
- ops on mmap_sem, dirtying cache line :
-        - lot of cache line ping pongs on SMP configurations.
-
- mmap_sem is also extensively used by mm code (page faults, mmap()/munmap())
- Highly threaded processes might suffer from mmap_sem contention.
-
- mmap_sem is also used by oprofile code. Enabling oprofile hurts threaded
-programs because of contention on the mmap_sem cache line.
-
-- Using an atomic_inc()/atomic_dec() on inode ref counter or mm ref counter:
- It's also a cache line ping pong on SMP. It also increases mmap_sem hold time
- because of cache misses.
-
-Most of these scalability problems come from the fact that futexes are in
-one global namespace. As we use a central hash table, we must make sure
-they are all using the same reference (given by the mm subsystem).
-We chose to force all futexes be 'shared'. This has a cost.
-
-But fact is POSIX defined PRIVATE and SHARED, allowing clear separation, and
-optimal performance if carefuly implemented. Time has come for linux to have 
-better threading performance.
-
-The goal is to permit new futex commands to avoid :
- - Taking the mmap_sem semaphore, conflicting with other subsystems.
- - Modifying a ref_count on mm or an inode, still conflicting with mm or fs.
-
-This is possible because, for one process using PTHREAD_PROCESS_PRIVATE
-futexes, we only need to distinguish futexes by their virtual address, no
-matter the underlying mm storage is.
-
-
-
-If glibc wants to exploit this new infrastructure, it should use new
-_PRIVATE futex subcommands for PTHREAD_PROCESS_PRIVATE futexes. And
-be prepared to fallback on old subcommands for old kernels. Using one
-global variable with the FUTEX_PRIVATE_FLAG or 0 value should be OK.
-
-PTHREAD_PROCESS_SHARED futexes should still use the old subcommands.
-
-Compatibility with old applications is preserved, they still hit the
-scalability problems, but new applications can fly :)
-
-Note : the same SHARED futex (mapped on a file) can be used by old binaries 
-*and* new binaries, because both binaries will use the old subcommands.
-
-Note : Vast majority of futexes should be using PROCESS_PRIVATE semantic,
-as this is the default semantic. Almost all applications should benefit
-of this changes (new kernel and updated libc)
-
-Some bench results on a Pentium M 1.6 GHz (SMP kernel on a UP machine)
-
-/* calling futex_wait(addr, value) with value != *addr */
-434 cycles per futex(FUTEX_WAIT) call (mixing 2 futexes)
-427 cycles per futex(FUTEX_WAIT) call (using one futex)
-345 cycles per futex(FUTEX_WAIT_PRIVATE) call (mixing 2 futexes)
-345 cycles per futex(FUTEX_WAIT_PRIVATE) call (using one futex)
-For reference :
-187 cycles per getppid() call
-188 cycles per umask() call
-183 cycles per ni_syscall() call
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/futex.h |   45 +++++-
- kernel/futex.c        |  294 +++++++++++++++++++++++++---------------
- 2 files changed, 230 insertions(+), 109 deletions(-)
+ include/linux/backing-dev.h |    8 ++
+ mm/backing-dev.c            |    3 
+ mm/page-writeback.c         |  166 +++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 145 insertions(+), 32 deletions(-)
 
---- linux-2.6.21-rc5-mm4/include/linux/futex.h
-+++ linux-2.6.21-rc5-mm4-ed/include/linux/futex.h
-@@ -19,6 +19,18 @@ union ktime;
- #define FUTEX_TRYLOCK_PI	8
- #define FUTEX_CMP_REQUEUE_PI	9
- 
-+#define FUTEX_PRIVATE_FLAG	128
-+#define FUTEX_CMD_MASK		~FUTEX_PRIVATE_FLAG
-+
-+#define FUTEX_WAIT_PRIVATE	(FUTEX_WAIT | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_WAKE_PRIVATE	(FUTEX_WAKE | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_REQUEUE_PRIVATE	(FUTEX_REQUEUE | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_CMP_REQUEUE_PRIVATE (FUTEX_CMP_REQUEUE | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_WAKE_OP_PRIVATE	(FUTEX_WAKE_OP | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_LOCK_PI_PRIVATE	(FUTEX_LOCK_PI | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_UNLOCK_PI_PRIVATE	(FUTEX_UNLOCK_PI | FUTEX_PRIVATE_FLAG)
-+#define FUTEX_TRYLOCK_PI_PRIVATE (FUTEX_TRYLOCK_PI | FUTEX_PRIVATE_FLAG)
-+
- /*
-  * Support for robust futexes: the kernel cleans up held futexes at
-  * thread exit time.
-@@ -115,8 +127,18 @@ handle_futex_death(u32 __user *uaddr, st
-  * Don't rearrange members without looking at hash_futex().
-  *
-  * offset is aligned to a multiple of sizeof(u32) (== 4) by definition.
-- * We set bit 0 to indicate if it's an inode-based key.
-+ * We use the two low order bits of offset to tell what is the kind of key :
-+ *  00 : Private process futex (PTHREAD_PROCESS_PRIVATE)
-+ *       (no reference on an inode or mm)
-+ *  01 : Shared futex (PTHREAD_PROCESS_SHARED)
-+ *	mapped on a file (reference on the underlying inode)
-+ *  10 : Shared futex (PTHREAD_PROCESS_SHARED)
-+ *       (but private mapping on an mm, and reference taken on it)
-  */
-+
-+#define FUT_OFF_INODE    1 /* We set bit 0 if key has a reference on inode */
-+#define FUT_OFF_MMSHARED 2 /* We set bit 1 if key has a reference on mm */
-+
- union futex_key {
- 	unsigned long __user *uaddr;
- 	struct {
-@@ -135,8 +157,27 @@ union futex_key {
- 		int offset;
- 	} both;
+Index: linux-2.6/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6.orig/include/linux/backing-dev.h
++++ linux-2.6/include/linux/backing-dev.h
+@@ -27,6 +27,8 @@ enum bdi_stat_item {
+ 	BDI_DIRTY,
+ 	BDI_WRITEBACK,
+ 	BDI_UNSTABLE,
++	BDI_WRITEOUT,
++	BDI_WRITEOUT_TOTAL,
+ 	NR_BDI_STAT_ITEMS
  };
--int get_futex_key(void __user *uaddr, union futex_key *key);
-+
-+/**
-+ * get_futex_key - Get parameters which are the keys for a futex.
-+ * @uaddr: virtual address of the futex
-+ * @shared: NULL for a PROCESS_PRIVATE futex,
-+ *	&current->mm->mmap_sem for a PROCESS_SHARED futex
-+ * @key: address where result is stored.
-+ *
-+ * Returns an error code or 0
-+ */
-+int get_futex_key(void __user *uaddr, union futex_key *key,
-+		  struct rw_semaphore *shared);
-+
-+/**
-+ * get_futex_key_refs - Take a reference to the resource addressed by a key
-+ */
- void get_futex_key_refs(union futex_key *key);
-+
-+/**
-+ * drop_futex_key_refs - Drop a reference to the resource addressed by a key.
-+ */
- void drop_futex_key_refs(union futex_key *key);
  
- #ifdef CONFIG_FUTEX
---- linux-2.6.21-rc5-mm4/kernel/futex.c
-+++ linux-2.6.21-rc5-mm4-ed/kernel/futex.c
-@@ -16,6 +16,9 @@
-  *  Copyright (C) 2006 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
-  *  Copyright (C) 2006 Timesys Corp., Thomas Gleixner <tglx@timesys.com>
-  *
-+ *  PRIVATE futexes by Eric Dumazet
-+ *  Copyright (C) 2007 Eric Dumazet <dada1@cosmosbay.com>
-+ *
-  *  Thanks to Ben LaHaise for yelling "hashed waitqueues" loudly
-  *  enough at me, Linus for the original (flawed) idea, Matthew
-  *  Kirkwood for proof-of-concept implementation.
-@@ -199,9 +202,12 @@ static inline int match_futex(union fute
-  * Returns: 0, or negative error code.
-  * The key words are stored in *key on success.
-  *
-- * Should be called with &current->mm->mmap_sem but NOT any spinlocks.
-+ * shared is NULL for PROCESS_PRIVATE futexes
-+ * For other futexes, it points to &current->mm->mmap_sem and
-+ * caller must have taken the reader lock. but NOT any spinlocks.
-  */
--int get_futex_key(void __user *uaddr, union futex_key *key)
-+int get_futex_key(void __user *uaddr, union futex_key *key,
-+	struct rw_semaphore *shared)
- {
- 	unsigned long address = (unsigned long)uaddr;
- 	struct mm_struct *mm = current->mm;
-@@ -218,6 +224,22 @@ int get_futex_key(void __user *uaddr, un
- 	address -= key->both.offset;
+@@ -50,6 +52,12 @@ struct backing_dev_info {
+ 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
+ 	void *unplug_io_data;
  
- 	/*
-+	 * PROCESS_PRIVATE futexes are fast.
-+	 * As the mm cannot disappear under us and the 'key' only needs
-+	 * virtual address, we dont even have to find the underlying vma.
-+	 * Note : We do have to check 'address' is a valid user address,
-+	 *        but access_ok() should be faster than find_vma()
-+	 * Note : At this point, address points to the start of page,
-+	 *        not the real futex address, this is ok.
-+	 */
-+	if (!shared) {
-+		if (!access_ok(VERIFY_WRITE, address, sizeof(int)))
-+			return -EFAULT;
-+		key->private.mm = mm;
-+		key->private.address = address;
-+		return 0;
-+	}
 +	/*
- 	 * The futex is hashed differently depending on whether
- 	 * it's in a shared or private mapping.  So check vma first.
- 	 */
-@@ -244,6 +266,7 @@ int get_futex_key(void __user *uaddr, un
- 	 * mappings of _writable_ handles.
- 	 */
- 	if (likely(!(vma->vm_flags & VM_MAYSHARE))) {
-+		key->both.offset += FUT_OFF_MMSHARED; /* reference taken on mm */
- 		key->private.mm = mm;
- 		key->private.address = address;
- 		return 0;
-@@ -253,7 +276,7 @@ int get_futex_key(void __user *uaddr, un
- 	 * Linear file mappings are also simple.
- 	 */
- 	key->shared.inode = vma->vm_file->f_path.dentry->d_inode;
--	key->both.offset++; /* Bit 0 of offset indicates inode-based key. */
-+	key->both.offset += FUT_OFF_INODE; /* inode-based key. */
- 	if (likely(!(vma->vm_flags & VM_NONLINEAR))) {
- 		key->shared.pgoff = (((address - vma->vm_start) >> PAGE_SHIFT)
- 				     + vma->vm_pgoff);
-@@ -281,17 +304,19 @@ EXPORT_SYMBOL_GPL(get_futex_key);
-  * Take a reference to the resource addressed by a key.
-  * Can be called while holding spinlocks.
++	 * data used for scaling the writeback cache
++	 */
++	spinlock_t lock;	/* protect the cycle count */
++	unsigned long cycles;	/* writeout cycles */
++
+ 	atomic_long_t bdi_stats[NR_BDI_STAT_ITEMS];
+ #ifdef CONFIG_SMP
+ 	struct bdi_per_cpu_data pcd[NR_CPUS];
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -49,8 +49,6 @@
+  */
+ static long ratelimit_pages = 32;
+ 
+-static int dirty_exceeded __cacheline_aligned_in_smp;	/* Dirty mem may be over limit */
+-
+ /*
+  * When balance_dirty_pages decides that the caller needs to perform some
+  * non-background writeback, this is how many pages it will attempt to write.
+@@ -103,6 +101,87 @@ EXPORT_SYMBOL(laptop_mode);
+ static void background_writeout(unsigned long _min_pages);
+ 
+ /*
++ * Scale the writeback cache size proportional to the relative writeout speeds.
++ *
++ * We do this by tracking a floating average per BDI and a global floating
++ * average. We optimize away the '/= 2' for the global average by noting that:
++ *
++ *  if (++i > thresh) i /= 2:
++ *
++ * Can be approximated by:
++ *
++ *   thresh/2 + (++i % thresh/2)
++ *
++ * Furthermore, when we choose thresh to be 2^n it can be written in terms of
++ * binary operations and wraparound artifacts disappear.
++ *
++ * Also note that this yields a natural counter of the elapsed periods:
++ *
++ *   i / thresh
++ *
++ * Its monotonous increasing property can be applied to mitigate the wrap-
++ * around issue.
++ */
++static int vm_cycle_shift __read_mostly;
++
++/*
++ * Sync up the per BDI average to the global cycle.
++ */
++static void bdi_writeout_norm(struct backing_dev_info *bdi)
++{
++	int bits = vm_cycle_shift;
++	unsigned long cycle = 1UL << bits;
++	unsigned long mask = ~(cycle - 1);
++	unsigned long global_cycle =
++		(__global_bdi_stat(BDI_WRITEOUT_TOTAL) << 1) & mask;
++	unsigned long flags;
++
++	if ((bdi->cycles & mask) == global_cycle)
++		return;
++
++	spin_lock_irqsave(&bdi->lock, flags);
++	while ((bdi->cycles & mask) != global_cycle) {
++		unsigned long val = __bdi_stat(bdi, BDI_WRITEOUT);
++		unsigned long half = (val + 1) >> 1;
++
++		if (!val)
++			break;
++
++		mod_bdi_stat(bdi, BDI_WRITEOUT, -half);
++		bdi->cycles += cycle;
++	}
++	bdi->cycles = global_cycle;
++	spin_unlock_irqrestore(&bdi->lock, flags);
++}
++
++static void bdi_writeout_inc(struct backing_dev_info *bdi)
++{
++	if (!bdi_cap_writeback_dirty(bdi))
++		return;
++
++	bdi_writeout_norm(bdi);
++
++	__inc_bdi_stat(bdi, BDI_WRITEOUT);
++	__inc_bdi_stat(bdi, BDI_WRITEOUT_TOTAL);
++}
++
++void get_writeout_scale(struct backing_dev_info *bdi, int *scale, int *div)
++{
++	int bits = vm_cycle_shift - 1;
++	unsigned long total = __global_bdi_stat(BDI_WRITEOUT_TOTAL);
++	unsigned long cycle = 1UL << bits;
++	unsigned long mask = cycle - 1;
++
++	if (bdi_cap_writeback_dirty(bdi)) {
++		bdi_writeout_norm(bdi);
++		*scale = __bdi_stat(bdi, BDI_WRITEOUT);
++	} else
++		*scale = 0;
++
++	*div = cycle + (total & mask);
++}
++
++/*
+  * Work out the current dirty-memory clamping and background writeout
+  * thresholds.
   *
-- * NOTE: mmap_sem MUST be held between get_futex_key() and calling this
-- * function, if it is called at all.  mmap_sem keeps key->shared.inode valid.
-  */
- inline void get_futex_key_refs(union futex_key *key)
- {
--	if (key->both.ptr != 0) {
--		if (key->both.offset & 1)
-+	if (key->both.ptr == 0)
-+		return;
-+	switch (key->both.offset & (FUT_OFF_INODE|FUT_OFF_MMSHARED)) {
-+		case FUT_OFF_INODE:
- 			atomic_inc(&key->shared.inode->i_count);
--		else
-+			break;
-+		case FUT_OFF_MMSHARED:
- 			atomic_inc(&key->private.mm->mm_count);
--	}
-+			break;
-+  	}
+@@ -158,8 +237,8 @@ static unsigned long determine_dirtyable
  }
- EXPORT_SYMBOL_GPL(get_futex_key_refs);
  
-@@ -301,11 +326,15 @@ EXPORT_SYMBOL_GPL(get_futex_key_refs);
-  */
- void drop_futex_key_refs(union futex_key *key)
+ static void
+-get_dirty_limits(long *pbackground, long *pdirty,
+-					struct address_space *mapping)
++get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
++		 struct backing_dev_info *bdi)
  {
--	if (key->both.ptr != 0) {
--		if (key->both.offset & 1)
-+	if (key->both.ptr == 0)
-+		return;
-+	switch (key->both.offset & (FUT_OFF_INODE|FUT_OFF_MMSHARED)) {
-+		case FUT_OFF_INODE:
- 			iput(key->shared.inode);
--		else
-+			break;
-+		case FUT_OFF_MMSHARED:
- 			mmdrop(key->private.mm);
-+			break;
+ 	int background_ratio;		/* Percentages */
+ 	int dirty_ratio;
+@@ -193,6 +272,31 @@ get_dirty_limits(long *pbackground, long
  	}
- }
- EXPORT_SYMBOL_GPL(drop_futex_key_refs);
-@@ -339,28 +368,40 @@ get_futex_value_locked(unsigned long *de
+ 	*pbackground = background;
+ 	*pdirty = dirty;
++
++	if (bdi) {
++		long long tmp = dirty;
++		long reserve;
++		int scale, div;
++
++		get_writeout_scale(bdi, &scale, &div);
++
++		tmp *= scale;
++		do_div(tmp, div);
++
++		reserve = dirty -
++			(global_bdi_stat(BDI_DIRTY) +
++			 global_bdi_stat(BDI_WRITEBACK) +
++			 global_bdi_stat(BDI_UNSTABLE));
++
++		if (reserve < 0)
++			reserve = 0;
++
++		reserve += bdi_stat(bdi, BDI_DIRTY) +
++			bdi_stat(bdi, BDI_WRITEBACK) +
++			bdi_stat(bdi, BDI_UNSTABLE);
++
++		*pbdi_dirty = min((long)tmp, reserve);
++	}
  }
  
  /*
-- * Fault handling. Called with current->mm->mmap_sem held.
-+ * Fault handling.
-+ * if shared is non NULL, current->mm->mmap_sem is already held
+@@ -204,9 +308,10 @@ get_dirty_limits(long *pbackground, long
   */
--static int futex_handle_fault(unsigned long address, int attempt)
-+static int futex_handle_fault(unsigned long address, int attempt,
-+	struct rw_semaphore *shared)
+ static void balance_dirty_pages(struct address_space *mapping)
  {
- 	struct vm_area_struct * vma;
- 	struct mm_struct *mm = current->mm;
-+	int ret = 0;
+-	long nr_reclaimable;
++	long bdi_nr_reclaimable;
+ 	long background_thresh;
+ 	long dirty_thresh;
++	long bdi_thresh;
+ 	unsigned long pages_written = 0;
+ 	unsigned long write_chunk = sync_writeback_pages();
  
--	if (attempt > 2 || !(vma = find_vma(mm, address)) ||
--	    vma->vm_start > address || !(vma->vm_flags & VM_WRITE))
-+	if (attempt > 2)
- 		return -EFAULT;
+@@ -221,32 +326,31 @@ static void balance_dirty_pages(struct a
+ 			.range_cyclic	= 1,
+ 		};
  
--	switch (handle_mm_fault(mm, vma, address, 1)) {
--	case VM_FAULT_MINOR:
--		current->min_flt++;
--		break;
--	case VM_FAULT_MAJOR:
--		current->maj_flt++;
--		break;
--	default:
--		return -EFAULT;
--	}
--	return 0;
-+	if (!shared)
-+		down_read(&mm->mmap_sem);
+-		get_dirty_limits(&background_thresh, &dirty_thresh, mapping);
+-		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+-					global_page_state(NR_UNSTABLE_NFS);
+-		if (nr_reclaimable + global_page_state(NR_WRITEBACK) <=
+-			dirty_thresh)
++		get_dirty_limits(&background_thresh, &dirty_thresh,
++				&bdi_thresh, bdi);
++		bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY) +
++					bdi_stat(bdi, BDI_UNSTABLE);
++		if (bdi_nr_reclaimable + bdi_stat(bdi, BDI_WRITEBACK) <=
++		     	bdi_thresh)
+ 				break;
+ 
+-		if (!dirty_exceeded)
+-			dirty_exceeded = 1;
+-
+ 		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
+ 		 * Unstable writes are a feature of certain networked
+ 		 * filesystems (i.e. NFS) in which data may have been
+ 		 * written to the server's write cache, but has not yet
+ 		 * been flushed to permanent storage.
+ 		 */
+-		if (nr_reclaimable) {
++		if (bdi_nr_reclaimable) {
+ 			writeback_inodes(&wbc);
+-			get_dirty_limits(&background_thresh,
+-					 	&dirty_thresh, mapping);
+-			nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+-					global_page_state(NR_UNSTABLE_NFS);
+-			if (nr_reclaimable +
+-				global_page_state(NR_WRITEBACK)
+-					<= dirty_thresh)
+-						break;
 +
-+	if (!(vma = find_vma(mm, address)) ||
-+	    vma->vm_start > address || !(vma->vm_flags & VM_WRITE))
-+		ret = -EFAULT;
++			get_dirty_limits(&background_thresh, &dirty_thresh,
++				       &bdi_thresh, bdi);
++			bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY) +
++						bdi_stat(bdi, BDI_UNSTABLE);
++			if (bdi_nr_reclaimable + bdi_stat(bdi, BDI_WRITEBACK) <=
++			     	bdi_thresh)
++				break;
 +
-+	else
-+		switch (handle_mm_fault(mm, vma, address, 1)) {
-+		case VM_FAULT_MINOR:
-+			current->min_flt++;
-+			break;
-+		case VM_FAULT_MAJOR:
-+			current->maj_flt++;
-+			break;
-+		default:
-+			ret = -EFAULT;
-+		}
-+	if (!shared)
-+		up_read(&mm->mmap_sem);
-+	return ret;
- }
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			if (pages_written >= write_chunk)
+ 				break;		/* We've done our duty */
+@@ -254,10 +358,6 @@ static void balance_dirty_pages(struct a
+ 		congestion_wait(WRITE, HZ/10);
+ 	}
  
- /*
-@@ -705,7 +746,8 @@ double_lock_hb(struct futex_hash_bucket 
-  * Wake up all waiters hashed on the physical page that is mapped
-  * to this virtual address:
-  */
--static int futex_wake(unsigned long __user *uaddr, int nr_wake)
-+static int futex_wake(unsigned long __user *uaddr, int nr_wake,
-+	struct rw_semaphore *shared)
- {
- 	struct futex_hash_bucket *hb;
- 	struct futex_q *this, *next;
-@@ -713,9 +755,10 @@ static int futex_wake(unsigned long __us
- 	union futex_key key;
- 	int ret;
+-	if (nr_reclaimable + global_page_state(NR_WRITEBACK)
+-		<= dirty_thresh && dirty_exceeded)
+-			dirty_exceeded = 0;
+-
+ 	if (writeback_in_progress(bdi))
+ 		return;		/* pdflush is already working this queue */
  
--	down_read(&current->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
- 
--	ret = get_futex_key(uaddr, &key);
-+	ret = get_futex_key(uaddr, &key, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -737,7 +780,8 @@ static int futex_wake(unsigned long __us
- 
- 	spin_unlock(&hb->lock);
- out:
--	up_read(&current->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 	return ret;
- }
- 
-@@ -807,7 +851,8 @@ retry:
-  */
- static int
- futex_requeue_pi(unsigned long __user *uaddr1, unsigned long __user *uaddr2,
--		 int nr_wake, int nr_requeue, unsigned long *cmpval, int futex64)
-+		 int nr_wake, int nr_requeue, unsigned long *cmpval, int futex64,
-+		 struct rw_semaphore *shared)
- {
- 	union futex_key key1, key2;
- 	struct futex_hash_bucket *hb1, *hb2;
-@@ -825,12 +870,13 @@ retry:
- 	/*
- 	 * First take all the futex related locks:
+@@ -270,7 +370,9 @@ static void balance_dirty_pages(struct a
+ 	 * background_thresh, to keep the amount of dirty memory low.
  	 */
--	down_read(&current->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
+ 	if ((laptop_mode && pages_written) ||
+-	     (!laptop_mode && (nr_reclaimable > background_thresh)))
++			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
++					  + global_page_state(NR_UNSTABLE_NFS)
++					  > background_thresh)))
+ 		pdflush_operation(background_writeout, 0);
+ }
  
--	ret = get_futex_key(uaddr1, &key1);
-+	ret = get_futex_key(uaddr1, &key1, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, &key2);
-+	ret = get_futex_key(uaddr2, &key2, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
+@@ -305,9 +407,7 @@ void balance_dirty_pages_ratelimited_nr(
+ 	unsigned long ratelimit;
+ 	unsigned long *p;
  
-@@ -998,7 +1044,8 @@ out:
-  */
- static int
- futex_wake_op(unsigned long __user *uaddr1, unsigned long __user *uaddr2,
--	      int nr_wake, int nr_wake2, int op, int futex64)
-+	      int nr_wake, int nr_wake2, int op, int futex64,
-+		struct rw_semaphore *shared)
- {
- 	union futex_key key1, key2;
- 	struct futex_hash_bucket *hb1, *hb2;
-@@ -1007,12 +1054,13 @@ futex_wake_op(unsigned long __user *uadd
- 	int ret, op_ret, attempt = 0;
+-	ratelimit = ratelimit_pages;
+-	if (dirty_exceeded)
+-		ratelimit = 8;
++	ratelimit = 8;
  
- retryfull:
--	down_read(&current->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
+ 	/*
+ 	 * Check the rate limiting. Also, we do not want to throttle real-time
+@@ -342,7 +442,7 @@ void throttle_vm_writeout(gfp_t gfp_mask
+ 	}
  
--	ret = get_futex_key(uaddr1, &key1);
-+	ret = get_futex_key(uaddr1, &key1, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, &key2);
-+	ret = get_futex_key(uaddr2, &key2, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
+         for ( ; ; ) {
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
++		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
  
-@@ -1055,15 +1103,14 @@ retry:
- 		 * futex_atomic_op_inuser needs to both read and write
- 		 * *(int __user *)uaddr2, but we can't modify it
- 		 * non-atomically.  Therefore, if get_user below is not
--		 * enough, we need to handle the fault ourselves, while
--		 * still holding the mmap_sem.
-+		 * enough, we need to handle the fault ourselves. Make 
-+		 * sure we hold mmap_sem.
- 		 */
- 		if (attempt++) {
--			if (futex_handle_fault((unsigned long)uaddr2,
--						attempt)) {
--				ret = -EFAULT;
-+			ret = futex_handle_fault((unsigned long)uaddr2,
-+						attempt, shared);
-+			if (ret)
- 				goto out;
--			}
- 			goto retry;
+                 /*
+                  * Boost the allowable dirty threshold a bit for page
+@@ -377,7 +477,7 @@ static void background_writeout(unsigned
+ 		long background_thresh;
+ 		long dirty_thresh;
+ 
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
++		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+ 		if (global_page_state(NR_FILE_DIRTY) +
+ 			global_page_state(NR_UNSTABLE_NFS) < background_thresh
+ 				&& min_pages <= 0)
+@@ -585,6 +685,7 @@ void __init page_writeback_init(void)
+ 	mod_timer(&wb_timer, jiffies + dirty_writeback_interval);
+ 	writeback_set_ratelimit();
+ 	register_cpu_notifier(&ratelimit_nb);
++	vm_cycle_shift = 1 + ilog2(vm_total_pages);
+ }
+ 
+ /**
+@@ -986,6 +1087,7 @@ int test_clear_page_writeback(struct pag
+ 						page_index(page),
+ 						PAGECACHE_TAG_WRITEBACK);
+ 			__dec_bdi_stat(mapping->backing_dev_info, BDI_WRITEBACK);
++			bdi_writeout_inc(mapping->backing_dev_info);
  		}
- 
-@@ -1071,7 +1118,8 @@ retry:
- 		 * If we would have faulted, release mmap_sem,
- 		 * fault it in and start all over again.
- 		 */
--		up_read(&current->mm->mmap_sem);
-+		if (shared)
-+			up_read(shared);
- 
- 		ret = futex_get_user(&dummy, uaddr2, futex64);
- 		if (ret)
-@@ -1108,7 +1156,8 @@ retry:
- 	if (hb1 != hb2)
- 		spin_unlock(&hb2->lock);
- out:
--	up_read(&current->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 	return ret;
- }
- 
-@@ -1118,7 +1167,8 @@ out:
-  */
- static int
- futex_requeue(unsigned long __user *uaddr1, unsigned long __user *uaddr2,
--	      int nr_wake, int nr_requeue, unsigned long *cmpval, int futex64)
-+	      int nr_wake, int nr_requeue, unsigned long *cmpval, int futex64,
-+		struct rw_semaphore *shared)
+ 		write_unlock_irqrestore(&mapping->tree_lock, flags);
+ 	} else {
+Index: linux-2.6/mm/backing-dev.c
+===================================================================
+--- linux-2.6.orig/mm/backing-dev.c
++++ linux-2.6/mm/backing-dev.c
+@@ -91,6 +91,9 @@ void bdi_init(struct backing_dev_in
  {
- 	union futex_key key1, key2;
- 	struct futex_hash_bucket *hb1, *hb2;
-@@ -1127,12 +1177,13 @@ futex_requeue(unsigned long __user *uadd
- 	int ret, drop_count = 0;
+ 	int i;
  
-  retry:
--	down_read(&current->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
- 
--	ret = get_futex_key(uaddr1, &key1);
-+	ret = get_futex_key(uaddr1, &key1, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, &key2);
-+	ret = get_futex_key(uaddr2, &key2, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -1155,7 +1206,8 @@ futex_requeue(unsigned long __user *uadd
- 			 * If we would have faulted, release mmap_sem, fault
- 			 * it in and start all over again.
- 			 */
--			up_read(&current->mm->mmap_sem);
-+			if (shared)
-+				up_read(shared);
- 
- 			ret = futex_get_user(&curval, uaddr1, futex64);
- 
-@@ -1208,7 +1260,8 @@ out_unlock:
- 		drop_futex_key_refs(&key1);
- 
- out:
--	up_read(&current->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 	return ret;
- }
- 
-@@ -1392,7 +1445,8 @@ static int fixup_pi_state_owner(unsigned
- 
- static long futex_wait_restart(struct restart_block *restart);
- static int futex_wait(unsigned long __user *uaddr, unsigned long val,
--		      ktime_t *abs_time, int futex64)
-+		      ktime_t *abs_time, int futex64,
-+		      struct rw_semaphore *shared)
- {
- 	struct task_struct *curr = current;
- 	DECLARE_WAITQUEUE(wait, curr);
-@@ -1405,9 +1459,10 @@ static int futex_wait(unsigned long __us
- 
- 	q.pi_state = NULL;
-  retry:
--	down_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
- 
--	ret = get_futex_key(uaddr, &q.key);
-+	ret = get_futex_key(uaddr, &q.key, shared);
- 	if (unlikely(ret != 0))
- 		goto out_release_sem;
- 
-@@ -1430,8 +1485,8 @@ static int futex_wait(unsigned long __us
- 	 * a wakeup when *uaddr != val on entry to the syscall.  This is
- 	 * rare, but normal.
- 	 *
--	 * We hold the mmap semaphore, so the mapping cannot have changed
--	 * since we looked it up in get_futex_key.
-+	 * for shared futexes, we hold the mmap semaphore, so the mapping
-+	 * cannot have changed since we looked it up in get_futex_key.
- 	 */
- 	ret = get_futex_value_locked(&uval, uaddr, futex64);
- 
-@@ -1442,7 +1497,8 @@ static int futex_wait(unsigned long __us
- 		 * If we would have faulted, release mmap_sem, fault it in and
- 		 * start all over again.
- 		 */
--		up_read(&curr->mm->mmap_sem);
-+		if (shared)
-+			up_read(shared);
- 		ret = futex_get_user(&uval, uaddr, futex64);
- 
- 		if (!ret)
-@@ -1468,7 +1524,8 @@ static int futex_wait(unsigned long __us
- 	 * Now the futex is queued and we have checked the data, we
- 	 * don't want to hold mmap_sem while we sleep.
- 	 */
--	up_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 
- 	/*
- 	 * There might have been scheduling since the queue_me(), as we
-@@ -1568,7 +1625,8 @@ static int futex_wait(unsigned long __us
- 			}
- 			/* Unqueue and drop the lock */
- 			unqueue_me_pi(&q);
--			up_read(&curr->mm->mmap_sem);
-+			if (shared)
-+				up_read(shared);
- 		}
- 
- 		debug_rt_mutex_free_waiter(&q.waiter);
-@@ -1598,6 +1656,8 @@ static int futex_wait(unsigned long __us
- 		restart->arg1 = val;
- 		restart->arg2 = (unsigned long)abs_time;
- 		restart->arg3 = (unsigned long)futex64;
-+		if (shared)
-+			restart->arg3 |= 2;
- 		return -ERESTART_RESTARTBLOCK;
- 	}
- 
-@@ -1605,7 +1665,8 @@ static int futex_wait(unsigned long __us
- 	queue_unlock(&q, hb);
- 
-  out_release_sem:
--	up_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 	return ret;
- }
- 
-@@ -1615,10 +1676,11 @@ static long futex_wait_restart(struct re
- 	unsigned long __user *uaddr = (unsigned long __user *)restart->arg0;
- 	unsigned long val = restart->arg1;
- 	ktime_t *abs_time = (ktime_t *)restart->arg2;
--	int futex64 = (int)restart->arg3;
-+	int futex64 = (int)restart->arg3 & 1 ;
-+	struct rw_semaphore *shared = (restart->arg3 & 2) ? &current->mm->mmap_sem : NULL;
- 
- 	restart->fn = do_no_restart_syscall;
--	return (long)futex_wait(uaddr, val, abs_time, futex64);
-+	return (long)futex_wait(uaddr, val, abs_time, futex64, shared);
- }
- 
- 
-@@ -1674,7 +1736,7 @@ static void set_pi_futex_owner(struct fu
-  * races the kernel might see a 0 value of the futex too.)
-  */
- static int futex_lock_pi(unsigned long __user *uaddr, int detect, ktime_t *time,
--			 int trylock, int futex64)
-+			 int trylock, int futex64, struct rw_semaphore *shared)
- {
- 	struct hrtimer_sleeper timeout, *to = NULL;
- 	struct task_struct *curr = current;
-@@ -1695,9 +1757,10 @@ static int futex_lock_pi(unsigned long _
- 
- 	q.pi_state = NULL;
-  retry:
--	down_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
- 
--	ret = get_futex_key(uaddr, &q.key);
-+	ret = get_futex_key(uaddr, &q.key, shared);
- 	if (unlikely(ret != 0))
- 		goto out_release_sem;
- 
-@@ -1818,7 +1881,8 @@ static int futex_lock_pi(unsigned long _
- 	 * Now the futex is queued and we have checked the data, we
- 	 * don't want to hold mmap_sem while we sleep.
- 	 */
--	up_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 
- 	WARN_ON(!q.pi_state);
- 	/*
-@@ -1832,7 +1896,8 @@ static int futex_lock_pi(unsigned long _
- 		ret = ret ? 0 : -EWOULDBLOCK;
- 	}
- 
--	down_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
- 	spin_lock(q.lock_ptr);
- 
- 	/*
-@@ -1854,7 +1919,8 @@ static int futex_lock_pi(unsigned long _
- 		}
- 		/* Unqueue and drop the lock */
- 		unqueue_me_pi(&q);
--		up_read(&curr->mm->mmap_sem);
-+		if (shared)
-+			up_read(shared);
- 	}
- 
- 	if (!detect && ret == -EDEADLK && 0)
-@@ -1866,7 +1932,8 @@ static int futex_lock_pi(unsigned long _
- 	queue_unlock(&q, hb);
- 
-  out_release_sem:
--	up_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 	return ret;
- 
-  uaddr_faulted:
-@@ -1877,15 +1944,15 @@ static int futex_lock_pi(unsigned long _
- 	 * still holding the mmap_sem.
- 	 */
- 	if (attempt++) {
--		if (futex_handle_fault((unsigned long)uaddr, attempt)) {
--			ret = -EFAULT;
-+		ret = futex_handle_fault((unsigned long)uaddr, attempt, shared);
-+		if (ret)
- 			goto out_unlock_release_sem;
--		}
- 		goto retry_locked;
- 	}
- 
- 	queue_unlock(&q, hb);
--	up_read(&curr->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 
- 	ret = futex_get_user(&uval, uaddr, futex64);
- 	if (!ret && (uval != -EFAULT))
-@@ -1899,7 +1966,8 @@ static int futex_lock_pi(unsigned long _
-  * This is the in-kernel slowpath: we look up the PI state (if any),
-  * and do the rt-mutex unlock.
-  */
--static int futex_unlock_pi(unsigned long __user *uaddr, int futex64)
-+static int futex_unlock_pi(unsigned long __user *uaddr, int futex64,
-+	struct rw_semaphore *shared)
- {
- 	struct futex_hash_bucket *hb;
- 	struct futex_q *this, *next;
-@@ -1919,9 +1987,10 @@ retry:
- 	/*
- 	 * First take all the futex related locks:
- 	 */
--	down_read(&current->mm->mmap_sem);
-+	if (shared)
-+		down_read(shared);
- 
--	ret = get_futex_key(uaddr, &key);
-+	ret = get_futex_key(uaddr, &key, shared);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -1980,7 +2049,8 @@ retry_locked:
- out_unlock:
- 	spin_unlock(&hb->lock);
- out:
--	up_read(&current->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 
- 	return ret;
- 
-@@ -1992,15 +2062,15 @@ pi_faulted:
- 	 * still holding the mmap_sem.
- 	 */
- 	if (attempt++) {
--		if (futex_handle_fault((unsigned long)uaddr, attempt)) {
--			ret = -EFAULT;
-+		ret = futex_handle_fault((unsigned long)uaddr, attempt, shared);
-+		if (ret)
- 			goto out_unlock;
--		}
- 		goto retry_locked;
- 	}
- 
- 	spin_unlock(&hb->lock);
--	up_read(&current->mm->mmap_sem);
-+	if (shared)
-+		up_read(shared);
- 
- 	ret = futex_get_user(&uval, uaddr, futex64);
- 	if (!ret && (uval != -EFAULT))
-@@ -2052,6 +2122,7 @@ static int futex_fd(u32 __user *uaddr, i
- 	struct futex_q *q;
- 	struct file *filp;
- 	int ret, err;
-+	struct rw_semaphore *shared;
- 	static unsigned long printk_interval;
- 
- 	if (printk_timed_ratelimit(&printk_interval, 60 * 60 * 1000)) {
-@@ -2093,11 +2164,12 @@ static int futex_fd(u32 __user *uaddr, i
- 	}
- 	q->pi_state = NULL;
- 
--	down_read(&current->mm->mmap_sem);
--	err = get_futex_key(uaddr, &q->key);
-+	shared = &current->mm->mmap_sem;
-+	down_read(shared);
-+	err = get_futex_key(uaddr, &q->key, shared);
- 
- 	if (unlikely(err != 0)) {
--		up_read(&current->mm->mmap_sem);
-+		up_read(shared);
- 		kfree(q);
- 		goto error;
- 	}
-@@ -2109,7 +2181,7 @@ static int futex_fd(u32 __user *uaddr, i
- 	filp->private_data = q;
- 
- 	queue_me(q, ret, filp);
--	up_read(&current->mm->mmap_sem);
-+	up_read(shared);
- 
- 	/* Now we map fd to filp, so userspace can access it */
- 	fd_install(ret, filp);
-@@ -2238,7 +2310,8 @@ retry:
- 		 */
- 		if (!pi) {
- 			if (uval & FUTEX_WAITERS)
--				futex_wake((unsigned long __user *)uaddr, 1);
-+				futex_wake((unsigned long __user *)uaddr, 1,
-+						&curr->mm->mmap_sem);
- 		}
- 	}
- 	return 0;
-@@ -2326,13 +2399,18 @@ long do_futex(unsigned long __user *uadd
- 	      unsigned long val2, unsigned long val3, int fut64)
- {
- 	int ret;
-+	int opm = op & FUTEX_CMD_MASK;
-+	struct rw_semaphore *shared = NULL;
++	spin_lock_init(&bdi->lock);
++	bdi->cycles = 0;
 +
-+	if (!(op & FUTEX_PRIVATE_FLAG))
-+		shared = &current->mm->mmap_sem;
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
+ 		atomic_long_set(&bdi->bdi_stats[i], 0);
  
--	switch (op) {
-+	switch (opm) {
- 	case FUTEX_WAIT:
--		ret = futex_wait(uaddr, val, timeout, fut64);
-+		ret = futex_wait(uaddr, val, timeout, fut64, shared);
- 		break;
- 	case FUTEX_WAKE:
--		ret = futex_wake(uaddr, val);
-+		ret = futex_wake(uaddr, val, shared);
- 		break;
- 	case FUTEX_FD:
- 		if (fut64)
-@@ -2342,25 +2420,25 @@ long do_futex(unsigned long __user *uadd
- 			ret = futex_fd((u32 __user *)uaddr, val);
- 		break;
- 	case FUTEX_REQUEUE:
--		ret = futex_requeue(uaddr, uaddr2, val, val2, NULL, fut64);
-+		ret = futex_requeue(uaddr, uaddr2, val, val2, NULL, fut64, shared);
- 		break;
- 	case FUTEX_CMP_REQUEUE:
--		ret = futex_requeue(uaddr, uaddr2, val, val2, &val3, fut64);
-+		ret = futex_requeue(uaddr, uaddr2, val, val2, &val3, fut64, shared);
- 		break;
- 	case FUTEX_WAKE_OP:
--		ret = futex_wake_op(uaddr, uaddr2, val, val2, val3, fut64);
-+		ret = futex_wake_op(uaddr, uaddr2, val, val2, val3, fut64, shared);
- 		break;
- 	case FUTEX_LOCK_PI:
--		ret = futex_lock_pi(uaddr, val, timeout, 0, fut64);
-+		ret = futex_lock_pi(uaddr, val, timeout, 0, fut64, shared);
- 		break;
- 	case FUTEX_UNLOCK_PI:
--		ret = futex_unlock_pi(uaddr, fut64);
-+		ret = futex_unlock_pi(uaddr, fut64, shared);
- 		break;
- 	case FUTEX_TRYLOCK_PI:
--		ret = futex_lock_pi(uaddr, 0, timeout, 1, fut64);
-+		ret = futex_lock_pi(uaddr, 0, timeout, 1, fut64, shared);
- 		break;
- 	case FUTEX_CMP_REQUEUE_PI:
--		ret = futex_requeue_pi(uaddr, uaddr2, val, val2, &val3, fut64);
-+		ret = futex_requeue_pi(uaddr, uaddr2, val, val2, &val3, fut64, shared);
- 		break;
- 	default:
- 		ret = -ENOSYS;
-@@ -2377,23 +2455,24 @@ sys_futex64(u64 __user *uaddr, int op, u
- 	struct timespec ts;
- 	ktime_t t, *tp = NULL;
- 	u64 val2 = 0;
-+	int opm = op & FUTEX_CMD_MASK;
- 
--	if (utime && (op == FUTEX_WAIT || op == FUTEX_LOCK_PI)) {
-+	if (utime && (opm == FUTEX_WAIT || opm == FUTEX_LOCK_PI)) {
- 		if (copy_from_user(&ts, utime, sizeof(ts)) != 0)
- 			return -EFAULT;
- 		if (!timespec_valid(&ts))
- 			return -EINVAL;
- 
- 		t = timespec_to_ktime(ts);
--		if (op == FUTEX_WAIT)
-+		if (opm == FUTEX_WAIT)
- 			t = ktime_add(ktime_get(), t);
- 		tp = &t;
- 	}
- 	/*
--	 * requeue parameter in 'utime' if op == FUTEX_REQUEUE.
-+	 * requeue parameter in 'utime' if opm == FUTEX_REQUEUE.
- 	 */
--	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE
--	    || op == FUTEX_CMP_REQUEUE_PI)
-+	if (opm == FUTEX_REQUEUE || opm == FUTEX_CMP_REQUEUE
-+	    || opm == FUTEX_CMP_REQUEUE_PI)
- 		val2 = (unsigned long) utime;
- 
- 	return do_futex((unsigned long __user*)uaddr, op, val, tp,
-@@ -2409,23 +2488,24 @@ asmlinkage long sys_futex(u32 __user *ua
- 	struct timespec ts;
- 	ktime_t t, *tp = NULL;
- 	u32 val2 = 0;
-+	int opm = op & FUTEX_CMD_MASK;
- 
--	if (utime && (op == FUTEX_WAIT || op == FUTEX_LOCK_PI)) {
-+	if (utime && (opm == FUTEX_WAIT || opm == FUTEX_LOCK_PI)) {
- 		if (copy_from_user(&ts, utime, sizeof(ts)) != 0)
- 			return -EFAULT;
- 		if (!timespec_valid(&ts))
- 			return -EINVAL;
- 
- 		t = timespec_to_ktime(ts);
--		if (op == FUTEX_WAIT)
-+		if (opm == FUTEX_WAIT)
- 			t = ktime_add(ktime_get(), t);
- 		tp = &t;
- 	}
- 	/*
- 	 * requeue parameter in 'utime' if op == FUTEX_REQUEUE.
- 	 */
--	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE
--	    || op == FUTEX_CMP_REQUEUE_PI)
-+	if (opm == FUTEX_REQUEUE || opm == FUTEX_CMP_REQUEUE
-+	    || opm == FUTEX_CMP_REQUEUE_PI)
- 		val2 = (u32) (unsigned long) utime;
- 
- 	return do_futex((unsigned long __user*)uaddr, op, val, tp,
+
+--
 
