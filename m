@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767159AbXDERl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767152AbXDERnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767159AbXDERl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 13:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767156AbXDERl5
+	id S1767152AbXDERnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 13:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767158AbXDERnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 13:41:57 -0400
-Received: from lucidpixels.com ([75.144.35.66]:41010 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767154AbXDERl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 13:41:56 -0400
-Date: Thu, 5 Apr 2007 13:41:55 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Kernel 2.6.20.4: Software RAID 5: ata13.00: (irq_stat 0x00020002,
- failed to transmit command FIS)
-In-Reply-To: <Pine.LNX.4.64.0704051243080.3810@p34.internal.lan>
-Message-ID: <Pine.LNX.4.64.0704051339470.3810@p34.internal.lan>
-References: <Pine.LNX.4.64.0704051243080.3810@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 5 Apr 2007 13:43:49 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:14216 "EHLO
+	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1767152AbXDERns (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 13:43:48 -0400
+Message-Id: <20070405174317.592853325@programming.kicks-ass.net>
+References: <20070405174209.498059336@programming.kicks-ass.net>
+User-Agent: quilt/0.45-1
+Date: Thu, 05 Apr 2007 19:42:10 +0200
+From: root@programming.kicks-ass.net
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com
+Subject: [PATCH 01/12] nfs: remove congestion_end()
+Content-Disposition: inline; filename=nfs_congestion_fixup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Its redundant, clear_bdi_congested() already wakes the waiters.
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/nfs/write.c              |    4 +---
+ include/linux/backing-dev.h |    1 -
+ mm/backing-dev.c            |   13 -------------
+ 3 files changed, 1 insertion(+), 17 deletions(-)
 
-On Thu, 5 Apr 2007, Justin Piszcz wrote:
+Index: linux-2.6-mm/fs/nfs/write.c
+===================================================================
+--- linux-2.6-mm.orig/fs/nfs/write.c	2007-04-05 16:24:50.000000000 +0200
++++ linux-2.6-mm/fs/nfs/write.c	2007-04-05 16:25:04.000000000 +0200
+@@ -235,10 +235,8 @@ static void nfs_end_page_writeback(struc
+ 	struct nfs_server *nfss = NFS_SERVER(inode);
+ 
+ 	end_page_writeback(page);
+-	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH) {
++	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
+ 		clear_bdi_congested(&nfss->backing_dev_info, WRITE);
+-		congestion_end(WRITE);
+-	}
+ }
+ 
+ /*
+Index: linux-2.6-mm/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6-mm.orig/include/linux/backing-dev.h	2007-04-05 16:24:50.000000000 +0200
++++ linux-2.6-mm/include/linux/backing-dev.h	2007-04-05 16:25:08.000000000 +0200
+@@ -96,7 +96,6 @@ void clear_bdi_congested(struct backing_
+ void set_bdi_congested(struct backing_dev_info *bdi, int rw);
+ long congestion_wait(int rw, long timeout);
+ long congestion_wait_interruptible(int rw, long timeout);
+-void congestion_end(int rw);
+ 
+ #define bdi_cap_writeback_dirty(bdi) \
+ 	(!((bdi)->capabilities & BDI_CAP_NO_WRITEBACK))
+Index: linux-2.6-mm/mm/backing-dev.c
+===================================================================
+--- linux-2.6-mm.orig/mm/backing-dev.c	2007-04-05 16:24:50.000000000 +0200
++++ linux-2.6-mm/mm/backing-dev.c	2007-04-05 16:25:16.000000000 +0200
+@@ -70,16 +70,3 @@ long congestion_wait_interruptible(int r
+ 	return ret;
+ }
+ EXPORT_SYMBOL(congestion_wait_interruptible);
+-
+-/**
+- * congestion_end - wake up sleepers on a congested backing_dev_info
+- * @rw: READ or WRITE
+- */
+-void congestion_end(int rw)
+-{
+-	wait_queue_head_t *wqh = &congestion_wqh[rw];
+-
+-	if (waitqueue_active(wqh))
+-		wake_up(wqh);
+-}
+-EXPORT_SYMBOL(congestion_end);
 
-> Had a quick question, this is the first time I have seen this happen, and it 
-> was not even under during heavy I/O, hardly anything was going on with the 
-> box at the time.
-
-.. snip ..
-
-# /usr/bin/time badblocks -b 512 -s -v -w /dev/sdl
-Checking for bad blocks in read-write mode
->From block 0 to 293046768
-Testing with pattern 0xaa: done
-Reading and comparing: done
-
-Not a single bad block on the drive so far.  I have not changed anything
-the box physically, with the exception of the BIOS version to V1666 for
-an Intel P965 motherboard (DG965WHMKR).  Any idea what or why this
-happened?  Is it a kernel or actual HW issue?  What caused this to
-occur?  Any thoughts or ideas?
-
-Justin.
+--
 
