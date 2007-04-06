@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767768AbXDFPeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767779AbXDFPj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767768AbXDFPeg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 11:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767771AbXDFPef
+	id S1767779AbXDFPj4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 11:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767778AbXDFPj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 11:34:35 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:50663 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767768AbXDFPee (ORCPT
+	Fri, 6 Apr 2007 11:39:56 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57535 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767777AbXDFPjz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 11:34:34 -0400
-Subject: Re: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10,13
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Burgess <aab@cichlid.com>
-Cc: cebbert@redhat.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, adam radford <aradford@gmail.com>
-In-Reply-To: <200704061512.l36FCFjl031431@cichlid.com>
-References: <200704061512.l36FCFjl031431@cichlid.com>
-Content-Type: text/plain
-Date: Fri, 06 Apr 2007 10:27:57 -0500
-Message-Id: <1175873277.3677.11.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Apr 2007 11:39:55 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Robin Holt <holt@sgi.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: init's children list is long and slows reaping children.
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
+	<Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
+	<46159987.6090006@redhat.com>
+	<Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
+	<m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
+	<20070406104301.GB19755@lnx-holt.americas.sgi.com>
+Date: Fri, 06 Apr 2007 09:38:24 -0600
+In-Reply-To: <20070406104301.GB19755@lnx-holt.americas.sgi.com> (Robin Holt's
+	message of "Fri, 6 Apr 2007 05:43:01 -0500")
+Message-ID: <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-06 at 08:12 -0700, Andrew Burgess wrote:
-> Yes. The 3w-xxxx.c driver changed between 2.6.18 and 2.6.20 but
-> nothing jumps out to my untrained eyes. Here's the diff:
-> Also, I should mention that the working kernel is a fedora
-> rpm (2.6.18-1.2798.fc6) so I don't know what patches are in it.
-> The vmlinuz is dated Oct 6 2006.
+Robin Holt <holt@sgi.com> writes:
 
-It's actually a long standing bug in the 3w-xxxx driver.  Apparently it
-assumes request sense is always the use_sg == 0 case.  This is what it
-does on a request sense:
+>> So I think we have some options once we get the kernel threads out
+>> of the way.  Getting the kernel threads out of the way would seem
+>> to be the first priority.
+>
+> I think both avenues would probably be the right way to proceeed.
+> Getting kthreads to not be parented by init would be an opportunity
+> for optimization.
+>
+> I think organizing the zombie tasks to be easily reaped also has merit.
+> Rapidly forking/exiting processes like udevd during the boot of a
+> different machine were also shown to benefit significantly from this
+> patch.  That machine had 512 cpus and 4608 disk devices, we dropped the
+> device discovery under udevd by 30%.  This, honestly, surprised us.
+> It makes some sense now that I think about it.  This would be a case
+> where improving the zombie handling would be beneficial to more than
+> just kthreads.
 
-static int tw_scsiop_request_sense(TW_Device_Extension *tw_dev, int request_id)
-{
-        dprintk(KERN_NOTICE "3w-xxxx: tw_scsiop_request_sense()\n");
+How hard is tasklist_lock hit on these systems?
 
-        /* For now we just zero the request buffer */
-        memset(tw_dev->srb[request_id]->request_buffer, 0, tw_dev->srb[request_id]->request_bufflen);
-        tw_dev->state[request_id] = TW_S_COMPLETED;
-        tw_state_request_finish(tw_dev, request_id);
-....
+How hard is the pid hash hit on these systems?
 
-Note that it's clearing the request buffer, which is actually zeroing the scatterlist, hence the problem.
+My hunch is that if you are doing a lot of forking and exiting
+zombie reaping isn't the only problem you are observing.
 
-James
+Thinking about it I do agree with Linus that two lists sounds like the
+right solution because it ensures we always have O(1) time when
+waiting for a zombie.  I'd like to place the list head for the zombie
+list in the signal_struct and not in the task_struct so our
+performance continues to be O(1) when we have a threaded process.
 
+The big benefit of the zombie list over your proposed list reordering
+is that waitpid can return immediately when we don't have zombies to
+wait for, but we have lots of children.  So it looks like a universal
+benefit and about as good as it is possible to make zombie handling
+of waitpid.
 
+Eric
