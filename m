@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767748AbXDFP1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767766AbXDFP3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767748AbXDFP1Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 11:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767753AbXDFP1Q
+	id S1767766AbXDFP3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 11:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767767AbXDFP3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 11:27:16 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:27256 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767748AbXDFP1N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 11:27:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BM6bnbGY6aAPmgVvaVShsXdu+1GD7eBNLqyz3N+a6J3tn6i09oWYzbouJH6nvrJIXEl1a/L1p2XL19TqTFBHLbDPiW6Xvv0/YSAivwUhpFCopRvhR3YeZDxK47hItJKsO1j5N/S31hHd4Iwazgil9wxhK13tiSZ210RGfKkhMp8=
-Message-ID: <6bffcb0e0704060827l73aeb8ehf35d80f7630f2ac5@mail.gmail.com>
-Date: Fri, 6 Apr 2007 17:27:11 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] hrtimers debug patch
-Cc: "Nick Piggin" <npiggin@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
+	Fri, 6 Apr 2007 11:29:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44989 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767766AbXDFP3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 11:29:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFD] CPU hotplug and suspend
+Date: Fri, 6 Apr 2007 17:32:31 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Mingming Cao" <cmm@us.ibm.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Sid Boyce" <g3vbv@blueyonder.co.uk>,
-       "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <20070326170225.GA951@elte.hu>
+       Oleg Nesterov <oleg@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070318184908.GU752@stusta.de> <46020385.50301@yahoo.com.au>
-	 <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org>
-	 <1174612132.16068.114.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
-	 <20070323021115.GA11147@wotan.suse.de>
-	 <6bffcb0e0703230051i5accb180r7bd0fb16de85198a@mail.gmail.com>
-	 <20070323120148.GA27505@elte.hu> <4607BDD9.1010002@googlemail.com>
-	 <20070326170225.GA951@elte.hu>
+Message-Id: <200704061732.32712.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi,
 
-On 26/03/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->
-> > Stardust is down, console log and config attached.
->
-> thanks! I have stared at hrtimer.c a few more hours and the good news is
-> that i found a narrow SMP race. The bad news is that i dont think it
-> could explain your bug symptoms: the worst-case effect of the race
-> should be an incorrect timeout on the current CPU - not a KTIME_MAX
-> thing like your logs show.
->
-> But maybe i didnt think through the effects of the bug well enough, and
-> your box has a HT CPU, with HT CPUs being pretty good at triggering
-> narrow SMP races - so maybe we are lucky? Fix attached below. Patch is
-> build and boot-tested.
->
+Currently, we use the CPU hotplug to disable nonboot CPUs in the suspend code
+paths, but with the recent change of code ordering (ie. nonboot CPUs are
+disabled after freezing tasks _and_ devices) it has become quite troublesome.
+The reason of this is that there are some CPU hotplug notifiers registered and
+called on each run of cpu_up()/cpu_down() that assume the system to be fully
+functional, which is not the case during the suspend.  Moreover, at least some
+of them do things that are not really necessary for disabling or enabling the
+nonboot CPUs.
 
-I didn't see this weird hang for 12 days. I think that this patch
-solves this issue.
+For example, it doesn't seem to be necessary to stop worker threads bound to
+the nonboot CPUs when they are disabled, because these CPUs most likely
+reappear during the resume.  This particular problem has caused us to make all
+workqueus nonfreezable, although at least some of them should be freezable, as
+far as the suspend is concerned.
 
-Huge thans!
+The advantage of using the CPU hotplug (in its current form) for suspending is
+that if some CPUs don't reappear during the resume, we are safe.  Still, I
+think it would be more appropriate, and simpler in the long run, to notify the
+interested subsystems _only_ if one (or more) CPUs are not functional after the
+resume.  In fact, with the current code ordering the subsystems don't even need
+to know that we have disabled and enabled the nonboot CPUs, unless something
+goes wrong.
 
-Regards,
-Michal
+For this reason, I'd like to change the suspend code to use a simplified CPU
+management, sharing some low-level code with the current CPU hotplug, that
+won't call all of the CPU hotplug notifiers at all, but will be able to call
+some other special notifiers in case one (or more) of the nonboot CPUs cannot
+be enabled.  Of course, that would require the subsystems to register separate
+CPU notifiers for the resume, but I think they may share some code with the
+current CPU hotplug notifiers.
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+It seems to me that we should separate the special case of suspend from the
+"run-time" CPU hotplug, or things will get more and more complicated over time.
+Still, that would be quite radical redesign, so I'm not sure if it's generally
+acceptable.
+
+Please advise.
+
+Greetings,
+Rafael
