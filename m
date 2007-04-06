@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbXDFTCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbXDFTDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751048AbXDFTCq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 15:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbXDFTCp
+	id S1751218AbXDFTDy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 15:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXDFTDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 15:02:45 -0400
-Received: from waste.org ([66.93.16.53]:47595 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbXDFTCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 15:02:44 -0400
-Date: Fri, 6 Apr 2007 13:50:11 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Milind Arun Choudhary <milindchoudhary@gmail.com>
-Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [KJ][RFC]NAME_OFFSET macro
-Message-ID: <20070406185011.GW10459@waste.org>
-References: <20070406085813.GA12105@arun.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070406085813.GA12105@arun.site>
-User-Agent: Mutt/1.5.9i
+	Fri, 6 Apr 2007 15:03:54 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38622 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbXDFTDx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 15:03:53 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46169968.2050006@s5r6.in-berlin.de>
+Date: Fri, 06 Apr 2007 21:03:04 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070303 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: coding style for long conditions (WAS: Re: [PATCH 25/90] ...
+ blinky leds!!)
+References: <11757099691323-git-send-email-tony@atomide.com> <200704051119.11944.david-b@pacbell.net> <Pine.LNX.4.61.0704052232540.6042@yvahk01.tjqt.qr> <200704061029.55710.david-b@pacbell.net>
+In-Reply-To: <200704061029.55710.david-b@pacbell.net>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 06, 2007 at 02:28:13PM +0530, Milind Arun Choudhary wrote:
+David Brownell wrote:
+[...]
+>>> 1	if (To control chain reactions, your odds
+>>> 2			Improve if you've got cadmium rods) {
+>>> 3		In your fission reactor
+>>> 4		Their lack is a factor
+>>> 5	}
+>>> 6	In screams of "A meltdown! Ye gods!"
+>>>
+>>> Now, the former makes it hard to tell what's condition vs consequent.
+>>> (Or whatever the correct technical term is in cases like these.)
+>> My fu dictates that continuation lines (line 2 in this example)
+>> should have more indent than line 1, 
 > 
-> milind@arun:~/src/linux> egrep -rin "#define.*NAME_?OFFSET" .
-> ./arch/alpha/kernel/osf_sys.c:95:#define NAME_OFFSET    offsetof (struct osf_dirent, d_name)
-> ./arch/mips/kernel/sysirix.c:1738:#define NAME_OFFSET32(de) ((int) ((de)->d_name - (char *) (de)))
-> ./arch/mips/kernel/sysirix.c:1840:#define NAME_OFFSET64(de) ((int) ((de)->d_name - (char *) (de)))
-> ./arch/parisc/hpux/fs.c:72:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-> ./arch/parisc/kernel/sys_parisc32.c:315:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-> ./arch/powerpc/kernel/sys_ppc32.c:57:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-> ./arch/sparc/kernel/sys_sunos.c:324:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-> ./arch/sparc64/kernel/sys_sunos32.c:275:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-> ./drivers/isdn/hardware/eicon/s_4bri.c:184:#define FPGA_NAME_OFFSET         0x10
-> ./fs/compat.c:903:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-> ./fs/readdir.c:54:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-> ./include/linux/fuse.h:342:#define FUSE_NAME_OFFSET ((unsigned) ((struct fuse_dirent *) 0)->name)
+> Yes.  Where "indent" is measured -- always!! -- in tabs.
+> Documentation/Coding style is quite explicit on that point:
 > 
-> 
-> just working out different options before putting it in kernel.h
-> 
-> as all the dirent structures have used the 
-> same name for the d_name member,so we can use
-> 
-> #define NAME_OFFSET(dirent) ((int) ((dirent)->d_name - (char __user *) (dirent)))
-> 
-> but then it becomes binding on the future users
->  to maintain the same naming  convention.
-> 
-> #define NAME_OFFSET(dirent,d_name) ((int) ((dirent)->d_name - (char __user *) (dirent)))
-> 
-> #define NAME_OFFSET(dirent,d_name) offsetof(struct dirent,d_name)
-> 
-> though ..the first one seem to be just fine
-> 
-> thoughts
+> 	Outside of comments, documentation and except in Kconfig,
+> 	spaces are never used for indentation ...
 
-Delete all instances of the macro. Replace all uses of it with
-offsetof(foo, name). You wouldn't wrap a simple sizeof in a macro like
-this, there's no reason to do so with offsetof except for ignorance of
-offsetof's existence.
+I usually indent this way if expressions exceed the 80 columns limit:
 
-Actually most of the above are probably copy and paste of code predating the
-kernel having a global offsetof definition.
+	if (foo___________ &&
+	    bar___________) {
+		doit;
+	}
+and
+	if ((one___________ ||
+	     one_and_a_half) &&
+	    two___________) {
+		doit;
+	}
+and
+	call(abc_______,
+	     def___);
+and
 
+static int definition(abc_______,
+		      def___)
+{
+...
+
+and I know I'm not the only one.  Yes, this means I indent with tabs and
+spaces --- if I wrap within expressions or within lists of function
+arguments.  Of course there are always leading tabs before spaces, never
+leading spaces.
+
+PS:  Everyone please try to avoid blowing CodingStyle up to a 200 pages
+document.  Thanks.
 -- 
-Mathematics is the supreme nostalgia of our time.
+Stefan Richter
+-=====-=-=== -=-- --==-
+http://arcgraph.de/sr/
