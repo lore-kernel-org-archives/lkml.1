@@ -1,96 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbXDFWHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbXDFWIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932808AbXDFWHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 18:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933217AbXDFWGV
+	id S932398AbXDFWIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 18:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933175AbXDFWHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 18:06:21 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:50529 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933222AbXDFWGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:06:18 -0400
-Date: Sat, 7 Apr 2007 00:04:23 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: David Brownell <david-b@pacbell.net>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, Tony Lindgren <tony@atomide.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: coding style for long conditions (WAS: Re: [PATCH 25/90] ...
- blinky leds!!)
-In-Reply-To: <200704061357.03700.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.61.0704062354530.6042@yvahk01.tjqt.qr>
-References: <11757099691323-git-send-email-tony@atomide.com>
- <200704061029.55710.david-b@pacbell.net> <Pine.LNX.4.61.0704061951580.6042@yvahk01.tjqt.qr>
- <200704061357.03700.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Fri, 6 Apr 2007 18:07:49 -0400
+Received: from waste.org ([66.93.16.53]:40087 "EHLO cinder.waste.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933165AbXDFWBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 18:01:39 -0400
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-PatchBomber: http://selenic.com/scripts/mailpatches
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1.469046093@selenic.com>
+Message-Id: <5.469046093@selenic.com>
+Subject: [PATCH 4/13] maps#2: Propagate errors from callback in page walker
+Date: Fri, 06 Apr 2007 17:03:04 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+Propagate errors from callback in page walker
 
+Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-On Apr 6 2007 13:57, David Brownell wrote:
->> though I do not speak for 
->> them, seem to do it much the way I described, judging from the code they
->> wrote/write.
->
->Your eyes are broken then ...
-
-Sorry? I could have simply told you to look into kernel/signal.c LINE
-220 (that's in the recalc_sigpending_tsk() function), to see that
-THERE IS code which uses /^\t+\x20/ to indent wrapped if continuation
-lines:
-
-fastcall void recalc_sigpending_tsk(struct task_struct *t)
-{
-	if (t->signal->group_stop_count > 0 ||
-	    (freezing(t)) ||
-	    PENDING(&t->pending, &t->blocked) ||
-	    PENDING(&t->signal->shared_pending, &t->blocked))
-		set_tsk_thread_flag(t, TIF_SIGPENDING);
-	else
-		clear_tsk_thread_flag(t, TIF_SIGPENDING);
-}
-
-And this is not the only function. But since I figured you would
-anyway object despite what I say...
-
->or maybe you're focussing exclusively
->on code that violates the most basic coding guidelines like:
-
-...I wrote that script that actually proves my point (minus script
-bugs - errare est humanum) that \t+\x20 is PREDOMINANT in kernel
-code. Whether that invalidates what CodingStyle says is another
-debate (which at best Randy just decides and sends a patch for which
-is then hopefully committed instantly).
-
->	if (...) {
->		THAT WAS ONE MORE TAB
->	}
->
->and
->
->	for (...) {
->		THAT WAS ALSO ONE MORE TAB
->	}
->
->Come on, stop wasting everyone's time with utter nonsense.
-
-I was never debating these two things. I was, however, if you have
-not noticed yet, about wrapped if lines:
-
-	if (foo ||
-	    continuation_with_2_or_more_spaces)
-		code_with_1_tab;
-and
-	if (foo ||
-			continuation_with_2_tabs)
-		code_with_1_tab;
-
-
-The former is what kernel code does "**TODAY**".
-Thank you.
-Jan
--- 
+Index: mm/fs/proc/task_mmu.c
+===================================================================
+--- mm.orig/fs/proc/task_mmu.c	2007-03-24 21:33:52.000000000 -0500
++++ mm/fs/proc/task_mmu.c	2007-03-24 21:33:58.000000000 -0500
+@@ -212,8 +212,8 @@ static int show_map(struct seq_file *m, 
+ 	return show_map_internal(m, v, NULL);
+ }
+ 
+-static void smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+-			    void *private)
++static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
++			   void *private)
+ {
+ 	struct mem_size_stats *mss = private;
+ 	struct vm_area_struct *vma = mss->vma;
+@@ -250,10 +250,11 @@ static void smaps_pte_range(pmd_t *pmd, 
+ 	}
+ 	pte_unmap_unlock(pte - 1, ptl);
+ 	cond_resched();
++	return 0;
+ }
+ 
+-static void clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
+-				 unsigned long end, void *private)
++static int clear_refs_pte_range(pmd_t *pmd, unsigned long addr,
++				unsigned long end, void *private)
+ {
+ 	struct vm_area_struct *vma = private;
+ 	pte_t *pte, ptent;
+@@ -276,40 +277,51 @@ static void clear_refs_pte_range(pmd_t *
+ 	}
+ 	pte_unmap_unlock(pte - 1, ptl);
+ 	cond_resched();
++	return 0;
+ }
+ 
+-static void walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+-			   void (*action)(pmd_t *, unsigned long,
+-					  unsigned long, void *),
+-			   void *private)
++static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
++			  int (*action)(pmd_t *, unsigned long,
++					unsigned long, void *),
++			  void *private)
+ {
+ 	pmd_t *pmd;
+ 	unsigned long next;
++	int err;
+ 
+ 	for (pmd = pmd_offset(pud, addr); addr != end;
+ 	     pmd++, addr = next) {
+ 		next = pmd_addr_end(addr, end);
+ 		if (pmd_none_or_clear_bad(pmd))
+ 			continue;
+-		action(pmd, addr, next, private);
++		err = action(pmd, addr, next, private);
++		if (err)
++			return err;
+ 	}
++
++	return 0;
+ }
+ 
+-static void walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+-			   void (*action)(pmd_t *, unsigned long,
+-					  unsigned long, void *),
+-			   void *private)
++static int walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
++			  int (*action)(pmd_t *, unsigned long,
++					unsigned long, void *),
++			  void *private)
+ {
+ 	pud_t *pud;
+ 	unsigned long next;
++	int err;
+ 
+ 	for (pud = pud_offset(pgd, addr); addr != end;
+ 	     pud++, addr = next) {
+ 		next = pud_addr_end(addr, end);
+ 		if (pud_none_or_clear_bad(pud))
+ 			continue;
+-		walk_pmd_range(pud, addr, next, action, private);
++		err = walk_pmd_range(pud, addr, next, action, private);
++		if (err)
++			return err;
+ 	}
++
++	return 0;
+ }
+ 
+ /*
+@@ -323,22 +335,27 @@ static void walk_pud_range(pgd_t *pgd, u
+  * Recursively walk the page table for the memory area in a VMA, calling
+  * a callback for every bottom-level (PTE) page table.
+  */
+-static void walk_page_range(struct mm_struct *mm,
+-			    unsigned long addr, unsigned long end,
+-			    void (*action)(pmd_t *, unsigned long,
+-					   unsigned long, void *),
+-			    void *private)
++static int walk_page_range(struct mm_struct *mm,
++			   unsigned long addr, unsigned long end,
++			   int (*action)(pmd_t *, unsigned long,
++					 unsigned long, void *),
++			   void *private)
+ {
+ 	pgd_t *pgd;
+ 	unsigned long next;
++	int err;
+ 
+ 	for (pgd = pgd_offset(mm, addr); addr != end;
+ 	     pgd++, addr = next) {
+ 		next = pgd_addr_end(addr, end);
+ 		if (pgd_none_or_clear_bad(pgd))
+ 			continue;
+-		walk_pud_range(pgd, addr, next, action, private);
++		err = walk_pud_range(pgd, addr, next, action, private);
++		if (err)
++			return err;
+ 	}
++
++	return 0;
+ }
+ 
+ static int show_smap(struct seq_file *m, void *v)
