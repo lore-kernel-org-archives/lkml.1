@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbXDFJoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbXDFJ6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752433AbXDFJoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 05:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXDFJoZ
+	id S1752503AbXDFJ6Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 05:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXDFJ6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 05:44:25 -0400
-Received: from mail.screens.ru ([213.234.233.54]:47930 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752433AbXDFJoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 05:44:24 -0400
-Date: Fri, 6 Apr 2007 13:44:13 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Robin Holt <holt@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070406094413.GA673@tv-sign.ru>
-References: <20070406084250.GA179@tv-sign.ru> <m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
+	Fri, 6 Apr 2007 05:58:24 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:55999 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752284AbXDFJ6W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 05:58:22 -0400
+Date: Fri, 6 Apr 2007 03:58:20 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: Jakub Jelinek <jakub@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: Interface for the new fallocate() system call
+Message-ID: <20070406095820.GF5967@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	Jakub Jelinek <jakub@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+References: <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070405112619.GA19982@amitarora.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070405112619.GA19982@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/06, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Apr 05, 2007  16:56 +0530, Amit K. Arora wrote:
+> This should work on all the platforms. The only concern I can think of
+> here is the convention being followed till now, where all the entities on
+> which the action has to be performed by the kernel (say fd, file/device
+> name, pid etc.) is the first argument of the system call. If we can live
+> with the small exception here, fine.
+
+Yes, it is much cleaner to have fd first, like every other such syscall.
+
+> Or else, we may have to implement the 
 > 
-> > Robin Holt wrote:
-> >>
-> >> wait_task_zombie() is taking many seconds to get through the list.
-> >> For the case of a modprobe, stop_machine creates one thread per cpu
-> >> (remember big number). All are parented to init and their exit will
-> >> cause wait_task_zombie to scan multiple times most of the way through
-> >> this very long list looking for threads which need to be reaped.
-> >
-> > Could you try this patch
-> >
-> > 	http://marc.info/?l=linux-kernel&m=117337194209912
-> >
-> > ?
-> >
-> > It can't solve the whole problem, but at least an exiting kernel thread
-> > won't kick init.
+>   int fd, int mode, loff_t offset, loff_t len
 > 
-> At first glance your patch looks reasonable.
+> as the layout of arguments here. I think only s390 will have a problem
+> with this, and we can think of a workaround for it (may be similar to
+> what ARM did to implement sync_file_range() system call)   :
 > 
-> Unfortunately it only applies to the rare thread that calls daemonize,
-> and not also to kernel/kthread/kthread() which means it will miss many of
-> our current kernel threads.
+> asmlinkage long sys_s390_fallocate(int fd, loff_t offset, loff_t len, int mode)
+> {
+>         return sys_fallocate(fd, offset, len, mode);
+> }
 
-Note that a thread created by kthread_create() has ->parent == "[kthread]",
-not /sbin/init (unless it was created before core_initcall). So I don't really
-understand how stop_machine() creates the threads parented to init.
-
-> For the sgi problem I doubt it is will make a difference
-
-most probably you are right.
-
-Oleg.
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
