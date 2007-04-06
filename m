@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767501AbXDFCUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767492AbXDFCVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767501AbXDFCUM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 22:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767503AbXDFCUM
+	id S1767492AbXDFCVT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 22:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767504AbXDFCVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 22:20:12 -0400
-Received: from ozlabs.org ([203.10.76.45]:40777 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767501AbXDFCUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 22:20:10 -0400
-Subject: Re: [PATCH] Unified lguest launcher
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org
-In-Reply-To: <5d6222a80704050743l3c387287kdbe7eb069b793d6e@mail.gmail.com>
-References: <5d6222a80704040903n49442679p2a6841de69d894c2@mail.gmail.com>
-	 <1175741082.12230.610.camel@localhost.localdomain>
-	 <5d6222a80704050743l3c387287kdbe7eb069b793d6e@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 06 Apr 2007 12:19:43 +1000
-Message-Id: <1175825983.12230.666.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 22:21:19 -0400
+Received: from dsl-63-249-106-23.cruzio.com ([63.249.106.23]:49339 "EHLO
+	cichlid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767492AbXDFCVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 22:21:18 -0400
+Date: Thu, 5 Apr 2007 19:21:13 -0700
+From: Andrew Burgess <aab@cichlid.com>
+Message-Id: <200704060221.l362LD4s025776@cichlid.com>
+To: davem@davemloft.net, James.Bottomley@SteelEye.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10,13
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 11:43 -0300, Glauber de Oliveira Costa wrote:
-> and here's the new patch, merging rusty's suggestions and some more on my own.
+
+On Thu, 2007-04-05 at 15:36 -0700, David Miller wrote:
+> From: Andrew Burgess <aab@cichlid.com>
+> Date: Thu, 5 Apr 2007 15:13:27 -0700
 > 
-> May I upload this, or does Rusty (or any other) has some more suggestions?
+> > David, do you see any other problems with scsi_send_eh_cmnd?
+> > 
+> > I've switched back to 2.6.18 which seems to not oops 
+> > and am happy to try patches.
+> 
+> Does 2.6.20 with my patch OOPS too?  Does reverting my patch
+> make the oops go away?
+> 
+> If reverting my patch makes the OOPS go away, we need to
+> verify if page_address() is returning crap for some reason
+> or the length is wrong.
 
-This looks excellent!
+2.6.20.4 with your patch dies in the memcpy (as does 21-gitN)
 
-There are a couple of extra spaces floating around, but that's trivial.
-You use "errno = ESRCH; err()" where you could use "errx()".
+2.6.20.4 without your patch dies in the subsequent __free_page
+with a null pointer ref at 000...008
 
-Please merge it straight in. No need for a separate patch in the tree
-for this I think, unless you plan more work?
+James should I try your posted patch? On which kernel?
 
-Thanks!
-Rusty.
+This machine will die in boot on these kernels until I power
+cycle it (which somehow fixes the disk/controller for a
+while), 2.6.18 continue to work (gets the scsi errors and
+continues)
+
 
