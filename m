@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbXDFWvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933274AbXDFW5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933294AbXDFWvz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 18:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXDFWvz
+	id S933274AbXDFW5Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 18:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXDFW5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 18:51:55 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:36579 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933294AbXDFWvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:51:54 -0400
-Date: Fri, 6 Apr 2007 15:51:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Robin Holt <holt@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-In-Reply-To: <4616CBF0.7090606@garzik.org>
-Message-ID: <Pine.LNX.4.64.0704061546590.6730@woody.linux-foundation.org>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
- <4616CBF0.7090606@garzik.org>
+	Fri, 6 Apr 2007 18:57:16 -0400
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:24448 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933274AbXDFW5P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 18:57:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4ksGRfaMVpfjG9gtNu6WjLS5mRVOHGjxDdpFywLrlD53AuyKsBfwTjvbPQK7sqlQgozsZ19xj8XuGiXrxsayANmOJuOXL/J9azdljmSZ4ymKmjtsq4Iy27nlpbpi6hWq4gfHC9dbpsHjV66Hdyce3cGJhxbWpmTmPkwsXwCcUCU=  ;
+X-YMail-OSG: VdxkQZ8VM1nKWScY1WCdmjecntlX19En6S1gdTVXSEfmn8EabEHmKNQAsuIQQBPX_3U4YPzKHe_P51mszWkS056NLePL61QFQhl26cuqvqYoYX6IYiU-
+From: David Brownell <david-b@pacbell.net>
+To: tglx@linutronix.de
+Subject: Re: coding style for long conditions (WAS: Re: [PATCH 25/90] ... blinky leds!!)
+Date: Fri, 6 Apr 2007 15:57:12 -0700
+User-Agent: KMail/1.7.1
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
+References: <11757099691323-git-send-email-tony@atomide.com> <200704061405.50169.david-b@pacbell.net> <1175897876.28263.490.camel@localhost.localdomain>
+In-Reply-To: <1175897876.28263.490.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704061557.12662.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 6 Apr 2007, Jeff Garzik wrote:
+On Friday 06 April 2007 3:17 pm, Thomas Gleixner wrote:
+> David,
 > 
-> I would rather change the implementation under the hood to start per-CPU
-> threads on demand, similar to a thread-pool implementation.
+> http://tglx.de/private/tglx/usbnet.png
 > 
-> Boxes with $BigNum CPUs probably won't ever use half of those threads.
+> /me recommends emacs-develock.el for colorful white space wreckage
+> display !
 
-The counter-argument is that boxes with $BigNum CPU's really don't hurt 
-from it either, and having per-process data structures is often simpler 
-and more efficient than trying to have some thread pool.
+Then I'd have to switch to EMACS ... no thanks!  ;)
 
-IOW, once we get the processes off the global list, there just isn't any 
-downside from them. Sure, they use some memory, but people who buy 
-1024-cpu machines won't care about a few kB per CPU..
+At the risk of switching to a VI/EMACS flamewar (could that be
+an improvement?) "let c_space_errors=1" shows the same sort of
+thing ... albeit a bit more usefully, it just highlights the
+single useless space character at the beginning of that line.
+(Which starts "space-TAB-TAB-TAB".)
 
-So the *only* downside is literally the process list, and one suggested 
-patch already just removes kernel threads entirely from the parenthood 
-lists.
 
-The other potential downside could be "ps is slow", but on the other hand, 
-having the things stick around and have things like CPU-time accumulate is 
-probably worth it - if there are some issues, they'd show up properly 
-accounted for in a way that process pools would have a hard time doing.
+> You probably want to look at more files contributed by david-b before
+> you look at mine :)
 
-So I really don't think this is worth changing things over, apart from 
-literally removing them from process lists, which I think everybody agrees 
-we should just do - it just never even came up before!
+I last touched that header in 2005 ... next time I have reason to
+touch it, I'll likely fix that little thing!   Patches accepted.  :)
 
-			Linus
+
+This particular issue doesn't actually affect indentation, since the
+tab trumps that space.  So it's a bit off-agenda for this particular
+flamage.  I tend to fix such space errors whenever I trip over them;
+e.g. "git show 438d6c2c015cf63bf7e9bdc2033d435433ac8455".
+
+- Dave
