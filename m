@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751576AbXDFKmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767583AbXDFKnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751576AbXDFKmW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 06:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbXDFKmW
+	id S1767583AbXDFKnH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 06:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767585AbXDFKnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 06:42:22 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:44714 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbXDFKmV (ORCPT
+	Fri, 6 Apr 2007 06:43:07 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59049 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767583AbXDFKnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 06:42:21 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Fri, 6 Apr 2007 06:38:25 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Dave Jones <davej@redhat.com>
-cc: Adrian Bunk <bunk@stusta.de>, davej@codemonkey.org.uk,
-       cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
-In-Reply-To: <20070406102914.GA27372@redhat.com>
-Message-ID: <Pine.LNX.4.64.0704060637400.26474@CPE00045a9c397f-CM001225dbafb6>
-References: <20070406101928.GB29169@stusta.de> <20070406102914.GA27372@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 6 Apr 2007 06:43:05 -0400
+Date: Fri, 6 Apr 2007 05:43:01 -0500
+From: Robin Holt <holt@sgi.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Robin Holt <holt@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+Message-ID: <20070406104301.GB19755@lnx-holt.americas.sgi.com>
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org> <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Apr 2007, Dave Jones wrote:
+> So I think we have some options once we get the kernel threads out
+> of the way.  Getting the kernel threads out of the way would seem
+> to be the first priority.
 
-> On Fri, Apr 06, 2007 at 12:19:28PM +0200, Adrian Bunk wrote:
->  > This patch contains the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI.
->  >
->  > Signed-off-by: Adrian Bunk <bunk@stusta.de>
->  > Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->
-> lets kill this in 2.6.22
+I think both avenues would probably be the right way to proceeed.
+Getting kthreads to not be parented by init would be an opportunity
+for optimization.
 
-given that there's no way this is going to make it into 2.6.21, isn't
-that what adrian is proposing here?
+I think organizing the zombie tasks to be easily reaped also has merit.
+Rapidly forking/exiting processes like udevd during the boot of a
+different machine were also shown to benefit significantly from this
+patch.  That machine had 512 cpus and 4608 disk devices, we dropped the
+device discovery under udevd by 30%.  This, honestly, surprised us.
+It makes some sense now that I think about it.  This would be a case
+where improving the zombie handling would be beneficial to more than
+just kthreads.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Thanks,
+Robin
