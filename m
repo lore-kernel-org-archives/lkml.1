@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767422AbXDFC7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767424AbXDFDMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767422AbXDFC7x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 22:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767424AbXDFC7x
+	id S1767424AbXDFDMe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 23:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767513AbXDFDMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 22:59:53 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:48817 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1767422AbXDFC7u (ORCPT
+	Thu, 5 Apr 2007 23:12:34 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:23404 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767424AbXDFDMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 22:59:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=KTGDj/LP7/l4Wg3rOA0cx8bcrebS0CcKSev0R+mibC1O2Pbb+NwseTK5dFNx+xGnDJg+Hih/7RH/aNx3zii1cMvxwUY6/CQhmj7yBEaSQrfMgFjUZ5mycTuggkWug6ze2p5yJ3CG1B4VHlIJ1qAgDh2K1J14CzTK6x4ygma5fbQ=  ;
-X-YMail-OSG: qH3p3YkVM1meo5ZvdyQ8Ny5R1WxbkbqqG2ah_dRxVlgXj4jcEZ38l2dphwCkY3zWceLXERmib9uMyjUDGGzsV160nOH.eH_ROX8DPJbn5cNGrBmCbzEWRrWj.Y_47Q--
-Message-ID: <4615B79E.9080407@yahoo.com.au>
-Date: Fri, 06 Apr 2007 12:59:42 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Rik van Riel <riel@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: missing madvise functionality
-References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <4614A5CC.5080508@redhat.com> <46151F73.50602@redhat.com> <4615B043.8060001@yahoo.com.au> <4615B5D9.7060703@redhat.com>
-In-Reply-To: <4615B5D9.7060703@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 23:12:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Za7W00C3pmFRlpsReQwYt6XM0nT29eVuy/6cX04iQOTZIvW0iwg8SnOFFjWWCrlYkIOB2WthPiFmKi0GCKMZpx+djSrpWAF+1a8VYLIpXNa65Alm6xc4LFQirbpuWhM/p8YiViyRl1vb+9/gqnMtWzyOcfxRRvAwJgTQ0LKlj4o=
+Date: Fri, 6 Apr 2007 11:15:13 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Michael <gonwg@hotmail.com>
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: set up new kernel with grub
+Message-ID: <20070406031513.GB2407@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Michael <gonwg@hotmail.com>,
+	"linux-os (Dick Johnson)" <linux-os@analogic.com>,
+	linux-kernel@vger.kernel.org
+References: <BAY113-DAV124C8565330DC6C51B2B09B9660@phx.gbl> <Pine.LNX.4.61.0704041246010.5035@chaos.analogic.com> <BAY113-DAV11F86E1B1E91A799AB05E9B9650@phx.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BAY113-DAV11F86E1B1E91A799AB05E9B9650@phx.gbl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> Nick Piggin wrote:
-> 
->>Cool. According to my thinking, madvise(MADV_DONTNEED) even in today's
->>kernels using down_write(mmap_sem) for MADV_DONTNEED is better than
->>mmap/mprotect, which have more fundamental locking requirements, more
->>overhead and no benefits (except debugging, I suppose).
-> 
-> 
-> It's a tiny bit faster, see
-> 
->   http://people.redhat.com/drepper/dontneed.png
-> 
-> I just ran it once so the graph is not smooth.  This is on a UP dual
-> core machine.  Maybe tomorrow I'll turn on the big 4p machine.
+On Thu, Apr 05, 2007 at 12:28:03PM -0500, Michael wrote:
+>Hi, Dick,
+>
+>Your steps work beautifully. Thanks.
+>
+>If you could explain a little about what happens in each step, that 
+>would be even better.
+>
+>> # cd /usr/src/linux-2.6.20.3
+>> If your current kernel is 2.6.20.3, edit the Makefile to
+>> add some character after "EXTRAVERSION" as EXTRAVERSION= 3x
+>> # cp .config ..
 
-Hmm, I saw an improvement, but that was just on a raw syscall test
-with a single page chunk. Real-world use I guess will get progressively
-less dramatic as other overheads start being introduced.
+Save your existing config file in the parent directory.
 
-Multi-thread performance probably won't get a whole lot better (it does
-eliminate 1 down_write(mmap_sem), but one remains) until you use my
-madvise patch.
+>> # make distclean
+
+Clean the files generated by last compiling.
+
+>> # cp ../.config .
+
+Copy your .config back here.
+
+>> # make oldconfig
+
+"The make oldconfig command causes the kernel configuration process to read in your existing configuration information and then prompt you for a value for any kernel configuration variables that were not provided set the existing kernel configuration file."
+
+>> # make
+
+Check all changed object files, and do the final kernel image link.
+
+>> # make modules_install
+
+Reinstall the newly-compiled modules.
+
+>> # make install
+
+Copy the kernel image and system.map to /boot and modify /boot/grub/menu.lst (or lilo.conf) properly.
 
 
-> I would have to see dramatically different results on the big machine to
-> make me change the libc code.  The reason is that there is a big drawback.
-> 
-> So far, when we allocate a new arena, we allocate address space with
-> PROT_NONE and only when we need memory the protection is changed to
-> PROT_READ|PROT_WRITE.  This is the advantage of catching wild pointer
-> accesses.
 
-Sure, yes. And I guess you'd always want to keep that options around as
-a debugging aid.
-
--- 
-SUSE Labs, Novell Inc.
