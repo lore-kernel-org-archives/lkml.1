@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbXDFJ6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766671AbXDFKDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbXDFJ6Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 05:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXDFJ6Y
+	id S1766671AbXDFKDq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 06:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767552AbXDFKDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 05:58:24 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:55999 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbXDFJ6W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 05:58:22 -0400
-Date: Fri, 6 Apr 2007 03:58:20 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: Jakub Jelinek <jakub@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: Interface for the new fallocate() system call
-Message-ID: <20070406095820.GF5967@schatzie.adilger.int>
-Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	Jakub Jelinek <jakub@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-References: <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070405112619.GA19982@amitarora.in.ibm.com>
+	Fri, 6 Apr 2007 06:03:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46335 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766665AbXDFKDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 06:03:45 -0400
+Date: Fri, 6 Apr 2007 12:03:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Mike Galbraith <efault@gmx.de>, linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+Subject: Re: Ten percent test
+Message-ID: <20070406100333.GA19855@elte.hu>
+References: <200703290237.38777.kernel@kolivas.org> <200704061103.34489.kernel@kolivas.org> <1175850471.22272.8.camel@Homer.simpson.net> <200704061928.39155.kernel@kolivas.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070405112619.GA19982@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+In-Reply-To: <200704061928.39155.kernel@kolivas.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 05, 2007  16:56 +0530, Amit K. Arora wrote:
-> This should work on all the platforms. The only concern I can think of
-> here is the convention being followed till now, where all the entities on
-> which the action has to be performed by the kernel (say fd, file/device
-> name, pid etc.) is the first argument of the system call. If we can live
-> with the small exception here, fine.
 
-Yes, it is much cleaner to have fd first, like every other such syscall.
+* Con Kolivas <kernel@kolivas.org> wrote:
 
-> Or else, we may have to implement the 
+> > I was more focused on the general case, but all I should have to do 
+> > to de-claw all of these sleep exploits is account rr time (only a 
+> > couple of lines, done and building now).  It's only a couple of 
+> > lines.
 > 
->   int fd, int mode, loff_t offset, loff_t len
-> 
-> as the layout of arguments here. I think only s390 will have a problem
-> with this, and we can think of a workaround for it (may be similar to
-> what ARM did to implement sync_file_range() system call)   :
-> 
-> asmlinkage long sys_s390_fallocate(int fd, loff_t offset, loff_t len, int mode)
-> {
->         return sys_fallocate(fd, offset, len, mode);
-> }
+> The more you try to "de-claw" these sleep exploits the less effective 
+> you make your precious interactive estimator. Feel free to keep adding 
+> endless tweaks to undo the other tweaks in order to try and achieve 
+> what SD has by design.
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+firstly, testing on various workloads Mike's tweaks work pretty well, 
+while SD still doesnt handle the high-load case all that well. Note that 
+it was you who raised this whole issue to begin with: everything was 
+pretty quiet in scheduling interactivity land. (There was one person who 
+reported wide-scale interactivity regressions against mainline but he 
+didnt answer my followup posts to trace/debug the scenario.)
 
+SD has a built-in "interactivity estimator" as well, but hardcoded into 
+its design. SD has its own set of ugly-looking tweaks as well - for 
+example the prio_matrix. So it all comes down on 'what interactivity 
+heuristics is enough', and which one is more tweakable. So far i've yet 
+to see SD address the hackbench and make -j interactivity 
+problems/regression for example, while Mike has been busy addressing the 
+'exploits' reported against mainline.
+
+> You'll end up with an incresingly complex state machine design of 
+> interactivity tweaks and interactivity throttlers all fighting each 
+> other to the point where the intearactivity estimator doesn't do 
+> anything. [...]
+
+It comes down to defining interactivity by scheduling behavior, and 
+making that definition flexible. SD's definition of interactivity is 
+rigid (but it's still behavior-based, so not fundamentally different 
+from an explicit 'interactivity estimator'), and currently it does not 
+work well under high load. But ... i'm still entertaining the notion 
+that it might be good enough, but you've got to demonstrate the design's 
+flexibility.
+
+furthermore, your description does not match my experience when using 
+Mike's tweaks and comparing it to SD on the same hardware. According to 
+your claim i should have seen regressions popping up in various, 
+already-fixed corners, but it didnt happen in practice. But ... i'm 
+awaiting further SD and Mike tweaks, the race certainly looks 
+interesting ;)
+
+	Ingo
