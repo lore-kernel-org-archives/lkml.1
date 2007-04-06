@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbXDFUVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751727AbXDFUXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbXDFUVf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 16:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXDFUVf
+	id S1751727AbXDFUXm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 16:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXDFUXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 16:21:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38972 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751943AbXDFUVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 16:21:34 -0400
-Date: Fri, 6 Apr 2007 22:21:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Robin Holt <holt@sgi.com>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070406202118.GA28466@elte.hu>
-References: <20070406084250.GA179@tv-sign.ru> <m18xd5amwq.fsf@ebiederm.dsl.xmission.com> <20070406094413.GA673@tv-sign.ru> <m1lkh58q16.fsf@ebiederm.dsl.xmission.com> <20070406154750.GA541@tv-sign.ru> <Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org> <20070406193621.GA96@tv-sign.ru> <20070406194329.GB21322@elte.hu> <20070406200116.GA169@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070406200116.GA169@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 6 Apr 2007 16:23:42 -0400
+Received: from 64-191-130-94.service.qx.net ([64.191.130.94]:41421 "EHLO
+	panacea.theblackmoor.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751727AbXDFUXk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 16:23:40 -0400
+X-Greylist: delayed 548 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Apr 2007 16:23:40 EDT
+Message-ID: <11584.192.146.101.26.1175890435.squirrel@panacea.theblackmoor.net>
+Date: Fri, 6 Apr 2007 16:13:55 -0400 (EDT)
+Subject: PROBLEM:  ACPI Thermal Zone for CPU0 does not update after 
+     hibernation
+From: "Walter Francis" <wally@theblackmoor.net>
+To: linux-kernel@vger.kernel.org
+Cc: wally@theblackmoor.net
+Reply-To: wally@theblackmoor.net
+User-Agent: SquirrelMail/1.4.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After hibernating, the CPU0 thermal zone never updates.  It will stay at 59C
+forever for example.
 
-* Oleg Nesterov <oleg@tv-sign.ru> wrote:
+I've tried making the thermal driver a module and unloading it before
+hibernating and it didn't help, also went back as far as 2.6.19 and saw the
+same behavior there.  Currently using 2.6.21-pre6.  If I reboot or suspend to
+*RAM*, the problem fixes itself.  And CPU1's thermal zone is fine.  But CPU0
+if it's (example) 59C, it stays 59C forever.  I'm seeing it in gkrellm, but
+it's coming from /proc/acpi/thermal_zone/*/temperature and verified to match
+there.
 
-> Probably it is I who missed something :)
-> 
-> But why can't we do both changes? I think it is just ugly to use init 
-> to reap the kernel thread. Ok, wait4() can find zombie quickly if we 
-> do the ->children split. But /sbin/init could be swapped out, we still 
-> need to deliver SIGCHLD, etc.
-> 
-> And I personally agree with Linus, it is nice to hide the kernel 
-> threads from /sbin/init (or whatever) completely.
+I'm using Fedora Core 6 on a Lenovo 3000 V100 laptop, custom kernel.  Still
+modular, but stripped down to eliminate things that are not part of this
+particular laptop.  All features work, suspend to ram and disk work fine,
+sound, wireless, etc.  Just this quirk with the ACPI thermal zone crops up
+when hibernating to disk.
 
-yeah, they should all be made auto-reap - nobody is really interested in 
-their wait4()-driven completion. (any completion they do is via other 
-mechanisms)
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Core(TM)2 CPU         T5500  @ 1.66GHz
+stepping        : 6
+cpu MHz         : 1000.000
+cache size      : 2048 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
+cmov pat p
+se36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni
+monitor d
+s_cpl est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips        : 3328.18
+clflush size    : 64
 
-	Ingo
+Repeat for CPU 1.  Core 2 Duo T5500.  Kernel is SMP, both CPUs show, just not
+pasting both for brevity.
+
+I have turned ACPI debug on, here's copies of dmesg before hibernating:
+http://unlimitedphoto.com/~wally/stuff/dmesg-2.6.21-pre6
+
+And after hibernating:
+http://unlimitedphoto.com/~wally/stuff/dmesg-2.6.21-pre6-afterhibernation
+
+Please keep me on the CC so I can respond to queries, as I am not on the
+mailing list.
+
+-- 
+Walter Francis
+
+khayts.us
+theblackmoor.net
+unlimitedphoto.com
+
