@@ -1,58 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933227AbXDFWCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXDFWCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933227AbXDFWCG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 18:02:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933222AbXDFWCF
+	id S933228AbXDFWCL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 18:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933211AbXDFWCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 18:02:05 -0400
-Received: from waste.org ([66.93.16.53]:8283 "EHLO cinder.waste.org"
+	Fri, 6 Apr 2007 18:02:10 -0400
+Received: from waste.org ([66.93.16.53]:8280 "EHLO cinder.waste.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933213AbXDFWBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:01:48 -0400
+	id S933204AbXDFWBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 18:01:47 -0400
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 X-PatchBomber: http://selenic.com/scripts/mailpatches
 Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <1.469046093@selenic.com>
-Message-Id: <14.469046093@selenic.com>
-Subject: [PATCH 13/13] maps#2: Add /proc/kpagemap interface
-Date: Fri, 06 Apr 2007 17:03:14 -0500
+Message-Id: <13.469046093@selenic.com>
+Subject: [PATCH 12/13] maps#2: Add /proc/pid/pagemap interface
+Date: Fri, 06 Apr 2007 17:03:13 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add /proc/kpagemap interface
+Add /proc/pid/pagemap interface
 
-This makes physical page flags and counts available to userspace.
-Together with /proc/pid/pagemap and /proc/pid/clear_refs, this can be
-used to measure memory usage on a per-page basis.
+This interface provides a mapping for each page in an address space to
+its physical page frame number, allowing precise determination of what
+pages are mapped and what pages are shared between processes.
 
 Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-Index: mm/fs/proc/proc_misc.c
+Index: mm/fs/proc/base.c
 ===================================================================
---- mm.orig/fs/proc/proc_misc.c	2007-04-05 14:18:49.000000000 -0500
-+++ mm/fs/proc/proc_misc.c	2007-04-05 14:26:23.000000000 -0500
-@@ -46,6 +46,8 @@
- #include <linux/vmalloc.h>
- #include <linux/crash_dump.h>
- #include <linux/pid_namespace.h>
-+#include <linux/ptrace.h>
-+#include <linux/bootmem.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/io.h>
-@@ -733,6 +735,91 @@ static struct file_operations proc_page_
+--- mm.orig/fs/proc/base.c	2007-04-04 18:03:03.000000000 -0500
++++ mm/fs/proc/base.c	2007-04-04 18:03:03.000000000 -0500
+@@ -664,7 +664,7 @@ out_no_task:
+ }
+ #endif
+ 
+-static loff_t mem_lseek(struct file * file, loff_t offset, int orig)
++loff_t mem_lseek(struct file * file, loff_t offset, int orig)
+ {
+ 	switch (orig) {
+ 	case 0:
+@@ -2006,6 +2006,9 @@ static const struct pid_entry tgid_base_
+ #ifdef CONFIG_PROC_SMAPS
+ 	REG("smaps",      S_IRUGO, smaps),
+ #endif
++#ifdef CONFIG_PROC_PAGEMAP
++	REG("pagemap",    S_IRUSR, pagemap),
++#endif
+ #endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",       S_IRUGO|S_IXUGO, attr_dir),
+@@ -2293,6 +2296,9 @@ static const struct pid_entry tid_base_s
+ #ifdef CONFIG_PROC_SMAPS
+ 	REG("smaps",     S_IRUGO, smaps),
+ #endif
++#ifdef CONFIG_PROC_PAGEMAP
++	REG("pagemap",    S_IRUSR, pagemap),
++#endif
+ #endif
+ #ifdef CONFIG_SECURITY
+ 	DIR("attr",      S_IRUGO|S_IXUGO, attr_dir),
+Index: mm/fs/proc/internal.h
+===================================================================
+--- mm.orig/fs/proc/internal.h	2007-04-04 18:01:16.000000000 -0500
++++ mm/fs/proc/internal.h	2007-04-04 18:03:03.000000000 -0500
+@@ -45,11 +45,13 @@ extern int proc_tid_stat(struct task_str
+ extern int proc_tgid_stat(struct task_struct *, char *);
+ extern int proc_pid_status(struct task_struct *, char *);
+ extern int proc_pid_statm(struct task_struct *, char *);
++extern loff_t mem_lseek(struct file * file, loff_t offset, int orig);
+ 
+ extern const struct file_operations proc_maps_operations;
+ extern const struct file_operations proc_numa_maps_operations;
+ extern const struct file_operations proc_smaps_operations;
+ extern const struct file_operations proc_clear_refs_operations;
++extern const struct file_operations proc_pagemap_operations;
+ 
+ void free_proc_entry(struct proc_dir_entry *de);
+ 
+Index: mm/fs/proc/task_mmu.c
+===================================================================
+--- mm.orig/fs/proc/task_mmu.c	2007-04-04 18:03:03.000000000 -0500
++++ mm/fs/proc/task_mmu.c	2007-04-05 14:25:39.000000000 -0500
+@@ -530,3 +530,187 @@ const struct file_operations proc_numa_m
  };
  #endif
  
-+#ifdef CONFIG_PROC_KPAGEMAP
-+#define KPMSIZE (sizeof(unsigned long) * 2)
-+#define KPMMASK (KPMSIZE - 1)
-+/* /proc/kpagemap - an array exposing page flags and counts
++#ifdef CONFIG_PROC_PAGEMAP
++struct pagemapread {
++	struct mm_struct *mm;
++	unsigned long next;
++	unsigned long *buf;
++	unsigned long pos;
++	size_t count;
++	int index;
++	char __user *out;
++};
++
++static int flush_pagemap(struct pagemapread *pm)
++{
++	int n = min(pm->count, pm->index * sizeof(unsigned long));
++	if (copy_to_user(pm->out, pm->buf, n))
++		return -EFAULT;
++	pm->out += n;
++	pm->pos += n;
++	pm->count -= n;
++	pm->index = 0;
++	cond_resched();
++	return 0;
++}
++
++static int add_to_pagemap(unsigned long addr, unsigned long pfn,
++			  struct pagemapread *pm)
++{
++	pm->buf[pm->index++] = pfn;
++	pm->next = addr + PAGE_SIZE;
++	if (pm->index * sizeof(unsigned long) >= PAGE_SIZE ||
++	    pm->index * sizeof(unsigned long) >= pm->count)
++		return flush_pagemap(pm);
++	return 0;
++}
++
++static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
++			     void *private)
++{
++	struct pagemapread *pm = private;
++	pte_t *pte;
++	int err;
++
++	pte = pte_offset_map(pmd, addr);
++	for (; addr != end; pte++, addr += PAGE_SIZE) {
++		if (addr < pm->next)
++			continue;
++		if (!pte_present(*pte))
++			err = add_to_pagemap(addr, -1, pm);
++		else
++			err = add_to_pagemap(addr, pte_pfn(*pte), pm);
++		if (err)
++			return err;
++	}
++	pte_unmap(pte - 1);
++	return 0;
++}
++
++static int pagemap_fill(struct pagemapread *pm, unsigned long end)
++{
++	int ret;
++
++	while (pm->next != end) {
++		ret = add_to_pagemap(pm->next, -1UL, pm);
++		if (ret)
++			return ret;
++	}
++	return 0;
++}
++
++static struct mm_walk pagemap_walk = { .pmd_entry = pagemap_pte_range };
++
++/*
++ * /proc/pid/pagemap - an array mapping virtual pages to pfns
 + *
-+ * Each entry is a pair of unsigned longs representing the
-+ * corresponding physical page, the first containing the page flags
-+ * and the second containing the page use count.
++ * For each page in the address space, this file contains one long
++ * representing the corresponding physical page frame number (PFN) or
++ * -1 if the page isn't present. This allows determining precisely
++ * which pages are mapped and comparing mapped pages between
++ * processes.
++ *
++ * Efficient users of this interface will use /proc/pid/maps to
++ * determine which areas of memory are actually mapped and llseek to
++ * skip over unmapped regions.
 + *
 + * The first 4 bytes of this file form a simple header:
 + *
@@ -61,106 +178,116 @@ Index: mm/fs/proc/proc_misc.c
 + * third byte:   entry size in bytes (currently either 4 or 8)
 + * fourth byte:  header size
 + */
-+static ssize_t kpagemap_read(struct file *file, char __user *buf,
-+			     size_t count, loff_t *ppos)
++static ssize_t pagemap_read(struct file *file, char __user *buf,
++			    size_t count, loff_t *ppos)
 +{
-+	unsigned long *page;
-+	struct page *ppage;
++	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
 +	unsigned long src = *ppos;
-+	unsigned long pfn;
-+	ssize_t ret = 0;
-+	int chunk, i;
++	unsigned long *page;
++	unsigned long addr, end, vend, svpfn, evpfn;
++	struct mm_struct *mm;
++	struct vm_area_struct *vma;
++	struct pagemapread pm;
++	int ret = -ESRCH;
 +
-+	pfn = src / KPMSIZE - 1;
-+	count = min_t(size_t, count, ((max_pfn + 1) * KPMSIZE) - src);
-+	if (src & KPMMASK || count & KPMMASK)
-+		return -EIO;
++	if (!task)
++		goto out_no_task;
 +
-+	page = (unsigned long *)__get_free_page(GFP_USER);
++	ret = -EACCES;
++	if (!ptrace_may_attach(task))
++		goto out;
++
++	ret = -EIO;
++	svpfn = src / sizeof(unsigned long) - 1;
++	addr = PAGE_SIZE * svpfn;
++	if ((svpfn + 1) * sizeof(unsigned long) != src)
++		goto out;
++	evpfn = min((src + count) / sizeof(unsigned long),
++		    ((~0UL) >> PAGE_SHIFT) + 1);
++	count = (evpfn - svpfn) * sizeof(unsigned long);
++	end = PAGE_SIZE * evpfn;
++
++	ret = -ENOMEM;
++	page = kzalloc(PAGE_SIZE, GFP_USER);
 +	if (!page)
-+		return -ENOMEM;
++		goto out;
 +
-+	while (count > 0) {
-+		chunk = min_t(size_t, count, PAGE_SIZE);
-+		i = 0;
++	ret = 0;
++	mm = get_task_mm(task);
++	if (!mm)
++		goto out_free;
 +
-+		if (pfn == -1) {
-+			page[0] = 0;
-+			page[1] = 0;
-+			((char *)page)[0] = (ntohl(1) != 1);
-+			((char *)page)[1] = PAGE_SHIFT;
-+			((char *)page)[2] = sizeof(unsigned long);
-+			((char *)page)[3] = KPMSIZE;
-+			i = 2;
-+			pfn++;
-+		}
++	pm.mm = mm;
++	pm.next = addr;
++	pm.buf = page;
++	pm.pos = src;
++	pm.count = count;
++	pm.index = 0;
++	pm.out = buf;
 +
-+		for (; i < 2 * chunk / KPMSIZE; i += 2, pfn++) {
-+			ppage = pfn_to_page(pfn);
-+			if (!ppage) {
-+				page[i] = 0;
-+				page[i + 1] = 0;
-+			} else {
-+				page[i] = ppage->flags;
-+				page[i + 1] = atomic_read(&ppage->_count);
-+			}
-+		}
-+		chunk = (i / 2) * KPMSIZE;
-+
-+		if (copy_to_user(buf, page, chunk)) {
-+			ret = -EFAULT;
-+			break;
-+		}
-+		ret += chunk;
-+		src += chunk;
-+		buf += chunk;
-+		count -= chunk;
-+		cond_resched();
++	if (svpfn == -1) {
++		add_to_pagemap(pm.next, 0, &pm);
++		((char *)page)[0] = (ntohl(1) != 1);
++		((char *)page)[1] = PAGE_SHIFT;
++		((char *)page)[2] = sizeof(unsigned long);
++		((char *)page)[3] = sizeof(unsigned long);
 +	}
-+	*ppos = src;
 +
-+	free_page((unsigned long)page);
++	down_read(&mm->mmap_sem);
++	vma = find_vma(mm, pm.next);
++	while (pm.count > 0 && vma) {
++		if (!ptrace_may_attach(task)) {
++			ret = -EIO;
++			goto out;
++		}
++		vend = min(vma->vm_start - 1, end - 1) + 1;
++		ret = pagemap_fill(&pm, vend);
++		if (ret || !pm.count)
++			break;
++		vend = min(vma->vm_end - 1, end - 1) + 1;
++		ret = walk_page_range(mm, vma->vm_start, vend,
++				      &pagemap_walk, &pm);
++		vma = vma->vm_next;
++	}
++	up_read(&mm->mmap_sem);
++
++	ret = pagemap_fill(&pm, end);
++
++	*ppos = pm.pos;
++	if (!ret)
++		ret = pm.pos - src;
++
++	mmput(mm);
++out_free:
++	kfree(page);
++out:
++	put_task_struct(task);
++out_no_task:
 +	return ret;
 +}
 +
-+struct proc_dir_entry *proc_kpagemap;
-+static struct file_operations proc_kpagemap_operations = {
-+	.llseek = mem_lseek,
-+	.read = kpagemap_read,
++const struct file_operations proc_pagemap_operations = {
++	.llseek		= mem_lseek, /* borrow this */
++	.read		= pagemap_read,
 +};
 +#endif
-+
- struct proc_dir_entry *proc_root_kcore;
- 
- void create_seq_entry(char *name, mode_t mode, const struct file_operations *f)
-@@ -812,6 +899,11 @@ void __init proc_misc_init(void)
- 				(size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
- 	}
- #endif
-+#ifdef CONFIG_PROC_KPAGEMAP
-+	proc_kpagemap = create_proc_entry("kpagemap", S_IRUSR, NULL);
-+	if (proc_kpagemap)
-+		proc_kpagemap->proc_fops = &proc_kpagemap_operations;
-+#endif
- #ifdef CONFIG_PROC_VMCORE
- 	proc_vmcore = create_proc_entry("vmcore", S_IRUSR, NULL);
- 	if (proc_vmcore)
 Index: mm/init/Kconfig
 ===================================================================
---- mm.orig/init/Kconfig	2007-04-05 14:18:49.000000000 -0500
-+++ mm/init/Kconfig	2007-04-05 14:26:23.000000000 -0500
-@@ -612,6 +612,15 @@ config PROC_PAGEMAP
-           with other processes. Disabling this interface will reduce the
-           size of the kernel for small machines.
+--- mm.orig/init/Kconfig	2007-04-04 18:03:03.000000000 -0500
++++ mm/init/Kconfig	2007-04-05 14:18:49.000000000 -0500
+@@ -602,6 +602,16 @@ config PROC_CLEAR_REFS
+           working set size. Disabling this interface will reduce
+           the size of the kernel for small machines.
  
-+config PROC_KPAGEMAP
++config PROC_PAGEMAP
 +	default y
-+	bool "Enable /proc/kpagemap support" if EMBEDDED && PROC_FS
++	bool "Enable /proc/pid/pagemap support" if EMBEDDED && PROC_FS && MMU
 +	help
-+	  The /proc/pid/kpagemap interface allows reading the
-+          kernel's per-page flag and usage counts to gather precise
-+          information on page-level memory usage. Disabling this interface
-+          will reduce the size of the kernel for small machines.
++	  The /proc/pid/pagemap interface allows reading the
++          kernel's virtual memory to page frame mapping to determine which
++          individual pages a process has mapped and which pages it shares
++          with other processes. Disabling this interface will reduce the
++          size of the kernel for small machines.
 +
  endmenu		# General setup
  
