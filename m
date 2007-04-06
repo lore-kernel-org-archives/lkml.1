@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbXDFALc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbXDFAPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbXDFALc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 20:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbXDFALc
+	id S1753398AbXDFAPL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 20:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbXDFAPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 20:11:32 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:47623 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753395AbXDFALb (ORCPT
+	Thu, 5 Apr 2007 20:15:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57823
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752266AbXDFAPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 20:11:31 -0400
-Message-ID: <46158FBE.3090105@vmware.com>
-Date: Thu, 05 Apr 2007 17:09:34 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Bugfix for VMI paravirt ops
-References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org>
-In-Reply-To: <46158F8E.1050807@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 5 Apr 2007 20:15:09 -0400
+Date: Thu, 05 Apr 2007 17:15:06 -0700 (PDT)
+Message-Id: <20070405.171506.125894469.davem@davemloft.net>
+To: James.Bottomley@SteelEye.com
+Cc: aab@cichlid.com, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10,13
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1175817739.3714.43.camel@mulgrave.il.steeleye.com>
+References: <200704052213.l35MDRRR015981@cichlid.com>
+	<20070405.153649.104035809.davem@davemloft.net>
+	<1175817739.3714.43.camel@mulgrave.il.steeleye.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Zachary Amsden wrote:
->   
->> Well at this point, the "proper" fix is dependent on Jeremy's
->> kmap_atomic_pte changes, which are definitely too late to pull into
->> 2.6.21.  Can we just apply this patch please? 
->>     
->
-> Hm, I think they're independent aren't they?  Your fix is about making
-> lazy_mmu disable interrupts; that's independent of how highpte pages get
-> mapped.
+From: James Bottomley <James.Bottomley@SteelEye.com>
+Date: Thu, 05 Apr 2007 19:02:19 -0500
 
-No, they are totally dependent.  The reason interrupts are disabled is 
-to stop kmap_atomic in interrupt handlers.  With the kmap_atomic_pte 
-changes, the whole interrupt disable jibberish goes away.
+> On Thu, 2007-04-05 at 15:36 -0700, David Miller wrote:
+> > From: Andrew Burgess <aab@cichlid.com>
+> > Date: Thu, 5 Apr 2007 15:13:27 -0700
+> > 
+> > > David, do you see any other problems with scsi_send_eh_cmnd?
+> > > 
+> > > I've switched back to 2.6.18 which seems to not oops 
+> > > and am happy to try patches.
+> > 
+> > Does 2.6.20 with my patch OOPS too?  Does reverting my patch
+> > make the oops go away?
+> > 
+> > If reverting my patch makes the OOPS go away, we need to
+> > verify if page_address() is returning crap for some reason
+> > or the length is wrong.
+> 
+> Assuming this does turn out to be the problem, we should just junk the
+> page allocation ... it's completely unnecessary; when the slab allocated
+> commands were done, we made sure the actual sense_buffer is at the
+> correct location, so this should be the final fix:
 
-Zach
+This won't work I believe.
+
+There are cases that use smaller sense buffers than the minimum
+specified by the SCSI layer.
+
+One example is that do_sr_ioctl() stuff when the cgc passed
+in has a sense buffer.  That will only be as large as a
+"struct request_sense".
+
+I'm pretty sure that's one of the reasons why we cons up a local sense
+buffer in this EH code.
+
+So we could walk past the end of that and corrupt memory with
+your patch.
