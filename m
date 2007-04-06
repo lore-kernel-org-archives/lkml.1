@@ -1,118 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXDFV3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXDFV3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933064AbXDFV3c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 17:29:32 -0400
+	id S933099AbXDFV3d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 17:29:33 -0400
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXDFV3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 6 Apr 2007 17:29:32 -0400
-Received: from main.gmane.org ([80.91.229.2]:34223 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933064AbXDFV3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from x35.xmailserver.org ([64.71.152.41]:52846 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933099AbXDFV3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Apr 2007 17:29:31 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
-Date: Fri, 06 Apr 2007 17:30:49 -0400
-Message-ID: <4616BC09.2080509@tmr.com>
-References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Andi Kleen <andi@firstfloor.org>, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, indan@nul.nu
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <4610EDF9.9000601@sciensis.com>
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 6 Apr 2007 14:29:28 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+In-Reply-To: <20070406191945.GA18255@elte.hu>
+Message-ID: <Pine.LNX.4.64.0704061427130.8738@alien.or.mcafeemobile.com>
+References: <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
+ <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
+ <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com>
+ <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru>
+ <Pine.LNX.4.64.0704061119090.8738@alien.or.mcafeemobile.com>
+ <m1wt0p5o1y.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704061214450.8738@alien.or.mcafeemobile.com>
+ <20070406191945.GA18255@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tasos Parisinos wrote:
-> Andi Kleen wrote:
->> Tasos Parisinos <parisino@ceid.upatras.gr> writes:
->>
->>  
->>> From: Tasos Parisinos <t.parisinos@sciensis.com>
->>>
->>> This patch adds module rsa.ko in the kernel (built-in or as a kernel
->>> module) and offers an API to do fast modular exponentiation, using the
->>> Montgomery algorithm, thus the exponentiation is not generic but can
->>> be used only when
->>> the modulus is odd, such as RSA public/private key pairs. This module 
->>> is the
->>> computational core (using multiple precision integer arithmetics) and 
->>> does not
->>> provide any means to do key management, implement padding schemas 
->>> e.t.c. so the
->>> calling code should implement all those as needed. Signed-off-by:
->>> Tasos Parisinos <t.parisinos@sciensis.com>
->>>     
->>
->> You forgot to answer the most important question.
->>
->> What would want to use RSA in the kernel and why? 
->> -Andi
->>
->>   
-> 
-> The main purpose behind the creation of this module was to create the
-> cryptographic infrastructure to develop an in-kernel system of signed
-> modules.
-> 
-I don't really see why this has to be in the kernel, even after reading 
-your text below. This would be code which a tiny number of users would 
-find useful, someone in the future might find exploitable, to perform a 
-function which can be done in user space.
+On Fri, 6 Apr 2007, Ingo Molnar wrote:
 
-> The best environment to deploy such functionality is in updating by
-> remote, executable code (programs, libs and modules) on embedded
-> devices running Linux, that have some form of kernel physical
-> security, so one can't tamper the kernel, but can read it. In this
-> case only a public key would be revealed. The vendor of the devices
-> can sign and distribute/update executable code to the devices, and
-> the kernel will not load/run any of them if they don't match with
-> their signatures. The signature can be embedded in the elf, so this
-> system is portable and centralized. 
-
-> Although this functionality can be achieved using userland helper
-> programs this may create the need to physically secure entire
-> filesystems which adds to the cost of developing such devices.
-
-So to save cost on your end you want to make this feature part of the 
-mainline kernel. Am I misreading your intent here?
-
-> In such cases one needs to use asymmetric cryptography because in the
-> case of symmetric it would be very easy to give away the key and end
-> with having all your devices being attacked.
 > 
-Which make a good argument for doing asymmetric anyway, it would seem. 
-That way any updates can be checked off the target machine and validated 
-as authentic.
+> * Davide Libenzi <davidel@xmailserver.org> wrote:
+> 
+> > > > Ohhh, the "signal" struct! Funny name for something that nowadays 
+> > > > has probably no more than a 5% affinity with signal-related tasks 
+> > > > :/
+> > > 
+> > > Hmm.  I wonder if we should just rename it the struct thread_group, 
+> > > or struct task_group.  Those seem slightly more accurate names.
+> > 
+> > Almost *anything* is better than "signal_struct" ;) A task_group could 
+> > be fine, so something on the line of task_shared_ctx.
+> 
+> or lets just face it and name it what it is: process_struct ;-)
 
-> There are already some systems that implement and utilize such 
-> functionality that use windows platforms, and other Linux distros
-> that use userland programs to do so, assuming physical security of
-> the host computer.
-> 
-Exactly.
+That'd be fine too! Wonder if Linus would swallow a rename patch like 
+that...
 
-> Moreover a same system that would use hashes is easier to brake and
-> more difficult to update each time new code must be loaded to the
-> host devices.
-> 
-> See also this thread
-> 
-> http://lkml.org/lkml/2007/3/19/447
-> 
-Having said all this, we have a boatload of other crypto in the kernel, 
-if it's just the crypto module, like aes, anubis or micheal_mic, and is 
-GPL compatible, some people may agree. But if this is an embedded 
-system, and you have the patch, why not just apply it to your kernel and 
-forget mainline?
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+- Davide
+
 
