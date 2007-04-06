@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXDFT6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932279AbXDFUBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932564AbXDFT6H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 15:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932516AbXDFT6H
+	id S932279AbXDFUBE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 16:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932516AbXDFUBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 15:58:07 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:44721 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932406AbXDFT6D convert rfc822-to-8bit (ORCPT
+	Fri, 6 Apr 2007 16:01:04 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50108 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932279AbXDFUBC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 15:58:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ClbTv+tc37zKL40C2eOFl6f4MTw3IHZhCzbdFp3LzVQ2RqMG9mbMIru79vx/Vbl6GJkQWX+KzuEdyQfKK+YgItu48eSgMxQhtOBc6yf93MSwRS2mLbl7tlnMVGOwWqfRqlPbF4tXiXEDBrLtKrC5zsRRI9np11uAav9ozWOgHH0=
-Message-ID: <d9def9db0704061258v47d4cf5dwaac39625e8d00150@mail.gmail.com>
-Date: Fri, 6 Apr 2007 21:58:02 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Oliver Neukum" <oneukum@suse.de>
-Subject: Re: kernel OOPSes when changing DVB-T adapter in 2.6.21-rc3
-Cc: CIJOML <cijoml@volny.cz>, "Andrew Morton" <akpm@linux-foundation.org>,
+	Fri, 6 Apr 2007 16:01:02 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Robin Holt <holt@sgi.com>,
+       Chris Snook <csnook@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <200703161025.44681.oneukum@suse.de>
+Subject: Re: init's children list is long and slows reaping children.
+References: <20070406084250.GA179@tv-sign.ru>
+	<m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
+	<20070406094413.GA673@tv-sign.ru>
+	<m1lkh58q16.fsf@ebiederm.dsl.xmission.com>
+	<20070406154750.GA541@tv-sign.ru>
+	<Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org>
+	<20070406193621.GA96@tv-sign.ru> <20070406194756.GB96@tv-sign.ru>
+Date: Fri, 06 Apr 2007 13:59:15 -0600
+In-Reply-To: <20070406194756.GB96@tv-sign.ru> (Oleg Nesterov's message of
+	"Fri, 6 Apr 2007 23:47:56 +0400")
+Message-ID: <m1k5wp5l64.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <200703091641.54249.cijoml@volny.cz>
-	 <200703151502.32161.oneukum@suse.de>
-	 <200703161013.37312.cijoml@volny.cz>
-	 <200703161025.44681.oneukum@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I committed a patch which fixes this issue:
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-http://mcentral.de/hg/~mrec/v4l-dvb-stable/
-
-That problem got caused by releasing data structures which are still
-in use when the device gets unplugged. These patches delay the
-deallocation of the data till the last user releases its reference to
-the dvb nodes.
-
-This patch got tested with devices which use the dvb-usb framework as
-well as em28xx based dvb devices.
-
-Markus
-
-On 3/16/07, Oliver Neukum <oneukum@suse.de> wrote:
-> Am Freitag, 16. März 2007 10:13 schrieb CIJOML:
-> > Hi,
-> >
-> > looks like more general problem with 2.6.21-rc3. This happens when I
-> remove my
-> > PCMCIA USB2.0/IEEE1384 adapter from slot:
+> On 04/06, Oleg Nesterov wrote:
+>>
+>> --- t/kernel/exit.c~	2007-04-06 23:31:31.000000000 +0400
+>> +++ t/kernel/exit.c	2007-04-06 23:31:57.000000000 +0400
+>> @@ -275,10 +275,7 @@ static void reparent_to_init(void)
+>>  	remove_parent(current);
+>>  	current->parent = child_reaper(current);
+>>  	current->real_parent = child_reaper(current);
 >
-> Yes, the more important it is to know whether -rc2 works.
-> And please report this as a generic sysfs failure to lkml.
->
-> 	Regards
-> 		Oliver
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Just noticed. Eric, is it ok we are using child_reaper() here?
+> This is for kernel threads only, shouldn't we always use
+> init_pid_ns.child_reaper ? (yes, it is the same currently).
 
+Yes.  It is a bug, and the description reparent_to_init is likewise
+buggy.
 
--- 
-Markus Rechberger
+I have recently realized that a number of the inital pid namespace
+patches have stupid little bugs in them like this.  I am upset with
+myself for failing to code review them closely before the went in.
+Live and learn I guess.
+
+So when I saw this I added this to my growing list of things I needed
+to review before I could assume they were done correctly.
+
+Feel free to fix it.  I'm still a couple days out from having enough
+time before I can start working on pid related issues.
+
+Eric
