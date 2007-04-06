@@ -1,97 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767330AbXDFAem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767321AbXDFAk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767330AbXDFAem (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 20:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767458AbXDFAem
+	id S1767321AbXDFAk0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 20:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767337AbXDFAk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 20:34:42 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:40190 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767330AbXDFAel (ORCPT
+	Thu, 5 Apr 2007 20:40:26 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:41298 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767321AbXDFAkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 20:34:41 -0400
-Message-Id: <1175819681.20754.1183287946@webmail.messagingengine.com>
-X-Sasl-Enc: qhFgk6krI9uniJCcAiZWHIzyWayv6/oAOQrvaHuOxV6o 1175819681
-From: johnrobertbanks@fastmail.fm
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Ignatich" <ignatich@gmail.com>, reiserfs-list@namesys.com,
-       linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Thu, 5 Apr 2007 20:40:25 -0400
+Message-ID: <461596DE.2020802@zytor.com>
+Date: Thu, 05 Apr 2007 17:39:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <46157B5B.5000602@gmail.com>
-   <1175817921.18400.1183285196@webmail.messagingengine.com>
-   <461592FB.5060507@zytor.com>
+To: johnrobertbanks@fastmail.fm
+CC: Ignatich <ignatich@gmail.com>, reiserfs-list@namesys.com,
+       linux-kernel@vger.kernel.org
 Subject: Re: Reiser4. BEST FILESYSTEM EVER? I need help.
-In-Reply-To: <461592FB.5060507@zytor.com>
-Date: Thu, 05 Apr 2007 17:34:41 -0700
+References: <46157B5B.5000602@gmail.com>   <1175817921.18400.1183285196@webmail.messagingengine.com>   <461592FB.5060507@zytor.com> <1175819681.20754.1183287946@webmail.messagingengine.com>
+In-Reply-To: <1175819681.20754.1183287946@webmail.messagingengine.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yeap, I guess that will probably work. 
-
-And here I was trying to compile old versions of GRUB from namesys.com.
-
-By the way, do you think the benchmarks from:
-
-http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
-http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
-
-are accurate?
-
-.-------------------------.
-| FILESYSTEM | TIME |DISK |
-| TYPE       |(secs)|USAGE|
-.-------------------------.
-|REISER4 lzo | 1938 | 278 |
-|REISER4 gzip| 2295 | 213 |
-|REISER4     | 3462 | 692 |
-|EXT2        | 4092 | 816 |
-|JFS         | 4225 | 806 |
-|EXT4        | 4408 | 816 |
-|EXT3        | 4421 | 816 |
-|XFS         | 4625 | 779 |
-|REISER3     | 6178 | 793 |
-|FAT32       |12342 | 988 |
-|NTFS-3g     |10414 | 772 |
-.-------------------------.
-
-
-Column one measures the time taken to complete the bonnie++ benchmarking
-test (run with the parameters bonnie++ -n128:128k:0)
-
-Column two, Disk Usage: measures the amount of disk used to store 655MB
-of raw data (which was 3 different copies of the Linux kernel sources).
-
-Thanks for that, John.
-
-
-On Thu, 05 Apr 2007 17:23:23 -0700, "H. Peter Anvin" <hpa@zytor.com>
-said:
-> johnrobertbanks@fastmail.fm wrote:
-> > 
-> > Anyway, I have patched the 2.6.20 kernel and have a partition formatted
-> > with Reiser4.
-> > 
-> > However, I am having trouble getting LILO or GRUB working (with
-> > Reiser4).
-> > 
-> > Could you guys who know all about this, help me, or point me to some
-> > help.
-> > 
+johnrobertbanks@fastmail.fm wrote:
+> Yeap, I guess that will probably work. 
 > 
-> Make your /boot a separate partition and format it as conservatively as 
-> possible (e.g. ext3, or even ext2.)
+> And here I was trying to compile old versions of GRUB from namesys.com.
 > 
-> Problem solved.
+> By the way, do you think the benchmarks from:
 > 
-> 	-hpa
--- 
-  
-  johnrobertbanks@fastmail.fm
+> http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
+> http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
+> 
+> are accurate?
+> 
 
--- 
-http://www.fastmail.fm - Send your email first class
+Accurate, probably.  Whether or not they're *relevant* is a totally 
+different ball of wax.
 
+	-hpa
