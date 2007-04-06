@@ -1,91 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbXDFNWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767618AbXDFNXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753667AbXDFNWt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 09:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbXDFNWs
+	id S1767618AbXDFNXt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 09:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767622AbXDFNXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 09:22:48 -0400
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:39204 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753667AbXDFNWs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 09:22:48 -0400
-Subject: Re: Shared futexes (was [PATCH] FUTEX : new PRIVATE futexes)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hugh Dickins <hugh@veritas.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       pravin b shelar <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org,
-       "Pierre.Peiffer" <Pierre.Peiffer@bull.net>
-In-Reply-To: <461647F5.5040206@yahoo.com.au>
-References: <20060808070708.GA3931@localhost.localdomain>
-	 <200608090826.28249.dada1@cosmosbay.com>
-	 <200608090843.52893.dada1@cosmosbay.com>
-	 <200703152010.35614.dada1@cosmosbay.com>
-	 <a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
-	 <20070405194942.1414c030.dada1@cosmosbay.com>
-	 <1175862369.6483.173.camel@twins>
-	 <Pine.LNX.4.64.0704061353330.18160@blonde.wat.veritas.com>
-	 <461647F5.5040206@yahoo.com.au>
-Content-Type: text/plain
-Date: Fri, 06 Apr 2007 15:22:44 +0200
-Message-Id: <1175865764.6483.190.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Apr 2007 09:23:49 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:35893 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767618AbXDFNXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 09:23:48 -0400
+Date: Fri, 6 Apr 2007 15:23:05 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       e1000-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
+       Natalie Protasevich <nataliep@google.com>, Andi Kleen <ak@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       auke-jan.h.kok@intel.com
+Subject: Re: 2.6.21-rc5-mm4
+In-Reply-To: <m1r6r0awc2.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0704061503310.31796@twin.jikos.cz>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704031455200.10589@twin.jikos.cz> <46126EAA.3050000@intel.com>
+ <Pine.LNX.4.64.0704031725300.28249@twin.jikos.cz> <46128C92.2020908@intel.com>
+ <Pine.LNX.4.64.0704031940080.28249@twin.jikos.cz>
+ <Pine.LNX.4.64.0704041748330.28249@twin.jikos.cz> <m1r6r0awc2.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-06 at 23:15 +1000, Nick Piggin wrote:
-> Hugh Dickins wrote:
-> > On Fri, 6 Apr 2007, Peter Zijlstra wrote:
-> > 
-> >>some thoughts on shared futexes;
-> >>
-> >>Could we get rid of the mmap_sem on the shared futexes in the following
-> >>manner:
-> 
-> I'd imagine shared futexes would be much less common than private for
-> threaded programs... I'd say we should reevaluate things once we have
-> private futexes, and malloc/free stop hammering mmap_sem so hard...
+On Wed, 4 Apr 2007, Eric W. Biederman wrote:
 
-Indeed, private futexes are by far the most common.
+> > And the bisection winner is
+> >
+> > 	i386-irq-kill-nr_irq_vectors-and-increase-nr_irqs.patch
+> >
+> > I don't immediately see how it could be causing it, so adding CCs which 
+> > are listed in the patch.
+> Weird.  I will have to look at that in a little more detail.
+> Do you know if this problem happens on x86_64? What does your .config 
+> look like? What does /proc/interrupts look like? What kind of hardware 
+> you running this kernel on? Can anyone else reproduce this?
+> The oops clearly shows something using -1 and calling that as an
+> address I don't know why, but I'm guessing I have triggered a memory
+> stomp somewhere.  I think this is the first time I have seen a small
+> negative number causing a NULL pointer dereference.
+> That patch looks innocuous enough that either:
+> - I just missed changing something I should have.
+> - Your configuration has an increase in NR_IRQS and that triggered
+>   something.
+> - The patch simply permuted things so a memory stomp now happens
+>   on the e1000 data structures instead of somewhere else.
+> - Something doesn't like large irq numbers.
+> This work is essentially a backport from x86_64 so if your hardware
+> is 64bit capable testing that should be a fairly easy test, and be
+> able to rule out large irq numbers as the culprit.
+> Until I get a good look at -mm I'm going to have a hard time guessing.
+> But a roving memory stomp is my best guess.
 
-> >> - get a page using pfn_to_page (skipping VM_PFNMAP)
-> >> - get the futex key from page->mapping->host and page->index
-> >>   and offset from addr % PAGE_SIZE.
-> >>
-> >>or given a key:
-> >>
-> >> - lookup the page from key.shared.inode->i_mapping by key.shared.pgoff
-> >>   possibly loading the page using mapping->a_ops->readpage().
-> 
-> For shared futexes, wouldn't i_mapping be worse, because you'd be
-> ping-ponging the tree_lock between processes, rather than have each
-> use their own mmap_sem?
+Hi Eric,
 
-Your lockless pagecache work would solve most of that, no?
+after struggling with this issue for some time, I think that it's just 
+some incosistent usage of NR_IRQS throughout the source probably due to 
+some include hell. I really don't understand the how the mach-*/ includes 
+are supposed to work.
 
-> That also only helps for the wakeup case too, doesn't it? You have
-> to use the vmas to find out which inode to use to do the wait, I think?
-> (unless you introduce a new shared futex API).
+I found out (by disassembling resulting vmlinux binaries) that in 
+arch/i386/kernel/entry.S, the loop in irq_entries_start does too little 
+iterations compared to NR_IRQS value as seen in for example io_apic.c
 
-one could do something like this:
+The super-stupid proof-patch below fixes the panic on my system. It's just 
+to demonstrate that the i386 includes really need fixing to be consistent 
+somehow.
 
- struct address_space *mapping = page_mapping(page);
- if (!mapping || mapping == &swapper_space)
-   do_private_futex();
- else
-   do_shared_futex(mapping->host, page->index, addr % PAGE_SIZE);
+diff --git a/arch/i386/kernel/entry.S b/arch/i386/kernel/entry.S
+index 976438c..b20dc07 100644
+--- a/arch/i386/kernel/entry.S
++++ b/arch/i386/kernel/entry.S
+@@ -53,6 +53,8 @@
+ #include <asm/dwarf2.h>
+ #include "irq_vectors.h"
+ 
++#define NR_IRQS 4096
++
+ /*
+  * We use macros for low-level operations which need to be overridden
+  * for paravirtualization.  The following will never clobber any registers:
 
-
-But alas, it seems I overlooked that the mmap_sem also protects the page
-tables as pointed out by Hugh, so this is all in fain it seems.
-
-A well.
-
+-- 
+Jiri Kosina
