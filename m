@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767661AbXDFOeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767715AbXDFPIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767661AbXDFOeh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 10:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767663AbXDFOeh
+	id S1767715AbXDFPIc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 11:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767716AbXDFPIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 10:34:37 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35298 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767661AbXDFOeg (ORCPT
+	Fri, 6 Apr 2007 11:08:32 -0400
+Received: from stinky.trash.net ([213.144.137.162]:41518 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767715AbXDFPIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 10:34:36 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       e1000-devel@lists.sourceforge.net, Len Brown <len.brown@intel.com>,
-       Natalie Protasevich <nataliep@google.com>, Andi Kleen <ak@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       auke-jan.h.kok@intel.com
-Subject: Re: 2.6.21-rc5-mm4
-References: <20070402224745.71a25af7.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704031455200.10589@twin.jikos.cz>
-	<46126EAA.3050000@intel.com>
-	<Pine.LNX.4.64.0704031725300.28249@twin.jikos.cz>
-	<46128C92.2020908@intel.com>
-	<Pine.LNX.4.64.0704031940080.28249@twin.jikos.cz>
-	<Pine.LNX.4.64.0704041748330.28249@twin.jikos.cz>
-	<m1r6r0awc2.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0704061503310.31796@twin.jikos.cz>
-Date: Fri, 06 Apr 2007 08:32:48 -0600
-In-Reply-To: <Pine.LNX.4.64.0704061503310.31796@twin.jikos.cz> (Jiri Kosina's
-	message of "Fri, 6 Apr 2007 15:23:05 +0200 (CEST)")
-Message-ID: <m1r6qx8tf3.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 6 Apr 2007 11:08:31 -0400
+Message-ID: <4616626C.9020100@trash.net>
+Date: Fri, 06 Apr 2007 17:08:28 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Vasily Averin <vvs@sw.ru>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       netfilter-devel@lists.netfilter.org, rusty@rustcorp.com.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH 2.6.21-rc6] [netfilter] early_drop imrovement
+References: <4615FE1D.80206@sw.ru> <20070406102433.d3a670a5.dada1@cosmosbay.com> <4616203A.80203@sw.ru>
+In-Reply-To: <4616203A.80203@sw.ru>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jikos@jikos.cz> writes:
+Vasily Averin wrote:
+> No, I've not investigated this scenario. It looks like you are right and my
+> patch can leads to a long delays.
+> 
+> In my experiments I've decreased ip_conntrack_max lower than number of hash
+> buckets and got the "table full, dropping packet" errors in logs. I've looked on
+> the conntrack list and found a huge number of conntracks that can be freed.
+> However my hash bucket was empty and therefore I even did not have any chances
+> to free something. That's why I would like to check the other hash buckets too.
+> 
+> Ok, let's limit the number of conntracks that can be checked inside
+> early_drop(). What do you prefer: some round number (for example 100) or
+> fraction of ip_conntrack_max (for example 1%)?
 
-> Hi Eric,
->
-> after struggling with this issue for some time, I think that it's just 
-> some incosistent usage of NR_IRQS throughout the source probably due to 
-> some include hell. I really don't understand the how the mach-*/ includes 
-> are supposed to work.
->
-> I found out (by disassembling resulting vmlinux binaries) that in 
-> arch/i386/kernel/entry.S, the loop in irq_entries_start does too little 
-> iterations compared to NR_IRQS value as seen in for example io_apic.c
->
-> The super-stupid proof-patch below fixes the panic on my system. It's just 
-> to demonstrate that the i386 includes really need fixing to be consistent 
-> somehow.
 
-Thanks, and that would do it, it  makes sense why it was the irq patch
-that caused problems.  I had forgotten about the number of stubs issue.
+A (small) fraction sounds better. We could even consider keeping track
+of the number of conntracks that can be evicted (not assured), so in a
+DOS situation we could save unnecessary table scans. Not sure if its
+worth the effort though.
 
-I had to clean that up on x86_64 as well and it probably makes most sense
-to put that cleanup as well, so we have a small fixed number of stubs
-which would make the includes not matter.
+Anyway, please base your patch on the net-2.6.22 tree, which doesn't
+include ip_conntrack anymore.
 
-Bleh.  Hopefully soon.
-
-Eric
-
-> diff --git a/arch/i386/kernel/entry.S b/arch/i386/kernel/entry.S
-> index 976438c..b20dc07 100644
-> --- a/arch/i386/kernel/entry.S
-> +++ b/arch/i386/kernel/entry.S
-> @@ -53,6 +53,8 @@
->  #include <asm/dwarf2.h>
->  #include "irq_vectors.h"
->  
-> +#define NR_IRQS 4096
-> +
->  /*
->   * We use macros for low-level operations which need to be overridden
->   * for paravirtualization.  The following will never clobber any registers:
->
-> -- 
-> Jiri Kosina
