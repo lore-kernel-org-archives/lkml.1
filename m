@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767314AbXDFAr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767451AbXDFAsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767314AbXDFAr1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 20:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXDFAr1
+	id S1767451AbXDFAsn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 20:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767464AbXDFAsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 20:47:27 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:57708 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767314AbXDFAr0 (ORCPT
+	Thu, 5 Apr 2007 20:48:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45452 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767451AbXDFAsm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 20:47:26 -0400
-Message-ID: <4615982A.1070700@vmware.com>
-Date: Thu, 05 Apr 2007 17:45:30 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Bugfix for VMI paravirt ops
-References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org> <46158FBE.3090105@vmware.com> <461590EA.10605@goop.org> <4615924E.8020009@vmware.com> <46159555.4020706@goop.org>
-In-Reply-To: <46159555.4020706@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 20:48:42 -0400
+Date: Fri, 6 Apr 2007 02:48:39 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Define EFLAGS_IF
+Message-ID: <20070406004839.GA27668@one.firstfloor.org>
+References: <1174533374.2713.104.camel@localhost.localdomain> <46159256.1040705@zytor.com> <461592AA.4060103@goop.org> <46159480.20108@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46159480.20108@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Zachary Amsden wrote:
->   
->> So the clean fix for this is still even further out.  I don't think I
->> want to hook kmap/unmap as paravirt-ops.
->>     
->
-> Yes, it seems like overkill.
->
-> How about something like adding PARAVIRT_LAZY_FLUSH as an argument to
-> set_lazy_mode?  It would be valid to use at any time, and it would flush
-> any pending work while still remaining in whatever lazy mode its
-> currently in.  That way kmap_atomic can flush anything pending without
-> having to muck around with the current lazy state.
->   
+On Thu, Apr 05, 2007 at 05:29:52PM -0700, H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+> >
+> >That patch got dropped, and replaced by one which pulled all the flags
+> >definitions out of <asm/processor.h>
+> >
+> 
+> Saw that a little too late :)
+> 
+> In general, it would be nice if the various CPU constants were all 
+> defined in one place, so I'd rather suggest protecting the appropriate 
+> parts of asm/processor.h with #ifndef __ASSEMBLY__.
 
-Yes, thought about several solutions, and this seems the best.  But it 
-requires a new paravirt-op.
+No processor.h is such a hodgepodge of unrelated stuff that any
+splitting up is a good thing.
 
-Zach
-
+-Andi
