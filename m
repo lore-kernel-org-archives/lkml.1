@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767472AbXDFBVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767466AbXDFBYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767472AbXDFBVA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 21:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767473AbXDFBVA
+	id S1767466AbXDFBYL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 21:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767473AbXDFBYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 21:21:00 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:49825 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767472AbXDFBU7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 21:20:59 -0400
-Message-ID: <4615A007.6010701@vmware.com>
-Date: Thu, 05 Apr 2007 18:19:03 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Bugfix for VMI paravirt ops
-References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org> <46158FBE.3090105@vmware.com> <461590EA.10605@goop.org> <4615924E.8020009@vmware.com> <46159555.4020706@goop.org> <4615982A.1070700@vmware.com> <461599C1.50002@goop.org>
-In-Reply-To: <461599C1.50002@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 5 Apr 2007 21:24:11 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:60549 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767466AbXDFBYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 21:24:09 -0400
+Date: Thu, 5 Apr 2007 18:24:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/3] epoll cleanups - epoll include diet ...
+Message-Id: <20070405182407.a785b895.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704051806300.27713@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.19972.1175650506.1>
+	<20070405175905.733705cf.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704051806300.27713@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Zachary Amsden wrote:
->   
->> Yes, thought about several solutions, and this seems the best.  But it
->> requires a new paravirt-op.
->>     
->
-> Not with the power of multiplexing.  Something like this, perhaps?
->   
+On Thu, 5 Apr 2007 18:12:58 -0700 (PDT)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Ok, I tried that and I got a nice clean fix.  For 2.6.22.  Backporting 
-this to 2.6.21 creates havoc, as a number of cleanup patches as well as 
-changes to highmem code get in the way.
+> On Thu, 5 Apr 2007, Andrew Morton wrote:
+> 
+> > epoll uses signal stuff and might need signal.h.  It implements syscalls
+> > and it certainly needs to have those syscall's prototypes in scope.  It
+> > surely uses stuff from mm.h (doesn't everything??)
+> 
+> Ack about signal.h, I forgot about the pwait code :(
+> Why syscalls.h? The eventpoll.c file expots syscalls, but it doesn't use 
+> anything declared in there.
 
-Andi, do you really want to deal with the conflicts this will create for 
-the paravirt queue for 2.6.22, or would you rather apply the dumb yet 
-simple and non-confrontational workaround I have been trying to get 
-applied to 2.6.21?
+So that the compiler can verify that our declarations of sys_epoll_foo()
+match our definitions of them.
 
-Zach
+> What does eventpoll.c use *directly* from mm.h? If eventpoll.c uses, let's 
+> say sched.h, and sched.h needs mm.h, it is sched.h responsibility to 
+> include the mm.h file not eventpoll.c one.
+> 
+
+Sure.  But if epoll.c _does_ use something from mm.h (or uses something
+from a header which mm.h includes) then if we later remove the #include
+mm.h from sched.h, eventpoll.c will break.
+
+The general rule is: include in .c the header files which provide the stuff
+which that .c file uses.  Now, it maybe that eventpoll.c indeed uses nothing
+which mm.h provides, and nothing which mm.h's includees provide.  But it is
+non-trivial to prove that.  Once added, includes are hard to remove :(
