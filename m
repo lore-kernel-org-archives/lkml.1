@@ -1,109 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbXDFAD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767423AbXDFAFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbXDFAD6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 20:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXDFAD6
+	id S1767423AbXDFAFY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 20:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767449AbXDFAFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 20:03:58 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:43734 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753377AbXDFADy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 20:03:54 -0400
-Subject: Re: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10,13
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: David Miller <davem@davemloft.net>
-Cc: aab@cichlid.com, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20070405.153649.104035809.davem@davemloft.net>
-References: <200704052213.l35MDRRR015981@cichlid.com>
-	 <20070405.153649.104035809.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 19:02:19 -0500
-Message-Id: <1175817739.3714.43.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Apr 2007 20:05:24 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54483 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767423AbXDFAFW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 20:05:22 -0400
+Message-Id: <1175817921.18400.1183285196@webmail.messagingengine.com>
+X-Sasl-Enc: 70iH39woqlf7p9cEedXu4KbwhwP1cQrRSEPKpUdrFw4r 1175817921
+From: johnrobertbanks@fastmail.fm
+To: "Ignatich" <ignatich@gmail.com>, reiserfs-list@namesys.com,
+       linux-kernel@vger.kernel.org
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <46157B5B.5000602@gmail.com>
+Subject: Re: Reiser4. BEST FILESYSTEM EVER? I need help.
+In-Reply-To: <46157B5B.5000602@gmail.com>
+Date: Thu, 05 Apr 2007 17:05:21 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 15:36 -0700, David Miller wrote:
-> From: Andrew Burgess <aab@cichlid.com>
-> Date: Thu, 5 Apr 2007 15:13:27 -0700
+Hi Ignatich,
+
+After seeing the following benchmarks at 
+
+http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
+http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
+
+The Reiser4 benchmarks are so good, I have decided to try the Reiser4
+filesystem.
+
+.-------------------------.
+| FILESYSTEM | TIME |DISK |
+| TYPE       |(secs)|USAGE|
+.-------------------------.
+|REISER4 lzo | 1938 | 278 |
+|REISER4 gzip| 2295 | 213 |
+|REISER4     | 3462 | 692 |
+|EXT2        | 4092 | 816 |
+|JFS         | 4225 | 806 |
+|EXT4        | 4408 | 816 |
+|EXT3        | 4421 | 816 |
+|XFS         | 4625 | 779 |
+|REISER3     | 6178 | 793 |
+|FAT32       |12342 | 988 |
+|NTFS-3g     |10414 | 772 |
+.-------------------------.
+
+Column one measures the time taken to complete the bonnie++ benchmarking
+test (run with the parameters bonnie++ -n128:128k:0)
+
+Column two, Disk Usage: measures the amount of disk used to store 655MB
+of raw data (which was 3 different copies of the Linux kernel sources).
+
+Anyway, I have patched the 2.6.20 kernel and have a partition formatted
+with Reiser4.
+
+However, I am having trouble getting LILO or GRUB working (with
+Reiser4).
+
+Could you guys who know all about this, help me, or point me to some
+help.
+
+Thanks a lot, John.
+
+
+On Fri, 06 Apr 2007 02:42:35 +0400, "Ignatich" <ignatich@gmail.com>
+said:
+> While trying to find the cause of problems with reiser4 in recent 
+> kernels I came across this.
 > 
-> > David, do you see any other problems with scsi_send_eh_cmnd?
-> > 
-> > I've switched back to 2.6.18 which seems to not oops 
-> > and am happy to try patches.
+> Incomplete write handling seem to be missing from reiser4_write_extent() 
+> thanks to reiser4-temp-fix.patch. Strangely, there is a patch by Edward 
+> Shishkin that should address that issue, but it is missing from -mm 
+> tree. Please check.
 > 
-> Does 2.6.20 with my patch OOPS too?  Does reverting my patch
-> make the oops go away?
+>     Max
 > 
-> If reverting my patch makes the OOPS go away, we need to
-> verify if page_address() is returning crap for some reason
-> or the length is wrong.
+-- 
+  
+  johnrobertbanks@fastmail.fm
 
-Assuming this does turn out to be the problem, we should just junk the
-page allocation ... it's completely unnecessary; when the slab allocated
-commands were done, we made sure the actual sense_buffer is at the
-correct location, so this should be the final fix:
-
-James
-
-diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
-index adb40f2..997532b 100644
---- a/drivers/scsi/scsi_error.c
-+++ b/drivers/scsi/scsi_error.c
-@@ -18,12 +18,12 @@
- #include <linux/sched.h>
- #include <linux/timer.h>
- #include <linux/string.h>
--#include <linux/slab.h>
- #include <linux/kernel.h>
- #include <linux/kthread.h>
- #include <linux/interrupt.h>
- #include <linux/blkdev.h>
- #include <linux/delay.h>
-+#include <linux/scatterlist.h>
- 
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-@@ -641,16 +641,8 @@ static int scsi_send_eh_cmnd(struct scsi_cmnd *scmd, unsigned char *cmnd,
- 	memcpy(scmd->cmnd, cmnd, cmnd_size);
- 
- 	if (copy_sense) {
--		gfp_t gfp_mask = GFP_ATOMIC;
--
--		if (shost->hostt->unchecked_isa_dma)
--			gfp_mask |= __GFP_DMA;
--
--		sgl.page = alloc_page(gfp_mask);
--		if (!sgl.page)
--			return FAILED;
--		sgl.offset = 0;
--		sgl.length = 252;
-+		sg_init_one(&sgl, scmd->sense_buffer,
-+			    sizeof(scmd->sense_buffer));
- 
- 		scmd->sc_data_direction = DMA_FROM_DEVICE;
- 		scmd->request_bufflen = sgl.length;
-@@ -721,18 +713,6 @@ static int scsi_send_eh_cmnd(struct scsi_cmnd *scmd, unsigned char *cmnd,
- 
- 
- 	/*
--	 * Last chance to have valid sense data.
--	 */
--	if (copy_sense) {
--		if (!SCSI_SENSE_VALID(scmd)) {
--			memcpy(scmd->sense_buffer, page_address(sgl.page),
--			       sizeof(scmd->sense_buffer));
--		}
--		__free_page(sgl.page);
--	}
--
--
--	/*
- 	 * Restore original data
- 	 */
- 	scmd->request_buffer = old_buffer;
-
+-- 
+http://www.fastmail.fm - And now for something completely different…
 
