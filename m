@@ -1,99 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbXDFQk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbXDFQl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933253AbXDFQk7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 12:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933256AbXDFQk7
+	id S933257AbXDFQl0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 12:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933267AbXDFQl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 12:40:59 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:44493 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933253AbXDFQk6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 12:40:58 -0400
-Date: Fri, 6 Apr 2007 18:40:58 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Pedro Mullor =?utf-8?Q?Jim=C3=A9nez?= <pmullor@skynet.be>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.9 won't compile
-Message-ID: <20070406164058.GK29169@stusta.de>
-References: <1175855823.16114.12.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 6 Apr 2007 12:41:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58304 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933257AbXDFQlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 12:41:24 -0400
+Date: Fri, 6 Apr 2007 18:39:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mingming Cao <cmm@us.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Oliver Pinter <oliver.pntr@gmail.com>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [patch] hrtimers debug patch
+Message-ID: <20070406163927.GA27031@elte.hu>
+References: <46020385.50301@yahoo.com.au> <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org> <1174612132.16068.114.camel@localhost.localdomain> <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org> <20070323021115.GA11147@wotan.suse.de> <6bffcb0e0703230051i5accb180r7bd0fb16de85198a@mail.gmail.com> <20070323120148.GA27505@elte.hu> <4607BDD9.1010002@googlemail.com> <20070326170225.GA951@elte.hu> <6bffcb0e0704060827l73aeb8ehf35d80f7630f2ac5@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1175855823.16114.12.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <6bffcb0e0704060827l73aeb8ehf35d80f7630f2ac5@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 06, 2007 at 12:37:03PM +0200, Pedro Mullor Jiménez wrote:
-> Dear all,
+
+* Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+
+> > thanks! I have stared at hrtimer.c a few more hours and the good 
+> > news is that i found a narrow SMP race. The bad news is that i dont 
+> > think it could explain your bug symptoms: the worst-case effect of 
+> > the race should be an incorrect timeout on the current CPU - not a 
+> > KTIME_MAX thing like your logs show.
+> >
+> > But maybe i didnt think through the effects of the bug well enough, 
+> > and your box has a HT CPU, with HT CPUs being pretty good at 
+> > triggering narrow SMP races - so maybe we are lucky? Fix attached 
+> > below. Patch is build and boot-tested.
 > 
-> I downloaded version 2.6.9 of the kernel from kernel.org
-> I went throught menuconfig, importing the configuration of my current
-> 2.6.15-28-686.
-> 
-> I then tried to compile it but the compilation exits with an error
-> (below).
-> 
-> I also tried to do make mrproper, got rid of the .config file, made
-> menuconfig again without importing anything, and when compiling it
-> failed again.
-> 
-> The reason for me to use this kernel is because I have a VIA VT82C
-> 693A/598/686 chipset and I suffer from perf problems (which google says
-> only happen since 2.6.10).
+> I didn't see this weird hang for 12 days. I think that this patch 
+> solves this issue.
 
-Can you give a pointer or description of this problem?
+cool :)
 
-The preferred solution for you would not be to run an ancient kernel 
-with tons of known security holes but to get this problem fixed.
+> Huge thans!
 
-> Might I request to be personally CC'ed in the answers/comments posted in
-> response to this post ?
-> 
-> Many thanks in advance for your comments and help!
-> 
-> With kind regards,
-> Pedro Mullor
-> 
-> 
->   CHK     include/linux/version.h
-> make[1]: `arch/i386/kernel/asm-offsets.s' is up to date.
->   CHK     include/linux/compile.h
->   CC      arch/i386/kernel/process.o
-> arch/i386/kernel/process.c: In function ‘show_regs’:
-> arch/i386/kernel/process.c:252: warning: pointer targets in passing
-> argument 2 of ‘show_trace’ differ in signedness
-> {standard input}: Assembler messages:
-> {standard input}:813: Error: suffix or operands invalid for `mov'
-> {standard input}:814: Error: suffix or operands invalid for `mov'
-> {standard input}:1040: Error: suffix or operands invalid for `mov'
-> {standard input}:1041: Error: suffix or operands invalid for `mov'
-> {standard input}:1121: Error: suffix or operands invalid for `mov'
-> {standard input}:1122: Error: suffix or operands invalid for `mov'
-> {standard input}:1226: Error: suffix or operands invalid for `mov'
-> {standard input}:1227: Error: suffix or operands invalid for `mov'
-> {standard input}:1290: Error: suffix or operands invalid for `mov'
-> {standard input}:1302: Error: suffix or operands invalid for `mov'
-> make[1]: *** [arch/i386/kernel/process.o] Error 1
-> make: *** [arch/i386/kernel] Error 2
+huge thanks to you for testing it!
 
-
-Older kernels use an assembler syntax no longer supported by recent 
-binutils.
-
-A patch is at [1].
-
-cu
-Adrian
-
-[1] http://www.kernel.org/pub/linux/devel/binutils/linux-2.6-seg-5.patch
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
