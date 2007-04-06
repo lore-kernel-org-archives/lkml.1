@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933404AbXDFXWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933382AbXDFXZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933404AbXDFXWj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933408AbXDFXWj
+	id S933382AbXDFXZJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbXDFXZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:22:39 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:38069 "EHLO smtp.osdl.org"
+	Fri, 6 Apr 2007 19:25:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:44076 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933404AbXDFXWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 19:22:38 -0400
-Date: Fri, 6 Apr 2007 16:22:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 18/20] clean up tsc-based sched_clock
-Message-Id: <20070406162233.b835bd4c.akpm@linux-foundation.org>
-In-Reply-To: <20070404191206.476822257@goop.org>
-References: <20070404191151.009821039@goop.org>
-	<20070404191206.476822257@goop.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S933382AbXDFXZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:25:06 -0400
+Message-ID: <4616D6A1.5050908@goop.org>
+Date: Fri, 06 Apr 2007 16:24:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>
+Subject: Re: [patch 09/20] rename struct paravirt_patch to paravirt_patch_site
+ for clarity
+References: <20070404191151.009821039@goop.org>	<20070404191205.617690202@goop.org> <20070406161822.a9f828a4.akpm@linux-foundation.org>
+In-Reply-To: <20070406161822.a9f828a4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 12:12:09 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Andrew Morton wrote:
+> Needed a bit of updating for Andi's recently-merged
+> x86_64-mm-vmi-backend-for-paravirt-ops.patch but I think I got it
+> right.  We'll see if it compiles.
+>   
 
-> Three cleanups:
->  - change "instable" -> "unstable"
->  - its better to use get_cpu_var for getting this cpu's variables
->  - change cycles_2_ns to do the full computation rather than just the
->    tsc->ns scaling.  Its a simpler interface, and it makes the function
->    more generally useful.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> 
-> ---
->  arch/i386/kernel/sched-clock.c |   35 +++++++++++++++++++++--------------
+Yeah, it's just a simple name change, so it will either compile or not.
 
-I'm dropping the relevant patch from Andi's tree due to it causing
-mysterious hangs when initscripts start ondemand.  So I'll need to drop
-this patch and "[patch 19/20] Add a sched_clock paravirt_op".
-
-
-I still need to work out why that hang is happening - it is very
-mysterious.  I got as far as working out that it was hanging on
-write_seqlock_irqsave(xtime_lock), then remembered that it's with
-CONFIG_SMP=n so I stomped off to bed in disgust.  Later.
+    J
