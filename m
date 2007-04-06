@@ -1,466 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbXDGAAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbXDGABL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933559AbXDGAAb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 20:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933552AbXDGAAb
+	id S933570AbXDGABL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 20:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933546AbXDGAAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 20:00:31 -0400
-Received: from 163.sub-75-209-152.myvzw.com ([75.209.152.163]:42394 "EHLO
+	Fri, 6 Apr 2007 20:00:33 -0400
+Received: from 163.sub-75-209-152.myvzw.com ([75.209.152.163]:42395 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933490AbXDGAA3 (ORCPT
+	with ESMTP id S933539AbXDGAA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Apr 2007 20:00:29 -0400
-X-Greylist: delayed 2816 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Apr 2007 20:00:27 EDT
-Message-Id: <20070406224204.596151568@goop.org>
+Message-Id: <20070406224205.093530064@goop.org>
 References: <20070406224152.556848893@goop.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Apr 2007 15:41:53 -0700
+Date: Fri, 06 Apr 2007 15:41:56 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [patch 1/4] Clean up asm-i386/bugs.h
-Content-Disposition: inline; filename=cleanup-asm-bugs_h.patch
+       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>,
+       "Jan Beulich" <JBeulich@novell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
+Subject: [patch 4/4] Make COMPAT_VDSO runtime selectable.
+Content-Disposition: inline; filename=runtime-COMPAT_VDSO-selection.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most of asm-i386/bugs.h is code which should be in a C file, so put it there.
+Now that relocation of the VDSO for COMPAT_VDSO users is done at
+runtime rather than compile time, it is possible to enable/disable
+compat mode at runtime.
+
+This patch allows you to enable COMPAT_VDSO mode with "vdso=2" on the
+kernel command line, or via sysctl.  (Switching on a running system
+shouldn't be done lightly; any process which was relying on the compat
+VDSO will be upset if it goes away.)
+
+The COMPAT_VDSO config option still exists, but if enabled it just
+makes vdso_enabled default to VDSO_COMPAT.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: "Jan Beulich" <JBeulich@novell.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Roland McGrath <roland@redhat.com>
 
 ---
- arch/i386/kernel/cpu/Makefile  |    2 
- arch/i386/kernel/cpu/bugs.c    |  191 +++++++++++++++++++++++++++++++++++++++
- include/asm-i386/alternative.h |    1 
- include/asm-i386/bugs.h        |  194 ----------------------------------------
- 4 files changed, 197 insertions(+), 191 deletions(-)
+ Documentation/kernel-parameters.txt |    1 
+ arch/i386/kernel/sysenter.c         |  141 +++++++++++++++++++++++------------
+ include/asm-i386/page.h             |    2 
+ 3 files changed, 94 insertions(+), 50 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/cpu/Makefile
-+++ b/arch/i386/kernel/cpu/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for x86-compatible CPU details and quirks
- #
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1807,6 +1807,7 @@ and is between 256 and 4096 characters. 
+ 			[USBHID] The interval which mice are to be polled at.
  
--obj-y	:=	common.o proc.o
-+obj-y	:=	common.o proc.o bugs.o
+ 	vdso=		[IA-32,SH]
++			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
+ 			vdso=1: enable VDSO (default)
+ 			vdso=0: disable VDSO mapping
  
- obj-y	+=	amd.o
- obj-y	+=	cyrix.o
 ===================================================================
---- /dev/null
-+++ b/arch/i386/kernel/cpu/bugs.c
-@@ -0,0 +1,191 @@
-+/*
-+ *  arch/i386/cpu/bugs.c
-+ *
-+ *  Copyright (C) 1994  Linus Torvalds
-+ *
-+ *  Cyrix stuff, June 1998 by:
-+ *	- Rafael R. Reilova (moved everything from head.S),
-+ *        <rreilova@ececs.uc.edu>
-+ *	- Channing Corn (tests & fixes),
-+ *	- Andrew D. Balsa (code cleanup).
-+ */
-+#include <linux/init.h>
-+#include <linux/utsname.h>
-+#include <asm/processor.h>
-+#include <asm/i387.h>
-+#include <asm/msr.h>
-+#include <asm/paravirt.h>
-+#include <asm/alternative.h>
+--- a/arch/i386/kernel/sysenter.c
++++ b/arch/i386/kernel/sysenter.c
+@@ -23,12 +23,25 @@
+ #include <asm/pgtable.h>
+ #include <asm/unistd.h>
+ #include <asm/elf.h>
++#include <asm/tlbflush.h>
 +
-+static int __init no_halt(char *s)
-+{
-+	boot_cpu_data.hlt_works_ok = 0;
-+	return 1;
-+}
++enum {
++	VDSO_DISABLED = 0,
++	VDSO_ENABLED = 1,
++	VDSO_COMPAT = 2,
++};
 +
-+__setup("no-hlt", no_halt);
-+
-+static int __init mca_pentium(char *s)
-+{
-+	mca_pentium_flag = 1;
-+	return 1;
-+}
-+
-+__setup("mca-pentium", mca_pentium);
-+
-+static int __init no_387(char *s)
-+{
-+	boot_cpu_data.hard_math = 0;
-+	write_cr0(0xE | read_cr0());
-+	return 1;
-+}
-+
-+__setup("no387", no_387);
-+
-+static double __initdata x = 4195835.0;
-+static double __initdata y = 3145727.0;
-+
-+/*
-+ * This used to check for exceptions..
-+ * However, it turns out that to support that,
-+ * the XMM trap handlers basically had to
-+ * be buggy. So let's have a correct XMM trap
-+ * handler, and forget about printing out
-+ * some status at boot.
-+ *
-+ * We should really only care about bugs here
-+ * anyway. Not features.
-+ */
-+static void __init check_fpu(void)
-+{
-+	if (!boot_cpu_data.hard_math) {
-+#ifndef CONFIG_MATH_EMULATION
-+		printk(KERN_EMERG "No coprocessor found and no math emulation present.\n");
-+		printk(KERN_EMERG "Giving up.\n");
-+		for (;;) ;
++#ifdef CONFIG_COMPAT_VDSO
++#define VDSO_DEFAULT	VDSO_COMPAT
++#else
++#define VDSO_DEFAULT	VDSO_ENABLED
 +#endif
-+		return;
-+	}
-+
-+/* trap_init() enabled FXSR and company _before_ testing for FP problems here. */
-+	/* Test for the divl bug.. */
-+	__asm__("fninit\n\t"
-+		"fldl %1\n\t"
-+		"fdivl %2\n\t"
-+		"fmull %2\n\t"
-+		"fldl %1\n\t"
-+		"fsubp %%st,%%st(1)\n\t"
-+		"fistpl %0\n\t"
-+		"fwait\n\t"
-+		"fninit"
-+		: "=m" (*&boot_cpu_data.fdiv_bug)
-+		: "m" (*&x), "m" (*&y));
-+	if (boot_cpu_data.fdiv_bug)
-+		printk("Hmm, FPU with FDIV bug.\n");
-+}
-+
-+static void __init check_hlt(void)
-+{
-+	if (paravirt_enabled())
-+		return;
-+
-+	printk(KERN_INFO "Checking 'hlt' instruction... ");
-+	if (!boot_cpu_data.hlt_works_ok) {
-+		printk("disabled\n");
-+		return;
-+	}
-+	halt();
-+	halt();
-+	halt();
-+	halt();
-+	printk("OK.\n");
-+}
-+
-+/*
-+ *	Most 386 processors have a bug where a POPAD can lock the
-+ *	machine even from user space.
-+ */
-+
-+static void __init check_popad(void)
-+{
-+#ifndef CONFIG_X86_POPAD_OK
-+	int res, inp = (int) &res;
-+
-+	printk(KERN_INFO "Checking for popad bug... ");
-+	__asm__ __volatile__(
-+	  "movl $12345678,%%eax; movl $0,%%edi; pusha; popa; movl (%%edx,%%edi),%%ecx "
-+	  : "=&a" (res)
-+	  : "d" (inp)
-+	  : "ecx", "edi" );
-+	/* If this fails, it means that any user program may lock the CPU hard. Too bad. */
-+	if (res != 12345678) printk( "Buggy.\n" );
-+		        else printk( "OK.\n" );
-+#endif
-+}
-+
-+/*
-+ * Check whether we are able to run this kernel safely on SMP.
-+ *
-+ * - In order to run on a i386, we need to be compiled for i386
-+ *   (for due to lack of "invlpg" and working WP on a i386)
-+ * - In order to run on anything without a TSC, we need to be
-+ *   compiled for a i486.
-+ * - In order to support the local APIC on a buggy Pentium machine,
-+ *   we need to be compiled with CONFIG_X86_GOOD_APIC disabled,
-+ *   which happens implicitly if compiled for a Pentium or lower
-+ *   (unless an advanced selection of CPU features is used) as an
-+ *   otherwise config implies a properly working local APIC without
-+ *   the need to do extra reads from the APIC.
-+*/
-+
-+static void __init check_config(void)
-+{
-+/*
-+ * We'd better not be a i386 if we're configured to use some
-+ * i486+ only features! (WP works in supervisor mode and the
-+ * new "invlpg" and "bswap" instructions)
-+ */
-+#if defined(CONFIG_X86_WP_WORKS_OK) || defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_BSWAP)
-+	if (boot_cpu_data.x86 == 3)
-+		panic("Kernel requires i486+ for 'invlpg' and other features");
-+#endif
-+
-+/*
-+ * If we configured ourselves for a TSC, we'd better have one!
-+ */
-+#ifdef CONFIG_X86_TSC
-+	if (!cpu_has_tsc && !tsc_disable)
-+		panic("Kernel compiled for Pentium+, requires TSC feature!");
-+#endif
-+
-+/*
-+ * If we were told we had a good local APIC, check for buggy Pentia,
-+ * i.e. all B steppings and the C2 stepping of P54C when using their
-+ * integrated APIC (see 11AP erratum in "Pentium Processor
-+ * Specification Update").
-+ */
-+#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_GOOD_APIC)
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL
-+	    && cpu_has_apic
-+	    && boot_cpu_data.x86 == 5
-+	    && boot_cpu_data.x86_model == 2
-+	    && (boot_cpu_data.x86_mask < 6 || boot_cpu_data.x86_mask == 11))
-+		panic("Kernel compiled for PMMX+, assumes a local APIC without the read-before-write bug!");
-+#endif
-+}
-+
-+
-+void __init check_bugs(void)
-+{
-+	identify_boot_cpu();
-+#ifndef CONFIG_SMP
-+	printk("CPU: ");
-+	print_cpu_info(&boot_cpu_data);
-+#endif
-+	check_config();
-+	check_fpu();
-+	check_hlt();
-+	check_popad();
-+	init_utsname()->machine[1] = '0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
-+	alternative_instructions();
-+}
-===================================================================
---- a/include/asm-i386/alternative.h
-+++ b/include/asm-i386/alternative.h
-@@ -14,6 +14,7 @@ struct alt_instr {
- 	u8  pad;
- };
  
-+extern void alternative_instructions(void);
- extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
- 
- struct module;
-===================================================================
---- a/include/asm-i386/bugs.h
-+++ b/include/asm-i386/bugs.h
-@@ -1,198 +1,12 @@
--/*
-- *  include/asm-i386/bugs.h
-- *
-- *  Copyright (C) 1994  Linus Torvalds
-- *
-- *  Cyrix stuff, June 1998 by:
-- *	- Rafael R. Reilova (moved everything from head.S),
-- *        <rreilova@ececs.uc.edu>
-- *	- Channing Corn (tests & fixes),
-- *	- Andrew D. Balsa (code cleanup).
-- */
--
  /*
-  * This is included by init/main.c to check for architecture-dependent bugs.
-  *
-  * Needs:
-  *	void check_bugs(void);
+  * Should the kernel map a VDSO page into processes and pass its
+  * address down to glibc upon exec()?
   */
-+#ifndef _ASM_I386_BUG_H
-+#define _ASM_I386_BUG_H
+-unsigned int __read_mostly vdso_enabled = 1;
++unsigned int __read_mostly vdso_enabled = VDSO_DEFAULT;
  
--#include <linux/init.h>
--#include <asm/processor.h>
--#include <asm/i387.h>
--#include <asm/msr.h>
--#include <asm/paravirt.h>
-+extern void __init check_bugs(void);
+ EXPORT_SYMBOL_GPL(vdso_enabled);
  
--static int __init no_halt(char *s)
+@@ -43,7 +56,6 @@ __setup("vdso=", vdso_setup);
+ 
+ extern asmlinkage void sysenter_entry(void);
+ 
+-#ifdef CONFIG_COMPAT_VDSO
+ static __init void reloc_symtab(Elf32_Ehdr *ehdr,
+ 				unsigned offset, unsigned size)
+ {
+@@ -160,11 +172,6 @@ static __init void relocate_vdso(Elf32_E
+ 				     shdr[i].sh_size);
+ 	}
+ }
+-#else
+-static inline void relocate_vdso(Elf32_Ehdr *ehdr)
 -{
--	boot_cpu_data.hlt_works_ok = 0;
--	return 1;
 -}
--
--__setup("no-hlt", no_halt);
--
--static int __init mca_pentium(char *s)
--{
--	mca_pentium_flag = 1;
--	return 1;
--}
--
--__setup("mca-pentium", mca_pentium);
--
--static int __init no_387(char *s)
--{
--	boot_cpu_data.hard_math = 0;
--	write_cr0(0xE | read_cr0());
--	return 1;
--}
--
--__setup("no387", no_387);
--
--static double __initdata x = 4195835.0;
--static double __initdata y = 3145727.0;
--
--/*
-- * This used to check for exceptions.. 
-- * However, it turns out that to support that,
-- * the XMM trap handlers basically had to
-- * be buggy. So let's have a correct XMM trap
-- * handler, and forget about printing out
-- * some status at boot.
-- *
-- * We should really only care about bugs here
-- * anyway. Not features.
-- */
--static void __init check_fpu(void)
--{
--	if (!boot_cpu_data.hard_math) {
--#ifndef CONFIG_MATH_EMULATION
--		printk(KERN_EMERG "No coprocessor found and no math emulation present.\n");
--		printk(KERN_EMERG "Giving up.\n");
--		for (;;) ;
+-#endif	/* COMPAT_VDSO */
+ 
+ void enable_sep_cpu(void)
+ {
+@@ -182,6 +189,25 @@ void enable_sep_cpu(void)
+ 	wrmsr(MSR_IA32_SYSENTER_ESP, tss->esp1, 0);
+ 	wrmsr(MSR_IA32_SYSENTER_EIP, (unsigned long) sysenter_entry, 0);
+ 	put_cpu();	
++}
++
++static struct vm_area_struct gate_vma;
++
++static int __init gate_vma_init(void)
++{
++	gate_vma.vm_mm = NULL;
++	gate_vma.vm_start = FIXADDR_USER_START;
++	gate_vma.vm_end = FIXADDR_USER_END;
++	gate_vma.vm_flags = VM_READ | VM_MAYREAD | VM_EXEC | VM_MAYEXEC;
++	gate_vma.vm_page_prot = __P101;
++	/*
++	 * Make sure the vDSO gets into every core dump.
++	 * Dumping its contents makes post-mortem fully interpretable later
++	 * without matching up the same kernel and hardware config to see
++	 * what PC values meant.
++	 */
++	gate_vma.vm_flags |= VM_ALWAYSDUMP;
++	return 0;
+ }
+ 
+ /*
+@@ -192,6 +218,22 @@ extern const char vsyscall_sysenter_star
+ extern const char vsyscall_sysenter_start, vsyscall_sysenter_end;
+ static struct page *syscall_pages[1];
+ 
++static void map_compat_vdso(int map)
++{
++	static int vdso_mapped;
++
++	if (map == vdso_mapped)
++		return;
++
++	vdso_mapped = map;
++
++	__set_fixmap(FIX_VDSO, page_to_pfn(syscall_pages[0]) << PAGE_SHIFT,
++		     map ? PAGE_READONLY_EXEC : PAGE_NONE);
++
++	/* flush stray tlbs */
++	flush_tlb_all();
++}
++
+ int __init sysenter_setup(void)
+ {
+ 	void *syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
+@@ -200,10 +242,9 @@ int __init sysenter_setup(void)
+ 
+ 	syscall_pages[0] = virt_to_page(syscall_page);
+ 
+-#ifdef CONFIG_COMPAT_VDSO
+-	__set_fixmap(FIX_VDSO, __pa(syscall_page), PAGE_READONLY_EXEC);
++	gate_vma_init();
++
+ 	printk("Compat vDSO mapped to %08lx.\n", __fix_to_virt(FIX_VDSO));
 -#endif
--		return;
+ 
+ 	if (!boot_cpu_has(X86_FEATURE_SEP)) {
+ 		vsyscall = &vsyscall_int80_start;
+@@ -222,42 +263,57 @@ int __init sysenter_setup(void)
+ /* Defined in vsyscall-sysenter.S */
+ extern void SYSENTER_RETURN;
+ 
+-#ifdef __HAVE_ARCH_GATE_AREA
+ /* Setup a VMA at program startup for the vsyscall page */
+ int arch_setup_additional_pages(struct linux_binprm *bprm, int exstack)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr;
+ 	int ret;
++	bool compat;
+ 
+ 	down_write(&mm->mmap_sem);
+-	addr = get_unmapped_area(NULL, 0, PAGE_SIZE, 0, 0);
+-	if (IS_ERR_VALUE(addr)) {
+-		ret = addr;
+-		goto up_fail;
 -	}
 -
--/* trap_init() enabled FXSR and company _before_ testing for FP problems here. */
--	/* Test for the divl bug.. */
--	__asm__("fninit\n\t"
--		"fldl %1\n\t"
--		"fdivl %2\n\t"
--		"fmull %2\n\t"
--		"fldl %1\n\t"
--		"fsubp %%st,%%st(1)\n\t"
--		"fistpl %0\n\t"
--		"fwait\n\t"
--		"fninit"
--		: "=m" (*&boot_cpu_data.fdiv_bug)
--		: "m" (*&x), "m" (*&y));
--	if (boot_cpu_data.fdiv_bug)
--		printk("Hmm, FPU with FDIV bug.\n");
--}
--
--static void __init check_hlt(void)
+-	/*
+-	 * MAYWRITE to allow gdb to COW and set breakpoints
+-	 *
+-	 * Make sure the vDSO gets into every core dump.
+-	 * Dumping its contents makes post-mortem fully interpretable later
+-	 * without matching up the same kernel and hardware config to see
+-	 * what PC values meant.
+-	 */
+-	ret = install_special_mapping(mm, addr, PAGE_SIZE,
+-				      VM_READ|VM_EXEC|
+-				      VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC|
+-				      VM_ALWAYSDUMP,
+-				      syscall_pages);
+-	if (ret)
+-		goto up_fail;
++
++	/* Test compat mode once here, in case someone
++	   changes it via sysctl */
++	compat = (vdso_enabled == VDSO_COMPAT);
++
++	map_compat_vdso(compat);
++
++	if (compat)
++		addr = VDSO_HIGH_BASE;
++	else {
++		addr = get_unmapped_area(NULL, 0, PAGE_SIZE, 0, 0);
++		if (IS_ERR_VALUE(addr)) {
++			ret = addr;
++			goto up_fail;
++		}
++
++		/*
++		 * MAYWRITE to allow gdb to COW and set breakpoints
++		 *
++		 * Make sure the vDSO gets into every core dump.
++		 * Dumping its contents makes post-mortem fully
++		 * interpretable later without matching up the same
++		 * kernel and hardware config to see what PC values
++		 * meant.
++		 */
++		ret = install_special_mapping(mm, addr, PAGE_SIZE,
++					      VM_READ|VM_EXEC|
++					      VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC|
++					      VM_ALWAYSDUMP,
++					      syscall_pages);
++
++		if (ret)
++			goto up_fail;
++	}
+ 
+ 	current->mm->context.vdso = (void *)addr;
+ 	current_thread_info()->sysenter_return =
+-				    (void *)VDSO_SYM(&SYSENTER_RETURN);
+-up_fail:
++		(void *)VDSO_SYM(&SYSENTER_RETURN);
++
++  up_fail:
+ 	up_write(&mm->mmap_sem);
++
+ 	return ret;
+ }
+ 
+@@ -270,6 +326,9 @@ const char *arch_vma_name(struct vm_area
+ 
+ struct vm_area_struct *get_gate_vma(struct task_struct *tsk)
+ {
++	/* Check to see if this task was created in compat vdso mode */
++	if (tsk->mm->context.vdso == (void *)VDSO_HIGH_BASE)
++		return &gate_vma;
+ 	return NULL;
+ }
+ 
+@@ -282,17 +341,3 @@ int in_gate_area_no_task(unsigned long a
+ {
+ 	return 0;
+ }
+-#else  /* !__HAVE_ARCH_GATE_AREA */
+-int arch_setup_additional_pages(struct linux_binprm *bprm, int exstack)
 -{
--	if (paravirt_enabled())
--		return;
+-	/*
+-	 * If not creating userspace VMA, simply set vdso to point to
+-	 * fixmap page.
+-	 */
+-	current->mm->context.vdso = (void *)VDSO_HIGH_BASE;
+-	current_thread_info()->sysenter_return =
+-		(void *)VDSO_SYM(&SYSENTER_RETURN);
 -
--	printk(KERN_INFO "Checking 'hlt' instruction... ");
--	if (!boot_cpu_data.hlt_works_ok) {
--		printk("disabled\n");
--		return;
--	}
--	halt();
--	halt();
--	halt();
--	halt();
--	printk("OK.\n");
+-	return 0;
 -}
--
--/*
-- *	Most 386 processors have a bug where a POPAD can lock the 
-- *	machine even from user space.
-- */
-- 
--static void __init check_popad(void)
--{
--#ifndef CONFIG_X86_POPAD_OK
--	int res, inp = (int) &res;
--
--	printk(KERN_INFO "Checking for popad bug... ");
--	__asm__ __volatile__( 
--	  "movl $12345678,%%eax; movl $0,%%edi; pusha; popa; movl (%%edx,%%edi),%%ecx "
--	  : "=&a" (res)
--	  : "d" (inp)
--	  : "ecx", "edi" );
--	/* If this fails, it means that any user program may lock the CPU hard. Too bad. */
--	if (res != 12345678) printk( "Buggy.\n" );
--		        else printk( "OK.\n" );
+-#endif	/* __HAVE_ARCH_GATE_AREA */
+===================================================================
+--- a/include/asm-i386/page.h
++++ b/include/asm-i386/page.h
+@@ -143,9 +143,7 @@ extern int page_is_ram(unsigned long pag
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/page.h>
+ 
+-#ifndef CONFIG_COMPAT_VDSO
+ #define __HAVE_ARCH_GATE_AREA 1
 -#endif
--}
--
--/*
-- * Check whether we are able to run this kernel safely on SMP.
-- *
-- * - In order to run on a i386, we need to be compiled for i386
-- *   (for due to lack of "invlpg" and working WP on a i386)
-- * - In order to run on anything without a TSC, we need to be
-- *   compiled for a i486.
-- * - In order to support the local APIC on a buggy Pentium machine,
-- *   we need to be compiled with CONFIG_X86_GOOD_APIC disabled,
-- *   which happens implicitly if compiled for a Pentium or lower
-- *   (unless an advanced selection of CPU features is used) as an
-- *   otherwise config implies a properly working local APIC without
-- *   the need to do extra reads from the APIC.
--*/
--
--static void __init check_config(void)
--{
--/*
-- * We'd better not be a i386 if we're configured to use some
-- * i486+ only features! (WP works in supervisor mode and the
-- * new "invlpg" and "bswap" instructions)
-- */
--#if defined(CONFIG_X86_WP_WORKS_OK) || defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_BSWAP)
--	if (boot_cpu_data.x86 == 3)
--		panic("Kernel requires i486+ for 'invlpg' and other features");
--#endif
--
--/*
-- * If we configured ourselves for a TSC, we'd better have one!
-- */
--#ifdef CONFIG_X86_TSC
--	if (!cpu_has_tsc && !tsc_disable)
--		panic("Kernel compiled for Pentium+, requires TSC feature!");
--#endif
--
--/*
-- * If we were told we had a good local APIC, check for buggy Pentia,
-- * i.e. all B steppings and the C2 stepping of P54C when using their
-- * integrated APIC (see 11AP erratum in "Pentium Processor
-- * Specification Update").
-- */
--#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_GOOD_APIC)
--	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL
--	    && cpu_has_apic
--	    && boot_cpu_data.x86 == 5
--	    && boot_cpu_data.x86_model == 2
--	    && (boot_cpu_data.x86_mask < 6 || boot_cpu_data.x86_mask == 11))
--		panic("Kernel compiled for PMMX+, assumes a local APIC without the read-before-write bug!");
--#endif
--}
--
--extern void alternative_instructions(void);
--
--static void __init check_bugs(void)
--{
--	identify_cpu(&boot_cpu_data);
--#ifndef CONFIG_SMP
--	printk("CPU: ");
--	print_cpu_info(&boot_cpu_data);
--#endif
--	check_config();
--	check_fpu();
--	check_hlt();
--	check_popad();
--	init_utsname()->machine[1] = '0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
--	alternative_instructions(); 
--}
-+#endif	/* _ASM_I386_BUG_H */
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _I386_PAGE_H */
 
 -- 
 
