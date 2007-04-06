@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934124AbXDFSGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993049AbXDFSTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934124AbXDFSGI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 14:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934123AbXDFSGI
+	id S2993049AbXDFSTh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 14:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993052AbXDFSTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 14:06:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39467 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934124AbXDFSGG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 14:06:06 -0400
-Date: Fri, 6 Apr 2007 19:05:52 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Snook <csnook@redhat.com>, Robin Holt <holt@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070406180552.GH32549@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Chris Snook <csnook@redhat.com>, Robin Holt <holt@sgi.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-	Jack Steiner <steiner@americas.sgi.com>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org> <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 6 Apr 2007 14:19:37 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:37304 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993049AbXDFSTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 14:19:35 -0400
+Date: Fri, 6 Apr 2007 19:19:25 +0100 (BST)
+From: Christian Kujau <christian@g-house.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: Christian Kujau <christian@g-house.de>
+cc: Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, malte@g-house.de,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: 2.6.20.4: NETDEV WATCHDOG and lockups
+In-Reply-To: <Pine.LNX.4.64.0704041412310.3963@sheep.housecafe.de>
+Message-ID: <Pine.LNX.4.64.0704061852270.3963@sheep.housecafe.de>
+References: <20070403065810.GA1832@ff.dom.local>
+ <Pine.LNX.4.64.0704031618070.3963@sheep.housecafe.de> <20070404112100.GA1979@ff.dom.local>
+ <Pine.LNX.4.64.0704041412310.3963@sheep.housecafe.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 05, 2007 at 06:29:16PM -0700, Linus Torvalds wrote:
-> > The support angel on my shoulder says we should just put all the kernel
-> > threads under a kthread subtree to shorten init's child list and minimize
-> > impact.
-> 
-> A number are already there, of course, since they use the kthread 
-> infrastructure to get there. 
+On Wed, 4 Apr 2007, Christian Kujau wrote:
+>> Maybe it's a real locking problem. Here are some more
+>> suggestions for testing (if you don't find anything better):
+>> - try without SMP, so: 'acpi=off lapic nosmp'
 
-As all kernel thread (1) should be converted to kthread anyway for
-proper containers support and general "let's get rid of a crappy API'
-cleanups I think that's enough.  It would be nice to have SGI helping
-to convert more drivers over to the proper API as conversions have stalled
-a little bit.
+We were able to have our hosting provider to replace the 8139too with a 
+E100, the onboard r8169 stayed of course. After this, the box came back 
+fine...only to lock up again shortly after :(
 
+So again we spoke to our hosting provider and they just took out the 2 
+SATA disks and put them in a completely new system: amd64 dualcore 
+again, 2 GB ram, r8169 onboard NIC, e100 pci-slot NIC. Now booting 
+2.6.20.4 and even 2.6.18-4-k7 (the debian kernel) with IOAPIC eabled 
+seems to work, meaning the box is up since yesterday evening and 
+interrupts are shared. Not equally, but still:
 
-(1) There's a few very core kernel threads that need to stick to the
-    low-level API, but they're too few to make any differences.
+# cat /proc/interrupts
+            CPU0       CPU1
+   0:        111          0   IO-APIC-edge      timer
+   1:          7          9   IO-APIC-edge      i8042
+   4:        260          1   IO-APIC-edge      serial
+   6:          0          3   IO-APIC-edge      floppy
+   8:          0          1   IO-APIC-edge      rtc
+   9:          0          0   IO-APIC-fasteoi   acpi
+  16:        157     575579   IO-APIC-fasteoi   eth0
+  17:    3812553          1   IO-APIC-fasteoi   eth1
+  19:     100651    8262484   IO-APIC-fasteoi   libata
+NMI:          0          0
+LOC:   17272991   17266237
+ERR:          0
+MIS:          0
 
+While this is a good thing, we now have different problems: our 2nd sata 
+drive is not usable any more, but we again we doubt hardware problems, 
+because this disk has been replaced already back in the old box...
+
+but yes, this seem to be different problems, for the curious among 
+you I've put details here: http://nerdbynature.de/bits/2.6.20.4/db2/
+
+Thanks to all who have replied,
+Christian.
+-- 
+BOFH excuse #209:
+
+Only people with names beginning with 'A' are getting mail this week (a la Microsoft)
