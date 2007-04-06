@@ -1,63 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932778AbXDFWRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbXDFWU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932778AbXDFWRa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 18:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933175AbXDFWRa
+	id S933001AbXDFWU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 18:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXDFWU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 18:17:30 -0400
-Received: from www.osadl.org ([213.239.205.134]:42440 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932778AbXDFWR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:17:29 -0400
-Subject: Re: coding style for long conditions (WAS: Re: [PATCH 25/90] ...
-	blinky leds!!)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: David Brownell <david-b@pacbell.net>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200704061405.50169.david-b@pacbell.net>
-References: <11757099691323-git-send-email-tony@atomide.com>
-	 <200704061029.55710.david-b@pacbell.net>
-	 <46169968.2050006@s5r6.in-berlin.de>
-	 <200704061405.50169.david-b@pacbell.net>
+	Fri, 6 Apr 2007 18:20:58 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:41150 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933001AbXDFWU5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 18:20:57 -0400
+Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond
+	software suspend
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
+       akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu,
+       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+In-Reply-To: <200704061634.51046.rjw@sisk.pl>
+References: <20070402053457.GA9076@in.ibm.com>
+	 <200704022248.25948.rjw@sisk.pl> <20070402205127.GF3840@elf.ucw.cz>
+	 <200704061634.51046.rjw@sisk.pl>
 Content-Type: text/plain
-Date: Sat, 07 Apr 2007 00:17:56 +0200
-Message-Id: <1175897876.28263.490.camel@localhost.localdomain>
+Date: Sat, 07 Apr 2007 08:20:55 +1000
+Message-Id: <1175898055.6481.83.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+Hi.
 
-On Fri, 2007-04-06 at 14:05 -0700, David Brownell wrote:
-> Please change your coding style to conform to Documentation/CodingStyle.
+On Fri, 2007-04-06 at 16:34 +0200, Rafael J. Wysocki wrote:
+> On Monday, 2 April 2007 22:51, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > > +/* Per process freezer specific flags */
+> > > > > +#define PF_FE_SUSPEND	0x00008000	/* This thread should not be frozen
+> > > > > +					 * for suspend
+> > > > > +					 */
+> > > > > +
+> > > > > +#define PF_FE_KPROBES	0x00000010	/* This thread should not be frozen
+> > > > > +					 * for Kprobes
+> > > > > +					 */
+> > > > 
+> > > > Just put the comment before the define for long comments?
+> > > 
+> > > Agreed.
+> > 
+> > (Actually it would be nice to say
+> > 
+> > /* This thread should not be frozen for suspend, becuase it is needed
+> >    for getting image saved to disk */
+> > 
+> > > > > -#ifdef CONFIG_PM
+> > > > > +#if defined(CONFIG_PM) || defined(CONFIG_HOTPLUG_CPU) || \
+> > > > > +					defined(CONFIG_KPROBES)
+> > > > 
+> > > > Should we create CONFIG_FREEZER?
+> > > 
+> > > Why do you think so?  I think the freezer should be compiled automatically
+> > > if any of the above is set, which is what this directive really means.
+> > 
+> > Kconfig can do that. ("select statement"). If we have one such ifdef,
+> > it is okay, but if it would be more of them.
+> > 
+> > > > Hmmm, I do not really like softlockup watchdog running during suspend.
+> > > > Can we make this freezeable and make watchdog shut itself off while
+> > > > suspending?
+> > > 
+> > > Generally, I agree, but this patch only replaces the existing instances
+> > > of PF_NOFREEZE with the new mechanism.  The changes you're talking about
+> > > require a separate patch series (or at least one separate patch), I think, and
+> > > they need not be so simple to make.
+> > 
+> > Agreed about separate patch series.
+> > 
+> > > > > -	current->flags |= PF_NOFREEZE;
+> > > > > +	freezer_exempt(FE_ALL);
+> > > > >  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+> > > > >  	if (pid > 0) {
+> > > > >  		while (pid != sys_wait4(-1, NULL, 0, NULL))
+> > > > 
+> > > > Does this mean we have userland /linuxrc running with PF_NOFREEZE?
+> > > > That would be very bad...
+> > > 
+> > > No, actually it is _required_ for the userland resume to work.  Well, perhaps
+> > > I should place a comment in there so that I don't have to explain this again
+> > > and again. :-)
+> > 
+> > Can you put big bold comment there?
+> >
+> > Why is it needed? Freezer never freezes _current_ task.
 > 
-> 	***	Only indent with tabs!!		***
+> No, it doesn't, but this task spawns linuxrc and then calls sys_wait4() in a
+> loop.
 > 
-> Every one of those examples violates that simple rule.
-> 
-> Why does *anyone* have even the slightest difficulty understanding such a
-> simple rule?  I realize that two of those words have more than a single
-> syllable, but that should not be a problem.  Even EMACS is trainable.
+> Well, actually, I'll try to plant try_to_freeze() in this loop and see if that
+> works.  If it doesn't, I'll add a comment.
 
-please stop to be more Catholic than the Pope.
+It works. I've had:
 
-commit  0aa599c5644fddd3052433c5335260108a8a39a2
-drivers/usb/net/usbnet.h
+                while (pid != sys_wait4(-1, NULL, 0, NULL)) {
+                        yield();
+                        try_to_freeze();
+                }
 
-http://tglx.de/private/tglx/usbnet.png
+there for ages for Suspend2.
 
-/me recommends emacs-develock.el for colorful white space wreckage
-display !
+Regards,
 
-You probably want to look at more files contributed by david-b before
-you look at mine :)
-
-	tglx
-
+Nigel
 
