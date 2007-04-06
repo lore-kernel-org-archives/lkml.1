@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933001AbXDFWU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbXDFWWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933001AbXDFWU6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 18:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXDFWU6
+	id S933100AbXDFWWi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 18:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbXDFWWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 18:20:58 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:41150 "EHLO
+	Fri, 6 Apr 2007 18:22:37 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:41163 "EHLO
 	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933001AbXDFWU5 (ORCPT
+	with ESMTP id S933100AbXDFWWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:20:57 -0400
-Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond
-	software suspend
+	Fri, 6 Apr 2007 18:22:36 -0400
+Subject: Re: [PATCH 3/8] Use process freezer for cpu-hotplug
 From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
        akpm@linux-foundation.org, paulmck@us.ibm.com,
        torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu,
-       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
-In-Reply-To: <200704061634.51046.rjw@sisk.pl>
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+In-Reply-To: <20070406174704.GC6131@localdomain>
 References: <20070402053457.GA9076@in.ibm.com>
-	 <200704022248.25948.rjw@sisk.pl> <20070402205127.GF3840@elf.ucw.cz>
-	 <200704061634.51046.rjw@sisk.pl>
+	 <20070402053824.GC12962@in.ibm.com> <20070406172714.GA6131@localdomain>
+	 <20070406173407.GB2517@elte.hu>  <20070406174704.GC6131@localdomain>
 Content-Type: text/plain
-Date: Sat, 07 Apr 2007 08:20:55 +1000
-Message-Id: <1175898055.6481.83.camel@nigel.suspend2.net>
+Date: Sat, 07 Apr 2007 08:22:35 +1000
+Message-Id: <1175898155.6481.85.camel@nigel.suspend2.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
@@ -35,82 +35,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi.
 
-On Fri, 2007-04-06 at 16:34 +0200, Rafael J. Wysocki wrote:
-> On Monday, 2 April 2007 22:51, Pavel Machek wrote:
-> > Hi!
+On Fri, 2007-04-06 at 12:47 -0500, Nathan Lynch wrote:
+> Ingo Molnar wrote:
 > > 
-> > > > > +/* Per process freezer specific flags */
-> > > > > +#define PF_FE_SUSPEND	0x00008000	/* This thread should not be frozen
-> > > > > +					 * for suspend
-> > > > > +					 */
-> > > > > +
-> > > > > +#define PF_FE_KPROBES	0x00000010	/* This thread should not be frozen
-> > > > > +					 * for Kprobes
-> > > > > +					 */
-> > > > 
-> > > > Just put the comment before the define for long comments?
+> > * Nathan Lynch <ntl@pobox.com> wrote:
+> > 
+> > > > -	raw_notifier_call_chain(&cpu_chain, CPU_LOCK_ACQUIRE, hcpu);
+> > > > +	if (freeze_processes(FE_HOTPLUG_CPU)) {
+> > > > +		thaw_processes(FE_HOTPLUG_CPU);
+> > > > +		return -EBUSY;
+> > > > +	}
+> > > > +
 > > > 
-> > > Agreed.
-> > 
-> > (Actually it would be nice to say
-> > 
-> > /* This thread should not be frozen for suspend, becuase it is needed
-> >    for getting image saved to disk */
-> > 
-> > > > > -#ifdef CONFIG_PM
-> > > > > +#if defined(CONFIG_PM) || defined(CONFIG_HOTPLUG_CPU) || \
-> > > > > +					defined(CONFIG_KPROBES)
-> > > > 
-> > > > Should we create CONFIG_FREEZER?
+> > > If I'm understanding correctly, this will cause
 > > > 
-> > > Why do you think so?  I think the freezer should be compiled automatically
-> > > if any of the above is set, which is what this directive really means.
-> > 
-> > Kconfig can do that. ("select statement"). If we have one such ifdef,
-> > it is okay, but if it would be more of them.
-> > 
-> > > > Hmmm, I do not really like softlockup watchdog running during suspend.
-> > > > Can we make this freezeable and make watchdog shut itself off while
-> > > > suspending?
+> > > # echo 0 > /sys/devices/system/cpu/cpuX/online
 > > > 
-> > > Generally, I agree, but this patch only replaces the existing instances
-> > > of PF_NOFREEZE with the new mechanism.  The changes you're talking about
-> > > require a separate patch series (or at least one separate patch), I think, and
-> > > they need not be so simple to make.
-> > 
-> > Agreed about separate patch series.
-> > 
-> > > > > -	current->flags |= PF_NOFREEZE;
-> > > > > +	freezer_exempt(FE_ALL);
-> > > > >  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
-> > > > >  	if (pid > 0) {
-> > > > >  		while (pid != sys_wait4(-1, NULL, 0, NULL))
-> > > > 
-> > > > Does this mean we have userland /linuxrc running with PF_NOFREEZE?
-> > > > That would be very bad...
+> > > to sometimes fail, and userspace is expected to try again?  This will 
+> > > break existing applications.
 > > > 
-> > > No, actually it is _required_ for the userland resume to work.  Well, perhaps
-> > > I should place a comment in there so that I don't have to explain this again
-> > > and again. :-)
+> > > Perhaps drivers/base/cpu.c:store_online should retry as long as 
+> > > cpu_up/down return -EBUSY.  That would avoid a userspace-visible 
+> > > interface change.
 > > 
-> > Can you put big bold comment there?
-> >
-> > Why is it needed? Freezer never freezes _current_ task.
+> > yeah. I'd even suggest a freeze_processes_nofail() API instead, that 
+> > does this internally, without burdening the callsites. (and once the 
+> > freezer becomes complete then freeze_processes_nofail() == 
+> > freeze_processes())
 > 
-> No, it doesn't, but this task spawns linuxrc and then calls sys_wait4() in a
-> loop.
-> 
-> Well, actually, I'll try to plant try_to_freeze() in this loop and see if that
-> works.  If it doesn't, I'll add a comment.
+> Yeah, I just realized that an implementation of my proposal would busy
+> loop in the kernel forever if a silly admin tried to offline the last
+> cpu (we're already using -EBUSY for that case), so
+> freeze_processes_nofail is a better idea :-)
 
-It works. I've had:
-
-                while (pid != sys_wait4(-1, NULL, 0, NULL)) {
-                        yield();
-                        try_to_freeze();
-                }
-
-there for ages for Suspend2.
+If there's only one online cpu, shouldn't it return -EINVAL?
 
 Regards,
 
