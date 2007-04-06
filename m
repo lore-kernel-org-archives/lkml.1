@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbXDFTXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbXDFTXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833AbXDFTXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 15:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXDFTXR
+	id S1751892AbXDFTXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 15:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXDFTXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 15:23:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53556 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751833AbXDFTXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 15:23:15 -0400
-Date: Fri, 6 Apr 2007 21:22:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: [patch] sched: get rid of p->children use in show_task()
-Message-ID: <20070406192259.GA18722@elte.hu>
-References: <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org> <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com> <20070406191806.GA15291@elte.hu>
-Mime-Version: 1.0
+	Fri, 6 Apr 2007 15:23:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35856 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751892AbXDFTXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 15:23:44 -0400
+Date: Fri, 6 Apr 2007 21:23:34 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Harald Welte <laforge@openmoko.org>
+Cc: openmoko-kernel@lists.openmoko.org,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: basic support for neo1973
+Message-ID: <20070406192334.GE2583@elf.ucw.cz>
+References: <20070405084850.GA11008@elf.ucw.cz> <20070406145806.GB5332@prithivi.gnumonks.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070406191806.GA15291@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070406145806.GB5332@prithivi.gnumonks.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > > i.e. a to-be-reaped task will still be on the main list _too_. The 
-> > > main list is for all the PID semantics rules. The reap-list is 
-> > > just for wait4() processing. The two would be completely separate.
-> > 
-> > And what pray tell except for heuristics is the list of children 
-> > used for?
+> > This adds very basic support for fic1973 (aka gta01, aka
+> > openmoko). With this patch applied, I can boot the kernel and actually
+> > see the messages.
 > 
-> yeah - by all means get rid of it, but first separate the data 
-> structures along uses. Then all the 'why should we iterate two lists 
-> in sequence' questions vanish.
+> please coordinate with Ben Dooks.  He's the 24xx maintainer and has
+> already picked up a number of our changes for mainline merging in the
+> next merge window.
 
-and this way we get the best change as well: not only will kthreads be 
-removed from that list, but all other tasks in the system too. I bet 
-this will speed up wait4() _enormously_, on server workloads that 
-involve many tasks.
-
-	Ingo
+I'm sorry, I screwed up timing. I was having mailserver problems (and
+did not know about them), so I asked "is it okay to merge" waited day
+or so (seeing no reply, because my question did not leave my mail
+server :-() and then went ahead. Sorry for confusion.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
