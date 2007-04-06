@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767749AbXDFP1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767748AbXDFP1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767749AbXDFP1E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 11:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767748AbXDFP1D
+	id S1767748AbXDFP1Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 11:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767753AbXDFP1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 11:27:03 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51330 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767749AbXDFP1B (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 11:27:01 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc5-mm4
-In-Reply-To: Your message of "Thu, 05 Apr 2007 13:31:09 PDT."
-             <20070405133109.fe416273.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <7763.1175792579@turing-police.cc.vt.edu>
-            <20070405133109.fe416273.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175873184_4439P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 6 Apr 2007 11:27:16 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:27256 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767748AbXDFP1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 11:27:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BM6bnbGY6aAPmgVvaVShsXdu+1GD7eBNLqyz3N+a6J3tn6i09oWYzbouJH6nvrJIXEl1a/L1p2XL19TqTFBHLbDPiW6Xvv0/YSAivwUhpFCopRvhR3YeZDxK47hItJKsO1j5N/S31hHd4Iwazgil9wxhK13tiSZ210RGfKkhMp8=
+Message-ID: <6bffcb0e0704060827l73aeb8ehf35d80f7630f2ac5@mail.gmail.com>
+Date: Fri, 6 Apr 2007 17:27:11 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] hrtimers debug patch
+Cc: "Nick Piggin" <npiggin@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Mingming Cao" <cmm@us.ibm.com>, "Adrian Bunk" <bunk@stusta.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
+       "Oliver Pinter" <oliver.pntr@gmail.com>,
+       "Sid Boyce" <g3vbv@blueyonder.co.uk>,
+       "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <20070326170225.GA951@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Fri, 06 Apr 2007 11:26:24 -0400
-Message-ID: <4532.1175873184@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <20070318184908.GU752@stusta.de> <46020385.50301@yahoo.com.au>
+	 <Pine.LNX.4.64.0703220813340.6730@woody.linux-foundation.org>
+	 <1174612132.16068.114.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0703221830470.6730@woody.linux-foundation.org>
+	 <20070323021115.GA11147@wotan.suse.de>
+	 <6bffcb0e0703230051i5accb180r7bd0fb16de85198a@mail.gmail.com>
+	 <20070323120148.GA27505@elte.hu> <4607BDD9.1010002@googlemail.com>
+	 <20070326170225.GA951@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175873184_4439P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <4522.1175873175.1@turing-police.cc.vt.edu>
+Hi all,
 
-On Thu, 05 Apr 2007 13:31:09 PDT, Andrew Morton said:
-> On Thu, 05 Apr 2007 13:02:59 -0400, Valdis.Kletnieks@vt.edu wrote:
+On 26/03/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+>
+> > Stardust is down, console log and config attached.
+>
+> thanks! I have stared at hrtimer.c a few more hours and the good news is
+> that i found a narrow SMP race. The bad news is that i dont think it
+> could explain your bug symptoms: the worst-case effect of the race
+> should be an incorrect timeout on the current CPU - not a KTIME_MAX
+> thing like your logs show.
+>
+> But maybe i didnt think through the effects of the bug well enough, and
+> your box has a HT CPU, with HT CPUs being pretty good at triggering
+> narrow SMP races - so maybe we are lucky? Fix attached below. Patch is
+> build and boot-tested.
+>
 
-> > Am seeing an Oops 'cannot handle kernel paging request' during late
-> > system startup, hand-copied traceback follows:
-> > 
-> > avc_has_perm_noaudit+0x2bf/0x506
-> > avc_has_perm+0x2b/0x5b
-> > selinux_socket_stream_connect+0x7e/0xc3
-> > unix_stream_connect+0x202/0x3f3
-> > sys_connect+0x7e/0xa4
-> > tracesys+0xde/0xe1
+I didn't see this weird hang for 12 days. I think that this patch
+solves this issue.
 
-> Thanks.
-> 
-> I'd have thought that the full trace could be captured with netconsole.
+Huge thans!
 
-I didn't have a second box available at first.  Then I blew close to 45
-minutes trying to figure out why netconsole was totally failing to work,
-before I found this in .config:
+Regards,
+Michal
 
-# CONFIG_NETCONSOLE is not set
-
-"Do'h!" -- H. Simpson
-
-Unfortunately, defining netconsole caused NETPOLL to be defined, which caused
-a recompile of half the known world, and the symptoms of the crash moved.
-
-Film at 11, once I figure out what's going on, and fix the testbed in my
-office so I can actually catch this sucker - I may have to string a serial
-cable.  One solid good data point:
-
-21-rc5 with only the -mm4 'origin.patch' applied is OK, so whatever the
-issue is, it's not in Linus's tree.
-
-
---==_Exmh_1175873184_4439P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGFmagcC3lWbTT17ARApjzAJ9dW/rRYOxJSPLu+5HT16EzgeOGfACfbj6l
-KmOu9/CH4V5v+oBR/iPIBlc=
-=Hsvr
------END PGP SIGNATURE-----
-
---==_Exmh_1175873184_4439P--
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
