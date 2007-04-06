@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbXDFXCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933340AbXDFXDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933305AbXDFXCq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbXDFXCp
+	id S933340AbXDFXDI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933363AbXDFXDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:02:45 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:36795 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933305AbXDFXCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 19:02:44 -0400
-Date: Fri, 6 Apr 2007 16:02:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/8] unprivileged mount syscall
-Message-Id: <20070406160238.f3178189.akpm@linux-foundation.org>
-In-Reply-To: <20070404183012.429274832@szeredi.hu>
-References: <20070404183012.429274832@szeredi.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 6 Apr 2007 19:03:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:26290 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933351AbXDFXDE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:03:04 -0400
+Date: Fri, 6 Apr 2007 16:03:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kernel-doc: handle spaces in array size
+Message-Id: <20070406160335.e125e287.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.61.0704062117460.6042@yvahk01.tjqt.qr>
+References: <20070406114730.02c82f43.randy.dunlap@oracle.com>
+	<Pine.LNX.4.61.0704062117460.6042@yvahk01.tjqt.qr>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Apr 2007 20:30:12 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Fri, 6 Apr 2007 21:24:48 +0200 (MEST) Jan Engelhardt wrote:
 
-> This patchset adds support for keeping mount ownership information in
-> the kernel, and allow unprivileged mount(2) and umount(2) in certain
-> cases.
+> On Apr 6 2007 11:47, Randy Dunlap wrote:
+> >
+> >Unfortunately, kernel-doc has problems with a struct field like this:
+> >	uint8_t databuf[NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE];
+> >
+> >simply due to the spaces around the "+" sign, so drop all spaces inside
+> >[...] so that parsing is done correctly (in some sense).
+> >
 
-No replies, huh?
+...
 
-My knowledge of the code which you're touching is not strong, and my spare
-reviewing capacity is not high.  And this work does need close review by
-people who are familar with the code which you're changing.
-
-So could I suggest that you go for a dig through the git history, identify
-some individuals who look like they know this code, then do a resend,
-cc'ing those people?  Please also cc linux-kernel on that resend.
-
-> This can be useful for the following reasons:
 > 
-> - mount(8) can store ownership ("user=XY" option) in the kernel
->   instead, or in addition to storing it in /etc/mtab.  For example if
->   private namespaces are used with mount propagations /etc/mtab
->   becomes unworkable, but using /proc/mounts works fine
+> 	while($arg =~ s/\[(.*)\s+(.*)\]/[$1$2]/) {
+> 	}
 > 
-> - fuse won't need a special suid-root mount/umount utility.  Plain
->   umount(8) can easily be made to work with unprivileged fuse mounts
-> 
-> - users can use bind mounts without having to pre-configure them in
->   /etc/fstab
-> 
-> All this is done in a secure way, and unprivileged bind and fuse
-> mounts are disabled by default and can be enabled through sysctl or
-> /proc/sys.
-> 
-> One thing that is missing from this series is the ability to restrict
-> user mounts to private namespaces.  The reason is that private
-> namespaces have still not gained the momentum and support needed for
-> painless user experience.  So such a feature would not yet get enough
-> attention and testing.  However adding such an optional restriction
-> can be done with minimal changes in the future, once private
-> namespaces have matured.
+> should do it, and saves us the pre-matching. (Also note the + at \s)
+> (No need to escape [ and ] in the target pattern.)
 
-I suspect the people who developed and maintain nsproxy would disagree ;)
+Yep, that works.  Want to send it with sign-off or shall I just
+send a new patch to akpm?
 
-Please also cc containers@lists.osdl.org.
+> I can also offer this gem which should do it the most saving way by
+> matching the inside of [] exactly once, and otherwise
+> matching/replacing only on \s:
+> 
+> 	$arg =~ s{\[(.*)\]}{($_=$1)=~s/\s+//g;"[$_]"}e;
+> 
+> (I already hear everyone screaming... ;-)
 
-> An earlier version of these patches have been discussed here:
-> 
->   http://lkml.org/lkml/2005/5/3/64
-> 
-> --
+No, thanks.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
