@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXDFTkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXDFTkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932173AbXDFTkY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 15:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbXDFTkY
+	id S932290AbXDFTkp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 15:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbXDFTkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 15:40:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58860 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932173AbXDFTkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 15:40:23 -0400
-Date: Fri, 6 Apr 2007 21:40:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Rik van Riel <riel@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: preemption and rwsems (was: Re: missing madvise functionality)
-Message-ID: <20070406194010.GA21322@elte.hu>
-References: <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <19526.1175777338@redhat.com> <20070405191129.GC22092@elte.hu> <20070405133742.88abc4f8.akpm@linux-foundation.org> <20070406090822.GA2425@elte.hu> <20070406123010.802c76b4.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Fri, 6 Apr 2007 15:40:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36552 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932310AbXDFTkn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 15:40:43 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Robin Holt <holt@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
+	<Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
+	<46159987.6090006@redhat.com>
+	<Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
+	<20070406180552.GH32549@infradead.org>
+Date: Fri, 06 Apr 2007 13:39:36 -0600
+In-Reply-To: <20070406180552.GH32549@infradead.org> (Christoph Hellwig's
+	message of "Fri, 6 Apr 2007 19:05:52 +0100")
+Message-ID: <m1odm15m2v.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070406123010.802c76b4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Hellwig <hch@infradead.org> writes:
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+> As all kernel thread (1) should be converted to kthread anyway for
+> proper containers support and general "let's get rid of a crappy API'
+> cleanups I think that's enough.  It would be nice to have SGI helping
+> to convert more drivers over to the proper API as conversions have stalled
+> a little bit.
+>
+>
+> (1) There's a few very core kernel threads that need to stick to the
+>     low-level API, but they're too few to make any differences.
 
-> > i've attached an updated version of trace-it.c, which will turn this 
-> > off itself, using a sysctl. I also made WAKEUP_TIMING default-off.
-> 
-> ok.  http://userweb.kernel.org/~akpm/to-ingo.txt is the trace of
-> 
-> 	taskset -c 0 ./jakubs-test-app
-> 
-> while the system was doing the 150,000 context switches/sec.
-> 
-> It isn't very interesting.
+Yes.  I had to step back and remind myself why I care as daemonize is
+currently doing an effective job of removing the namespace information.
 
-this shows an idle CPU#7: you should taskset -c 0 trace-it too - it only 
-traces the current CPU by default. (there's the 
-/proc/sys/kernel/trace_all_cpus flag to trace all cpus, but in this case 
-we really want the trace of CPU#0)
+However there is nothing daemonize can do about the pid of the task
+because it is returned by kernel_thread and used by the callers 
+(to at the very least find the task_struct).
 
-	Ingo
+So not finishing that conversion is certainly one of the last blockers
+for implementing the pid namespace.
+
+Eric
