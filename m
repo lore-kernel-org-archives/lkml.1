@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767571AbXDFKal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767576AbXDFKc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767571AbXDFKal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 06:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767572AbXDFKal
+	id S1767576AbXDFKc5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 06:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767575AbXDFKc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 06:30:41 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36624 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767571AbXDFKak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 06:30:40 -0400
-Date: Fri, 6 Apr 2007 12:30:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Define EFLAGS_IF
-Message-ID: <20070406103038.GA32440@one.firstfloor.org>
-References: <1174533374.2713.104.camel@localhost.localdomain> <46159256.1040705@zytor.com> <461592AA.4060103@goop.org> <46159480.20108@zytor.com> <20070406004839.GA27668@one.firstfloor.org> <46159D08.9030400@zytor.com>
+	Fri, 6 Apr 2007 06:32:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51819 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767573AbXDFKc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 06:32:56 -0400
+Date: Fri, 6 Apr 2007 06:29:14 -0400
+From: Dave Jones <davej@redhat.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
+Message-ID: <20070406102914.GA27372@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Adrian Bunk <bunk@stusta.de>, davej@codemonkey.org.uk,
+	cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	lenb@kernel.org, linux-acpi@vger.kernel.org
+References: <20070406101928.GB29169@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46159D08.9030400@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070406101928.GB29169@stusta.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 05, 2007 at 06:06:16PM -0700, H. Peter Anvin wrote:
-> Andi Kleen wrote:
-> >
-> >No processor.h is such a hodgepodge of unrelated stuff that any
-> >splitting up is a good thing.
-> >
-> 
-> Fair enough.  However, I'd still like to see the X86_CR* constants 
-> moved, too (and constants added for at least CR0 as well.)
+On Fri, Apr 06, 2007 at 12:19:28PM +0200, Adrian Bunk wrote:
+ > This patch contains the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI.
+ > 
+ > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+ > Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-Send patches then.
+lets kill this in 2.6.22
 
--Andi
+	Dave
+
+
+-- 
+http://www.codemonkey.org.uk
