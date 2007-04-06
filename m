@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbXDFTge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXDFTkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932192AbXDFTge (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 15:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbXDFTge
+	id S932173AbXDFTkY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 15:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbXDFTkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 15:36:34 -0400
-Received: from mail.screens.ru ([213.234.233.54]:45684 "EHLO mail.screens.ru"
+	Fri, 6 Apr 2007 15:40:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58860 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbXDFTgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 15:36:33 -0400
-Date: Fri, 6 Apr 2007 23:36:21 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Robin Holt <holt@sgi.com>,
-       Chris Snook <csnook@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070406193621.GA96@tv-sign.ru>
-References: <20070406084250.GA179@tv-sign.ru> <m18xd5amwq.fsf@ebiederm.dsl.xmission.com> <20070406094413.GA673@tv-sign.ru> <m1lkh58q16.fsf@ebiederm.dsl.xmission.com> <20070406154750.GA541@tv-sign.ru> <Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org>
+	id S932173AbXDFTkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 15:40:23 -0400
+Date: Fri, 6 Apr 2007 21:40:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Rik van Riel <riel@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: preemption and rwsems (was: Re: missing madvise functionality)
+Message-ID: <20070406194010.GA21322@elte.hu>
+References: <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <19526.1175777338@redhat.com> <20070405191129.GC22092@elte.hu> <20070405133742.88abc4f8.akpm@linux-foundation.org> <20070406090822.GA2425@elte.hu> <20070406123010.802c76b4.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070406123010.802c76b4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/06, Linus Torvalds wrote:
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > i've attached an updated version of trace-it.c, which will turn this 
+> > off itself, using a sysctl. I also made WAKEUP_TIMING default-off.
 > 
-> On Fri, 6 Apr 2007, Oleg Nesterov wrote:
-> > 
-> > Oops. I misread stop_machine(), it does kernel_thread(), not kthread_create().
-> > So "stopmachine" threads are all re-parented to init when the caller exits.
-> > I think it makes sense to set ->exit_state = -1 in stopmachine(), regadless
-> > of any other changes.
+> ok.  http://userweb.kernel.org/~akpm/to-ingo.txt is the trace of
 > 
-> I agree that "->exit_state = -1" makes sense, but I disagree in that I 
-> don't think it *matters*.
+> 	taskset -c 0 ./jakubs-test-app
 > 
-> Most of the problematic kernel threads are long-running (as in "never 
-> exit"). Things like eventd, khelper, migration-threads etc will have init 
-> as their parent and never actually exit, so their ->exit_state doesn't 
-> matter. What matters is that they are on the children list, so when you 
-> have 1024 CPU's, and init has many thousand of these per-cpu threads as 
-> its children, then the *user* threads (that do exit) will cause problems!
+> while the system was doing the 150,000 context switches/sec.
 > 
-> I'd almost prefer to just not add kernel threads to any parent process 
-> list *at*all*. 
+> It isn't very interesting.
 
-Yes sure, I didn't argue with that. However, "->exit_state = -1" does matter,
-we can't detach process unless we make it auto-reap.
+this shows an idle CPU#7: you should taskset -c 0 trace-it too - it only 
+traces the current CPU by default. (there's the 
+/proc/sys/kernel/trace_all_cpus flag to trace all cpus, but in this case 
+we really want the trace of CPU#0)
 
-Perhaps,
-
---- t/kernel/exit.c~	2007-04-06 23:31:31.000000000 +0400
-+++ t/kernel/exit.c	2007-04-06 23:31:57.000000000 +0400
-@@ -275,10 +275,7 @@ static void reparent_to_init(void)
- 	remove_parent(current);
- 	current->parent = child_reaper(current);
- 	current->real_parent = child_reaper(current);
--	add_parent(current);
--
--	/* Set the exit signal to SIGCHLD so we signal init on exit */
--	current->exit_signal = SIGCHLD;
-+	current->exit_signal = -1;
- 
- 	if (!has_rt_policy(current) && (task_nice(current) < 0))
- 		set_user_nice(current, 0);
-
-is enough. init is still our parent (make ps happy), but it can't see us,
-we are not on ->children list.
-
-Off course, we also need to add preparent_to_init() to kthread() and
-(say) stopmachine(). Or we can create kernel_thread_detached() and
-modify callers to use it.
-
-Oleg.
-
+	Ingo
