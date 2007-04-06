@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767813AbXDFP4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767814AbXDFP7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767813AbXDFP4p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 11:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767811AbXDFP4o
+	id S1767814AbXDFP7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 11:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767815AbXDFP7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 11:56:44 -0400
-Received: from dsl-63-249-106-23.cruzio.com ([63.249.106.23]:55574 "EHLO
-	cichlid.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767792AbXDFP4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 11:56:43 -0400
-Date: Fri, 6 Apr 2007 08:51:32 -0700
-From: Andrew Burgess <aab@cichlid.com>
-Message-Id: <200704061551.l36FpWoV015751@cichlid.com>
-To: james.bottomley@steeleye.com
-Subject: Re: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10,13
-Cc: cebbert@redhat.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, aradford@gmail.com
+	Fri, 6 Apr 2007 11:59:40 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:22924 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767814AbXDFP7k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 11:59:40 -0400
+Date: Fri, 06 Apr 2007 09:57:03 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Invalid operand: kernel BUG at mm/rmap.c:434! and
+ arch/i386/mm/highmem.c:42!)
+In-reply-to: <fa.UqD3AUpVhpmkJHPiQ1o5eUzIrx0@ifi.uio.no>
+To: Pat <patchu1@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <46166DCF.70209@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.UqD3AUpVhpmkJHPiQ1o5eUzIrx0@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
+Pat wrote:
+> I'm running kernel 2.6.9-22.ELsmp on dual Xeon
+> servers. I've received kernel panics occasionally in
+> the past, but they are more frequent now as the load
+> on the system has increased. Below is a capture of the
+> kernel panic. 
+> 
+> If anything below screams it's coming from a certain
+> source (defective RAM? Bad application or device
+> driver?), please let me know as I'm pulling what
+> little hair I have left out on this one. Suggestions
+> on what to try would be greatly appreciated. Thanks! 
 
->It's actually a long standing bug in the 3w-xxxx driver.  Apparently it
->assumes request sense is always the use_sg == 0 case.  This is what it
->does on a request sense:
+First try updating to the latest RHEL update kernel, that one's out of date.
 
->static int tw_scsiop_request_sense(TW_Device_Extension *tw_dev, int request_id)
->{
->        dprintk(KERN_NOTICE "3w-xxxx: tw_scsiop_request_sense()\n");
-
->        /* For now we just zero the request buffer */
->        memset(tw_dev->srb[request_id]->request_buffer, 0, tw_dev->srb[request_id]->request_bufflen);
->        tw_dev->state[request_id] = TW_S_COMPLETED;
->        tw_state_request_finish(tw_dev, request_id);
->....
-
->Note that it's clearing the request buffer, which is actually zeroing the scatterlist, hence the problem.
-
-OK. Is there a quick workaround or should I just wait for
-Adam & Company to make a patch?
-
-You said your earlier patch would hide it, and then said you
-had a length wrong in it and I'm not sure what length you
-mean.
-
-Thanks for yours and Chuck's and Dave's time.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
