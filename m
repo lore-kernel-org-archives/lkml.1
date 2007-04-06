@@ -1,108 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932310AbXDFTqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbXDFTqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932310AbXDFTqI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 15:46:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbXDFTqI
+	id S932382AbXDFTqm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 15:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932406AbXDFTql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 15:46:08 -0400
-Received: from mail.tmr.com ([64.65.253.246]:59208 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932310AbXDFTqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 15:46:06 -0400
-Message-ID: <4616A3E0.4070206@tmr.com>
-Date: Fri, 06 Apr 2007 15:47:44 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Fri, 6 Apr 2007 15:46:41 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40805 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932382AbXDFTqk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 15:46:40 -0400
+Date: Fri, 6 Apr 2007 12:46:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Make page->private usable in compound pages V1
+In-Reply-To: <20070405164300.a5d24329.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704061245210.23939@schroedinger.engr.sgi.com>
+References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+ <20070405164300.a5d24329.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: scdbackup@gmx.net
-CC: cdwrite@other.debian.org,
-       Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: was once: Samsung DVD writer.
-References: <46165A5E.1060709@tmr.com> <20070406155003.1F4372E4C7@murphy.debian.org>
-In-Reply-To: <20070406155003.1F4372E4C7@murphy.debian.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-scdbackup@gmx.net wrote:
-> Hi,
->
-> BTW: What happened to "FreeBSD User Giacomo" and his Samsung DVD writer ?
->
-> Any news to report ? A happy ending perchance ?
->
->
-> Bill Davidsen: [about filtering dangerous SCSI commands]
->   
->> My suggestion would be to add an ioctl, like SET_SCSI_UNFILTERED, which
->> can only be used as root, and which would allow SCSI commands sent a
->> device to be persistently set unfiltered.
->>     
->
-> I understand that would be for programs like firmware
-> updaters, but not for the vanilla purpose of bringing
-> data onto an optical disc ?
->
-> Because ... if this is intended for daily usage:
->
-> I do not think that burning a disc on a desktop should
-> necessarily require root privileges. Let's leave it to
-> the sysadmin (or distro) to decide who may burn resp.
-> may endanger the device by malicious use of normally
-> harmless SCSI commands. (Like overworking the drive tray
-> motor ?)
->
->   
-I don't see a problem here requiring root. Once the filter is turned off 
-for the device, say in rc.local, and the ownership and permissions are 
-set, there's no issue. It can be owned by root, group cdwriters, have 
-permissions 0660, and cdrecord or other trusted programs can be setgid 
-once the kernel stop blocking such access.
-> After all, what is gained if one performs daily tasks
-> as a privileged user ? That only pierces the protection
-> against absent-minded mistakes and involuntary backdoors.
->
->   
-No need to do any daily tasks in a dangerous mode, access would be 
-limited to users and programs regarded as trusted.
-> Actually i try to stay away from any kernel peculiarities
-> so i do not get addicted to something that might change.
-> A pointer to a list of forbidden commands would be welcome
-> thus.
->
->   
-If this could be added it would presumably not change.
-> Maybe cdrskin was up to now only tested on totally insecure
-> systems.  After all i never got reports of the ominous
-> command filtering interfering with burning. If it prevents
-> any of libburn's SCSI commands from being executed then it
-> does this silently and does not prevent burning success.
->   
+On Thu, 5 Apr 2007, Andrew Morton wrote:
 
-No, as I noted, programs other than cdrecord are clever enough to avoid 
-requiring disallowed commands.
-> I would like to know, which commands and cease sending them. :))
->
->
-> libburn SCSI command list (commands in brackets are defined
-> but not in normal use):
-> spc.c: 00h, 03h, 12h, 1Eh, 55h, 5Ah,
-> sbc.c: 1Bh,
-> mmc.c: 04h, 23h, 2Ah, 35h, 43h, 46h, 4Ah, 
->        51h, 52h, 53h, 54h, 5Bh, 5Ch, 5Dh,
->        A1h,(AAh),ACh, B6h, BBh,(BEh), 
->
->
-> Have a nice day :)
->   
-I put lkml back on the recipients, I'm suggesting a new ioctl as a way 
-around the decision to no longer have setuid/setgid actually fully 
-functional.
+> A new virt_to_head_page() is needed.
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+Add virt_to_head_page and consolidate code in slab and slub.
 
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6.21-rc5-mm4/include/linux/mm.h
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/include/linux/mm.h	2007-04-06 19:35:51.000000000 +0000
++++ linux-2.6.21-rc5-mm4/include/linux/mm.h	2007-04-06 19:42:53.000000000 +0000
+@@ -316,6 +316,12 @@
+ 	atomic_inc(&page->_count);
+ }
+ 
++static inline struct page *virt_to_head_page(const void *x)
++{
++	struct page *page = virt_to_page(x);
++	return compound_head(page);
++}
++
+ /*
+  * Setup the page count before being freed into the page allocator for
+  * the first time (boot or memory hotplug)
+Index: linux-2.6.21-rc5-mm4/mm/slab.c
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/mm/slab.c	2007-04-06 19:38:58.000000000 +0000
++++ linux-2.6.21-rc5-mm4/mm/slab.c	2007-04-06 19:41:57.000000000 +0000
+@@ -614,20 +614,19 @@
+ 
+ static inline struct slab *page_get_slab(struct page *page)
+ {
+-	page = compound_head(page);
+ 	BUG_ON(!PageSlab(page));
+ 	return (struct slab *)page->lru.prev;
+ }
+ 
+ static inline struct kmem_cache *virt_to_cache(const void *obj)
+ {
+-	struct page *page = virt_to_page(obj);
++	struct page *page = virt_to_head_page(obj);
+ 	return page_get_cache(page);
+ }
+ 
+ static inline struct slab *virt_to_slab(const void *obj)
+ {
+-	struct page *page = virt_to_page(obj);
++	struct page *page = virt_to_head_page(obj);
+ 	return page_get_slab(page);
+ }
+ 
+@@ -2884,7 +2883,7 @@
+ 
+ 	objp -= obj_offset(cachep);
+ 	kfree_debugcheck(objp);
+-	page = virt_to_page(objp);
++	page = virt_to_head_page(objp);
+ 
+ 	slabp = page_get_slab(page);
+ 
+@@ -3108,7 +3107,7 @@
+ 		struct slab *slabp;
+ 		unsigned objnr;
+ 
+-		slabp = page_get_slab(virt_to_page(objp));
++		slabp = page_get_slab(virt_to_head_page(objp));
+ 		objnr = (unsigned)(objp - slabp->s_mem) / cachep->buffer_size;
+ 		slab_bufctl(slabp)[objnr] = BUFCTL_ACTIVE;
+ 	}
+Index: linux-2.6.21-rc5-mm4/mm/slub.c
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/mm/slub.c	2007-04-06 19:37:49.000000000 +0000
++++ linux-2.6.21-rc5-mm4/mm/slub.c	2007-04-06 19:38:56.000000000 +0000
+@@ -1297,9 +1297,7 @@
+ {
+ 	struct page * page;
+ 
+-	page = virt_to_page(x);
+-
+-	page = compound_head(page);
++	page = virt_to_head_page(x);
+ 
+ 	if (unlikely(PageError(page) && (s->flags & SLAB_STORE_USER)))
+ 		set_tracking(s, x, 1);
+@@ -1310,7 +1308,7 @@
+ /* Figure out on which slab object the object resides */
+ static struct page *get_object_page(const void *x)
+ {
+-	struct page *page = compound_head(virt_to_page(x));
++	struct page *page = virt_to_head_page(x);
+ 
+ 	if (!PageSlab(page))
+ 		return NULL;
+@@ -1952,7 +1950,7 @@
+ 	if (!x)
+ 		return;
+ 
+-	page = compound_head(virt_to_page(x));
++	page = virt_to_head_page(x);
+ 
+ 	s = page->slab;
+ 
+@@ -1988,7 +1986,7 @@
+ 		return NULL;
+ 	}
+ 
+-	page = compound_head(virt_to_page(p));
++	page = virt_to_head_page(p);
+ 
+ 	new_cache = get_slab(new_size, flags);
+ 
