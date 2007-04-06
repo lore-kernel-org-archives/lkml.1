@@ -1,113 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767490AbXDFBeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767485AbXDFBh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767490AbXDFBeu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 21:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767487AbXDFBeu
+	id S1767485AbXDFBh2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 21:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767487AbXDFBh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 21:34:50 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:60917 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767486AbXDFBet (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 21:34:49 -0400
-Message-Id: <1175823288.25662.1183293506@webmail.messagingengine.com>
-X-Sasl-Enc: F4xEVW5PUhSxjFecK6uvQP6jD9YOcbx8kaGyIa0TmJT1 1175823288
-From: johnrobertbanks@fastmail.fm
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Ignatich" <ignatich@gmail.com>, reiserfs-list@namesys.com,
-       linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Thu, 5 Apr 2007 21:37:28 -0400
+Received: from gw.goop.org ([64.81.55.164]:39113 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767485AbXDFBh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 21:37:27 -0400
+Message-ID: <4615A431.5040104@goop.org>
+Date: Thu, 05 Apr 2007 18:36:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <46157B5B.5000602@gmail.com>
-   <1175817921.18400.1183285196@webmail.messagingengine.com>
-   <461592FB.5060507@zytor.com>
-   <1175819681.20754.1183287946@webmail.messagingengine.com>
-   <461596DE.2020802@zytor.com>
-Subject: Re: Reiser4. BEST FILESYSTEM EVER.
-In-Reply-To: <461596DE.2020802@zytor.com>
-Date: Thu, 05 Apr 2007 18:34:48 -0700
+To: Zachary Amsden <zach@vmware.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] Bugfix for VMI paravirt ops
+References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org> <46158FBE.3090105@vmware.com> <461590EA.10605@goop.org> <4615924E.8020009@vmware.com> <46159555.4020706@goop.org> <4615982A.1070700@vmware.com> <461599C1.50002@goop.org> <46159A2A.8050804@vmware.com> <4615A2F8.7040602@goop.org> <4615A32D.2080209@vmware.com>
+In-Reply-To: <4615A32D.2080209@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Zachary Amsden wrote:
+> Do you mean kmap_atomic_pfn?
 
-You say that the results may be accurate, but not relevant.
+Yes.
 
-.-------------------------.
-| FILESYSTEM | TIME |DISK |
-| TYPE       |(secs)|USAGE|
-.-------------------------.
-|REISER4 lzo | 1938 | 278 |
-|REISER4 gzip| 2295 | 213 |
-|REISER4     | 3462 | 692 |
-|EXT2        | 4092 | 816 |
-|JFS         | 4225 | 806 |
-|EXT4        | 4408 | 816 |
-|EXT3        | 4421 | 816 |
-|XFS         | 4625 | 779 |
-|REISER3     | 6178 | 793 |
-|FAT32       |12342 | 988 |
-|NTFS-3g     |10414 | 772 |
-.-------------------------.
+>   kunmap_atomic can stay lazy (at least for VMI), actually, but it
+> doesn't help since it happens outside the spin lock.
 
-If they are accurate,.... THEN they are obviously very relevant.
+May as well be consistent.  Or do you mean you can't flush outside the
+spinlock, even if there's nothing pending?
 
-Trying to follow http://linuxhelp.150m.com/resources/fs-benchmarks.htm 
-
-I have set up a Reiser4 partition with gzip compression, here is the
-difference in disk usage of a typical Debian installation on two 10GB
-partitions, one with Reiser3 and the other with Reiser4.
-
-debian:/# df
-Filesystem           1K-blocks      Used Available Use% Mounted on
-/dev/sda3             10490104   6379164   4110940  61% /3
-/dev/sda7              9967960   2632488   7335472  27% /7
-
-Partitions 3 and 7 have exactly the same data on them (the typical
-Debian install).
-
-The partitions are exactly the same size (although df records different
-sizes).
-
-Partition 3 is Reiser3 -- uses 6.4 GB.
-Partition 7 is Reiser4 -- uses 2.6 GB.
-
-So Reiser4 uses 2.6 GB to store the (typical) data that it takes Reiser3
-6.4 GB to store (note it would take ext2/3/4 some 7 GB to store the same
-info).
-
-This seems very relevant to me.
-
-John.
-
-
-
-On Thu, 05 Apr 2007 17:39:58 -0700, "H. Peter Anvin" <hpa@zytor.com>
-said:
-> johnrobertbanks@fastmail.fm wrote:
-> > Yeap, I guess that will probably work. 
-> > 
-> > And here I was trying to compile old versions of GRUB from namesys.com.
-> > 
-> > By the way, do you think the benchmarks from:
-> > 
-> > http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
-> > http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
-> > 
-> > are accurate?
-> > 
-> 
-> Accurate, probably.  Whether or not they're *relevant* is a totally 
-> different ball of wax.
-> 
-> 	-hpa
--- 
-  
-  johnrobertbanks@fastmail.fm
-
--- 
-http://www.fastmail.fm - mmm... Fastmail...
-
+    J
