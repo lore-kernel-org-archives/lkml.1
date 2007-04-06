@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXDFHtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767547AbXDFIBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbXDFHtK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 03:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbXDFHtK
+	id S1767547AbXDFIBy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 04:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767548AbXDFIBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 03:49:10 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:31286 "EHLO relay.sw.ru"
+	Fri, 6 Apr 2007 04:01:54 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:25906 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753650AbXDFHtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 03:49:08 -0400
-Message-ID: <4615FB59.6000807@sw.ru>
-Date: Fri, 06 Apr 2007 11:48:41 +0400
+	id S1767547AbXDFIBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 04:01:53 -0400
+Message-ID: <4615FE1D.80206@sw.ru>
+Date: Fri, 06 Apr 2007 12:00:29 +0400
 From: Vasily Averin <vvs@sw.ru>
 User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
 To: "David S. Miller" <davem@davemloft.net>, Patrick McHardy <kaber@trash.net>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       netfilter-devel@lists.netfiletr.org, rusty@rustcorp.com.au,
+       netfilter-devel@lists.netfilter.org, rusty@rustcorp.com.au,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        devel@openvz.org
 Subject: [PATCH 2.6.21-rc6] [netfilter] early_drop imrovement
@@ -122,3 +122,4 @@ Signed-off-by:	Vasily Averin <vvs@sw.ru>
  			atomic_dec(&nf_conntrack_count);
  			if (net_ratelimit())
  				printk(KERN_WARNING
+
