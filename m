@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767510AbXDFCuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767512AbXDFCwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767510AbXDFCuz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 22:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767507AbXDFCuz
+	id S1767512AbXDFCwa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 22:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767516AbXDFCwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 22:50:55 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:33275 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767510AbXDFCux (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 22:50:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=mGDyVry8JRrtKxyIwjz9odUVEHYr6qWMA4Qqca1NubqbL69jREzLhQN55G31sbrcKSo7+96YQo5pG2nMzsgkANaDs8Ej67bBZ951iHaWTVHuJzZo4KJwi3Ayorf/WcK5jsn6gwIz9OZcyNWkfr7sgtu3JBvaZg2siMhsij7lmY8=
-Date: Fri, 6 Apr 2007 10:53:43 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       viro@zeniv.linux.org.uk
-Subject: Re: [-mm3 PATCH] (Retry) Check the return value of kobject_add and etc.
-Message-ID: <20070406025343.GA2407@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-Mail-Followup-To: Cornelia Huck <cornelia.huck@de.ibm.com>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>, viro@zeniv.linux.org.uk
-References: <2375c9f90704010032r119f4a1eqb24dd611d5ecd943@mail.gmail.com> <20070402130128.707c8c19@gondolin.boeblingen.de.ibm.com> <20070405045410.GA4692@localhost.localdomain> <20070405111142.4723035f@gondolin.boeblingen.de.ibm.com> <20070405144409.GA5294@localhost.localdomain> <20070405170514.481b765f@gondolin.boeblingen.de.ibm.com> <20070405152732.GA5569@localhost.localdomain> <20070405180016.5099e0cd@gondolin.boeblingen.de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070405180016.5099e0cd@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 5 Apr 2007 22:52:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57950 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767416AbXDFCw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 22:52:28 -0400
+Message-ID: <4615B5D9.7060703@redhat.com>
+Date: Thu, 05 Apr 2007 19:52:09 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Rik van Riel <riel@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: missing madvise functionality
+References: <46128051.9000609@redhat.com> <p73648dz5oa.fsf@bingen.suse.de> <46128CC2.9090809@redhat.com> <20070403172841.GB23689@one.firstfloor.org> <20070403125903.3e8577f4.akpm@linux-foundation.org> <4612B645.7030902@redhat.com> <20070403202937.GE355@devserv.devel.redhat.com> <4614A5CC.5080508@redhat.com> <46151F73.50602@redhat.com> <4615B043.8060001@yahoo.com.au>
+In-Reply-To: <4615B043.8060001@yahoo.com.au>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig142F53141530ABD4FA3327D3"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 05, 2007 at 06:00:16PM +0200, Cornelia Huck wrote:
->On Thu, 5 Apr 2007 23:27:32 +0800,
->WANG Cong <xiyou.wangcong@gmail.com> wrote:
->
->> Thank you very much! I know. So I should replace all kfree with kobject_put, like this one:
->> 
->> -	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
->> +	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
->> +		kobject_uevent(&p->kobj, KOBJ_REMOVE);
->> +		kobject_del(&p->kobj);
->> +		kobject_put(&p->kobj);
->> +		return;
->> +	}
->> 
->> Is that all right?
->> 
->
->Yes, or use kobject_unregister().
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig142F53141530ABD4FA3327D3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-OK. Then I send it again. Hopefully it can be accepted this time. ;-p
+Nick Piggin wrote:
+> Cool. According to my thinking, madvise(MADV_DONTNEED) even in today's
+> kernels using down_write(mmap_sem) for MADV_DONTNEED is better than
+> mmap/mprotect, which have more fundamental locking requirements, more
+> overhead and no benefits (except debugging, I suppose).
 
+It's a tiny bit faster, see
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
----
+  http://people.redhat.com/drepper/dontneed.png
 
---- linux-2.6.21-rc5-mm4/fs/partitions/check.c.orig	2007-04-05 12:48:29.000000000 +0800
-+++ linux-2.6.21-rc5-mm4/fs/partitions/check.c	2007-04-05 23:15:41.000000000 +0800
-@@ -385,10 +385,18 @@ void add_partition(struct gendisk *disk,
- 	p->kobj.parent = &disk->kobj;
- 	p->kobj.ktype = &ktype_part;
- 	kobject_init(&p->kobj);
--	kobject_add(&p->kobj);
-+	if (kobject_add(&p->kobj)) {
-+		kobject_put(&p->kobj);
-+		return;
-+	}
- 	if (!disk->part_uevent_suppress)
- 		kobject_uevent(&p->kobj, KOBJ_ADD);
--	sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
-+	if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
-+		kobject_uevent(&p->kobj, KOBJ_REMOVE);
-+		kobject_del(&p->kobj);
-+		kobject_put(&p->kobj);
-+		return;
-+	}
- 	if (flags & ADDPART_FLAG_WHOLEDISK) {
- 		static struct attribute addpartattr = {
- 			.name = "whole_disk",
-@@ -396,7 +404,13 @@ void add_partition(struct gendisk *disk,
- 			.owner = THIS_MODULE,
- 		};
- 
--		sysfs_create_file(&p->kobj, &addpartattr);
-+		if (sysfs_create_file(&p->kobj, &addpartattr)) {
-+			sysfs_remove_link(&p->kobj, "subsystem");
-+			kobject_uevent(&p->kobj, KOBJ_REMOVE);
-+			kobject_del(&p->kobj);
-+			kobject_put(&p->kobj);
-+			return;
-+		}
- 	}
- 	partition_sysfs_add_subdir(p);
- 	disk->part[part-1] = p;
+I just ran it once so the graph is not smooth.  This is on a UP dual
+core machine.  Maybe tomorrow I'll turn on the big 4p machine.
+
+I would have to see dramatically different results on the big machine to
+make me change the libc code.  The reason is that there is a big drawback=
+=2E
+
+So far, when we allocate a new arena, we allocate address space with
+PROT_NONE and only when we need memory the protection is changed to
+PROT_READ|PROT_WRITE.  This is the advantage of catching wild pointer
+accesses.
+
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
 
 
+--------------enig142F53141530ABD4FA3327D3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGFbXZ2ijCOnn/RHQRAt06AKCJzuZsl2Ba8VCRWWUc2+BbSQ+16ACgnIGM
+6NuLcq3+/gFllhoYBNJ0AtU=
+=63qB
+-----END PGP SIGNATURE-----
+
+--------------enig142F53141530ABD4FA3327D3--
