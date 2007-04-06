@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933647AbXDFRgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933675AbXDFRgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933647AbXDFRgI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 13:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933660AbXDFRgH
+	id S933675AbXDFRgz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 13:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933701AbXDFRgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 13:36:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42733 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933675AbXDFRgD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 13:36:03 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
-       Chris Snook <csnook@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: init's children list is long and slows reaping children.
-References: <20070406084250.GA179@tv-sign.ru>
-	<m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
-	<20070406094413.GA673@tv-sign.ru>
-	<m1lkh58q16.fsf@ebiederm.dsl.xmission.com>
-	<20070406154750.GA541@tv-sign.ru>
-	<Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org>
-Date: Fri, 06 Apr 2007 11:34:39 -0600
-In-Reply-To: <Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Fri, 6 Apr 2007 10:16:27 -0700 (PDT)")
-Message-ID: <m1ejmx76fk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 6 Apr 2007 13:36:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50973 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933675AbXDFRgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 13:36:53 -0400
+Date: Fri, 6 Apr 2007 19:36:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: John <linux.kernel@free.fr>
+Cc: linux-kernel@vger.kernel.org, tglx@timesys.com
+Subject: Re: 2.6.20-rt8 patch tweaked for 2.6.20.5
+Message-ID: <20070406173639.GA2929@elte.hu>
+References: <461672D8.7090100@free.fr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <461672D8.7090100@free.fr>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> On Fri, 6 Apr 2007, Oleg Nesterov wrote:
->> 
->> Oops. I misread stop_machine(), it does kernel_thread(), not kthread_create().
->> So "stopmachine" threads are all re-parented to init when the caller exits.
->> I think it makes sense to set ->exit_state = -1 in stopmachine(), regadless
->> of any other changes.
->
-> I agree that "->exit_state = -1" makes sense, but I disagree in that I 
-> don't think it *matters*.
->
-> Most of the problematic kernel threads are long-running (as in "never 
-> exit"). Things like eventd, khelper, migration-threads etc will have init 
-> as their parent and never actually exit, so their ->exit_state doesn't 
-> matter. What matters is that they are on the children list, so when you 
-> have 1024 CPU's, and init has many thousand of these per-cpu threads as 
-> its children, then the *user* threads (that do exit) will cause problems!
->
-> I'd almost prefer to just not add kernel threads to any parent process 
-> list *at*all*. 
+* John <linux.kernel@free.fr> wrote:
 
-Oleg is coming from a different case where it was found that exiting kernel
-threads were causing problems for nash when nash was run as init in an
-initramfs.  While I think that case is likely a user space bug because
-nash should check the pid from waidpid before assuming the process it
-was waiting for returned.
+> Hello,
+> 
+> I've tweaked patch-2.6.20-rt8 so that it applies to 2.6.20.5
+> 
+> The unified diff is attached to this message.
 
-I do think you can construct valid embedded cases where you can prove
-there that among the user space processes certain actions are safe
-when they exit that a spare kernel space thread could invalidate.
+thanks - this is useful to those who are not that much on the bleeding 
+edge.
 
-It just happens that the exit signal of kernel threads just matters on
-the other end of system size.
+> I'd be happy to hear comments on what I've done wrong.
+> 
+> 78 hunks had to be offset and 3 hunks had to be fuzzed.
+> 
+> $ grep -B1 fuzz patch.log
+> patching file arch/ia64/kernel/iosapic.c
+> Hunk #3 succeeded at 469 with fuzz 2.
+> --
+> patching file kernel/fork.c
+> Hunk #9 succeeded at 975 with fuzz 1.
+> --
+> patching file kernel/sched.c
+> Hunk #46 succeeded at 3996 with fuzz 1.
+> 
+> What is the fuzz value, exactly?
 
-Eric
+it's harmless: when the 'patch' utility didnt find the 'context' of the 
+patch chunk at its claimed position (because all patch chunks have 
+precise coordinates of source code embedded), but finds them 'nearby' 
+(or at least, somewhere in the file), it emits this reminder that the 
+underlying code did change since the patch was generated. Generating a 
+'clean' patch will get rid of these messages.
+
+	Ingo
