@@ -1,61 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767481AbXDFB3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767479AbXDFBcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767481AbXDFB3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 21:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767482AbXDFB3c
+	id S1767479AbXDFBcP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 21:32:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767469AbXDFBcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 21:29:32 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:60695 "EHLO smtp.osdl.org"
+	Thu, 5 Apr 2007 21:32:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:45917 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767481AbXDFB3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 21:29:31 -0400
-Date: Thu, 5 Apr 2007 18:29:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Chris Snook <csnook@redhat.com>
-cc: Robin Holt <holt@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-In-Reply-To: <46159987.6090006@redhat.com>
-Message-ID: <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
- <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
- <46159987.6090006@redhat.com>
+	id S1767479AbXDFBcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 21:32:14 -0400
+Message-ID: <4615A2F8.7040602@goop.org>
+Date: Thu, 05 Apr 2007 18:31:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Zachary Amsden <zach@vmware.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] Bugfix for VMI paravirt ops
+References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org> <46158FBE.3090105@vmware.com> <461590EA.10605@goop.org> <4615924E.8020009@vmware.com> <46159555.4020706@goop.org> <4615982A.1070700@vmware.com> <461599C1.50002@goop.org> <46159A2A.8050804@vmware.com>
+In-Reply-To: <46159A2A.8050804@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Zachary Amsden wrote:
+> Throw it in the queue; I'll slide in after it.
 
+I've pushed it up.  I added a few missing cases to the patch
+(kmap_atomic_pte, kunmap_atomic).
 
-On Thu, 5 Apr 2007, Chris Snook wrote:
-
-> Linus Torvalds wrote:
->
-> > Another thing we could do is to just make sure that kernel threads simply
-> > don't end up as children of init. That whole thing is silly, they're really
-> > not children of the user-space init anyway. Comments?
-> 
-> Does anyone remember why we started doing this in the first place?  I'm sure
-> there are some tools that expect a process tree, rather than a forest, and
-> making it a forest could make them unhappy.
-
-I'm not sure anybody would really be unhappy with pptr pointing to some 
-magic and special task that has pid 0 (which makes it clear to everybody 
-that the parent is something special), and that has SIGCHLD set to SIG_IGN 
-(which should make the exit case not even go through the zombie phase).
-
-I can't even imagine *how* you'd make a tool unhappy with that, since even 
-tools like "ps" (and even more "pstree" won't read all the process states 
-atomically, so they invariably will see parent pointers that don't even 
-exist any more, because by the time they get to the parent, it has exited 
-already.
-
-> The support angel on my shoulder says we should just put all the kernel
-> threads under a kthread subtree to shorten init's child list and minimize
-> impact.
-
-A number are already there, of course, since they use the kthread 
-infrastructure to get there. 
-
-		Linus
+    J
