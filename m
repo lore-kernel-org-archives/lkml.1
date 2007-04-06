@@ -1,179 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXDFPmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXDFPng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbXDFPmH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 11:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932943AbXDFPmG
+	id S932943AbXDFPng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 11:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932953AbXDFPng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 11:42:06 -0400
-Received: from mail.macqel.be ([194.78.208.39]:29175 "EHLO mail.macqel.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932933AbXDFPmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 11:42:05 -0400
-X-Greylist: delayed 1092 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Apr 2007 11:42:04 EDT
-Date: Fri, 6 Apr 2007 17:23:51 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] partition : add support for sysv68 partitions
-Message-ID: <20070406152351.GA26889@ingate.macqel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 6 Apr 2007 11:43:36 -0400
+Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:32089 "HELO
+	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932900AbXDFPne (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 11:43:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=sMaCtKIPl7jqDd714/Z2Mt0oqC3oN6YJLM8TqhAiQcflwq+gB+mNLXFXvlUc6PfF3vW8RhDDadzuOxv+LC58BKDpSiXvqMQ/cTDx7qToAX91z8sAyBOj24I/hXY0G+ZWSCl4SFtB6CRE2w4jNR6S8EKP8LGUZ823xVhrUxAihT0=  ;
+X-YMail-OSG: OPQ3VGUVM1muE_POSSfUq.vYMn8LK_zPwJySxEgUTlO2dYFUVIWX.E95ZzPSt8OpZdbNdDaXYQ--
+From: David Brownell <david-b@pacbell.net>
+To: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
+Date: Fri, 6 Apr 2007 08:43:30 -0700
+User-Agent: KMail/1.7.1
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+References: <200704031741.42273.david-b@pacbell.net> <200704050358.43689.david-b@pacbell.net> <1175852213.2650.4.camel@localhost.localdomain>
+In-Reply-To: <1175852213.2650.4.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Message-Id: <200704060843.30723.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Friday 06 April 2007 2:36 am, Zhang Rui wrote:
+> On Thu, 2007-04-05 at 03:58 -0700, David Brownell wrote: 
+> > 
+> > For wakeup devices, the main issue I've seen is with button devices.
+> > In my limited set of test sytems, everything else is either PCI, PNP,
+> > or a bug (listing a non-existent device).
+>
+> There may be other wakeup-enabled devices like legacy serial,
+> PS2 devices described in ACPI name space.
 
-Add support for the Motorola sysv68 disk partition (slices in motorola doc).
+Do you mean they wouldn't be listed in /proc/acpi/wakeup though?
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+Or just that they wouldn't be listed as PNP devices (like the button
+devices)?  That seems buglike.  Not that BIOS bugs are so rare; and
+I sure wouldn't know which types are common...
 
-diff -ruN fs/partitionsbk/check.c fs/partitions/check.c
---- fs/partitionsbk/check.c	2006-09-20 05:42:06.000000000 +0200
-+++ fs/partitions/check.c	2007-04-06 10:52:21.000000000 +0200
-@@ -34,6 +34,7 @@
- #include "ultrix.h"
- #include "efi.h"
- #include "karma.h"
-+#include "sysv68.h"
- 
- #ifdef CONFIG_BLK_DEV_MD
- extern void md_autodetect_dev(dev_t dev);
-@@ -105,6 +106,9 @@
- #ifdef CONFIG_KARMA_PARTITION
- 	karma_partition,
- #endif
-+#ifdef CONFIG_SYSV68_PARTITION
-+	sysv68_partition,
-+#endif
- 	NULL
- };
-  
-diff -ruN fs/partitionsbk/Kconfig fs/partitions/Kconfig
---- fs/partitionsbk/Kconfig	2006-09-20 05:42:06.000000000 +0200
-+++ fs/partitions/Kconfig	2007-04-04 15:14:57.000000000 +0200
-@@ -237,3 +237,12 @@
- 	  Say Y here if you would like to use hard disks under Linux which
- 	  were partitioned using EFI GPT.  Presently only useful on the
- 	  IA-64 platform.
-+
-+config SYSV68_PARTITION
-+	bool "SYSV68 partition table support" if PARTITION_ADVANCED
-+	default y if M68K
-+	help
-+	  Say Y here if you would like to be able to read the hard disk
-+	  partition table format used by Motorola Delta machines (using
-+	  sysv68).
-+	  Otherwise, say N.
-diff -ruN fs/partitionsbk/Makefile fs/partitions/Makefile
---- fs/partitionsbk/Makefile	2006-09-20 05:42:06.000000000 +0200
-+++ fs/partitions/Makefile	2007-04-04 15:53:01.000000000 +0200
-@@ -17,3 +17,4 @@
- obj-$(CONFIG_IBM_PARTITION) += ibm.o
- obj-$(CONFIG_EFI_PARTITION) += efi.o
- obj-$(CONFIG_KARMA_PARTITION) += karma.o
-+obj-$(CONFIG_SYSV68_PARTITION) += sysv68.o
-diff -ruN fs/partitionsbk/sysv68.c fs/partitions/sysv68.c
---- fs/partitionsbk/sysv68.c	1970-01-01 01:00:00.000000000 +0100
-+++ fs/partitions/sysv68.c	2007-04-06 16:34:33.000000000 +0200
-@@ -0,0 +1,92 @@
-+/*
-+ *  fs/partitions/sysv68.c
-+ *
-+ *  Copyright (C) 2007 Philippe De Muyter <phdm@macqel.be>
-+ */
-+
-+#include "check.h"
-+#include "sysv68.h"
-+
-+/*
-+ *	Volume ID structure: on first 256-bytes sector of disk
-+ */
-+
-+struct	volumeid {
-+	u8	vid_unused[248];
-+	u8	vid_mac[8];	/* ASCII string "MOTOROLA" */
-+};
-+
-+/*
-+ *	config block: second 256-bytes sector on disk
-+ */
-+
-+struct dkconfig {
-+	u8	ios_unused0[128];
-+	__be32	ios_slcblk;	/* Slice table block number */
-+	__be16	ios_slccnt;	/* Number of entries in slice table */
-+	u8	ios_unused1[122];
-+};
-+
-+/*
-+ *	combined volumeid and dkconfig block
-+ */
-+
-+struct dkblk0 {
-+	struct volumeid dk_vid;
-+	struct dkconfig dk_ios;
-+};
-+
-+/*
-+ *	Slice Table Structure
-+ */
-+
-+struct slice {
-+	__be32	nblocks;		/* slice size (in blocks) */
-+	__be32	blkoff;			/* block offset of slice */
-+};
-+
-+
-+int sysv68_partition(struct parsed_partitions *state, struct block_device *bdev)
-+{
-+	int i, slices;
-+	int slot = 1;
-+	Sector sect;
-+	unsigned char *data;
-+	struct dkblk0 *b;
-+	struct slice *slice;
-+
-+	data = read_dev_sector(bdev, 0, &sect);
-+	if (!data)
-+		return -1;
-+
-+	b = (struct dkblk0 *) data;
-+	if (memcmp(b->dk_vid.vid_mac, "MOTOROLA", sizeof(b->dk_vid.vid_mac))) {
-+		put_dev_sector(sect);
-+		return 0;
-+	}
-+	slices = be16_to_cpu(b->dk_ios.ios_slccnt);
-+	i = be32_to_cpu(b->dk_ios.ios_slcblk);
-+	put_dev_sector(sect);
-+
-+	data = read_dev_sector(bdev, i, &sect);
-+	if (!data)
-+		return -1;
-+
-+	slices -= 1; /* last slice is the whole disk */
-+	printk("sysV68: %s(s%u)", state->name, slices);
-+	slice = (struct slice *)data;
-+	for (i = 0 ; i < slices; i++, slice++) {
-+		if (slot == state->limit)
-+			break;
-+		if (be32_to_cpu(slice->nblocks)) {
-+			put_partition(state, slot,
-+				be32_to_cpu(slice->blkoff),
-+				be32_to_cpu(slice->nblocks));
-+			printk("(s%u)", i);
-+		}
-+		slot++;
-+	}
-+	printk("\n");
-+	put_dev_sector(sect);
-+	return 1;
-+}
-diff -ruN fs/partitionsbk/sysv68.h fs/partitions/sysv68.h
---- fs/partitionsbk/sysv68.h	1970-01-01 01:00:00.000000000 +0100
-+++ fs/partitions/sysv68.h	2007-04-06 16:30:22.000000000 +0200
-@@ -0,0 +1 @@
-+extern int sysv68_partition(struct parsed_partitions *state, struct block_device *bdev);
--- 
-Philippe De Muyter  phdm at macqel dot be  Tel +32 27029044
-Macq Electronique SA  rue de l'Aeronef 2  B-1140 Bruxelles  Fax +32 27029077
+Because that example file certainly included UART and PS2 devices,
+which were listed both as PNP devices and as ACPI devices.
+
+
+> > If this patch starts to get deployed, I expect other people will find
+> > a few other curiousities ... and likely some things to be fixed.
+> 
+> > The /sys/devices/acpi_system:00/ tree is kind of new.  I suspect one
+> > way it could be more informative is to set up cross-links in sysfs
+> > between the ACPI devices and the "real" device nodes ... e.g. on the
+> > system I'm using right now .../device:00/PNP0A03:00/device:15/PNP0B00:00
+> > could have a link pointing to /sys/devices/pnp0/00:06 ... and that PNP
+> > node in turn could have an "acpi" link pointing back to the ACPI thing.
+> > 
+> > Such cross-links would let people see those relationships, and observe
+> > which links are missing or otherwise strange.  Fixing the bugs would
+> > seem unlikely until those things become visible.
+>
+> Sounds nice.
+> The patch below should make sense.
+
+Yeah, that's the idea.  Let's see if it's any good.  :)
+
+I'd just call it "acpi_node" not "ACPI_node" (NO POINT IN SHOUTING),
+and might not even use the "_node" suffix.
+
+I cc'd Greg, who's our resident (or is that itinerant?) sysfs guru,
+in case he has comments on this issue.
+
+This applied over the "ACPI driver model flags and platform_enable_wake()"
+patch with a bit of fuzz, on RC6.
+
+- Dave
+
+
+> Add cross-links between ACPI device and "real" devices in sysfs.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com> 
+> ---
+>  drivers/acpi/glue.c |   14 ++++++++++++++
+>  1 files changed, 14 insertions(+)
+> 
+> Index: linux-2.6.21-rc5/drivers/acpi/glue.c
+> ===================================================================
+> --- linux-2.6.21-rc5.orig/drivers/acpi/glue.c	2007-04-06 16:06:04.000000000 +0800
+> +++ linux-2.6.21-rc5/drivers/acpi/glue.c	2007-04-06 17:32:40.000000000 +0800
+> @@ -147,6 +147,7 @@ EXPORT_SYMBOL(acpi_get_physical_device);
+>  static int acpi_bind_one(struct device *dev, acpi_handle handle)
+>  {
+>  	acpi_status status;
+> +	struct acpi_device *acpi_dev;
+>  
+>  	if (dev->archdata.acpi_handle) {
+>  		printk(KERN_WARNING PREFIX
+> @@ -161,16 +162,29 @@ static int acpi_bind_one(struct device *
+>  	}
+>  	dev->archdata.acpi_handle = handle;
+>  
+> +	if (!acpi_bus_get_device(handle, &acpi_dev)) {
+> +		sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj, "ACPI_node");
+> +		sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj, "physical_node");
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+>  static int acpi_unbind_one(struct device *dev)
+>  {
+> +	struct acpi_device *acpi_dev;
+> +
+>  	if (!dev->archdata.acpi_handle)
+>  		return 0;
+>  	if (dev == acpi_get_physical_device(dev->archdata.acpi_handle)) {
+>  		/* acpi_get_physical_device increase refcnt by one */
+>  		put_device(dev);
+> +
+> +		if (!acpi_bus_get_device(dev->archdata.acpi_handle, &acpi_dev)) {
+> +			sysfs_remove_link(&dev->kobj, "ACPI_node");
+> +			sysfs_remove_link(&acpi_dev->dev.kobj, "physical_node");
+> +		}
+> +
+>  		acpi_detach_data(dev->archdata.acpi_handle,
+>  				 acpi_glue_data_handler);
+>  		dev->archdata.acpi_handle = NULL;
+> 
