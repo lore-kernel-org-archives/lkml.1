@@ -1,85 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbXDFQhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbXDFQk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933231AbXDFQhb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 12:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXDFQhb
+	id S933253AbXDFQk7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 12:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933256AbXDFQk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 12:37:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34476 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933231AbXDFQha (ORCPT
+	Fri, 6 Apr 2007 12:40:59 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:44493 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933253AbXDFQk6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 12:37:30 -0400
-Message-ID: <4616761F.2050905@torque.net>
-Date: Fri, 06 Apr 2007 12:32:31 -0400
-From: Douglas Gilbert <dougg@torque.net>
-Reply-To: dougg@torque.net
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 6 Apr 2007 12:40:58 -0400
+Date: Fri, 6 Apr 2007 18:40:58 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Pedro Mullor =?utf-8?Q?Jim=C3=A9nez?= <pmullor@skynet.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.9 won't compile
+Message-ID: <20070406164058.GK29169@stusta.de>
+References: <1175855823.16114.12.camel@localhost>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andrew Burgess <aab@cichlid.com>, cebbert@redhat.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       aradford@gmail.com
-Subject: Re: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10,13
-References: <200704061551.l36FpWoV015751@cichlid.com> <1175876096.3677.24.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1175876096.3677.24.camel@mulgrave.il.steeleye.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1175855823.16114.12.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Fri, 2007-04-06 at 08:51 -0700, Andrew Burgess wrote:
->> James Bottomley wrote:
->>
->>> It's actually a long standing bug in the 3w-xxxx driver.  Apparently it
->>> assumes request sense is always the use_sg == 0 case.  This is what it
->>> does on a request sense:
->>> static int tw_scsiop_request_sense(TW_Device_Extension *tw_dev, int request_id)
->>> {
->>>        dprintk(KERN_NOTICE "3w-xxxx: tw_scsiop_request_sense()\n");
->>>        /* For now we just zero the request buffer */
->>>        memset(tw_dev->srb[request_id]->request_buffer, 0, tw_dev->srb[request_id]->request_bufflen);
->>>        tw_dev->state[request_id] = TW_S_COMPLETED;
->>>        tw_state_request_finish(tw_dev, request_id);
->>> ....
->>> Note that it's clearing the request buffer, which is actually zeroing the scatterlist, hence the problem.
->> OK. Is there a quick workaround or should I just wait for
->> Adam & Company to make a patch?
+On Fri, Apr 06, 2007 at 12:37:03PM +0200, Pedro Mullor Jiménez wrote:
+> Dear all,
 > 
-> Try this ... I think it's roughly the correct fix.
+> I downloaded version 2.6.9 of the kernel from kernel.org
+> I went throught menuconfig, importing the configuration of my current
+> 2.6.15-28-686.
 > 
->> You said your earlier patch would hide it, and then said you
->> had a length wrong in it and I'm not sure what length you
->> mean.
+> I then tried to compile it but the compilation exits with an error
+> (below).
 > 
-> It's the length specifier in the error handler request sense command ...
-> I'll fix it up and redo my patch through scsi-misc, since it's not going
-> to fix the root cause of the problem.
+> I also tried to do make mrproper, got rid of the .config file, made
+> menuconfig again without importing anything, and when compiling it
+> failed again.
 > 
-> James
-> 
-> diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
-> index bf5d63e..6b303ba 100644
-> --- a/drivers/scsi/3w-xxxx.c
-> +++ b/drivers/scsi/3w-xxxx.c
-> @@ -1864,10 +1864,17 @@ static int tw_scsiop_read_write(TW_Device_Extension *tw_dev, int request_id)
->  /* This function will handle the request sense scsi command */
->  static int tw_scsiop_request_sense(TW_Device_Extension *tw_dev, int request_id)
->  {
-> +	char request_buffer[18];
-> +
->  	dprintk(KERN_NOTICE "3w-xxxx: tw_scsiop_request_sense()\n");
->  
-> -	/* For now we just zero the request buffer */
-> -	memset(tw_dev->srb[request_id]->request_buffer, 0, tw_dev->srb[request_id]->request_bufflen);
-> +	memset(request_buffer, 0, sizeof(request_buffer));
-> +	request_buffer[0] = 0x70; /* Immediate fixed format */
-> +	request_buffer[7] = 11;	/* minimum size per SPC: 18 bytes */
+> The reason for me to use this kernel is because I have a VIA VT82C
+> 693A/598/686 chipset and I suffer from perf problems (which google says
+> only happen since 2.6.10).
 
-James,
-That last line should be:
-        request_buffer[7] = 10;	/* minimum size per SPC: 18 bytes */
+Can you give a pointer or description of this problem?
 
-Doug Gilbert
+The preferred solution for you would not be to run an ancient kernel 
+with tons of known security holes but to get this problem fixed.
+
+> Might I request to be personally CC'ed in the answers/comments posted in
+> response to this post ?
+> 
+> Many thanks in advance for your comments and help!
+> 
+> With kind regards,
+> Pedro Mullor
+> 
+> 
+>   CHK     include/linux/version.h
+> make[1]: `arch/i386/kernel/asm-offsets.s' is up to date.
+>   CHK     include/linux/compile.h
+>   CC      arch/i386/kernel/process.o
+> arch/i386/kernel/process.c: In function ‘show_regs’:
+> arch/i386/kernel/process.c:252: warning: pointer targets in passing
+> argument 2 of ‘show_trace’ differ in signedness
+> {standard input}: Assembler messages:
+> {standard input}:813: Error: suffix or operands invalid for `mov'
+> {standard input}:814: Error: suffix or operands invalid for `mov'
+> {standard input}:1040: Error: suffix or operands invalid for `mov'
+> {standard input}:1041: Error: suffix or operands invalid for `mov'
+> {standard input}:1121: Error: suffix or operands invalid for `mov'
+> {standard input}:1122: Error: suffix or operands invalid for `mov'
+> {standard input}:1226: Error: suffix or operands invalid for `mov'
+> {standard input}:1227: Error: suffix or operands invalid for `mov'
+> {standard input}:1290: Error: suffix or operands invalid for `mov'
+> {standard input}:1302: Error: suffix or operands invalid for `mov'
+> make[1]: *** [arch/i386/kernel/process.o] Error 1
+> make: *** [arch/i386/kernel] Error 2
+
+
+Older kernels use an assembler syntax no longer supported by recent 
+binutils.
+
+A patch is at [1].
+
+cu
+Adrian
+
+[1] http://www.kernel.org/pub/linux/devel/binutils/linux-2.6-seg-5.patch
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
