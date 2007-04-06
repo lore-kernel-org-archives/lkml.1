@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbXDFI4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752324AbXDFI7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751884AbXDFI4x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 04:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXDFI4x
+	id S1752324AbXDFI7f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 04:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766521AbXDFI7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 04:56:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:34261 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbXDFI4w (ORCPT
+	Fri, 6 Apr 2007 04:59:35 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:36397 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbXDFI7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 04:56:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=lGfJkz0xobk+qDjd5Quy3Td5QxXV3VTjxbkLWAkXIfq5xzQz1DIvC0N1pdvv53lKHvHW/fdjMbcRJrsG6Ffy674/s0zdB7KXJjosozvH7Z/nh9YeSizbfv6RtfkmB5k3xaV5U9B+IgVr6hoQoXW1rR2uCSKGrO7ycB4kNjy9x+I=
-Date: Fri, 6 Apr 2007 14:28:13 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: kernel-janitors@lists.osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [KJ][RFC]NAME_OFFSET macro
-Message-ID: <20070406085813.GA12105@arun.site>
-Mime-Version: 1.0
+	Fri, 6 Apr 2007 04:59:34 -0400
+Date: Fri, 6 Apr 2007 10:55:57 +0200
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: [PATCH 2.6.20.4] pci-calgary: cleanup of unneeded macros
+Message-ID: <20070406085557.GB11218@bull.net>
+MIME-Version: 1.0
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Guillaume Thouvenin <guillaume.thouvenin@ext.bull.net>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 06/04/2007 11:01:53,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 06/04/2007 11:01:54,
+	Serialize complete at 06/04/2007 11:01:54
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cleanup unneeded macros used for register space address calculation. 
+Now we are using the EBDA to find the space address.
 
-milind@arun:~/src/linux> egrep -rin "#define.*NAME_?OFFSET" .
-./arch/alpha/kernel/osf_sys.c:95:#define NAME_OFFSET    offsetof (struct osf_dirent, d_name)
-./arch/mips/kernel/sysirix.c:1738:#define NAME_OFFSET32(de) ((int) ((de)->d_name - (char *) (de)))
-./arch/mips/kernel/sysirix.c:1840:#define NAME_OFFSET64(de) ((int) ((de)->d_name - (char *) (de)))
-./arch/parisc/hpux/fs.c:72:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-./arch/parisc/kernel/sys_parisc32.c:315:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-./arch/powerpc/kernel/sys_ppc32.c:57:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-./arch/sparc/kernel/sys_sunos.c:324:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-./arch/sparc64/kernel/sys_sunos32.c:275:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-./drivers/isdn/hardware/eicon/s_4bri.c:184:#define FPGA_NAME_OFFSET         0x10
-./fs/compat.c:903:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-./fs/readdir.c:54:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
-./include/linux/fuse.h:342:#define FUSE_NAME_OFFSET ((unsigned) ((struct fuse_dirent *) 0)->name)
-
-
-just working out different options before putting it in kernel.h
-
-as all the dirent structures have used the 
-same name for the d_name member,so we can use
-
-#define NAME_OFFSET(dirent) ((int) ((dirent)->d_name - (char __user *) (dirent)))
-
-but then it becomes binding on the future users
- to maintain the same naming  convention.
-
-#define NAME_OFFSET(dirent,d_name) ((int) ((dirent)->d_name - (char __user *) (dirent)))
-
-#define NAME_OFFSET(dirent,d_name) offsetof(struct dirent,d_name)
-
-though ..the first one seem to be just fine
-
-thoughts
-
--- 
-Milind Arun Choudhary
+Signed-off-by: Guillaume Thouvenin <guillaume.thouvenin@bull.net>
+---
+ pci-calgary.c |    5 -----
+ 1 file changed, 5 deletions(-)
+Index: linux-2.6.20.4/arch/x86_64/kernel/pci-calgary.c
+===================================================================
+--- linux-2.6.20.4.orig/arch/x86_64/kernel/pci-calgary.c	2007-04-06 09:42:12.000000000 +0200
++++ linux-2.6.20.4/arch/x86_64/kernel/pci-calgary.c	2007-04-06 09:42:20.000000000 +0200
+@@ -53,11 +53,6 @@
+ #define PCI_VENDOR_DEVICE_ID_CALGARY \
+ 	(PCI_VENDOR_ID_IBM | PCI_DEVICE_ID_IBM_CALGARY << 16)
+ 
+-/* we need these for register space address calculation */
+-#define START_ADDRESS           0xfe000000
+-#define CHASSIS_BASE            0
+-#define ONE_BASED_CHASSIS_NUM   1
+-
+ /* register offsets inside the host bridge space */
+ #define CALGARY_CONFIG_REG	0x0108
+ #define PHB_CSR_OFFSET		0x0110 /* Channel Status */
