@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933273AbXDFQmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbXDFQn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933273AbXDFQmF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 12:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933271AbXDFQmE
+	id S933219AbXDFQn3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 12:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933277AbXDFQn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 12:42:04 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54265 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933267AbXDFQmB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 12:42:01 -0400
-Date: Fri, 6 Apr 2007 11:41:54 -0500
-From: Robin Holt <holt@sgi.com>
+	Fri, 6 Apr 2007 12:43:29 -0400
+Received: from mail.screens.ru ([213.234.233.54]:50969 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933219AbXDFQn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 12:43:28 -0400
+Date: Fri, 6 Apr 2007 19:47:50 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Robin Holt <holt@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Robin Holt <holt@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
 Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070406164153.GA30841@lnx-holt.americas.sgi.com>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org> <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <20070406154750.GA541@tv-sign.ru>
+References: <20070406084250.GA179@tv-sign.ru> <m18xd5amwq.fsf@ebiederm.dsl.xmission.com> <20070406094413.GA673@tv-sign.ru> <m1lkh58q16.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <m1lkh58q16.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 06, 2007 at 09:38:24AM -0600, Eric W. Biederman wrote:
-> How hard is tasklist_lock hit on these systems?
+On 04/06, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+> >> At first glance your patch looks reasonable.
+> >> 
+> >> Unfortunately it only applies to the rare thread that calls daemonize,
+> >> and not also to kernel/kthread/kthread() which means it will miss many of
+> >> our current kernel threads.
+> >
+> > Note that a thread created by kthread_create() has ->parent == "[kthread]",
+> > not /sbin/init (unless it was created before core_initcall). So I don't really
+> > understand how stop_machine() creates the threads parented to init.
+> 
+> Duh.  I was looking for that detail but the code was sufficiently
+> abstracted that I missed it skimming through.  Now I see it thanks.
+> That at least explains how a handful of threads created with
+> kthread_create have init as their parent.
 
-The major hold-off we are seeing is from tasks reaping children,
-especially tasks with very large children lists.
+Oops. I misread stop_machine(), it does kernel_thread(), not kthread_create().
+So "stopmachine" threads are all re-parented to init when the caller exits.
+I think it makes sense to set ->exit_state = -1 in stopmachine(), regadless
+of any other changes.
 
-> How hard is the pid hash hit on these systems?
+> My gut feel says it makes sense to change reparent_to_init to 
+> reparent_to_kthread.  Which will get the all of the kernel daemons
+> under a single parent.  Further I think it makes sense to see if
+> we can start kthread earlier. Having kthread have pid == 2 would be
+> nice.  That way we can kill the conditional that is only used during
+> early initialization (make the code simpler and more predictable).
 
-In the little bit of testing we got before the machine got taken away,
-we never observed significant issues with the pid hash.  We only got
-time to run a few benchmarks like aim7.
+Yes. But we can't create helper_wq ([kthread]) before init_workqueues().
+We can call helper_init() from init_workqueues() before creating "events"
+though.
 
-...
-> The big benefit of the zombie list over your proposed list reordering
-> is that waitpid can return immediately when we don't have zombies to
-> wait for, but we have lots of children.  So it looks like a universal
-> benefit and about as good as it is possible to make zombie handling
-> of waitpid.
+Oleg.
 
-Is this something you are taking on as a task for yourself or do you
-want me to pursue?  I am extremely swamped on other non-kernel issues
-and Jack is off working on x86_64 issues so we would both _greatly_
-appreciate any help you can give.  Of course, we understand this is an
-issue that is affecting us and the responsibility ultimately lies here.
-
-As for testing a proposed patch, we have a customer machine available for
-the next few days which could be put into the same configuration we had
-for this test, but it will be limited availability and then only assuming
-the SGI site test personnel are certain the machine meets customer needs.
-
-Thanks,
-Robin
