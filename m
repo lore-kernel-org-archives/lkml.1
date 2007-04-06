@@ -1,126 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbXDFJiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbXDFJoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932710AbXDFJiQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 05:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXDFJiQ
+	id S1752433AbXDFJoZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 05:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXDFJoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 05:38:16 -0400
-Received: from mga01.intel.com ([192.55.52.88]:32456 "EHLO mga01.intel.com"
+	Fri, 6 Apr 2007 05:44:25 -0400
+Received: from mail.screens.ru ([213.234.233.54]:47930 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932658AbXDFJiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 05:38:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,381,1170662400"; 
-   d="scan'208"; a="225765970:sNHT31167766"
-Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
-From: Zhang Rui <rui.zhang@intel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger" <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, lenb@kernel.org
-In-Reply-To: <200704050358.43689.david-b@pacbell.net>
-References: <200704031741.42273.david-b@pacbell.net>
-	 <1175759995.23121.18.camel@localhost.localdomain>
-	 <200704050358.43689.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Fri, 06 Apr 2007 17:36:53 +0800
-Message-Id: <1175852213.2650.4.camel@localhost.localdomain>
+	id S1752433AbXDFJoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 05:44:24 -0400
+Date: Fri, 6 Apr 2007 13:44:13 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Robin Holt <holt@sgi.com>, Chris Snook <csnook@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: init's children list is long and slows reaping children.
+Message-ID: <20070406094413.GA673@tv-sign.ru>
+References: <20070406084250.GA179@tv-sign.ru> <m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-05 at 03:58 -0700, David Brownell wrote: 
-> On Thursday 05 April 2007 12:59 am, Zhang Rui wrote:
-> > On Wed, 2007-04-04 at 08:41 +0800, David Brownell wrote:
-> > > In that example, two devices don't actually exist (USB3, S139), one can't
-> > > issue wakeup events (PCI0), and two seem harmlessly (?) confused (MDM and
-> > > AUD are the same PCI device, but it's the _modem_ that does wake-on-ring). 
-> > > 
-> > Well, ACPI can't find the sysfs node for all the wakeup-enabled devices.
+On 04/06, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
 > 
-> The only example of that type in the example I provided is SLPB, where the
-> sysfs node is ACPI-internal; I'm not sure how one can detect such cases.
+> > Robin Holt wrote:
+> >>
+> >> wait_task_zombie() is taking many seconds to get through the list.
+> >> For the case of a modprobe, stop_machine creates one thread per cpu
+> >> (remember big number). All are parented to init and their exit will
+> >> cause wait_task_zombie to scan multiple times most of the way through
+> >> this very long list looking for threads which need to be reaped.
+> >
+> > Could you try this patch
+> >
+> > 	http://marc.info/?l=linux-kernel&m=117337194209912
+> >
+> > ?
+> >
+> > It can't solve the whole problem, but at least an exiting kernel thread
+> > won't kick init.
 > 
+> At first glance your patch looks reasonable.
 > 
-> > In fact, only pci and pnp devices can be found now.
-> 
-> Well, PNP courtesy of a previous patch from me, but remember that I was
-> using that as an example of a ** BOGUS ACPI TABLE ** as summarized above.
-Then it's OK. :)
-> 
-> > ACPI needs the ability to distinguish all the physical devices, i.e. map
-> > ACPI device to physical device nodes in sysfs, which I mentioned before.
-> 
-> For wakeup devices, the main issue I've seen is with button devices.
-> In my limited set of test sytems, everything else is either PCI, PNP,
-> or a bug (listing a non-existent device).
-There may be other wakeup-enabled devices like legacy serial,
-PS2 devices described in ACPI name space. 
-> If this patch starts to get deployed, I expect other people will find
-> a few other curiousities ... and likely some things to be fixed.
+> Unfortunately it only applies to the rare thread that calls daemonize,
+> and not also to kernel/kthread/kthread() which means it will miss many of
+> our current kernel threads.
 
-> The /sys/devices/acpi_system:00/ tree is kind of new.  I suspect one
-> way it could be more informative is to set up cross-links in sysfs
-> between the ACPI devices and the "real" device nodes ... e.g. on the
-> system I'm using right now .../device:00/PNP0A03:00/device:15/PNP0B00:00
-> could have a link pointing to /sys/devices/pnp0/00:06 ... and that PNP
-> node in turn could have an "acpi" link pointing back to the ACPI thing.
-> 
-> Such cross-links would let people see those relationships, and observe
-> which links are missing or otherwise strange.  Fixing the bugs would
-> seem unlikely until those things become visible.
-Sounds nice.
-The patch below should make sense.
+Note that a thread created by kthread_create() has ->parent == "[kthread]",
+not /sbin/init (unless it was created before core_initcall). So I don't really
+understand how stop_machine() creates the threads parented to init.
 
-Add cross-links between ACPI device and "real" devices in sysfs.
+> For the sgi problem I doubt it is will make a difference
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com> 
----
- drivers/acpi/glue.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+)
+most probably you are right.
 
-Index: linux-2.6.21-rc5/drivers/acpi/glue.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/acpi/glue.c	2007-04-06 16:06:04.000000000 +0800
-+++ linux-2.6.21-rc5/drivers/acpi/glue.c	2007-04-06 17:32:40.000000000 +0800
-@@ -147,6 +147,7 @@ EXPORT_SYMBOL(acpi_get_physical_device);
- static int acpi_bind_one(struct device *dev, acpi_handle handle)
- {
- 	acpi_status status;
-+	struct acpi_device *acpi_dev;
- 
- 	if (dev->archdata.acpi_handle) {
- 		printk(KERN_WARNING PREFIX
-@@ -161,16 +162,29 @@ static int acpi_bind_one(struct device *
- 	}
- 	dev->archdata.acpi_handle = handle;
- 
-+	if (!acpi_bus_get_device(handle, &acpi_dev)) {
-+		sysfs_create_link(&dev->kobj, &acpi_dev->dev.kobj, "ACPI_node");
-+		sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj, "physical_node");
-+	}
-+
- 	return 0;
- }
- 
- static int acpi_unbind_one(struct device *dev)
- {
-+	struct acpi_device *acpi_dev;
-+
- 	if (!dev->archdata.acpi_handle)
- 		return 0;
- 	if (dev == acpi_get_physical_device(dev->archdata.acpi_handle)) {
- 		/* acpi_get_physical_device increase refcnt by one */
- 		put_device(dev);
-+
-+		if (!acpi_bus_get_device(dev->archdata.acpi_handle, &acpi_dev)) {
-+			sysfs_remove_link(&dev->kobj, "ACPI_node");
-+			sysfs_remove_link(&acpi_dev->dev.kobj, "physical_node");
-+		}
-+
- 		acpi_detach_data(dev->archdata.acpi_handle,
- 				 acpi_glue_data_handler);
- 		dev->archdata.acpi_handle = NULL;
+Oleg.
 
