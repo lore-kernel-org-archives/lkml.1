@@ -1,61 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbXDFX2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750808AbXDFXdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933463AbXDFX2J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:28:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbXDFX2J
+	id S1750808AbXDFXdL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXDFXdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:28:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:48644 "EHLO mail.goop.org"
+	Fri, 6 Apr 2007 19:33:10 -0400
+Received: from neon.samage.net ([85.17.153.66]:58333 "EHLO neon.samage.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933463AbXDFX2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 19:28:08 -0400
-Message-ID: <4616D758.6020300@goop.org>
-Date: Fri, 06 Apr 2007 16:27:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1750874AbXDFXdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:33:09 -0400
+X-Greylist: delayed 1592 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Apr 2007 19:33:08 EDT
+Message-ID: <4152.81.207.0.53.1175900790.squirrel@secure.samage.net>
+In-Reply-To: <4616BC09.2080509@tmr.com>
+References: <4610D25F.7080005@ceid.upatras.gr>
+    <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com>
+    <4616BC09.2080509@tmr.com>
+Date: Sat, 7 Apr 2007 01:06:30 +0200 (CEST)
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Bill Davidsen" <davidsen@tmr.com>
+Cc: "Tasos Parisinos" <t.parisinos@sciensis.com>,
+       "Andi Kleen" <andi@firstfloor.org>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 18/20] clean up tsc-based sched_clock
-References: <20070404191151.009821039@goop.org>	<20070404191206.476822257@goop.org> <20070406162233.b835bd4c.akpm@linux-foundation.org>
-In-Reply-To: <20070406162233.b835bd4c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: bbdeaaa4d227adae8d620e69c05793d6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 04 Apr 2007 12:12:09 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> Three cleanups:
->>  - change "instable" -> "unstable"
->>  - its better to use get_cpu_var for getting this cpu's variables
->>  - change cycles_2_ns to do the full computation rather than just the
->>    tsc->ns scaling.  Its a simpler interface, and it makes the function
->>    more generally useful.
+On Fri, April 6, 2007 23:30, Bill Davidsen wrote:
+> Tasos Parisinos wrote:
+>> The main purpose behind the creation of this module was to create the
+>> cryptographic infrastructure to develop an in-kernel system of signed
+>> modules.
 >>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
->>
->> ---
->>  arch/i386/kernel/sched-clock.c |   35 +++++++++++++++++++++--------------
->>     
+
+>> Although this functionality can be achieved using userland helper
+>> programs this may create the need to physically secure entire
+>> filesystems which adds to the cost of developing such devices.
 >
-> I'm dropping the relevant patch from Andi's tree due to it causing
-> mysterious hangs when initscripts start ondemand.  So I'll need to drop
-> this patch and "[patch 19/20] Add a sched_clock paravirt_op".
->   
+> So to save cost on your end you want to make this feature part of the
+> mainline kernel. Am I misreading your intent here?
 
-OK.  That just means we need to go back to the original "Add a
-sched_clock paravirt_op" follow-on patch.
+(Tasos was talking about the cost of securing whole file systems versus only
+the kernel binary.)
 
-> I still need to work out why that hang is happening - it is very
-> mysterious.  I got as far as working out that it was hanging on
-> write_seqlock_irqsave(xtime_lock), then remembered that it's with
-> CONFIG_SMP=n so I stomped off to bed in disgust.  Later.
->   
+But if that "entire filesystem" is initramfs, I don't
+see any problem. If it fits into the kernel, it also has enough room for an
+initramfs with a user space program with the RSA signing. I said this before,
+so please look up how initramfs works and tell us why that isn't sufficient
+for this case.
 
-Hangs always, or just sometimes?  I haven't seen any problems with it.
+I suspect your answer will be because it isn't the only part and a lot other
+infrastructure is need in the kernel to do all the binary signing. But that
+code you didn't post, only a MPI module, however nice, which is only a partial
+solution to what you want to achieve. Combine that with the kernel policy to
+not merge unused code, and you're in the current situation.
 
-    J
+> Having said all this, we have a boatload of other crypto in the kernel,
+> if it's just the crypto module, like aes, anubis or micheal_mic, and is
+> GPL compatible, some people may agree. But if this is an embedded
+> system, and you have the patch, why not just apply it to your kernel and
+> forget mainline?
+
+Currently it's less than a cryptoapi module, as it only provide some functions
+to do multi-precision integer calculations, which happen to be the tricky part
+of implementing RSA.
+
+That said, this implementation seems quite good, from a code size and complexity
+point of view. So for that alone I think it wouldn't be bad to merge this or a
+modified version of this, even if it's unused by the rest of the kernel, it might
+be useful for other users. The burden to carry it along for the kernel is quite
+small, while the code is worth something and might get improved by their users,
+in the end having a central place to collect them. So I think from an open source
+ecological point of view, it wouldn't be bad to merge it.
+
+I see three possible way forwards (alternative is the status quo):
+
+1) Move it to user space (into the initramfs embedded into the kernel).
+But you'd still need to add binary (modules, libs and programs) load hooks.
+
+2) Flesh it out into a ready to use, full blown RSA cryptoAPI module. Whatever
+you said earlier, whether you want or not, it's just a block cipher, with the
+modulo as block size (I suspect there's some room for code simplification when
+assuming fixed block sizes too, by allocating blocksize * 2 space instead of
+resizing when needed).
+
+3) Go all the way, and post all the other kernel modifications too, to get the
+whole binary signing you want to achieve.
+Advantage will be that in the end you'll end up with something scrutinized to
+death. Disadvantage is that it will be scrutinized to death, as that can take
+a lot of time. Maybe you'll end up with a new LSM module, who knows?
+
+The list is in increasing order of difficulty and quality of your end code.
+
+It would help if you could find others who also wants something similar and
+work together to get it into the kernel. But even if the last step fails,
+you still have had people reviewing your code. And failing even that, you at
+least shared your code with the rest of the world, which is already something
+good (and required by the GPL. But doing it in the open is much more laudable
+than hiding it on a website).
+
+Greetings,
+
+Indan
+
+
