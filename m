@@ -1,107 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767496AbXDFCQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767497AbXDFCTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767496AbXDFCQI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 22:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767497AbXDFCQI
+	id S1767497AbXDFCTX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 22:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767499AbXDFCTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 22:16:08 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44887 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767496AbXDFCQG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 22:16:06 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Snook <csnook@redhat.com>, Robin Holt <holt@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
-	<Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
-	<46159987.6090006@redhat.com>
-	<Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
-Date: Thu, 05 Apr 2007 20:15:09 -0600
-In-Reply-To: <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Thu, 5 Apr 2007 18:29:16 -0700 (PDT)")
-Message-ID: <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 5 Apr 2007 22:19:23 -0400
+Received: from animx.eu.org ([216.98.75.249]:52788 "EHLO animx.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767497AbXDFCTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 22:19:22 -0400
+Date: Thu, 5 Apr 2007 22:16:51 -0400
+From: Wakko Warner <wakko@animx.eu.org>
+To: linux-kernel@vger.kernel.org
+Subject: AIC79xx: scsi0: device overrun (status a)
+Message-ID: <20070406021651.GA25060@animx.eu.org>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Can anyone tell me what this means:
+Apr  5 22:11:56 vegeta kernel: [ 1265.267700] scsi0: device overrun (status a) on 0:1:0
 
-> On Thu, 5 Apr 2007, Chris Snook wrote:
->
->> Linus Torvalds wrote:
->>
->> > Another thing we could do is to just make sure that kernel threads simply
->> > don't end up as children of init. That whole thing is silly, they're really
->> > not children of the user-space init anyway. Comments?
->> 
->> Does anyone remember why we started doing this in the first place?  I'm sure
->> there are some tools that expect a process tree, rather than a forest, and
->> making it a forest could make them unhappy.
->
-> I'm not sure anybody would really be unhappy with pptr pointing to some 
-> magic and special task that has pid 0 (which makes it clear to everybody 
-> that the parent is something special), and that has SIGCHLD set to SIG_IGN 
-> (which should make the exit case not even go through the zombie phase).
->
-> I can't even imagine *how* you'd make a tool unhappy with that, since even 
-> tools like "ps" (and even more "pstree" won't read all the process states 
-> atomically, so they invariably will see parent pointers that don't even 
-> exist any more, because by the time they get to the parent, it has exited 
-> already.
+Kernel is 2.6.20.
 
-Right.  pid == 1 being missing might cause some confusing having 
-but having ppid == 0 should be fine.  Heck pid == 1 already has 
-ppid == 0, so it is a value user space has had to deal with for a
-while.
+I setup a raid1 between 2 hard disks (on partition #2), as soon as it
+started to sync the array, my log was flooded with the above entry.
 
-In addition there was a period in 2.6 where most kernel threads
-and init had a pgid == 0 and a session  == 0, and nothing seemed
-to complain.
+The scsi adapter is an onboard controller on a supermicro x5da8.  The hard
+disks are SEAGATE ST318404LW drives on channel 0 (no other devices on this
+channel).
 
-We should probably make all of the kernel threads children of
-init_task.  The initial idle thread on the first cpu that is the
-parent of pid == 1.   That will give the ppid == 0 naturally because
-the idle thread has pid == 0.
+>From what I can tell, the speed of the sync is going fairly quickly. 
+~29mb/sec
 
->> The support angel on my shoulder says we should just put all the kernel
->> threads under a kthread subtree to shorten init's child list and minimize
->> impact.
->
-> A number are already there, of course, since they use the kthread 
-> infrastructure to get there. 
+This is really strange to me, since I dd'd from the first disk to the second
+with out any messages in the log (It was an older kernel, 2.6.17)
 
-Almost everything should be using kthread by now.  I do admit that there
-are a handful of kernel threads that still use kthread_create but it
-is a relatively short list.
+If there's any other information needed, ask.  I'm not sure what else is
+needed.
 
-Looking we apparently have a couple of process started by
-kthread_create that are not under kthread.  They all have  pid numbers
-lower than kthread so I'm guessing it is some startup ordering issue.
-
-Currently it looks like daemonize is reparenting everything to init,
-changing that to init_task and making the threads self reaping
-should be trivial.
-
-.....
-
-I'm a little nervous that we exceeded our default pid max just booting
-the kernel.  32768 is a lot of kernel threads.  That sounds like 32
-kernel threads per cpu.  That seems to be more than I have on any
-of my little machines.
-
-
-There is no defined order for reaping of child processes and in fact
-I can't even see anything in the kernel right now that would even
-accidentally give user space the idea we had a defined order.
-
-So I think we have some options once we get the kernel threads out
-of the way.  Getting the kernel threads out of the way would seem
-to be the first priority.
-
-Eric
+-- 
+ Lab tests show that use of micro$oft causes cancer in lab animals
+ Got Gas???
