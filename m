@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933140AbXDFQZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbXDFQbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933140AbXDFQZq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 12:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbXDFQZq
+	id S933068AbXDFQbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 12:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbXDFQbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 12:25:46 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:49172 "EHLO atlrel6.hp.com"
+	Fri, 6 Apr 2007 12:31:39 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:50708 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933140AbXDFQZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 12:25:45 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Keith Owens <kaos@ocs.com.au>
-Subject: Re: PNPACPI probes serial twice, messes up serial console
-Date: Fri, 6 Apr 2007 10:25:24 -0600
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-References: <11466.1174537431@kao2.melbourne.sgi.com>
-In-Reply-To: <11466.1174537431@kao2.melbourne.sgi.com>
+	id S933068AbXDFQbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 12:31:38 -0400
+Date: Fri, 6 Apr 2007 18:31:26 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Martin Bligh <mbligh@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] leave loglevel at 7 through sysrq output so you can
+ actually read it
+In-Reply-To: <46157DD2.4050502@google.com>
+Message-ID: <Pine.LNX.4.64.0704061830401.14458@scrub.home>
+References: <46157DD2.4050502@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704061025.24433.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 March 2007 22:23, Keith Owens wrote:
-> The aim of the patch looks sensible, but it will not compile for
-> 2.6.21-rc4.  8250_x86.c tests pnp_platform_devices, which does not
-> exist.  Also the combination of CONFIG_SERIAL_8250_X86=y and
-> CONFIG_SERIAL_8250_PNP=m would result in 8250_x86.o being built into
-> vmlinux but referring to serial8250_nopnp in module 8250_pnp.o, kernel
-> to module references are tricky.
 
-I posted an updated series of patches a couple days ago:
-  http://lkml.org/lkml/2007/4/4/540
 
-Let me know whether they work for you.
+On Thu, 5 Apr 2007, Martin Bligh wrote:
 
-Bjorn
+> We carefully set loglevel to 7, and print the sysrq messsage
+> as to what event we're doing, but we can't actually see
+> the output as it sets it back before calling the handler,
+> rather than after.
+> 
+> Move the assignment down one line.
+
+I think you have to tell sysrq_handle_loglevel() about this too...
+
+bye, Roman
