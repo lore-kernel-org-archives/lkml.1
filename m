@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbXDFXpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbXDFXwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933410AbXDFXpm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933416AbXDFXpm
+	id S933455AbXDFXwg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933458AbXDFXwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:45:42 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39054 "EHLO smtp.osdl.org"
+	Fri, 6 Apr 2007 19:52:36 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:48586 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933410AbXDFXpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 19:45:42 -0400
-Date: Fri, 6 Apr 2007 16:45:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 18/20] clean up tsc-based sched_clock
-Message-Id: <20070406164536.9d747160.akpm@linux-foundation.org>
-In-Reply-To: <4616D758.6020300@goop.org>
-References: <20070404191151.009821039@goop.org>
-	<20070404191206.476822257@goop.org>
-	<20070406162233.b835bd4c.akpm@linux-foundation.org>
-	<4616D758.6020300@goop.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933455AbXDFXwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:52:35 -0400
+Date: Sat, 7 Apr 2007 01:50:42 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: David Brownell <david-b@pacbell.net>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, Tony Lindgren <tony@atomide.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: coding style for long conditions (WAS: Re: [PATCH 25/90] ...
+ blinky leds!!)
+In-Reply-To: <200704061540.34500.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.61.0704070141000.22181@yvahk01.tjqt.qr>
+References: <11757099691323-git-send-email-tony@atomide.com>
+ <200704061357.03700.david-b@pacbell.net> <Pine.LNX.4.61.0704062354530.6042@yvahk01.tjqt.qr>
+ <200704061540.34500.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Apr 2007 16:27:20 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> > I still need to work out why that hang is happening - it is very
-> > mysterious.  I got as far as working out that it was hanging on
-> > write_seqlock_irqsave(xtime_lock), then remembered that it's with
-> > CONFIG_SMP=n so I stomped off to bed in disgust.  Later.
-> >   
-> 
-> Hangs always, or just sometimes?  I haven't seen any problems with it.
+On Apr 6 2007 15:40, David Brownell wrote:
+>> >	if (...) {
+>> >		THAT WAS ONE MORE TAB
+>> >	}
+>> >
+>> >Come on, stop wasting everyone's time with utter nonsense.
+>> I was never debating these two things. 
+>Actually, you did.
 
-100%.  On the Vaio, of course.  The kernel's canary.
+If it was perceived I did, then I owe you an apology.
+
+>Go back and see the point I was specifically
+>disagreeing with.  It related to the body of the "if" block,
+>which you had said would **NOT** indent by a single tab.
+
+Ok somewhere is a bug. What is the body an if block, for you? To avoid
+that confusion, I termed these "condition" and "code":
+
+	if(condition1 ||	/* if() line */
+	    condition2) {	/* continuation line */
+		code;		/* body */
+		code;		/* body */
+	}
+
+And I think I made that pretty clear in <http://lkml.org/lkml/2007/4/5/293>,
+which part is what, and how I like things.
+In <http://lkml.org/lkml/2007/4/6/133>, the loop begins then.
+Yes, it does not match "(a) only use tabs", but it matches the
+rest of kernel code.
+
+
+Jan
+-- 
