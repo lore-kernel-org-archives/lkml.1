@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbXDFXem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933414AbXDFXhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751704AbXDFXem (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbXDFXem
+	id S933414AbXDFXhw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933379AbXDFXhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:34:42 -0400
-Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:25436 "HELO
-	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751722AbXDFXel (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 19:34:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Wz29pVeCIGK3hGZK9DlZ8vb3yP5Oeu40QQKNxshgsq8pQpLF8ORgHpOpXtlesx0lcHG+3ksU/v8VUgPko7DPSzhTz0uhoFIy4/H8SsLM/z4v+zq32mVDUOiq/KoE516z/Ip+3p0hK+Gil7CZIpEz29Dsbwffc1naSqxhzBx9MrQ=  ;
-X-YMail-OSG: jewK2LoVM1n6ql21i7iUDvTiYeZEcfaOtfOvSHADSexX8pP6
-From: David Brownell <david-b@pacbell.net>
-To: tglx@linutronix.de
-Subject: Re: coding style for long conditions (WAS: Re: [PATCH 25/90] ... blinky leds!!)
-Date: Fri, 6 Apr 2007 16:34:38 -0700
-User-Agent: KMail/1.7.1
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-References: <11757099691323-git-send-email-tony@atomide.com> <200704061557.12662.david-b@pacbell.net> <1175901682.28263.507.camel@localhost.localdomain>
-In-Reply-To: <1175901682.28263.507.camel@localhost.localdomain>
+	Fri, 6 Apr 2007 19:37:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38403 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933330AbXDFXhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:37:51 -0400
+Message-ID: <4616D9C5.7020707@garzik.org>
+Date: Fri, 06 Apr 2007 19:37:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Robin Holt <holt@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <4616CBF0.7090606@garzik.org> <Pine.LNX.4.64.0704061546590.6730@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704061546590.6730@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704061634.39344.david-b@pacbell.net>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 April 2007 4:21 pm, Thomas Gleixner wrote:
-> David,
+Linus Torvalds wrote:
 > 
-> On Fri, 2007-04-06 at 15:57 -0700, David Brownell wrote:
-> > This particular issue doesn't actually affect indentation, since the
-> > tab trumps that space.  So it's a bit off-agenda for this particular
-> > flamage.
+> On Fri, 6 Apr 2007, Jeff Garzik wrote:
+>> I would rather change the implementation under the hood to start per-CPU
+>> threads on demand, similar to a thread-pool implementation.
+>>
+>> Boxes with $BigNum CPUs probably won't ever use half of those threads.
 > 
-> ROTFL, the tab trumps the space. Is this a card game ?
+> The counter-argument is that boxes with $BigNum CPU's really don't hurt 
+> from it either, and having per-process data structures is often simpler 
+> and more efficient than trying to have some thread pool.
 
-Nah, just standard display algorithms.  Alignment doesn't change.
+Two points here:
+
+* A lot of the users in the current kernel tree don't rely on the 
+per-CPU qualities.  They just need multiple threads running.
+
+* Even with per-CPU data structures and code, you don't necessarily have 
+to keep a thread alive and running for each CPU.  Reap the ones that 
+haven't been used in $TimeFrame, and add thread creation to the slow 
+path that already exists in the bowels of schedule_work().
+
+Or if some kernel hacker is really motivated, all workqueue users in the 
+kernel would benefit from a "thread audit", looking at working 
+conditions to decide if the new kthread APIs are more appropriate.
 
 
-> > > Please change your coding style to conform to Documentation/CodingStyle.
-> > > 
-> > >       ***     Only indent with tabs!!         ***
+> IOW, once we get the processes off the global list, there just isn't any 
+> downside from them. Sure, they use some memory, but people who buy 
+> 1024-cpu machines won't care about a few kB per CPU..
 > 
-> How does your own rule make SPACE-TAB-TAB more acceptable than
-> TAB-TAB-SPACE ? Just because TAB trumps the space but not the other way
-> round ?
+> So the *only* downside is literally the process list, and one suggested 
+> patch already just removes kernel threads entirely from the parenthood 
+> lists.
+> 
+> The other potential downside could be "ps is slow", but on the other hand, 
+> having the things stick around and have things like CPU-time accumulate is 
+> probably worth it - if there are some issues, they'd show up properly 
+> accounted for in a way that process pools would have a hard time doing.
 
-Because when you display the text, it doesn't affect the
-alignment == indentation.  In fact you have to turn on
-nonstandard editor options to even see if this happened.
-Not everyone does so, which is why such things persist.
-
-So in practical terms "\n \t" and "\n\t" are identical;
-although the former "should not" be used, it doesn't
-actually affect what CodingStyle is primarily trying to
-control (i.e. what the code looks like).
+Regardless of how things are shuffled about internally, there will 
+always be annoying overhead /somewhere/ when you have a metric ton of 
+kernel threads.  I think that people should also be working on ways to 
+make the kernel threads a bit more manageable for the average human.
 
 
-> You started nitpicking, so please accept the backfire.
+> So I really don't think this is worth changing things over, apart from 
+> literally removing them from process lists, which I think everybody agrees 
+> we should just do - it just never even came up before!
 
-Done.
+I think there is a human downside.  For an admin you have to wade 
+through a ton of processes on your machine, if you are attempting to 
+evaluate the overall state of the machine.  Just google around for all 
+the admins complaining about the explosion of kernel threads on 
+production machines :)
 
-:)
+	Jeff
+
+
+
