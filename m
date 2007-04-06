@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbXDFRBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933328AbXDFRCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbXDFRBl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 13:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbXDFRBk
+	id S933328AbXDFRCu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 13:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933340AbXDFRCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 13:01:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41912 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750978AbXDFRBj (ORCPT
+	Fri, 6 Apr 2007 13:02:50 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:10231 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933328AbXDFRCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 13:01:39 -0400
-Date: Fri, 6 Apr 2007 10:01:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       dgc@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Make page->private usable in compound pages V1
-In-Reply-To: <20070405164300.a5d24329.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704060958430.25652@schroedinger.engr.sgi.com>
-References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
- <20070405164300.a5d24329.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Apr 2007 13:02:49 -0400
+Date: Fri, 06 Apr 2007 09:52:03 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: 2.6.9 won't compile
+In-reply-to: <fa.wFTrjBlmoNpWJlHvvdovpz3pV2I@ifi.uio.no>
+To: =?UTF-8?B?UGVkcm8gTXVsbG9yIEppbcOpbmV6?= <pmullor@skynet.be>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <46166CA3.6080406@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 8BIT
+References: <fa.wFTrjBlmoNpWJlHvvdovpz3pV2I@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Apr 2007, Andrew Morton wrote:
-
-> > We add PageTail as an alias of PageReclaim. Compound pages cannot
-> > currently be reclaimed. Because of the alias one needs to check
-> > PageCompound first.
+Pedro Mullor Jiménez wrote:
+> Dear all,
 > 
-> So slub is using compound pages so that it can locate the head page in
-> higher-order pages, whereas slab uses per-object (or per-order-0-page?)
-> metadata for that?
-
-Both SLAB and SLUB use compound pages.
-
+> I downloaded version 2.6.9 of the kernel from kernel.org
+> I went throught menuconfig, importing the configuration of my current
+> 2.6.15-28-686.
 > 
-> I see four instances of
+> I then tried to compile it but the compilation exits with an error
+> (below).
 > 
-> +	page = virt_to_page(p);
-> +
-> +	if (unlikely(PageCompound(page)))
-> +		page = page->first_page;
+> I also tried to do make mrproper, got rid of the .config file, made
+> menuconfig again without importing anything, and when compiling it
+> failed again.
 > 
-> A new virt_to_head_page() is needed.
+> The reason for me to use this kernel is because I have a VIA VT82C
+> 693A/598/686 chipset and I suffer from perf problems (which google says
+> only happen since 2.6.10).
+> 
+> Might I request to be personally CC'ed in the answers/comments posted in
+> response to this post ?
 
-Ok.
- 
- > Sigh.  We're seeing rather a lot of churn to accommodate slub.  Do we
-> actually have any justification for all this?  If we end up deciding to
-> merge slub and to deprecate then remove slab, what would our reasons have
-> been?
+Your compiler is probably too new to be able to compile 2.6.9. You'd 
+likely be better off trying the latest kernels and making a detailed 
+report of the problems you're having with it..
 
-This is not SLUB specific. SLAB does the same. SLAB does special casing 
-for page size slabs and does not allow slab debugging because it would 
-use page->private if debugging would be enabled. Which would get into 
-trouble on i386.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-If you want less SLUB churn on other fronts then I can add the special 
-casing for PAGE_SIZE slabs back into SLUB. Then we keep all the 
-inconsistencies in SLAB use in the code.
-
-I'd rather clean up the stuff and then also remove the special casing from 
-SLAB.
-
- 
