@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbXDFWXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbXDFWau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933120AbXDFWXv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 18:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933114AbXDFWXv
+	id S933133AbXDFWau (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 18:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933142AbXDFWau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 18:23:51 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:41174 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933120AbXDFWXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:23:50 -0400
-Subject: Re: USB: on suspend to ram/disk all usb devices are replugged
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Alan Stern <stern@rowland.harvard.edu>,
-       David Zeuthen <davidz@redhat.com>, Maxim <maximlevitsky@gmail.com>,
-       Pete Zaitcev <zaitcev@redhat.com>, gregkh@suse.de,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-In-Reply-To: <20070402193606.GA3576@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0704011422460.1054-100000@netrider.rowland.org>
-	 <46114DAD.3060100@redhat.com>  <20070402193606.GA3576@elf.ucw.cz>
-Content-Type: text/plain
-Date: Sat, 07 Apr 2007 08:23:50 +1000
-Message-Id: <1175898230.6481.87.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+	Fri, 6 Apr 2007 18:30:50 -0400
+Received: from mail.tmr.com ([64.65.253.246]:59342 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933133AbXDFWat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 18:30:49 -0400
+Message-ID: <4616CA22.7040005@tmr.com>
+Date: Fri, 06 Apr 2007 18:30:58 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       davej@codemonkey.org.uk, linux-kernel@vger.kernel.org,
+       cpufreq@lists.linux.org.uk
+Subject: Re: [2.6 patch] the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI
+References: <20070220000641.GG13958@stusta.de>
+In-Reply-To: <20070220000641.GG13958@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Mon, 2007-04-02 at 21:36 +0200, Pavel Machek wrote:
-> Hi!
+Adrian Bunk wrote:
+> This patch contains the overdue removal of X86_SPEEDSTEP_CENTRINO_ACPI.
 > 
-> > > But you're still likely to run into trouble if you unplug a storage
-> > > device, move it to another system and write on it, then plug it back into
-> > > the original system.  The PLVM would somehow have to recognize that the
-> > > data had been changed.  I don't know a foolproof way of doing that.
-> > > 
-> > 
-> > Mark the filesystem as in-use with a one-time UUID in the superblock at
-> > mount time. If one moved the drive to another system it would require
-> > an fsck to clear the UUID before the other system could use it; then
-> > the original machine would refuse to use the drive when the UUID didn't
-> > match on resume.
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 > 
-> You still need fs-specific code, I'm afraid... plus userland tool
-> to reset signatures back.
+It would be really nice, when removing features used on computers which 
+are only a few years old, if you noted what replaces this functionality. 
+Yes, people can take 10-15 minutes to find and read previous discussion, 
+but one or two sentences who generate less concern and noise on the list.
 
-You don't need userland to reset the signatures. More kernel code, sure.
-But it doesn't _need_ to be userland.
-
-Regards,
-
-Nigel
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
