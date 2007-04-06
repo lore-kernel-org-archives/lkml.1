@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993027AbXDFSrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932315AbXDFSs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993027AbXDFSrr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 14:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992977AbXDFSrp
+	id S932315AbXDFSs1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 14:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXDFSs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 14:47:45 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:43790 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992860AbXDFSrl (ORCPT
+	Fri, 6 Apr 2007 14:48:26 -0400
+Received: from web51605.mail.re2.yahoo.com ([206.190.38.210]:40987 "HELO
+	web51605.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932315AbXDFSsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 14:47:41 -0400
-Date: Fri, 6 Apr 2007 11:47:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] kernel-doc: handle spaces in array size
-Message-Id: <20070406114730.02c82f43.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Fri, 6 Apr 2007 14:48:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=xXa4Wkx/DSk3YjSRCOoLP8gPH431KiyrlmQ0gDh/TroesFd0eO3ECXISvuNzX9LUKUELGkW+ACUAK+iFkTJti4cWPxTiM+5k0tpx1tcfCu3AygjUcruoLPVBb6PImtiz7k09/f1jDzzewm9y+LW+1YliFIHn9LmR95497H15QUQ=;
+X-YMail-OSG: XUp8Pc4VM1kGkXf5yRiQXSmS78y2oHLZWK_K72ZI
+Date: Fri, 6 Apr 2007 11:48:20 -0700 (PDT)
+From: Ashish Singhai <hybrid.rules@yahoo.com>
+Subject: Re: PCI: iomem bigger than 4GB
+To: Chuck Ebbert <cebbert@redhat.com>, Ashish Singhai <hybrid.rules@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46112AAA.9050207@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Transfer-Encoding: 7BIT
+Message-ID: <192846.29706.qm@web51605.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Unfortunately, kernel-doc has problems with a struct field like this:
-	uint8_t databuf[NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE];
+--- Chuck Ebbert <cebbert@redhat.com> wrote:
 
-simply due to the spaces around the "+" sign, so drop all spaces inside
-[...] so that parsing is done correctly (in some sense).
+> Ashish Singhai wrote:
+> > Hello,
+> > 
+> > Please refer to Andrew' post on this thread on PCI
+> > subsystem assigning prefetchable memory bigger
+> than
+> > 4GB:
+> > 
+> > http://lkml.org/lkml/2006/11/24/160
+> > 
+> > This patch is not included in 2.6.20.1 or earlier
+> --
+> > it would be helpful if we could have this patch
+> > considered. I have tried it in a simulated
+> environment
+> > and it works.
+> 
+> What bug does it fix?
 
-Warning(linux-2.6.20-git15/include/linux/mtd/nand.h:304): No description found for parameter 'NAND_MAX_OOBSIZE]'
+If a devices advertises a prefetchable BAR bigger than
+4GB then the address space is not correctly assigned.
 
-This needs to sit in -mm for awhile to see if it has any adverse effects.
+-- Ashish
+> 
+> 
+> 
 
-And yes, this is just a hack until kernel-doc learns to do better
-parsing.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    6 ++++++
- 1 file changed, 6 insertions(+)
 
---- linux-2.6.21-rc6.orig/scripts/kernel-doc
-+++ linux-2.6.21-rc6/scripts/kernel-doc
-@@ -1452,6 +1452,12 @@ sub create_parameterlist($$$) {
- 	    $arg =~ s/\s*:\s*/:/g;
- 	    $arg =~ s/\s*\[/\[/g;
  
-+	    # no spaces inside [array size expression];
-+	    # messes up split/pop/shift/unshift below;
-+	    while ($arg =~ m/\[.*\s.*\]/) {
-+		$arg =~ s/\[(.*)\s(.*)\]/\[$1$2\]/;
-+	    }
-+
- 	    my @args = split('\s*,\s*', $arg);
- 	    if ($args[0] =~ m/\*/) {
- 		$args[0] =~ s/(\*+)\s*/ $1/;
+____________________________________________________________________________________
+Don't get soaked.  Take a quick peek at the forecast
+with the Yahoo! Search weather shortcut.
+http://tools.search.yahoo.com/shortcuts/#loc_weather
