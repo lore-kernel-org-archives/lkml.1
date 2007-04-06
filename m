@@ -1,43 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbXDFAPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767138AbXDFAUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753399AbXDFAPQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 20:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbXDFAPP
+	id S1767138AbXDFAUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 20:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbXDFAUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 20:15:15 -0400
-Received: from gw.goop.org ([64.81.55.164]:39808 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399AbXDFAPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 20:15:11 -0400
-Message-ID: <461590EA.10605@goop.org>
-Date: Thu, 05 Apr 2007 17:14:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	Thu, 5 Apr 2007 20:20:55 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:36725 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753435AbXDFAUy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 20:20:54 -0400
+Message-ID: <46159256.1040705@zytor.com>
+Date: Thu, 05 Apr 2007 17:20:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Bugfix for VMI paravirt ops
-References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org> <46158FBE.3090105@vmware.com>
-In-Reply-To: <46158FBE.3090105@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.osdl.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] Define EFLAGS_IF
+References: <1174533374.2713.104.camel@localhost.localdomain>
+In-Reply-To: <1174533374.2713.104.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> No, they are totally dependent.  The reason interrupts are disabled is
-> to stop kmap_atomic in interrupt handlers.  With the kmap_atomic_pte
-> changes, the whole interrupt disable jibberish goes away. 
+Rusty Russell wrote:
+> There is now more than one place where we use the fact that bit 9 of
+> eflags is the interrupt-enabled flag, so define EFLAGS_IF.  We make it
+> 512 so it can be used in asm, too.
 
-But kmap_atomic_pte is a special case of kmap_atomic for ptes. 
-Interrupt routines can still use plain kmap_atomic for bouncebuffers and
-so on.
+How about defining all the other EFLAGS in one place?
 
-A more general patch would be to make kmap/unmap_atomic pv_ops, and then
-they can all be rolled together.  I.e: check the type to see if special
-pte handling needs to happen, etc.
-
-    J
-
+	-hpa
