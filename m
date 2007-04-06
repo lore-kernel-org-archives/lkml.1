@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750897AbXDFS6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbXDFTCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750897AbXDFS6E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 14:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbXDFS6E
+	id S1751048AbXDFTCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 15:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbXDFTCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 14:58:04 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57993 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbXDFS6B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 14:58:01 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
-	<Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
-	<46159987.6090006@redhat.com>
-	<Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
-	<m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
-	<20070406104301.GB19755@lnx-holt.americas.sgi.com>
-	<m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
-	<20070406163100.GA554@tv-sign.ru>
-	<Pine.LNX.4.64.0704061119090.8738@alien.or.mcafeemobile.com>
-Date: Fri, 06 Apr 2007 12:56:57 -0600
-In-Reply-To: <Pine.LNX.4.64.0704061119090.8738@alien.or.mcafeemobile.com>
-	(Davide Libenzi's message of "Fri, 6 Apr 2007 11:21:34 -0700 (PDT)")
-Message-ID: <m1wt0p5o1y.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 6 Apr 2007 15:02:45 -0400
+Received: from waste.org ([66.93.16.53]:47595 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751048AbXDFTCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 15:02:44 -0400
+Date: Fri, 6 Apr 2007 13:50:11 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Cc: kernel-janitors@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [KJ][RFC]NAME_OFFSET macro
+Message-ID: <20070406185011.GW10459@waste.org>
+References: <20070406085813.GA12105@arun.site>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070406085813.GA12105@arun.site>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi <davidel@xmailserver.org> writes:
+On Fri, Apr 06, 2007 at 02:28:13PM +0530, Milind Arun Choudhary wrote:
+> 
+> milind@arun:~/src/linux> egrep -rin "#define.*NAME_?OFFSET" .
+> ./arch/alpha/kernel/osf_sys.c:95:#define NAME_OFFSET    offsetof (struct osf_dirent, d_name)
+> ./arch/mips/kernel/sysirix.c:1738:#define NAME_OFFSET32(de) ((int) ((de)->d_name - (char *) (de)))
+> ./arch/mips/kernel/sysirix.c:1840:#define NAME_OFFSET64(de) ((int) ((de)->d_name - (char *) (de)))
+> ./arch/parisc/hpux/fs.c:72:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+> ./arch/parisc/kernel/sys_parisc32.c:315:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+> ./arch/powerpc/kernel/sys_ppc32.c:57:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+> ./arch/sparc/kernel/sys_sunos.c:324:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+> ./arch/sparc64/kernel/sys_sunos32.c:275:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+> ./drivers/isdn/hardware/eicon/s_4bri.c:184:#define FPGA_NAME_OFFSET         0x10
+> ./fs/compat.c:903:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+> ./fs/readdir.c:54:#define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
+> ./include/linux/fuse.h:342:#define FUSE_NAME_OFFSET ((unsigned) ((struct fuse_dirent *) 0)->name)
+> 
+> 
+> just working out different options before putting it in kernel.h
+> 
+> as all the dirent structures have used the 
+> same name for the d_name member,so we can use
+> 
+> #define NAME_OFFSET(dirent) ((int) ((dirent)->d_name - (char __user *) (dirent)))
+> 
+> but then it becomes binding on the future users
+>  to maintain the same naming  convention.
+> 
+> #define NAME_OFFSET(dirent,d_name) ((int) ((dirent)->d_name - (char __user *) (dirent)))
+> 
+> #define NAME_OFFSET(dirent,d_name) offsetof(struct dirent,d_name)
+> 
+> though ..the first one seem to be just fine
+> 
+> thoughts
 
-> On Fri, 6 Apr 2007, Oleg Nesterov wrote:
->
->> Sure. It would be nice to move ->children into signal_struct at first.
->> Except this change breaks (in fact fixes) ->pdeath_signal behaviour.
->
-> Ohhh, the "signal" struct! Funny name for something that nowadays has 
-> probably no more than a 5% affinity with signal-related tasks :/
+Delete all instances of the macro. Replace all uses of it with
+offsetof(foo, name). You wouldn't wrap a simple sizeof in a macro like
+this, there's no reason to do so with offsetof except for ignorance of
+offsetof's existence.
 
-Hmm.  I wonder if we should just rename it the struct thread_group,
-or struct task_group.  Those seem slightly more accurate names.
+Actually most of the above are probably copy and paste of code predating the
+kernel having a global offsetof definition.
 
-I remember last time the conversation about renaming it came up no
-one had a good name for it that wasn't already taken.
-
-Eric
+-- 
+Mathematics is the supreme nostalgia of our time.
