@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933083AbXDFVih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933089AbXDFVkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933083AbXDFVih (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 17:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933058AbXDFVih
+	id S933089AbXDFVkL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 17:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933094AbXDFVkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 17:38:37 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:47125 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933083AbXDFVif (ORCPT
+	Fri, 6 Apr 2007 17:40:10 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:40601 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933089AbXDFVkI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 17:38:35 -0400
-To: David Brownell <david-b@pacbell.net>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: Re: coding style for long conditions
-X-Message-Flag: Warning: May contain useful information
-References: <11757099691323-git-send-email-tony@atomide.com>
-	<200704061029.55710.david-b@pacbell.net>
-	<46169968.2050006@s5r6.in-berlin.de>
-	<200704061405.50169.david-b@pacbell.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 06 Apr 2007 14:38:25 -0700
-In-Reply-To: <200704061405.50169.david-b@pacbell.net> (David Brownell's message of "Fri, 6 Apr 2007 14:05:49 -0700")
-Message-ID: <adabqi16v5a.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Fri, 6 Apr 2007 17:40:08 -0400
+Message-ID: <4616BE59.20300@oracle.com>
+Date: Fri, 06 Apr 2007 14:40:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Apr 2007 21:38:25.0559 (UTC) FILETIME=[E8432A70:01C77893]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: David Brownell <david-b@pacbell.net>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
+Subject: Re: coding style for long conditions (WAS: Re: [PATCH 25/90] ...
+ blinky leds!!)
+References: <11757099691323-git-send-email-tony@atomide.com> <200704061029.55710.david-b@pacbell.net> <46169968.2050006@s5r6.in-berlin.de> <200704061405.50169.david-b@pacbell.net>
+In-Reply-To: <200704061405.50169.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[I can't believe I'm stepping into an indentation flamewar, but here goes...]
+David Brownell wrote:
+> On Friday 06 April 2007 12:03 pm, Stefan Richter wrote:
+> 
+>> I usually indent this way if expressions exceed the 80 columns limit:
+>>
+>> 	if (foo___________ &&
+>> 	    bar___________) {
+>> 		doit;
+>> 	}
+>> and
+>> 	if ((one___________ ||
+>> 	     one_and_a_half) &&
+>> 	    two___________) {
+>> 		doit;
+>> 	}
+>> and
+>> 	call(abc_______,
+>> 	     def___);
+>> and
+>>
+>> static int definition(abc_______,
+>> 		      def___)
+>> {
+>> ...
+> 
+> Please change your coding style to conform to Documentation/CodingStyle.
+> 
+> 	***	Only indent with tabs!!		***
+> 
+> Every one of those examples violates that simple rule.
+> 
+> Why does *anyone* have even the slightest difficulty understanding such a
+> simple rule?  I realize that two of those words have more than a single
+> syllable, but that should not be a problem.  Even EMACS is trainable.
+> 
+> 
+>> PS:  Everyone please try to avoid blowing CodingStyle up to a 200 pages
+>> document.  Thanks.
+> 
+> Better yet, try to stick to its guidelines rather than growing lots of
+> exceptions saying when your personal style says you ought to use spaces
+> instead of tabs for indents, etc
+> 
+> 
+> Randy, next time you criticise coding style, please make sure that the
+> code in question actually violates the existing rules first ... this
+> thread has been way too much noise, given that the usage you criticized
+> was in full conformance with that document, and the proposed fixes were
+> in blatant violation ...
 
- > Please change your coding style to conform to Documentation/CodingStyle.
- > 
- > 	***	Only indent with tabs!!		***
- > 
- > Every one of those examples violates that simple rule.
+Yeah, well, I've already given up.  But please try to understand,
+David, that CodingStyle can have mistakes in it, just like some of
+the kernel code does.  And like I said earlier, it's just a set of
+guidelines.
 
-Yes, Documentation/CodingStyle says that we should only indent with
-tabs.  However, that simple rule has to be interpreted with some
-common sense, and the case of multi-line if conditions is definitely a
-case where using only tabs makes code much less readable.
+And I haven't seen any flamage here (referring to another posting).
 
-If you want an excuse, you could say that in code like
-
-	if (foo___________ &&
-	    bar___________) {
- 		doit;
-
-that the line with "bar" on it is properly indented with one tab
-(since it is part of the if statement that is also indented one tab),
-and then four spaces are used to align the "bar" with the previous
-line.  So only tabs are used for indentation, and the spaces after the
-tab are used for alignment, and the letter of the law is observed.
-
-If you have a git tree handy, you can do "git show 68380b58" and see
-that Linus himself wrote:
-
-	if (get_wq_data(work) == cwq
-	    && work_pending(work)
-	    && !list_empty(&work->entry)) {
-
-I have to admit that I would have put the &&s at the ends of the
-previous lines rather than where Linus put them, but... egads!  Linus
-put spaces before the &&s to line them up nicely!
-
-"more in the breach" and all that I guess...
-
- - R.
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
