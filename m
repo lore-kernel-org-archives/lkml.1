@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751691AbXDFWL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbXDFWMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751691AbXDFWL5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 18:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXDFWL5
+	id S933230AbXDFWMZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 18:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933256AbXDFWMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 18:11:57 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:52102 "EHLO tmailer.gwdg.de"
+	Fri, 6 Apr 2007 18:12:25 -0400
+Received: from mms3.broadcom.com ([216.31.210.19]:3204 "EHLO MMS3.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbXDFWL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:11:56 -0400
-Date: Sat, 7 Apr 2007 00:07:37 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: David Brownell <david-b@pacbell.net>
-cc: Roland Dreier <rdreier@cisco.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: Re: coding style for long conditions
-In-Reply-To: <200704061505.41956.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.61.0704070007140.6042@yvahk01.tjqt.qr>
-References: <11757099691323-git-send-email-tony@atomide.com>
- <200704061405.50169.david-b@pacbell.net> <adabqi16v5a.fsf@cisco.com>
- <200704061505.41956.david-b@pacbell.net>
+	id S933165AbXDFWMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 18:12:21 -0400
+X-Server-Uuid: 20144BB6-FB76-4F11-80B6-E6B2900CA0D7
+Subject: Re: tg3: unable to handle null pointer dereference [Re: Linux
+ 2.6.21-rc6]
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Nishanth Aravamudan" <nacc@us.ibm.com>, davem@davemloft.net
+cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <20070406214014.GF3346@us.ibm.com>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+ <20070406214014.GF3346@us.ibm.com>
+Date: Fri, 06 Apr 2007 15:57:13 -0700
+Message-ID: <1175900233.7911.87.camel@dell>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6A081A3138G13598993-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-04-06 at 14:40 -0700, Nishanth Aravamudan wrote:
 
-On Apr 6 2007 15:05, David Brownell wrote:
->
->> but... egads!  Linus 
->> put spaces before the &&s to line them up nicely!
->> 
->> "more in the breach" and all that I guess...
->
->Yeah, nobody likes style nazis.  On the other hand, it's rather
->unusual to be the target of style nazism for actually following
->the style guide!!  You'd think that maybe the folk objecting to
->that style guide might maybe choose a more direct way to address
->their particular frustrations, eh?  :)
+> 2.6.21-rc5 is ok. 2.6.21-rc6 results in
+> 
+> [   14.241665] Unable to handle kernel NULL pointer dereference (address 0000000000000000)
 
-About time...
-http://en.wikipedia.org/wiki/Godwin%27s_Law
+Sorry, I think this should fix it:
+
+[TG3]: Fix crash during tg3_init_one().
+
+The driver will crash when the chip has been initialized by EFI before
+tg3_init_one().  In this case, the driver will call tg3_chip_reset()
+before allocating consistent memory.
+
+The bug is fixed by checking for tp->hw_status before accessing it
+during tg3_chip_reset().
+
+Signed-off-by: Michael Chan <mchan@broadcom.com>
+
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index 0acee9f..256969e 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -4834,8 +4834,10 @@ static int tg3_chip_reset(struct tg3 *tp)
+ 	 * sharing or irqpoll.
+ 	 */
+ 	tp->tg3_flags |= TG3_FLAG_CHIP_RESETTING;
+-	tp->hw_status->status = 0;
+-	tp->hw_status->status_tag = 0;
++	if (tp->hw_status) {
++		tp->hw_status->status = 0;
++		tp->hw_status->status_tag = 0;
++	}
+ 	tp->last_tag = 0;
+ 	smp_mb();
+ 	synchronize_irq(tp->pdev->irq);
 
 
-Jan
--- 
+
+
