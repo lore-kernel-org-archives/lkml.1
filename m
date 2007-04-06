@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767461AbXDFBGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767460AbXDFBNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767461AbXDFBGb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 21:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767468AbXDFBGb
+	id S1767460AbXDFBNG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 21:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767466AbXDFBNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 21:06:31 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:44530 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767461AbXDFBGa (ORCPT
+	Thu, 5 Apr 2007 21:13:06 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:52441 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767460AbXDFBNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 21:06:30 -0400
-Message-ID: <46159D08.9030400@zytor.com>
-Date: Thu, 05 Apr 2007 18:06:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 5 Apr 2007 21:13:04 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 5 Apr 2007 18:12:58 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/3] epoll cleanups - epoll include diet ...
+In-Reply-To: <20070405175905.733705cf.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704051806300.27713@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.19972.1175650506.1>
+ <20070405175905.733705cf.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Define EFLAGS_IF
-References: <1174533374.2713.104.camel@localhost.localdomain> <46159256.1040705@zytor.com> <461592AA.4060103@goop.org> <46159480.20108@zytor.com> <20070406004839.GA27668@one.firstfloor.org>
-In-Reply-To: <20070406004839.GA27668@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> 
-> No processor.h is such a hodgepodge of unrelated stuff that any
-> splitting up is a good thing.
-> 
+On Thu, 5 Apr 2007, Andrew Morton wrote:
 
-Fair enough.  However, I'd still like to see the X86_CR* constants 
-moved, too (and constants added for at least CR0 as well.)
+> epoll uses signal stuff and might need signal.h.  It implements syscalls
+> and it certainly needs to have those syscall's prototypes in scope.  It
+> surely uses stuff from mm.h (doesn't everything??)
 
-	-hpa
+Ack about signal.h, I forgot about the pwait code :(
+Why syscalls.h? The eventpoll.c file expots syscalls, but it doesn't use 
+anything declared in there.
+What does eventpoll.c use *directly* from mm.h? If eventpoll.c uses, let's 
+say sched.h, and sched.h needs mm.h, it is sched.h responsibility to 
+include the mm.h file not eventpoll.c one.
+
+
+
+- Davide
+
+
