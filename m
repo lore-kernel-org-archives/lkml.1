@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767546AbXDFJLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766609AbXDFJ3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767546AbXDFJLZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 05:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766609AbXDFJLY
+	id S1766609AbXDFJ3E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 05:29:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767552AbXDFJ3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 05:11:24 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42398 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767546AbXDFJLY (ORCPT
+	Fri, 6 Apr 2007 05:29:04 -0400
+Received: from mail02.syd.optusnet.com.au ([211.29.132.183]:57882 "EHLO
+	mail02.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766609AbXDFJ3B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 05:11:24 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Robin Holt <holt@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: init's children list is long and slows reaping children.
-References: <20070406084250.GA179@tv-sign.ru>
-Date: Fri, 06 Apr 2007 03:10:29 -0600
-In-Reply-To: <20070406084250.GA179@tv-sign.ru> (Oleg Nesterov's message of
-	"Fri, 6 Apr 2007 12:42:50 +0400")
-Message-ID: <m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 6 Apr 2007 05:29:01 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: Ten percent test
+Date: Fri, 6 Apr 2007 19:28:38 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+References: <200703290237.38777.kernel@kolivas.org> <200704061103.34489.kernel@kolivas.org> <1175850471.22272.8.camel@Homer.simpson.net>
+In-Reply-To: <1175850471.22272.8.camel@Homer.simpson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704061928.39155.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
-
-> Robin Holt wrote:
->>
->> wait_task_zombie() is taking many seconds to get through the list.
->> For the case of a modprobe, stop_machine creates one thread per cpu
->> (remember big number). All are parented to init and their exit will
->> cause wait_task_zombie to scan multiple times most of the way through
->> this very long list looking for threads which need to be reaped.
+On Friday 06 April 2007 19:07, Mike Galbraith wrote:
+> On Fri, 2007-04-06 at 11:03 +1000, Con Kolivas wrote:
+> > On Thursday 05 April 2007 21:54, Ingo Molnar wrote:
+> > >  - fiftyp.c:  noticeable, but alot better than previously!
+> >
+> > fiftyp.c seems to have been stumbled across by accident as having an
+> > effect when Xenofon was trying to recreate Mike's 50% x 3 test case. I
+> > suggest a ten percent version like the following would be more useful as
+> > a test for the harmful effect discovered in fiftyp.c. (/me throws in
+> > obligatory code style change).
+> >
+> > Starts 15 processes that sleep ten times longer than they run. Change
+> > forks to 15 times the number of cpus you have and it should work on any
+> > size hardware.
 >
-> Could you try this patch
->
-> 	http://marc.info/?l=linux-kernel&m=117337194209912
->
-> ?
->
-> It can't solve the whole problem, but at least an exiting kernel thread
-> won't kick init.
+> I was more focused on the general case, but all I should have to do to
+> de-claw all of these sleep exploits is account rr time (only a couple of
+> lines, done and building now).  It's only a couple of lines.
 
-At first glance your patch looks reasonable.
+The more you try to "de-claw" these sleep exploits the less effective you make 
+your precious interactive estimator. Feel free to keep adding endless tweaks 
+to undo the other tweaks in order to try and achieve what SD has by design. 
+You'll end up with an incresingly complex state machine design of 
+interactivity tweaks and interactivity throttlers all fighting each other to 
+the point where the intearactivity estimator doesn't do anything. What's the 
+point in that? Eventually you'll have an estimator throttled to the point it 
+does nothing and you end up with something far less interactive than SD which 
+is as interactive as fairness allows, unlike mainline.
 
-Unfortunately it only applies to the rare thread that calls daemonize,
-and not also to kernel/kthread/kthread() which means it will miss many of
-our current kernel threads.
-
-For the sgi problem I doubt it is will make a difference but the change
-is certainly worth making.
-
-Eric
+-- 
+-ck
