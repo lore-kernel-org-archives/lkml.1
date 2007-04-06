@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXDFVb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXDFVh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXDFVb1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 17:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXDFVb1
+	id S933036AbXDFVh0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 17:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933058AbXDFVh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 17:31:27 -0400
-Received: from mail.tmr.com ([64.65.253.246]:59286 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933084AbXDFVbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 17:31:25 -0400
-Message-ID: <4616BC95.8070009@tmr.com>
-Date: Fri, 06 Apr 2007 17:33:09 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Paa Paa <paapaa125@hotmail.com>
-CC: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org
-Subject: Re: Lower HD transfer rate with NCQ enabled?
-References: <46121BCF.50401@yahoo.com.au> <BAY20-F2534ADD292CC02D5ACAFBCF9670@phx.gbl>
-In-Reply-To: <BAY20-F2534ADD292CC02D5ACAFBCF9670@phx.gbl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 6 Apr 2007 17:37:26 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:54003 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933036AbXDFVhZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 17:37:25 -0400
+Subject: Re: Oops in scsi_send_eh_cmnd 2.6.21-rc5-git6,7,10,13
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: David Miller <davem@davemloft.net>
+Cc: aab@cichlid.com, cebbert@redhat.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, aradford@gmail.com
+In-Reply-To: <20070406.113229.122031524.davem@davemloft.net>
+References: <200704061512.l36FCFjl031431@cichlid.com>
+	 <1175873277.3677.11.camel@mulgrave.il.steeleye.com>
+	 <20070406.113229.122031524.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 06 Apr 2007 16:35:46 -0500
+Message-Id: <1175895346.3677.57.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paa Paa wrote:
->>> Q: What conclusion can I make on "hdparm -t" results or can I make 
->>> any conclusions? Do I really have lower performance with NCQ or not? 
->>> If I do, is this because of my HD or because of kernel?
->>
->> What IO scheduler are you using? If AS or CFQ, could you try with 
->> deadline?
+On Fri, 2007-04-06 at 11:32 -0700, David Miller wrote:
+> From: James Bottomley <James.Bottomley@SteelEye.com>
+> Date: Fri, 06 Apr 2007 10:27:57 -0500
 > 
-> I was using CFQ. I now tried with Deadline and that doesn't seem to 
-> degrade the performance at all! With Deadline I got 60MB/s both with and 
-> without NCQ. This was with "hdparm -t".
+> > On Fri, 2007-04-06 at 08:12 -0700, Andrew Burgess wrote:
+> > > Yes. The 3w-xxxx.c driver changed between 2.6.18 and 2.6.20 but
+> > > nothing jumps out to my untrained eyes. Here's the diff:
+> > > Also, I should mention that the working kernel is a fedora
+> > > rpm (2.6.18-1.2798.fc6) so I don't know what patches are in it.
+> > > The vmlinuz is dated Oct 6 2006.
+> > 
+> > It's actually a long standing bug in the 3w-xxxx driver.  Apparently it
+> > assumes request sense is always the use_sg == 0 case.  This is what it
+> > does on a request sense:
 > 
-> So what does this tell us?
-> 
-It suggests that it's time to test with real load and see if deadline 
-works well for you in the general case.
+> Thanks for figuring this out James.  I was very worried there
+> was some bug in my scsi_send_eh_cmnd() fix :)
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+You're welcome ... the code in the fix looked fine, which is why I was
+initially suspicious ... however, the bug in __free_page() on reversion
+pretty much confirmed a driver issue.
+
+James
+
+
