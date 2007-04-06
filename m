@@ -1,166 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933465AbXDFRP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbXDFRQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933465AbXDFRP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 13:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933340AbXDFRP2
+	id S933470AbXDFRQg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 13:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933471AbXDFRQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 13:15:28 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43041 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933463AbXDFRP0 (ORCPT
+	Fri, 6 Apr 2007 13:16:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43047 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933470AbXDFRQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 13:15:26 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 5/5] driver core: Implement shadow directory support for device classes.
-In-Reply-To: <m1odm178eq.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Fri, 06 Apr 2007 10:51:57 -0600")
-References: <m164898ncw.fsf@ebiederm.dsl.xmission.com>
-	<m11wix8n74.fsf@ebiederm.dsl.xmission.com>
-	<m1wt0p78k5.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1slbd78h3.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1odm178eq.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-Date: Fri, 06 Apr 2007 11:14:52 -0600
-Message-ID: <m1irc977cj.fsf_-_@ebiederm.dsl.xmission.com>
+	Fri, 6 Apr 2007 13:16:34 -0400
+Date: Fri, 6 Apr 2007 10:16:33 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Luck, Tony" <tony.luck@intel.com>
+cc: akpm@linux-foundation.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Martin Bligh <mbligh@google.com>,
+       linux-mm@kvack.org, Andi Kleen <ak@suse.de>,
+       Dave Hansen <hansendc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: RE: [PATCH 4/4] IA64: SPARSE_VIRTUAL 16M page size support
+In-Reply-To: <617E1C2C70743745A92448908E030B2A0153594A@scsmsx411.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0704061004140.25652@schroedinger.engr.sgi.com>
+References: <617E1C2C70743745A92448908E030B2A0153594A@scsmsx411.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 5 Apr 2007, Luck, Tony wrote:
 
-This patch enables shadowing on every class directory if struct class
-has shadow_ops.
+> > This implements granule page sized vmemmap support for IA64.
+> 
+> Christoph,
+> 
+> Your calculations here are all based on a granule size of 16M, but
+> it is possible to configure 64M granules.
 
-In addition device_del and device_rename were modified to use
-sysfs_delete_link and sysfs_rename_link respectively to ensure when
-these operations happen in the presence of shadow directories the
-work properly.
+Hmm...... Maybe we need to have a separate size for the vmemmap size?
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/base/class.c   |   30 ++++++++++++++++++++++++++----
- drivers/base/core.c    |   20 +++++++++++---------
- include/linux/device.h |    2 ++
- 3 files changed, 39 insertions(+), 13 deletions(-)
+> With current sizeof(struct page) == 56, a 16M page will hold enough
+> page structures for about 4.5G of physical space (assuming 16K pages),
+> so a 64M page would cover 18G.
 
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index 80bbb20..1ac2b0e 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -136,6 +136,17 @@ static void remove_class_attrs(struct class * cls)
- 	}
- }
- 
-+static int class_setup_shadowing(struct class *cls)
-+{
-+	const struct shadow_dir_operations *shadow_ops;
-+
-+	shadow_ops = cls->shadow_ops;
-+	if (!shadow_ops)
-+		return 0;
-+
-+	return sysfs_enable_shadowing(&cls->subsys.kset.kobj, shadow_ops);
-+}
-+
- int class_register(struct class * cls)
- {
- 	int error;
-@@ -154,11 +165,22 @@ int class_register(struct class * cls)
- 	subsys_set_kset(cls, class_subsys);
- 
- 	error = subsystem_register(&cls->subsys);
--	if (!error) {
--		error = add_class_attrs(class_get(cls));
--		class_put(cls);
--	}
-+	if (error)
-+		goto out;
-+
-+	error = class_setup_shadowing(cls);
-+	if (error)
-+		goto out_unregister;
-+
-+	error = add_class_attrs(cls);
-+	if (error)
-+		goto out_unregister;
-+
-+out:
- 	return error;
-+out_unregister:
-+	subsystem_unregister(&cls->subsys);
-+	goto out;
- }
- 
- void class_unregister(struct class * cls)
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 8650401..3d9c5ff 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -519,8 +519,14 @@ static struct kobject * get_device_parent(struct device *dev,
- 			return kobj;
- 
- 		/* or create a new class-directory at the parent device */
--		return kobject_kset_add_dir(&dev->class->class_dirs,
-+		kobj = kobject_kset_add_dir(&dev->class->class_dirs,
- 					    parent_kobj, dev->class->name);
-+
-+		/* If we created a new class-directory setup shadowing */
-+		if (kobj && dev->class->shadow_ops)
-+			sysfs_enable_shadowing(kobj, dev->class->shadow_ops);
-+
-+		return kobj;
- 	}
- 
- 	if (parent)
-@@ -797,8 +803,8 @@ void device_del(struct device * dev)
- 		/* If this is not a "fake" compatible device, remove the
- 		 * symlink from the class to the device. */
- 		if (dev->kobj.parent != &dev->class->subsys.kset.kobj)
--			sysfs_remove_link(&dev->class->subsys.kset.kobj,
--					  dev->bus_id);
-+			sysfs_delete_link(&dev->class->subsys.kset.kobj,
-+					  &dev->kobj, dev->bus_id);
- 		if (parent) {
- #ifdef CONFIG_SYSFS_DEPRECATED
- 			char *class_name = make_class_name(dev->class->name,
-@@ -1096,6 +1102,8 @@ int device_rename(struct device *dev, char *new_name)
- 			goto out_free_old_class;
- 		}
- 		strlcpy(old_symlink_name, dev->bus_id, BUS_ID_SIZE);
-+		sysfs_rename_link(&dev->class->subsys.kset.kobj, &dev->kobj,
-+				  old_symlink_name, new_name);
- 	}
- 
- 	strlcpy(dev->bus_id, new_name, BUS_ID_SIZE);
-@@ -1113,12 +1121,6 @@ int device_rename(struct device *dev, char *new_name)
- 	}
- #endif
- 
--	if (dev->class) {
--		sysfs_remove_link(&dev->class->subsys.kset.kobj,
--				  old_symlink_name);
--		sysfs_create_link(&dev->class->subsys.kset.kobj, &dev->kobj,
--				  dev->bus_id);
--	}
- 	put_device(dev);
- 
- 	kfree(new_class_name);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index de0e73e..8326067 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -199,6 +199,8 @@ struct class {
- 
- 	int	(*suspend)(struct device *, pm_message_t state);
- 	int	(*resume)(struct device *);
-+
-+	const struct shadow_dir_operations *shadow_ops;
- };
- 
- extern int __must_check class_register(struct class *);
--- 
-1.5.0.g53756
+Yes that is far too much.
 
+> Maybe a granule is not the right unit of allocation ... perhaps 4M
+> would work better (4M/56 ~= 75000 pages ~= 1.1G)?  But if this is
+> too small, then a hard-coded 16M would be better than a granule,
+> because 64M is (IMHO) too big.
+
+I have some measurements 1M vs. 16M that I took last year when I first 
+developed the approach:
+
+1. 16k vmm page size
+
+Tasks    jobs/min  jti  jobs/min/task      real       cpu
+    1     2434.08  100      2434.0771      2.46      0.02   Thu Oct 12 03:22:20 2006
+  100   178784.27   93      1787.8427      3.36      7.14   Thu Oct 12 03:22:34 2006
+  200   279199.63   94      1395.9981      4.30     14.70   Thu Oct 12 03:22:52 2006
+  300   340909.09   92      1136.3636      5.28     22.55   Thu Oct 12 03:23:14 2006
+  400   381133.87   90       952.8347      6.30     30.64   Thu Oct 12 03:23:40 2006
+  500   408942.20   93       817.8844      7.34     38.90   Thu Oct 12 03:24:10 2006
+  600   430673.53   89       717.7892      8.36     47.15   Thu Oct 12 03:24:45 2006
+  700   445859.87   92       636.9427      9.42     55.59   Thu Oct 12 03:25:23 2006
+  800   460564.19   94       575.7052     10.42     63.57   Thu Oct 12 03:26:06 2006
+
+2. 1M vmm page size
+
+Tasks    jobs/min  jti  jobs/min/task      real       cpu
+    1     2435.06  100      2435.0649      2.46      0.02   Thu Oct 12 03:08:25 2006
+  100   178041.54   93      1780.4154      3.37      7.18   Thu Oct 12 03:08:39 2006
+  200   278035.22   96      1390.1761      4.32     14.85   Thu Oct 12 03:08:57 2006
+  300   338536.77   96      1128.4559      5.32     22.90   Thu Oct 12 03:09:19 2006
+  400   377180.58   89       942.9514      6.36     31.19   Thu Oct 12 03:09:46 2006
+  500   407000.41   96       814.0008      7.37     39.21   Thu Oct 12 03:10:16 2006
+  600   428979.98   91       714.9666      8.39     47.43   Thu Oct 12 03:10:51 2006
+  700   444209.41   94       634.5849      9.46     55.86   Thu Oct 12 03:11:30 2006
+  800   455753.89   93       569.6924     10.53     64.59   Thu Oct 12 03:12:13 2006
+
+4M would be right in the middle and maybe not so bad.
+
+Note that these numbers were based on a more complex TLB handler.
+See http://marc.info/?l=linux-ia64&m=116069969308257&w=2 (variable
+kernel page size handler).
+
+The problem with a different page size is that this would require 
+redesign of the TLB lookup logic. We could go back to my variable kernel 
+page size patch quoted above but then we walk the complete page table.
+
+The 1 level lookup as far as I can tell only works well with 16M.
+
+If we would try to use a 1 level lookup for a 4M page then we would have
+a linear lookup table that takes up 4MB to support 1 Petabyte.
