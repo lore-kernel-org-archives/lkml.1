@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbXDFVsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbXDFVsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933148AbXDFVsi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 17:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933158AbXDFVsi
+	id S933158AbXDFVsx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 17:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbXDFVsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 17:48:38 -0400
-Received: from mail.tmr.com ([64.65.253.246]:59302 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933148AbXDFVsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 17:48:37 -0400
-Message-ID: <4616C097.1030908@tmr.com>
-Date: Fri, 06 Apr 2007 17:50:15 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Fri, 6 Apr 2007 17:48:52 -0400
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:28411 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933158AbXDFVsu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 17:48:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GGlNTl/0mzDfa4KWINTlMTImPta6Ics7Pf7dQ0/1Mvty/t5ihoa3FKtfK6/9uvR9AudmEQySzdky1ydw2jXZaOY3frTw7v7LOXbUy3wly1fDlVqC9z6WhAUApYeE9PRFh9JuJnNTmunJcgzY94VxvpVfUabTGicNWRPwt02449w=  ;
+X-YMail-OSG: s1eCzwoVM1nI9ex5mt50KsATDTtWGeXA9oovjL0ALeqw.Kaq1VhMmEK05lzsogDGsn03O_cI1Q--
+From: David Brownell <david-b@pacbell.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.21-rc6-git] at91_cf, minor fix
+Date: Fri, 6 Apr 2007 14:48:47 -0700
+User-Agent: KMail/1.7.1
+Cc: Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Valdis.Kletnieks@vt.edu
-CC: Maxim Uvarov <muvarov@ru.mvista.com>, linux-kernel@vger.kernel.org
-Subject: Re: Performance Stats: Kernel patch
-References: <46124E93.2000408@ru.mvista.com> <16797.1175641303@turing-police.cc.vt.edu>            <4613A4FF.9030202@ru.mvista.com> <6099.1175723450@turing-police.cc.vt.edu>
-In-Reply-To: <6099.1175723450@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704061448.47406.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
+This is a minor correctness fix:  since the at91_cf driver probe() routine
+is in the init section, it should use platform_driver_probe() instead of
+leaving that pointer around in the driver struct after init section removal.
 
-> 2) It arrived here with some line-wrapping damage, most likely to the fact
-> that you posted it with Thunderbird.  There's a mystic Thunderbird incantation
-> to make it not do that, but I have no idea what it is - it's in the list
-> archives someplace.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+This is a refresh of a patch sent to the linux-pcmcia list on 15-February;
+it seems that despite the MAINTAINERS file, that's not the place to send
+patches.  (So what good is that list, and why is it in MAINTAINERS?)
 
-I don't use TBird (seamonkey fan) but I assume the patch can just be 
-attached rather than inlined. Some mailers are pretty arcane otherwise.
 
-But I do like the idea, but the issue of things which parse 
-/proc/PID/status hasn't had comments. A good parser would ignore what it 
-didn't understand, or take everything, not everyone has a good parser. ;-)
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Index: at91/drivers/pcmcia/at91_cf.c
+===================================================================
+--- at91.orig/drivers/pcmcia/at91_cf.c	2007-02-15 18:20:53.000000000 -0800
++++ at91/drivers/pcmcia/at91_cf.c	2007-02-15 18:31:27.000000000 -0800
+@@ -360,7 +360,6 @@ static struct platform_driver at91_cf_dr
+ 		.name		= (char *) driver_name,
+ 		.owner		= THIS_MODULE,
+ 	},
+-	.probe		= at91_cf_probe,
+ 	.remove		= __exit_p(at91_cf_remove),
+ 	.suspend	= at91_cf_suspend,
+ 	.resume		= at91_cf_resume,
+@@ -370,7 +369,7 @@ static struct platform_driver at91_cf_dr
+ 
+ static int __init at91_cf_init(void)
+ {
+-	return platform_driver_register(&at91_cf_driver);
++	return platform_driver_probe(&at91_cf_driver, at91_cf_probe);
+ }
+ module_init(at91_cf_init);
+ 
