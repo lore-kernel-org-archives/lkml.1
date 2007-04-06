@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933340AbXDFXDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbXDFXEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933340AbXDFXDI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933363AbXDFXDI
+	id S933313AbXDFXEj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933322AbXDFXEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:03:08 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26290 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933351AbXDFXDE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 19:03:04 -0400
-Date: Fri, 6 Apr 2007 16:03:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kernel-doc: handle spaces in array size
-Message-Id: <20070406160335.e125e287.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.61.0704062117460.6042@yvahk01.tjqt.qr>
-References: <20070406114730.02c82f43.randy.dunlap@oracle.com>
-	<Pine.LNX.4.61.0704062117460.6042@yvahk01.tjqt.qr>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Fri, 6 Apr 2007 19:04:39 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:36845 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933313AbXDFXEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:04:38 -0400
+Date: Fri, 6 Apr 2007 16:04:24 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Soeren Sonnenburg <kernel@nn7.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux 2.6.21-rc6 - regressions update
+In-Reply-To: <1175899460.5393.9.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0704061552380.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+ <1175899460.5393.9.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Apr 2007 21:24:48 +0200 (MEST) Jan Engelhardt wrote:
 
-> On Apr 6 2007 11:47, Randy Dunlap wrote:
-> >
-> >Unfortunately, kernel-doc has problems with a struct field like this:
-> >	uint8_t databuf[NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE];
-> >
-> >simply due to the spaces around the "+" sign, so drop all spaces inside
-> >[...] so that parsing is done correctly (in some sense).
-> >
+[ Added some people to the cc.. Len, Thomas, Ingo - look for the exact 
+  report on linux-kernel, but basically it's a "irq 9: nobody cared" issue 
+  with acpi_irq on irq9 ]
 
-...
-
+On Sat, 7 Apr 2007, Soeren Sonnenburg wrote:
 > 
-> 	while($arg =~ s/\[(.*)\s+(.*)\]/[$1$2]/) {
-> 	}
+> regression update for 21-rc6:
 > 
-> should do it, and saves us the pre-matching. (Also note the + at \s)
-> (No need to escape [ and ] in the target pattern.)
-
-Yep, that works.  Want to send it with sign-off or shall I just
-send a new patch to akpm?
-
-> I can also offer this gem which should do it the most saving way by
-> matching the inside of [] exactly once, and otherwise
-> matching/replacing only on \s:
+> 1) all s2ram and NO_HZ related things seem to be resolved on my macbook
+> pro, also 
+> CONFIG_HPET_TIMER=y
+> CONFIG_HPET_EMULATE_RTC=y
 > 
-> 	$arg =~ s{\[(.*)\]}{($_=$1)=~s/\s+//g;"[$_]"}e;
+> don't break resume anymore.
+
+Goodie. I think we fixed most stuff..
+
+> 2) However I am still having problems with
+> +CONFIG_HIGH_RES_TIMERS=y
+> +CONFIG_HPET=y
+> +CONFIG_HPET_MMAP=y
+> although the machine resumes, I've managed to get the attached oops.
+
+Ok, interesting. I'd have blamed ACPI for this one (stuck IRQ9 is almost 
+always some ACPI event that got stuck or the SCI got mis-routed and/or 
+marked with the wrong polarity), although from your message I take it you 
+don't get it without high-res timers? 
+
+In fact,  I have a theory.. Your backtrace is:
+
+ [<c0119637>] smp_apic_timer_interrupt+0x57/0x90
+ [<c0142d30>] retrigger_next_event+0x0/0xb0
+ [<c0104d30>] apic_timer_interrupt+0x28/0x30
+ [<c0142d30>] retrigger_next_event+0x0/0xb0
+ [<c0140068>] __kfifo_put+0x8/0x90
+ [<c0130fe5>] on_each_cpu+0x35/0x60
+ [<c0143538>] clock_was_set+0x18/0x20
+ [<c0135cdc>] timekeeping_resume+0x7c/0xa0
+ [<c02aabe1>] __sysdev_resume+0x11/0x80
+ [<c02ab0c7>] sysdev_resume+0x47/0x80
+ [<c02b0b05>] device_power_up+0x5/0x10
+
+and the thing is, I don't think we should have interrupt enabled at this 
+point in time! I susect that the timer resume enables interrupts too 
+early! We should be doing the whole "device_power_up()" sequence with 
+irq's off, I think..
+
+> 3) Subject    : SATA breakage on resume
+> References : http://lkml.org/lkml/2007/3/7/233
+> Submitter  : Thomas Gleixner <tglx@linutronix.de>
+>              Soeren Sonnenburg <kernel@nn7.de>
+> Status     : unknown
 > 
-> (I already hear everyone screaming... ;-)
+> I am still seeing these messages after a suspend/resume cycle (though
+> all devices work even after multiple suspend/resume cycles)
+> 
+> ATA: abnormal status 0x80 on port 0x000140df
 
-No, thanks.
+This seems to be normal, and related to some unknown timing issue. If the 
+thing works for you apart from the message, I'd just ignore it..
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+		Linus
