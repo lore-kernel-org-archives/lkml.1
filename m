@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbXDFUEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbXDFUI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932773AbXDFUEN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 16:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932785AbXDFUEN
+	id S932796AbXDFUI3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 16:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932794AbXDFUI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 16:04:13 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:60912 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932773AbXDFUEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 16:04:12 -0400
-Date: Fri, 6 Apr 2007 13:04:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       dgc@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Make page->private usable in compound pages V1
-Message-Id: <20070406130401.b380b8da.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704060958430.25652@schroedinger.engr.sgi.com>
-References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
-	<20070405164300.a5d24329.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704060958430.25652@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 6 Apr 2007 16:08:29 -0400
+Received: from www.osadl.org ([213.239.205.134]:33157 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932787AbXDFUI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 16:08:28 -0400
+Subject: [PATCH-mm] Replace more deprecated SA_xxx interrupt flags
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1175889782.28263.470.camel@localhost.localdomain>
+References: <20070114081905.135797900@inhelltoy.tec.linutronix.de>
+	 <20070114081926.912658228@inhelltoy.tec.linutronix.de>
+	 <20070123120245.ec3b0772.akpm@osdl.org>
+	 <1169584278.21181.86.camel@localhost.localdomain>
+	 <1175867366.28263.454.camel@localhost.localdomain>
+	 <20070406122228.3dc06c79.akpm@linux-foundation.org>
+	 <1175888217.28263.465.camel@localhost.localdomain>
+	 <1175889782.28263.470.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Apr 2007 22:08:55 +0200
+Message-Id: <1175890135.28263.473.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Apr 2007 10:01:38 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+Fix the obnoxious users of the deprecated SA_xxx interrupt flags.
 
-> On Thu, 5 Apr 2007, Andrew Morton wrote:
-> 
-> > > We add PageTail as an alias of PageReclaim. Compound pages cannot
-> > > currently be reclaimed. Because of the alias one needs to check
-> > > PageCompound first.
-> > 
-> > So slub is using compound pages so that it can locate the head page in
-> > higher-order pages, whereas slab uses per-object (or per-order-0-page?)
-> > metadata for that?
-> 
-> Both SLAB and SLUB use compound pages.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-Not really.  slab sets the page->lru.prev of each constituent page to point
-at the controlling slab.
+Index: linux-2.6.21-rc3-mm2/drivers/i2c/busses/i2c-bfin-twi.c
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/drivers/i2c/busses/i2c-bfin-twi.c
++++ linux-2.6.21-rc3-mm2/drivers/i2c/busses/i2c-bfin-twi.c
+@@ -573,7 +573,7 @@ static int i2c_bfin_twi_probe(struct pla
+ 	p_adap->dev.parent = &dev->dev;
+ 
+ 	rc = request_irq(iface->irq, bfin_twi_interrupt_entry,
+-		SA_INTERRUPT, dev->name, iface);
++		IRQF_DISABLED, dev->name, iface);
+ 	if (rc) {
+ 		dev_err(&(p_adap->dev), "i2c-bfin-twi: can't get IRQ %d !\n",
+ 			iface->irq);
+Index: linux-2.6.21-rc3-mm2/drivers/input/keyboard/pxa27x_keyboard.c
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/drivers/input/keyboard/pxa27x_keyboard.c
++++ linux-2.6.21-rc3-mm2/drivers/input/keyboard/pxa27x_keyboard.c
+@@ -181,7 +181,7 @@ static int __devinit pxakbd_probe(struct
+ 		}
+ 	}
+ 
+-	error = request_irq(IRQ_KEYPAD, pxakbd_irq_handler, SA_INTERRUPT,
++	error = request_irq(IRQ_KEYPAD, pxakbd_irq_handler, IRQF_DISABLED,
+ 			    DRIVER_NAME, pdev);
+ 	if (error) {
+ 		printk(KERN_ERR "Cannot request keypad IRQ\n");
+Index: linux-2.6.21-rc3-mm2/drivers/net/vioc/vioc_irq.c
+===================================================================
+--- linux-2.6.21-rc3-mm2.orig/drivers/net/vioc/vioc_irq.c
++++ linux-2.6.21-rc3-mm2/drivers/net/vioc/vioc_irq.c
+@@ -319,7 +319,7 @@ static int vioc_irq_install(struct pci_d
+ 
+ 	ret = request_irq(vioc_interrupts[vioc_id].intreq[intr_id].irq,
+ 			  vioc_interrupts[vioc_id].intreq[intr_id].hthandler,
+-			  SA_INTERRUPT,
++			  IRQF_DISABLED,
+ 			  vioc_interrupts[vioc_id].intreq[intr_id].name,
+ 			  vioc_interrupts[vioc_id].intreq[intr_id].
+ 			  intrFuncparm);
 
-I assume the PageCompound() handling in (for example) page_get_cache() is
-for the NOMMU special case.
 
-> > 
-> > I see four instances of
-> > 
-> > +	page = virt_to_page(p);
-> > +
-> > +	if (unlikely(PageCompound(page)))
-> > +		page = page->first_page;
-> > 
-> > A new virt_to_head_page() is needed.
-> 
-> Ok.
->  
->  > Sigh.  We're seeing rather a lot of churn to accommodate slub.  Do we
-> > actually have any justification for all this?  If we end up deciding to
-> > merge slub and to deprecate then remove slab, what would our reasons have
-> > been?
-> 
-> This is not SLUB specific. SLAB does the same. SLAB does special casing 
-> for page size slabs and does not allow slab debugging because it would 
-> use page->private if debugging would be enabled. Which would get into 
-> trouble on i386.
-> 
-> If you want less SLUB churn on other fronts then I can add the special 
-> casing for PAGE_SIZE slabs back into SLUB. Then we keep all the 
-> inconsistencies in SLAB use in the code.
-> 
-> I'd rather clean up the stuff and then also remove the special casing from 
-> SLAB.
-> 
-
-Will slub handle NOMMU anonymous pages appropriately?
