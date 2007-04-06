@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767321AbXDFAk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767314AbXDFAr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767321AbXDFAk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 20:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767337AbXDFAk0
+	id S1767314AbXDFAr1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 20:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXDFAr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 20:40:26 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:41298 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767321AbXDFAkZ (ORCPT
+	Thu, 5 Apr 2007 20:47:27 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:57708 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767314AbXDFAr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 20:40:25 -0400
-Message-ID: <461596DE.2020802@zytor.com>
-Date: Thu, 05 Apr 2007 17:39:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 5 Apr 2007 20:47:26 -0400
+Message-ID: <4615982A.1070700@vmware.com>
+Date: Thu, 05 Apr 2007 17:45:30 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: johnrobertbanks@fastmail.fm
-CC: Ignatich <ignatich@gmail.com>, reiserfs-list@namesys.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Reiser4. BEST FILESYSTEM EVER? I need help.
-References: <46157B5B.5000602@gmail.com>   <1175817921.18400.1183285196@webmail.messagingengine.com>   <461592FB.5060507@zytor.com> <1175819681.20754.1183287946@webmail.messagingengine.com>
-In-Reply-To: <1175819681.20754.1183287946@webmail.messagingengine.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [PATCH] Bugfix for VMI paravirt ops
+References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org> <46158FBE.3090105@vmware.com> <461590EA.10605@goop.org> <4615924E.8020009@vmware.com> <46159555.4020706@goop.org>
+In-Reply-To: <46159555.4020706@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-johnrobertbanks@fastmail.fm wrote:
-> Yeap, I guess that will probably work. 
-> 
-> And here I was trying to compile old versions of GRUB from namesys.com.
-> 
-> By the way, do you think the benchmarks from:
-> 
-> http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
-> http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
-> 
-> are accurate?
-> 
+Jeremy Fitzhardinge wrote:
+> Zachary Amsden wrote:
+>   
+>> So the clean fix for this is still even further out.  I don't think I
+>> want to hook kmap/unmap as paravirt-ops.
+>>     
+>
+> Yes, it seems like overkill.
+>
+> How about something like adding PARAVIRT_LAZY_FLUSH as an argument to
+> set_lazy_mode?  It would be valid to use at any time, and it would flush
+> any pending work while still remaining in whatever lazy mode its
+> currently in.  That way kmap_atomic can flush anything pending without
+> having to muck around with the current lazy state.
+>   
 
-Accurate, probably.  Whether or not they're *relevant* is a totally 
-different ball of wax.
+Yes, thought about several solutions, and this seems the best.  But it 
+requires a new paravirt-op.
 
-	-hpa
+Zach
+
