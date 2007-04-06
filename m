@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767585AbXDFLKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbXDFLM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767585AbXDFLKh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 07:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXDFLKh
+	id S1752648AbXDFLM1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 07:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXDFLM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 07:10:37 -0400
-Received: from www.osadl.org ([213.239.205.134]:37657 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752648AbXDFLKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 07:10:37 -0400
-From: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [-mm patch] drivers/uio/uio_cif.c: convert pci_module_init()
-Date: Fri, 6 Apr 2007 13:11:56 +0200
-User-Agent: KMail/1.9.5
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, tglx@linutronix.de,
-       Benedikt Spranger <b.spranger@linutronix.de>,
-       linux-kernel@vger.kernel.org
-References: <20070406101937.GD29169@stusta.de>
-In-Reply-To: <20070406101937.GD29169@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704061311.57723.hjk@linutronix.de>
+	Fri, 6 Apr 2007 07:12:27 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:49891 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbXDFLM1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 07:12:27 -0400
+To: akpm@linux-foundation.org
+CC: a.p.zijlstra@chello.nl, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com
+In-reply-to: <20070406040035.2f1e1105.akpm@linux-foundation.org> (message from
+	Andrew Morton on Fri, 6 Apr 2007 04:00:35 -0700)
+Subject: Re: [PATCH 12/12] mm: per BDI congestion feedback
+References: <20070405174209.498059336@programming.kicks-ass.net>
+	<20070405174320.649550491@programming.kicks-ass.net>
+	<20070405162425.eb78c701.akpm@linux-foundation.org>
+	<1175842917.6483.130.camel@twins> <20070406040035.2f1e1105.akpm@linux-foundation.org>
+Message-Id: <E1HZmLH-000319-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 06 Apr 2007 13:10:55 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 06 April 2007 12:19 schrieb Adrian Bunk:
-> This patch converts the pci_module_init() usage to pci_register_driver().
->
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
->
-> ---
-> --- linux-2.6.21-rc5-mm4/drivers/uio/uio_cif.c.old	2007-04-05
-> 20:44:24.000000000 +0200 +++
-> linux-2.6.21-rc5-mm4/drivers/uio/uio_cif.c	2007-04-05 20:44:38.000000000
-> +0200 @@ -144,7 +144,7 @@
->
->  static int __init hilscher_init_module(void)
->  {
-> -	return pci_module_init(&hilscher_pci_driver);
-> +	return pci_register_driver(&hilscher_pci_driver);
->  }
->
->  static void __exit hilscher_exit_module(void)
+> > OK, so you disagree with Miklos' 2nd point here:
+> >   http://lkml.org/lkml/2007/4/4/137
+> 
+> Yup, silly man thought that "congestion_wait" has something to do with
+> congestion ;)  I think it sort-of used to, once.
 
-OK.
+Oh well.  I _usually_ do actually read the code, but this seemed so
+obvious...  I'll learn never to trust descriptive function names.
 
-Acked-by: Hans J. Koch <hjk@linutronix.de>
-
+Miklos
