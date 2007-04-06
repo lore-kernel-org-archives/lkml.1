@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767583AbXDFKnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXDFKsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767583AbXDFKnH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 06:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767585AbXDFKnH
+	id S1752599AbXDFKsn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 06:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbXDFKsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 06:43:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59049 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767583AbXDFKnF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 06:43:05 -0400
-Date: Fri, 6 Apr 2007 05:43:01 -0500
-From: Robin Holt <holt@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, Robin Holt <holt@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070406104301.GB19755@lnx-holt.americas.sgi.com>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org> <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
+	Fri, 6 Apr 2007 06:48:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40691 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752599AbXDFKsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 06:48:42 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18i3DB9vE0iTN0UlU0BzD+mn6jKjJdyQJeOt18d+O
+	aG3UZsiplvgL36
+Subject: Re: Ten percent test
+From: Mike Galbraith <efault@gmx.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+In-Reply-To: <200704061928.39155.kernel@kolivas.org>
+References: <200703290237.38777.kernel@kolivas.org>
+	 <200704061103.34489.kernel@kolivas.org>
+	 <1175850471.22272.8.camel@Homer.simpson.net>
+	 <200704061928.39155.kernel@kolivas.org>
+Content-Type: text/plain
+Date: Fri, 06 Apr 2007 12:48:39 +0200
+Message-Id: <1175856519.7546.12.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So I think we have some options once we get the kernel threads out
-> of the way.  Getting the kernel threads out of the way would seem
-> to be the first priority.
+On Fri, 2007-04-06 at 19:28 +1000, Con Kolivas wrote:
+> On Friday 06 April 2007 19:07, Mike Galbraith wrote:
+> > On Fri, 2007-04-06 at 11:03 +1000, Con Kolivas wrote:
+> > > On Thursday 05 April 2007 21:54, Ingo Molnar wrote:
+> > > >  - fiftyp.c:  noticeable, but alot better than previously!
+> > >
+> > > fiftyp.c seems to have been stumbled across by accident as having an
+> > > effect when Xenofon was trying to recreate Mike's 50% x 3 test case. I
+> > > suggest a ten percent version like the following would be more useful as
+> > > a test for the harmful effect discovered in fiftyp.c. (/me throws in
+> > > obligatory code style change).
+> > >
+> > > Starts 15 processes that sleep ten times longer than they run. Change
+> > > forks to 15 times the number of cpus you have and it should work on any
+> > > size hardware.
+> >
+> > I was more focused on the general case, but all I should have to do to
+> > de-claw all of these sleep exploits is account rr time (only a couple of
+> > lines, done and building now).  It's only a couple of lines.
+> 
+> The more you try to "de-claw" these sleep exploits the less effective you make 
+> your precious interactive estimator. Feel free to keep adding endless tweaks 
+> to undo the other tweaks in order to try and achieve what SD has by design.
 
-I think both avenues would probably be the right way to proceeed.
-Getting kthreads to not be parented by init would be an opportunity
-for optimization.
+I haven't seen SD achieve what it's design docs claim yet, so yup, I'm
+going to keep right on trying to fix the corner cases in what we have
+that _does_ give me the interactivity I want.
 
-I think organizing the zombie tasks to be easily reaped also has merit.
-Rapidly forking/exiting processes like udevd during the boot of a
-different machine were also shown to benefit significantly from this
-patch.  That machine had 512 cpus and 4608 disk devices, we dropped the
-device discovery under udevd by 30%.  This, honestly, surprised us.
-It makes some sense now that I think about it.  This would be a case
-where improving the zombie handling would be beneficial to more than
-just kthreads.
+	-Mike
 
-Thanks,
-Robin
