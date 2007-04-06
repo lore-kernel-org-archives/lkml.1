@@ -1,67 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbXDFV0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbXDFV3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933057AbXDFV0X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 17:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933094AbXDFV0X
+	id S933064AbXDFV3c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 17:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbXDFV3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 17:26:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:51230 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933057AbXDFV0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 17:26:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=M4pEgFDqvAzhFzGLFhitzgynUFyKPngLF5AeoYp/Z2kAkeoNdBdKmdXXAkeV0UTIcDj+0YIp87zWQN+glPQB5ZHZPFrr0qIw/wLehwzreVllnOskAFtVWOuCW0oXMChpPnq27iaSSg5K+7xZa4I+K0zk/RYvdcWWUPUXy6DHM2Y=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] Correctly prevent IDE timer expiry function to run if request was already handled
-Date: Fri, 6 Apr 2007 23:35:26 +0200
-User-Agent: KMail/1.9.6
-Cc: Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20070406173603.GA82722@freefall.freebsd.org> <50660.65.57.245.11.1175892938.squirrel@ssl.mu.org> <4616B70B.3070501@ru.mvista.com>
-In-Reply-To: <4616B70B.3070501@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 6 Apr 2007 17:29:32 -0400
+Received: from main.gmane.org ([80.91.229.2]:34223 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933064AbXDFV3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 17:29:31 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+Date: Fri, 06 Apr 2007 17:30:49 -0400
+Message-ID: <4616BC09.2080509@tmr.com>
+References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704062335.26560.bzolnier@gmail.com>
+X-Complaints-To: usenet@sea.gmane.org
+Cc: Andi Kleen <andi@firstfloor.org>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, indan@nul.nu
+X-Gmane-NNTP-Posting-Host: mail.tmr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <4610EDF9.9000601@sciensis.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Friday 06 April 2007, Sergei Shtylyov wrote:
-> Hello.
+Tasos Parisinos wrote:
+> Andi Kleen wrote:
+>> Tasos Parisinos <parisino@ceid.upatras.gr> writes:
+>>
+>>  
+>>> From: Tasos Parisinos <t.parisinos@sciensis.com>
+>>>
+>>> This patch adds module rsa.ko in the kernel (built-in or as a kernel
+>>> module) and offers an API to do fast modular exponentiation, using the
+>>> Montgomery algorithm, thus the exponentiation is not generic but can
+>>> be used only when
+>>> the modulus is odd, such as RSA public/private key pairs. This module 
+>>> is the
+>>> computational core (using multiple precision integer arithmetics) and 
+>>> does not
+>>> provide any means to do key management, implement padding schemas 
+>>> e.t.c. so the
+>>> calling code should implement all those as needed. Signed-off-by:
+>>> Tasos Parisinos <t.parisinos@sciensis.com>
+>>>     
+>>
+>> You forgot to answer the most important question.
+>>
+>> What would want to use RSA in the kernel and why? 
+>> -Andi
+>>
+>>   
 > 
-> Suleiman Souhlal wrote:
-
-> > The reason the timer could have been active at that point, before applying
-> > this patch, is that we try to dispatch a new request after handling one.
-> > The new request will then have its own expiry timer, along with a handler.
-> > Since  before this patch ide_timer_expiry() only looked at whether or not
-> > a handler was present, it would incorrectly think the request had not been
-> > handled already, and incorrectly tried to restart the timer.
+> The main purpose behind the creation of this module was to create the
+> cryptographic infrastructure to develop an in-kernel system of signed
+> modules.
 > 
->     Hm, I'm still not sure why this happens at all, probably need to try 
-> reproducing it (unless you post a stack trace :-).
+I don't really see why this has to be in the kernel, even after reading 
+your text below. This would be code which a tiny number of users would 
+find useful, someone in the future might find exploitable, to perform a 
+function which can be done in user space.
 
-not a stack trace but should explain the issue a bit:
+> The best environment to deploy such functionality is in updating by
+> remote, executable code (programs, libs and modules) on embedded
+> devices running Linux, that have some form of kernel physical
+> security, so one can't tamper the kernel, but can read it. In this
+> case only a public key would be revealed. The vendor of the devices
+> can sign and distribute/update executable code to the devices, and
+> the kernel will not load/run any of them if they don't match with
+> their signatures. The signature can be embedded in the elf, so this
+> system is portable and centralized. 
 
-...
-ide_timer_expiry
-	-> just before taking ide_lock IRQ happens
-...
-ide_intr
-	-> completes the command and queues the next one
-...
-ide_timer_expiry (resumed)
-	-> takes ide_lock
-	-> the bug happens ;)
+> Although this functionality can be achieved using userland helper
+> programs this may create the need to physically secure entire
+> filesystems which adds to the cost of developing such devices.
 
-should be even easier to trigger it on SMP since ide_timer_expiry
-may be running at the same time as ide_intr
+So to save cost on your end you want to make this feature part of the 
+mainline kernel. Am I misreading your intent here?
 
-Bart
+> In such cases one needs to use asymmetric cryptography because in the
+> case of symmetric it would be very easy to give away the key and end
+> with having all your devices being attacked.
+> 
+Which make a good argument for doing asymmetric anyway, it would seem. 
+That way any updates can be checked off the target machine and validated 
+as authentic.
+
+> There are already some systems that implement and utilize such 
+> functionality that use windows platforms, and other Linux distros
+> that use userland programs to do so, assuming physical security of
+> the host computer.
+> 
+Exactly.
+
+> Moreover a same system that would use hashes is easier to brake and
+> more difficult to update each time new code must be loaded to the
+> host devices.
+> 
+> See also this thread
+> 
+> http://lkml.org/lkml/2007/3/19/447
+> 
+Having said all this, we have a boatload of other crypto in the kernel, 
+if it's just the crypto module, like aes, anubis or micheal_mic, and is 
+GPL compatible, some people may agree. But if this is an embedded 
+system, and you have the patch, why not just apply it to your kernel and 
+forget mainline?
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
