@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933330AbXDFXjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933379AbXDFXlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933330AbXDFXjz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933379AbXDFXjz
+	id S933379AbXDFXlM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbXDFXlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:39:55 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:45479 "EHLO tmailer.gwdg.de"
+	Fri, 6 Apr 2007 19:41:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:44962 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933330AbXDFXjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 19:39:54 -0400
-Date: Sat, 7 Apr 2007 01:38:56 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kernel-doc: handle spaces in array size
-In-Reply-To: <20070406160335.e125e287.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.61.0704070138350.22181@yvahk01.tjqt.qr>
-References: <20070406114730.02c82f43.randy.dunlap@oracle.com>
- <Pine.LNX.4.61.0704062117460.6042@yvahk01.tjqt.qr>
- <20070406160335.e125e287.randy.dunlap@oracle.com>
+	id S933379AbXDFXlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:41:10 -0400
+Message-ID: <4616DA66.8040009@goop.org>
+Date: Fri, 06 Apr 2007 16:40:22 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 18/20] clean up tsc-based sched_clock
+References: <20070404191151.009821039@goop.org>	<20070404191206.476822257@goop.org> <20070406162233.b835bd4c.akpm@linux-foundation.org>
+In-Reply-To: <20070406162233.b835bd4c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Apr 6 2007 16:03, Randy Dunlap wrote:
->On Fri, 6 Apr 2007 21:24:48 +0200 (MEST) Jan Engelhardt wrote:
+Andrew Morton wrote:
+> On Wed, 04 Apr 2007 12:12:09 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
->> On Apr 6 2007 11:47, Randy Dunlap wrote:
->> >
->> >Unfortunately, kernel-doc has problems with a struct field like this:
->> >	uint8_t databuf[NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE];
->> >
->> >simply due to the spaces around the "+" sign, so drop all spaces inside
->> >[...] so that parsing is done correctly (in some sense).
->> >
+>   
+>> Three cleanups:
+>>  - change "instable" -> "unstable"
+>>  - its better to use get_cpu_var for getting this cpu's variables
+>>  - change cycles_2_ns to do the full computation rather than just the
+>>    tsc->ns scaling.  Its a simpler interface, and it makes the function
+>>    more generally useful.
+>>
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+>>
+>> ---
+>>  arch/i386/kernel/sched-clock.c |   35 +++++++++++++++++++++--------------
+>>     
 >
->...
+> I'm dropping the relevant patch from Andi's tree due to it causing
+> mysterious hangs when initscripts start ondemand.  So I'll need to drop
+> this patch and "[patch 19/20] Add a sched_clock paravirt_op".
 >
->> 
->> 	while($arg =~ s/\[(.*)\s+(.*)\]/[$1$2]/) {
->> 	}
->> 
->> should do it, and saves us the pre-matching. (Also note the + at \s)
->> (No need to escape [ and ] in the target pattern.)
 >
->Yep, that works.  Want to send it with sign-off or shall I just
->send a new patch to akpm?
+> I still need to work out why that hang is happening - it is very
+> mysterious.  I got as far as working out that it was hanging on
+> write_seqlock_irqsave(xtime_lock), then remembered that it's with
+> CONFIG_SMP=n so I stomped off to bed in disgust.  Later.
+>   
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+Though I do get:
 
+BUG: at arch/i386/kernel/sched-clock.c:167 init_sched_clock()
+ [<c0109012>] show_trace_log_lvl+0x1a/0x30
+ [<c01095c7>] show_trace+0x12/0x14
+ [<c010965b>] dump_stack+0x16/0x18
+ [<c0465f51>] init_sched_clock+0x82/0xa8
+ [<c045e547>] init+0x14b/0x241
+ [<c0108bf7>] kernel_thread_helper+0x7/0x10
+ =======================
 
-Jan
--- 
+which suggests that its being initialized too late.
+
+    J
