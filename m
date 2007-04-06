@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbXDFUBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932493AbXDFUCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbXDFUBf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 16:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932700AbXDFUBf
+	id S932493AbXDFUCg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 16:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932700AbXDFUCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 16:01:35 -0400
-Received: from mail.screens.ru ([213.234.233.54]:33024 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932619AbXDFUBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 16:01:34 -0400
-Date: Sat, 7 Apr 2007 00:01:16 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Robin Holt <holt@sgi.com>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070406200116.GA169@tv-sign.ru>
-References: <20070406084250.GA179@tv-sign.ru> <m18xd5amwq.fsf@ebiederm.dsl.xmission.com> <20070406094413.GA673@tv-sign.ru> <m1lkh58q16.fsf@ebiederm.dsl.xmission.com> <20070406154750.GA541@tv-sign.ru> <Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org> <20070406193621.GA96@tv-sign.ru> <20070406194329.GB21322@elte.hu>
+	Fri, 6 Apr 2007 16:02:35 -0400
+Received: from www.osadl.org ([213.239.205.134]:37013 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932493AbXDFUCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 16:02:34 -0400
+Subject: [PATCH] Replace deprecated SA_xxx interrupt flags
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1175888217.28263.465.camel@localhost.localdomain>
+References: <20070114081905.135797900@inhelltoy.tec.linutronix.de>
+	 <20070114081926.912658228@inhelltoy.tec.linutronix.de>
+	 <20070123120245.ec3b0772.akpm@osdl.org>
+	 <1169584278.21181.86.camel@localhost.localdomain>
+	 <1175867366.28263.454.camel@localhost.localdomain>
+	 <20070406122228.3dc06c79.akpm@linux-foundation.org>
+	 <1175888217.28263.465.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Apr 2007 22:03:01 +0200
+Message-Id: <1175889782.28263.470.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070406194329.GB21322@elte.hu>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/06, Ingo Molnar wrote:
-> 
-> * Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> 
-> > > I'd almost prefer to just not add kernel threads to any parent 
-> > > process list *at*all*.
-> > 
-> > Yes sure, I didn't argue with that. However, "->exit_state = -1" does 
-> > matter, we can't detach process unless we make it auto-reap.
-> 
-> > Off course, we also need to add preparent_to_init() to kthread() and 
-> > (say) stopmachine(). Or we can create kernel_thread_detached() and 
-> > modify callers to use it.
-> 
-> this isnt a kernel-thread special case. The right solution IMO is to 
-> first migrate wait4()'s ->children use over to a new p->exiting_children 
-> list and then to gradually get rid of all remaining uses of p->children. 
-> (the first patch of which i sent a few minutes ago)
-> 
-> that way wait4() will be sped up, and quite dramatically i believe. No 
-> need to deal with kthreads here at all - those just wont ever show up in 
-> the ->exiting_children list. Am i missing something?
+Fix the last refractory users of the deprecated SA_xxx interrupt flags.
 
-Probably it is I who missed something :)
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-But why can't we do both changes? I think it is just ugly to use init to
-reap the kernel thread. Ok, wait4() can find zombie quickly if we do the
-->children split. But /sbin/init could be swapped out, we still need to
-deliver SIGCHLD, etc.
+diff --git a/arch/mips/sni/irq.c b/arch/mips/sni/irq.c
+index ad5fc47..9ccffdf 100644
+--- a/arch/mips/sni/irq.c
++++ b/arch/mips/sni/irq.c
+@@ -42,7 +42,7 @@ static irqreturn_t sni_isa_irq_handler(int dummy, void *p)
+ struct irqaction sni_isa_irq = {
+ 	.handler = sni_isa_irq_handler,
+ 	.name = "ISA",
+-	.flags = SA_SHIRQ
++	.flags = IRQF_SHARED
+ };
+ 
+ /*
+diff --git a/drivers/scsi/sni_53c710.c b/drivers/scsi/sni_53c710.c
+index 6bc5051..a7dfb65 100644
+--- a/drivers/scsi/sni_53c710.c
++++ b/drivers/scsi/sni_53c710.c
+@@ -98,7 +98,7 @@ static int __init snirm710_probe(struct platform_device *dev)
+ 	host->this_id = 7;
+ 	host->base = base;
+ 	host->irq = platform_get_irq(dev, 0);
+-	if(request_irq(host->irq, NCR_700_intr, SA_SHIRQ, "snirm710", host)) {
++	if(request_irq(host->irq, NCR_700_intr, IRQF_SHARED, "snirm710", host)) {
+ 		printk(KERN_ERR "snirm710: request_irq failed!\n");
+ 		goto out_put_host;
+ 	}
 
-And I personally agree with Linus, it is nice to hide the kernel threads
-from /sbin/init (or whatever) completely.
-
-No?
-
-Oleg.
 
