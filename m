@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767632AbXDFNbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXDFNjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767632AbXDFNbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 09:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767646AbXDFNbn
+	id S932079AbXDFNjo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 09:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932725AbXDFNjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 09:31:43 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:7276 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767632AbXDFNbm (ORCPT
+	Fri, 6 Apr 2007 09:39:44 -0400
+Received: from anchor-post-36.mail.demon.net ([194.217.242.86]:3682 "EHLO
+	anchor-post-36.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932079AbXDFNjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 09:31:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=NatgpauhHIY8aHUAHBZ/p1oPmDvwO9UoXjlkKWin2ziiS0vRwDdPPFRwkDcypcJvuvkoyihM6QxiSXBhPV3B/3JoQzvFe3ar8tWSH4B/QGhfhJJoiTKgPAQYj0WrRsdPvVj+vfV4iZG7SedvDEXg1LXbQrd3TEEFp8me7WlOc2s=
-Date: Fri, 6 Apr 2007 21:34:37 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Michael <gonwg@hotmail.com>
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: set up new kernel with grub
-Message-ID: <20070406133437.GA3784@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-Mail-Followup-To: Michael <gonwg@hotmail.com>,
-	"linux-os (Dick Johnson)" <linux-os@analogic.com>,
-	linux-kernel@vger.kernel.org
-References: <BAY113-DAV124C8565330DC6C51B2B09B9660@phx.gbl> <Pine.LNX.4.61.0704041246010.5035@chaos.analogic.com> <BAY113-DAV11F86E1B1E91A799AB05E9B9650@phx.gbl> <20070406031513.GB2407@localhost.localdomain> <BAY113-DAV1002875F3A5E59C668B830B9640@phx.gbl>
+	Fri, 6 Apr 2007 09:39:43 -0400
+Subject: Re: [PATCH 01/01] New FBDev driver for Intel Vermilion Range
+From: Alan Hourihane <alanh@fairlite.demon.co.uk>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1175818158.31131.63.camel@daplas>
+References: <1175769886.10382.29.camel@localhost>
+	 <1175818158.31131.63.camel@daplas>
+Content-Type: text/plain
+Date: Fri, 06 Apr 2007 14:39:37 +0100
+Message-Id: <1175866777.10112.5.camel@jetpack.demon.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY113-DAV1002875F3A5E59C668B830B9640@phx.gbl>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.2.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 06, 2007 at 09:23:38AM -0500, Michael wrote:
->Hi, Wang,
->
->Thanks for replying. So which step is doing the compilation of each 
->module , "make oldconfig" or "make" ? For compilation, I mean the step 
->to compile the source code to .o file.
->
->Regards,
->
->Mike
->
+On Fri, 2007-04-06 at 08:09 +0800, Antonino A. Daplas wrote:
+> On Thu, 2007-04-05 at 11:44 +0100, Alan Hourihane wrote:
+> > Attached is a patch against 2.6.21-rc5 which adds the Intel Vermilion
+> > Range support.
+> > 
+> > Intel funded Tungsten Graphics to do this work.
+> > 
+> > If there's any problems or updates needed to be done to get accepted,
+> > please let me know.
+> > 
+> 
+> Preferably, add sparse annotations and compile with make C=1. I've
+> included possible sparse annotations (the only ones I can see) below.
 
-'Make' does that. 'Make oldconfig' just checks and ajusts the .config file.
+Great. Thanks for this information.
+
+> Perhaps backling_on/off and panel_on/off can be moved to the backlight
+> subsystem?
+
+Another good pointer.
+
+Thanks. I'll revisit things and get back to the list.
+
+Alan.
 
