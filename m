@@ -1,41 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767457AbXDFAeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767330AbXDFAem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767457AbXDFAeG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Apr 2007 20:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767458AbXDFAeF
+	id S1767330AbXDFAem (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Apr 2007 20:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767458AbXDFAem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Apr 2007 20:34:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:60772 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767457AbXDFAeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Apr 2007 20:34:04 -0400
-Message-ID: <46159555.4020706@goop.org>
-Date: Thu, 05 Apr 2007 17:33:25 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Bugfix for VMI paravirt ops
-References: <46158674.5090709@vmware.com> <200704060154.41574.ak@suse.de> <46158DE1.4050508@vmware.com> <46158F8E.1050807@goop.org> <46158FBE.3090105@vmware.com> <461590EA.10605@goop.org> <4615924E.8020009@vmware.com>
-In-Reply-To: <4615924E.8020009@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 5 Apr 2007 20:34:42 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:40190 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767330AbXDFAel (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Apr 2007 20:34:41 -0400
+Message-Id: <1175819681.20754.1183287946@webmail.messagingengine.com>
+X-Sasl-Enc: qhFgk6krI9uniJCcAiZWHIzyWayv6/oAOQrvaHuOxV6o 1175819681
+From: johnrobertbanks@fastmail.fm
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Ignatich" <ignatich@gmail.com>, reiserfs-list@namesys.com,
+       linux-kernel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <46157B5B.5000602@gmail.com>
+   <1175817921.18400.1183285196@webmail.messagingengine.com>
+   <461592FB.5060507@zytor.com>
+Subject: Re: Reiser4. BEST FILESYSTEM EVER? I need help.
+In-Reply-To: <461592FB.5060507@zytor.com>
+Date: Thu, 05 Apr 2007 17:34:41 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> So the clean fix for this is still even further out.  I don't think I
-> want to hook kmap/unmap as paravirt-ops.
+Yeap, I guess that will probably work. 
 
-Yes, it seems like overkill.
+And here I was trying to compile old versions of GRUB from namesys.com.
 
-How about something like adding PARAVIRT_LAZY_FLUSH as an argument to
-set_lazy_mode?  It would be valid to use at any time, and it would flush
-any pending work while still remaining in whatever lazy mode its
-currently in.  That way kmap_atomic can flush anything pending without
-having to muck around with the current lazy state.
+By the way, do you think the benchmarks from:
 
-    J
+http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
+http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
+
+are accurate?
+
+.-------------------------.
+| FILESYSTEM | TIME |DISK |
+| TYPE       |(secs)|USAGE|
+.-------------------------.
+|REISER4 lzo | 1938 | 278 |
+|REISER4 gzip| 2295 | 213 |
+|REISER4     | 3462 | 692 |
+|EXT2        | 4092 | 816 |
+|JFS         | 4225 | 806 |
+|EXT4        | 4408 | 816 |
+|EXT3        | 4421 | 816 |
+|XFS         | 4625 | 779 |
+|REISER3     | 6178 | 793 |
+|FAT32       |12342 | 988 |
+|NTFS-3g     |10414 | 772 |
+.-------------------------.
+
+
+Column one measures the time taken to complete the bonnie++ benchmarking
+test (run with the parameters bonnie++ -n128:128k:0)
+
+Column two, Disk Usage: measures the amount of disk used to store 655MB
+of raw data (which was 3 different copies of the Linux kernel sources).
+
+Thanks for that, John.
+
+
+On Thu, 05 Apr 2007 17:23:23 -0700, "H. Peter Anvin" <hpa@zytor.com>
+said:
+> johnrobertbanks@fastmail.fm wrote:
+> > 
+> > Anyway, I have patched the 2.6.20 kernel and have a partition formatted
+> > with Reiser4.
+> > 
+> > However, I am having trouble getting LILO or GRUB working (with
+> > Reiser4).
+> > 
+> > Could you guys who know all about this, help me, or point me to some
+> > help.
+> > 
+> 
+> Make your /boot a separate partition and format it as conservatively as 
+> possible (e.g. ext3, or even ext2.)
+> 
+> Problem solved.
+> 
+> 	-hpa
+-- 
+  
+  johnrobertbanks@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Send your email first class
+
