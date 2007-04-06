@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933297AbXDFXAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933305AbXDFXCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933297AbXDFXAA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 19:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbXDFXAA
+	id S933305AbXDFXCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 19:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbXDFXCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 19:00:00 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:53445 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933297AbXDFW77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 18:59:59 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 6 Apr 2007 15:59:56 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-In-Reply-To: <Pine.LNX.4.64.0704061542180.6730@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704061555170.8738@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org>
- <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>
- <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com>
- <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru>
- <Pine.LNX.4.64.0704061119090.8738@alien.or.mcafeemobile.com>
- <m1wt0p5o1y.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704061214450.8738@alien.or.mcafeemobile.com>
- <20070406191945.GA18255@elte.hu> <Pine.LNX.4.64.0704061427130.8738@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0704061449231.6730@woody.linux-foundation.org>
- <Pine.LNX.4.64.0704061528190.8738@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0704061542180.6730@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Apr 2007 19:02:45 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:36795 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933305AbXDFXCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 19:02:44 -0400
+Date: Fri, 6 Apr 2007 16:02:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/8] unprivileged mount syscall
+Message-Id: <20070406160238.f3178189.akpm@linux-foundation.org>
+In-Reply-To: <20070404183012.429274832@szeredi.hu>
+References: <20070404183012.429274832@szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Apr 2007, Linus Torvalds wrote:
+On Wed, 04 Apr 2007 20:30:12 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
 
+> This patchset adds support for keeping mount ownership information in
+> the kernel, and allow unprivileged mount(2) and umount(2) in certain
+> cases.
+
+No replies, huh?
+
+My knowledge of the code which you're touching is not strong, and my spare
+reviewing capacity is not high.  And this work does need close review by
+people who are familar with the code which you're changing.
+
+So could I suggest that you go for a dig through the git history, identify
+some individuals who look like they know this code, then do a resend,
+cc'ing those people?  Please also cc linux-kernel on that resend.
+
+> This can be useful for the following reasons:
 > 
+> - mount(8) can store ownership ("user=XY" option) in the kernel
+>   instead, or in addition to storing it in /etc/mtab.  For example if
+>   private namespaces are used with mount propagations /etc/mtab
+>   becomes unworkable, but using /proc/mounts works fine
 > 
-> On Fri, 6 Apr 2007, Davide Libenzi wrote:
+> - fuse won't need a special suid-root mount/umount utility.  Plain
+>   umount(8) can easily be made to work with unprivileged fuse mounts
 > 
-> > On Fri, 6 Apr 2007, Linus Torvalds wrote:
-> > > 
-> > > I don't really see the point. It's not even *true*. A "process" includes 
-> > > more than the shared signal-handling - it would include files and fs etc 
-> > > too.
-> > > 
-> > > So it's actually *more* correct to call it the shared signal state than it 
-> > > would be to call it "process" state.
-> > 
-> > But "signal" has *nothing* to do with what the structure store nowadays, 
-> > really. It's a pool of "things" that are not Linux task specific.
+> - users can use bind mounts without having to pre-configure them in
+>   /etc/fstab
 > 
-> You're ignoring reality. It has more to do with signals than with 
-> processes. Look at *all* the fields in the top half of the structure, up 
-> to (and including) the "tty" field. They're *all* about signal semantics 
-> in one form or another (whether it's directly about shared signal 
-> behaviour, or indirectly about *sources* of signals like process control 
-> or timers).
+> All this is done in a secure way, and unprivileged bind and fuse
+> mounts are disabled by default and can be enabled through sysctl or
+> /proc/sys.
 > 
-> And renaming it really has no upsides, even *if* you had a point, which 
-> you don't.
+> One thing that is missing from this series is the ability to restrict
+> user mounts to private namespaces.  The reason is that private
+> namespaces have still not gained the momentum and support needed for
+> painless user experience.  So such a feature would not yet get enough
+> attention and testing.  However adding such an optional restriction
+> can be done with minimal changes in the future, once private
+> namespaces have matured.
 
-OTOH, the other half of the fields has nothing to do with them (signals). 
-Not only, the more time it passes, the more ppl (reason why I posted this 
-comment in the beginning) sees the "struct signal_struct" has a boilerplate
-where to store shared resources.
-Chosing a name like "struct task_shared_ctx" fits it, because "signals" 
-are *a* task_shared thing, whereas all the fields on the bottom of the 
-"struct signal_struct" (on top of the ones that ppl will want to add 
-everytime there's somethign to be shared between task structs) are *not* a 
-"signal".
+I suspect the people who developed and maintain nsproxy would disagree ;)
 
+Please also cc containers@lists.osdl.org.
 
-
-- Davide
-
-
+> An earlier version of these patches have been discussed here:
+> 
+>   http://lkml.org/lkml/2005/5/3/64
+> 
+> --
