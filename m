@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXDGACL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbXDGADe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933585AbXDGACL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 20:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbXDGACK
+	id S933537AbXDGADe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 20:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933450AbXDGADd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 20:02:10 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:51000 "EHLO tmailer.gwdg.de"
+	Fri, 6 Apr 2007 20:03:33 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:39506 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933546AbXDGACH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 20:02:07 -0400
-Date: Sat, 7 Apr 2007 01:55:44 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/8] unprivileged mount syscall
-In-Reply-To: <4616D4D4.6020405@zytor.com>
-Message-ID: <Pine.LNX.4.61.0704070153180.22181@yvahk01.tjqt.qr>
-References: <20070404183012.429274832@szeredi.hu>
- <20070406160238.f3178189.akpm@linux-foundation.org> <4616D4D4.6020405@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S933537AbXDGADc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 20:03:32 -0400
+Date: Fri, 6 Apr 2007 17:03:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH] [sched] redundant reschedule when set_user_nice()
+ boosts a prio of a task from the "expired" array
+Message-Id: <20070406170319.2c961eba.akpm@linux-foundation.org>
+In-Reply-To: <b647ffbd0704041305t2a140369q56cf9f0746b8fd86@mail.gmail.com>
+References: <b647ffbd0704040704k2e4b3abcyfadc7662dff37f5b@mail.gmail.com>
+	<20070404141546.GA862@elte.hu>
+	<b647ffbd0704041305t2a140369q56cf9f0746b8fd86@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Apr 2007 22:05:40 +0200 "Dmitry Adamushko" <dmitry.adamushko@gmail.com> wrote:
 
-On Apr 6 2007 16:16, H. Peter Anvin wrote:
->> > 
->> > - users can use bind mounts without having to pre-configure them in
->> > /etc/fstab
->> > 
->
-> This is by far the biggest concern I see.  I think the security implication of
-> allowing anyone to do bind mounts are poorly understood.
+> Ingo,
+> 
+> following the conversation on "a redundant reschedule call in set_user_prio()",
+> here is a possible approach.
+> 
+> The patch is somewhat intrusive as it even dares to adapt TASK_PREEMPTS_CURR().
+> 
+> Nevertheless, this adaptation seems to be ok with all the current use-cases.
+> 
+> Presupposition: TASK_PREEMPTS_CURR(p, rq) will /never/ be used as "a
+> mere prio comparator" - e.g. to make decisions on which array a task
+> has to be placed in.
+> 
+> 
+> =====
+> 
+> o  Make TASK_PREEMPTS_CURR(task, rq) return "true" only if the task's
+> prio is higher than the current's one and the task is in the "active"
+> array.
+> This ensures we don't make redundant resched_task() calls when the
+> task is in the "expired" array (as may happen now in set_user_prio(),
+> rt_mutex_setprio() and pull_task() ) ;
+> 
+> o  generilise conditions for a call to resched_task() in
+> set_user_nice(), rt_mutex_setprio() and sched_setscheduler()
+> 
 
-$ whoami
-miklos
-$ mount --bind / ~/down_under
+grief.  This patch conflicts seriously with the staircase scheduler in -mm.
+So to merge it I need to
 
-later that day:
-# userdel -r miklos
+- apply it 
+- then apply a revert-it-again patch
+- then apply staircase
+- then ask Con to cook up a staircase-based equivalent of your change.
 
-So both the source (/) and target (~/down_under) directory must be owned 
-by the user before --bind may succeed.
+so
 
-There may be other implications hpa might want to fill us in.
+- your code only gets publically tested in its against-staircase version
 
-Regards,
-Jan
--- 
+- the against-mainline version will get merged without having been
+  publically tested outside of staircase
+
+which is probably all OK for a 2.6.22-rc1 thing, provided Ingo can give a
+confident ack.
+
+
+Where are we at with staircase anyway?  Is it looking like a 2.6.22 thing? 
+I don't personally think we've yet seen enough serious performance testing
+to permit a merge, apart from other issues...
+
+
+
+> --- linux-2.6.21-rc5/kernel/sched-orig.c        2007-04-04
+> 18:26:19.000000000 +0200
+> +++ linux-2.6.21-rc5/kernel/sched.c     2007-04-04 18:26:43.000000000 +0200
+> @@ -168,7 +168,7 @@ unsigned long long __attribute__((weak))
+>                 (MAX_BONUS / 2 + DELTA((p)) + 1) / MAX_BONUS - 1))
+> 
+>  #define TASK_PREEMPTS_CURR(p, rq) \
+> -       ((p)->prio < (rq)->curr->prio)
+> +       (((p)->prio < (rq)->curr->prio) && ((p)->array == (rq)->active))
+
+Your patch was wordwrapped and had its tabs replaced with spaces.  Please
+fix your email client.
+
+(I might as well make that paragraph my .signature)
+
