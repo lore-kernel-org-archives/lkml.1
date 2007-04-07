@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965417AbXDGHFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965442AbXDGHPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965417AbXDGHFe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 03:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965442AbXDGHFe
+	id S965442AbXDGHPo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 03:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965449AbXDGHPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 03:05:34 -0400
-Received: from web86903.mail.ukl.yahoo.com ([217.12.13.55]:37397 "HELO
-	web86903.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965417AbXDGHFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 03:05:33 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Apr 2007 03:05:33 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.uk;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=uTblpwOChlW7IJbYQTC9DewwWR4qbgwRHqXDmBlVva99xFDKkAuKFhH4ide693vbcDWYYWR/OG4QzX4IGiMV6/sYTpXehFwxqng/ymr8mdN9+grFB1PZ2T7ynyKUFzc1wwVG54Igrp9T8fFjgTDlk6ZsRC8ZB0PvEq7Bgy0WeE0=;
-X-YMail-OSG: Hyg84i0VM1ntA6s3X4sIn4B..V1U7ISN0nWbnt3Le7JB2y.PwT85uybo9Tjydinzk.JWnd6IBfDGAt4I3KFXay8KNEc.CeNWUC5hd9oQgW2u2AsBUV57
-X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.8
-Date: Sat, 7 Apr 2007 06:58:51 +0000 (GMT)
-From: JanuGerman <doublemalam@yahoo.co.uk>
-Subject: Two questions regarding Opening files within Kernel!
-To: linuxkernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
-Message-ID: <400855.99642.qm@web86903.mail.ukl.yahoo.com>
+	Sat, 7 Apr 2007 03:15:44 -0400
+Received: from 1wt.eu ([62.212.114.60]:1698 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965442AbXDGHPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 03:15:43 -0400
+Date: Sat, 7 Apr 2007 09:15:35 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: johnrobertbanks@fastmail.fm
+Cc: Jan Harkes <jaharkes@cs.cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Reiser4. BEST FILESYSTEM EVER.
+Message-ID: <20070407071535.GD943@1wt.eu>
+References: <461592FB.5060507@zytor.com> <1175819681.20754.1183287946@webmail.messagingengine.com> <461596DE.2020802@zytor.com> <1175823288.25662.1183293506@webmail.messagingengine.com> <4615C780.5040407@zytor.com> <1175833931.8916.1183307802@webmail.messagingengine.com> <20070406152119.GC4228@delft.aura.cs.cmu.edu> <1175914056.9653.1183426876@webmail.messagingengine.com> <20070407033049.GI4228@delft.aura.cs.cmu.edu> <1175925525.21154.1183436614@webmail.messagingengine.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1175925525.21154.1183436614@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Every one,
+On Fri, Apr 06, 2007 at 10:58:45PM -0700, johnrobertbanks@fastmail.fm wrote:
+> You know,... you cut out this bit:
+> 
+> -----------------------------------------------------------------
+> 
+> > The following benchmarks are from
+> > 
+> > http://linuxhelp.150m.com/resources/fs-benchmarks.htm or,
+> > http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
 
-  I have got two questions regarding opening files within the Linux kernel. If some body can help me, in sorting out this problem, i will be very thankful.
+...
 
-1)   I have just a file path with me, an absolute path, but no dentry, no inode, no vfsmount object, which function i can call to get a "file" object associated with the absoulte file path. I have surfed arround the source code especially fs/open.c and some other files, but each function requires a parameter "mode" and "fd" beside file path. Actually, i was confuse about the "mode" parameter (and its differece with "flag"), like what to send, and secondly for "fd", i am not sure, what value to send as there is no file infact and only file path exists. Any idea?
+Hey John, please change your disk, it's scratched and you're repeating
+yourself again and again. At first I thought "Oh cool, some good news
+about reiser4", now when I see "reiserfs" in a thread, I think "oh no,
+not this boring guy who escaped from the asylum again !". I hope this
+thread will be cut shortly so that you stop doing bad publicity to
+reiserfs and its developers, because when a product is indicated as
+good by stupid people, it's really doing harm.
 
-2) Any functionality within linux kernel source code, to read one line per file? or some indirect way to set buffer size for one read?. That is, any existing header file for doing text I/O rather than binary within the kernel source code?
+Also, about this part :
+[Jan]
+> > But in the end everything is a tradeoff. You can save diskspace, but
+> > increase the cost of corruption. 
 
-Thanks,
-JG
+I don't 100% agree with Jan, because for some usages (temporary space),
+light compression can increase speed. For instance, when processing logs,
+I get better speed by compressing intermediate files with LZO on the fly.
 
+[John]
+> You deliberately ignored the fact that bad blocks are NOT dealt with by
+> the filesystem,... but by the operating system. Like I said: If your
+> filesystem is writing to bad blocks, then throw away your operating
+> system.
 
-		
-___________________________________________________________ 
-The all-new Yahoo! Mail goes wherever you go - free your email address from your Internet provider. http://uk.docs.yahoo.com/nowyoucan.html
+But what you write here is complete crap. The filesystem relies on a
+linear block device. The operating system is responsible for doing
+read retries or reporting errors on bad blocks, but the FS and only
+the FS can decide how not to use some known defective areas, for
+instance not putting any metadata on them nor any useful data.
+
+Now if you want to stop writing stupid things again and again, take
+your bag, don't miss the bus to school, and listen to the teachers
+instead of playing games on your calculator.
+
+Willy
+PS: non need to reply either, I'll kill this thread and your address here.
+
