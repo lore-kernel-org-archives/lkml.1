@@ -1,81 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966126AbXDGRKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966129AbXDGRRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966126AbXDGRKm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 13:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966131AbXDGRKl
+	id S966129AbXDGRRm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 13:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966131AbXDGRRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 13:10:41 -0400
-Received: from h80ad275a.async.vt.edu ([128.173.39.90]:36611 "EHLO
-	h80ad275a.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966126AbXDGRKk (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 13:10:40 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: johnrobertbanks@fastmail.fm, Jan Harkes <jaharkes@cs.cmu.edu>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Reiser4. BEST FILESYSTEM EVER.
-In-Reply-To: Your message of "Sat, 07 Apr 2007 16:11:46 +0200."
-             <m34pns46l9.fsf@maximus.localdomain>
-From: Valdis.Kletnieks@vt.edu
-References: <46157B5B.5000602@gmail.com> <1175817921.18400.1183285196@webmail.messagingengine.com> <461592FB.5060507@zytor.com> <1175819681.20754.1183287946@webmail.messagingengine.com> <461596DE.2020802@zytor.com> <1175823288.25662.1183293506@webmail.messagingengine.com> <4615C780.5040407@zytor.com> <1175833931.8916.1183307802@webmail.messagingengine.com> <20070406152119.GC4228@delft.aura.cs.cmu.edu> <1175914056.9653.1183426876@webmail.messagingengine.com> <20070407033049.GI4228@delft.aura.cs.cmu.edu> <1175925525.21154.1183436614@webmail.messagingengine.com>
-            <m34pns46l9.fsf@maximus.localdomain>
+	Sat, 7 Apr 2007 13:17:42 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33309 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S966129AbXDGRRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 13:17:41 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18gZykK7jkg1wuRTdgGD5ovYW88OAOycDnk74x/3c
+	rUlAObZro/bl8q
+Subject: Re: SD scheduler testing hitch
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>
+In-Reply-To: <1175962840.10478.49.camel@Homer.simpson.net>
+References: <b647ffbd0704040704k2e4b3abcyfadc7662dff37f5b@mail.gmail.com>
+	 <20070404141546.GA862@elte.hu>
+	 <b647ffbd0704041305t2a140369q56cf9f0746b8fd86@mail.gmail.com>
+	 <20070406170319.2c961eba.akpm@linux-foundation.org>
+	 <20070407092401.GB16356@elte.hu>
+	 <1175962840.10478.49.camel@Homer.simpson.net>
+Content-Type: multipart/mixed; boundary="=-ORFsABSSjRV50v/h33VR"
+Date: Sat, 07 Apr 2007 19:17:35 +0200
+Message-Id: <1175966255.11408.5.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175965831_4736P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 07 Apr 2007 13:10:31 -0400
-Message-ID: <13684.1175965831@turing-police.cc.vt.edu>
+X-Mailer: Evolution 2.8.2 
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175965831_4736P
-Content-Type: text/plain; charset=us-ascii
 
-On Sat, 07 Apr 2007 16:11:46 +0200, Krzysztof Halasa said:
+--=-ORFsABSSjRV50v/h33VR
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> > Think about it,... read speeds that are some FOUR times the physical
-> > disk read rate,... impossible without the use of compression (or
-> > something similar).
+On Sat, 2007-04-07 at 18:20 +0200, Mike Galbraith wrote:
+
+> xx.c
 > 
-> It's really impossible with compression only unless you're writing
-> only zeros or stuff alike. I don't know what bonnie uses for testing
-> but real life data doesn't compress 4 times. Two times, sometimes,
+> #include <stdio.h>
+> #include <sys/time.h>
+> 
+> #define max(a,b) ((a) > (b) ? (a) : (b))
+> #define min(a,b) ((a) < (b) ? (a) : (b))
+> 
+> int main(void)
+> {
+>     struct timeval then, now;
+>     struct timespec t = {0, 1000}, r;
+> 
+>     for(;;) {
+>         int t1, t2;
+>         short i;
+> 
+>         if (gettimeofday(&then, 0))
+>             break;
+>         for (i = 1; i > 0; i++);
+>         if (gettimeofday(&now, 0))
+>             break;
+>         t2 = max(then.tv_usec, now.tv_usec);
+>         t1 = min(then.tv_usec, now.tv_usec);
+>         if (t2 - t1 >= 1000 && nanosleep(&t, &r))
+>             break;
+>     }
+>     return 0;
+> }
 
-All depends on your data.  From a recent "compress the old logs" job on
-our syslog server:
+I lowered the time to 500us, and ran at nice -10.. it starves tenpercent
+here every time.  (ran as taskset -c 1 nice -n -10 ./fairtest)  The
+starving 10% duty cycle task has trouble getting 1% CPU.
 
-/logs/lennier.cc.vt.edu/2007/03/maillog-2007-0308:       85.4% -- replaced with /logs/lennier.cc.vt.edu/2007/03/maillog-2007-0308.gz
+	-Mike
 
-And it wasn't a tiny file either - it's a busy mailserver, the logs run to
-several hundred megabytes a day.  Syslogs *often* compress 90% or more,
-meaning a 10X compression.
+--=-ORFsABSSjRV50v/h33VR
+Content-Disposition: attachment; filename=fairtest.c
+Content-Type: text/x-csrc; name=fairtest.c; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-> but then it will be typically slower than disk access (I mean read,
-> as write will be much slower).
+// gcc -O2 -o tenp tenp.c -lrt
+// code from interbench.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+/*
+ * Start $forks processes that run for 10% cpu time each. Set this to
+ * 15 * number of cpus for best effect.
+ */
+int forks = 1;
 
-Actually, as far back as 1998 or so, I was able to document 20% *speedups*
-on an AIX system that supported compressed file systems - and that was from
-when a 133mz PowerPC 604e was a *fast* machine.   Since then, CPUs have gotten
-faster at a faster rate than disks have, even increasing the speedup.
+unsigned long run_us = 1000000000, sleep_us;
+unsigned long loops_per_ms;
 
-The basic theory is that unless you're sitting close to 100%CPU, it is *faster*
-to burn some CPU to compress/decompress a 4K chunk of data down to 2K, and then
-move 2K to the disk drive, than it is to move 4K.  It's particularly noticable
-for larger files - if you can apply the compression to  remove the need to move
-2M of data faster than you can move 2M of data, you win.
+void terminal_error(const char *name)
+{
+	fprintf(stderr, "\n");
+	perror(name);
+	exit (1);
+}
+
+unsigned long long get_nsecs(struct timespec *myts)
+{
+	if (clock_gettime(CLOCK_REALTIME, myts))
+		terminal_error("clock_gettime");
+	return (myts->tv_sec * 1000000000 + myts->tv_nsec );
+}
+
+void burn_loops(unsigned long loops)
+{
+	unsigned long i;
+
+	/*
+	 * We need some magic here to prevent the compiler from optimising
+	 * this loop away. Otherwise trying to emulate a fixed cpu load
+	 * with this loop will not work.
+	 */
+	for (i = 0 ; i < loops ; i++)
+	     asm volatile("" : : : "memory");
+}
+
+/* Use this many usecs of cpu time */
+void burn_usecs(unsigned long usecs)
+{
+	unsigned long ms_loops;
+
+	ms_loops = loops_per_ms / 1000 * usecs;
+	burn_loops(ms_loops);
+}
+
+void microsleep(unsigned long long usecs)
+{
+	struct timespec req, rem;
+
+	rem.tv_sec = rem.tv_nsec = 0;
+
+	req.tv_sec = usecs / 1000000;
+	req.tv_nsec = (usecs - (req.tv_sec * 1000000)) * 1000;
+continue_sleep:
+	if ((nanosleep(&req, &rem)) == -1) {
+		if (errno == EINTR) {
+			if (rem.tv_sec || rem.tv_nsec) {
+				req.tv_sec = rem.tv_sec;
+				req.tv_nsec = rem.tv_nsec;
+				goto continue_sleep;
+			}
+			goto out;
+		}
+		terminal_error("nanosleep");
+	}
+out:
+	return;
+}
+
+/*
+ * In an unoptimised loop we try to benchmark how many meaningless loops
+ * per second we can perform on this hardware to fairly accurately
+ * reproduce certain percentage cpu usage
+ */
+void calibrate_loop(void)
+{
+	unsigned long long start_time, loops_per_msec, run_time = 0,
+		min_run_us = run_us;
+	unsigned long loops;
+	struct timespec myts;
+	int i;
+
+	printf("Calibrating loop\n");
+	loops_per_msec = 1000000;
+redo:
+	/* Calibrate to within 1% accuracy */
+	while (run_time > 1010000 || run_time < 990000) {
+		loops = loops_per_msec;
+		start_time = get_nsecs(&myts);
+		burn_loops(loops);
+		run_time = get_nsecs(&myts) - start_time;
+		loops_per_msec = (1000000 * loops_per_msec / run_time ? :
+			loops_per_msec);
+	}
+
+	/* Rechecking after a pause increases reproducibility */
+	microsleep(1);
+	loops = loops_per_msec;
+	start_time = get_nsecs(&myts);
+	burn_loops(loops);
+	run_time = get_nsecs(&myts) - start_time;
+
+	/* Tolerate 5% difference on checking */
+	if (run_time > 1050000 || run_time < 950000)
+		goto redo;
+	loops_per_ms=loops_per_msec;
+	printf("Calibrating sleep interval\n");
+	microsleep(1);
+	/* Find the smallest time interval close to 1ms that we can sleep */
+	for (i = 0; i < 100; i++) {
+		start_time=get_nsecs(&myts);
+		microsleep(1000);
+		run_time=get_nsecs(&myts)-start_time;
+		run_time /= 1000;
+		if (run_time < run_us && run_us > 1000)
+			run_us = run_time;
+	}
+	/* Then set run_us to that duration and sleep_us to 9 x that */
+	sleep_us = run_us * 9;
+	printf("Calibrating run interval\n");
+	microsleep(1);
+	/* Do a few runs to see what really gets us run_us runtime */
+	for (i = 0; i < 100; i++) {
+		start_time=get_nsecs(&myts);
+		burn_usecs(run_us);
+		run_time=get_nsecs(&myts)-start_time;
+		run_time /= 1000;
+		if (run_time < min_run_us && run_time > run_us)
+			min_run_us = run_time;
+	}
+	if (min_run_us < run_us)
+		run_us = run_us * run_us / min_run_us;
+	printf("Each fork will run for %lu usecs and sleep for %lu usecs\n",
+		run_us, sleep_us);
+}
 
 
---==_Exmh_1175965831_4736P
-Content-Type: application/pgp-signature
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+void steal(void)
+{
+    struct timeval then, now;
+    struct timespec t = {0, 500}, r;
 
-iD8DBQFGF9CHcC3lWbTT17ARAkCjAKD9qQoON7KzBXuBY5sY/4zgVVfjHgCg8joB
-EhcogAGY+4wH4uLNqI0kTUE=
-=fj85
------END PGP SIGNATURE-----
+    for(;;) {
+        int t1, t2;
+        short i;
 
---==_Exmh_1175965831_4736P--
+        if (gettimeofday(&then, 0))
+            break;
+        for (i = 1; i > 0; i++);
+        if (gettimeofday(&now, 0))
+            break;
+        t2 = max(then.tv_usec, now.tv_usec);
+        t1 = min(then.tv_usec, now.tv_usec);
+        if (t2 - t1 >= 500 && nanosleep(&t, &r))
+            break;
+    }
+}
+
+int main(void){
+	int i, child;
+
+	calibrate_loop();
+	printf("starting %d forks\n", forks);
+	for(i = 0; i < forks; i++){
+		if(!(child = fork()))
+			break;
+	}
+        if (child)
+            steal();
+	else while(1){
+		burn_usecs(run_us);
+		microsleep(sleep_us);
+	}
+	return 0;
+}
+
+--=-ORFsABSSjRV50v/h33VR--
+
