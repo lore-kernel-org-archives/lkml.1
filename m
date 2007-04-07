@@ -1,135 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965709AbXDGKFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965736AbXDGKOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965709AbXDGKFP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 06:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965711AbXDGKFP
+	id S965736AbXDGKOd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 06:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965739AbXDGKOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 06:05:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35869 "EHLO mx2.mail.elte.hu"
+	Sat, 7 Apr 2007 06:14:33 -0400
+Received: from max.feld.cvut.cz ([147.32.192.36]:38775 "EHLO max.feld.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965709AbXDGKFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 06:05:13 -0400
-Date: Sat, 7 Apr 2007 12:05:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Soeren Sonnenburg <kernel@nn7.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch, take #3] high-res timers: resume fix
-Message-ID: <20070407100500.GA24122@elte.hu>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070407081244.GA28284@elte.hu> <20070407094924.GA21237@elte.hu> <200704071202.41981.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S965736AbXDGKOc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 06:14:32 -0400
+From: CIJOML <cijoml@volny.cz>
+To: "Markus Rechberger" <mrechberger@gmail.com>
+Subject: Re: kernel OOPSes when changing DVB-T adapter in 2.6.21-rc3
+Date: Sat, 7 Apr 2007 12:14:12 +0200
+User-Agent: KMail/1.9.5
+Cc: "Oliver Neukum" <oneukum@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200703091641.54249.cijoml@volny.cz> <200703161025.44681.oneukum@suse.de> <d9def9db0704061258v47d4cf5dwaac39625e8d00150@mail.gmail.com>
+In-Reply-To: <d9def9db0704061258v47d4cf5dwaac39625e8d00150@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200704071202.41981.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200704071214.13210.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+I can confirm this fixes problem.
+Please include into 2.6.21
 
-> Hm, I'm probably missing something obvious, but where is it going to 
-> be called from?
+Michal
 
-doh! :) Find new patch below :-/ Soeren, please test this one.
-
-	Ingo
-
----------------------------->
-Subject: [patch] high-res timers: resume fix
-From: Ingo Molnar <mingo@elte.hu>
-
-Soeren Sonnenburg reported that upon resume he is getting
-this backtrace:
-
- [<c0119637>] smp_apic_timer_interrupt+0x57/0x90
- [<c0142d30>] retrigger_next_event+0x0/0xb0
- [<c0104d30>] apic_timer_interrupt+0x28/0x30
- [<c0142d30>] retrigger_next_event+0x0/0xb0
- [<c0140068>] __kfifo_put+0x8/0x90
- [<c0130fe5>] on_each_cpu+0x35/0x60
- [<c0143538>] clock_was_set+0x18/0x20
- [<c0135cdc>] timekeeping_resume+0x7c/0xa0
- [<c02aabe1>] __sysdev_resume+0x11/0x80
- [<c02ab0c7>] sysdev_resume+0x47/0x80
- [<c02b0b05>] device_power_up+0x5/0x10
-
-it turns out that on resume we mistakenly re-enable interrupts.
-Do the timer retrigger only on the current CPU.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/hrtimer.h |    3 +++
- kernel/hrtimer.c        |   12 ++++++++++++
- kernel/timer.c          |    2 +-
- 3 files changed, 16 insertions(+), 1 deletion(-)
-
-Index: linux/include/linux/hrtimer.h
-===================================================================
---- linux.orig/include/linux/hrtimer.h
-+++ linux/include/linux/hrtimer.h
-@@ -206,6 +206,7 @@ struct hrtimer_cpu_base {
- struct clock_event_device;
- 
- extern void clock_was_set(void);
-+extern void hres_timers_resume(void);
- extern void hrtimer_interrupt(struct clock_event_device *dev);
- 
- /*
-@@ -236,6 +237,8 @@ static inline ktime_t hrtimer_cb_get_tim
-  */
- static inline void clock_was_set(void) { }
- 
-+static inline void hres_timers_resume(void) { }
-+
- /*
-  * In non high resolution mode the time reference is taken from
-  * the base softirq time variable.
-Index: linux/kernel/hrtimer.c
-===================================================================
---- linux.orig/kernel/hrtimer.c
-+++ linux/kernel/hrtimer.c
-@@ -459,6 +459,18 @@ void clock_was_set(void)
- }
- 
- /*
-+ * During resume we might have to reprogram the high resolution timer
-+ * interrupt (on the local CPU):
-+ */
-+void hres_timers_resume(void)
-+{
-+	WARN_ON_ONCE(num_online_cpus() > 1);
-+
-+	/* Retrigger the CPU local events: */
-+	retrigger_next_event(NULL);
-+}
-+
-+/*
-  * Check, whether the timer is on the callback pending list
-  */
- static inline int hrtimer_cb_pending(const struct hrtimer *timer)
-Index: linux/kernel/timer.c
-===================================================================
---- linux.orig/kernel/timer.c
-+++ linux/kernel/timer.c
-@@ -1016,7 +1016,7 @@ static int timekeeping_resume(struct sys
- 	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
- 
- 	/* Resume hrtimers */
--	clock_was_set();
-+	hres_timers_resume();
- 
- 	return 0;
- }
-
+Dne pátek 06 duben 2007 21:58 Markus Rechberger napsal(a):
+> I committed a patch which fixes this issue:
+>
+> http://mcentral.de/hg/~mrec/v4l-dvb-stable/
+>
+> That problem got caused by releasing data structures which are still
+> in use when the device gets unplugged. These patches delay the
+> deallocation of the data till the last user releases its reference to
+> the dvb nodes.
+>
+> This patch got tested with devices which use the dvb-usb framework as
+> well as em28xx based dvb devices.
+>
+> Markus
+>
+> On 3/16/07, Oliver Neukum <oneukum@suse.de> wrote:
+> > Am Freitag, 16. März 2007 10:13 schrieb CIJOML:
+> > > Hi,
+> > >
+> > > looks like more general problem with 2.6.21-rc3. This happens when I
+> >
+> > remove my
+> >
+> > > PCMCIA USB2.0/IEEE1384 adapter from slot:
+> >
+> > Yes, the more important it is to know whether -rc2 works.
+> > And please report this as a generic sysfs failure to lkml.
+> >
+> > 	Regards
+> > 		Oliver
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> > in the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
