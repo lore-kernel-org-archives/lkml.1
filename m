@@ -1,390 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbXDGFrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965365AbXDGF6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752093AbXDGFrt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 01:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXDGFrt
+	id S965365AbXDGF6s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 01:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965356AbXDGF6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 01:47:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:50348 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752093AbXDGFrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 01:47:47 -0400
-Message-ID: <46173056.20907@goop.org>
-Date: Fri, 06 Apr 2007 22:47:02 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andi Kleen <ak@suse.de>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Zachary Amsden <zach@vmware.com>, Christoph Lameter <clameter@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 07/20] Allow paravirt backend to choose kernel PMD sharing
-References: <20070404191151.009821039@goop.org>	<20070404191205.392155702@goop.org>	<20070406164139.08cd343b.akpm@linux-foundation.org>	<4616DFB2.4020802@goop.org>	<20070406172844.12f7b8e7.akpm@linux-foundation.org>	<4616E86D.30904@goop.org> <20070406182155.e72d8f95.akpm@linux-foundation.org>
-In-Reply-To: <20070406182155.e72d8f95.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 7 Apr 2007 01:58:48 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:44799 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965312AbXDGF6q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 01:58:46 -0400
+Message-Id: <1175925525.21154.1183436614@webmail.messagingengine.com>
+X-Sasl-Enc: 50NycYwAxnYqIZGNuakdXn2aOFcnUUPvrBEpTQNN/pyv 1175925525
+From: johnrobertbanks@fastmail.fm
+To: "Jan Harkes" <jaharkes@cs.cmu.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <46157B5B.5000602@gmail.com>
+   <1175817921.18400.1183285196@webmail.messagingengine.com>
+   <461592FB.5060507@zytor.com>
+   <1175819681.20754.1183287946@webmail.messagingengine.com>
+   <461596DE.2020802@zytor.com>
+   <1175823288.25662.1183293506@webmail.messagingengine.com>
+   <4615C780.5040407@zytor.com>
+   <1175833931.8916.1183307802@webmail.messagingengine.com>
+   <20070406152119.GC4228@delft.aura.cs.cmu.edu>
+   <1175914056.9653.1183426876@webmail.messagingengine.com>
+   <20070407033049.GI4228@delft.aura.cs.cmu.edu>
+Subject: Re: Reiser4. BEST FILESYSTEM EVER.
+In-Reply-To: <20070407033049.GI4228@delft.aura.cs.cmu.edu>
+Date: Fri, 06 Apr 2007 22:58:45 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Thanks.  A replacement would suit.
->   
-Subject: Allow paravirt backend to choose kernel PMD sharing
 
-Normally when running in PAE mode, the 4th PMD maps the kernel address
-space, which can be shared among all processes (since they all need
-the same kernel mappings).
+On Fri, 6 Apr 2007 23:30:49 -0400, "Jan Harkes" <jaharkes@cs.cmu.edu>
+said:
+> 
+> Since you decide to publically respond to a private email, but not only
+> you did not 'discuss' anything I wrote and in fact cut out most of the
+> useful information in my reply I guess I will have to repeat my
+> observations.
 
-Xen, however, does not allow guests to have the kernel pmd shared
-between page tables, so parameterize pgtable.c to allow both modes of
-operation.
+You are a funny guy Jan.
 
-There are several side-effects of this.  One is that vmalloc will
-update the kernel address space mappings, and those updates need to be
-propagated into all processes if the kernel mappings are not
-intrinsically shared.  In the non-PAE case, this is done by
-maintaining a pgd_list of all processes; this list is used when all
-process pagetables must be updated.  pgd_list is threaded via
-otherwise unused entries in the page structure for the pgd, which
-means that the pgd must be page-sized for this to work.
+Here you are, once again, cutting out my most useful information, ie,
+the data I was discussing, while complaining that I cut out your most
+useful information. 
 
-Normally the PAE pgd is only 4x64 byte entries large, but Xen requires
-the PAE pgd to page aligned anyway, so this patch forces the pgd to be
-page aligned+sized when the kernel pmd is unshared, to accomodate both
-these requirements.
+You know,... you cut out this bit:
 
-Also, since there may be several distinct kernel pmds (if the
-user/kernel split is below 3G), there's no point in allocating them
-from a slab cache; they're just allocated with get_free_page and
-initialized appropriately.  (Of course the could be cached if there is
-just a single kernel pmd - which is the default with a 3G user/kernel
-split - but it doesn't seem worthwhile to add yet another case into
-this code).
+-----------------------------------------------------------------
 
-[ Many thanks to wli for review comments. ]
+> The following benchmarks are from
+> 
+> http://linuxhelp.150m.com/resources/fs-benchmarks.htm or,
+> http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
+> 
+> .-------------------------.
+> | FILESYSTEM | TIME |DISK |
+> | TYPE       |(secs)|USAGE|
+> .-------------------------.
+> |REISER4 lzo | 1938 | 278 |
+> |REISER4 gzip| 2295 | 213 |
+> |REISER4     | 3462 | 692 |
+> |EXT2        | 4092 | 816 |
+> |JFS         | 4225 | 806 |
+> |EXT4        | 4408 | 816 |
+> |EXT3        | 4421 | 816 |
+> |XFS         | 4625 | 779 |
+> |REISER3     | 6178 | 793 |
+> |FAT32       |12342 | 988 |
+> |NTFS-3g     |10414 | 772 |
+> .-------------------------.
+> 
+> Column one measures the time taken to complete the bonnie++ benchmarking test (run with the parameters bonnie++ -n128:128k:0)
+> 
+> Column two, Disk Usage: measures the amount of disk used to store 655MB of raw data (which was 3 different copies of the Linux kernel sources).
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: William Lee Irwin III <wli@holomorphy.com>
-Cc: Zachary Amsden <zach@vmware.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
----
- arch/i386/kernel/paravirt.c            |    1 
- arch/i386/mm/fault.c                   |    5 +
- arch/i386/mm/init.c                    |   18 +++++-
- arch/i386/mm/pageattr.c                |    2 
- arch/i386/mm/pgtable.c                 |   84 ++++++++++++++++++++++++++------
- include/asm-i386/paravirt.h            |    1 
- include/asm-i386/pgtable-2level-defs.h |    2 
- include/asm-i386/pgtable-2level.h      |    2 
- include/asm-i386/pgtable-3level-defs.h |    6 ++
- include/asm-i386/pgtable-3level.h      |    2 
- include/asm-i386/pgtable.h             |    2 
- 11 files changed, 100 insertions(+), 25 deletions(-)
+-----------------------------------------------------------------
 
-===================================================================
---- a/arch/i386/kernel/paravirt.c
-+++ b/arch/i386/kernel/paravirt.c
-@@ -132,6 +132,7 @@ struct paravirt_ops paravirt_ops = {
- 	.name = "bare hardware",
- 	.paravirt_enabled = 0,
- 	.kernel_rpl = 0,
-+	.shared_kernel_pmd = 1,	/* Only used when CONFIG_X86_PAE is set */
+And this bit: 
+
+Jan,... Here is another section, you conveniently cut out. Maybe you
+should explain why you cut out this section? Was it embarrassing to you?
+I mean, your statement is sort of correct,... but it shows a basic
+misunderstanding of filesystems.
+
+> > With compression there is a pretty high probability that one corrupted
+> > byte or disk block will result in loss of a considerably larger amount
+> > of data. 
+> 
+> Bad blocks are NOT dealt with by the filesystem,... so your comment is
+> irrelevant, or just plain wrong.
+> 
+> If your filesystem is writing to bad blocks, then throw away your
+> operating system.
+
+-----------------------------------------------------------------
+
+It is true that I considered your "most useful information," an
+irrelevant section, which is why it was cut out (ignored).
+
+I did not see my doing this, any worse than you doing it. I did not
+realize that you were be so impolite.
+
+As to your email being private, I had thought I had joined a mailing
+list. I had not idea your email was meant to be private and just
+considered it like all the others.
+
+Now you mention it, I wondered why the email did not automatically list
+the mailing lists, as recipients, and I had to add them. If I had
+realized this I may have added the mailing lists as recipients, anyway.
+It would be like me to do such. However, you should understand that I am
+new to mailing lists.
  
-  	.patch = native_patch,
- 	.banner = default_banner,
-===================================================================
---- a/arch/i386/mm/fault.c
-+++ b/arch/i386/mm/fault.c
-@@ -603,7 +603,6 @@ do_sigbus:
- 	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
- }
- 
--#ifndef CONFIG_X86_PAE
- void vmalloc_sync_all(void)
- {
- 	/*
-@@ -615,6 +614,9 @@ void vmalloc_sync_all(void)
- 	static DECLARE_BITMAP(insync, PTRS_PER_PGD);
- 	static unsigned long start = TASK_SIZE;
- 	unsigned long address;
-+
-+	if (SHARED_KERNEL_PMD)
-+		return;
- 
- 	BUILD_BUG_ON(TASK_SIZE & ~PGDIR_MASK);
- 	for (address = start; address >= TASK_SIZE; address += PGDIR_SIZE) {
-@@ -638,4 +640,3 @@ void vmalloc_sync_all(void)
- 			start = address + PGDIR_SIZE;
- 	}
- }
--#endif
-===================================================================
---- a/arch/i386/mm/init.c
-+++ b/arch/i386/mm/init.c
-@@ -757,6 +757,8 @@ struct kmem_cache *pmd_cache;
- 
- void __init pgtable_cache_init(void)
- {
-+	size_t pgd_size = PTRS_PER_PGD*sizeof(pgd_t);
-+
- 	if (PTRS_PER_PMD > 1) {
- 		pmd_cache = kmem_cache_create("pmd",
- 					PTRS_PER_PMD*sizeof(pmd_t),
-@@ -766,13 +768,23 @@ void __init pgtable_cache_init(void)
- 					NULL);
- 		if (!pmd_cache)
- 			panic("pgtable_cache_init(): cannot create pmd cache");
-+
-+		if (!SHARED_KERNEL_PMD) {
-+			/* If we're in PAE mode and have a non-shared
-+			   kernel pmd, then the pgd size must be a
-+			   page size.  This is because the pgd_list
-+			   links through the page structure, so there
-+			   can only be one pgd per page for this to
-+			   work. */
-+			pgd_size = PAGE_SIZE;
-+		}
- 	}
- 	pgd_cache = kmem_cache_create("pgd",
--				PTRS_PER_PGD*sizeof(pgd_t),
--				PTRS_PER_PGD*sizeof(pgd_t),
-+				pgd_size,
-+				pgd_size,
- 				0,
- 				pgd_ctor,
--				PTRS_PER_PMD == 1 ? pgd_dtor : NULL);
-+				(!SHARED_KERNEL_PMD) ? pgd_dtor : NULL);
- 	if (!pgd_cache)
- 		panic("pgtable_cache_init(): Cannot create pgd cache");
- }
-===================================================================
---- a/arch/i386/mm/pageattr.c
-+++ b/arch/i386/mm/pageattr.c
-@@ -91,7 +91,7 @@ static void set_pmd_pte(pte_t *kpte, uns
- 	unsigned long flags;
- 
- 	set_pte_atomic(kpte, pte); 	/* change init_mm */
--	if (PTRS_PER_PMD > 1)
-+	if (SHARED_KERNEL_PMD)
- 		return;
- 
- 	spin_lock_irqsave(&pgd_lock, flags);
-===================================================================
---- a/arch/i386/mm/pgtable.c
-+++ b/arch/i386/mm/pgtable.c
-@@ -232,35 +232,56 @@ static inline void pgd_list_del(pgd_t *p
- 		set_page_private(next, (unsigned long)pprev);
- }
- 
-+#if (PTRS_PER_PMD == 1)
-+/* Non-PAE pgd constructor */
- void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
- {
- 	unsigned long flags;
- 
--	if (PTRS_PER_PMD == 1) {
--		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
--		spin_lock_irqsave(&pgd_lock, flags);
--	}
-+	/* !PAE, no pagetable sharing */
-+	memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
- 
- 	clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
- 			swapper_pg_dir + USER_PTRS_PER_PGD,
- 			KERNEL_PGD_PTRS);
- 
--	if (PTRS_PER_PMD > 1)
--		return;
-+	spin_lock_irqsave(&pgd_lock, flags);
- 
- 	/* must happen under lock */
- 	paravirt_alloc_pd_clone(__pa(pgd) >> PAGE_SHIFT,
--			__pa(swapper_pg_dir) >> PAGE_SHIFT,
--			USER_PTRS_PER_PGD, PTRS_PER_PGD - USER_PTRS_PER_PGD);
-+				__pa(swapper_pg_dir) >> PAGE_SHIFT,
-+				USER_PTRS_PER_PGD,
-+				KERNEL_PGD_PTRS);
- 
- 	pgd_list_add(pgd);
- 	spin_unlock_irqrestore(&pgd_lock, flags);
- }
--
--/* never called when PTRS_PER_PMD > 1 */
-+#else  /* PTRS_PER_PMD > 1 */
-+/* PAE pgd constructor */
-+void pgd_ctor(void *pgd, struct kmem_cache *cache, unsigned long unused)
-+{
-+	/* PAE, kernel PMD may be shared */
-+
-+	if (SHARED_KERNEL_PMD) {
-+		clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
-+				swapper_pg_dir + USER_PTRS_PER_PGD,
-+				KERNEL_PGD_PTRS);
-+	} else {
-+		unsigned long flags;
-+
-+		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
-+		spin_lock_irqsave(&pgd_lock, flags);
-+		pgd_list_add(pgd);
-+		spin_unlock_irqrestore(&pgd_lock, flags);
-+	}
-+}
-+#endif	/* PTRS_PER_PMD */
-+
- void pgd_dtor(void *pgd, struct kmem_cache *cache, unsigned long unused)
- {
- 	unsigned long flags; /* can be called from interrupt context */
-+
-+	BUG_ON(SHARED_KERNEL_PMD);
- 
- 	paravirt_release_pd(__pa(pgd) >> PAGE_SHIFT);
- 	spin_lock_irqsave(&pgd_lock, flags);
-@@ -268,6 +289,37 @@ void pgd_dtor(void *pgd, struct kmem_cac
- 	spin_unlock_irqrestore(&pgd_lock, flags);
- }
- 
-+#define UNSHARED_PTRS_PER_PGD				\
-+	(SHARED_KERNEL_PMD ? USER_PTRS_PER_PGD : PTRS_PER_PGD)
-+
-+/* If we allocate a pmd for part of the kernel address space, then
-+   make sure its initialized with the appropriate kernel mappings.
-+   Otherwise use a cached zeroed pmd.  */
-+static pmd_t *pmd_cache_alloc(int idx)
-+{
-+	pmd_t *pmd;
-+
-+	if (idx >= USER_PTRS_PER_PGD) {
-+		pmd = (pmd_t *)__get_free_page(GFP_KERNEL);
-+
-+		if (pmd)
-+			memcpy(pmd,
-+			       (void *)pgd_page_vaddr(swapper_pg_dir[idx]),
-+			       sizeof(pmd_t) * PTRS_PER_PMD);
-+	} else
-+		pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
-+
-+	return pmd;
-+}
-+
-+static void pmd_cache_free(pmd_t *pmd, int idx)
-+{
-+	if (idx >= USER_PTRS_PER_PGD)
-+		free_page((unsigned long)pmd);
-+	else
-+		kmem_cache_free(pmd_cache, pmd);
-+}
-+
- pgd_t *pgd_alloc(struct mm_struct *mm)
- {
- 	int i;
-@@ -276,10 +328,12 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
- 	if (PTRS_PER_PMD == 1 || !pgd)
- 		return pgd;
- 
--	for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
--		pmd_t *pmd = kmem_cache_alloc(pmd_cache, GFP_KERNEL);
-+ 	for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
-+		pmd_t *pmd = pmd_cache_alloc(i);
-+
- 		if (!pmd)
- 			goto out_oom;
-+
- 		paravirt_alloc_pd(__pa(pmd) >> PAGE_SHIFT);
- 		set_pgd(&pgd[i], __pgd(1 + __pa(pmd)));
- 	}
-@@ -290,7 +344,7 @@ out_oom:
- 		pgd_t pgdent = pgd[i];
- 		void* pmd = (void *)__va(pgd_val(pgdent)-1);
- 		paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
--		kmem_cache_free(pmd_cache, pmd);
-+		pmd_cache_free(pmd, i);
- 	}
- 	kmem_cache_free(pgd_cache, pgd);
- 	return NULL;
-@@ -302,11 +356,11 @@ void pgd_free(pgd_t *pgd)
- 
- 	/* in the PAE case user pgd entries are overwritten before usage */
- 	if (PTRS_PER_PMD > 1)
--		for (i = 0; i < USER_PTRS_PER_PGD; ++i) {
-+		for (i = 0; i < UNSHARED_PTRS_PER_PGD; ++i) {
- 			pgd_t pgdent = pgd[i];
- 			void* pmd = (void *)__va(pgd_val(pgdent)-1);
- 			paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
--			kmem_cache_free(pmd_cache, pmd);
-+			pmd_cache_free(pmd, i);
- 		}
- 	/* in the non-PAE case, free_pgtables() clears user pgd entries */
- 	kmem_cache_free(pgd_cache, pgd);
-===================================================================
---- a/include/asm-i386/paravirt.h
-+++ b/include/asm-i386/paravirt.h
-@@ -35,6 +35,7 @@ struct paravirt_ops
- struct paravirt_ops
- {
- 	unsigned int kernel_rpl;
-+	int shared_kernel_pmd;
-  	int paravirt_enabled;
- 	const char *name;
- 
-===================================================================
---- a/include/asm-i386/pgtable-2level-defs.h
-+++ b/include/asm-i386/pgtable-2level-defs.h
-@@ -1,5 +1,7 @@
- #ifndef _I386_PGTABLE_2LEVEL_DEFS_H
- #define _I386_PGTABLE_2LEVEL_DEFS_H
-+
-+#define SHARED_KERNEL_PMD	0
- 
- /*
-  * traditional i386 two-level paging structure:
-===================================================================
---- a/include/asm-i386/pgtable-2level.h
-+++ b/include/asm-i386/pgtable-2level.h
-@@ -82,6 +82,4 @@ static inline int pte_exec_kernel(pte_t 
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { (pte).pte_low })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val })
- 
--void vmalloc_sync_all(void);
--
- #endif /* _I386_PGTABLE_2LEVEL_H */
-===================================================================
---- a/include/asm-i386/pgtable-3level-defs.h
-+++ b/include/asm-i386/pgtable-3level-defs.h
-@@ -1,5 +1,11 @@
- #ifndef _I386_PGTABLE_3LEVEL_DEFS_H
- #define _I386_PGTABLE_3LEVEL_DEFS_H
-+
-+#ifdef CONFIG_PARAVIRT
-+#define SHARED_KERNEL_PMD	(paravirt_ops.shared_kernel_pmd)
-+#else
-+#define SHARED_KERNEL_PMD	1
-+#endif
- 
- /*
-  * PGDIR_SHIFT determines what a top-level page table entry can map
-===================================================================
---- a/include/asm-i386/pgtable-3level.h
-+++ b/include/asm-i386/pgtable-3level.h
-@@ -200,6 +200,4 @@ static inline pmd_t pfn_pmd(unsigned lon
- 
- #define __pmd_free_tlb(tlb, x)		do { } while (0)
- 
--#define vmalloc_sync_all() ((void)0)
--
- #endif /* _I386_PGTABLE_3LEVEL_H */
-===================================================================
---- a/include/asm-i386/pgtable.h
-+++ b/include/asm-i386/pgtable.h
-@@ -242,6 +242,8 @@ static inline pte_t pte_mkyoung(pte_t pt
- static inline pte_t pte_mkyoung(pte_t pte)	{ (pte).pte_low |= _PAGE_ACCESSED; return pte; }
- static inline pte_t pte_mkwrite(pte_t pte)	{ (pte).pte_low |= _PAGE_RW; return pte; }
- static inline pte_t pte_mkhuge(pte_t pte)	{ (pte).pte_low |= _PAGE_PSE; return pte; }
-+
-+extern void vmalloc_sync_all(void);
- 
- #ifdef CONFIG_X86_PAE
- # include <asm/pgtable-3level.h>
+> 
+> > > Do you really have to repeat the results in every email you sent?
+> > 
+> > Damn, I did it again. WHY DO YOU CARE?
+> 
+> Because I saw them the first time around. And although the performance
+> difference on those micro benchmarks seems quite impressive, I'm not
+> convinced.
+
+So, likewise, I saw your comments (you know the ones you miss so much)
+the first time around, as I was not convinced of their worth.
+
+The benchmarks measure certain data. Its fine you do not read into them,
+stuff that isn't there, like reliability, for example. 
+
+> > Look, its simple, I am (among other things) discussing these results, so
+> > people need to see them.
+> 
+> However, you do not discuss, you just repeat, and repeat, and repeat.
+
+I never said I wanted discussion, you just said I did.
+
+You just repeat, and repeat, and repeat.
+
+In reality, I quite appreciate reasonable discussion. But, I doubt I
+will get much from you.
+
+> But for what reason. Do you want an actual discussion, or do you hate
+> the reiserfs developers so much that you want to antagonize any and all
+> other Linux file systems developers?
+
+Why do you think I hate reiserfs developers? That is an insane claim.
+Why would I hate reiser3 developers?
+Why would I hate reiser4 developers? 
+Why would I even dislike them?
+
+I think Hans Reiser is a genius. Is that what you mean by hate?
+
+Answer this question. Why do YOU think I am antagonizing reiserfs
+developers?
+
+You must have a reason for stating what you have.
+
+> > By the way, I have pulled the plug on my REISER4 system, a number of
+> > times now, and it recovers without problem.
+> 
+> Very nice for you. I guess you have also not been hit by out of memory
+> conditions or failing partial writes. So I guess we can ignore the patch
+> that was just sent a day or two ago to the mailing list because you
+> succesfully pulled the plug, a number of times at that.
+
+Why are you attacking me with sarcasm, when I have just stated a simple
+fact?
+
+> > > > I have set up a Reiser4 partition with gzip compression, here is the
+> > > > difference in disk usage of a typical Debian installation on two 10GB
+> > > > partitions, one with Reiser3 and the other with Reiser4.
+> > > > 
+> > > > debian:/# df
+> > > > Filesystem           1K-blocks      Used Available Use% Mounted on
+> > > > /dev/sda3             10490104   6379164   4110940  61% /3
+> > > > /dev/sda7              9967960   2632488   7335472  27% /7
+> > > ...
+> > > > Partition 3 is Reiser3 -- uses 6.4 GB.
+> > > > Partition 7 is Reiser4 -- uses 2.6 GB.
+> > > > 
+> > > > So Reiser4 uses 2.6 GB to store the (typical) data that it takes Reiser3
+> > > > 6.4 GB to store (note it would take ext2/3/4 some 7 GB to store the same
+> > > > info).
+> > > 
+> > > Wow, consider me totally and completely, unimpressed.
+> > > 
+> 
+> Here is the part of my email that you seemed to totally ignore,
+
+Yes, I ignored it,.... is that a crime?
+
+> You've just saved yourself $3.80, now go get yourself a latte.
+> (see. http://tomayko.com/weblog/2006/09/11/that-dilbert-cartoon)
+> 
+> Seriously, disk storage is getting less expensive all the time, you can
+> already buy a 250GB SATA drive for $70. Also, compression doesn't help
+> once you store already compressed data such as jpeg images, mp3 files,
+> or mpeg2/4/divx video files. Not only are the savings non-existant, but
+> we still end up with the disadvantage that corruption propagates to
+> multiple files because of the compression in the file system.
+
+I believe that compression in REISER4 is just a wrapper for gzip or lzo.
+So each file is compressed and your "corruption propagation" is just in
+your imagination.
+
+> And if it doesn't propagate across multiple files, the compression can't
+> be all that good 
+
+It can be as good as gzipping every file, ie, pretty damn good.
+
+> since it can't benefit as much from similarity between
+> files. So if that is the case and you really want to save diskspace you
+> almost have to look at read-only compressed filesystems such as cramfs,
+> squashfs, zisofs, cloop and various other variants in combination with
+> a unionfs overlay to get read/write functionality.
+> 
+> But in the end everything is a tradeoff. You can save diskspace, but
+> increase the cost of corruption. 
+
+You deliberately ignored the fact that bad blocks are NOT dealt with by
+the filesystem,... but by the operating system. Like I said: If your
+filesystem is writing to bad blocks, then throw away your operating
+system.
+
+> Use a better compression algorithm, but
+> that uses more CPU or which is visible in performance of the
+> application. 
+
+Not necessarily, just look at the bonnie++ tests. The tests show that
+using compression (with todays hardware) leads to read speeds that are
+some FOUR times the physical disk read rate,... 
+
+but you ignore this as you have some strange anti-REISER religion.
+
+Think about it,... read speeds that are some FOUR times the physical
+disk read rate,... impossible without the use of compression (or
+something similar).
+
+> This can be offset by caching more, and being lazier with
+> writebacks, but that hurts on-disk consistency, creates more memory
+> pressure (more swapout/paging) and generally slows down other
+> applications that aren't actually accessing the disk. Having a fast
+> multi-core cpu and lots of memory helps a lot, but at some point what
+> tradeoff did we just make, we saved a couple of dollars not having to
+> buy a larger disk, but we spend considerably more on the more
+> expensive cpu and memory.
+> 
+
+Wow, consider me STILL totally impressed by your AMAZING BIAS.
+Would you like to tell me why you are SO BIASED against REISER4?
+
+John.
+-- 
+  
+  johnrobertbanks@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Choose from over 50 domains or use your own
 
