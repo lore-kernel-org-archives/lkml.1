@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbXDGFMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXDGFXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752126AbXDGFMp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 01:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXDGFMp
+	id S1752083AbXDGFXq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 01:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXDGFXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 01:12:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55976 "EHLO gate.crashing.org"
+	Sat, 7 Apr 2007 01:23:45 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44957 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752069AbXDGFMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 01:12:44 -0400
-Subject: Re: [PATCH] PPC4xx UART0 (8250) problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mikhail Zolotaryov <lebon@faust.net.ua>
-Cc: mporter@kernel.crashing.org, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46171C50.3020104@faust.net.ua>
-References: <46171C50.3020104@faust.net.ua>
-Content-Type: text/plain
-Date: Sat, 07 Apr 2007 15:12:36 +1000
-Message-Id: <1175922756.7407.46.camel@localhost.localdomain>
+	id S1752083AbXDGFXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 01:23:44 -0400
+Date: Fri, 6 Apr 2007 22:23:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
+ flag
+Message-Id: <20070406222336.4dcdd663.akpm@linux-foundation.org>
+In-Reply-To: <20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+	<20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-07 at 07:21 +0300, Mikhail Zolotaryov wrote:
-> On PPC4xx embedded we often have UART0 on IRQ0 but 8250 UART driver
-> uses IRQ0 as "no irq" hack. It's suggested that platforms with UART
-> on IRQ0 will redefine is_real_interrupt(irq) macro but 8250 code
-> anyway overrides that. As the result, serial line on UART0 works
-> on polling-way and we have character loss on high baud rates.
+On Thu,  5 Apr 2007 15:36:57 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+
+> Unalias PG_tail for performance reasons
 > 
-> In patch I added check if UART0 is on IRQ0, if so we define
-> is_real_interrupt macro to be 1 (true). Also, check if
-> is_real_interrupt macro is already defined added to 8250 UART
-> driver.
+> If PG_tail is an alias then we need to check PageCompound before PageTail.
+> This is particularly bad because the slab and others have to use these tests
+> in performance critical paths. 
+> 
+> This patch uses one of the freed up software suspend flags that is defined
+> next to PG_compound.
 
-This is an old problem. The proper fix is already implemented for
-arch/powerpc and consist of having virtual irq numbers (which helps for
-many other things anyway).
+I get a reject from this because it is dependent upon later patches.  As
+the Official Protector Of Page Flags, I'm going to drop it.
 
-Support for 4xx platforms in arch/powerpc is starting to get in, pop on
-linuxppc-dev@ozlabs.org where the patches are being posted and you are
-welcome to give a hand porting more platforms over :-)
+Did you investigate
 
-Ben.
+static inline int page_tail(struct page *page)
+{
+	return ((page->flags & (PG_compound|PG_tail)) == (PG_compound|PG_tail));
+}
 
+and
+
+static inline int page_tail(struct page *page)
+{
+	return unlikely(PageCompound(page)) && unlikely(PageTail(page));
+}
+
+?
+
+In the latter case we _should_ have a not-taken branch to not-inline code. 
+If the compiler doesn't do that, we can make the PageTail() test an
+out-of-line function.  Or make the whole thing an uninlined function.
+
+More work needed, please.  I don't expect that a not-taken branch to
+not-inline code is worth a new page flag.  Especially as it does not
+actually reduce the number of branch decisions in the common case.
+
+(I'm assuming in all of this that !PageCompound() is the very common case
+with slub.  If that is not true, we need to talk).
 
