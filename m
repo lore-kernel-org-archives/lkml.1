@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964930AbXDGB62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965025AbXDGCFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964930AbXDGB62 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 21:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964989AbXDGB62
+	id S965025AbXDGCFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 22:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbXDGCFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 21:58:28 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:34877 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964930AbXDGB60 (ORCPT
+	Fri, 6 Apr 2007 22:05:43 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:22853 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965025AbXDGCFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 21:58:26 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=s5UlahQxg0XcDgQ+1jUPV07HV/4r71T8a2KqmDRyYwa+Mg304L9mxzFTWXHh8XBJH
-	d2hvSLa/jhpZLCKMQoqeQ==
-Message-ID: <6599ad830704061858j30747a79rd16b20a23d8584ab@mail.gmail.com>
-Date: Fri, 6 Apr 2007 18:58:15 -0700
-From: "Paul Menage" <menage@google.com>
-To: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com
-Subject: Re: [ckrm-tech] [PATCH 3/7] Containers (V8): Add generic multi-subsystem API to containers
-Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
-       devel@openvz.org
-In-Reply-To: <20070407001324.271959000@menage.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 6 Apr 2007 22:05:42 -0400
+Subject: Re: [PATCH] timekeeping: drop irq-context clocksource polling
+From: Daniel Walker <dwalker@mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, mingo@elte.hu
+In-Reply-To: <20070406182100.9f205621.akpm@linux-foundation.org>
+References: <20070405210316.785839431@mvista.com>
+	 <20070406182100.9f205621.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 06 Apr 2007 19:04:44 -0700
+Message-Id: <1175911485.15973.144.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070406233221.989528000@menage.corp.google.com>
-	 <20070407001324.271959000@menage.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/6/07, menage@google.com <menage@google.com> wrote:
-> This patch removes all cpuset-specific knowlege from the container
-> system, replacing it with a generic API that can be used by multiple
-> subsystems. Cpusets is adapted to be a container subsystem.
->
-> +
-> +       /* Set of subsystem states, one for each subsystem. NULL for
-> +        * subsystems that aren't part of this hierarchy. These
-> +        * pointers reduce the number of dereferences required to get
-> +        * from a task to its state for a given container, but result
-> +        * in increased space usage if tasks are in wildly different
-> +        * groupings across different hierarchies. This array is
-> +        * mostly immutable after creation - a newly registered
-> +        * subsystem can result in a pointer in this array
-> +        * transitioning from NULL to non-NULL */
-> +       struct container_subsys_state *subsys[CONTAINER_SUBSYS_COUNT];
+On Fri, 2007-04-06 at 18:21 -0700, Andrew Morton wrote:
+> On Thu, 05 Apr 2007 14:03:16 -0700 Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > Boot tested on i386, compile tested on x86_64 .. However, I couldn't
+> > find a !GENERIC_TIME that compiled without this change so it's untested..
+> 
+> I'm scratching my head over this statement.
+> 
+> Do you mean that none of grep -lv GENERIC_TIME arch/*/Kconfig compile?  Confused.
 
-Oops, this comment is rather out of date and should have been trimmed
-for this patch. It should be disregarded apart from the first
-sentence.
+Yeah .. I tested 2 or 3 ARM configs that didn't have GENERIC_TIME , but
+they failed .. I just assumed it was work in progress from the ARM
+tree ..
 
-Paul
+Daniel
+
