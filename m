@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965962AbXDGWQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965984AbXDGWTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965962AbXDGWQw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 18:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965975AbXDGWQw
+	id S965984AbXDGWTI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 18:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965980AbXDGWTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 18:16:52 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:34961 "EHLO smtp.osdl.org"
+	Sat, 7 Apr 2007 18:19:07 -0400
+Received: from ns.suse.de ([195.135.220.2]:38341 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965962AbXDGWQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 18:16:50 -0400
-Date: Sat, 7 Apr 2007 15:15:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Dave Jones <davej@redhat.com>, "Ulrich Drepper" <drepper@gmail.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>,
-       "Ravikiran G Thirumalai" <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       "pravin b shelar" <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
-Message-Id: <20070407151556.4f58cb94.akpm@linux-foundation.org>
-In-Reply-To: <20070407104339.6674336b.dada1@cosmosbay.com>
-References: <20060808070708.GA3931@localhost.localdomain>
-	<200608090826.28249.dada1@cosmosbay.com>
-	<200608090843.52893.dada1@cosmosbay.com>
-	<200703152010.35614.dada1@cosmosbay.com>
-	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
-	<20070405194942.1414c030.dada1@cosmosbay.com>
-	<20070407104339.6674336b.dada1@cosmosbay.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S965977AbXDGWTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 18:19:05 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1/4] x86_64: (SPARSE_VIRTUAL doubles sparsemem speed)
+Date: Sun, 8 Apr 2007 00:18:44 +0200
+User-Agent: KMail/1.9.6
+Cc: Andy Whitcroft <apw@shadowen.org>, Martin Bligh <mbligh@google.com>,
+       Dave Hansen <hansendc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0704051119400.9800@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0704071455060.31468@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0704071455060.31468@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704080018.45084.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Apr 2007 10:43:39 +0200 Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Sunday 08 April 2007 00:06:13 Christoph Lameter wrote:
 
-> Hi all
+> Results:
 > 
-> Updates on this take4 :
+> x86_64 boot with virtual memmap
 > 
-> - All remarks from Nick were addressed I hope
+> Format:               #events totaltime (min/avg/max)
 > 
-> - Current mm code have a problem with 64bit futexes, as spoted by Nick :
+> kfree_virt_to_page       598430 5.6ms(3ns/9ns/322ns)
 > 
-> get_futex_key() does a check against sizeof(u32) regardless of futex being 64bits or not.
-> So it is possible a 64bit futex spans two pages of memory...
-> I had to change get_futex_key() prototype to be able to do a correct test.
+> x86_64 boot regular sparsemem
 > 
+> kfree_virt_to_page       596360 10.5ms(4ns/18ns/28.7us)
+> 
+> 
+> On average sparsemem virtual takes half the time than of sparsemem.
 
-Cold we please have that in a separate patch?  It's logically a part of the
-64-bit-futex work, is it not?
+Nice.  But on what workloads? 
 
-> +
-> +/**
-> + * get_futex_key - Get parameters which are the keys for a futex.
-> + * @uaddr: virtual address of the futex
-> + * @size: size of futex (4 or 8)
-> + * @shared: NULL for a PROCESS_PRIVATE futex,
-> + *	&current->mm->mmap_sem for a PROCESS_SHARED futex
-> + * @key: address where result is stored.
-> + *
-> + * Returns an error code or 0
-> + */
-> +int get_futex_key(void __user *uaddr, int size, struct rw_semaphore *shared,
-> +		  union futex_key *key);
+Anyways it looks promising. I hope we can just
+replace old style sparsemem support with this for x86-64.
 
-Thanks for documenting the interface, but please do it in the .c file at
-the function's definition site.
+> Time is measured using the cycle counter (TSC on IA32, ITC on IA64) which has
+> a very low latency.
 
+Sorry that triggered my usual RDTSC rant...
+
+Not on NetBurst (hundred of cycles) And on the others (C2,K8) it is a bit dangerous 
+to measure short code blocks because RDTSC is not guaranteed ordered with the surrounding 
+instructions.
+
+-Andi
+ 
