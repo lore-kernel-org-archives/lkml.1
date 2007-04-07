@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966186AbXDGR0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966146AbXDGR1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966186AbXDGR0I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 13:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966188AbXDGR0I
+	id S966146AbXDGR1U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 13:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966187AbXDGR1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 13:26:08 -0400
-Received: from ojjektum.uhulinux.hu ([62.112.194.64]:35794 "EHLO
-	ojjektum.uhulinux.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966186AbXDGR0G (ORCPT
+	Sat, 7 Apr 2007 13:27:20 -0400
+Received: from hammerhead.shentel.net ([204.111.1.228]:35372 "EHLO
+	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966146AbXDGR1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 13:26:06 -0400
-Date: Sat, 7 Apr 2007 19:26:03 +0200
-From: Egmont Koblinger <egmont@uhulinux.hu>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-Message-ID: <20070407172603.GA25351@uhulinux.hu>
-References: <20070406191245.GA11974@uhulinux.hu> <4616A2C7.3030000@zytor.com> <20070407092451.GA8779@uhulinux.hu> <Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.11
+	Sat, 7 Apr 2007 13:27:19 -0400
+Date: Sat, 7 Apr 2007 13:27:09 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: aeb@cwi.nl
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] partitions: Enhance Kconfig help text for EESOX and MSDOS
+ formats
+Message-ID: <alpine.DEB.0.83.0704071322440.9798@sigma.j-a-k-j.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 07, 2007 at 01:00:48PM +0200, Jan Engelhardt wrote:
+From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-Hi,
+Adds help text for ACORN_PARTITION_EESOX and improves help text for 
+MSDOS_PARTITION in fs/partitions/Kconfig.
 
-> Please, no dot, and no inverse color.
-> Imagine someone had the following bitmap for <unknown glyph/illegal sequence>:
+Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-No dot, I'm already convinced. To clarify the inverse thingy:
+---
 
-This is what the current kernel does:
-  1) tries to display the desired symbol
-  2) if it fails, tries to display U+FFFD (which usually looks similar to an
-     inverted question mark)
-  3) if this fails again then displays a normal '?'
-     (or a different symbol due to a bug discussed below)
+Applied against Linux v2.6.20.6.
 
-Here's my proposal. This only alters the 3rd step, not the first two:
-  1) tries to display the desired symbol
-  2) if it fails, tries to display U+FFFD, still with _normal_ attributes
-  3) if this fails then display an ascii '?' with inverted attributes
-
-So you won't get "double" inversion. If you do have U+FFFD in your font then
-this will introduce no chance. If you don't have U+FFFD, you'll see inverse
-question marks instead of normal ones.
-
-
-> I blame your latin2 unicode map. (See above about 'Û'.)
-
-There's nothing wrong with my latin2 unicode map, and I've located and
-changed the part _in the kernel_ that displays a false glyph using the
-algorithm I've outlined. It just uses "the glyph at that code position
-within the glyph table" as a fallback, which might be okay in 8-bit mode
-(and I haven't modified the behavior in that case), but I got rid of this
-behavior in UTF-8 mode since it's definitely a fault in the world of
-Unicode.
-
-> It should perhaps display a regular 'u' if it cannot display 'û',
-
-I rather think it should display U+FFFD but YMMV.
-
-> but definitely not 'ü' (which is not called a double accent, btw).
-
-This is not the character I've been talking about, I actually _did_ talk
-about u with double acute accent (ű - you might not have seen this character
-so far, AFAIK it's only used in Hungarian, no other languages). But we agree
-that the kernel definitely shouldn't display a character with a different
-accent on it. This is one of the bugs my patch addresses.
-
-
-bye,
-
-Egmont
+--- linux-2.6.20.6-orig/fs/partitions/Kconfig	2007-04-06 16:02:48.000000000 -0400
++++ linux-2.6.20.6-mod/fs/partitions/Kconfig	2007-04-07 13:22:17.000000000 -0400
+@@ -32,6 +32,10 @@ config ACORN_PARTITION_EESOX
+ 	bool "EESOX partition support" if PARTITION_ADVANCED
+ 	default y if ARCH_ACORN
+ 	depends on ACORN_PARTITION
++	help
++	  EESOX SCSI card on-disk partition format support for Acorn
++	  systems. If you have one of these cards, or want to use a disk
++	  written by one, say Y.
+ 
+ config ACORN_PARTITION_ICS
+ 	bool "ICS partition support" if PARTITION_ADVANCED
+@@ -108,7 +112,11 @@ config MSDOS_PARTITION
+ 	bool "PC BIOS (MSDOS partition tables) support" if PARTITION_ADVANCED
+ 	default y
+ 	help
+-	  Say Y here.
++	  Standard PC-compatible partition table support for Linux. Used by
++	  i386 systems, Linux/Windows dual-boot systems, and many others.
++	  Unless you are certain your system does not use this partition
++	  table format, and you're not using any disks from a system that
++	  does, say Y.
+ 
+ config BSD_DISKLABEL
+ 	bool "BSD disklabel (FreeBSD partition tables) support"
