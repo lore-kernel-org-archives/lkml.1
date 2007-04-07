@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966063AbXDGQkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966083AbXDGQnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966063AbXDGQkK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 12:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966090AbXDGQkK
+	id S966083AbXDGQnG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 12:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966100AbXDGQnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 12:40:10 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:14369 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966063AbXDGQkI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 12:40:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CwVrRLiJGfFpgJNBfzLyxCPwhAZKiyXTheVtYVuu/dJDv0eK6ms8TyrK26ZbfGoa+C//OkC8jxsdbnKVn+KEYrRJYielFtMFY5bwSLPxWfkS0QWhjCht3+0wCIQ0eoVh8QqjUwQHpf9h5h3ZN9tlSjQVslCk1poMKZtM/4Z9sak=
-Message-ID: <a36005b50704070940q7c3c0835y47486523d2640b4b@mail.gmail.com>
-Date: Sat, 7 Apr 2007 09:40:06 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
-Cc: "Jakub Jelinek" <jakub@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Dave Jones" <davej@redhat.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>,
-       "Ravikiran G Thirumalai" <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       "pravin b shelar" <pravin.shelar@calsoftinc.com>,
+	Sat, 7 Apr 2007 12:43:06 -0400
+Received: from h80ad275a.async.vt.edu ([128.173.39.90]:56108 "EHLO
+	h80ad275a.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966083AbXDGQnF (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 12:43:05 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: johnrobertbanks@fastmail.fm
+Cc: Ignatich <ignatich@gmail.com>, reiserfs-list@namesys.com,
        linux-kernel@vger.kernel.org
-In-Reply-To: <46178676.3010704@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: COMPILING AND CONFIGURING A NEW KERNEL.
+In-Reply-To: Your message of "Fri, 06 Apr 2007 18:26:45 PDT."
+             <1175909205.905.1183425104@webmail.messagingengine.com>
+From: Valdis.Kletnieks@vt.edu
+References: <46157B5B.5000602@gmail.com> <1175817921.18400.1183285196@webmail.messagingengine.com>
+            <1175909205.905.1183425104@webmail.messagingengine.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1175964174_4736P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20060808070708.GA3931@localhost.localdomain>
-	 <200608090826.28249.dada1@cosmosbay.com>
-	 <200608090843.52893.dada1@cosmosbay.com>
-	 <200703152010.35614.dada1@cosmosbay.com>
-	 <a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
-	 <20070405194942.1414c030.dada1@cosmosbay.com>
-	 <20070407104339.6674336b.dada1@cosmosbay.com>
-	 <20070407111849.GT355@devserv.devel.redhat.com>
-	 <46178676.3010704@cosmosbay.com>
+Date: Sat, 07 Apr 2007 12:42:54 -0400
+Message-ID: <12252.1175964174@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/7/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> I am not sure what you want to say.
+--==_Exmh_1175964174_4736P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-What Jakub meant is that it is OK for the kernel to reject using
-unaligned 64-bit futexes.  Just return an error in all cases (not just
-in some).
+On Fri, 06 Apr 2007 18:26:45 PDT, johnrobertbanks=40fastmail.fm said:
+>
+> YOU SHOULD compile all the drivers necessary to boot your system, into
+> the kernel (ie, such drivers should not be built as modules).
+>=20
+> This way you will NOT need an initrd file.
+
+It is quite possible to build a kernel that has all the drivers built-in,=
+
+but still require an initrd file.  For instance, if you have a recent
+RedHat or Fedora system, '/' may very well be on an LVM partition, which
+means you need an initrd to do a 'lvm varyonvg' before mounting your real=
+
+root filesystem will work....
+
+--==_Exmh_1175964174_4736P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGF8oOcC3lWbTT17ARAkHXAKC27KCQjHJkkA8CUR6e1r5Hi6f5mwCgwUSo
+VegXdIBZlaLBC2Bnxp+1z4Y=
+=F1Jj
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1175964174_4736P--
