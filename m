@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965760AbXDGLU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965763AbXDGLVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965760AbXDGLU0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 07:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965763AbXDGLU0
+	id S965763AbXDGLVu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 07:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965786AbXDGLVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 07:20:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36831 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965760AbXDGLUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 07:20:25 -0400
-Date: Sat, 7 Apr 2007 07:18:49 -0400
-From: Jakub Jelinek <jakub@redhat.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       pravin b shelar <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
-Message-ID: <20070407111849.GT355@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <20060808070708.GA3931@localhost.localdomain> <200608090826.28249.dada1@cosmosbay.com> <200608090843.52893.dada1@cosmosbay.com> <200703152010.35614.dada1@cosmosbay.com> <a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com> <20070405194942.1414c030.dada1@cosmosbay.com> <20070407104339.6674336b.dada1@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 7 Apr 2007 07:21:49 -0400
+Received: from mailgw1.uni-kl.de ([131.246.120.220]:47568 "EHLO
+	mailgw1.uni-kl.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965763AbXDGLVs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 07:21:48 -0400
+Date: Sat, 7 Apr 2007 13:21:32 +0200
+From: Eduard Bloch <edi@gmx.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, debburn-devel@lists.alioth.debian.org
+Subject: Re: broken device locking, sg vs. sg_io on block devices
+Message-ID: <20070407112131.GA10487@rotes76.wohnheim.uni-kl.de>
+References: <200703261811.21448.gerald@itzgrund.net> <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de> <20070330134327.GA24030@infradead.org> <20070330142114.GA31685@rotes76.wohnheim.uni-kl.de> <20070330191038.067c346b@the-village.bc.nu> <20070331170703.GA8179@rotes76.wohnheim.uni-kl.de> <20070331232002.7b478f37@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070407104339.6674336b.dada1@cosmosbay.com>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070331232002.7b478f37@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 07, 2007 at 10:43:39AM +0200, Eric Dumazet wrote:
-> get_futex_key() does a check against sizeof(u32) regardless of futex being 64bits or not.
-> So it is possible a 64bit futex spans two pages of memory...
+#include <hallo.h>
 
-That would be a user bug.  32-bit futexes have to be 32-bit aligned, 64-bit
-futexes have to be 64-bit aligned.
+First, we (me and Thomas Schmidt) are working on a draft for a mandatory
+locking scheme which will take care of the most racy situations even
+without having a proper in-kernel solution. But you need to exlain some
+things, otherwise we cannot rely on your words.
 
-	Jakub
+> (open has side effects relocking doesnt)
+
+What exactly does that mean in our scope?
+
+Can we do following without having side effects:
+
+open("/dev/sr0",O_EXCL|O_RDWR); /* no matter what it returns */
+fcntl(..., F_SETLK); /* no matter what it returns */
+ioctl(f, SCSI_IOCTL_GET_IDLUN, &x);
+ioctl(f, SCSI_IOCTL_GET_BUS_NUMBER, &jo);
+
+Can you guarantee us that bit? 
+
+Or shall we really implement ugly workarounds to avoid every open call?
+Note that "just do like UUCP guys" is not as easy or reliable as people
+may pretend.
+
+Eduard.
+
+-- 
+Naja, Garbage Collector eben. Holt den Müll sogar vom Himmel.
+       (Heise Trollforum über Java in der Flugzeugsteuerung)
