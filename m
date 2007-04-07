@@ -1,201 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965536AbXDGIZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965554AbXDGI0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965536AbXDGIZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 04:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965533AbXDGIZF
+	id S965554AbXDGI0T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 04:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965635AbXDGI0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 04:25:05 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:60676 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965536AbXDGIX6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 04:23:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=qu5L8xYqcXRgQWF4oqWp6QwESfjdxF9YIssDQvY+5PFSIgxgcdHr+IitKdhm30A4h7d80A6AR5N35UgUoXaozNg87flVZ0b7JX2+xxxqiPLjrtpLX2Rb9D1jP1RNsO3a3XCoRptv27nyYhOORDtyy01+bkLEjlxNZDLvSxI3GRc=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 11/14] sysfs: implement bin_buffer
-In-Reply-To: <1175934226928-git-send-email-htejun@gmail.com>
-X-Mailer: git-send-email
-Date: Sat, 7 Apr 2007 17:23:48 +0900
-Message-Id: <11759342283459-git-send-email-htejun@gmail.com>
+	Sat, 7 Apr 2007 04:26:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50868 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965537AbXDGI0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 04:26:00 -0400
+Date: Sat, 7 Apr 2007 10:25:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Soeren Sonnenburg <kernel@nn7.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] high-res timers: UP resume fix
+Message-ID: <20070407082554.GA1943@elte.hu>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <1175899460.5393.9.camel@localhost> <Pine.LNX.4.64.0704061552380.6730@woody.linux-foundation.org> <20070407081244.GA28284@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Tejun Heo <htejun@gmail.com>
-To: gregkh@suse.de, maneesh@in.ibm.com, dmitry.torokhov@gmail.com,
-       cornelia.huck@de.ibm.com, oneukum@suse.de, rpurdie@rpsys.net,
-       James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       htejun@gmail.com
-Content-Transfer-Encoding: 7BIT
-From: Tejun Heo <htejun@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070407081244.GA28284@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement bin_buffer which contains a mutex and pointer to PAGE_SIZE
-buffer to properly synchronize accesses to per-openfile buffer and
-prepare for immediate-kobj-disconnect.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/bin.c |   64 ++++++++++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 49 insertions(+), 15 deletions(-)
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 0f0027b..1dd1bf1 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -20,6 +20,11 @@
- 
- #include "sysfs.h"
- 
-+struct bin_buffer {
-+	struct mutex	mutex;
-+	void		*buffer;
-+};
-+
- static int
- fill_read(struct dentry *dentry, char *buffer, loff_t off, size_t count)
- {
-@@ -36,7 +41,7 @@ fill_read(struct dentry *dentry, char *buffer, loff_t off, size_t count)
- static ssize_t
- read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
- {
--	char *buffer = file->private_data;
-+	struct bin_buffer *bb = file->private_data;
- 	struct dentry *dentry = file->f_path.dentry;
- 	int size = dentry->d_inode->i_size;
- 	loff_t offs = *off;
-@@ -49,17 +54,23 @@ read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
- 			count = size - offs;
- 	}
- 
--	count = fill_read(dentry, buffer, offs, count);
-+	mutex_lock(&bb->mutex);
-+
-+	count = fill_read(dentry, bb->buffer, offs, count);
- 	if (count < 0)
--		return count;
-+		goto out_unlock;
- 
--	if (copy_to_user(userbuf, buffer, count))
--		return -EFAULT;
-+	if (copy_to_user(userbuf, bb->buffer, count)) {
-+		count = -EFAULT;
-+		goto out_unlock;
-+	}
- 
- 	pr_debug("offs = %lld, *off = %lld, count = %zd\n", offs, *off, count);
- 
- 	*off = offs + count;
- 
-+ out_unlock:
-+	mutex_unlock(&bb->mutex);
- 	return count;
- }
- 
-@@ -79,7 +90,7 @@ flush_write(struct dentry *dentry, char *buffer, loff_t offset, size_t count)
- static ssize_t write(struct file *file, const char __user *userbuf,
- 		     size_t bytes, loff_t *off)
- {
--	char *buffer = file->private_data;
-+	struct bin_buffer *bb = file->private_data;
- 	struct dentry *dentry = file->f_path.dentry;
- 	int size = dentry->d_inode->i_size;
- 	loff_t offs = *off;
-@@ -92,25 +103,38 @@ static ssize_t write(struct file *file, const char __user *userbuf,
- 			count = size - offs;
- 	}
- 
--	if (copy_from_user(buffer, userbuf, count))
--		return -EFAULT;
-+	mutex_lock(&bb->mutex);
-+
-+	if (copy_from_user(bb->buffer, userbuf, count)) {
-+		count = -EFAULT;
-+		goto out_unlock;
-+	}
- 
--	count = flush_write(dentry, buffer, offs, count);
-+	count = flush_write(dentry, bb->buffer, offs, count);
- 	if (count > 0)
- 		*off = offs + count;
-+
-+ out_unlock:
-+	mutex_unlock(&bb->mutex);
- 	return count;
- }
- 
- static int mmap(struct file *file, struct vm_area_struct *vma)
- {
-+	struct bin_buffer *bb = file->private_data;
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
- 	struct kobject *kobj = to_kobj(file->f_path.dentry->d_parent);
-+	int rc;
- 
- 	if (!attr->mmap)
- 		return -EINVAL;
- 
--	return attr->mmap(kobj, attr, vma);
-+	mutex_lock(&bb->mutex);
-+	rc = attr->mmap(kobj, attr, vma);
-+	mutex_unlock(&bb->mutex);
-+
-+	return rc;
- }
- 
- static int open(struct inode * inode, struct file * file)
-@@ -118,6 +142,7 @@ static int open(struct inode * inode, struct file * file)
- 	struct kobject *kobj = sysfs_get_kobject(file->f_path.dentry->d_parent);
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
-+	struct bin_buffer *bb = NULL;
- 	int error = -EINVAL;
- 
- 	if (!kobj || !attr)
-@@ -135,14 +160,22 @@ static int open(struct inode * inode, struct file * file)
- 		goto Error;
- 
- 	error = -ENOMEM;
--	file->private_data = kmalloc(PAGE_SIZE, GFP_KERNEL);
--	if (!file->private_data)
-+	bb = kzalloc(sizeof(*bb), GFP_KERNEL);
-+	if (!bb)
- 		goto Error;
- 
-+	bb->buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!bb->buffer)
-+		goto Error;
-+
-+	mutex_init(&bb->mutex);
-+	file->private_data = bb;
-+
- 	error = 0;
--    goto Done;
-+	goto Done;
- 
-  Error:
-+	kfree(bb);
- 	module_put(attr->attr.owner);
-  Done:
- 	if (error)
-@@ -155,11 +188,12 @@ static int release(struct inode * inode, struct file * file)
- 	struct kobject * kobj = to_kobj(file->f_path.dentry->d_parent);
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
--	u8 * buffer = file->private_data;
-+	struct bin_buffer *bb = file->private_data;
- 
- 	kobject_put(kobj);
- 	module_put(attr->attr.owner);
--	kfree(buffer);
-+	kfree(bb->buffer);
-+	kfree(bb);
- 	return 0;
- }
- 
--- 
-1.5.0.3
+> [...] Soeren, can you confirm that you are using a !CONFIG_SMP kernel, 
+> and if yes, does the patch below fix the resume problem for you?
 
+hm, you seem to have a CONFIG_SMP=y kernel. I dont immediately see where 
+we re-enable interrupts in the SMP case, but could you try my patch 
+nevertheless?
 
+	Ingo
