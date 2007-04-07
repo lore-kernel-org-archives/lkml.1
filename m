@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbXDGJrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965679AbXDGJru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752219AbXDGJrR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 05:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbXDGJrR
+	id S965679AbXDGJru (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 05:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965650AbXDGJrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 05:47:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56407 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbXDGJrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 05:47:16 -0400
-Date: Sat, 7 Apr 2007 11:47:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	Sat, 7 Apr 2007 05:47:49 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:52338 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965679AbXDGJrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 05:47:48 -0400
+Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond
+	software suspend
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: tglx@linutronix.de, Linus Torvalds <torvalds@linux-foundation.org>,
-       Soeren Sonnenburg <kernel@nn7.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: [patch] high-res timers: UP resume fix
-Message-ID: <20070407094705.GA20998@elte.hu>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070407082554.GA1943@elte.hu> <1175935730.28263.510.camel@localhost.localdomain> <200704071148.43136.rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
+       akpm@linux-foundation.org, paulmck@us.ibm.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu,
+       dipankar@in.ibm.com, dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+In-Reply-To: <200704071133.42269.rjw@sisk.pl>
+References: <20070402053457.GA9076@in.ibm.com>
+	 <200704061634.51046.rjw@sisk.pl>
+	 <1175898055.6481.83.camel@nigel.suspend2.net>
+	 <200704071133.42269.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Sat, 07 Apr 2007 19:47:45 +1000
+Message-Id: <1175939265.3894.1.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704071148.43136.rjw@sisk.pl>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> > We do in on_each_cpu() unconditionally. I missed that.
+On Sat, 2007-04-07 at 11:33 +0200, Rafael J. Wysocki wrote:
+> On Saturday, 7 April 2007 00:20, Nigel Cunningham wrote:
+> > > > > > > -	current->flags |= PF_NOFREEZE;
+> > > > > > > +	freezer_exempt(FE_ALL);
+> > > > > > >  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+> > > > > > >  	if (pid > 0) {
+> > > > > > >  		while (pid != sys_wait4(-1, NULL, 0, NULL))
+> > > > > > 
+> > > > > > Does this mean we have userland /linuxrc running with PF_NOFREEZE?
+> > > > > > That would be very bad...
+> > > > > 
+> > > > > No, actually it is _required_ for the userland resume to work.  Well, perhaps
+> > > > > I should place a comment in there so that I don't have to explain this again
+> > > > > and again. :-)
+> > > > 
+> > > > Can you put big bold comment there?
+> > > >
+> > > > Why is it needed? Freezer never freezes _current_ task.
+> > > 
+> > > No, it doesn't, but this task spawns linuxrc and then calls sys_wait4() in a
+> > > loop.
+> > > 
+> > > Well, actually, I'll try to plant try_to_freeze() in this loop and see if that
+> > > works.  If it doesn't, I'll add a comment.
+> > 
+> > It works. I've had:
+> > 
+> >                 while (pid != sys_wait4(-1, NULL, 0, NULL)) {
+> >                         yield();
+> >                         try_to_freeze();
+> >                 }
+> > 
+> > there for ages for Suspend2.
 > 
-> BTW, the on_each_cpu() in clock_was_set() is unnecessary, because 
-> timekeeping_resume() is always run on one CPU.
+> OK, thanks.  Is there any particular reason to place try_to_freeze() after
+> yield()?
 
-yes - but that's not the only place where we do clock_was_set(), and the 
-on_each_cpu() is necessary in every other case. So i think the right 
-solution was the patch i did: to split the resume functionality from the 
-clock_was_set() functionality.
+Not that I remember. I haven't touched that for years :)
 
-	Ingo
+Nigel
+
