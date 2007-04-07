@@ -1,117 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966341AbXDGUoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966348AbXDGUtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966341AbXDGUoL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 16:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966344AbXDGUoL
+	id S966348AbXDGUtv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 16:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966345AbXDGUtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 16:44:11 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:56088 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966341AbXDGUoK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 16:44:10 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Sat, 7 Apr 2007 16:42:59 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, starvik@axis.com
-Subject: [PATCH] CRIS: Remove code related to pre-2.2 kernel.
-Message-ID: <Pine.LNX.4.64.0704071641050.14248@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sat, 7 Apr 2007 16:49:49 -0400
+Received: from www.osadl.org ([213.239.205.134]:55331 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966344AbXDGUts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 16:49:48 -0400
+Subject: Re: [PATCH] timekeeping: drop irq-context clocksource polling
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, mingo@elte.hu
+In-Reply-To: <1175967839.15973.156.camel@imap.mvista.com>
+References: <20070405210316.785839431@mvista.com>
+	 <20070407031922.ee49478f.akpm@linux-foundation.org>
+	 <1175967839.15973.156.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Sat, 07 Apr 2007 22:50:19 +0200
+Message-Id: <1175979019.28263.523.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-04-07 at 10:43 -0700, Daniel Walker wrote:
+> Looks like this path ,
+> 
+> arch/i386/kernel/tsc.c: time_cpufreq_notifier(); <-- takes xtime_lock
+> 			 mark_tsc_unstable();
+>             		  clocksource_change_rating(&clocksource_tsc, 0);
+> 			   timekeeping_change_clocksource(); <-- takes xtime_lock
+> 
+> 
+> I'm not sure why the time_cpufreq_notifier is taking the xtime_lock tho .
 
-Remove conditionals and code related to checking for a pre-2.2
-kernel.
+Simply because it fiddles with variables which are relevant for
+timekeeping.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-
----
-
-i'm fairly certain there's no value in checking for pre-2.2 kernels
-anymore.  (not compile tested as i have no such system.)
+	tglx
 
 
-diff --git a/arch/cris/arch-v32/kernel/fasttimer.c b/arch/cris/arch-v32/kernel/fasttimer.c
-index 5daeb6f..79e1e4c 100644
---- a/arch/cris/arch-v32/kernel/fasttimer.c
-+++ b/arch/cris/arch-v32/kernel/fasttimer.c
-@@ -603,23 +603,8 @@ void schedule_usleep(unsigned long us)
+	
 
- #ifdef CONFIG_PROC_FS
- static int proc_fasttimer_read(char *buf, char **start, off_t offset, int len
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
--                       ,int *eof, void *data_unused
--#else
--                        ,int unused
--#endif
--                               );
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
-+                       ,int *eof, void *data_unused);
- static struct proc_dir_entry *fasttimer_proc_entry;
--#else
--static struct proc_dir_entry fasttimer_proc_entry =
--{
--  0, 9, "fasttimer",
--  S_IFREG | S_IRUGO, 1, 0, 0,
--  0, NULL /* ops -- default to array */,
--  &proc_fasttimer_read /* get_info */,
--};
--#endif
- #endif /* CONFIG_PROC_FS */
+	
 
- #ifdef CONFIG_PROC_FS
-@@ -628,12 +613,7 @@ static struct proc_dir_entry fasttimer_proc_entry =
- #define BIG_BUF_SIZE (500 + NUM_TIMER_STATS * 300)
-
- static int proc_fasttimer_read(char *buf, char **start, off_t offset, int len
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
--                       ,int *eof, void *data_unused
--#else
--                        ,int unused
--#endif
--                               )
-+                       ,int *eof, void *data_unused)
- {
-   unsigned long flags;
-   int i = 0;
-@@ -808,9 +788,7 @@ static int proc_fasttimer_read(char *buf, char **start, off_t offset, int len
-
-   memcpy(buf, bigbuf + offset, len);
-   *start = buf;
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
-   *eof = 1;
--#endif
-
-   return len;
- }
-@@ -974,12 +952,8 @@ void fast_timer_init(void)
-     printk("fast_timer_init()\n");
-
- #ifdef CONFIG_PROC_FS
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,2,0)
-    if ((fasttimer_proc_entry = create_proc_entry( "fasttimer", 0, 0 )))
-      fasttimer_proc_entry->read_proc = proc_fasttimer_read;
--#else
--    proc_register_dynamic(&proc_root, &fasttimer_proc_entry);
--#endif
- #endif /* PROC_FS */
-     if(request_irq(TIMER_INTR_VECT, timer_trig_interrupt, IRQF_DISABLED,
-                    "fast timer int", NULL))
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
