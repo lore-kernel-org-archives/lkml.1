@@ -1,60 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbXDGAMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933572AbXDGAOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933552AbXDGAMw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 20:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933572AbXDGAMw
+	id S933572AbXDGAOQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 20:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933575AbXDGAOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 20:12:52 -0400
-Received: from mga03.intel.com ([143.182.124.21]:17699 "EHLO mga03.intel.com"
+	Fri, 6 Apr 2007 20:14:16 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:39856 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933552AbXDGAMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 20:12:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,383,1170662400"; 
-   d="scan'208"; a="209504639:sNHT23831668"
-Date: Fri, 6 Apr 2007 17:11:41 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: akpm@osdl.org
-Subject: [PATCH] Cleanup flush_tlb_others fn
-Message-ID: <20070407001140.GB3545@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+	id S933572AbXDGAOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Apr 2007 20:14:15 -0400
+Date: Fri, 6 Apr 2007 17:14:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/5] Char: cyclades, remove volatiles
+Message-Id: <20070406171406.317ea28a.akpm@linux-foundation.org>
+In-Reply-To: <25307199761334218148@karneval.cz>
+References: <16309194841640222796@karneval.cz>
+	<25307199761334218148@karneval.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed,  4 Apr 2007 23:45:38 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Cleanup flush_tlb_others(), no functional change.
+> cyclades, remove volatiles
 
-Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+The other changes seem uncontroversial, but this one has the potential
+to change runtime behaviour.  And cyclades.c is a driver which some people
+actually use ;)
 
----
- arch/i386/kernel/smp.c |   12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
-
-Index: work/arch/i386/kernel/smp.c
-===================================================================
---- work.orig/arch/i386/kernel/smp.c
-+++ work/arch/i386/kernel/smp.c
-@@ -379,17 +379,7 @@ static void flush_tlb_others(cpumask_t c
- 	
- 	flush_mm = mm;
- 	flush_va = va;
--#if NR_CPUS <= BITS_PER_LONG
--	atomic_set_mask(cpumask, &flush_cpumask);
--#else
--	{
--		int k;
--		unsigned long *flush_mask = (unsigned long *)&flush_cpumask;
--		unsigned long *cpu_mask = (unsigned long *)&cpumask;
--		for (k = 0; k < BITS_TO_LONGS(NR_CPUS); ++k)
--			atomic_set_mask(cpu_mask[k], &flush_mask[k]);
--	}
--#endif
-+	cpus_or(flush_cpumask, cpumask, flush_cpumask);
- 	/*
- 	 * We have to send the IPI only to
- 	 * CPUs affected.
+Have these changes been runtime-tested?
