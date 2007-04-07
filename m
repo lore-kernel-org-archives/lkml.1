@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbXDGP2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbXDGPfD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752253AbXDGP2G (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 11:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXDGP2G
+	id S1752249AbXDGPfD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 11:35:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966027AbXDGPfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 11:28:06 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:48484 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752253AbXDGP2E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 11:28:04 -0400
-Message-Id: <1175959684.29481.1183471808@webmail.messagingengine.com>
-X-Sasl-Enc: oZMRPPV5+55czSV9N6snFrqNRmf1mw9uzbkn+8m80YRg 1175959684
-From: johnrobertbanks@fastmail.fm
-To: "Dale Amon" <amon@vnl.com>
-Cc: "Jan Harkes" <jaharkes@cs.cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Content-Disposition: inline
+	Sat, 7 Apr 2007 11:35:03 -0400
+Received: from dovecot.org ([213.157.71.38]:42630 "EHLO dovecot.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752249AbXDGPfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 11:35:00 -0400
+X-Greylist: delayed 1138 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Apr 2007 11:35:00 EDT
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20070407125914.GA31074@vnl.com>
-Subject: Re: Reiser4. BEST FILESYSTEM EVER.
-In-Reply-To: <20070407125914.GA31074@vnl.com>
-Date: Sat, 07 Apr 2007 08:28:04 -0700
+Message-Id: <BFF42091-C65E-49FE-826A-91E181354E2F@iki.fi>
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-14-83262571"
+To: linux-kernel@vger.kernel.org
+From: Timo Sirainen <tss@iki.fi>
+Subject: O_APPEND, lseek() and pwrite()
+Date: Sat, 7 Apr 2007 18:15:57 +0300
+X-Pgp-Agent: GPGMail 1.1.2 (Tiger)
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Apr 2007 13:59:14 +0100, "Dale Amon" <amon@vnl.com> said:
-> Jan does have a point about bad blocks. A couple years ago
-> I had a relatively new disk start to go bad on random blocks.
-> I detected it fairly quickly but did have some data loss.
-> 
-> All the compressed archives which were hit were near
-> total losses; most other files were at least partially
-> recoverable.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--Apple-Mail-14-83262571
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
 
-As you know, there is not substitute for backups. What if the disk had
-totally crashed and scratched GBs of your data.
+If I open a file with O_APPEND and write() to it, it looks like the  
+file offset is updated and I can get it with lseek(SEEK_CUR). Can I  
+trust that this behavior won't change in future Linux versions?  
+Apparently this isn't standard, because at least OS X and Solaris  
+don't do this.
 
-And did you ever trust those (non-compressed) executables that you saved
-after recovering them from corruption?
+pwrite() ignores the file offset if the fd has O_APPEND set (with  
+2.6.20). http://www.opengroup.org/austin/mailarchives/ag/ 
+msg09453.html suggests that it shouldn't ignore it. Could this be  
+changed? For now I can of course just change the flag with fcntl().
 
-Of course not. No one would. The fact that they were not compressed did
-not save them.
+I guess there aren't any limits to how large blocks write() accepts  
+without the data being mixed with another process's writes (both with  
+O_APPEND)? And I guess there aren't any horrible performance problems  
+with this, so that this is actually a good idea compared to file lock  
++ write() + unlock? :)
 
-You are really arguing for backups, not for one filesystem or another.
 
-Besides, Jan claimed that corruption due to bad blocks propagates to
-MULTIPLE files because of the compression in the file system. You are
-arguing something different.
+--Apple-Mail-14-83262571
+content-type: application/pgp-signature; x-mac-type=70674453;
+	name=PGP.sig
+content-description: This is a digitally signed message part
+content-disposition: inline; filename=PGP.sig
+content-transfer-encoding: 7bit
 
-> It is not a matter of your operating system writing
-> to bad blocks. It is a matter of what happens when the
-> blocks on which your data sit go bad underneath you.
->
-> This issue has also been discussed by people working
-> with revision control system. If you are archiving
-> data, how do you know you if your data is still good
-> unless you actually need it? If you do not know it
-> is bad, you may well get rid of good copies thinking
-> you do not need the extras... it does happen.
-> 
-> I would be quite hesitant to go with on disk compression
-> unless damage was limited to only the bad bits or blocks
-> and did not propagate through the rest of the file.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (Darwin)
 
-You don't really mean that. Most backup uses compression (which
-propagates errors through the rest of the file).
+iD8DBQFGF7WuyUhSUUBViskRAp5hAJ9pyjaotNFqciVWdcRQzrF5iZb6iACfY6kO
+jTxNcxYXXT9u6oHYlZezmIw=
+=vJqh
+-----END PGP SIGNATURE-----
 
-> Perhaps if everyone used hardware RAID and the RAID
-> automatically detected a difference due to trashed
-> data on one disk and flagged the admin with a warning...
-> 
-> BTW: I'm a CMU Alum, so who are you working with John?
-
-I retired quite young.
--- 
-  
-  johnrobertbanks@fastmail.fm
-
--- 
-http://www.fastmail.fm - Send your email first class
-
+--Apple-Mail-14-83262571--
