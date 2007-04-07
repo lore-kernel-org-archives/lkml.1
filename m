@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966351AbXDGVZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966347AbXDGVbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966351AbXDGVZE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 17:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966353AbXDGVZE
+	id S966347AbXDGVbz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 17:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966350AbXDGVbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 17:25:04 -0400
-Received: from pop5-1.us4.outblaze.com ([205.158.62.125]:32954 "HELO
-	pop5-1.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S966352AbXDGVZA (ORCPT
+	Sat, 7 Apr 2007 17:31:55 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:20285 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966347AbXDGVbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 17:25:00 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Apr 2007 17:25:00 EDT
-Subject: Re: [PATCH -mm] freezer: Remove PF_NOFREEZE from handle_initrd
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200704071814.25588.rjw@sisk.pl>
-References: <200704071814.25588.rjw@sisk.pl>
+	Sat, 7 Apr 2007 17:31:55 -0400
+Subject: Re: [PATCH] timekeeping: drop irq-context clocksource polling
+From: Daniel Walker <dwalker@mvista.com>
+To: tglx@linutronix.de
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, mingo@elte.hu
+In-Reply-To: <1175979019.28263.523.camel@localhost.localdomain>
+References: <20070405210316.785839431@mvista.com>
+	 <20070407031922.ee49478f.akpm@linux-foundation.org>
+	 <1175967839.15973.156.camel@imap.mvista.com>
+	 <1175979019.28263.523.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Sun, 08 Apr 2007 07:18:16 +1000
-Message-Id: <1175980696.10725.12.camel@nigel.suspend2.net>
+Date: Sat, 07 Apr 2007 14:30:31 -0700
+Message-Id: <1175981431.15973.158.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Sat, 2007-04-07 at 18:14 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sat, 2007-04-07 at 22:50 +0200, Thomas Gleixner wrote:
+> On Sat, 2007-04-07 at 10:43 -0700, Daniel Walker wrote:
+> > Looks like this path ,
+> > 
+> > arch/i386/kernel/tsc.c: time_cpufreq_notifier(); <-- takes xtime_lock
+> > 			 mark_tsc_unstable();
+> >             		  clocksource_change_rating(&clocksource_tsc, 0);
+> > 			   timekeeping_change_clocksource(); <-- takes xtime_lock
+> > 
+> > 
+> > I'm not sure why the time_cpufreq_notifier is taking the xtime_lock tho .
 > 
-> Make handle_initrd() call try_to_freeze() in a suitable place instead of setting
-> PF_NOFREEZE for the current task.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  init/do_mounts_initrd.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.21-rc6/init/do_mounts_initrd.c
-> ===================================================================
-> --- linux-2.6.21-rc6.orig/init/do_mounts_initrd.c
-> +++ linux-2.6.21-rc6/init/do_mounts_initrd.c
-> @@ -55,11 +55,12 @@ static void __init handle_initrd(void)
->  	sys_mount(".", "/", NULL, MS_MOVE, NULL);
->  	sys_chroot(".");
->  
-> -	current->flags |= PF_NOFREEZE;
->  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
->  	if (pid > 0) {
-> -		while (pid != sys_wait4(-1, NULL, 0, NULL))
-> +		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
-> +			try_to_freeze();
->  			yield();
-> +		}
->  	}
->  
->  	/* move initrd to rootfs' /old */
+> Simply because it fiddles with variables which are relevant for
+> timekeeping.
 
-ACK.
+loops_per_jiffy perhaps?
 
-Regards,
 
-Nigel
 
