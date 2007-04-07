@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965984AbXDGWTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965978AbXDGWbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965984AbXDGWTI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 18:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965980AbXDGWTH
+	id S965978AbXDGWbJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 18:31:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965981AbXDGWbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 18:19:07 -0400
-Received: from ns.suse.de ([195.135.220.2]:38341 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965977AbXDGWTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 18:19:05 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 1/4] x86_64: (SPARSE_VIRTUAL doubles sparsemem speed)
-Date: Sun, 8 Apr 2007 00:18:44 +0200
-User-Agent: KMail/1.9.6
-Cc: Andy Whitcroft <apw@shadowen.org>, Martin Bligh <mbligh@google.com>,
-       Dave Hansen <hansendc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-mm@kvack.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070401071024.23757.4113.sendpatchset@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0704051119400.9800@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0704071455060.31468@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704071455060.31468@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 7 Apr 2007 18:31:09 -0400
+Received: from pop5-1.us4.outblaze.com ([205.158.62.125]:35328 "HELO
+	pop5-1.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965978AbXDGWbI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 18:31:08 -0400
+Subject: Re: [RFC][PATCH -mm] swsusp: Use rbtree for tracking allocated swap
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070407150612.f99aae4a.akpm@linux-foundation.org>
+References: <200704072320.40238.rjw@sisk.pl>
+	 <20070407150612.f99aae4a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 08 Apr 2007 08:31:05 +1000
+Message-Id: <1175985065.10725.20.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704080018.45084.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 April 2007 00:06:13 Christoph Lameter wrote:
+Hi.
 
-> Results:
+On Sat, 2007-04-07 at 15:06 -0700, Andrew Morton wrote:
+> On Sat, 7 Apr 2007 23:20:39 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> x86_64 boot with virtual memmap
+> > This should allow us to reduce the memory usage, practically always, and
+> > improve performance.
 > 
-> Format:               #events totaltime (min/avg/max)
-> 
-> kfree_virt_to_page       598430 5.6ms(3ns/9ns/322ns)
-> 
-> x86_64 boot regular sparsemem
-> 
-> kfree_virt_to_page       596360 10.5ms(4ns/18ns/28.7us)
-> 
-> 
-> On average sparsemem virtual takes half the time than of sparsemem.
+> And does it?
 
-Nice.  But on what workloads? 
+It will. I've been using extents for ages, for the same reasons. I don't
+put them in an rb_tree because I view it as less than most efficient,
+but it will still be a huge step forward from bitmaps in the normal
+case.
 
-Anyways it looks promising. I hope we can just
-replace old style sparsemem support with this for x86-64.
+The worst case would be if every second page of swap was in use, so that
+you needed one extent per swap page. In that case, it would use more
+memory than the bitmap, but far, far more common will be the case where
+only one extent is needed for the whole swap partition, because the
+algorithm used by the swap allocator minimises fragmentation.
 
-> Time is measured using the cycle counter (TSC on IA32, ITC on IA64) which has
-> a very low latency.
+Regards,
 
-Sorry that triggered my usual RDTSC rant...
+Nigel
 
-Not on NetBurst (hundred of cycles) And on the others (C2,K8) it is a bit dangerous 
-to measure short code blocks because RDTSC is not guaranteed ordered with the surrounding 
-instructions.
-
--Andi
- 
