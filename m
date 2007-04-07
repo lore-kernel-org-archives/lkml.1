@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965211AbXDGEH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965233AbXDGELb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965211AbXDGEH3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 00:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965233AbXDGEH3
+	id S965233AbXDGELb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 00:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXDGELb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 00:07:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54156 "EHLO mx2.suse.de"
+	Sat, 7 Apr 2007 00:11:31 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:42251 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965211AbXDGEH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 00:07:28 -0400
-Date: Fri, 6 Apr 2007 17:43:03 -0700
-From: Greg KH <gregkh@suse.de>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg KH <greg@kroah.com>, Adrian Bunk <bunk@stusta.de>,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove the broken PCI_MULTITHREAD_PROBE option
-Message-ID: <20070407004303.GF23230@suse.de>
-References: <20070327010251.GX16477@stusta.de> <20070327130351.51aff00e@gondolin.boeblingen.de.ibm.com> <20070327225006.GC4478@kroah.com> <20070328103625.23910f1e@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
+	id S965233AbXDGELa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 00:11:30 -0400
+Date: Sat, 7 Apr 2007 09:48:51 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
+       devel@openvz.org
+Subject: Re: [PATCH 3/7] Containers (V8): Add generic multi-subsystem API to containers
+Message-ID: <20070407041851.GA15007@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070406233221.989528000@menage.corp.google.com> <20070407001324.271959000@menage.corp.google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070328103625.23910f1e@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070407001324.271959000@menage.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 28, 2007 at 10:36:25AM +0200, Cornelia Huck wrote:
-> On Tue, 27 Mar 2007 15:50:06 -0700,
-> Greg KH <greg@kroah.com> wrote:
-> 
-> > > Greg, what about driver-core-per-subsystem-multithreaded-probing.patch?
-> > > PCI_MULTITHREAD_PROBE shoudn't be broken with that, only in mainline?
-> > 
-> > Do you want to enable PCI multithreaded probing using your patch?  I
-> > don't think the world is ready for pci multithreaded probing as was
-> > determined by the zillion of bug reports from people who like to enable
-> > config options that state in big letters, "THIS WILL BREAK YOUR BOX"...
-> 
-> But IIRC, that was without my patch?
+On Fri, Apr 06, 2007 at 04:32:24PM -0700, menage@google.com wrote:
+> +static int attach_task(struct container *cont, struct task_struct *tsk)
+>  {
 
-Oh yes, your patch had nothing to do with it.
+[snip]
 
-It was a more general, "do we want to allow multithreaded probing at
-all" type question.  Some suggested that we allow it only by letting the
-individual busses handle it (like we prototyped in the USB core),
-instead of having the driver core do it.
+> +	task_lock(tsk);
 
-> Wouldn't per-subsystem multithreaded probing just expose bugs that
-> could also be exposed on SMP systems?
+You need to check here if task state is PF_EXITING and fail with
+-ESRCH if so? Otherwise we risk breaking refcount on
+init_container_group.
 
-Yes, it would be the same.
+> +	rcu_assign_pointer(tsk->containers, newcg);
+> +	task_unlock(tsk);
 
-> > And I'm still questioning if we should add your patch at all, as I don't
-> > think any other subsystems need it.  Do you?
-> 
-> The css/ccw busses may profit from it, since we tend to have thousands
-> of devices there. OTOH, we've already tried to make probing as
-> asynchronous as possible, so maybe there isn't that much gain. I'd need
-> to do some measurements (when I find some time...)
-
-Ok, I'll keep the patch then and send it to Linus for 2.6.22, I didn't
-realize your stuff would work well with it.
-
-thanks,
-
-greg k-h
+-- 
+Regards,
+vatsa
