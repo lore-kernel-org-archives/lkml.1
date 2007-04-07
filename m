@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966105AbXDGQu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966108AbXDGQ5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966105AbXDGQu7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 12:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966109AbXDGQu7
+	id S966108AbXDGQ5L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 12:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966109AbXDGQ5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 12:50:59 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:29610 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966105AbXDGQu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 12:50:58 -0400
-Date: Sat, 07 Apr 2007 10:50:47 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Two questions regarding Opening files within Kernel!
-In-reply-to: <fa.9BBqigWhVcsOIUStQ9CipWD6PQo@ifi.uio.no>
-To: JanuGerman <doublemalam@yahoo.co.uk>
-Cc: linuxkernel <linux-kernel@vger.kernel.org>
-Message-id: <4617CBE7.5060401@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.9BBqigWhVcsOIUStQ9CipWD6PQo@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sat, 7 Apr 2007 12:57:10 -0400
+Received: from h80ad275a.async.vt.edu ([128.173.39.90]:48108 "EHLO
+	h80ad275a.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966108AbXDGQ5J (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 12:57:09 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: johnrobertbanks@fastmail.fm
+Cc: Ignatich <ignatich@gmail.com>, reiserfs-list@namesys.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: COMPILING AND CONFIGURING A NEW KERNEL.
+In-Reply-To: Your message of "Sat, 07 Apr 2007 00:45:32 PDT."
+             <1175931932.27274.1183445262@webmail.messagingengine.com>
+From: Valdis.Kletnieks@vt.edu
+References: <46157B5B.5000602@gmail.com> <1175817921.18400.1183285196@webmail.messagingengine.com> <1175909205.905.1183425104@webmail.messagingengine.com>
+            <1175931932.27274.1183445262@webmail.messagingengine.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1175965022_4736P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 07 Apr 2007 12:57:02 -0400
+Message-ID: <13183.1175965022@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-JanuGerman wrote:
-> Hi Every one,
+--==_Exmh_1175965022_4736P
+Content-Type: text/plain; charset=us-ascii
+
+On Sat, 07 Apr 2007 00:45:32 PDT, johnrobertbanks@fastmail.fm said:
+
+> Use rpm-pkg to create a Red Hat RPM kernel package.
+> # make rpm-pkg
 > 
->   I have got two questions regarding opening files within the Linux kernel. If some body can help me, in sorting out this problem, i will be very thankful.
+> When built, the RPM package is put in
+> /usr/src/packages/RPMS/*your*architecture*
+> 
+> # cd /usr/src/packages/RPMS/x86_64
+> 
+> Install the package (you may have to un-install previous installs)
+> # rpm -i kernel-2.6.20-1.x86_64.rpm
 
-First off, likely not something you should be doing:
+It is *highly* recommended that you change the kernel identifier at
+least slightly, so that you can install '2.6.20-1.local' without overlaying
+the vendor-supplied 2.6.20-1 kernel.  Among other things, this lets you
+boot back to the equivalent code level in the vendor kernel, so you can figure
+out if it's your .config file that's broken, or if you hit a bug upggrading
+from 2.6.19-10 to 2.6.20-1.
 
-http://kernelnewbies.org/FAQ/WhyWritingFilesFromKernelIsBad
+--==_Exmh_1175965022_4736P
+Content-Type: application/pgp-signature
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFGF81ecC3lWbTT17ARAq6zAKDlzFh1SIH00/TlrtFOHyUma0DmjQCfW6Xl
+HZbqcmdLjRKrH0RrxIeAgYI=
+=5UYo
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1175965022_4736P--
