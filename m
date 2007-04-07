@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965737AbXDGTaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966287AbXDGTni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965737AbXDGTaF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 15:30:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966304AbXDGTaF
+	id S966287AbXDGTni (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 15:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966304AbXDGTni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 15:30:05 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:53463 "EHLO mail.zelnet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965737AbXDGTaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 15:30:03 -0400
-Message-ID: <4617F12D.8080905@namesys.com>
-Date: Sat, 07 Apr 2007 23:29:49 +0400
-From: Edward Shishkin <edward@namesys.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
+	Sat, 7 Apr 2007 15:43:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:15598 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966287AbXDGTnh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 15:43:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=P4pq900fUbHiwChukjg/RPYUM1ReQDeTQti6UZxgIW0LRfC0as+mhsoRGFPnN3AJvm3+k+D17RgOTjjgcqFfn4vMesKcjJ88r9juMo44eKJ985fN7Xft+RrMXUGesjjZXcWqrAQF8g/KH2OX2bJpcY4L6MLk6uJm9Vj7WRsGICI=
+Message-ID: <4617F455.2050401@googlemail.com>
+Date: Sat, 07 Apr 2007 21:43:17 +0200
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Laurent Riffard <laurent.riffard@free.fr>
-CC: Ignatich <ignatich@gmail.com>, reiserfs-list@namesys.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: REISER4: fix for reiser4_write_extent
-References: <46157B5B.5000602@gmail.com> <461793E4.5040706@free.fr>
-In-Reply-To: <461793E4.5040706@free.fr>
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: mm snapshot broken-out-2007-04-07-03-27.tar.gz uploaded
+References: <200704071029.l37ATdKR032505@shell0.pdx.osdl.net>
+In-Reply-To: <200704071029.l37ATdKR032505@shell0.pdx.osdl.net>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Riffard wrote:
+akpm@linux-foundation.org napisa³(a):
+> The mm snapshot broken-out-2007-04-07-03-27.tar.gz has been uploaded to
+> 
+>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-04-07-03-27.tar.gz
+> 
+> It contains the following patches against 2.6.21-rc6:
 
-> Le 06.04.2007 00:42, Ignatich a Ã©crit :
->
->> While trying to find the cause of problems with reiser4 in recent 
->> kernels I came across this.
->>
->> Incomplete write handling seem to be missing from 
->> reiser4_write_extent() thanks to reiser4-temp-fix.patch. Strangely, 
->> there is a patch by Edward Shishkin that should address that issue, 
->> but it is missing from -mm tree. Please check.
->>
->>    Max
->>
->
-> This patch was added to -mm tree the 14 Dec 2006 (see 
-> http://www.mail-archive.com/mm-commits@vger.kernel.org/msg05338.html).
->
-> It was then dropped from -mm tree the 05 Mar 2007 (see 
-> http://www.mail-archive.com/mm-commits@vger.kernel.org/msg10818.html), 
-> with this comment:
->     "This patch was dropped because it is obsolete"
->
-> No idea why it was obsolete. Does somebody know ?
+suspend-to-disk doesn't work when pktgen module is loaded.
 
+Stopping kernel threads timed out after 20 seconds (2 tasks refusing to freeze):
+ kpktgend_0
+ kpktgend_1
+Restarting tasks ... done.
+swsusp: Basic memory bitmaps freed
 
-This uses not settled interface filemap_copy_from_user_atomic/nonatomic
-However, those things should be fixed. I'll prepare the patch a bit later..
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-04-07-03-27/mm-serialconsole2.log
 
-Thanks,
-Edward.
+Anyway, this kernel is pretty stable :)
+
+aio_dio_bugs - ok
+aiostress - ok
+bash_shared_mapping - ok
+bonnie - ok
+cpu_hotplug - ok
+cyclictest - ok
+dbench - ok
+fsfuzzer - ok
+fs_mark - ok
+fsx - ok
+interbench - ok
+iozone -ok
+isic - ok
+linus_stress - ok
+ltp - ptrace bug
+pi_tests - ok
+rmaptest - ok
+rtlinuxtests - ok
+rttester - ok
+scrashme - ok
+spew - ok
+stress - ok
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
