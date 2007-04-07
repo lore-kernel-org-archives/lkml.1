@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752082AbXDGFKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbXDGFMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752082AbXDGFKg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 01:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbXDGFKg
+	id S1752126AbXDGFMp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 01:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbXDGFMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 01:10:36 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41345 "EHLO mx1.suse.de"
+	Sat, 7 Apr 2007 01:12:45 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55976 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044AbXDGFKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 01:10:35 -0400
-Date: Fri, 6 Apr 2007 22:01:31 -0700
-From: Greg KH <greg@kroah.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Zhang Rui <rui.zhang@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
-Message-ID: <20070407050131.GB25511@kroah.com>
-References: <200704031741.42273.david-b@pacbell.net> <200704050358.43689.david-b@pacbell.net> <1175852213.2650.4.camel@localhost.localdomain> <200704060843.30723.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704060843.30723.david-b@pacbell.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1752069AbXDGFMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 01:12:44 -0400
+Subject: Re: [PATCH] PPC4xx UART0 (8250) problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mikhail Zolotaryov <lebon@faust.net.ua>
+Cc: mporter@kernel.crashing.org, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46171C50.3020104@faust.net.ua>
+References: <46171C50.3020104@faust.net.ua>
+Content-Type: text/plain
+Date: Sat, 07 Apr 2007 15:12:36 +1000
+Message-Id: <1175922756.7407.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 06, 2007 at 08:43:30AM -0700, David Brownell wrote:
-> > > If this patch starts to get deployed, I expect other people will find
-> > > a few other curiousities ... and likely some things to be fixed.
-> > 
-> > > The /sys/devices/acpi_system:00/ tree is kind of new.  I suspect one
-> > > way it could be more informative is to set up cross-links in sysfs
-> > > between the ACPI devices and the "real" device nodes ... e.g. on the
-> > > system I'm using right now .../device:00/PNP0A03:00/device:15/PNP0B00:00
-> > > could have a link pointing to /sys/devices/pnp0/00:06 ... and that PNP
-> > > node in turn could have an "acpi" link pointing back to the ACPI thing.
-> > > 
-> > > Such cross-links would let people see those relationships, and observe
-> > > which links are missing or otherwise strange.  Fixing the bugs would
-> > > seem unlikely until those things become visible.
-> >
-> > Sounds nice.
-> > The patch below should make sense.
+On Sat, 2007-04-07 at 07:21 +0300, Mikhail Zolotaryov wrote:
+> On PPC4xx embedded we often have UART0 on IRQ0 but 8250 UART driver
+> uses IRQ0 as "no irq" hack. It's suggested that platforms with UART
+> on IRQ0 will redefine is_real_interrupt(irq) macro but 8250 code
+> anyway overrides that. As the result, serial line on UART0 works
+> on polling-way and we have character loss on high baud rates.
 > 
-> Yeah, that's the idea.  Let's see if it's any good.  :)
-> 
-> I'd just call it "acpi_node" not "ACPI_node" (NO POINT IN SHOUTING),
-> and might not even use the "_node" suffix.
+> In patch I added check if UART0 is on IRQ0, if so we define
+> is_real_interrupt macro to be 1 (true). Also, check if
+> is_real_interrupt macro is already defined added to 8250 UART
+> driver.
 
-Yes, please don't shout :)
+This is an old problem. The proper fix is already implemented for
+arch/powerpc and consist of having virtual irq numbers (which helps for
+many other things anyway).
 
-> I cc'd Greg, who's our resident (or is that itinerant?) sysfs guru,
-> in case he has comments on this issue.
+Support for 4xx platforms in arch/powerpc is starting to get in, pop on
+linuxppc-dev@ozlabs.org where the patches are being posted and you are
+welcome to give a hand porting more platforms over :-)
 
-Are you _sure_ you have a 1-to-1 relationship here?  No multiple devices
-pointing to the same acpi node?  Or the other way around?  If so, you
-are going to have to change the name to be something more unique.
+Ben.
 
-Or how about "firmware" instead of "acpi" to be able to have the
-userspace tools work on any type of firmware that provides this, like
-openfirmware?
 
-thanks,
-
-greg k-h
