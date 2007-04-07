@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966192AbXDGRkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966193AbXDGRnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966192AbXDGRkI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 13:40:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966188AbXDGRkH
+	id S966193AbXDGRnV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 13:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933630AbXDGRnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 13:40:07 -0400
-Received: from h80ad275a.async.vt.edu ([128.173.39.90]:42176 "EHLO
-	h80ad275a.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933605AbXDGRkF (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 13:40:05 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: johnrobertbanks@fastmail.fm
-Cc: Jan Harkes <jaharkes@cs.cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Reiser4. BEST FILESYSTEM EVER.
-In-Reply-To: Your message of "Fri, 06 Apr 2007 19:47:36 PDT."
-             <1175914056.9653.1183426876@webmail.messagingengine.com>
-From: Valdis.Kletnieks@vt.edu
-References: <46157B5B.5000602@gmail.com> <1175817921.18400.1183285196@webmail.messagingengine.com> <461592FB.5060507@zytor.com> <1175819681.20754.1183287946@webmail.messagingengine.com> <461596DE.2020802@zytor.com> <1175823288.25662.1183293506@webmail.messagingengine.com> <4615C780.5040407@zytor.com> <1175833931.8916.1183307802@webmail.messagingengine.com> <20070406152119.GC4228@delft.aura.cs.cmu.edu>
-            <1175914056.9653.1183426876@webmail.messagingengine.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1175967598_4736P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 07 Apr 2007 13:39:58 -0400
-Message-ID: <14921.1175967598@turing-police.cc.vt.edu>
+	Sat, 7 Apr 2007 13:43:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:59466 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933617AbXDGRnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 13:43:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type;
+        b=HITIonuCoD37W2o8tIHwaUTvrZea+E1q4wJtGn+TJSN5kJOwV+iJ48FlE4j6/CLmyFBW+iOVWF0SU1Wk8mphAMwrJF/REtb+NWGOhKmhblHqLcdnzpKrIb/d7TX5NwGYbZmvVZo7szFIlE+wkujXQN4o2BXm0iGFjncKptrDdSU=
+Message-ID: <8d158e1f0704071043w5483f60ayc9f240abb1039392@mail.gmail.com>
+Date: Sat, 7 Apr 2007 19:43:16 +0200
+From: "Patrick Ale" <patrick.ale@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, netfilter@lists.netfilter.org
+Subject: [PATCH] ip_tables.h
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6821_31053376.1175967796823"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1175967598_4736P
-Content-Type: text/plain; charset=us-ascii
+------=_Part_6821_31053376.1175967796823
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Fri, 06 Apr 2007 19:47:36 PDT, johnrobertbanks@fastmail.fm said:
-> On Fri, 6 Apr 2007 11:21:19 -0400, "Jan Harkes" <jaharkes@cs.cmu.edu>
+Hi lads,
 
-> > With compression there is a pretty high probability that one corrupted
-> > byte or disk block will result in loss of a considerably larger amount
-> > of data. 
-> 
-> Bad blocks are NOT dealt with by the filesystem,... so your comment is
-> irrelevant, or just plain wrong.
-> 
-> If your filesystem is writing to bad blocks, then throw away your
-> operating system.
+I had some problems compiling the external netfilter modules due to
+missing definitions.
+I googled a lot, saw a lot of people having the same problems but no
+real answer to how to fix it.
 
-You know... occasionally, blocks go bad *after* you write to them.  If
-you have an uncompressed filesystem, it's often possible to recover most
-of the file , and just have a few 512-byte blocks of zeros, simply by
-doing something like 'dd if=bad.file of=bad.file bs=512 conv=noerror'
-or careful applications of 'skip=N'.  If it's compressed, you usually
-can't recover the rest of a compression group if a previous block is lost.
+So.. I made a little patch which make things work for me, at least.
 
-(And for those who talk about backups - yes, taking backups is good.
-However, it's the rare laptop or desktop machine that can afford the
-luxury of RAID disks, and backups usually happen once a night, if that
-often.  This means that if you've been working hard on something important
-all day, and the disk blows chunks at 4:30PM, you *will* be suddenly very
-concerned over exactly how much you can recover off the failing drive....
+Modules that work after applying the patch are the geopip module,
+connlimit module, and prolly more, but I didnt test them.
 
-And yes, I'd *love* to have all my users connected to nice SAN systems that do
-snapshotting and remote replication to DR sites and all that - but have you
-ever *priced* a petabyte of SAN storage, the NAS gateways to serve it to users,
-and upgrading several tens of thousands of network ports to Gig-E? Hint -
-US$1M would get us through a pilot, and probably $5M and up to *start*
-deployment. Anybody wanna buy us an EMC DMX-3? :)
+Please note, I am not a coder, not a maintainer and I am happy that I
+didnt break anything so please don't consider this as a proposal to
+include in the kernel or something, I am just in favor of sharing what
+helped me getting things to work, if i can help others with it or if
+it is interesting material for inclusion, even better :)
 
-http://www.emc.com/products/systems/symmetrix/DMX_series/DMX3.jsp
+So, the patch is attached in this email and can also be found on
+http://www.patrickale.eu/documents/archives/patches/ip_tables.h.diff
 
 
---==_Exmh_1175967598_4736P
-Content-Type: application/pgp-signature
+I hope this helps a people or two.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFGF9ducC3lWbTT17ARAgoTAJ9Hg1wWgLQ47Uuk0kCh+RIiv+1/VQCg2nHw
-w1Iycl0MQx6w3XtS1n0rMHA=
-=aO8Q
------END PGP SIGNATURE-----
+Patrick
 
---==_Exmh_1175967598_4736P--
+------=_Part_6821_31053376.1175967796823
+Content-Type: text/x-patch; name="ip_tables.h.diff"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="ip_tables.h.diff"
+X-Attachment-Id: f_f08f4o42
+
+LS0tIGluY2x1ZGUvbGludXgvbmV0ZmlsdGVyX2lwdjQvaXBfdGFibGVzLmgub3JpZyAgICAgICAy
+MDA3LTA0LTA3IDIwOjMwOjI1LjM0NDM2NTcwNyArMDIwMAorKysgaW5jbHVkZS9saW51eC9uZXRm
+aWx0ZXJfaXB2NC9pcF90YWJsZXMuaCAgICAyMDA3LTA0LTA3IDIwOjM0OjA1LjA3Njg4NzU1MCAr
+MDIwMApAQCAtMzQsNiArMzQsMTIgQEAKICNkZWZpbmUgaXB0X3RhYmxlIHh0X3RhYmxlCiAjZGVm
+aW5lIGlwdF9nZXRfcmV2aXNpb24geHRfZ2V0X3JldmlzaW9uCgorI2RlZmluZSBpcHRfcmVnaXN0
+ZXJfbWF0Y2gobXRjaCkgICAgICAgIFwKKyh7ICAgICAgKG10Y2gpLT5mYW1pbHkgPSBBRl9JTkVU
+OyAgICAgICBcCisgICAgICAgIHh0X3JlZ2lzdGVyX21hdGNoKG10Y2gpOyB9KQorI2RlZmluZSBp
+cHRfdW5yZWdpc3Rlcl9tYXRjaChtdGNoKSB4dF91bnJlZ2lzdGVyX21hdGNoKG10Y2gpCisKKwog
+LyogWWVzLCBWaXJnaW5pYSwgeW91IGhhdmUgdG8gemVybyB0aGUgcGFkZGluZy4gKi8KIHN0cnVj
+dCBpcHRfaXAgewogICAgICAgIC8qIFNvdXJjZSBhbmQgZGVzdGluYXRpb24gSVAgYWRkciAqLwoK
+
+------=_Part_6821_31053376.1175967796823--
