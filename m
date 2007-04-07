@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXDGRo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966190AbXDGRqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933617AbXDGRo5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 13:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966194AbXDGRo5
+	id S966190AbXDGRqh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 13:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933634AbXDGRqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 13:44:57 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:49431 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933617AbXDGRo5 (ORCPT
+	Sat, 7 Apr 2007 13:46:37 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:35260
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933630AbXDGRqg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 13:44:57 -0400
-Subject: Re: [PATCH] timekeeping: drop irq-context clocksource polling
-From: Daniel Walker <dwalker@mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, mingo@elte.hu
-In-Reply-To: <20070407031922.ee49478f.akpm@linux-foundation.org>
-References: <20070405210316.785839431@mvista.com>
-	 <20070407031922.ee49478f.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 07 Apr 2007 10:43:59 -0700
-Message-Id: <1175967839.15973.156.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Sat, 7 Apr 2007 13:46:36 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Larry Finger <larry.finger@lwfinger.net>
+Subject: Re: Kernel NULL pointer when loading bcm43xx-mac80211 =?iso-8859-1?q?with=09fwpostfix_=3D?= ".fw4"
+Date: Sat, 7 Apr 2007 19:45:30 +0200
+User-Agent: KMail/1.9.5
+Cc: Johannes Berg <johannes@sipsolutions.net>, bcm43xx-dev@lists.berlios.de,
+       "linux-kernel, " <linux-kernel@vger.kernel.org>
+References: <4616DF5A.7040800@lwfinger.net> <1175958655.8459.8.camel@johannes.berg> <4617D862.7010202@lwfinger.net>
+In-Reply-To: <4617D862.7010202@lwfinger.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704071945.30680.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-07 at 03:19 -0700, Andrew Morton wrote:
-> On Thu, 05 Apr 2007 14:03:16 -0700 Daniel Walker <dwalker@mvista.com> wrote:
+On Saturday 07 April 2007 19:44, Larry Finger wrote:
+> Johannes Berg wrote:
+> > On Sat, 2007-04-07 at 15:51 +0200, Michael Buesch wrote:
+> >> On Saturday 07 April 2007 02:01, Larry Finger wrote:
+> >>> The current mb and wireless-dev git trees both get a kernel NULL pointer in "param_set_copystring" 
+> >>> when modprobe'ing bcm43xx-mac80211 with a line of 'options bcm43xx-mac80211 fwpostfix = ".fw4"' in 
+> >>> /etc/modprobe.conf.local. This construction used to work and still does for bcm43xx-softmac. I 
+> >>> compared the code between the two versions and cannot see any real differences. Any suggestions?
+> >> Uhm, fwpostfix=.fw4 works fine for me when I pass it to modprobe.
+> > 
+> > I use
+> > $ cat /etc/modprobe.d/bcm43xx 
+> > options bcm43xx-mac80211 fwpostfix=-v4
+> > options bcm43xx_mac80211 fwpostfix=-v4
+> > options bcm43xx fwpostfix=-v3
+> > 
+> > and it works great.
 > 
-> > Before this change the timekeeping code would poll the clocksource
-> > list every interrupt. This changes that so the clocksource list is
-> > only checked when there has been and update, and no longer checks
-> > in interrupt context.
-> 
-> I get a complete lockup on i386 SMP - before the kernel has printed anything.
-> 
-> I'm suspecting a recursive taking of xtime_lock.
+> My bad. As shown above, I had white space around the equals - a no-no. Removing it fixed the 
+> problem. The examples both of you showed gave me the clue.
 
-Looks like this path ,
+Hm, probably a bug in the modparam subsystem, though.
+I'd say it shouldn't crash, at least.
 
-arch/i386/kernel/tsc.c: time_cpufreq_notifier(); <-- takes xtime_lock
-			 mark_tsc_unstable();
-            		  clocksource_change_rating(&clocksource_tsc, 0);
-			   timekeeping_change_clocksource(); <-- takes xtime_lock
-
-
-I'm not sure why the time_cpufreq_notifier is taking the xtime_lock tho .
-
-Daniel
-
+-- 
+Greetings Michael.
