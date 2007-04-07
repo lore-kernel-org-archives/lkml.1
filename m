@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965025AbXDGCFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965122AbXDGChQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965025AbXDGCFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Apr 2007 22:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965028AbXDGCFn
+	id S965122AbXDGChQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Apr 2007 22:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965116AbXDGChQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Apr 2007 22:05:43 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:22853 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965025AbXDGCFm (ORCPT
+	Fri, 6 Apr 2007 22:37:16 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:23470 "EHLO
+	asav09.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965122AbXDGChO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Apr 2007 22:05:42 -0400
-Subject: Re: [PATCH] timekeeping: drop irq-context clocksource polling
-From: Daniel Walker <dwalker@mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, mingo@elte.hu
-In-Reply-To: <20070406182100.9f205621.akpm@linux-foundation.org>
-References: <20070405210316.785839431@mvista.com>
-	 <20070406182100.9f205621.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 06 Apr 2007 19:04:44 -0700
-Message-Id: <1175911485.15973.144.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+	Fri, 6 Apr 2007 22:37:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAGygFkZKhRO4UGdsb2JhbACPcgEBGyM
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Helge Hafting <helgehaf@aitel.hist.no>
+Subject: Re: usb touchscreen breakage in 2.6.21-rc5-mm4 ?
+Date: Fri, 6 Apr 2007 22:37:12 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+References: <20070407005458.GA18985@aitel.hist.no>
+In-Reply-To: <20070407005458.GA18985@aitel.hist.no>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704062237.13118.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-06 at 18:21 -0700, Andrew Morton wrote:
-> On Thu, 05 Apr 2007 14:03:16 -0700 Daniel Walker <dwalker@mvista.com> wrote:
+On Friday 06 April 2007 20:54, Helge Hafting wrote:
+> I have an usb  touchscreen (egalax variety) that works with
+> the 2.6.18 kernel supplied by debian.
 > 
-> > Boot tested on i386, compile tested on x86_64 .. However, I couldn't
-> > find a !GENERIC_TIME that compiled without this change so it's untested..
+> It fails when I compile 2.6.21-rc5-mm4, tuned to the machine
+> in question.  Unlike the debian kernel, this kernel don't use
+> modules in order to save boot time.
 > 
-> I'm scratching my head over this statement.
+> The strange thing is, 2.6.21-rc5-mm4 recognizes the device.
+> dmesg says things like 
+> usb 3-2: Manufacturer: eGalac Inc.
+> usb 3-2: Product: USB TouchController
 > 
-> Do you mean that none of grep -lv GENERIC_TIME arch/*/Kconfig compile?  Confused.
+> and a lot more. Unlike 2.6.18, it never gets around to say
+> "usbcore: registered new driver usbtouchscreen"
+> which seems to indicate a problem.
+> usbcore registers several other drivers, such as usbserial and pl2303
+> that makes the gps work. It also registers other drivers like
+> usb-storage,usbfs,hub,libusual,hiddev,usbhid.  But not usbtouchscreen.
+> I believe I have turned on every config option for usb touchscreen,
+> this should not be missing.
+> 
+> Is there something wrong, or could there be a seemingly unrelated option
+> that I need to turn on?
 
-Yeah .. I tested 2 or 3 ARM configs that didn't have GENERIC_TIME , but
-they failed .. I just assumed it was work in progress from the ARM
-tree ..
+Please make sure that you have CONFIG_USB_TOUCHSCREEN turned on.
 
-Daniel
-
+-- 
+Dmitry
