@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965539AbXDGIZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965533AbXDGIZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965539AbXDGIZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 04:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965536AbXDGIZJ
+	id S965533AbXDGIZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 04:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965635AbXDGIZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 04:25:09 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:12920 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965539AbXDGIX6 (ORCPT
+	Sat, 7 Apr 2007 04:25:01 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:60687 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965537AbXDGIX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Apr 2007 04:23:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=K/q6C+0KqkvoKNzlg9o5QrmgwVQ43Sh/ejfbLC2x7DYWXPCQ+CkMIU4m9E9gblzuStey2Mp0tICq0CQC59hpSL6WznJrQk1sZoKglH8hkNA2Utc95OxawtBYyUdrTTSoVSQUgzM9YsKfVQPmqqfBjBHEInYkjQAZzpL1gCopgl0=
+        b=umJhsA6U6U+TQewbXli3Vx5VUt7dK3Ej5gK2bHxGlldZz+uhfugYwrxsRPfBL0Uejj+edDluCCJxLVAUHlX9CDWotc+at9sX3R2J9WHv04/qiC79S39WvTPugKgYDzbth2q9ZGBGwCOQp2Wa9JbBbeWzjc1aQJCmA2HZu1Qp818=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 05/14] sysfs: consolidate sysfs_dirent creation functions
+Subject: [PATCH 06/14] sysfs: add sysfs_dirent->s_parent
 In-Reply-To: <1175934226928-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Sat, 7 Apr 2007 17:23:47 +0900
-Message-Id: <1175934227208-git-send-email-htejun@gmail.com>
+Message-Id: <11759342272927-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -32,257 +32,127 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently there are four functions to create sysfs_dirent -
-__sysfs_new_dirent(), sysfs_new_dirent(), __sysfs_make_dirent() and
-sysfs_make_dirent().  Other than sysfs_make_dirent(), no function has
-two users if calls to implement other functions are excluded.
+Add sysfs_dirent->s_parent.  With this patch, each sd points to and
+holds a reference to its parent.  This allows walking sysfs tree
+without referencing sd->s_dentry which can go away anytime if the user
+doesn't control when it's deleted.
 
-This patch consolidates sysfs_dirent creation functions into the
-following two.
+sd->s_parent is initialized and parent is referenced in
+sysfs_attach_dirent().  Reference to parent is released when the sd is
+released, so as long as reference to a sd is held, s_parent can be
+followed.
 
-* sysfs_new_dirent() : allocate and initialize
-* sysfs_attach_dirent() : attach to sysfs_dirent hierarchy and/or
-			  associate with dentry
+dentry walk in sysfs_readdir() is convereted to s_parent walk.
 
-This simplifies interface and gives callers more flexibility.  This is
-in preparation of object reference simplification.
+This will be used to reimplement symlink such that it uses only
+sysfs_dirent tree.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/dir.c     |   82 ++++++++++++++++------------------------------------
- fs/sysfs/file.c    |   21 ++++++++++---
- fs/sysfs/symlink.c |    7 ++--
- fs/sysfs/sysfs.h   |    7 +++-
- 4 files changed, 50 insertions(+), 67 deletions(-)
+ fs/sysfs/dir.c   |   27 ++++++++++++++++++++-------
+ fs/sysfs/mount.c |    1 +
+ fs/sysfs/sysfs.h |    1 +
+ 3 files changed, 22 insertions(+), 7 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 99a0ba1..653c23c 100644
+index 653c23c..ef45c3e 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -60,10 +60,7 @@ static struct dentry_operations sysfs_dentry_ops = {
- 	.d_iput		= sysfs_d_iput,
- };
+@@ -34,6 +34,11 @@ struct kobject *sysfs_get_kobject(struct dentry *dentry)
  
--/*
-- * Allocates a new sysfs_dirent and links it to the parent sysfs_dirent
-- */
--static struct sysfs_dirent * __sysfs_new_dirent(void * element)
-+struct sysfs_dirent *sysfs_new_dirent(void *element, umode_t mode, int type)
+ void release_sysfs_dirent(struct sysfs_dirent * sd)
  {
- 	struct sysfs_dirent * sd;
- 
-@@ -75,25 +72,25 @@ static struct sysfs_dirent * __sysfs_new_dirent(void * element)
- 	atomic_set(&sd->s_event, 1);
- 	INIT_LIST_HEAD(&sd->s_children);
- 	INIT_LIST_HEAD(&sd->s_sibling);
++	struct sysfs_dirent *parent_sd;
 +
- 	sd->s_element = element;
-+	sd->s_mode = mode;
-+	sd->s_type = type;
- 
- 	return sd;
++ repeat:
++	parent_sd = sd->s_parent;
++
+ 	if (sd->s_type & SYSFS_KOBJ_LINK) {
+ 		struct sysfs_symlink * sl = sd->s_element;
+ 		kfree(sl->link_name);
+@@ -42,6 +47,10 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
+ 	}
+ 	kfree(sd->s_iattr);
+ 	kmem_cache_free(sysfs_dir_cachep, sd);
++
++	sd = parent_sd;
++	if (sd && atomic_dec_and_test(&sd->s_count))
++		goto repeat;
  }
  
--static void __sysfs_list_dirent(struct sysfs_dirent *parent_sd,
--			      struct sysfs_dirent *sd)
-+void sysfs_attach_dirent(struct sysfs_dirent *sd,
-+			 struct sysfs_dirent *parent_sd, struct dentry *dentry)
- {
--	if (sd)
--		list_add(&sd->s_sibling, &parent_sd->s_children);
--}
-+	if (dentry) {
-+		sd->s_dentry = dentry;
-+		dentry->d_fsdata = sysfs_get(sd);
-+		dentry->d_op = &sysfs_dentry_ops;
-+	}
+ static void sysfs_d_iput(struct dentry * dentry, struct inode * inode)
+@@ -89,8 +98,10 @@ void sysfs_attach_dirent(struct sysfs_dirent *sd,
+ 		dentry->d_op = &sysfs_dentry_ops;
+ 	}
  
--static struct sysfs_dirent * sysfs_new_dirent(struct sysfs_dirent *parent_sd,
--						void * element)
--{
--	struct sysfs_dirent *sd;
--	sd = __sysfs_new_dirent(element);
--	__sysfs_list_dirent(parent_sd, sd);
--	return sd;
-+	if (parent_sd)
-+		list_add(&sd->s_sibling, &parent_sd->s_children);
+-	if (parent_sd)
++	if (parent_sd) {
++		sd->s_parent = sysfs_get(parent_sd);
+ 		list_add(&sd->s_sibling, &parent_sd->s_children);
++	}
  }
  
  /*
-@@ -121,39 +118,6 @@ int sysfs_dirent_exist(struct sysfs_dirent *parent_sd,
- 	return 0;
- }
+@@ -526,7 +537,7 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ 			i++;
+ 			/* fallthrough */
+ 		case 1:
+-			ino = (unsigned long)dentry->d_parent->d_fsdata;
++			ino = (unsigned long)parent_sd->s_parent;
+ 			if (filldir(dirent, "..", 2, i, ino, DT_DIR) < 0)
+ 				break;
+ 			filp->f_pos++;
+@@ -643,13 +654,13 @@ int sysfs_make_shadowed_dir(struct kobject *kobj,
  
--
--static struct sysfs_dirent *
--__sysfs_make_dirent(struct dentry *dentry, void *element, mode_t mode, int type)
--{
--	struct sysfs_dirent * sd;
--
--	sd = __sysfs_new_dirent(element);
--	if (!sd)
--		goto out;
--
--	sd->s_mode = mode;
--	sd->s_type = type;
--	sd->s_dentry = dentry;
--	if (dentry) {
--		dentry->d_fsdata = sysfs_get(sd);
--		dentry->d_op = &sysfs_dentry_ops;
--	}
--
--out:
--	return sd;
--}
--
--int sysfs_make_dirent(struct sysfs_dirent * parent_sd, struct dentry * dentry,
--			void * element, umode_t mode, int type)
--{
--	struct sysfs_dirent *sd;
--
--	sd = __sysfs_make_dirent(dentry, element, mode, type);
--	__sysfs_list_dirent(parent_sd, sd);
--
--	return sd ? 0 : -ENOMEM;
--}
--
- static int init_dir(struct inode * inode)
+ struct dentry *sysfs_create_shadow_dir(struct kobject *kobj)
  {
- 	inode->i_op = &sysfs_dir_inode_operations;
-@@ -197,10 +161,11 @@ static int create_dir(struct kobject *kobj, struct dentry *parent,
- 	if (sysfs_dirent_exist(parent->d_fsdata, name))
- 		goto out_dput;
++	struct dentry *dir = kobj->dentry;
++	struct inode *inode = dir->d_inode;
++	struct dentry *parent = dir->d_parent;
++	struct sysfs_dirent *parent_sd = parent->d_fsdata;
++	struct dentry *shadow;
+ 	struct sysfs_dirent *sd;
+-	struct dentry *parent, *dir, *shadow;
+-	struct inode *inode;
  
--	error = sysfs_make_dirent(parent->d_fsdata, dentry, kobj, mode,
--				  SYSFS_DIR);
--	if (error)
-+	error = -ENOMEM;
-+	sd = sysfs_new_dirent(kobj, mode, SYSFS_DIR);
-+	if (!sd)
- 		goto out_drop;
-+	sysfs_attach_dirent(sd, parent->d_fsdata, dentry);
- 
- 	error = sysfs_create(dentry, mode, init_dir);
- 	if (error)
-@@ -215,7 +180,6 @@ static int create_dir(struct kobject *kobj, struct dentry *parent,
- 	goto out_dput;
- 
-  out_sput:
--	sd = dentry->d_fsdata;
- 	list_del_init(&sd->s_sibling);
- 	sysfs_put(sd);
-  out_drop:
-@@ -512,13 +476,16 @@ static int sysfs_dir_open(struct inode *inode, struct file *file)
- {
- 	struct dentry * dentry = file->f_path.dentry;
- 	struct sysfs_dirent * parent_sd = dentry->d_fsdata;
-+	struct sysfs_dirent * sd;
- 
- 	mutex_lock(&dentry->d_inode->i_mutex);
--	file->private_data = sysfs_new_dirent(parent_sd, NULL);
-+	sd = sysfs_new_dirent(NULL, 0, 0);
-+	if (sd)
-+		sysfs_attach_dirent(sd, parent_sd, NULL);
- 	mutex_unlock(&dentry->d_inode->i_mutex);
- 
--	return file->private_data ? 0 : -ENOMEM;
--
-+	file->private_data = sd;
-+	return sd ? 0 : -ENOMEM;
- }
- 
- static int sysfs_dir_close(struct inode *inode, struct file *file)
-@@ -691,9 +658,10 @@ struct dentry *sysfs_create_shadow_dir(struct kobject *kobj)
- 	if (!shadow)
- 		goto nomem;
- 
--	sd = __sysfs_make_dirent(shadow, kobj, inode->i_mode, SYSFS_DIR);
-+	sd = sysfs_new_dirent(kobj, inode->i_mode, SYSFS_DIR);
+-	dir = kobj->dentry;
+-	inode = dir->d_inode;
+-	parent = dir->d_parent;
+ 	shadow = ERR_PTR(-EINVAL);
+ 	if (!sysfs_is_shadowed_inode(inode))
+ 		goto out;
+@@ -661,6 +672,8 @@ struct dentry *sysfs_create_shadow_dir(struct kobject *kobj)
+ 	sd = sysfs_new_dirent(kobj, inode->i_mode, SYSFS_DIR);
  	if (!sd)
  		goto nomem;
-+	sysfs_attach_dirent(sd, NULL, shadow);
++	/* point to parent_sd but don't attach to it */
++	sd->s_parent = sysfs_get(parent_sd);
+ 	sysfs_attach_dirent(sd, NULL, shadow);
  
  	d_instantiate(shadow, igrab(inode));
- 	inc_nlink(inode);
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index fc46333..f6b86a8 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -474,14 +474,25 @@ int sysfs_add_file(struct dentry * dir, const struct attribute * attr, int type)
- {
- 	struct sysfs_dirent * parent_sd = dir->d_fsdata;
- 	umode_t mode = (attr->mode & S_IALLUGO) | S_IFREG;
--	int error = -EEXIST;
-+	struct sysfs_dirent *sd;
-+	int error = 0;
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 23a48a3..141f7b1 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -28,6 +28,7 @@ static const struct super_operations sysfs_ops = {
+ };
  
- 	mutex_lock(&dir->d_inode->i_mutex);
--	if (!sysfs_dirent_exist(parent_sd, attr->name))
--		error = sysfs_make_dirent(parent_sd, NULL, (void *)attr,
--					  mode, type);
--	mutex_unlock(&dir->d_inode->i_mutex);
- 
-+	if (sysfs_dirent_exist(parent_sd, attr->name)) {
-+		error = -EEXIST;
-+		goto out_unlock;
-+	}
-+
-+	sd = sysfs_new_dirent((void *)attr, mode, type);
-+	if (!sd) {
-+		error = -ENOMEM;
-+		goto out_unlock;
-+	}
-+	sysfs_attach_dirent(sd, parent_sd, NULL);
-+
-+ out_unlock:
-+	mutex_unlock(&dir->d_inode->i_mutex);
- 	return error;
- }
- 
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index b463f17..d96bb9c 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -49,6 +49,7 @@ static int sysfs_add_link(struct dentry * parent, const char * name, struct kobj
- {
- 	struct sysfs_dirent * parent_sd = parent->d_fsdata;
- 	struct sysfs_symlink * sl;
-+	struct sysfs_dirent * sd;
- 	int error;
- 
- 	error = -ENOMEM;
-@@ -63,10 +64,10 @@ static int sysfs_add_link(struct dentry * parent, const char * name, struct kobj
- 	strcpy(sl->link_name, name);
- 	sl->target_kobj = kobject_get(target);
- 
--	error = sysfs_make_dirent(parent_sd, NULL, sl, S_IFLNK|S_IRWXUGO,
--				SYSFS_KOBJ_LINK);
--	if (error)
-+	sd = sysfs_new_dirent(sl, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
-+	if (!sd)
- 		goto err_out;
-+	sysfs_attach_dirent(sd, parent_sd, NULL);
- 
- 	return 0;
- 
+ static struct sysfs_dirent sysfs_root = {
++	.s_count	= ATOMIC_INIT(1),
+ 	.s_sibling	= LIST_HEAD_INIT(sysfs_root.s_sibling),
+ 	.s_children	= LIST_HEAD_INIT(sysfs_root.s_children),
+ 	.s_element	= NULL,
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 812c8c3..104649c 100644
+index 104649c..b4876de 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -20,8 +20,11 @@ extern int sysfs_create(struct dentry *, int mode, int (*init)(struct inode *));
- extern struct kobject *sysfs_get_kobject(struct dentry *dentry);
- extern void release_sysfs_dirent(struct sysfs_dirent * sd);
- extern int sysfs_dirent_exist(struct sysfs_dirent *, const unsigned char *);
--extern int sysfs_make_dirent(struct sysfs_dirent *, struct dentry *, void *,
--				umode_t, int);
-+extern struct sysfs_dirent *sysfs_new_dirent(void *element, umode_t mode,
-+					     int type);
-+extern void sysfs_attach_dirent(struct sysfs_dirent *sd,
-+				struct sysfs_dirent *parent_sd,
-+				struct dentry *dentry);
- 
- extern int sysfs_add_file(struct dentry *, const struct attribute *, int);
- extern int sysfs_hash_and_remove(struct dentry * dir, const char * name);
+@@ -1,5 +1,6 @@
+ struct sysfs_dirent {
+ 	atomic_t		s_count;
++	struct sysfs_dirent	* s_parent;
+ 	struct list_head	s_sibling;
+ 	struct list_head	s_children;
+ 	void 			* s_element;
 -- 
 1.5.0.3
 
