@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751260AbXDGJpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbXDGJrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751260AbXDGJpZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 05:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbXDGJpZ
+	id S1752219AbXDGJrR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 05:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbXDGJrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 05:45:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47723 "EHLO ogre.sisk.pl"
+	Sat, 7 Apr 2007 05:47:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56407 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751260AbXDGJpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 05:45:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: tglx@linutronix.de
-Subject: Re: [patch] high-res timers: UP resume fix
-Date: Sat, 7 Apr 2007 11:48:42 +0200
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1752042AbXDGJrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 05:47:16 -0400
+Date: Sat, 7 Apr 2007 11:47:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: tglx@linutronix.de, Linus Torvalds <torvalds@linux-foundation.org>,
        Soeren Sonnenburg <kernel@nn7.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Len Brown <len.brown@intel.com>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070407082554.GA1943@elte.hu> <1175935730.28263.510.camel@localhost.localdomain>
-In-Reply-To: <1175935730.28263.510.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Subject: Re: [patch] high-res timers: UP resume fix
+Message-ID: <20070407094705.GA20998@elte.hu>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070407082554.GA1943@elte.hu> <1175935730.28263.510.camel@localhost.localdomain> <200704071148.43136.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704071148.43136.rjw@sisk.pl>
+In-Reply-To: <200704071148.43136.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 7 April 2007 10:48, Thomas Gleixner wrote:
-> On Sat, 2007-04-07 at 10:25 +0200, Ingo Molnar wrote:
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > [...] Soeren, can you confirm that you are using a !CONFIG_SMP kernel, 
-> > > and if yes, does the patch below fix the resume problem for you?
-> > 
-> > hm, you seem to have a CONFIG_SMP=y kernel. I dont immediately see where 
-> > we re-enable interrupts in the SMP case, but could you try my patch 
-> > nevertheless
+
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> > We do in on_each_cpu() unconditionally. I missed that.
 > 
-> We do in on_each_cpu() unconditionally. I missed that.
+> BTW, the on_each_cpu() in clock_was_set() is unnecessary, because 
+> timekeeping_resume() is always run on one CPU.
 
-BTW, the on_each_cpu() in clock_was_set() is unnecessary, because
-timekeeping_resume() is always run on one CPU.
+yes - but that's not the only place where we do clock_was_set(), and the 
+on_each_cpu() is necessary in every other case. So i think the right 
+solution was the patch i did: to split the resume functionality from the 
+clock_was_set() functionality.
 
-Greetings,
-Rafael
+	Ingo
