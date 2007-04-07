@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966015AbXDGPSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbXDGP2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966015AbXDGPSy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 11:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966027AbXDGPSy
+	id S1752253AbXDGP2G (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 11:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXDGP2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 11:18:54 -0400
-Received: from cs1.cs.huji.ac.il ([132.65.16.10]:62369 "EHLO cs1.cs.huji.ac.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966015AbXDGPSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 11:18:54 -0400
-X-Greylist: delayed 2648 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Apr 2007 11:18:53 EDT
-Date: Sat, 7 Apr 2007 17:34:43 +0300 (IDT)
-From: amnonaar@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: [patch] nfs statfs error-handling fix
-Message-ID: <010704071723070.28698@inferno-01.cs.huji.ac.il>
+	Sat, 7 Apr 2007 11:28:06 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:48484 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752253AbXDGP2E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 11:28:04 -0400
+Message-Id: <1175959684.29481.1183471808@webmail.messagingengine.com>
+X-Sasl-Enc: oZMRPPV5+55czSV9N6snFrqNRmf1mw9uzbkn+8m80YRg 1175959684
+From: johnrobertbanks@fastmail.fm
+To: "Dale Amon" <amon@vnl.com>
+Cc: "Jan Harkes" <jaharkes@cs.cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20070407125914.GA31074@vnl.com>
+Subject: Re: Reiser4. BEST FILESYSTEM EVER.
+In-Reply-To: <20070407125914.GA31074@vnl.com>
+Date: Sat, 07 Apr 2007 08:28:04 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 7 Apr 2007 13:59:14 +0100, "Dale Amon" <amon@vnl.com> said:
+> Jan does have a point about bad blocks. A couple years ago
+> I had a relatively new disk start to go bad on random blocks.
+> I detected it fairly quickly but did have some data loss.
+> 
+> All the compressed archives which were hit were near
+> total losses; most other files were at least partially
+> recoverable.
 
-The nfs statfs function returns a success code on error, and fills the 
-output buffer with invalid values. The attached patch makes it return a 
-correct error code instead.
+As you know, there is not substitute for backups. What if the disk had
+totally crashed and scratched GBs of your data.
 
-Thanks,
-Amnon
+And did you ever trust those (non-compressed) executables that you saved
+after recovering them from corruption?
 
-Signed-off-by: Amnon Aaronsohn <amnonaar@gmail.com>
---
+Of course not. No one would. The fact that they were not compressed did
+not save them.
 
---- linux-source-2.6.20-2.6.20/fs/nfs/super.c.orig	2007-04-07 15:19:14.000000000 +0300
-+++ linux-source-2.6.20-2.6.20/fs/nfs/super.c	2007-04-07 15:24:35.000000000 +0300
-@@ -203,9 +203,9 @@ static int nfs_statfs(struct dentry *den
-  	lock_kernel();
+You are really arguing for backups, not for one filesystem or another.
 
-  	error = server->nfs_client->rpc_ops->statfs(server, fh, &res);
--	buf->f_type = NFS_SUPER_MAGIC;
-  	if (error < 0)
--		goto out_err;
-+		goto out;
-+	buf->f_type = NFS_SUPER_MAGIC;
+Besides, Jan claimed that corruption due to bad blocks propagates to
+MULTIPLE files because of the compression in the file system. You are
+arguing something different.
 
-  	/*
-  	 * Current versions of glibc do not correctly handle the
-@@ -234,13 +234,7 @@ static int nfs_statfs(struct dentry *den
-  	buf->f_namelen = server->namelen;
-   out:
-  	unlock_kernel();
--	return 0;
--
-- out_err:
--	dprintk("%s: statfs error = %d\n", __FUNCTION__, -error);
--	buf->f_bsize = buf->f_blocks = buf->f_bfree = buf->f_bavail = -1;
--	goto out;
--
-+	return error;
-  }
+> It is not a matter of your operating system writing
+> to bad blocks. It is a matter of what happens when the
+> blocks on which your data sit go bad underneath you.
+>
+> This issue has also been discussed by people working
+> with revision control system. If you are archiving
+> data, how do you know you if your data is still good
+> unless you actually need it? If you do not know it
+> is bad, you may well get rid of good copies thinking
+> you do not need the extras... it does happen.
+> 
+> I would be quite hesitant to go with on disk compression
+> unless damage was limited to only the bad bits or blocks
+> and did not propagate through the rest of the file.
 
-  /*
+You don't really mean that. Most backup uses compression (which
+propagates errors through the rest of the file).
+
+> Perhaps if everyone used hardware RAID and the RAID
+> automatically detected a difference due to trashed
+> data on one disk and flagged the admin with a warning...
+> 
+> BTW: I'm a CMU Alum, so who are you working with John?
+
+I retired quite young.
+-- 
+  
+  johnrobertbanks@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Send your email first class
+
