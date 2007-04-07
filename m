@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966190AbXDGRqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933631AbXDGRxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966190AbXDGRqh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 13:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933634AbXDGRqh
+	id S933631AbXDGRxk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 13:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933630AbXDGRxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 13:46:37 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:35260
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933630AbXDGRqg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 13:46:36 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Larry Finger <larry.finger@lwfinger.net>
-Subject: Re: Kernel NULL pointer when loading bcm43xx-mac80211 =?iso-8859-1?q?with=09fwpostfix_=3D?= ".fw4"
-Date: Sat, 7 Apr 2007 19:45:30 +0200
-User-Agent: KMail/1.9.5
-Cc: Johannes Berg <johannes@sipsolutions.net>, bcm43xx-dev@lists.berlios.de,
-       "linux-kernel, " <linux-kernel@vger.kernel.org>
-References: <4616DF5A.7040800@lwfinger.net> <1175958655.8459.8.camel@johannes.berg> <4617D862.7010202@lwfinger.net>
-In-Reply-To: <4617D862.7010202@lwfinger.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704071945.30680.mb@bu3sch.de>
+	Sat, 7 Apr 2007 13:53:40 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:58203 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933631AbXDGRxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 13:53:39 -0400
+Date: Sat, 7 Apr 2007 10:53:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>
+Subject: Re: mm snapshot broken-out-2007-04-07-03-27.tar.gz uploaded
+Message-Id: <20070407105328.836902d1.akpm@linux-foundation.org>
+In-Reply-To: <46178ECC.2030107@googlemail.com>
+References: <200704071029.l37ATdKR032505@shell0.pdx.osdl.net>
+	<46178ECC.2030107@googlemail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 April 2007 19:44, Larry Finger wrote:
-> Johannes Berg wrote:
-> > On Sat, 2007-04-07 at 15:51 +0200, Michael Buesch wrote:
-> >> On Saturday 07 April 2007 02:01, Larry Finger wrote:
-> >>> The current mb and wireless-dev git trees both get a kernel NULL pointer in "param_set_copystring" 
-> >>> when modprobe'ing bcm43xx-mac80211 with a line of 'options bcm43xx-mac80211 fwpostfix = ".fw4"' in 
-> >>> /etc/modprobe.conf.local. This construction used to work and still does for bcm43xx-softmac. I 
-> >>> compared the code between the two versions and cannot see any real differences. Any suggestions?
-> >> Uhm, fwpostfix=.fw4 works fine for me when I pass it to modprobe.
+On Sat, 07 Apr 2007 14:30:04 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+
+> akpm@linux-foundation.org napisał(a):
+> > The mm snapshot broken-out-2007-04-07-03-27.tar.gz has been uploaded to
 > > 
-> > I use
-> > $ cat /etc/modprobe.d/bcm43xx 
-> > options bcm43xx-mac80211 fwpostfix=-v4
-> > options bcm43xx_mac80211 fwpostfix=-v4
-> > options bcm43xx fwpostfix=-v3
+> >    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-04-07-03-27.tar.gz
 > > 
-> > and it works great.
+> > It contains the following patches against 2.6.21-rc6:
+> > 
 > 
-> My bad. As shown above, I had white space around the equals - a no-no. Removing it fixed the 
-> problem. The examples both of you showed gave me the clue.
+> LTP triggered a ptrace problem.
+> 
+> ------------[ cut here ]------------
+> kernel BUG at kernel/ptrace.c:1281!
 
-Hm, probably a bug in the modparam subsystem, though.
-I'd say it shouldn't crash, at least.
+umm, Roland, if you're going to add assertions which only function with
+CONFIG_PREEMPT enabled, you'd better test with CONFIG_PREEMPT enabled ;)
 
--- 
-Greetings Michael.
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+We hold read_lock(tasklist_lock) in here.
+
+Cc: Roland McGrath <roland@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/ptrace.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+diff -puN kernel/ptrace.c~utrace-fix-bug kernel/ptrace.c
+--- a/kernel/ptrace.c~utrace-fix-bug
++++ a/kernel/ptrace.c
+@@ -1278,8 +1278,6 @@ found:
+ 		 current->pid, tsk->pid, p->pid, exit_code,
+ 		 p->exit_state, p->exit_signal);
+ 
+-	NO_LOCKS;
+-
+ 	/*
+ 	 * If there was a group exit in progress, all threads report that
+ 	 * status.  Most will have SIGKILL in their own exit_code.
+_
+
+
