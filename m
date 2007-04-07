@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966281AbXDGTKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966302AbXDGTO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966281AbXDGTKG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 15:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966295AbXDGTKG
+	id S966302AbXDGTO0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 15:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966304AbXDGTO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 15:10:06 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50108 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966281AbXDGTKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 15:10:03 -0400
-Date: Sat, 7 Apr 2007 21:10:49 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Victor <andrew@sanpeople.com>, Russell King <rmk@arm.linux.org.uk>,
-       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] arm: fix section mismatch warning in board-sam9260
-Message-ID: <20070407191049.GA30885@uranus.ravnborg.org>
+	Sat, 7 Apr 2007 15:14:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49550 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S966302AbXDGTOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 15:14:25 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX183S7xi+iE3Rz72vYZEAqgIn8As0xJTlmiOBDmGUC
+	RW857EmaVpO8dh
+Subject: Re: Ten percent test
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+In-Reply-To: <20070407180818.GB23861@elte.hu>
+References: <200703290237.38777.kernel@kolivas.org>
+	 <20070406100333.GA19855@elte.hu> <200704071650.43905.kernel@kolivas.org>
+	 <200704071212.57401.gene.heskett@gmail.com>
+	 <20070407180818.GB23861@elte.hu>
+Content-Type: text/plain
+Date: Sat, 07 Apr 2007 21:14:21 +0200
+Message-Id: <1175973261.6288.2.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton found a section mismatch warning in x86_64 triggered
-by a wrongly placed __initdata marker.
-git grep "struct __initdata" revealed that board-sam9260.c
-had the same problem.
+On Sat, 2007-04-07 at 20:08 +0200, Ingo Molnar wrote:
+> * Gene Heskett <gene.heskett@gmail.com> wrote:
 
-This patch fixes this by placing the __initdata marker correct.
-It was checked with objdump that the variable was moved to
-.init.data by this change.
+> > (who the hell runs a 'make -j 200' or 50 while(1)'s in the real world?
+> 
+> not many - and i dont think Mike tested any of these - Mike tested 
+> pretty low make -j values (Mike, can you confirm?).
 
-Fixed an unrelated section mismatch warning while touching the file.
+Yes.  I don't test anything more than make -j5 when looking at
+interactivity, and make -j nr_cpus+1 is my must have yardstick.
 
-Both changes are only compile tested but obvious correct.
-[Used at91sam9260ek_defconfig to get compile coverage]
+	-Mike
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-diff --git a/arch/arm/mach-at91/board-sam9260ek.c b/arch/arm/mach-at91/board-sam9260ek.c
-index 57fb449..7a31db0 100644
---- a/arch/arm/mach-at91/board-sam9260ek.c
-+++ b/arch/arm/mach-at91/board-sam9260ek.c
-@@ -118,7 +118,7 @@ static struct spi_board_info ek_spi_devices[] = {
- /*
-  * MACB Ethernet device
-  */
--static struct __initdata at91_eth_data ek_macb_data = {
-+static struct at91_eth_data __initdata ek_macb_data = {
- 	.phy_irq_pin	= AT91_PIN_PA7,
- 	.is_rmii	= 1,
- };
-@@ -140,7 +140,7 @@ static struct mtd_partition __initdata ek_nand_partition[] = {
- 	},
- };
- 
--static struct mtd_partition *nand_partitions(int size, int *num_partitions)
-+static struct mtd_partition * __init nand_partitions(int size, int *num_partitions)
- {
- 	*num_partitions = ARRAY_SIZE(ek_nand_partition);
- 	return ek_nand_partition;
