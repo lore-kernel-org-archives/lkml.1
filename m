@@ -1,39 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965961AbXDGWr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965980AbXDGWv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965961AbXDGWr3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 18:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965980AbXDGWr3
+	id S965980AbXDGWv5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 18:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbXDGWv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 18:47:29 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:46343 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965961AbXDGWr2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 18:47:28 -0400
-Date: Sat, 7 Apr 2007 18:47:20 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: aeb@cwi.nl
-cc: linux-kernel@vger.kernel.org
-Subject: [RFC] partitions: CONFIG_BLK_DEV_MD and modular RAID support
-Message-ID: <alpine.DEB.0.83.0704071836060.19488@sigma.j-a-k-j.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 7 Apr 2007 18:51:57 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:35379 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750837AbXDGWv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 18:51:56 -0400
+Date: Sat, 7 Apr 2007 15:51:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
+ flag
+Message-Id: <20070407155148.94da92e8.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
+References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+	<20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
+	<20070406222336.4dcdd663.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Linux v2.6.20.6.)
+On Sat, 7 Apr 2007 15:16:17 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-The function md_autodetect_dev is defined in drivers/md/md.c. Its 
-declaration is on line 1443, outside of conditionals. However, both its 
-use on line 1455 and its definition on line 5600 are inside "#ifndef 
-MODULE" conditionals. So it seems obvious that the declaration should be 
-inside conditionals as well.
+> On Fri, 6 Apr 2007, Andrew Morton wrote:
+> 
+> > Did you investigate
+> > 
+> > static inline int page_tail(struct page *page)
+> > {
+> > 	return ((page->flags & (PG_compound|PG_tail)) == (PG_compound|PG_tail));
+> > }
+> 
+> The usual test_bit that we are using there uses a volatile reference 
+> so these wont be combined if I check them separately.
+> 
+> A working example of the above would be much uglier:
+> 
+> static inline int page_tail(struct page *page)
+> {
+>  	return ((page->flags & ((1L << PG_compound)|(1L << PG_tail))) == 
+> ((1L << PG_compound)|(1L << PG_tail)));
+> }
+> 
+> May be this can be cleaned up somehow.
 
-However, this function is separately declared and used in 
-fs/partitions/check.c but not inside the same conditional, which means if 
-md.c is compiled as a module, check.c will be referencing an undefined 
-symbol.
+It might generate better code to do
 
-Should the conditionals around md_autodetect_dev be changed to make sure 
-CONFIG_BLK_DEV_MD=y, or does the function need to be extracted from md.c 
-so it can be used by check.c in any case?
+	unsigned long compound;
+
+	compound = page->flags & (1 << PG_compound);
+	if (PG_compound > PG_tail)
+		return compound & (page->flags << (PG_compound - PG_tail));
+	else
+		return compound & (page->flags << (PG_tail - PG_compound));
+
+
+ie: get the PG_compound flag into `compound', then bitwise-and that with
+the PG_tail flag, after shifting it into PG_compound' slot.  The return
+value will be zero if either bit is clear, (1<<PG_compound) if both are
+set.  The `if (PG_compound > PG_tail)' will be swallowed by the compiler.
+
+The compiler should turn it all into
+
+	(page->flags & N) & (page->flags << M)
+
+Which may or may not be better than (page->flags & N == N), dunno. 
+Probably not - if the compiler's any good it won't save a branch, I
+suspect.
+
+
+
+Which is all a ton of fun, but this subversion of the architecture's
+freedom to use volatile, memory barriers etc is a worry.  We do the same in
+page_alloc.c, of course...  
+
