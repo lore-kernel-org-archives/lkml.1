@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750961AbXDHMCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750964AbXDHMHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750961AbXDHMCc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 08:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbXDHMCc
+	id S1750964AbXDHMHv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 08:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXDHMHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 08:02:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34818 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750961AbXDHMCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 08:02:19 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+qCWlW/L6qTSJJMSJD4fjIy5NiltV9kquAydkeXd
-	E9D+g8jtMMUhuP
-Subject: Re: Ten percent test
-From: Mike Galbraith <efault@gmx.de>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-In-Reply-To: <1176032450.6304.3.camel@Homer.simpson.net>
-References: <200703290237.38777.kernel@kolivas.org>
-	 <200704071630.25830.gene.heskett@gmail.com>
-	 <20070408104125.GB11123@elte.hu>
-	 <200704080733.39303.gene.heskett@gmail.com>
-	 <1176032450.6304.3.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Sun, 08 Apr 2007 14:02:15 +0200
-Message-Id: <1176033735.6404.2.camel@Homer.simpson.net>
+	Sun, 8 Apr 2007 08:07:51 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3189 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbXDHMHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 08:07:50 -0400
+Date: Sun, 8 Apr 2007 13:07:40 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
+       Marek =?utf-8?B?VmHFoXV0?= <marek.vasut@gmail.com>
+Subject: Re: [PATCH 29/90] ARM: OMAP: Palm Tungsten|T support
+Message-ID: <20070408120740.GC5431@flint.arm.linux.org.uk>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
+	Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
+	Marek =?utf-8?B?VmHFoXV0?= <marek.vasut@gmail.com>
+References: <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <20070406120923.GB3866@ucw.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070406120923.GB3866@ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-08 at 13:40 +0200, Mike Galbraith wrote:
-> On Sun, 2007-04-08 at 07:33 -0400, Gene Heskett wrote:
+On Fri, Apr 06, 2007 at 12:09:23PM +0000, Pavel Machek wrote:
+> On Wed 2007-04-04 14:05:08, Tony Lindgren wrote:
 > 
-> > That seems to be the killer loading here, building a kernel (make -j3) 
-> > doesn't seem to lag it all that bad.  One session of gzip -best makes it 
-> > fall plumb over though, which was a disappointment.
+> > From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
 > 
-> Can you make a testcase that doesn't require amanda?
+> EEk.
+> 
+> > Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
+> 
+> Eek2.
 
-Or at least send me a couple of 5 or 10 second top snapshots (which also
-show CPU usage of sleeping tasks) while the system is misbehaving?
+As I see it, that eek2 is correct UTF-8, and since the body charset was
+utf-8 I don't see this as a problem.
 
-	-Mike
+As far as the first goes, doesn't git parse qp-encoded From lines?
 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
