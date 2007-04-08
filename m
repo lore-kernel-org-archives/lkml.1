@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXDHGrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbXDHHmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbXDHGrL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 02:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXDHGrL
+	id S1752674AbXDHHmD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 03:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbXDHHmC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 02:47:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53679
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752653AbXDHGrK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 02:47:10 -0400
-Date: Sat, 07 Apr 2007 23:47:08 -0700 (PDT)
-Message-Id: <20070407.234708.93384523.davem@davemloft.net>
-To: poemann@gmail.com
+	Sun, 8 Apr 2007 03:42:02 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:47184 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752674AbXDHHmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 03:42:00 -0400
+Message-ID: <46189CC6.2070004@gmail.com>
+Date: Sun, 08 Apr 2007 09:41:58 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
+MIME-Version: 1.0
+To: "S. Vishnu Priya" <vpriya@lantana.tenet.res.in>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <19061b0b0704071111m65c70d1ei736de86ad2f09a82@mail.gmail.com>
-References: <19061b0b0704071111m65c70d1ei736de86ad2f09a82@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Subject: Re: pci card detection by kernel
+References: <Pine.LNX.4.64.0704081051270.26389@lantana.tenet.res.in>
+In-Reply-To: <Pine.LNX.4.64.0704081051270.26389@lantana.tenet.res.in>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartek <poemann@gmail.com>
-Date: Sat, 7 Apr 2007 20:11:13 +0200
+S. Vishnu Priya napsal(a):
+> 
+> Dear All,
+> 
+>       I am new to this group. I was asked to write a device driver for a
+> new pci card. My doubt is, Kernel will detect a new pci card which is
+> attached to the system? Or how we can make the kernel to detect the new
+> card which is newly attached? I am using kernel 2.6.11.12. Please
+> suggest me regarding this.
 
-> I have problem with a Linux kernel oops. It mostly appears when I
-> download files using bittorrent or other large file. I have a phone
-> modem based Internet access using Home Internet Solution
-> (http://en.wikipedia.org/wiki/Home_internet_Solution). I use Debian
-> testing, Linux vanilla version: 2.6.21-rc6 (however I noticed that
-> problem since Linux ver. 2.6.15, doesn't matter if that was vanilla
-> kernel or from Debian distro), Here my sys info:
+See drivers/*, search for pci_driver -- driver, probe, remove, suspend, resume
+and pci_device_id table.
 
-Please reproduce and provide a new crash dump without the nvidia
-binary-only module loaded.
-
-Thank you.
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
