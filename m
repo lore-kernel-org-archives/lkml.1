@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750943AbXDHMBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750961AbXDHMCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750943AbXDHMBp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 08:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbXDHMBp
+	id S1750961AbXDHMCc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 08:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbXDHMCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 08:01:45 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4568 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750943AbXDHMBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 08:01:44 -0400
-Date: Fri, 6 Apr 2007 12:09:23 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-kernel@vger.kernel.org,
-       Marek =?utf-8?B?VmHFoXV0?= <marek.vasut@gmail.com>
-Subject: Re: [PATCH 29/90] ARM: OMAP: Palm Tungsten|T support
-Message-ID: <20070406120923.GB3866@ucw.cz>
-References: <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com>
+	Sun, 8 Apr 2007 08:02:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34818 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750961AbXDHMCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 08:02:19 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+qCWlW/L6qTSJJMSJD4fjIy5NiltV9kquAydkeXd
+	E9D+g8jtMMUhuP
+Subject: Re: Ten percent test
+From: Mike Galbraith <efault@gmx.de>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+In-Reply-To: <1176032450.6304.3.camel@Homer.simpson.net>
+References: <200703290237.38777.kernel@kolivas.org>
+	 <200704071630.25830.gene.heskett@gmail.com>
+	 <20070408104125.GB11123@elte.hu>
+	 <200704080733.39303.gene.heskett@gmail.com>
+	 <1176032450.6304.3.camel@Homer.simpson.net>
+Content-Type: text/plain
+Date: Sun, 08 Apr 2007 14:02:15 +0200
+Message-Id: <1176033735.6404.2.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <11757100423982-git-send-email-tony@atomide.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2007-04-04 14:05:08, Tony Lindgren wrote:
+On Sun, 2007-04-08 at 13:40 +0200, Mike Galbraith wrote:
+> On Sun, 2007-04-08 at 07:33 -0400, Gene Heskett wrote:
+> 
+> > That seems to be the killer loading here, building a kernel (make -j3) 
+> > doesn't seem to lag it all that bad.  One session of gzip -best makes it 
+> > fall plumb over though, which was a disappointment.
+> 
+> Can you make a testcase that doesn't require amanda?
 
-> From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
+Or at least send me a couple of 5 or 10 second top snapshots (which also
+show CPU usage of sleeping tasks) while the system is misbehaving?
 
-EEk.
+	-Mike
 
-> Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
-
-Eek2.
-
-Marek, I guess it would be easier to use your name without
-diacritics... Otherwise it probably needs to be utf-8, but not
-mime-damaged.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
