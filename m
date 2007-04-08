@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966037AbXDHBsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbXDHCFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966037AbXDHBsL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 21:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966039AbXDHBsL
+	id S932658AbXDHCFd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 22:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965289AbXDHCFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 21:48:11 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37659 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966037AbXDHBsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 21:48:09 -0400
-Date: Sat, 7 Apr 2007 18:48:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       dgc@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
- flag
-Message-Id: <20070407184801.b6f3f549.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704071825510.32544@schroedinger.engr.sgi.com>
-References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
-	<20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
-	<20070406222336.4dcdd663.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
-	<20070407155148.94da92e8.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704071718530.31790@schroedinger.engr.sgi.com>
-	<20070407182506.4386dc13.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704071825510.32544@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Apr 2007 22:05:33 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:32994 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S933636AbXDHCFc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 22:05:32 -0400
+Date: Sat, 7 Apr 2007 18:35:41 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Willy Tarreau <w@1wt.eu>
+cc: Al Boldi <a1426z@gawab.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: compressing intermediate files with LZO on the fly
+In-Reply-To: <20070407115830.GE943@1wt.eu>
+Message-ID: <Pine.LNX.4.63.0704071830510.25121@qynat.qvtvafvgr.pbz>
+References: <200704071432.34157.a1426z@gawab.com> <20070407115830.GE943@1wt.eu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Apr 2007 18:32:04 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On Sat, 7 Apr 2007, Willy Tarreau wrote:
 
-> On Sat, 7 Apr 2007, Andrew Morton wrote:
-> 
-> > > I just tried the approach that we discussed earlier and it was not 
-> > > nice either.
-> > 
-> > We've discussed at least three approaches, so we don't know to what you refer.
-> 
-> Thats the approach of checking two flags at the same time. In that case 
-> the compiler will generate and "and-immediate" and then a 
-> "compare-immediate" one branch but .... Yuck.
+> Hi Al,
+>
+> On Sat, Apr 07, 2007 at 02:32:34PM +0300, Al Boldi wrote:
+>> Willy Tarreau wrote:
+>>>
+>>> ... for some usages (temporary space),
+>>> light compression can increase speed. For instance, when processing logs,
+>>> I get better speed by compressing intermediate files with LZO on the fly.
+>>
+>> How can you do that on ext3?
+>>
+>> Also, can you do that on a partition block-io level?
+>
+> No, sorry for the confusion. My scripts simply do :
+>
+> $ lzop -cd file1.lzo | process | lzop -c3 > file2.lzo
+>
+> With decent CPU, you can reach higher read/write data rates than what a
+> single off-the-shelf disk can achieve. For this reason, I think that
+> reiser4 would be worth trying for this particular usage. And in this case,
+> I'm not interested at all in reliability. It's just temporary storage. If
+> the disk fails, I throw it away and buy a new one.
 
-Right.
+I see the same thing with my nightly scripts that do syslog analysis, last year 
+I trimmed 2 hours from the nightly run by processing compressed files instead of 
+uncompressed ones (after I did this I configured it to compress the files as 
+they are rolled, but rolling every 5 min the compression takes <20 seconds, so 
+the compression is < 30 min)
 
-        movl    (%ebx), %eax    # <variable>.flags, tmp399
-        andl    $48, %eax       #, tmp399
-        cmpl    $48, %eax       #, tmp399
-        je      .L265   #,
+now I just need to find a version of split that can compress it's output files.
 
-what's "yuck" about that?
-
-With the single page flag:
-
-	movl	(%ebx), %eax	#* page.521, D.21940
-	testb	$32, %al	#, D.21940
-	jne	.L265	#,
-
-So you're talking about saving one sole single silly solitary instruction.
-
-
-> > Because I don't expect there will be much efficiency difference between the
-> > above and the use of another page flag.
-> 
-> Then we end up with all these small efficiency differences in all 
-> the code paths. I'd rather go for optimal performance in a frequently used 
-> construct like this.
-
-You can save that worrisome single instruction in the common case by putting the
-handling of the uncommon compound pages out of line, as I indicated.
-
+David Lang
