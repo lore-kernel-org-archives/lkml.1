@@ -1,547 +1,398 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXDHVgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbXDHVu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752016AbXDHVgI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 17:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbXDHVgI
+	id S1751999AbXDHVu5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 17:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXDHVu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 17:36:08 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:57280 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751894AbXDHVgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 17:36:05 -0400
-Date: Sun, 8 Apr 2007 14:35:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc6-mm1
-Message-Id: <20070408143559.f5014629.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 8 Apr 2007 17:50:57 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:44139 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751999AbXDHVuy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 17:50:54 -0400
+Message-Id: <1176069053.31062.1183584012@webmail.messagingengine.com>
+X-Sasl-Enc: PPgjZkUfipbhL6IlQu3QMa9yn3YBmoIBR+jHDij7/kb6 1176069053
+From: johnrobertbanks@fastmail.fm
+To: "Christer Weinigel" <christer@weinigel.se>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       reiserfs-list@namesys.com
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <46157B5B.5000602@gmail.com>
+   <1175817921.18400.1183285196@webmail.messagingengine.com>
+   <461592FB.5060507@zytor.com>
+   <1175819681.20754.1183287946@webmail.messagingengine.com>
+   <461596DE.2020802@zytor.com>
+   <1175823288.25662.1183293506@webmail.messagingengine.com>
+   <4615C780.5040407@zytor.com>
+   <1175833931.8916.1183307802@webmail.messagingengine.com>
+   <20070407191715.GG3510@csclub.uwaterloo.ca>
+   <1175993097.32498.1183512070@webmail.messagingengine.com>
+   <m3zm5jebad.fsf@zoo.weinigel.se>
+Subject: Re: Reiser4. BEST FILESYSTEM EVER - Christer Weinigel
+In-Reply-To: <m3zm5jebad.fsf@zoo.weinigel.se>
+Date: Sun, 08 Apr 2007 14:50:53 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/
-
-
-- Lots of x86 updates
-
-- This is a 25MB diff against mainline, which is rather large.
-
-
-
-Boilerplate:
-
-- See the `hot-fixes' directory for any important updates to this patchset.
-
-- To fetch an -mm tree using git, use (for example)
-
-  git-fetch git://git.kernel.org/pub/scm/linux/kernel/git/smurf/linux-trees.git tag v2.6.16-rc2-mm1
-  git-checkout -b local-v2.6.16-rc2-mm1 v2.6.16-rc2-mm1
-
-- -mm kernel commit activity can be reviewed by subscribing to the
-  mm-commits mailing list.
-
-        echo "subscribe mm-commits" | mail majordomo@vger.kernel.org
-
-- If you hit a bug in -mm and it is not obvious which patch caused it, it is
-  most valuable if you can perform a bisection search to identify which patch
-  introduced the bug.  Instructions for this process are at
-
-        http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
-
-  But beware that this process takes some time (around ten rebuilds and
-  reboots), so consider reporting the bug first and if we cannot immediately
-  identify the faulty patch, then perform the bisection search.
-
-- When reporting bugs, please try to Cc: the relevant maintainer and mailing
-  list on any email.
-
-- When reporting bugs in this kernel via email, please also rewrite the
-  email Subject: in some manner to reflect the nature of the bug.  Some
-  developers filter by Subject: when looking for messages to read.
-
-- Occasional snapshots of the -mm lineup are uploaded to
-  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/ and are announced on
-  the mm-commits list.
-
-
-Changes since 2.6.21-rc5-mm4:
-
- origin.patch
- git-acpi.patch
- git-alsa.patch
- git-agpgart.patch
- git-arm.patch
- git-avr32.patch
- git-cifs.patch
- git-cpufreq.patch
- git-powerpc.patch
- git-drm.patch
- git-dvb.patch
- git-gfs2-nmw.patch
- git-hid.patch
- git-ia64.patch
- git-ieee1394.patch
- git-infiniband.patch
- git-input.patch
- git-jfs.patch
- git-kbuild.patch
- git-kvm.patch
- git-leds.patch
- git-libata-all.patch
- git-md-accel.patch
- git-mips.patch
- git-mmc.patch
- git-mtd.patch
- git-ubi.patch
- git-netdev-all.patch
- git-e1000.patch
- git-net.patch
- git-ioat.patch
- git-ocfs2.patch
- git-parisc.patch
- git-r8169.patch
- git-selinux.patch
- git-pciseg.patch
- git-s390.patch
- git-scsi-misc.patch
- git-block.patch
- git-unionfs.patch
- git-watchdog.patch
- git-wireless.patch
- git-ipwireless_cs.patch
- git-cryptodev.patch
- git-gccbug.patch
+Christer Weinigel: Until YOU, have actually used the REISER4 filesystem
+yourself, I think YOU OWE IT to the people on the linux-kernel mailing
+list, to, AS YOU SAY, shut the fuck up. 
 
- git trees.
-
--md-avoid-a-deadlock-when-removing-a-device-from-an-md-array-via-sysfs.patch
--md-avoid-a-deadlock-when-removing-a-device-from-an-md-array-via-sysfs-fix.patch
--revert-driver-core-do-not-wait-unnecessarily-in-driver_unregister.patch
--net-sunrpc-svcsockc-fix-a-check.patch
--agp-prevent-probe-collision-of-sis-agp-and-amd64_agp.patch
--cifs-remove-unneeded-checks.patch
--git-libata-all-ipr-fix.patch
--pcmcia-spot-slave-decode-flaws-for-testing.patch
--sata_nv-dont-read-shadow-registers-when-in-adma-mode.patch
--pata_ali-remove-all-the-crap-again-and-switch-to.patch
--pata_amd-remove-all-the-crud-and-restore-the-cable-detect.patch
--pata_netcell-re-remove-all-the-crud.patch
--pata_qdi-restore-cable-detect.patch
--pata_sl82c105-restore-cable-detect-method.patch
--pata_winbond-restore-cable-method.patch
--pata_optidma-rework-for-cable-detect-and-to-remove.patch
--ide-sl82c105-rework-pio-support.patch
--ide-sl82c105-dma-support-code-cleanup-take3.patch
--mtd-pmc-msp71xx-flash-rootfs-mappings.patch
--jffs2-delete-everything-related-to-obsolete-jffs2_proc.patch
--mtd-support-for-auto-locking-flash-on-power-up.patch
--make-drivers-net-qla3xxxcphy_devices-static.patch
--git-wireless-debug-build-fixes.patch
--cxgb3-safeguard-tcam-size-usage.patch
--cxgb3-detect-nic-only-adapters.patch
--cxgb3-tighten-xgmac-workaround.patch
--cxgb3-firwmare-update.patch
--fix-scsi_send_eh_cmnd-scatterlist-handling.patch
--slab-mention-slab-name-when-listing-corrupt-objects.patch
--turn-do_sync_file_range-into-do_sync_mapping_range.patch
+Even reading up on the REISER4 filesystem would help. 
 
- Merged into mainline or a subsystem tree.
+Applying a little intelligence would undoubtedly help too.
 
-+fuse-validate-rootmode-mount-option.patch
-+proper-fix-for-highmem-kmap_atomic-functions-for-vmi-for-2621.patch
-+omap_cf-oops-on-suspend-fix.patch
-+x86_64-early-quirks-fix-early_qrk-section-tag.patch
-+i386-irqbalance_disable-section-fix.patch
+> johnrobertbanks@fastmail.fm writes:
+> 
+> > Lennart. Tell me again that these results from 
+> > 
+> > http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
+> > http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
+> > 
+> > are not of interest to you. I still don't understand why you
+> > have your head in the sand.
+> 
+> Oh, for fucks sake, stop sounding like a broken record.  
 
- 2.6.21 queue.
+Oh, for fucks sake, would you, and your religious anti-REISER cohorts,
+stop sounding like a broken record.
 
--vmi-paravirt-ops-bugfix-for-2621.patch
+> You have repeated the same totally meaningless statistics more 
+> times than I care to count.  Please shut the fuck up.
 
- Dropped.
+You, and your religious anti-REISER cohorts, have indeed repeated the
+same broken arguments (if you can call them such) more times than I care
+to count.
 
-+make-proc-acpi-wakeup-more-useful.patch
-+sony-laptop-remove-acpi-references-from-variable-and-function-names.patch
-+sony-laptop-prepare-the-platform-driver-for-multiple-users.patch
-+sony-laptop-add-debug-macros-also-used-by-the-sonypi-reimplementation.patch
-+sony-laptop-add-sny6001-device-handling-sonypi-reimplementation.patch
-+sony-laptop-unify-the-input-subsystem-event-forwarding.patch
-+sony-laptop-additional-platform-attributes-coming-from-sny6001.patch
-+sony-laptop-sanitize-printks.patch
-+sony-laptop-update-documentation-and-kconfig-help.patch
-+sony-laptop-add-sonypi-compat-code.patch
+NO statistics, NO real facts, just selective MANIPULATION of facts.
 
- sony-laptop work.
+> Please shut the fuck up.
 
-+arm-fix-section-mismatch-warning-in-board-sam9260.patch
+Yes, why don't you politely, shut the fuck up.
 
- ARM fix
+Until YOU, have actually used the REISER4 filesystem yourself, I think
+YOU OWE IT to the people on the linux-kernel mailing list, to shut the
+fuck up, as YOU say.
 
-+agk-dm-dm-bio-list-helpers.patch
-+agk-dm-dm-delay.patch
+I guess, the fact that you are a TOTAL HYPOCRITE, has completely escaped
+you.
 
- device-mapper tree updates
+By the way: Did I thank you "delightful" people for the "pleasant"
+welcome to the linux-kernel mailing list?
 
-+unused-round_up-name_offset-macro-in-arch-powerpc.patch
+-----------------------------------------------------------------
 
- powerpc cleanup
+> So the two bonnie benchmarks with lzo and gzip are
+> totally meaningless for any real life usages.
 
-+fix-sysfs_readdir-oops.patch
+YOU (yes, the one with no experience and next to NO knowledge on the
+subject) claim that because bonnie++ writes files that are mostly zeros,
+the results are meaningless. It should be mentioned that bonnie++ writes
+files that are mostly zero for all the filesystems compared. So the
+results are meaningful, contrary to would you claim.
 
- Another go at fixing the rare sysfs readdir crash
+And hopefully all will notice that you just ignore these tests:
 
-+i2c-replace-more-deprecated-sa_xxx-interrupt-flags.patch
+.-------------------------------------------------.
+|File         |Disk |Copy |Copy |Tar  |Unzip| Del |
+|System       |Usage|655MB|655MB|Gzip |UnTar| 2.5 |
+|Type         | (MB)| (1) | (2) |655MB|655MB| Gig |
+.-------------------------------------------------.
+|REISER4 gzip | 213 | 148 |  68 |  83 |  48 |  70 |
+|REISER4 lzo  | 278 | 138 |  56 |  80 |  34 |  84 |
+|REISER4 tails| 673 | 148 |  63 |  78 |  33 |  65 |
+|REISER4      | 692 | 148 |  55 |  67 |  25 |  56 |
+|NTFS3g       | 772 |1333 |1426 | 585 | 767 | 194 |
+|NTFS         | 779 | 781 | 173 |   X |   X |   X |
+|REISER3      | 793 | 184 |  98 |  85 |  63 |  22 |
+|XFS          | 799 | 220 | 173 | 119 |  90 | 106 |
+|JFS          | 806 | 228 | 202 |  95 |  97 | 127 |
+|EXT4 extents | 806 | 162 |  55 |  69 |  36 |  32 |
+|EXT4 default | 816 | 174 |  70 |  74 |  42 |  50 |
+|EXT3         | 816 | 182 |  74 |  73 |  43 |  51 |
+|EXT2         | 816 | 201 |  82 |  73 |  39 |  67 |
+|FAT32        | 988 | 253 | 158 | 118 |  81 |  95 |
+.-------------------------------------------------.
 
- I2C tree update
 
-+git-input-fixup.patch
+where the files are definitely NOT mostly zeros. 
+
+Your negligence has to be deliberate,... but why?
 
- Fix rejects in git-input
-
-+input-replace-more-deprecated-sa_xxx-interrupt-flags.patch
-
- Cleanup
-
-+pata_acpi-restore-driver-fix-2.patch
-
- Fix pata_acpi-restore-driver.patch
-
-+drivers-ata-pata_cmd640c-fix-build-with-config_pm=n.patch
-
- ata build fix
-
-+ide-ide-correctly-prevent-ide-timer-expiry-function-to-run-if-request-was-already-handled.patch
-+ide-ide-ugly-messages-trying-to-open-cd-drive-with-no-media-present.patch
-+ide-ide-add-optical-to-sysfs-media-attribute.patch
-+ide-sl82c105-rework-pio-support-take2.patch
-+ide-sl82c105-dma-support-code-cleanup-take4.patch
--ide-sl82c105-add-speedproc.patch
-+ide-sl82c105-add-speedproc-method-and-mwdma01-support.patch
-
- IDE tree updates
-
-+vioc-replace-more-deprecated-sa_xxx-interrupt-flags.patch
-
- netdev cleanup
-
-+net-possible-cleanups.patch
-+round_up-macro-cleanup-in-drivers-net-ppp_genericc.patch
-
- net cleanups
-
-+iucv-fix-compilation-on-s390-up.patch
-
- net build fix
-
-+pcmcia-irq-probe-can-be-done-without-risking-an-irq-storm.patch
-+at91_cf-minor-fix.patch
-
- pcmcia updates
-
-+git-r8169-fixup.patch
-
- Fix rejects in git-r8169.patch
-
-+8250_pci-fix-pci-must_checks.patch
-
- PCI fixes
-
-+scsi-fix-config_scsi_wait_scan=m.patch
-+scsi-fix-config_scsi_wait_scan=m-fix.patch
-+scsi-fix-config_scsi_wait_scan=m-fix-fix.patch
-
- scsi fixes
-
-+usb-gadget-rndis-fix-struct-rndis_packet_msg_type.patch
-+hid-add-quirk_hiddev-for-belkin-flip-kvm.patch
-
- USB updates
-
-+revert-proper-fix-for-highmem-kmap_atomic-functions-for-vmi-for-2621.patch
-
- Revert temp-for-2.6.21 VMI patch
-
-+fix-x86_64-mm-fix-amd64-agp-aperture-validation.patch
-+paravirt_ops-update-maintainers.patch
-+paravirt_ops-remove-config_debug_paravirt.patch
-+paravirt_ops-use-paravirt_nop-to-consistently-mark-no-op-operations.patch
-+paravirt_ops-add-pagetable-accessors-to-pack-and-unpack-pagetable-entries.patch
-+paravirt_ops-hooks-to-set-up-initial-pagetable.patch
-+paravirt_ops-allocate-a-fixmap-slot.patch
-+paravirt_ops-allow-paravirt-backend-to-choose-kernel-pmd-sharing.patch
-+paravirt_ops-add-hooks-to-intercept-mm-creation-and-destruction.patch
-+paravirt_ops-rename-struct-paravirt_patch-to-paravirt_patch_site-for-clarity.patch
-+paravirt_ops-use-patch-site-ids-computed-from-offset-in-paravirt_ops-structure.patch
-+paravirt_ops-fix-patch-site-clobbers-to-include-return-register.patch
-+paravirt_ops-consistently-wrap-paravirt-ops-callsites-to-make-them-patchable.patch
-+paravirt_ops-document-asm-i386-paravirth.patch
-+paravirt_ops-clean-up-paravirt-patchable-wrappers.patch
-+paravirt_ops-add-common-patching-machinery.patch
-+paravirt_ops-add-flush_tlb_others-paravirt_op.patch
-+paravirt_ops-revert-map_pt_hook.patch
-+paravirt_ops-add-kmap_atomic_pte-for-mapping-highpte-pages.patch
-+add-apply_to_page_range-which-applies-a-function-to-a-pte-range.patch
-+re-enable-vdso-by-default-with-paravirt.patch
-+remove-noreplacement-option.patch
-+remove-smp_alt_instructions.patch
-+rename-the-parainstructions-symbols-to-be-consistent-with-the-others.patch
-+rename-the-parainstructions-symbols-to-be-consistent-with-the-others-fix.patch
-+allow-boot-time-disable-of-smp-altinstructions.patch
-+allow-boot-time-disable-of-paravirt_ops-patching.patch
-+fix-mtrr-sections.patch
-+i386-avoid-checking-for-cpu-gone-when-config_hotplug_cpu-not-defined.patch
-+i386-clean-up-asm-i386-bugsh.patch
-+x86_64-clean-up-asm-x86_64-bugsh.patch
-+x86-clean-up-identify_cpu.patch
-+x86-clean-up-identify_cpu-update.patch
-+i386-relocate-vdso-elf-headers-to-match-mapped-location-with-compat_vdso.patch
-+i386-make-compat_vdso-runtime-selectable.patch
-+i386-cleanup-flush_tlb_others-fn.patch
-+i386-mce-check-capability.patch
-
- x86 updates
-
--i386-irq-kill-nr_irq_vectors-and-increase-nr_irqs.patch
-
- Dropped
-
-+xfs-clean-up-shrinker-games.patch
-
- xfs cleanup
-
-+fix-hotplug-for-legacy-platform-drivers-update.patch
-
- Fix fix-hotplug-for-legacy-platform-drivers.patch
-
-+depcac-fix-handling-of-platorm_device_add-failure.patch
-+pktgen-add-try_to_freeze.patch
-
- Fixes for 2.6.21 (IMO)
-
-+move-free-pages-between-lists-on-steal-do-not-cross-section-boundary-when-moving-pages-between-mobility-lists.patch
-
- Fix Mel's MM stuff
-
-+maps2-uninline-some-functions-in-the-page-walker.patch
-+maps2-eliminate-the-pmd_walker-struct-in-the-page-walker.patch
-+maps2-remove-vma-from-args-in-the-page-walker.patch
-+maps2-propagate-errors-from-callback-in-page-walker.patch
-+maps2-add-callbacks-for-each-level-to-page-walker.patch
-+maps2-move-the-page-walker-code-to-lib.patch
-+maps2-move-the-page-walker-code-to-lib-fix.patch
-+maps2-simplify-interdependence-of-proc-pid-maps-and-smaps.patch
-+maps2-move-clear_refs-code-to-task_mmuc.patch
-+maps2-regroup-task_mmu-by-interface.patch
-+maps2-make-proc-pid-smaps-optional-under-config_embedded.patch
-+maps2-make-proc-pid-clear_refs-option-under-config_embedded.patch
-+maps2-add-proc-pid-pagemap-interface.patch
-+maps2-add-proc-kpagemap-interface.patch
-
- New interfaces for inspecting process memory status
-
-+mm-clean-up-and-kernelify-shrinker-registration.patch
-
- MM cleanup
-
-+fix-section-mismatch-of-memory-hotplug-related-code.patch
-+add-white-list-into-modpostc-for-memory-hotplug-code-and-ia64s-machvec-section.patch
-+split-mmap.patch
-+only-allow-nonlinear-vmas-for-ram-backed-filesystems.patch
-+i386-use-page-allocator-to-allocate-thread_info-structure.patch
-+slub-fix-numa-bootstrap.patch
-+slub-use-correct-flags-to-check-for-dma-cache.patch
-+slub-treat-slab_hwcache_align-as-a-mininum-and-not-as-the-alignment.patch
-+make-page-private-usable-in-compound-pages-v1.patch
-+add-virt_to_head_page-and-consolidate-code-in-slab-and-slub.patch
-
- MM updates
-
-+blackfin-arch-always-include-linux-kallsysms-header-file.patch
-+blackfin-arch-sync-with-uclibc-no-functional-changes.patch
-+blackfin-arch-using-asm-generic-pgtable-header-file-by.patch
-+blackfin-arch-add-missing-__clear_user-function-to.patch
-+blackfin-arch-use-boot_command_line-instead-of.patch
-+blackfin-arch-fix-some-coding-style-in-include.patch
-+blackfin-arch-add-scm_timestampns-and-siocgstampns-to.patch
-+blackfin-arch-define-a-new-cacheline_aligned-attribute-to-put-it-in-l1-data-memory-with-linkscript-update.patch
-+blackfin-arch-fix-bug-asserting-gpio-requested-doesnt-make-sense-with-gpio-whole-port-accesses.patch
-+blackfin-arch-04-and-05-silicon-doesnt-exist-for-bf534-bf536-adn-bf537-so-dont-let-people-select-the-option.patch
-
- Blackfin updates
-
-+round_up-macro-cleanup-in-arch-alpha-kernel-osf_sysc.patch
-
- Alpha cleanup
-
-+freezer-remove-pf_nofreeze-from-handle_initrd.patch
-
- swsusp fix
-
-+cris-remove-code-related-to-pre-22-kernel.patch
-
- Cris cleanup
-
-+uml-tidy-processc-fix.patch
-
- Fix uml-tidy-processc.patch
-
-+uml-tidy-fault-code.patch
-+uml-kernel-segfaults-should-dump-proper-registers.patch
-+uml-comment-early-boot-locking.patch
-+uml-irq-locking-commentary.patch
-+uml-delete-host_frame_size.patch
-+uml-drivers-get-release-methods.patch
-+uml-dump-registers-on-ptrace-or-wait-failure.patch
-+uml-speed-up-page-table-walking.patch
-
- UML updates
-
--serial-allocate-minor-device-numbers-for.patch
-
- Dropped (I think)
-
-+move-die-notifier-handling-to-common-code-fix.patch
-
- Fix move-die-notifier-handling-to-common-code.patch some more
-
--remove-hardcoding-of-hard_smp_processor_id-on-up.patch
-
- Updated version was merged
-
-+unexport-pci_proc_attach_device.patch
-
- Cleanup
-
-+kdump-kexec-calculate-note-size-at-compile-time-update-2.patch
-
- Fix kdump-kexec-calculate-note-size-at-compile-time.patch
-
-+pnpacpi-sets-pnpdev-devarchdata.patch
-+simplify-module_get_kallsym-by-dropping-length-arg.patch
-+fix-race-between-rmmod-and-cat-proc-kallsyms.patch
-+simplify-kallsyms_lookup.patch
-+fix-race-between-cat-proc-wchan-and-rmmod-et-al.patch
-+fix-race-between-cat-proc-slab_allocators-and-rmmod.patch
-+kernel-paramsc-fix-lying-comment-for-param_array.patch
-+replace-deprecated-sa_xxx-interrupt-flags.patch
-+deprecate-sa_xxx-interrupt-flags-v2.patch
-+expose-range-checking-functions-from-arch-specific.patch
-+remove-hardcoding-of-hard_smp_processor_id-on-up.patch
-+use-the-apic-to-determine-the-hardware-processor-id-i386.patch
-+use-the-apic-to-determine-the-hardware-processor-id-x86_64.patch
-+always-ask-the-hardware-to-obtain-hardware-processor-id-ia64.patch
-+round_up-macro-cleanup-in-drivers-char-lpc.patch
-+i386-schedh-inclusion-from-moduleh-is-baack.patch
-+parport_serial-fix-pci-must_checks.patch
-+round_up-macro-cleanup-in-fs-selectcompatreaddirc.patch
-+round_up-macro-cleanup-in-fs-smbfs-requestc.patch
-+doc-kernel-parameters-use-x86-32-tag-instead-of-ia-32.patch
-+kernel-doc-handle-spaces-in-array-size.patch
-+kernel-doc-handle-arrays-with-arithmetic-expressions-as.patch
-
- Misc
-
-+sched-redundant-reschedule-when-set_user_nice-boosts-a-prio-of-a-task-from-the-expired-array.patch
-
- sched speedup
-
-+revert-sched-redundant-reschedule-when-set_user_nice-boosts-a-prio-of-a-task-from-the-expired-array.patch
-
- Revert it again so that Con's stuff applies
-
-+sched-implement-staircase-deadline-cpu-scheduler-improvements-fix.patch
-
- staircase sched fix
-
--clocksource-arm-initialize-list-value.patch
--clocksource-parisc-initialize-list-value.patch
--clocksource-avr32-initialize-list-value.patch
--clocksource-mips-initialize-list-value.patch
--clocksource-i386-initialize-list-value.patch
--clocksource-x86_64-initialize-list-value.patch
--clocksource-s390-initialize-list-value.patch
--clocksource-driver-initialize-list-value.patch
--clocksource-refactor-duplicate-registration-checking.patch
-
- Dropped
-
-+kprobes-the-on-off-knob-thru-debugfs-updated.patch
-+kprobes-the-on-off-knob-thru-debugfs-updated-fix.patch
-
- kprobes work
-
-+undo-utrace-prep-2.patch
--utrace-x86_64-fix.patch
-
- utrace tweaks
-
-+signal-timer-event-fds-v9-anonymous-inode-source-fix.patch
-+signal-timer-event-fds-v9-signalfd-core-fix-fix.patch
-+signal-timer-event-fds-v9-signalfd-core-fix-fix-fix.patch
-+signal-timer-event-fds-v9-timerfd-core-fix.patch
-+signal-timer-event-fds-v9-timerfd-core-fix-fix.patch
-+signal-timer-event-fds-v9-eventfd-core-fix-fix.patch
-+signal-timer-event-fds-v9-eventfd-core-fix-fix-fix.patch
-
- Various fixes and updates against the signalfd work in -mm.
-
-+epoll-cleanups-epoll-no-module.patch
-+epoll-cleanups-epoll-remove-static-pre-declarations-and-akpm-ize-the-code.patch
-
- epoll stuff
-
-+char-cyclades-remove-pause.patch
-+char-cyclades-cy_readx-writex-cleanup.patch
-+char-cyclades-timer-cleanup.patch
-+char-cyclades-remove-volatiles.patch
-+char-cyclades-remove-useless-casts.patch
-
- cyclades cleanups
-
-+pnp-notice-whether-we-have-pnp-devices-pnpbios-or-pnpacpi.patch
-+pnp-workaround-hp-bios-defect-that-leaves-smcf010-device-partly-enabled.patch
-+smsc-ircc2-tidy-up-module-parameter-checking.patch
-+smsc-ircc2-add-pnp-support.patch
-+x86-serial-convert-legacy-com-ports-to-platform-devices.patch
-+x86-serial-convert-legacy-com-ports-to-platform-devices-fix.patch
-
- PNP work
-
-+locks-trivial-removal-of-unnecessary-parentheses.patch
-+locks-create-posix-to-flock-helper-functions.patch
-+locks-make-lock-release-private-data-before-returning-in-getlk-case.patch
-+locks-give-posix_test_lock-same-interface-as-lock.patch
-+locks-factor-out-generic-filesystem-switch-from-test_lock.patch
-+locks-factor-out-generic-filesystem-switch-from-setlock-code.patch
-+locks-allow-vfsposix_lock_file-to-return-conflicting-lock.patch
-+locks-add-fl_notify-arguments-for-asynchronous-lock-return.patch
-+locks-add-lock-cancel-command.patch
-+nfsd4-convert-nfsv4-to-new-lock-interface.patch
-+lockd-save-lock-state-on-deferral.patch
-+lockd-handle-fl_notify-callbacks.patch
-+lockd-pass-cookie-in-nlmsvc_testlock.patch
-+lockd-handle-test_lock-deferrals.patch
-+lockd-always-preallocate-block-in-nlmsvc_lock.patch
-+lockd-add-code-to-handle-deferred-lock-requests.patch
-+gfs2-nfs-lock-support-for-gfs2.patch
-
- Rework file locking code for nfs
-
-+mm-clean-up-and-kernelify-shrinker-registration-reiser4.patch
-
- update reiser4 for shrinker changes
-
-+s3fb-fix-pci-must_checks.patch
-
- fbdev driver fixes
-
-
-
-
-All 1405 patches:
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/patch-list
-
+Are you manipulating the facts just to try and win an argument?
+
+Most sane people will realize, that what you say is simply wrong.
+
+ALSO YOU IGNORE examples offered by others, on lkml, which contradict
+your assertion: FOR EXAMPLE:
+
+> I see the same thing with my nightly scripts that do syslog analysis, last year 
+> I trimmed 2 hours from the nightly run by processing compressed files instead of 
+> uncompressed ones (after I did this I configured it to compress the files as 
+> they are rolled, but rolling every 5 min the compression takes <20 seconds, so 
+> the compression is < 30 min)
+
+>From David Lang http://lkml.org/lkml/2007/4/7/196
+
+Willy Tarreau also mentions this situation in a couple of articles.
+
+Let me spoon feed you:
+
+David has said that compressing the logs takes
+
+24 x 12 x 20 secs = 5,760 secs = 1.6 hours of CPU time (over the day)
+
+but he saves 2 hours of CPU time on the daily syslog analysis.
+
+For a total (minimum) saving of 24 minutes.
+
+The actual saving is probably much greater. It depends on the CPU
+utilization when not compressing, ie, whether you are using ide CPU
+cycles or not. I guess it also depends on whether you can go home one
+and a half hours earlier by using compression, or if your boss makes you
+stick around anyway.
+
+NOTE THAT THE FILES IN THIS EXAMPLE ARE ALSO NOT MAINLY ZEROS.
+
+MAYBE you just lacked the knowledge to understand what David was saying,
+or maybe your desire to denigrate REISER4 is so strong, that you simply
+don't care what other people say about similar circumstances.
+
+I am not sure why you have to be spoon feed on these matters, or why you
+adamantly refuse to find the facts of the matter, for yourself.
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+On Fri, 6 Apr 2007 23:30:49 -0400, "Jan Harkes" <jaharkes@cs.cmu.edu>
+said:
+> 
+> Since you decide to publically respond to a private email, but not only
+> you did not 'discuss' anything I wrote and in fact cut out most of the
+> useful information in my reply I guess I will have to repeat my
+> observations.
+
+You are a funny guy Jan.
+
+Here you are, once again, cutting out my most useful information, ie,
+the data I was discussing, while complaining that I cut out your most
+useful information. 
+
+You know,... you cut out this bit:
+
+-----------------------------------------------------------------
+
+> The following benchmarks are from
+> 
+> http://linuxhelp.150m.com/resources/fs-benchmarks.htm or,
+> http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
+> 
+> .-------------------------.
+> | FILESYSTEM | TIME |DISK |
+> | TYPE       |(secs)|USAGE|
+> .-------------------------.
+> |REISER4 lzo | 1938 | 278 |
+> |REISER4 gzip| 2295 | 213 |
+> |REISER4     | 3462 | 692 |
+> |EXT2        | 4092 | 816 |
+> |JFS         | 4225 | 806 |
+> |EXT4        | 4408 | 816 |
+> |EXT3        | 4421 | 816 |
+> |XFS         | 4625 | 779 |
+> |REISER3     | 6178 | 793 |
+> |FAT32       |12342 | 988 |
+> |NTFS-3g     |10414 | 772 |
+> .-------------------------.
+> 
+> Column one measures the time taken to complete the bonnie++ benchmarking test (run with the parameters bonnie++ -n128:128k:0)
+> 
+> Column two, Disk Usage: measures the amount of disk used to store 655MB of raw data (which was 3 different copies of the Linux kernel sources).
+
+-----------------------------------------------------------------
+
+And this bit: 
+
+Jan,... Here is another section, you conveniently cut out. Maybe you
+should explain why you cut out this section? Was it embarrassing to you?
+I mean, your statement is sort of correct,... but it shows a basic
+misunderstanding of filesystems.
+
+> > With compression there is a pretty high probability that one corrupted
+> > byte or disk block will result in loss of a considerably larger amount
+> > of data. 
+> 
+> Bad blocks are NOT dealt with by the filesystem,... so your comment is
+> irrelevant, or just plain wrong.
+> 
+> If your filesystem is writing to bad blocks, then throw away your
+> operating system.
+
+-----------------------------------------------------------------
+
+It is true that I considered your "most useful information," an
+irrelevant section, which is why it was cut out (ignored).
+
+I did not see my doing this, any worse than you doing it. I did not
+realize that you were being so impolite.
+
+As to your email being private, I had thought I had joined a mailing
+list. I had no idea your email was meant to be private and just
+considered it like all the others.
+
+Now you mention it, I wondered why the email did not automatically list
+the mailing lists, as recipients, and I had to add them. If I had
+realized this I may have added the mailing lists as recipients, anyway.
+It would be like me to do such. However, you should understand that I am
+new to mailing lists.
+ 
+> 
+> > > Do you really have to repeat the results in every email you sent?
+> > 
+> > Damn, I did it again. WHY DO YOU CARE?
+> 
+> Because I saw them the first time around. And although the performance
+> difference on those micro benchmarks seems quite impressive, I'm not
+> convinced.
+
+So, likewise, I saw your comments (you know the ones you miss so much)
+the first time around, and I ignored them, as I was not convinced of
+their worth.
+
+The benchmarks measure certain data. Its fine you do not read into them,
+stuff that isn't there, like reliability, for example. 
+
+> > Look, its simple, I am (among other things) discussing these results, so
+> > people need to see them.
+> 
+> However, you do not discuss, you just repeat, and repeat, and repeat.
+
+I never said I wanted discussion, you just said I did.
+
+You just repeat, and repeat, and repeat.
+
+In reality, I quite appreciate reasonable discussion. But, I doubt I
+will get much from you.
+
+> But for what reason. Do you want an actual discussion, or do you hate
+> the reiserfs developers so much that you want to antagonize any and all
+> other Linux file systems developers?
+
+Why do you think I hate reiserfs developers? That is an insane claim.
+Why would I hate reiser3 developers?
+Why would I hate reiser4 developers? 
+Why would I even dislike them?
+
+I think Hans Reiser is a genius. Is that what you mean by hate?
+
+Answer this question. Why do YOU think I am antagonizing reiserfs
+developers?
+
+You must have a reason for stating what you have.
+
+> > By the way, I have pulled the plug on my REISER4 system, a number of
+> > times now, and it recovers without problem.
+> 
+> Very nice for you. I guess you have also not been hit by out of memory
+> conditions or failing partial writes. So I guess we can ignore the patch
+> that was just sent a day or two ago to the mailing list because you
+> succesfully pulled the plug, a number of times at that.
+
+Why are you attacking me with sarcasm, when I have just stated a simple
+fact?
+
+> > > > I have set up a Reiser4 partition with gzip compression, here is the
+> > > > difference in disk usage of a typical Debian installation on two 10GB
+> > > > partitions, one with Reiser3 and the other with Reiser4.
+> > > > 
+> > > > debian:/# df
+> > > > Filesystem           1K-blocks      Used Available Use% Mounted on
+> > > > /dev/sda3             10490104   6379164   4110940  61% /3
+> > > > /dev/sda7              9967960   2632488   7335472  27% /7
+> > > ...
+> > > > Partition 3 is Reiser3 -- uses 6.4 GB.
+> > > > Partition 7 is Reiser4 -- uses 2.6 GB.
+> > > > 
+> > > > So Reiser4 uses 2.6 GB to store the (typical) data that it takes Reiser3
+> > > > 6.4 GB to store (note it would take ext2/3/4 some 7 GB to store the same
+> > > > info).
+> > > 
+> > > Wow, consider me totally and completely, unimpressed.
+> > > 
+> 
+> Here is the part of my email that you seemed to totally ignore,
+
+Yes, I ignored it,.... is that a crime?
+
+> You've just saved yourself $3.80, now go get yourself a latte.
+> (see. http://tomayko.com/weblog/2006/09/11/that-dilbert-cartoon)
+> 
+> Seriously, disk storage is getting less expensive all the time, you can
+> already buy a 250GB SATA drive for $70. Also, compression doesn't help
+> once you store already compressed data such as jpeg images, mp3 files,
+> or mpeg2/4/divx video files. Not only are the savings non-existant, but
+> we still end up with the disadvantage that corruption propagates to
+> multiple files because of the compression in the file system.
+
+I believe that compression in REISER4 is just a wrapper for gzip or lzo.
+So each file is compressed and your "corruption propagation" is just in
+your imagination.
+
+> And if it doesn't propagate across multiple files, the compression can't
+> be all that good 
+
+It can be as good as gzipping every file, ie, pretty damn good.
+
+> since it can't benefit as much from similarity between
+> files. So if that is the case and you really want to save diskspace you
+> almost have to look at read-only compressed filesystems such as cramfs,
+> squashfs, zisofs, cloop and various other variants in combination with
+> a unionfs overlay to get read/write functionality.
+> 
+> But in the end everything is a tradeoff. You can save diskspace, but
+> increase the cost of corruption. 
+
+You deliberately ignored the fact that bad blocks are NOT dealt with by
+the filesystem,... but by the operating system. Like I said: If your
+filesystem is writing to bad blocks, then throw away your operating
+system.
+
+> Use a better compression algorithm, but
+> that uses more CPU or which is visible in performance of the
+> application. 
+
+Not necessarily, just look at the bonnie++ tests. The tests show that
+using compression (with todays hardware) leads to read speeds that are
+some FOUR times the physical disk read rate,... 
+
+but you ignore this as you have some strange anti-REISER religion.
+
+Think about it,... read speeds that are some FOUR times the physical
+disk read rate,... impossible without the use of compression (or
+something similar).
+
+> This can be offset by caching more, and being lazier with
+> writebacks, but that hurts on-disk consistency, creates more memory
+> pressure (more swapout/paging) and generally slows down other
+> applications that aren't actually accessing the disk. Having a fast
+> multi-core cpu and lots of memory helps a lot, but at some point what
+> tradeoff did we just make, we saved a couple of dollars not having to
+> buy a larger disk, but we spend considerably more on the more
+> expensive cpu and memory.
+> 
+
+Wow, consider me STILL totally impressed by your AMAZING BIAS.
+Would you like to tell me why you are SO BIASED against REISER4?
+
+John.
+-- 
+  
+  johnrobertbanks@fastmail.fm
+
+-- 
+http://www.fastmail.fm - The professional email service
 
