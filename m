@@ -1,208 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbXDHEHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbXDHENf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751600AbXDHEHe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 00:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXDHEHd
+	id S1752654AbXDHENf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 00:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXDHENf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 00:07:33 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:10345 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXDHEH1 (ORCPT
+	Sun, 8 Apr 2007 00:13:35 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54558 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752540AbXDHENd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 00:07:27 -0400
-Date: Sat, 7 Apr 2007 21:09:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-Cc: aeb@cwi.nl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] partitions: Rewrite check_partition to remove
- necessity of check_part
-Message-Id: <20070407210936.4ceaa9fd.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.DEB.0.83.0704072340550.27057@sigma.j-a-k-j.com>
-References: <alpine.DEB.0.83.0704072235180.27057@sigma.j-a-k-j.com>
-	<alpine.DEB.0.83.0704072340550.27057@sigma.j-a-k-j.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 8 Apr 2007 00:13:33 -0400
+Message-Id: <1176005612.15484.1183524228@webmail.messagingengine.com>
+X-Sasl-Enc: ApY7pt6R5qjwcontext7nTnqepeRbPNav/mkm+5nVSjy 1176005612
+From: johnrobertbanks@fastmail.fm
+To: "Theodore Tso" <tytso@mit.edu>
+Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Ignatich" <ignatich@gmail.com>,
+       reiserfs-list@namesys.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <46157B5B.5000602@gmail.com>
+   <1175817921.18400.1183285196@webmail.messagingengine.com>
+   <461592FB.5060507@zytor.com>
+   <1175819681.20754.1183287946@webmail.messagingengine.com>
+   <461596DE.2020802@zytor.com>
+   <1175823288.25662.1183293506@webmail.messagingengine.com>
+   <4615C780.5040407@zytor.com>
+   <1175833931.8916.1183307802@webmail.messagingengine.com>
+   <20070407191715.GG3510@csclub.uwaterloo.ca>
+   <1175993097.32498.1183512070@webmail.messagingengine.com>
+   <20070408025632.GA17646@thunk.org>
+Subject: Re: Reiser4. BEST FILESYSTEM EVER.
+In-Reply-To: <20070408025632.GA17646@thunk.org>
+Date: Sat, 07 Apr 2007 21:13:32 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Apr 2007 23:42:00 -0400 (EDT) John Anthony Kazos Jr. wrote:
+Teddy,
 
-> From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
+It is a pity you don't address the full set of results, when you make
+your snide comments.
+
+Now since you have them,... why don't you make reasoned comment about
+them.
+
+You can read more here:
+
+http://linuxhelp.150m.com/resources/fs-benchmarks.htm and
+http://m.domaindlx.com/LinuxHelp/resources/fs-benchmarks.htm
+
+.-------------------------.
+| FILESYSTEM | TIME |DISK |
+| TYPE       |(secs)|USAGE|
+.-------------------------.
+|REISER4 lzo | 1938 | 278 |
+|REISER4 gzip| 2295 | 213 |
+|REISER4     | 3462 | 692 |
+|EXT2        | 4092 | 816 |
+|JFS         | 4225 | 806 |
+|EXT4        | 4408 | 816 |
+|EXT3        | 4421 | 816 |
+|XFS         | 4625 | 779 |
+|REISER3     | 6178 | 793 |
+|FAT32       |12342 | 988 |
+|NTFS-3g     |10414 | 772 |
+.-------------------------.
+
+
+Column one measures the time taken to complete the bonnie++ benchmarking
+test (run with the parameters bonnie++ -n128:128k:0)
+
+Column two, Disk Usage: measures the amount of disk used to store 655MB
+of raw data (which was 3 different copies of the Linux kernel sources).
+
+OR LOOK AT THE FULL RESULTS:
+
+.-------------------------------------------------.
+|File         |Disk |Copy |Copy |Tar  |Unzip| Del |
+|System       |Usage|655MB|655MB|Gzip |UnTar| 2.5 |
+|Type         | (MB)| (1) | (2) |655MB|655MB| Gig |
+.-------------------------------------------------.
+|REISER4 gzip | 213 | 148 |  68 |  83 |  48 |  70 |
+|REISER4 lzo  | 278 | 138 |  56 |  80 |  34 |  84 |
+|REISER4 tails| 673 | 148 |  63 |  78 |  33 |  65 |
+|REISER4      | 692 | 148 |  55 |  67 |  25 |  56 |
+|NTFS3g       | 772 |1333 |1426 | 585 | 767 | 194 |
+|NTFS         | 779 | 781 | 173 |   X |   X |   X |
+|REISER3      | 793 | 184 |  98 |  85 |  63 |  22 |
+|XFS          | 799 | 220 | 173 | 119 |  90 | 106 |
+|JFS          | 806 | 228 | 202 |  95 |  97 | 127 |
+|EXT4 extents | 806 | 162 |  55 |  69 |  36 |  32 |
+|EXT4 default | 816 | 174 |  70 |  74 |  42 |  50 |
+|EXT3         | 816 | 182 |  74 |  73 |  43 |  51 |
+|EXT2         | 816 | 201 |  82 |  73 |  39 |  67 |
+|FAT32        | 988 | 253 | 158 | 118 |  81 |  95 |
+.-------------------------------------------------.
+
+
+Each test was preformed 5 times and the average value recorded.
+Disk Usage: The amount of disk used to store the data (which was 3
+different copies of the Linux kernel sources).
+The raw data (without filesystem meta-data, block alignment wastage,
+etc) was 655MB.
+Copy 655MB (1): Copy the data over a partition boundary.
+Copy 655MB (2): Copy the data within a partition.
+Tar Gzip 655MB: Tar and Gzip the data.
+Unzip UnTar 655MB: UnGzip and UnTar the data.
+Del 2.5 Gig: Delete everything just written (about 2.5 Gig).
+
+
+To get a feel for the performance increases that can be achieved by
+using compression, we look at the total time (in seconds) to run the
+test:
+
+bonnie++ -n128:128k:0 (bonnie++ is Version 1.93c)
+
+.-------------------.
+| FILESYSTEM | TIME |
+.-------------------.
+|REISER4 lzo |  1938|
+|REISER4 gzip|  2295|
+|REISER4     |  3462|
+|EXT4        |  4408|
+|EXT2        |  4092|
+|JFS         |  4225|
+|EXT3        |  4421|
+|XFS         |  4625|
+|REISER3     |  6178|
+|FAT32       | 12342|
+|NTFS-3g     |>10414|
+.-------------------.
+
+
+
+On Sat, 7 Apr 2007 22:56:32 -0400, "Theodore Tso" <tytso@mit.edu> said:
+> On Sat, Apr 07, 2007 at 05:44:57PM -0700, johnrobertbanks@fastmail.fm
+> wrote:
+> > To get a feel for the performance increases that can be achieved by
+> > using compression, we look at the total time (in seconds) to run the
+> > test:
 > 
-> Removes the entire check_part array and uses the presence of new stub 
-> functions in header files in fs/partitions to call them directly in a list 
-> and let the compiler optimize away any that aren't compiled in. Also fixes 
-> a bug where " unable to read partition table" would never be printed.
+> You mean the performance increases of writing a file which is mostly
+> all zero's?  Yawn.....
 > 
-> Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
-> 
-> ---
-> 
-> I did this because it seems to be much easier to understand. And even 
-> though the memory used by the array was only sizeof(void*)*n+1 for the 
-> number of partitions configured to be included, that's still unnecessary 
-> usage.
-> 
-> This code also has two warn_unused_result problems, but I don't feel up to 
-> the task of fixing those yet.
-> 
-> Within the old loop, if res < 0, res = 0, and immediately after the loop, 
-> the function returns if res > 0. Therefore, it must be that res == 0 after 
-> the loop. if (!err) is true only if err == 0 so again, res == 0, so if 
-> (!res) is true, and the else condition can never be reached. I 
-> re-interpreted the intent to be "log a message if the partition format is 
-> unrecognized, and log a message if the partition cannot be read but only 
-> if the warning is requested". Judging by the "This is ugly" comment, the 
-> warning is not intended to account for actual I/O errors when reading the 
-> partition-table block, but rather to detect when the partitions are 
-> checked for a device with a medium that has been removed.
-> 
-> --- linux-2.6.20.6-orig/fs/partitions/check.c	2007-04-06 16:02:48.000000000 -0400
-> +++ linux-2.6.20.6-mod/fs/partitions/check.c	2007-04-07 21:50:22.000000000 -0400
-> @@ -41,73 +41,6 @@ extern void md_autodetect_dev(dev_t dev)
->  
->  int warn_no_part = 1; /*This is ugly: should make genhd removable media aware*/
+> 					- Ted
+-- 
+  
+  johnrobertbanks@fastmail.fm
 
-[snip]
+-- 
+http://www.fastmail.fm - IMAP accessible web-mail
 
->  /*
->   * disk_name() is used by partition check code and the genhd driver.
->   * It formats the devicename of the indicated disk into
-> @@ -149,11 +82,125 @@ const char *__bdevname(dev_t dev, char *
->  
->  EXPORT_SYMBOL(__bdevname);
->  
-> +static int
-> +check_succeeded(int res, struct parsed_partitions *state, int *err)
-> +{
-> +	if (res < 0) {
-> +		/* We have hit an I/O error which we don't report now.
-> +		 * But record it, and let the others do their job.
-> +		 */
-> +		*err = res;
-> +		res = 0;
-> +	}
-> +
-> +	if (!res) {
-> +		memset(state->parts, 0, sizeof(state->parts));
-> +	}
-
-No braces on single-statement blocks.  (many of these below also)
-
-> +
-> +	return res;
-> +}
-> +
-> +static struct parsed_partitions *
-> +do_check_list(struct parsed_partitions *state, struct block_device *bdev)
-> +{
-> +	int err;
-> +
-> +	err = 0;
-> +
-> +        /*
-
-Use tab to indent (above), not (only) spaces.
-
-> +	 * Probe partition formats with tables at disk address 0
-> +	 * that also have an ADFS boot block at 0xdc0.
-> +	 */
-> +	if (check_succeeded(adfspart_check_ICS(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +	if (check_succeeded(adfspart_check_POWERTEC(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +	if (check_succeeded(adfspart_check_EESOX(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +        /*
-
-tab above
-
-> +	 * Now move on to formats that only have partition info at
-> +	 * disk address 0xdc0.  Since these may also have stale
-> +	 * PC/BIOS partition tables, they need to come before
-> +	 * the msdos entry.
-> +	 */
-> +	if (check_succeeded(adfspart_check_CUMANA(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +	if (check_succeeded(adfspart_check_ADFS(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	/* this must come before msdos */
-> +	if (check_succeeded(efi_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(sgi_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	/* this must come before msdos */
-> +	if (check_succeeded(ldm_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(msdos_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(osf_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(sun_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(amiga_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(atari_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(mac_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(ultrix_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(ibm_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	if (check_succeeded(karma_partition(state, bdev), state, &err)) {
-> +		return state;
-> +	}
-> +
-> +	kfree(state);
-> +
-> +	if (err) {
-> +		if (warn_no_part) {
-> +			printk(" unable to read partition table\n");
-> +		}
-> +	} else {
-> +		printk(" unknown partition table\n");
-> +	}
-> +
-> +	return ERR_PTR(err);
-> +}
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
