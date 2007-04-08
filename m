@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbXDHSwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751878AbXDHS5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbXDHSwj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 14:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbXDHSwj
+	id S1751878AbXDHS5m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 14:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXDHS5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 14:52:39 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:46702 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751783AbXDHSwi (ORCPT
+	Sun, 8 Apr 2007 14:57:42 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36953 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751878AbXDHS5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 14:52:38 -0400
-Message-ID: <461939A4.2020305@gmail.com>
-Date: Sun, 08 Apr 2007 20:51:16 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-Subject: Re: Ten percent test
-References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu>
-In-Reply-To: <20070408104125.GB11123@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sun, 8 Apr 2007 14:57:41 -0400
+Date: Sun, 8 Apr 2007 19:59:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [RFC] pata_icside driver
+Message-ID: <20070408195956.4e7d50c0@the-village.bc.nu>
+In-Reply-To: <20070408101826.GA5431@flint.arm.linux.org.uk>
+References: <20070330110022.GA21653@flint.arm.linux.org.uk>
+	<20070330110800.GB21653@flint.arm.linux.org.uk>
+	<20070408101826.GA5431@flint.arm.linux.org.uk>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/08/2007 12:41 PM, Ingo Molnar wrote:
+> The second FIXME area is ata_irq_ack - it is unconditionally coded
+> for SFF-type interfaces.  I believe that using this function in
+> non-BMDMA interfaces is wrong - it attempts to read from the BMDMA
+> registers irrespective of whether ap->ioaddr.bmdma_addr is set or
+> not.  The question this poses is: what should non-BMDMA implementations
+> use for this method?  Note that pata_platform also uses this
+> function despite not supporting BMDMA which seems even more suspicious.
 
-> this is pretty hard to get right, and the most objective way to change 
-> it is to do it testcase-driven. FYI, interactivity tweaking has been 
-> gradual, the last bigger round of interactivity changes were done a year 
-> ago:
-> 
->  commit 5ce74abe788a26698876e66b9c9ce7e7acc25413
->  Author: Mike Galbraith <efault@gmx.de>
->  Date:   Mon Apr 10 22:52:44 2006 -0700
-> 
->      [PATCH] sched: fix interactive task starvation
-> 
-> (and a few smaller tweaks since then too.)
-> 
-> and that change from Mike responded to a testcase. Mike's latest changes 
-> (the ones you just tested) were mostly driven by actual testcases too, 
-> which measured long-term timeslice distribution fairness.
+Thats a bug that has arrived again. The older code was corrected to
+handle this properly but the fix appears to have become lost. The
+ioread/iowrite code actually made quite a mess (all the address reporting
+is also broken) and we do some iffy things like compare the iomap result
+with zero and assume thats the same as checking for true bus zero
+addresses.
 
-Ah yes, that one. Here's the next one in that series:
+ata_irq_ack is part of the SFF layer so its fine that it assumes SFF but
+its wrong that it is used unconditionally and it shouldn't be used this
+way. It just needs a (!ap->ioaddr.bmdma_addr) test adding (assuming thats
+valid for iomap)
 
-commit f1adad78dd2fc8edaa513e0bde92b4c64340245c
-Author: Linus Torvalds <torvalds@g5.osdl.org>
-Date:   Sun May 21 18:54:09 2006 -0700
 
-     Revert "[PATCH] sched: fix interactive task starvation"
-
-It personally had me wonder if _anyone_ was testing this stuff...
-
-Rene.
-
+Alan
