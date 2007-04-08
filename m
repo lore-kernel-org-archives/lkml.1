@@ -1,118 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXDHQ0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbXDHQbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbXDHQ0J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 12:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbXDHQ0J
+	id S1751466AbXDHQbb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 12:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXDHQbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 12:26:09 -0400
-Received: from web33012.mail.mud.yahoo.com ([209.191.69.127]:41434 "HELO
-	web33012.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751399AbXDHQ0I (ORCPT
+	Sun, 8 Apr 2007 12:31:31 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:45155 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751443AbXDHQba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 12:26:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=gurKBW4cFwrRfxoZe7e2EqAoYeOHsKfjH7nupfp4vkjHjtja1IiU5hx4f0EaRzTGpCoUYaJ2pKMwHPcCU5Phb5woFRuTb88ETarmLsYmgRdLi7ESwF9zjZvf5cqwCjJQQrRgbd1XSzOnKlymngx1G7/FH4IHZGZ4op6YDH14/tw=;
-X-YMail-OSG: k1.aQ3kVM1n03paNXQPw.XdlDrBO87padhiJr.u2KRY_n8ffUJCH4AgYkVmHNrl.qBVmXUy76wVUzOA4Yx8YU4cQkwoB0tM9kdJbLwWQcuwme5xgEg.WWPWMfA--
-Date: Sun, 8 Apr 2007 09:26:06 -0700 (PDT)
-From: Stephen Cameron <smcameron@yahoo.com>
-Subject: Re: [PATCH] Perverting cciss
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, james.bottomley@steeleye.com,
-       mike.miller@hp.com, steve.cameron@hp.com
-In-Reply-To: <20070408101902.GA2275@infradead.org>
+	Sun, 8 Apr 2007 12:31:30 -0400
+Date: Sun, 8 Apr 2007 18:31:31 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Valdis.Kletnieks@vt.edu
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, johnrobertbanks@fastmail.fm,
+       Jan Harkes <jaharkes@cs.cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Reiser4. BEST FILESYSTEM EVER.
+Message-ID: <20070408163131.GA6296@stusta.de>
+References: <461596DE.2020802@zytor.com> <1175823288.25662.1183293506@webmail.messagingengine.com> <4615C780.5040407@zytor.com> <1175833931.8916.1183307802@webmail.messagingengine.com> <20070406152119.GC4228@delft.aura.cs.cmu.edu> <1175914056.9653.1183426876@webmail.messagingengine.com> <20070407033049.GI4228@delft.aura.cs.cmu.edu> <1175925525.21154.1183436614@webmail.messagingengine.com> <m34pns46l9.fsf@maximus.localdomain> <13684.1175965831@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <759655.87535.qm@web33012.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <13684.1175965831@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 07, 2007 at 01:10:31PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Sat, 07 Apr 2007 16:11:46 +0200, Krzysztof Halasa said:
+> 
+> > > Think about it,... read speeds that are some FOUR times the physical
+> > > disk read rate,... impossible without the use of compression (or
+> > > something similar).
+> > 
+> > It's really impossible with compression only unless you're writing
+> > only zeros or stuff alike. I don't know what bonnie uses for testing
+> > but real life data doesn't compress 4 times. Two times, sometimes,
+> 
+> All depends on your data.  From a recent "compress the old logs" job on
+> our syslog server:
+> 
+> /logs/lennier.cc.vt.edu/2007/03/maillog-2007-0308:       85.4% -- replaced with /logs/lennier.cc.vt.edu/2007/03/maillog-2007-0308.gz
+> 
+> And it wasn't a tiny file either - it's a busy mailserver, the logs run to
+> several hundred megabytes a day.  Syslogs *often* compress 90% or more,
+> meaning a 10X compression.
+> 
+> > but then it will be typically slower than disk access (I mean read,
+> > as write will be much slower).
+> 
+> Actually, as far back as 1998 or so, I was able to document 20% *speedups*
+> on an AIX system that supported compressed file systems - and that was from
+> when a 133mz PowerPC 604e was a *fast* machine.   Since then, CPUs have gotten
+> faster at a faster rate than disks have, even increasing the speedup.
+> 
+> The basic theory is that unless you're sitting close to 100%CPU, it is *faster*
+> to burn some CPU to compress/decompress a 4K chunk of data down to 2K, and then
+> move 2K to the disk drive, than it is to move 4K.  It's particularly noticable
+> for larger files - if you can apply the compression to  remove the need to move
+> 2M of data faster than you can move 2M of data, you win.
 
---- Christoph Hellwig <hch@infradead.org> wrote:
- 
-> Also is there a reason you don't want to pass down the various
-> other ioctls scsi_cmd_ioctl can handle to it?
+Counterpoints:
+- not only CPUs have became faster, RAM has become faster, too
+  a kernel tree after an allyesconfig build is at about 1 GB which is 
+  less than half the size of RAM in my desktop computer
+  if all disk accesses are asynchronous write accesses without any 
+  pressure of being done quickly, compression can't improve performance
+- today, much of the bigger data is already compressed data like mp3s
+  or movies
+- for cases like logfiles or databases, application specific compression
+  should give best results
 
-Didn't think about it, SG_IO is the one people were
-clamoring for.
+There might be special cases where compressed filesystems make sense, 
+but my impression is that filesystem compresssion is not important and 
+suited for current average systems.
 
-SG_GET_VERSION_NUM:
-easily doable.
+cu
+Adrian
 
-SCSI_IOCTL_GET_IDLUN:
-Hmm, cciss is a block driver, and doesn't
-really have an ID/LUN which are meaningful
-in the normal sense of this ioctl.  If we
-report something for this one, it is going to
-conflict with some other device on the system
-if that info is used in the usual way.  That is,
-disk devices on cciss do not have any bus/target/lun
-as far as linux is concerned, and aren't addressable
-using those.
+-- 
 
-SCSI_IOCTL_GET_BUS_NUMBER:
-Same problem as SCSI_IOCTL_GET_IDLUN.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-SG_SET_TIMEOUT:
-SG_GET_TIMEOUT:
-Doable.  I don't think timeout will be honored though,
-and I think this has to do with the sg driver, which
-isn't involved with cciss anyhow, as cciss is not
-a scsi driver (except for tape drives).
-
-SG_GET_RESERVED_SIZE:
-SG_SET_RESERVED_SIZE:
-I think this is an sg driver thing and won't make
-any difference for cciss, but we could pass it
-through, I guess.
-
-SG_EMULATED_HOST:
-
-Er....  I guess we can do it:
-
-/*
- * will always return that we are ATAPI even for a real SCSI drive, I'm not
- * so sure this is worth doing anything about (why would you care??)
- */
-static int sg_emulated_host(request_queue_t *q, int __user *p)
-{
-        return put_user(1, p);
-}
-
-What's it for?
-
-
-
-CDROM_SEND_PACKET:
-CDROMCLOSETRAY:
-CDROMEJECT:
-
-I think all the CDROM stuff doesn't really apply.  CD-ROMs
-on smartarray are not supported, nor are CD-ROMs presented
-even if you attach one (excepting some weird tape device
-that HP sells which sometimes pretends to be a CDROM for
-booting purposes.) (Why would you put a cdrom on a RAID 
-controller?)  I guess we could pass it through, it might not 
-hurt, probably doesn't help though, and might give people
-the mistaken impression that they can connect a SCSI cd-rom 
-to a smartarray.
-
-SCSI_IOCTL_SEND_COMMAND:
-
-Doable, I think.
-
-It'll be tomorrow at best before I can try anything out
-or fix the other stuff you pointed out though.
-
--- steve
-
-
-
-
- 
-____________________________________________________________________________________
-Bored stiff? Loosen up... 
-Download and play hundreds of games for free on Yahoo! Games.
-http://games.yahoo.com/games/front
