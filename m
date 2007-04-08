@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbXDHOPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbXDHOg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751221AbXDHOPI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 10:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXDHOPH
+	id S1751243AbXDHOg4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 10:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXDHOg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 10:15:07 -0400
-Received: from 1wt.eu ([62.212.114.60]:1720 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbXDHOPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 10:15:06 -0400
-Date: Sun, 8 Apr 2007 16:14:53 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: johnrobertbanks@fastmail.fm
-Cc: Jose Celestino <japc@co.sapo.pt>, reiserfs-list@namesys.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Reiser4. BEST FILESYSTEM EVER.
-Message-ID: <20070408141453.GF943@1wt.eu>
-References: <461596DE.2020802@zytor.com> <1175823288.25662.1183293506@webmail.messagingengine.com> <4615C780.5040407@zytor.com> <1175833931.8916.1183307802@webmail.messagingengine.com> <20070407191715.GG3510@csclub.uwaterloo.ca> <1175993097.32498.1183512070@webmail.messagingengine.com> <20070408025632.GA17646@thunk.org> <1176005612.15484.1183524228@webmail.messagingengine.com> <20070408124645.GA8363@co.sapo.pt> <1176038489.5131.1183549496@webmail.messagingengine.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1176038489.5131.1183549496@webmail.messagingengine.com>
-User-Agent: Mutt/1.5.11
+	Sun, 8 Apr 2007 10:36:56 -0400
+Received: from web86905.mail.ukl.yahoo.com ([217.12.13.57]:31941 "HELO
+	web86905.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751243AbXDHOgz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 10:36:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=wckInUyN/jAph4Q2CAdD3/qzod6jvLGb/vGki5lV2+GKdbSygvBtZXnkpdGNX4gWm74BK59CNVVMy2zq/G3179Q7h5JZOOVPYV9f4lO8sWhK96g3w1F2xU3UjUDY5dUE0hY/MO23maT83/AeIo0EFneomXC6hTMoNK+z5fQZByk=  ;
+Message-ID: <20070408143653.97346.qmail@web86905.mail.ukl.yahoo.com>
+X-YMail-OSG: .vR2DWYVM1nuh263nXq11P2NPfIbCzNMqmiXwxlxIgF45bYicSPsZEexsajfq6bBkJDonV68a0TJ9wlL2viKltjnqjpaM8TvFw--
+X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.8
+Date: Sun, 8 Apr 2007 14:36:53 +0000 (GMT)
+From: JanuGerman <doublemalam@yahoo.co.uk>
+Subject: Security computation within Linux kernel
+To: linuxkernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 08, 2007 at 06:21:29AM -0700, johnrobertbanks@fastmail.fm wrote:
-> Jose,
->   since you clearly have nothing useful to say. Why don't you let Teddy
->   talk for himself.
+Hi every one,
 
-John,
+I have one question regarding security libraries, already shipped with Linux Kernel. That is, all PKI, RSA libraries, as provided by OpenSSL are already integrated within the linux kernel source code? OR, one have to use OpenSSL seperately in this regard. 
 
-You should first apply your own advice to yourself. Annoying everyone
-with the exact same mail 10 times a day is really disserving to the
-cause you pretend to defend. Please stop tainting reiser4's reputation,
-because I suspect that it can do far more things than what you make it
-look like. Its developers certainly need useful reports instead of a
-mentally deficient's rant.
+I can see, linux/crypto.h and linux/hash.h files shipped with 2.6 kernel and know that SHA1 "hashing" can be done using linux/hash.h, but beside that, any possiblity for RSA or PKI.
 
-Now please call the nurse for your injection and go back to bed.
+If yes, any link to their use, will be highly appreciated.
 
-Thank you in advance,
-Willy
 
+Best,
+JG
+
+
+		
+___________________________________________________________ 
+Copy addresses and emails from any email account to Yahoo! Mail - quick, easy and free. http://uk.docs.yahoo.com/trueswitch2.html
