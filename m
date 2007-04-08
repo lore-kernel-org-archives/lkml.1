@@ -1,55 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751643AbXDHSbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXDHSi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751643AbXDHSbG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 14:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXDHSbG
+	id S1751744AbXDHSi0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 14:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXDHSi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 14:31:06 -0400
-Received: from [212.12.190.168] ([212.12.190.168]:34360 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751643AbXDHSbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 14:31:05 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: SD scheduler testing hitch
-Date: Sun, 8 Apr 2007 21:34:43 +0300
-User-Agent: KMail/1.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 8 Apr 2007 14:38:26 -0400
+Received: from imf22aec.mail.bellsouth.net ([205.152.59.70]:58580 "EHLO
+	imf22aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751744AbXDHSiZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 14:38:25 -0400
+Date: Sun, 8 Apr 2007 13:38:22 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: APIC error on 32-bit kernel
+Message-ID: <20070408133822.3868e6ff@osprey.hogchain.net>
+In-Reply-To: <20070323200817.1f3e39b9@osprey.hogchain.net>
+References: <20070323200817.1f3e39b9@osprey.hogchain.net>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704082134.43029.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Galbraith wrote:
-> On Sat, 2007-04-07 at 19:17 +0200, Mike Galbraith wrote:
-> > I lowered the time to 500us, and ran at nice -10.. it starves tenpercent
-> > here every time.  (ran as taskset -c 1 nice -n -10 ./fairtest)  The
-> > starving 10% duty cycle task has trouble getting 1% CPU.
->
-> Hmm.  Playing with it some more today, it still happens, but it's not
-> very repeatable.  Something is odd.  I wonder if any SD using readers
-> will try it.
+[Adding linux-kernel to the cc list, hoping for wider exposure.]
 
-Tried it on mainline 2.6.20.3.
-It's not easily repeatable, but it's got the same problem.
+On Fri, 23 Mar 2007 20:08:17 -0500
+Jay Cliburn <jacliburn@bellsouth.net> wrote:
 
-top - 21:21:45 up 27 min,  0 users,  load average: 0.80, 0.43, 0.20
-Tasks:  45 total,   3 running,  42 sleeping,   0 stopped,   0 zombie
-Cpu(s):  24.3% user,   0.5% system,   0.0% nice,  75.0% idle,   0.2% IO-wait
-Mem:    499488k total,    27352k used,   472136k free,     1996k buffers
-Swap:  1020088k total,        0k used,  1020088k free,     9160k cached
+> We're trying to track down the source of a problem that occurs
+> whenever the atl1 network driver is activated on a 32-bit 2.6.21-rc4
 
-  PID  PR  NI  VIRT  RES  SHR SWAP nFLT nDRT WCHAN     S %CPU    TIME+  Command 
-  688  25   0  1804  412  352 1392    0    0 rest_init R 94.7   2:37.01 fairtest
-  689  15   0  1804  264  204 1540    0    0 rest_init R  0.0   0:00.79 fairtest
-    1  15   0  1440  500  444  940   15    0 rest_init S  0.0   0:00.73 init    
+and -rc5, -rc6, 2.6.20.x, 2.6.19.3, and probably others.
 
+> We can load the driver just fine, but whenever we activate the
+> network, we see APIC errors (a sample of them are shown here,
+> captured from a serial console):
+> 
+> [root@hawk ~]# echo 8 > /proc/sys/kernel/printk
+> [root@hawk ~]# [   93.942012] process `sysctl' is using deprecated
+> sysctl (sysc.
+> [   94.396609] atl1: eth0 link is up 1000 Mbps full duplex
+> [   94.498887] APIC error on CPU0: 00(08)
+> [   94.498534] APIC error on CPU1: 00(08)
+> [   94.550079] APIC error on CPU0: 08(08)
+> [   94.549725] APIC error on CPU1: 08(08)
+> [   94.600915] APIC error on CPU1: 08(08)
+> [   94.601276] APIC error on CPU0: 08(08)
+> [   94.652108] APIC error on CPU1: 08(08)
+> [   94.652470] APIC error on CPU0: 08(08)
+> [   94.703659] APIC error on CPU0: 08(08)
+> [   94.703305] APIC error on CPU1: 08(08)
+> [   94.754852] APIC error on CPU0: 08(40)
+> [   94.806045] APIC error on CPU0: 40(08)
+> [   94.805692] APIC error on CPU1: 08(08)
+> [   94.857238] APIC error on CPU0: 08(08)
+> [   94.856884] APIC error on CPU1: 08(08)
+> [   94.908432] APIC error on CPU0: 08(08)
+> [   94.908078] APIC error on CPU1: 08(08)
+> [snip, more of the same]
+> [   98.901156] APIC error on CPU1: 08(08)
+> [   98.952702] APIC error on CPU0: 08(08)
+> [   98.952349] APIC error on CPU1: 08(08)
+> [   99.003895] APIC error on CPU0: 08(08)
+> [   99.003542] APIC error on CPU1: 08(08)
+> 
+> The machine hangs for about 5-10 seconds, then spontaneously reboots
+> without further console output.
 
-Thanks!
+I can prompt an oops by pinging my router while the apic errors are
+scrolling by.
 
---
-Al
+> 
+> This is an Asus M2V (Via K8T890) motherboard.
+> 
+> The problem does not occur on a 32-bit kernel if we boot with
+> pci=nomsi, and it doesn't occur at all on a 64-bit kernel on the same
+> motherboard.
+> 
+> We also do not see this problem on Intel-based motherboards, with
+> either 32- or 64-bit kernels.
 
+A full raft of documentation -- including acpidump and
+linux-firmware-kit output, console capture, kernel config, lspci -vvxxx
+(with apic=debug boot option), dmesg, and /proc/interrupts -- is
+available at http://www.hogchain.net/m2v/apic-problem/
+
+If this is a motherboard problem, that's fine; I'd just like to know
+the details so I tell users something more than "it's a motherboard
+problem."
+
+Thanks,
+Jay
