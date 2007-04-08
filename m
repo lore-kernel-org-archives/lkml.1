@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbXDHOkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751250AbXDHOvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751244AbXDHOkh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 10:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXDHOkh
+	id S1751250AbXDHOvr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 10:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXDHOvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 10:40:37 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4994 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbXDHOkh (ORCPT
+	Sun, 8 Apr 2007 10:51:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:65378 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbXDHOvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 10:40:37 -0400
-Date: Sun, 8 Apr 2007 15:40:29 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
-       MarekVa@ucw.cz
-Subject: Re: [PATCH 29/90] ARM: OMAP: Palm Tungsten|T support
-Message-ID: <20070408144029.GB20065@flint.arm.linux.org.uk>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
-	MarekVa@ucw.cz
-References: <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <20070406120923.GB3866@ucw.cz> <20070408120740.GC5431@flint.arm.linux.org.uk> <20070408121238.GB4310@ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 8 Apr 2007 10:51:46 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] merge compat_ioctl.h into compat_ioctl.c
+Date: Sun, 8 Apr 2007 16:51:20 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+References: <20070408140433.GA28023@lst.de>
+In-Reply-To: <20070408140433.GA28023@lst.de>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070408121238.GB4310@ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200704081651.21148.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18F8P1q/+dMS6lISC9jar8Fb8JgA/g/m8s3QzQ
+ /lP1mlrV4JWKK3Pjs9S+EJWN4NI+1bDDUqxgqEfrOnDTnfGIe8
+ +MYp5LhygVzl2Z6LHGs2w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 08, 2007 at 12:12:39PM +0000, Pavel Machek wrote:
-> Hi!
+On Sunday 08 April 2007, Christoph Hellwig wrote:
 > 
-> > > > From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
-> > > 
-> > > EEk.
-> > > 
-> > > > Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
-> > > 
-> > > Eek2.
-> > 
-> > As I see it, that eek2 is correct UTF-8, and since the body charset was
-> > utf-8 I don't see this as a problem.
-> 
-> I do not think eek2 is correct utf-8. It seems to short for that. (It
-> should be s with v over it.
+> Now that there is no arch-specific compat ioctl handling left there
+> is not point in having a separate copat_ioctl.h, so merge it into
+> compat_ioctl.c
 
-BTW, your mailer appears to be rather broken.
+Yes, definitely a good idea.
 
-The thread previous to your reply was being sent to Marek Vašut
-<marek.vasut@gmail.com>.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+ 
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
->From your reply onwards, that address magically changed to
-MarekVa@ucw.cz, which returns a non-delivery error.
+On a similar subject, how about merging include/linux/ioctl32.h and the ioctl
+bits of fs/compat.c into fs/compat_ioctl.c as well to make it completely
+self-contained?
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	Arnd <><
