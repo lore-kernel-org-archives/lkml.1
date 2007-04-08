@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbXDHSu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbXDHSwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751771AbXDHSu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 14:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXDHSu3
+	id S1751783AbXDHSwj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 14:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbXDHSwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 14:50:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:47380 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbXDHSu2 (ORCPT
+	Sun, 8 Apr 2007 14:52:39 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:46702 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbXDHSwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 14:50:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GIXq9sP/mbiPaS0kbmuh1S2NHg6KBh9KXy1+pZt+pYogbDxcgY3nEympN5ef5G1yu9qIwK0FWgtcx1a/qIdnW0vCk0u209w8I19zr39DDpv9jXcsYzuPBHcbR7BDno4I67pL+OriJq5AsMV+vtx4IhN98M1DPaiBo5S5gM+IMMc=
-Message-ID: <a36005b50704081150i5a457963w2ab5928f873eeabf@mail.gmail.com>
-Date: Sun, 8 Apr 2007 11:50:27 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>, "Theodore Tso" <tytso@mit.edu>,
-       "Ulrich Drepper" <drepper@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-In-Reply-To: <20070407233037.GA16508@infradead.org>
+	Sun, 8 Apr 2007 14:52:38 -0400
+Message-ID: <461939A4.2020305@gmail.com>
+Date: Sun, 08 Apr 2007 20:51:16 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+Subject: Re: Ten percent test
+References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu>
+In-Reply-To: <20070408104125.GB11123@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com>
-	 <20070407203633.GA21555@thunk.org>
-	 <20070407233037.GA16508@infradead.org>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/7/07, Christoph Hellwig <hch@infradead.org> wrote:
-> It's not going to solve anything at all.  We can't stop supporting
-> functionality that has been there forever.
+On 04/08/2007 12:41 PM, Ingo Molnar wrote:
 
-Not necessarily.
+> this is pretty hard to get right, and the most objective way to change 
+> it is to do it testcase-driven. FYI, interactivity tweaking has been 
+> gradual, the last bigger round of interactivity changes were done a year 
+> ago:
+> 
+>  commit 5ce74abe788a26698876e66b9c9ce7e7acc25413
+>  Author: Mike Galbraith <efault@gmx.de>
+>  Date:   Mon Apr 10 22:52:44 2006 -0700
+> 
+>      [PATCH] sched: fix interactive task starvation
+> 
+> (and a few smaller tweaks since then too.)
+> 
+> and that change from Mike responded to a testcase. Mike's latest changes 
+> (the ones you just tested) were mostly driven by actual testcases too, 
+> which measured long-term timeslice distribution fairness.
 
-One problem here is that the interface for using readdir() with and
-without telldir()/seekdir() is the same.  A second problem is that the
-functionality is universally required.  Both of these problems can be
-addressed.
+Ah yes, that one. Here's the next one in that series:
 
-For the second problem, I certainly could imagine that making the
-functionality to to use seekdir()/telldir() optional.  It might be
-hard in POSIX but this does not mean anything about implementations.
-Implementations just have to provide a way to allow these functions to
-be used.  It does not mean it always and everywhere has to work.  What
-this means is that if, for instance, a filesystem would be (for now)
-be able to have a mount option to not allow seekdir()/telldir() the
-system still can conform to POSIX.  At the same time we can gather
-information as to whether seekdir()/telldir() are really needed.  I
-personally think the number of apps which depend on this functionality
-is miniscule.
+commit f1adad78dd2fc8edaa513e0bde92b4c64340245c
+Author: Linus Torvalds <torvalds@g5.osdl.org>
+Date:   Sun May 21 18:54:09 2006 -0700
 
-Using a mount option isn't the nicest solution, though.  If a
-filesystem can support seekdir()/telldir() the better solution from
-the userlevel API POV would be to provide a better, alternative
-interface.  Maybe an alternative opendir() call (opendir2?) which
-takes a second parameter as to whether seeking is needed or not.  Then
-this opendir2() function can use a new getdents() syscall and return
-the entries.  The difference would be that if the user wants to use
-seekdir()/telldir() the userlevel code would cache the old results and
-the seekdir()/telldir() handling would be entirely at userlevel.
+     Revert "[PATCH] sched: fix interactive task starvation"
 
-It's not a good idea to make this the default behavior for the old
-opendir() since the vast majority of the current users don't want to
-seek and therefore the caching would significantly impact the
-performance.  With the extra argument saying when caching is needed
-this is no problem anymore.  Over time people would migrate off of
-opendir() and towards opendir2() (with some "careful" encouragement)
-and the whole problem will go away.
+It personally had me wonder if _anyone_ was testing this stuff...
 
-And the best: this is certainly a path I can see being viable for
-POSIX.  But it requires that we have
-a) established existing practice
-b) shown the impact is really low
+Rene.
 
-So, I think it would be great to get started writing this new getdents
-call.  Yes, for now it means maintaining two separate versions.  If
-all goes well those filsystems which feel a high burden can simply
-stop supporting the old syscall or at least the seek functionality.
