@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbXDHBcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965404AbXDHBh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932501AbXDHBcG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 21:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966020AbXDHBcG
+	id S965404AbXDHBh6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 21:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966020AbXDHBh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 21:32:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36883 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932658AbXDHBcF (ORCPT
+	Sat, 7 Apr 2007 21:37:58 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:51592 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965404AbXDHBh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 21:32:05 -0400
-Date: Sat, 7 Apr 2007 18:32:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       dgc@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
- flag
-In-Reply-To: <20070407182506.4386dc13.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704071825510.32544@schroedinger.engr.sgi.com>
-References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
- <20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
- <20070406222336.4dcdd663.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
- <20070407155148.94da92e8.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704071718530.31790@schroedinger.engr.sgi.com>
- <20070407182506.4386dc13.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 7 Apr 2007 21:37:57 -0400
+Date: Sat, 7 Apr 2007 18:39:50 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Cc: aeb@cwi.nl, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] partitions: CONFIG_BLK_DEV_MD and modular RAID support
+Message-Id: <20070407183950.1199c945.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.DEB.0.83.0704071836060.19488@sigma.j-a-k-j.com>
+References: <alpine.DEB.0.83.0704071836060.19488@sigma.j-a-k-j.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Apr 2007, Andrew Morton wrote:
+On Sat, 7 Apr 2007 18:47:20 -0400 (EDT) John Anthony Kazos Jr. wrote:
 
-> > I just tried the approach that we discussed earlier and it was not 
-> > nice either.
+> (Linux v2.6.20.6.)
 > 
-> We've discussed at least three approaches, so we don't know to what you refer.
+> The function md_autodetect_dev is defined in drivers/md/md.c. Its 
+> declaration is on line 1443, outside of conditionals. However, both its 
+> use on line 1455 and its definition on line 5600 are inside "#ifndef 
+> MODULE" conditionals. So it seems obvious that the declaration should be 
+> inside conditionals as well.
+> 
+> However, this function is separately declared and used in 
+> fs/partitions/check.c but not inside the same conditional, which means if 
+> md.c is compiled as a module, check.c will be referencing an undefined 
+> symbol.
 
-Thats the approach of checking two flags at the same time. In that case 
-the compiler will generate and "and-immediate" and then a 
-"compare-immediate" one branch but .... Yuck.
+I don't get a build error when BLK_DEV_MD=m.  Do you?
 
-> Because I don't expect there will be much efficiency difference between the
-> above and the use of another page flag.
+Do you want to determine why there is no build error?
+Hint:  look at include/linux/autoconf.h.
 
-Then we end up with all these small efficiency differences in all 
-the code paths. I'd rather go for optimal performance in a frequently used 
-construct like this.
+> Should the conditionals around md_autodetect_dev be changed to make sure 
+> CONFIG_BLK_DEV_MD=y, or does the function need to be extracted from md.c 
+> so it can be used by check.c in any case?
 
-This check is not rare. It is done on every SLAB free and on every 
-get_page() and put_page(). Lets do the page flag.
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
