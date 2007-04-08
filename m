@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965404AbXDHBh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966020AbXDHBmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965404AbXDHBh6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 21:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966020AbXDHBh6
+	id S966020AbXDHBmx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 21:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966039AbXDHBmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 21:37:58 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:51592 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965404AbXDHBh5 (ORCPT
+	Sat, 7 Apr 2007 21:42:53 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:37908 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966020AbXDHBmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 21:37:57 -0400
-Date: Sat, 7 Apr 2007 18:39:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-Cc: aeb@cwi.nl, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] partitions: CONFIG_BLK_DEV_MD and modular RAID support
-Message-Id: <20070407183950.1199c945.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.DEB.0.83.0704071836060.19488@sigma.j-a-k-j.com>
-References: <alpine.DEB.0.83.0704071836060.19488@sigma.j-a-k-j.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sat, 7 Apr 2007 21:42:52 -0400
+Date: Sat, 7 Apr 2007 21:42:50 -0400
+To: johnrobertbanks@fastmail.fm
+Cc: Valdis.Kletnieks@vt.edu, Ignatich <ignatich@gmail.com>,
+       reiserfs-list@namesys.com, linux-kernel@vger.kernel.org
+Subject: Re: COMPILING AND CONFIGURING A NEW KERNEL.
+Message-ID: <20070408014250.GH3510@csclub.uwaterloo.ca>
+References: <46157B5B.5000602@gmail.com> <1175817921.18400.1183285196@webmail.messagingengine.com> <1175909205.905.1183425104@webmail.messagingengine.com> <12252.1175964174@turing-police.cc.vt.edu> <1175994157.1894.1183513166@webmail.messagingengine.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1175994157.1894.1183513166@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.9i
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Apr 2007 18:47:20 -0400 (EDT) John Anthony Kazos Jr. wrote:
-
-> (Linux v2.6.20.6.)
+On Sat, Apr 07, 2007 at 06:02:37PM -0700, johnrobertbanks@fastmail.fm wrote:
+> Thats interesting, I didn't know that. 
 > 
-> The function md_autodetect_dev is defined in drivers/md/md.c. Its 
-> declaration is on line 1443, outside of conditionals. However, both its 
-> use on line 1455 and its definition on line 5600 are inside "#ifndef 
-> MODULE" conditionals. So it seems obvious that the declaration should be 
-> inside conditionals as well.
+> Do you know if deb-pkg and rpm-pkg take care of creating the initrd
+> automatically.
 > 
-> However, this function is separately declared and used in 
-> fs/partitions/check.c but not inside the same conditional, which means if 
-> md.c is compiled as a module, check.c will be referencing an undefined 
-> symbol.
+> I seriously doubt they do.
+> 
+> Actually, I guess I only need to compile another kernel to find out.
 
-I don't get a build error when BLK_DEV_MD=m.  Do you?
+Certainly on debian make-kpkg actually does have options for initrd
+(--initrd) and will call mkinitrd/update-initramfs/yaird at package
+install time to generate an initrd for the kernel to deal with raid,
+lvm, etc.  It works quite well in general.
 
-Do you want to determine why there is no build error?
-Hint:  look at include/linux/autoconf.h.
+I would be surprised if redhat didn't do something similar.
 
-> Should the conditionals around md_autodetect_dev be changed to make sure 
-> CONFIG_BLK_DEV_MD=y, or does the function need to be extracted from md.c 
-> so it can be used by check.c in any case?
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+--
+Len Sorensen
