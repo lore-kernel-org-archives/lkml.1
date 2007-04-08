@@ -1,96 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXDHSi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbXDHSla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751744AbXDHSi0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 14:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXDHSi0
+	id S1751766AbXDHSla (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 14:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXDHSl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 14:38:26 -0400
-Received: from imf22aec.mail.bellsouth.net ([205.152.59.70]:58580 "EHLO
-	imf22aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751744AbXDHSiZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 14:38:25 -0400
-Date: Sun, 8 Apr 2007 13:38:22 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: APIC error on 32-bit kernel
-Message-ID: <20070408133822.3868e6ff@osprey.hogchain.net>
-In-Reply-To: <20070323200817.1f3e39b9@osprey.hogchain.net>
-References: <20070323200817.1f3e39b9@osprey.hogchain.net>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 8 Apr 2007 14:41:29 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40458 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751766AbXDHSl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 14:41:29 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX1/3MDo+Yiz3QDC+Su7172/kkP2Xy0+d5sIGSE2hjY
+	w2Vxuu/bKwB/Tu
+Message-ID: <46193754.40203@gmx.net>
+Date: Sun, 08 Apr 2007 20:41:24 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+CC: emogenet@google.com, lhawthorn@google.com, dibona@google.com
+Subject: man-pages-2.44 is released
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding linux-kernel to the cc list, hoping for wider exposure.]
+Gidday,
 
-On Fri, 23 Mar 2007 20:08:17 -0500
-Jay Cliburn <jacliburn@bellsouth.net> wrote:
+After a long hiatus, a new man-pages release...
 
-> We're trying to track down the source of a problem that occurs
-> whenever the atl1 network driver is activated on a 32-bit 2.6.21-rc4
+And a happy announcement!  My work on man-pages is now partially supported
+by my employer, Google.  Henceforth, something up to 20% [*] of my working
+week (depending on other time pressures...) will be spent on man-pages
+maintenance.  Thanks, Google!
 
-and -rc5, -rc6, 2.6.20.x, 2.6.19.3, and probably others.
+So...
 
-> We can load the driver just fine, but whenever we activate the
-> network, we see APIC errors (a sample of them are shown here,
-> captured from a serial console):
-> 
-> [root@hawk ~]# echo 8 > /proc/sys/kernel/printk
-> [root@hawk ~]# [   93.942012] process `sysctl' is using deprecated
-> sysctl (sysc.
-> [   94.396609] atl1: eth0 link is up 1000 Mbps full duplex
-> [   94.498887] APIC error on CPU0: 00(08)
-> [   94.498534] APIC error on CPU1: 00(08)
-> [   94.550079] APIC error on CPU0: 08(08)
-> [   94.549725] APIC error on CPU1: 08(08)
-> [   94.600915] APIC error on CPU1: 08(08)
-> [   94.601276] APIC error on CPU0: 08(08)
-> [   94.652108] APIC error on CPU1: 08(08)
-> [   94.652470] APIC error on CPU0: 08(08)
-> [   94.703659] APIC error on CPU0: 08(08)
-> [   94.703305] APIC error on CPU1: 08(08)
-> [   94.754852] APIC error on CPU0: 08(40)
-> [   94.806045] APIC error on CPU0: 40(08)
-> [   94.805692] APIC error on CPU1: 08(08)
-> [   94.857238] APIC error on CPU0: 08(08)
-> [   94.856884] APIC error on CPU1: 08(08)
-> [   94.908432] APIC error on CPU0: 08(08)
-> [   94.908078] APIC error on CPU1: 08(08)
-> [snip, more of the same]
-> [   98.901156] APIC error on CPU1: 08(08)
-> [   98.952702] APIC error on CPU0: 08(08)
-> [   98.952349] APIC error on CPU1: 08(08)
-> [   99.003895] APIC error on CPU0: 08(08)
-> [   99.003542] APIC error on CPU1: 08(08)
-> 
-> The machine hangs for about 5-10 seconds, then spontaneously reboots
-> without further console output.
+I've released man-pages-2.44.
 
-I can prompt an oops by pinging my router while the apic errors are
-scrolling by.
+This release is now available for download at:
 
-> 
-> This is an Asus M2V (Via K8T890) motherboard.
-> 
-> The problem does not occur on a 32-bit kernel if we boot with
-> pci=nomsi, and it doesn't occur at all on a 64-bit kernel on the same
-> motherboard.
-> 
-> We also do not see this problem on Intel-based motherboards, with
-> either 32- or 64-bit kernels.
+    ftp://ftp.kernel.org/pub/linux/docs/manpages
+    or mirrors: ftp://ftp.XX.kernel.org/pub/linux/docs/manpages
 
-A full raft of documentation -- including acpidump and
-linux-firmware-kit output, console capture, kernel config, lspci -vvxxx
-(with apic=debug boot option), dmesg, and /proc/interrupts -- is
-available at http://www.hogchain.net/m2v/apic-problem/
+and soon at:
 
-If this is a motherboard problem, that's fine; I'd just like to know
-the details so I tell users something more than "it's a motherboard
-problem."
+    ftp://ftp.win.tue.nl/pub/linux-local/manpages
 
-Thanks,
-Jay
+Cheers,
+
+Michael
+
+[*] http://www.google.com/support/jobs/bin/static.py?page=about.html
+http://en.wikipedia.org/wiki/Google#.22Twenty_percent.22_time
+
+=======
+
+This release contains a very large number of changes.  Among the changes
+that may be of interest to readers of this list are the following:
+
+New pages
+---------
+
+termio.7
+    mtk, after a bit of prodding by Reuben Thomas
+        A brief discussion of the old System V termio interface,
+        with pointers to pages that will contain the information
+        that the reader probably wants.
+
+Changes to individual pages
+---------------------------
+
+access.2
+    mtk
+        Since 2.6.20, access() honours the MS_NOEXEC mount flag.
+
+mincore.2
+    Nick Piggin
+        Kernel 2.6.21 fixes several earlier bugs in mincore().
+    mtk
+        Rewrote various parts to make the page clearer.
+
+mmap.2
+    mtk
+        Rewrote and reorganised various parts to be clearer.
+
+mount.2
+    mtk / Val Henson
+        Document MS_RELATIME, new in Linux 2.6.20.
+
+semop.2
+    mtk
+        If sops contains multiple operations, then these are performed
+        in array order.  All Unix systems that I know of do this,
+        and some Linux applications depend on this behaviour.  SUSv3
+        made no explicit statement here, but SUSv4 will explicitly
+        require this behaviour.
+
+ptrace.2
+    Chuck Ebbert
+        When the parent receives an event with PTRACE_EVENT_* set,
+        the child is not in the normal signal delivery path.  This
+        means the parent cannot do ptrace(PTRACE_CONT) with a signal
+        or ptrace(PTRACE_KILL).  kill() with a SIGKILL signal can be
+        used instead to kill the child process after receiving one
+        of these messages.
+
+time.7
+    mtk
+        Since kernel 2.6.20, the software clock can also be 300 HZ.
+
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
+
