@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbXDHUGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbXDHUHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751978AbXDHUGo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 16:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbXDHUGo
+	id S1751988AbXDHUHb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 16:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXDHUHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 16:06:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50025 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751978AbXDHUGo (ORCPT
+	Sun, 8 Apr 2007 16:07:30 -0400
+Received: from homer.mvista.com ([63.81.120.158]:38049 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbXDHUHY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 16:06:44 -0400
-Date: Sun, 8 Apr 2007 21:09:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [RFC] pata_icside driver
-Message-ID: <20070408210917.6e306851@the-village.bc.nu>
-In-Reply-To: <20070408101826.GA5431@flint.arm.linux.org.uk>
-References: <20070330110022.GA21653@flint.arm.linux.org.uk>
-	<20070330110800.GB21653@flint.arm.linux.org.uk>
-	<20070408101826.GA5431@flint.arm.linux.org.uk>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Sun, 8 Apr 2007 16:07:24 -0400
+Subject: Re: [PATCH] timekeeping: drop irq-context clocksource polling
+From: Daniel Walker <dwalker@mvista.com>
+To: tglx@linutronix.de
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, mingo@elte.hu
+In-Reply-To: <1176021199.28263.529.camel@localhost.localdomain>
+References: <20070405210316.785839431@mvista.com>
+	 <20070407031922.ee49478f.akpm@linux-foundation.org>
+	 <1175967839.15973.156.camel@imap.mvista.com>
+	 <1175979019.28263.523.camel@localhost.localdomain>
+	 <1175981431.15973.158.camel@imap.mvista.com>
+	 <1176021199.28263.529.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 08 Apr 2007 13:02:42 -0700
+Message-Id: <1176062563.15973.163.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	/*
-> +	 * DMA is based on a 16MHz clock
-> +	 */
-> +	if (ata_timing_compute(adev, adev->dma_mode, &t, 1000, 1))
-> +		return;
+On Sun, 2007-04-08 at 10:33 +0200, Thomas Gleixner wrote:
+> 
+> Oh well, this is a leftover from the days where we tried to use TSC
+> despite of frequency changes. It still modifies the scale factor of the
+> tsc clocksource. 
+> 
+> I agree that it can be removed as we switch off TSC anyway in that case.
 
-This seems strange for a 16MHz clock.
+That's what I was thinking .. However, I wanted to wait for John to
+comment on it also ..
 
-> +
-> +	/*
-> +	 * Now, properly adjust the timings.  If we have a 62.5ns clock
-> +	 * period and we ask for MWDMA2, it calculates the following
-> +	 * timings: active 125ns, recovery 62.5ns, cycle 125ns.
-> +	 * Quite obviously bogus. 
-
-NAK. 
-
-At this point you need to work out why you are getting bogus results and
-fix it or demonstrate a bug in the core code and fix that.
+Dainel
 
