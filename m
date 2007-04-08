@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751602AbXDHSOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751626AbXDHSRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751602AbXDHSOG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 14:14:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbXDHSOG
+	id S1751626AbXDHSRa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 14:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbXDHSRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 14:14:06 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:52725 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751602AbXDHSOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 14:14:04 -0400
-Message-ID: <46193048.6000606@zytor.com>
-Date: Sun, 08 Apr 2007 11:11:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com> <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org>
-In-Reply-To: <20070407233037.GA16508@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Apr 2007 14:17:30 -0400
+Received: from mail.screens.ru ([213.234.233.54]:50716 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751626AbXDHSR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 14:17:28 -0400
+Date: Sun, 8 Apr 2007 22:17:23 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] zap_other_threads: remove unneeded ->exit_signal change
+Message-ID: <20070408181723.GA307@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Sat, Apr 07, 2007 at 04:36:33PM -0400, Theodore Tso wrote:
->> this functionality, and it is highly questionable how useful it is,
->> anyway.  If you use telldir/seekdir and keep the cookie for a long
->> time, even the POSIX-provided guarantees about files that are created
->> and deleted between the telldir() and seekdir() points in time makes
->> its utility highly dubious.
-> 
-> It's not going to solve anything at all.  We can't stop supporting
-> functionality that has been there forever. 
+We already depend on fact that all sub-threads have ->exit_signal == -1,
+no need to set it in zap_other_threads().
 
-Well, the question is if you can keep the seekdir/telldir cookie around 
-as a pointer -- preferrably in userspace, of course.  You would 
-presumably garbage-collect them on closedir() -- there is no other point 
-at which you could.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-I personally suspect that hch is right -- this stuff has been there 
-since time immemorial and it'll be hard or impossible to deprecate it.
+--- 2.6.21-rc5-mm4/kernel/signal.c~zat	2007-04-07 20:11:14.000000000 +0400
++++ 2.6.21-rc5-mm4/kernel/signal.c	2007-04-08 22:09:20.000000000 +0400
+@@ -1163,17 +1163,6 @@ void zap_other_threads(struct task_struc
+ 		if (t->exit_state)
+ 			continue;
+ 
+-		/*
+-		 * We don't want to notify the parent, since we are
+-		 * killed as part of a thread group due to another
+-		 * thread doing an execve() or similar. So set the
+-		 * exit signal to -1 to allow immediate reaping of
+-		 * the process.  But don't detach the thread group
+-		 * leader.
+-		 */
+-		if (t != p->group_leader)
+-			t->exit_signal = -1;
+-
+ 		/* SIGKILL will be handled before any pending SIGSTOP */
+ 		sigaddset(&t->pending.signal, SIGKILL);
+ 		signal_wake_up(t, 1);
 
-	-hpa
