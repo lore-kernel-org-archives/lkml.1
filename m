@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751209AbXDHPzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbXDHPzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751209AbXDHPzZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 11:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXDHPzZ
+	id S1751448AbXDHPzq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 11:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbXDHPzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 11:55:25 -0400
-Received: from mail.screens.ru ([213.234.233.54]:37418 "EHLO mail.screens.ru"
+	Sun, 8 Apr 2007 11:55:46 -0400
+Received: from mail.screens.ru ([213.234.233.54]:37444 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751209AbXDHPzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 11:55:24 -0400
-Date: Sun, 8 Apr 2007 19:55:13 +0400
+	id S1751448AbXDHPzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 11:55:45 -0400
+Date: Sun, 8 Apr 2007 19:55:34 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -17,8 +17,8 @@ To: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [RFC, PATCH 2/3] implement CLONE_KERNEL_THREAD flag
-Message-ID: <20070408155513.GA129@tv-sign.ru>
+Subject: [RFC, PATCH 3/3] use CLONE_KERNEL_THREAD
+Message-ID: <20070408155534.GA132@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,72 +28,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 For review only.
 
-We have some problems with the kernel threads parented to /sbin/init, see
-
-	http://marc.info/?t=117580282200003&r=1
-	http://marc.info/?t=95299284800003&r=1
-
-A task created with CLONE_KERNEL_THREAD will have swapper as its parent.
-Note that this is only the first step, we can extend the meaning of this
-flag to also use init_task for copy_mm/copy_files/etc.
-
-	arch/sparc/kernel/process.c
-	arch/sparc64/kernel/process.c
-	arch/m68knommu/kernel/process.c
-	arch/m68k/kernel/process.c
-	arch/alpha/kernel/entry.S
-	arch/h8300/kernel/process.c
-	arch/v850/kernel/process.c
-	arch/frv/kernel/kernel_thread.S
-	arch/frv/kernel/kernel_thread.S
-	arch/powerpc/kernel/misc_32.S
-	arch/powerpc/kernel/misc_64.S
-
-implement kthread_create() via sys_clone(). This means that these arches can't
-take advantage of CLONE_KERNEL_THREAD, it will be filtered out by sys_clone().
-
-This patch breaks arch/ia64/, its sys_clone() was not converted by the previous
-patch, so user-space can do sys_clone(CLONE_KERNEL_THREAD).
+Add CLONE_KERNEL_THREAD to kthread_create() and change reparent_to_init()
+to match CLONE_KERNEL_THREAD.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
- include/linux/sched.h |    5 ++++-
- kernel/fork.c         |    5 ++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ kthread.c |    2 +-
+ exit.c    |   20 +++++++++-----------
+ 2 files changed, 10 insertions(+), 12 deletions(-)
 
---- 2.6.21-rc5-mm4/include/linux/sched.h~2_IMPL	2007-04-07 22:07:50.000000000 +0400
-+++ 2.6.21-rc5-mm4/include/linux/sched.h	2007-04-08 18:53:51.000000000 +0400
-@@ -28,7 +28,10 @@
- #define CLONE_NEWIPC		0x08000000	/* New ipcs */
+--- 2.6.21-rc5-mm4/kernel/kthread.c~3_USE	2007-04-05 12:18:28.000000000 +0400
++++ 2.6.21-rc5-mm4/kernel/kthread.c	2007-04-08 19:18:59.000000000 +0400
+@@ -120,7 +120,7 @@ static void keventd_create_kthread(struc
+ 	int pid;
  
- /* user-space visible */
--#define SYS_CLONE_MASK		(~0x0)
-+#define SYS_CLONE_MASK		(~(CLONE_KERNEL_THREAD))
-+
-+/* for in kernel use only */
-+#define CLONE_KERNEL_THREAD	0x20000000	/* hide from init */
+ 	/* We want our own signal handler (we take no signals by default). */
+-	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
++	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | CLONE_KERNEL_THREAD);
+ 	if (pid < 0) {
+ 		create->result = ERR_PTR(pid);
+ 	} else {
+--- 2.6.21-rc5-mm4/kernel/exit.c~3_USE	2007-04-08 19:06:27.000000000 +0400
++++ 2.6.21-rc5-mm4/kernel/exit.c	2007-04-08 19:23:18.000000000 +0400
+@@ -279,28 +279,26 @@ static int has_stopped_jobs(struct pid *
+ }
  
- /*
-  * Scheduling policies
---- 2.6.21-rc5-mm4/kernel/fork.c~2_IMPL	2007-04-07 23:56:08.000000000 +0400
-+++ 2.6.21-rc5-mm4/kernel/fork.c	2007-04-08 18:55:42.000000000 +0400
-@@ -1159,7 +1159,8 @@ static struct task_struct *copy_process(
- 	p->parent_exec_id = p->self_exec_id;
+ /**
+- * reparent_to_init - Reparent the calling kernel thread to the init task of the pid space that the thread belongs to.
++ * reparent_kthread - Reparent the calling kernel thread to swapper.
+  *
+  * If a kernel thread is launched as a result of a system call, or if
+- * it ever exits, it should generally reparent itself to init so that
+- * it is correctly cleaned up on exit.
++ * it ever exits, it should generally reparent itself so that it is
++ * correctly cleaned up on exit.
+  *
+  * The various task state such as scheduling policy and priority may have
+  * been inherited from a user process, so we reset them to sane values here.
+  *
+- * NOTE that reparent_to_init() gives the caller full capabilities.
++ * NOTE that reparent_kthread() gives the caller full capabilities.
+  */
+-static void reparent_to_init(void)
++static void reparent_kthread(void)
+ {
+ 	write_lock_irq(&tasklist_lock);
  
- 	/* ok, now we should be set up.. */
--	p->exit_signal = (clone_flags & CLONE_THREAD) ? -1 : (clone_flags & CSIGNAL);
-+	p->exit_signal = (clone_flags & (CLONE_THREAD|CLONE_KERNEL_THREAD))
-+					? -1 : (clone_flags & CSIGNAL);
- 	p->pdeath_signal = 0;
- 	p->exit_state = 0;
+-	/* Reparent to init */
+ 	remove_parent(current);
+-	current->parent = child_reaper(current);
+-	add_parent(current);
  
-@@ -1196,6 +1197,8 @@ static struct task_struct *copy_process(
- 	/* CLONE_PARENT re-uses the old parent */
- 	if (clone_flags & (CLONE_PARENT|CLONE_THREAD))
- 		p->parent = current->parent;
-+	else if (unlikely(clone_flags & CLONE_KERNEL_THREAD))
-+		p->parent = &init_task;
- 	else
- 		p->parent = current;
+-	/* Set the exit signal to SIGCHLD so we signal init on exit */
+-	current->exit_signal = SIGCHLD;
++	current->parent = &init_task;
++	add_parent(current);
++	current->exit_signal = -1;
  
+ 	if (!has_rt_policy(current) && (task_nice(current) < 0))
+ 		set_user_nice(current, 0);
+@@ -423,7 +421,7 @@ void daemonize(const char *name, ...)
+ 	current->files = init_task.files;
+ 	atomic_inc(&current->files->count);
+ 
+-	reparent_to_init();
++	reparent_kthread();
+ }
+ 
+ EXPORT_SYMBOL(daemonize);
 
