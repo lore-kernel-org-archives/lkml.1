@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751250AbXDHOvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbXDHPHC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751250AbXDHOvr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 10:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXDHOvr
+	id S1751306AbXDHPHC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 11:07:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXDHPHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 10:51:47 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:65378 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbXDHOvq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 10:51:46 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] merge compat_ioctl.h into compat_ioctl.c
-Date: Sun, 8 Apr 2007 16:51:20 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-References: <20070408140433.GA28023@lst.de>
-In-Reply-To: <20070408140433.GA28023@lst.de>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 8 Apr 2007 11:07:01 -0400
+Received: from h80ad276f.async.vt.edu ([128.173.39.111]:55331 "EHLO
+	h80ad276f.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbXDHPHA (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 11:07:00 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: root <swordfish@onetbd.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Scheduler: Improving the scheduler performance.
+In-Reply-To: Your message of "Sat, 07 Apr 2007 23:42:20 +0600."
+             <1175967725.5798.13.camel@localhost>
+From: Valdis.Kletnieks@vt.edu
+References: <1175967725.5798.13.camel@localhost>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1176044803_6542P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704081651.21148.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18F8P1q/+dMS6lISC9jar8Fb8JgA/g/m8s3QzQ
- /lP1mlrV4JWKK3Pjs9S+EJWN4NI+1bDDUqxgqEfrOnDTnfGIe8
- +MYp5LhygVzl2Z6LHGs2w==
+Date: Sun, 08 Apr 2007 11:06:43 -0400
+Message-ID: <8762.1176044803@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 April 2007, Christoph Hellwig wrote:
-> 
-> Now that there is no arch-specific compat ioctl handling left there
-> is not point in having a separate copat_ioctl.h, so merge it into
-> compat_ioctl.c
+--==_Exmh_1176044803_6542P
+Content-Type: text/plain; charset=us-ascii
 
-Yes, definitely a good idea.
+On Sat, 07 Apr 2007 23:42:20 +0600, root said:
 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
- 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+> As we know that, linux scheduler use separate runqueue for every CPU of
+> a multiprocessor system, which having an active and an expired array.If
+> we use only one expired array, then the CPUs of a multiprocessor system
+> will be able to share their expired task via the accumulated expired
+> array,
 
-On a similar subject, how about merging include/linux/ioctl32.h and the ioctl
-bits of fs/compat.c into fs/compat_ioctl.c as well to make it completely
-self-contained?
+I got this far, and the first thought that popped into my head was:
 
-	Arnd <><
+"Wow.  This might actually win on a UP or small MP (2-15 CPU).  But the
+lock contention on a big 512-CPU machoflops box is likely going to *suck*".
+
+For that matter, my quick eyeballing of the code, although it doesn't *find*
+any race conditions, doesn't convince me there's any protection taken to make
+sure there aren't any.  Is there some subtle algorithmic trick I'm missing
+to ensure Nothing Bad Can Happen?
+
+--==_Exmh_1176044803_6542P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGGQUDcC3lWbTT17ARAlblAJ4v8orJnvnTkgWFGK5GaBCi0liKzACg/fkn
+46yITe3dQgotnBtC9zpz+tw=
+=GQ/e
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1176044803_6542P--
