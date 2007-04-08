@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbXDHOg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbXDHOkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751243AbXDHOg4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 10:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXDHOg4
+	id S1751244AbXDHOkh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 10:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXDHOkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 10:36:56 -0400
-Received: from web86905.mail.ukl.yahoo.com ([217.12.13.57]:31941 "HELO
-	web86905.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751243AbXDHOgz (ORCPT
+	Sun, 8 Apr 2007 10:40:37 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4994 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751244AbXDHOkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 10:36:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.uk;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=wckInUyN/jAph4Q2CAdD3/qzod6jvLGb/vGki5lV2+GKdbSygvBtZXnkpdGNX4gWm74BK59CNVVMy2zq/G3179Q7h5JZOOVPYV9f4lO8sWhK96g3w1F2xU3UjUDY5dUE0hY/MO23maT83/AeIo0EFneomXC6hTMoNK+z5fQZByk=  ;
-Message-ID: <20070408143653.97346.qmail@web86905.mail.ukl.yahoo.com>
-X-YMail-OSG: .vR2DWYVM1nuh263nXq11P2NPfIbCzNMqmiXwxlxIgF45bYicSPsZEexsajfq6bBkJDonV68a0TJ9wlL2viKltjnqjpaM8TvFw--
-X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.8
-Date: Sun, 8 Apr 2007 14:36:53 +0000 (GMT)
-From: JanuGerman <doublemalam@yahoo.co.uk>
-Subject: Security computation within Linux kernel
-To: linuxkernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
+	Sun, 8 Apr 2007 10:40:37 -0400
+Date: Sun, 8 Apr 2007 15:40:29 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
+       MarekVa@ucw.cz
+Subject: Re: [PATCH 29/90] ARM: OMAP: Palm Tungsten|T support
+Message-ID: <20070408144029.GB20065@flint.arm.linux.org.uk>
+Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
+	Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
+	MarekVa@ucw.cz
+References: <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <20070406120923.GB3866@ucw.cz> <20070408120740.GC5431@flint.arm.linux.org.uk> <20070408121238.GB4310@ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070408121238.GB4310@ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi every one,
+On Sun, Apr 08, 2007 at 12:12:39PM +0000, Pavel Machek wrote:
+> Hi!
+> 
+> > > > From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
+> > > 
+> > > EEk.
+> > > 
+> > > > Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
+> > > 
+> > > Eek2.
+> > 
+> > As I see it, that eek2 is correct UTF-8, and since the body charset was
+> > utf-8 I don't see this as a problem.
+> 
+> I do not think eek2 is correct utf-8. It seems to short for that. (It
+> should be s with v over it.
 
-I have one question regarding security libraries, already shipped with Linux Kernel. That is, all PKI, RSA libraries, as provided by OpenSSL are already integrated within the linux kernel source code? OR, one have to use OpenSSL seperately in this regard. 
+BTW, your mailer appears to be rather broken.
 
-I can see, linux/crypto.h and linux/hash.h files shipped with 2.6 kernel and know that SHA1 "hashing" can be done using linux/hash.h, but beside that, any possiblity for RSA or PKI.
+The thread previous to your reply was being sent to Marek Vašut
+<marek.vasut@gmail.com>.
 
-If yes, any link to their use, will be highly appreciated.
+>From your reply onwards, that address magically changed to
+MarekVa@ucw.cz, which returns a non-delivery error.
 
-
-Best,
-JG
-
-
-		
-___________________________________________________________ 
-Copy addresses and emails from any email account to Yahoo! Mail - quick, easy and free. http://uk.docs.yahoo.com/trueswitch2.html
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
