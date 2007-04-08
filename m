@@ -1,156 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965994AbXDHAZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966012AbXDHAkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965994AbXDHAZV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 20:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966013AbXDHAZV
+	id S966012AbXDHAkF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 20:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966019AbXDHAkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 20:25:21 -0400
-Received: from usermail.globalproof.net ([194.146.153.18]:39494 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965994AbXDHAZT (ORCPT
+	Sat, 7 Apr 2007 20:40:05 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58511 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966012AbXDHAkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 20:25:19 -0400
-From: "Denys" <denys@visp.net.lb>
-To: linux-kernel@vger.kernel.org
-Subject: JFFS2 BUG(), report
-Date: Sun, 8 Apr 2007 03:25:05 +0300
-Message-Id: <20070408002505.M14936@visp.net.lb>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+	Sat, 7 Apr 2007 20:40:00 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Robin Holt <holt@sgi.com>,
+       Chris Snook <csnook@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: init's children list is long and slows reaping children.
+References: <20070406084250.GA179@tv-sign.ru>
+	<m18xd5amwq.fsf@ebiederm.dsl.xmission.com>
+	<20070406094413.GA673@tv-sign.ru>
+	<m1lkh58q16.fsf@ebiederm.dsl.xmission.com>
+	<20070406154750.GA541@tv-sign.ru>
+	<Pine.LNX.4.64.0704061013060.6730@woody.linux-foundation.org>
+	<20070406193621.GA96@tv-sign.ru> <20070407203125.GA6032@tv-sign.ru>
+Date: Sat, 07 Apr 2007 18:38:51 -0600
+In-Reply-To: <20070407203125.GA6032@tv-sign.ru> (Oleg Nesterov's message of
+	"Sun, 8 Apr 2007 00:31:25 +0400")
+Message-ID: <m11wiv4s4k.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-Trying to mount filesystem image, mounted over block2mtd to USB Flash (usb-
-storage), got OOPS/BUG. Reproduced on latest kernel, 2.6.21-rc6.
+> On 04/06, Oleg Nesterov wrote:
+>> 
+>> Perhaps,
+>> 
+>> --- t/kernel/exit.c~	2007-04-06 23:31:31.000000000 +0400
+>> +++ t/kernel/exit.c	2007-04-06 23:31:57.000000000 +0400
+>> @@ -275,10 +275,7 @@ static void reparent_to_init(void)
+>>  	remove_parent(current);
+>>  	current->parent = child_reaper(current);
+>>  	current->real_parent = child_reaper(current);
+>> -	add_parent(current);
+>> -
+>> -	/* Set the exit signal to SIGCHLD so we signal init on exit */
+>> -	current->exit_signal = SIGCHLD;
+>> +	current->exit_signal = -1;
+>>  
+>>  	if (!has_rt_policy(current) && (task_nice(current) < 0))
+>>  		set_user_nice(current, 0);
+>> 
+>> is enough. init is still our parent (make ps happy), but it can't see us,
+>> we are not on ->children list.
+>
+> OK, this doesn't work. A multi-threaded init may do execve(). 
 
-Do you need complete JFFS2 image?
-Please CC me in reply, cause i am not subscribed to list.
+Good catch.  daemonize must die! 
 
-oops text:
-[   41.355000] scsi 0:0:0:0: Direct-Access     USB 2.0  Flash Disk       0.00 
-PQ: 0 ANSI: 2
-[   41.357000] SCSI device sda: 512000 512-byte hdwr sectors (262 MB)
-[   41.357000] sda: Write Protect is off
-[   41.357000] sda: Mode Sense: 00 00 00 00
-[   41.357000] sda: assuming drive cache: write through
-[   41.361000] SCSI device sda: 512000 512-byte hdwr sectors (262 MB)
-[   41.361000] sda: Write Protect is off
-[   41.361000] sda: Mode Sense: 00 00 00 00
-[   41.361000] sda: assuming drive cache: write through
-[   41.361000]  sda: sda1 sda2
-[   41.414000] sd 0:0:0:0: Attached scsi removable disk sda
-[   41.414000] usb-storage: device scan complete
-[   44.681000] eth0: link down
-[   79.680000] block2mtd: mtd0: [d: /dev/sda2] erase_size = 8KiB [8192]
-[   79.681000] block2mtd: version $Revision: 1.30 $
-[   79.763000] JFFS2 version 2.2. (NAND) (SUMMARY)  (C) 2001-2006 Red Hat, 
-Inc.
-[   80.209000] Totlen for ref at d56c09b4 (0x00640000-0x0064000c) 
-miscalculated as 0x0 instead of c
-[   80.209000] next d56c09c0 (0x00640000-0x0064000c)
-[   80.209000] jeb->wasted_size 0, dirty_size 0, used_size c, free_size 1ff4
-[   80.209000] BUG: at fs/jffs2/nodelist.c:1219 __jffs2_ref_totlen()
-[   80.209000]  [<e0348d1a>] __jffs2_ref_totlen+0x1e3/0x22d [jffs2]
-[   80.209000]  [<e0348dd4>] jffs2_link_node_ref+0x70/0x121 [jffs2]
-[   80.209000]  [<e02ef8b5>] block2mtd_read+0xe4/0x113 [block2mtd]
-[   80.209000]  [<e034cf47>] jffs2_scan_make_ino_cache+0x10/0x63 [jffs2]
-[   80.209000]  [<e0356b01>] jffs2_sum_scan_sumnode+0x1ab/0x574 [jffs2]
-[   80.209000]  [<e034d35c>] jffs2_scan_medium+0x302/0x12da [jffs2]
-[   80.209000]  [<c0137cb1>] __alloc_pages+0x59/0x28d
-[   80.209000]  [<c0142e43>] __vmalloc+0xf/0x11
-[   80.209000]  [<e0356909>] jffs2_sum_init+0x50/0x9d [jffs2]
-[   80.209000]  [<e034ff2b>] jffs2_do_mount_fs+0x16f/0x470 [jffs2]
-[   80.209000]  [<e035190d>] jffs2_do_fill_super+0xe3/0x1e6 [jffs2]
-[   80.209000]  [<e0351b4d>] jffs2_sb_set+0x0/0x1d [jffs2]
-[   80.209000]  [<e0351b3c>] jffs2_sb_compare+0x0/0x11 [jffs2]
-[   80.209000]  [<e0351d46>] jffs2_get_sb_mtd+0xfd/0x147 [jffs2]
-[   80.209000]  [<e0351f7e>] jffs2_get_sb+0x1a3/0x1bd [jffs2]
-[   80.209000]  [<c02915ac>] error_code+0x74/0x7c
-[   80.209000]  [<c015b4bc>] alloc_vfsmnt+0x8d/0xb4
-[   80.209000]  [<c014c434>] vfs_kern_mount+0x40/0x6f
-[   80.209000]  [<c014c4a5>] do_kern_mount+0x2d/0x3e
-[   80.209000]  [<c015be81>] do_mount+0x56e/0x5e1
-[   80.209000]  [<c015ae8b>] mntput_no_expire+0x11/0x47
-[   80.209000]  [<c0151d9e>] link_path_walk+0xa5/0xaf
-[   80.209000]  [<c013da1a>] __handle_mm_fault+0x271/0x675
-[   80.209000]  [<c013db57>] __handle_mm_fault+0x3ae/0x675
-[   80.209000]  [<c01511b0>] getname+0x59/0x8f
-[   80.209000]  [<c02915ac>] error_code+0x74/0x7c
-[   80.209000]  [<c0137eff>] __get_free_pages+0x1a/0x33
-[   80.209000]  [<c015ab1f>] copy_mount_options+0x26/0x109
-[   80.209000]  [<c015bf66>] sys_mount+0x72/0xa9
-[   80.209000]  [<c0103a60>] sysenter_past_esp+0x5d/0x81
-[   80.209000]  =======================
-[   80.209000] JFFS2 error: (8300) jffs2_link_node_ref: Adding new ref 
-d56c09c0 at (0x00640000-0x00640dd4) not immediately after previous 
-(0x00640000-0x0064000c)
-[   80.209000] ------------[ cut here ]------------
-[   80.209000] kernel BUG at fs/jffs2/nodelist.c:1098!
-[   80.209000] invalid opcode: 0000 [#1]
-[   80.209000] Modules linked in: jffs2 zlib_deflate block2mtd mtdpart 
-mtdcore snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss 
-snd_seq_midi_event snd_seq snd_seq_device ohci_hcd thermal processor battery 
-ac usb_storage libusual wlan_scan_sta ath_rate_sample ath_pci rtc_cmos 
-rtc_core wlan rtc_lib ath_hal(P) 8139too i2c_i801 ehci_hcd uhci_hcd usbcore 
-intelfb i2c_algo_bit cfbcopyarea snd_hda_intel snd_hda_codec snd_pcm 
-snd_timer i2c_core snd soundcore snd_page_alloc cfbimgblt cfbfillrect
-[   80.209000] CPU:    0
-[   80.209000] EIP:    0060:[<e0348e22>]    Tainted: P       VLI
-[   80.209000] EFLAGS: 00010296   (2.6.21-rc5 #6)
-[   80.209000] EIP is at jffs2_link_node_ref+0xbe/0x121 [jffs2]
-[   80.209000] eax: 000000a5   ebx: d65f10f0   ecx: 00000046   edx: 00007324
-[   80.209000] esi: d56c09c0   edi: d7129400   ebp: 00000dd4   esp: d6949bdc
-[   80.209000] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-[   80.209000] Process mount (pid: 8300, ti=d6948000 task=d65f10f0 
-task.ti=d6948000)
-[   80.209000] Stack: e0357fed 0000206c e035782f d56c09c0 00640000 00640dd4 
-00640000 0064000c
-[   80.209000]        d605bf44 0000e002 00000000 000000dc e0356b01 00000dd4 
-d58b62dc 00000008
-[   80.209000]        00000006 c14db0b0 d605bf24 e03af280 d7129400 00002000 
-000000dc 00000000
-[   80.209000] Call Trace:
-[   80.209000]  [<e0356b01>] jffs2_sum_scan_sumnode+0x1ab/0x574 [jffs2]
-[   80.209000]  [<e034d35c>] jffs2_scan_medium+0x302/0x12da [jffs2]
-[   80.209000]  [<c0137cb1>] __alloc_pages+0x59/0x28d
-[   80.209000]  [<c0142e43>] __vmalloc+0xf/0x11
-[   80.209000]  [<e0356909>] jffs2_sum_init+0x50/0x9d [jffs2]
-[   80.209000]  [<e034ff2b>] jffs2_do_mount_fs+0x16f/0x470 [jffs2]
-[   80.209000]  [<e035190d>] jffs2_do_fill_super+0xe3/0x1e6 [jffs2]
-[   80.209000]  [<e0351b4d>] jffs2_sb_set+0x0/0x1d [jffs2]
-[   80.209000]  [<e0351b3c>] jffs2_sb_compare+0x0/0x11 [jffs2]
-[   80.209000]  [<e0351d46>] jffs2_get_sb_mtd+0xfd/0x147 [jffs2]
-[   80.209000]  [<e0351f7e>] jffs2_get_sb+0x1a3/0x1bd [jffs2]
-[   80.209000]  [<c02915ac>] error_code+0x74/0x7c
-[   80.209000]  [<c015b4bc>] alloc_vfsmnt+0x8d/0xb4
-[   80.209000]  [<c014c434>] vfs_kern_mount+0x40/0x6f
-[   80.209000]  [<c014c4a5>] do_kern_mount+0x2d/0x3e
-[   80.209000]  [<c015be81>] do_mount+0x56e/0x5e1
-[   80.209000]  [<c015ae8b>] mntput_no_expire+0x11/0x47
-[   80.209000]  [<c0151d9e>] link_path_walk+0xa5/0xaf
-[   80.209000]  [<c013da1a>] __handle_mm_fault+0x271/0x675
-[   80.209000]  [<c013db57>] __handle_mm_fault+0x3ae/0x675
-[   80.209000]  [<c01511b0>] getname+0x59/0x8f
-[   80.209000]  [<c02915ac>] error_code+0x74/0x7c
-[   80.209000]  [<c0137eff>] __get_free_pages+0x1a/0x33
-[   80.209000]  [<c015ab1f>] copy_mount_options+0x26/0x109
-[   80.209000]  [<c015bf66>] sys_mount+0x72/0xa9
-[   80.209000]  [<c0103a60>] sysenter_past_esp+0x5d/0x81
-[   80.209000]  =======================
-[   80.209000] Code: 24 1c 8d 04 29 89 54 24 18 89 44 24 14 c7 44 24 08 2f 78 
-35 e0 8b 83 a4 00 00 00 c7 04 24 ed 7f 35 e0 89 44 24 04 e8 46 d5 dc df <0f> 
-0b eb fe 85 d2 89 73 2c 74 0a 8b 42 04 89 06 89 72 04 eb 06
-[   80.209000] EIP: [<e0348e22>] jffs2_link_node_ref+0xbe/0x121 [jffs2] 
-SS:ESP 0068:d6949bdc
+> So, we can re-parent a kernel thread to swapper. In that case it doesn't matter
+> if we put task on ->children list or not.
 
+Yes.  We can.
 
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+> User-visible change. Acceptable?
 
+We would have user visible changes when we changed to ktrhead_create anyway,
+and it's none of user space's business so certainly.
+
+>> Off course, we also need to add preparent_to_init() to kthread() and
+>> (say) stopmachine(). Or we can create kernel_thread_detached() and
+>> modify callers to use it.
+>
+> It would be very nice to introduce CLONE_KERNEL_THREAD instead, then
+
+If we are going to do something to copy_process and the like let's take
+this one step farther.  Let's pass in the value of the task to copy.
+
+Then we can add a wrapper around copy_process to build kernel_thread
+something like:
+
+struct task_struct *__kernel_thread(int (*fn)(void *), void * arg,
+				    unsigned long flags)
+{
+	struct task_struct *task;
+	struct pt_regs regs, *reg;
+
+        reg = kernel_thread_regs(&regs, fn, arg);
+	task = copy_process(&init_task, flags, 0, reg, 0, NULL, NULL, NULL, 0);
+	if (!IS_ERR(task))
+		wake_up_new_task(task, flags);
+
+	return task;
+}
+
+long kernel_thread(int (*fn)(void *), void * arg, unsigned long flags)
+{
+	struct task_struct *task;
+	task = __kernel_thread(fn, arg, flags);
+        if (IS_ERR(task))
+        	return PTR_ERR(task);
+	return task->pid;               
+}
+
+After that daemonize just becomes:
+
+void daemonize(const char *name, ...)
+{
+	va_list args;
+
+	va_start(args, name);
+	vsnprintf(current->comm, sizeof(current->comm), name, args);
+	va_end(args);
+}
+
+And kthread_create becomes:
+
+struct task_struct *kthread_create(int (*threadfn)(void *data),
+				   void *data,
+				   const char namefmt[],
+				   ...)
+{
+	struct kthread_create_info create;
+	struct task_struct *task;
+
+	create.threadfn = threadfn;
+	create.data = data;
+
+	/* We want our own signal handler (we take no signals by default). */
+        task = __kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
+	if (!IS_ERR(task)) {
+		va_list args;
+		va_start(args, namefmt);
+		vsnprintf(task->comm, sizeof(task->comm),  namefmt, args);
+		va_end(args);
+	}
+        return task;
+}
+
+If we are willing to go that far.  I think it is worth it to touch the
+architecture specific code.  As that removes an unnecessary wait
+queue, and ensures that kernel threads always start with a consistent
+state.  So it is a performance, scalability and simplicity boost.
+
+Otherwise we should just put the code in the callers of kernel_thread
+like we do today.
+
+I don't have the energy to rework all of th architecture or even a
+noticeable fraction of them right now.  I have to much on my plate.
+A non-architecture specific solution looks like a fairly simple
+patch and I might get around to it one of these times..
+
+Eric
