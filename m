@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbXDHPHC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751325AbXDHPMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751306AbXDHPHC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 11:07:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbXDHPHB
+	id S1751325AbXDHPMy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 11:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXDHPMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 11:07:01 -0400
-Received: from h80ad276f.async.vt.edu ([128.173.39.111]:55331 "EHLO
-	h80ad276f.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbXDHPHA (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 11:07:00 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: root <swordfish@onetbd.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Scheduler: Improving the scheduler performance.
-In-Reply-To: Your message of "Sat, 07 Apr 2007 23:42:20 +0600."
-             <1175967725.5798.13.camel@localhost>
-From: Valdis.Kletnieks@vt.edu
-References: <1175967725.5798.13.camel@localhost>
+	Sun, 8 Apr 2007 11:12:54 -0400
+Received: from verein.lst.de ([213.95.11.210]:42500 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbXDHPMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 11:12:53 -0400
+Date: Sun, 8 Apr 2007 17:12:57 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Christoph Hellwig <hch@lst.de>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] merge compat_ioctl.h into compat_ioctl.c
+Message-ID: <20070408151257.GA31164@lst.de>
+References: <20070408140433.GA28023@lst.de> <200704081651.21148.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1176044803_6542P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sun, 08 Apr 2007 11:06:43 -0400
-Message-ID: <8762.1176044803@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704081651.21148.arnd@arndb.de>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1176044803_6542P
-Content-Type: text/plain; charset=us-ascii
+On Sun, Apr 08, 2007 at 04:51:20PM +0200, Arnd Bergmann wrote:
+> On Sunday 08 April 2007, Christoph Hellwig wrote:
+> > 
+> > Now that there is no arch-specific compat ioctl handling left there
+> > is not point in having a separate copat_ioctl.h, so merge it into
+> > compat_ioctl.c
+> 
+> Yes, definitely a good idea.
+> 
+> > Signed-off-by: Christoph Hellwig <hch@lst.de>
+>  
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> 
+> On a similar subject, how about merging include/linux/ioctl32.h and the ioctl
+> bits of fs/compat.c into fs/compat_ioctl.c as well to make it completely
+> self-contained?
 
-On Sat, 07 Apr 2007 23:42:20 +0600, root said:
+I have a patch for that pending.
 
-> As we know that, linux scheduler use separate runqueue for every CPU of
-> a multiprocessor system, which having an active and an expired array.If
-> we use only one expired array, then the CPUs of a multiprocessor system
-> will be able to share their expired task via the accumulated expired
-> array,
-
-I got this far, and the first thought that popped into my head was:
-
-"Wow.  This might actually win on a UP or small MP (2-15 CPU).  But the
-lock contention on a big 512-CPU machoflops box is likely going to *suck*".
-
-For that matter, my quick eyeballing of the code, although it doesn't *find*
-any race conditions, doesn't convince me there's any protection taken to make
-sure there aren't any.  Is there some subtle algorithmic trick I'm missing
-to ensure Nothing Bad Can Happen?
-
---==_Exmh_1176044803_6542P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGGQUDcC3lWbTT17ARAlblAJ4v8orJnvnTkgWFGK5GaBCi0liKzACg/fkn
-46yITe3dQgotnBtC9zpz+tw=
-=GQ/e
------END PGP SIGNATURE-----
-
---==_Exmh_1176044803_6542P--
