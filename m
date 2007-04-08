@@ -1,104 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbXDHQn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751468AbXDHQ6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751458AbXDHQn5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 12:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbXDHQn5
+	id S1751468AbXDHQ6Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 12:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXDHQ6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 12:43:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51754 "EHLO ogre.sisk.pl"
+	Sun, 8 Apr 2007 12:58:16 -0400
+Received: from mail.screens.ru ([213.234.233.54]:43508 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751458AbXDHQn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 12:43:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: [RFC][PATCH -mm] swsusp: Use rbtree for tracking allocated swap
-Date: Sun, 8 Apr 2007 18:47:16 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200704072320.40238.rjw@sisk.pl> <200704080113.24171.rjw@sisk.pl> <1175989328.10725.59.camel@nigel.suspend2.net>
-In-Reply-To: <1175989328.10725.59.camel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1751468AbXDHQ6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 12:58:15 -0400
+X-Greylist: delayed 3857 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Apr 2007 12:58:15 EDT
+Date: Sun, 8 Apr 2007 20:57:50 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [RFC, PATCH 1/3] introduce SYS_CLONE_MASK
+Message-ID: <20070408165750.GA149@tv-sign.ru>
+References: <20070408155337.GA126@tv-sign.ru> <m1lkh23kkb.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704081847.16738.rjw@sisk.pl>
+In-Reply-To: <m1lkh23kkb.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 8 April 2007 01:42, Nigel Cunningham wrote:
-> Hi.
+On 04/08, Eric W. Biederman wrote:
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
 > 
-> On Sun, 2007-04-08 at 01:13 +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 8 April 2007 00:31, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Sat, 2007-04-07 at 15:06 -0700, Andrew Morton wrote:
-> > > > On Sat, 7 Apr 2007 23:20:39 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > 
-> > > > > This should allow us to reduce the memory usage, practically always, and
-> > > > > improve performance.
-> > > > 
-> > > > And does it?
-> > 
-> > Yes.  There are theoretical corner cases in which it may be less efficient
-> > than the current approach, but in the usual situation it is _much_ better.
-> > 
-> > > It will. I've been using extents for ages, for the same reasons. I don't
-> > > put them in an rb_tree because I view it as less than most efficient,
-> > 
-> > Actually, I don't agree with that.  In the normal situation (ie. one extent is
-> > needed) there is no difference as far as the memory usage or performance
-> > are concerned, but if there are more extents, the rbtree should be more
-> > efficient.
+> > For review only.
+> >
+> > To implement for-in-kerenl-use-only CLONE_ flags, we need to filter out them
+> > in sys_clone().
 > 
-> I don't think it's worth having a big discussion over, but let me give
-> you the details, which you can then feel free to ignore :)
+> Nack
 > 
-> The rb_node struct adds an unsigned long and two struct rb_node *
-> pointers. My extents use one struct extent * pointer. The difference is
-> thus 12/24 bytes per extent (32/64 bits) vs 20/40.
+> The current clone_flags field is for user space consumption and we
+> have proposed users for all or almost all of the remaining bits.
 
-Well, you use open-coded lists.  If you used list.h lists, the numbers 
-would be different. :-)
+OK.
 
-> In the normal situation, not worth worrying about, but I'm also using these for
-> recording the sectors we write too, and thinking about swap files and
-> multiple swap devices. Nearly double the memory use bites more as you
-> get more extents.
->
-> Insertion cost for rb_node includes keeping the tree balanced. For
-> extents, I start with the location of the last insertion to minimise the
-> cost, so insertion time is usually virtually zero (inc max of last
-> extent or append a new one).
+> If we are going to have kernel only flags please use an additional
+> argument to do_fork and copy_process.
 
-Isn't the appending one actually linear worst-case?
+Yes, we can do this. But we have a number of architectures which use
+sys_clone() to implement kernel_thread(). It would be nice to have an
+architecture neutral kernel_thread() implementation as you proposed.
+We should change all of them if we want to add a new parameter to
+do_fork().
 
-> If for some reason swap was allocated out of order, I might need to traverse
-> the whole chain from the start. 
+Perhaps it is better to add reparent_kthread() (next patch) to kthread()
+and forget about CLONE_KERNEL_THREAD.
 
-Exactly.
+Anyway, re-parenting to swapper breaks pstree, it doesn't show kernel
+threads. And if ->parent == /sbin/init, we can't remove us from ->children
+(unless we forbid sub-thread-of-init exec). So the only safe change is
+set ->exit_state = -1.
 
-> Normal usage in both cases is simply iterating through the list, so I
-> guess the cost would be approximately the same.
-> 
-> Deletion could would include rebalancing for the rb_nodes.
+> Your current scheme also has the bad side that if user space supplied
+> a kernel flag it is hard to detect it and return -EINVAL.  Which
+> limits future expansion.  Silently dropping clone flags is a real
+> pain, if you are trying to detect if a new flag has been implemented.
 
-In swsusp the deletions are needed only if there's an error.
+Yes. But that is what we are doing now. copy_process() just ignores
+unknown flags.
 
-> Code cost is a gain for you - you're leveraging existing code, I'm
-> adding a bit more. extent.c is 300 lines including code for serialising
-> the chains in an image header and iterating through a group of chains
-> (multiple swap devices support).
-> 
-> rb_nodes seem to be the wrong solution to me because we generally don't
-> care about searching. We care about minimising memory usage and
-> maximising the speed of iteration, insertion and deletion. I believe
-> I've managed to do that with a singly linked, sorted list.
+Oleg.
 
-The insertion also uses searching and in fact I don't really care for anything
-else.
-
-Greetings,
-Rafael
