@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751752AbXDHTLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbXDHTO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751752AbXDHTLK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 15:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbXDHTLK
+	id S1751906AbXDHTO1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 15:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXDHTO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 15:11:10 -0400
-Received: from h80ad276f.async.vt.edu ([128.173.39.111]:58898 "EHLO
-	h80ad276f.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbXDHTLJ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 15:11:09 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Rene Rebe <rene@exactcode.de>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andi Kleen <ak@suse.de>, "Brown, Len" <len.brown@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc5: Thinkpad X60 gets critical thermal shutdowns
-In-Reply-To: Your message of "Mon, 02 Apr 2007 10:35:40 +0200."
-             <200704021035.40672.rene@exactcode.de>
-From: Valdis.Kletnieks@vt.edu
-References: <460E0158.7090705@goop.org> <8393D4C0-57C5-4CD2-8CA4-E4241E74FB4E@mac.com>
-            <200704021035.40672.rene@exactcode.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1176059397_28267P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 8 Apr 2007 15:14:27 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:47427 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbXDHTO0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 15:14:26 -0400
+Message-ID: <46193EDF.3000303@zytor.com>
+Date: Sun, 08 Apr 2007 12:13:35 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com> <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184735.GC29180@thunk.org>
+In-Reply-To: <20070408184735.GC29180@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sun, 08 Apr 2007 15:09:57 -0400
-Message-ID: <28333.1176059397@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1176059397_28267P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+Theodore Tso wrote:
+> 
+> You could, but then you're succeptible to a memory allocation attack.
+> If you have an arbitrarily large directory (say, one with multiple
+> millions of entries), and the attacker program calls seekdir() after
+> every single readdir() call, you would then force the kernel to
+> allocate and then pin arbitrarily large amounts of memory, which as
+> you point out, as currently specified by the POSIX specification, you
+> are not allowed to release until closedir().
+> 
+> This could be done in userspace, by forcing glibc to readdir() the
+> entire directory into memory, at which point seekdir()/telldir() will
+> work just fine.  But for a really big directory, this could consume a
+> huge amount of space. 
+> 
+> If we had the 64-byte telldir cookie that I had proposed, then in
+> userspace we could simply associate that 64-byte telldir cookie with a
+> small 32-bit integer, either in memory, or in some berkdb or tdb
+> interface, at least until the use of telldir/seekdir had actually
+> disappeared.  (Which probably wouldn't take that long; I really doubt
+> there are that many users of it out there, so it's probably OK if they
+> suffer a performance penality if they use this really wretched and
+> horrible interface.)
+> 
 
-On Mon, 02 Apr 2007 10:35:40 +0200, Rene Rebe said:
+If you want to have a large cookies, you could have glibc allocate a 
+memory block to store it, and have glibc responsible for keeping track 
+of it.  As far as I know, off_t can hold a pointer on all our 
+implementations (only 32-bit machines have 32-bit off_t as an option; 
+Alpha *might* be an exception but I don't think so.)
 
-(Sorry for the late reply..)
+> I'll also note, by the way, that there are those who have been much
+> more cavalier with breaking the wireless interface or the udev/sys
+> interface after one year.  Not that I would agree with that, but over
+> some deprecation period measured in years, I think it is possible to
+> nuke what was a horribly misguided interface that should have never
+> existed.  Whoever invented it really should receive the brown paper
+> award for one of the worst design decisions of all time.
 
-> IIRC a MSI Megabook S270 (I formerly owned) BIOS notifies this
-> =22Critical temperature reached (128C)=22 when the battery run empty
-> when the OS did no action due to battery low indications. I guess
-> the BIOS people thought this is a good last resort to let the OS
-> really shutdown before the box just turns off.
+Readdir/telldir are much, much, more fundamental than that.  We're 
+talking interfaces which have been standardized for longer than Linux 
+itself has existed.
 
-It's not just MSI - I recently managed to put a Dell Latitude D820 into i=
-ts bag
-while still running, where it babbled to itself running on the warm side =
-for
-several hours.  When I finally did get it out, it *was* quite hot to the =
-touch,
-but I was amazed that it managed to run the battery down to somewhere und=
-er 4%
-(which took some 4 or 5 hours) and then throw the thermal check that made=
- it
-shut down - quite the coincidence indeed.
-
-However, =22ran warm but tolerable and then used the thermal to shut down=
- when
-the battery failed=22 matches the symptoms much better....
-
-
---==_Exmh_1176059397_28267P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGGT4FcC3lWbTT17ARAhUrAJwJSoCK3homnoc3dhaKTZh0mIVC5ACeIvXr
-TMz47x5h/nNyv5nuuUXZFYM=
-=NvHm
------END PGP SIGNATURE-----
-
---==_Exmh_1176059397_28267P--
+	-hpa
