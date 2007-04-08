@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752335AbXDHBLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbXDHBZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752335AbXDHBLR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Apr 2007 21:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbXDHBLR
+	id S1752360AbXDHBZR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Apr 2007 21:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932469AbXDHBZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Apr 2007 21:11:17 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:37890 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752284AbXDHBLQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Apr 2007 21:11:16 -0400
-Message-Id: <1175994676.2359.1183513514@webmail.messagingengine.com>
-X-Sasl-Enc: 9fAZ4zXKIfEgyyB1GWxC/tXCqTiaXUPZis1YRiNB0V5A 1175994676
-From: johnrobertbanks@fastmail.fm
-To: Valdis.Kletnieks@vt.edu
-Cc: "Ignatich" <ignatich@gmail.com>, reiserfs-list@namesys.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Content-Disposition: inline
+	Sat, 7 Apr 2007 21:25:17 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37420 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbXDHBZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Apr 2007 21:25:15 -0400
+Date: Sat, 7 Apr 2007 18:25:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
+ flag
+Message-Id: <20070407182506.4386dc13.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704071718530.31790@schroedinger.engr.sgi.com>
+References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+	<20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
+	<20070406222336.4dcdd663.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
+	<20070407155148.94da92e8.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704071718530.31790@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <46157B5B.5000602@gmail.com>
-   <1175817921.18400.1183285196@webmail.messagingengine.com>
-   <1175909205.905.1183425104@webmail.messagingengine.com>
-   <1175931932.27274.1183445262@webmail.messagingengine.com>
-   <13183.1175965022@turing-police.cc.vt.edu>
-Subject: Re: COMPILING AND CONFIGURING A NEW KERNEL.
-In-Reply-To: <13183.1175965022@turing-police.cc.vt.edu>
-Date: Sat, 07 Apr 2007 18:11:16 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 7 Apr 2007 17:21:38 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> It is *highly* recommended that you change the kernel identifier at
-> least slightly, so that you can install '2.6.20-1.local' without
-> overlaying
-> the vendor-supplied 2.6.20-1 kernel.  Among other things, this lets you
-> boot back to the equivalent code level in the vendor kernel, 
-> so you can figure
-> out if it's your .config file that's broken, or if you hit a bug
-> upggrading from 2.6.19-10 to 2.6.20-1.
+> On Sat, 7 Apr 2007, Andrew Morton wrote:
+> 
+> > Which is all a ton of fun, but this subversion of the architecture's
+> > freedom to use volatile, memory barriers etc is a worry.  We do the same in
+> > page_alloc.c, of course...  
+> 
+> I just tried the approach that we discussed earlier and it was not 
+> nice either.
 
-I agree. I think your advice is *highly* recommended.
+We've discussed at least three approaches, so we don't know to what you refer.
 
-I had this problem once after forcing an upgrade, which removed the
-working kernel. I just booted the kernel and stuff, from another
-partition.
+>  Lets just use a page flag please.
 
-John.
--- 
-  
-  johnrobertbanks@fastmail.fm
+Nope, try harder.
 
--- 
-http://www.fastmail.fm - The way an email service should be
+PageCompound is an unlikely case.  Back in the old days we would have done
+
+
+
+	if (PageCompound(page))
+		goto out_of_line;
+back:
+
+	do_stuff_with(page);
+	return;
+
+out_of_line:
+	if (PageTail(page)) {
+		page = page_tail(page);
+		goto back;
+	}
+	<do other stuff>
+
+and nowadays we hope that gcc does the above for us.  If it doesn't do it
+for us, perhaps it needs open-coded help.
+
+Because I don't expect there will be much efficiency difference between the
+above and the use of another page flag.
 
