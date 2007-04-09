@@ -1,90 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbXDIFfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbXDIFi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960AbXDIFfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 01:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXDIFfx
+	id S1752962AbXDIFi1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 01:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbXDIFi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 01:35:53 -0400
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:37261 "HELO
-	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752945AbXDIFfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 01:35:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=34bHMKMjSg4ct5/l8uvZgyUaZ6rOjDgYNg+I/rl9fUPtA/2xkq3otF0sPI4aXp0BcThWoiLFKPnROfcgqQYeTpjsjceBsW3FkTzQ+VDh2bcBh4gq4YfVSUpejexNDaPSi7vN1yf7/hcCJinD2yf/2U0cCzpX5t/1ipD7y97di58=  ;
-X-YMail-OSG: TJn1mEoVM1nJ3_wHUvdmdx.ao1uAu3TE31XKWdYYM26Ak56EuD_JTfjcdubHOLkDC6370eV4Pw--
-Date: Sun, 08 Apr 2007 22:35:49 -0700
-From: David Brownell <david-b@pacbell.net>
-To: rui.zhang@intel.com, greg@kroah.com
-Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org,
-       akpm@linux-foundation.org
-References: <200704031741.42273.david-b@pacbell.net>
- <200704060843.30723.david-b@pacbell.net>
- <20070407050131.GB25511@kroah.com>
- <200704071308.07571.david-b@pacbell.net>
- <1176086185.2650.28.camel@localhost.localdomain>
-In-Reply-To: <1176086185.2650.28.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Apr 2007 01:38:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57592 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752962AbXDIFiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 01:38:25 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18L9UMqb+ULYRpLPnKNfKMyAV1KNa7QB2pVZkr4R3
+	TWU0DuVPmzprPx
+Subject: Re: Ten percent test
+From: Mike Galbraith <efault@gmx.de>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       linux list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+In-Reply-To: <200704080909.00472.edt@aei.ca>
+References: <200703290237.38777.kernel@kolivas.org>
+	 <20070406100333.GA19855@elte.hu> <200704071650.43905.kernel@kolivas.org>
+	 <200704080909.00472.edt@aei.ca>
+Content-Type: text/plain
+Date: Mon, 09 Apr 2007 07:38:21 +0200
+Message-Id: <1176097101.6355.89.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070409053549.C7C64229527@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sat, 2007-04-07 at 13:08 -0700, David Brownell wrote:
-> > On Friday 06 April 2007 10:01 pm, Greg KH wrote:
-> > 
-> > > Are you _sure_ you have a 1-to-1 relationship here?  No multiple devices
-> > > pointing to the same acpi node?  Or the other way around?  If so, you
-> > > are going to have to change the name to be something more unique.
-> > 
-> > I've wondered that too.  The short answer:  APCI only supports 1-1
-> > here.
->
-> Right.
->
-> >   It will emit warnings if it tries to bind more than one ACPI
-> > device to a given "real" device ... but errors the other way are
-> > silently ignored.
->
-> My understanding is different.
-> First, one "real" device can only have one device.archdata.acpi_handle,
-> which means it can only be bound to one ACPI device.
-> Second, AE_ALREADY_EXISTS will be returned when ACPI tries to bind more
-> than one "real" devices to the same ACPI device.
+On Sun, 2007-04-08 at 09:08 -0400, Ed Tomlinson wrote:
+> Hi,
+> 
+> I am one of those who have been happily testing Con's patches.  
+> 
+> They work better than mainline here.
 
-Exactly.  The "first" case emits a warning, the "second" case doesn't;
-no matter what it is (though I only saw ALREADY_EXISTS).
+(I tried a UP kernel yesterday, and even a single kernel build would
+make noticeable hitches if I move a window around. YMMV etc.)
 
+> If one really needs some sort of interactivity booster (I do not with SD), why
+> not move it into user space?  With SD it would be simple enough to export
+> some info on estimated latency.  With this user space could make a good
+> attempt to keep latency within bounds for a set of tasks just by renicing.... 
 
-When I added a warning to that case:
+I don't think you can have very much effect on latency using nice with
+SD once the CPU is fully utilized.  See below.
 
-> > By adding a warning over this create-links patch, I found that the
-> > system in the $SUBJECT patch (and likely every ACPI system) has
-> > two different nodes that correspond to one ACPI node:
-> > 
-> > 	/sys/devices/pci0000:00 ... pci root node
-> > 	/sys/devices/pnp0/00:00 ... id PNP0a03
-> > 	/sys/devices/acpi_system:00/device:00/PNP0A03:00 ... ditto
-> > 
-> > Arguably that's too many sysfs nodes for one device...
+/*
+ * This contains a bitmap for each dynamic priority level with empty slots
+ * for the valid priorities each different nice level can have. It allows
+ * us to stagger the slots where differing priorities run in a way that
+ * keeps latency differences between different nice levels at a minimum.
+ * ie, where 0 means a slot for that priority, priority running from left to
+ * right:
+ * nice -20 0000000000000000000000000000000000000000
+ * nice -10 1001000100100010001001000100010010001000
+ * nice   0 0101010101010101010101010101010101010101
+ * nice   5 1101011010110101101011010110101101011011
+ * nice  10 0110111011011101110110111011101101110111
+ * nice  15 0111110111111011111101111101111110111111
+ * nice  19 1111111111111111111011111111111111111111
+ */
 
-Presumably you've noticed this same thing (not necessarily pnp0/00:00)
-on other systems ...
+Nice allocates bandwidth, but as long as the CPU is busy, tasks always
+proceed downward in priority until they hit the expired array.  That's
+the design.  If X gets busy and expires, and a nice 20 CPU hog wakes up
+after it's previous rotation has ended, but before the current rotation
+is ended (ie there is 1 task running at wakeup time), X will take a
+guaranteed minimum 160ms latency hit (quite noticeable) independent of
+nice level.  The only way to avoid it is to use a realtime class.
 
+A nice -20 task has maximum bandwidth allocated, but that also makes it
+a bigger target for preemption from tasks at all nice levels as it
+proceeds downward toward expiration.  AFAIKT, low latency scheduling
+just isn't possible once the CPU becomes 100% utilized, but it is
+bounded to runqueue length.  In mainline OTOH, a nice -20 task will
+always preempt a nice 0 task, giving it instant gratification, and
+latency of lower priority tasks is bounded by the EXPIRED_STARVING(rq)
+safety net.
 
-> > Plus, there's the issue of flakey ACPI tables; in the $SUBJECT patch
-> > both MDM and AUD nodes exist in the ACPI namespace, but they could
-> > only refer to one PCI device (with MDM as the wakeup source, not AUD
-> > as listed in the table).  Or maybe that's another case where the ACPI
-> > code isn't handling the tables as sensibly as it might...
->
-> Could you attach this acpidump please? :)
-
-Off-list; yes.
-
-- Dave
+	-Mike
 
