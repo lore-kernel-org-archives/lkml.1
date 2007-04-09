@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965869AbXDIPto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965907AbXDIPuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965869AbXDIPto (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965881AbXDIPto
+	id S965907AbXDIPuV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965898AbXDIPuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:49:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:37020 "EHLO mail.goop.org"
+	Mon, 9 Apr 2007 11:50:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:37034 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965869AbXDIPtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:49:43 -0400
-Message-ID: <461A604D.7050903@goop.org>
-Date: Mon, 09 Apr 2007 08:48:29 -0700
+	id S965907AbXDIPuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 11:50:18 -0400
+Message-ID: <461A6072.9040207@goop.org>
+Date: Mon, 09 Apr 2007 08:49:06 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
@@ -58,10 +58,7 @@ Randy Dunlap wrote:
 >>     
 >
 > drop comment.
->
-> Are you going to tackle asm-i386/bugs.h also?
 
-Yes, I'd already sent it out.  This was just the response to "please
-make them consistent".
+I'll edit it, but I won't remove the copyrights.
 
     J
