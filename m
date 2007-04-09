@@ -1,121 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965194AbXDITTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXDITTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965194AbXDITTJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 15:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965164AbXDITTJ
+	id S965280AbXDITTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 15:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965164AbXDITTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 15:19:09 -0400
-Received: from cmx2.usace.army.mil ([140.194.245.34]:26146 "EHLO
-	cmx2.usace.army.mil" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965105AbXDITTH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 15:19:07 -0400
-X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Apr 2007 15:19:07 EDT
-Message-ID: <461A8E56.6020002@bellsouth.net>
-Date: Mon, 09 Apr 2007 14:04:54 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-Reply-To: jacliburn@bellsouth.net
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Mon, 9 Apr 2007 15:19:19 -0400
+Received: from mail.tmr.com ([64.65.253.246]:33527 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965153AbXDITTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 15:19:18 -0400
+Message-ID: <461A900C.40400@tmr.com>
+Date: Mon, 09 Apr 2007 15:12:12 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: APIC error on 32-bit kernel
-References: <20070323200817.1f3e39b9@osprey.hogchain.net> <20070408133822.3868e6ff@osprey.hogchain.net> <461A7F14.1080105@redhat.com>
-In-Reply-To: <461A7F14.1080105@redhat.com>
+To: johnrobertbanks@fastmail.fm
+CC: linux-kernel@vger.kernel.org, dhlii@comcast.net,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: REISER4 FOR INCLUSION IN THE LINUX KERNEL.
+References: <1176092219.12458.1183612420@webmail.messagingengine.com>
+In-Reply-To: <1176092219.12458.1183612420@webmail.messagingengine.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Apr 2007 19:04:54.0720 (UTC) FILETIME=[F569EC00:01C77AD9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
+johnrobertbanks@fastmail.fm wrote:
 
-> Where is the text of the oops?
+>> I actually beleive that Hans made a reasonable case that 
+>> Reiser4 had gone about as far as it could reasonably go with regard 
+>> to testing, robustness, ... without the broader base of use that 
+>> even an experimental filesystem in distribution tree would get.
+> 
+> Of course, this is an entirely reasonable request of Reiser's.
+> One meet with an array of unreasonable actions, but mainly STALLING 
+> which has led to REISER4 never becoming part of the main kernel.
+> 
+> It has also lead to many false claims about REISER4. Claims that are
+> never backed up with solid statistics, but used to keep REISER4 out of
+> the kernel and tar its reputation.
+> 
+Keep that last sentence in mind for four lines...
 
-In one of the files on the website I referenced.  Here's the text...
+>>     I for one would at least play with it if it were in the distribution
+>> tree.
+> 
+> I AM SURE THERE ARE A HUGE NUMBER OF PEOPLE WHO WOULD GIVE IT A TRY.
+>  
+"Claims that are never backed up with solid statistics, ..."
 
-[  173.584000] APIC error on CPU1: 08(08)
-[  173.665000] APIC error on CPU0: 08(08)
-[  173.665000] APIC error on CPU1: 08(08)
-[  173.746000] APIC error on CPU0: 08(08)
-[  173.746000] APIC error on CPU1: 08(08)
-[  173.827000] APIC error on CPU0: 08(08)
-[  173.827000] APIC error on CPU1: 08(08)
-[  173.908000] APIC error on CPU0: 08(08)
-[  173.908000] APIC error on CPU1: 08(08)
-[  173.989000] APIC error on CPU0: 08(08)
-[  173.989000] APIC error on CPU1: 08(08)
+>>     As far as I could tell Hans pretty much everything else that 
+>> was demanded. Hans eventually caved and provided - albeit with much 
+>> pissing and moaning, and holy than thou rhetoric.
+> 
+> It was not his pissing and moaning, etc,... these were just excuses to
+> keep REISER4 from succeeding. The truth is, that any excuse would do.
+> 
+> The real reasons are financial and backed by big money (sometimes, big
+> egos).
+> 
+Yes all of the people who make millions on the other filesystems! 
+Wait... identify who makes a penny more or less with or without Reiser4.
 
-pinged my router somewhere along about here...
+[ snip ]
 
-[  174.069000] BUG: unable to handle kernel NULL pointer 
-dereference<1>BUG: unable to 0
-[  174.069000]  printing eip:
-[  174.069000] 00000000
-[  174.069000] *pde = 1feb8067
-[  174.069000] Oops: 0000 [#1]
-[  174.069000] SMP
-[  174.069000] Modules linked in: nf_conntrack_netbios_ns ipt_REJECT 
-nf_conntrack_ipv4d
-[  174.069000] CPU:    1
-[  174.069000] EIP:    0060:[<00000000>]    Not tainted VLI
-[  174.069000] EFLAGS: 00010006   (2.6.21-rc5-git1 #1)
-[  174.069000] EIP is at 0x0
-[  174.069000] eax: 000000a0   ebx: dfe99f98   ecx: c07bb000   edx: c074de00
-[  174.069000] esi: 000000a0   edi: 00000000   ebp: 00000000   esp: c07bbffc
-[  174.069000] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-[  174.069000] Process beagled-helper (pid: 3393, ti=c07bb000 
-task=dfe28270 task.ti=df)
-[  174.069000] Stack: c040704b
-[  174.069000] Call Trace:
-[  174.069000]  [<c040704b>] do_IRQ+0xac/0xd1
-[  174.069000]  [<c040580e>] common_interrupt+0x2e/0x34
-[  174.069000]  =======================
-[  174.069000] Code:  Bad EIP value.
-[  174.069000] EIP: [<00000000>] 0x0 SS:ESP 0068:c07bbffc
-[  174.069000] Kernel panic - not syncing: Fatal exception in interrupt
-[  174.069000] BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
-[  174.069000]  [<c0417b4f>] smp_call_function+0x5c/0xc8
-[  174.069000]  [<c054052e>] do_unblank_screen+0x2a/0x120
-[  174.069000]  [<c0417bd6>] smp_send_stop+0x1b/0x2e
-[  174.069000]  [<c04271ca>] panic+0x54/0xf2
-[  174.069000]  [<c04062c5>] die+0x1f8/0x22c
-[  174.069000]  [<c0623d13>] do_page_fault+0x40c/0x4df
-[  174.069000]  [<c0623907>] do_page_fault+0x0/0x4df
-[  174.069000]  [<c0622574>] error_code+0x7c/0x84
-[  174.069000]  [<c040704b>] do_IRQ+0xac/0xd1
-[  174.069000]  [<c040580e>] common_interrupt+0x2e/0x34
-[  174.069000]  =======================
-[  174.069000]  at virtual address 00000000
-[  174.069000]  printing eip:
-[  174.069000] 00000000
-[  174.069000] *pde = 20bd3067
-[  174.069000] Oops: 0000 [#2]
-[  174.069000] SMP
-[  174.069000] Modules linked in: nf_conntrack_netbios_ns ipt_REJECT 
-nf_conntrack_ipv4d
-[  174.069000] CPU:    0
-[  174.069000] EIP:    0060:[<00000000>]    Not tainted VLI
-[  174.069000] EFLAGS: 00010087   (2.6.21-rc5-git1 #1)
-[  174.069000] EIP is at 0x0
-[  174.069000] eax: 000000a0   ebx: c0753f74   ecx: c07ba000   edx: c074de00
-[  174.069000] esi: 000000a0   edi: 00000000   ebp: 00000000   esp: c07baffc
-[  174.069000] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-[  174.069000] Process swapper (pid: 0, ti=c07ba000 task=c07094c0 
-task.ti=c0753000)
-[  174.069000] Stack: c040704b
-[  174.069000] Call Trace:
-[  174.069000]  [<c040704b>] do_IRQ+0xac/0xd1
-[  174.069000]  [<c040580e>] common_interrupt+0x2e/0x34
-[  174.069000]  [<c0403c74>] default_idle+0x3d/0x54
-[  174.069000]  [<c040339b>] cpu_idle+0xa3/0xbc
-[  174.069000]  [<c0758a37>] start_kernel+0x45d/0x465
-[  174.069000]  [<c07581ae>] unknown_bootoption+0x0/0x202
-[  174.069000]  =======================
-[  174.069000] Code:  Bad EIP value.
-[  174.069000] EIP: [<00000000>] 0x0 SS:ESP 0068:c07baffc
-[  174.069000] Kernel panic - not syncing: Fatal exception in interrupt
+Until Namesys is stable there's no support team. It's not my impression 
+that there's much support otherwise.
 
-Short hang, then spontaneous reboot.
-
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
