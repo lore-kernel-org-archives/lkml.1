@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXDIT4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965271AbXDIT4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbXDIT4M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 15:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXDIT4L
+	id S965271AbXDIT4x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 15:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965287AbXDIT4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 15:56:11 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:42594 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965034AbXDIT4K (ORCPT
+	Mon, 9 Apr 2007 15:56:53 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:57591 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965271AbXDIT4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 15:56:10 -0400
-Message-ID: <461A9A03.9070602@gmail.com>
-Date: Mon, 09 Apr 2007 21:54:43 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-CC: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+	Mon, 9 Apr 2007 15:56:52 -0400
+Date: Mon, 09 Apr 2007 15:56:37 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
 Subject: Re: Ten percent test
-References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu> <461939A4.2020305@gmail.com> <1176092598.6355.22.camel@Homer.simpson.net> <461A2E39.8060106@gmail.com> <20070409132717.GA10489@rhlx01.hs-esslingen.de>
-In-Reply-To: <20070409132717.GA10489@rhlx01.hs-esslingen.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+In-reply-to: <20070409174803.GA10189@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Rene Herman <rene.herman@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <200704091556.37903.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703290237.38777.kernel@kolivas.org> <461A7246.60003@gmail.com>
+ <20070409174803.GA10189@elte.hu>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/09/2007 03:27 PM, Andreas Mohr wrote:
+On Monday 09 April 2007, Ingo Molnar wrote:[...]
+>
+>i didnt say that, in fact my first lkml comment about RSDL on lkml was
+>the exact opposite, but you SD advocates are _still_ bickering about
+>(and not accepting) fundamental things like Mike's make -j5 workload and
+>flagging it as unrealistic, so until there's so much reality disconnect
+>there's not much chance for this issue to progress i'm afraid.
 
-> And I really don't see much difference whatsoever to the I/O scheduler
-> area: some people want predictable latency, while others want maximum
-> throughput or fastest operation for seek-less flash devices (noop).
-> Hardware varies similarly greatly has well:
-> Some people have huge disk arrays or NAS, others have a single flash disk.
-> Some people have a decaying UP machine, others have huge SMP farms.
+Mikes -j5 workload is AFAIAC, a very realistic workload for building a 
+kernel.  My own script I just discovered was using -j8, and that was 
+noticeable, but by no means a killing hit on my poor old Xp2800 Athlon.  
+I pulled it back to 4 for this mornings build and the hit, while less, is 
+still noticeable.  Killer hit?  No way.  Using Mike's v4 patch I think it 
+was called.
 
-I do agree, and yes, I/O scheduling seems to not have suffered from the 
-choice although I must say I'm not sure how much use each I/O scheduler 
-individualy sees.
+>	Ingo
 
-If one CPU scheduler can be good enough then it would better to just 
-have that one, but well, yes, maybe it can't. I certainly believe any 
-one scheduler can't avoid breaking down onder some condition. Demand is 
-just too varied.
 
-I find it interesting that you see SD as a server scheduler and I guess 
-deterministic behaviour does point in that direction somewhat. I would 
-be enabling it on the desktop though, which probably is _some_ argument 
-on having multiple schedulers.
 
-Rene.
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+When you jump for joy, beware that no-one moves the ground from beneath
+your feet.
+		-- Stanislaw Lem, "Unkempt Thoughts"
