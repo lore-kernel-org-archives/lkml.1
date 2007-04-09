@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbXDINCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXDINEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166AbXDINCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 09:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbXDINCL
+	id S1753180AbXDINEq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 09:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbXDINEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 09:02:11 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:31765 "EHLO relay.sw.ru"
+	Mon, 9 Apr 2007 09:04:46 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:22109 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753166AbXDINCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 09:02:06 -0400
-Message-ID: <461A3775.8090604@sw.ru>
-Date: Mon, 09 Apr 2007 16:54:13 +0400
+	id S1753180AbXDINEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 09:04:45 -0400
+Message-ID: <461A3905.1070700@sw.ru>
+Date: Mon, 09 Apr 2007 17:00:53 +0400
 From: Pavel Emelianov <xemul@sw.ru>
 User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
@@ -22,561 +22,218 @@ CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Rohit Seth <rohitseth@google.com>,
        Linux Containers <containers@lists.osdl.org>
-Subject: [PATCH 5/8] RSS accounting hooks over the code
+Subject: [PATCH 7/8] Page scanner changes needed to implement per-container
+ scanner
 References: <461A3010.90403@sw.ru>
 In-Reply-To: <461A3010.90403@sw.ru>
 Content-Type: multipart/mixed;
- boundary="------------090507000600070005070507"
+ boundary="------------050701030700060407010302"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------090507000600070005070507
+--------------050701030700060407010302
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-As described above, pages are charged to their first touchers.
-The first toucher is determined using pages' mapcount manipulations
-in rmap calls.
+Struct scan_control now carries:
+* the RSS container to free pages in;
+* pointer to an isolate_pages() function to isolate
+  pages needed for the reclamation.
 
-Page is charged in two stages:
-1. preparation, in which the resource availability is checked.
-   This stage may lead to page reclamation, thus it is performed
-   in a might-sleep places;
-2. the container assignment to page. This is done in an atomic
-   code that handles multiple touches.
-
---------------090507000600070005070507
+--------------050701030700060407010302
 Content-Type: text/plain;
- name="diff-rss-container-rmap-hooks"
+ name="diff-rss-container-reclaim-core"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="diff-rss-container-rmap-hooks"
+ filename="diff-rss-container-reclaim-core"
 
-diff -upr linux-2.6.20.orig/fs/exec.c linux-2.6.20-2/fs/exec.c
---- linux-2.6.20.orig/fs/exec.c	2007-03-06 19:09:50.000000000 +0300
-+++ linux-2.6.20-2/fs/exec.c	2007-04-09 11:26:06.000000000 +0400
-@@ -58,6 +58,8 @@
- #include <linux/kmod.h>
- #endif
- 
-+#include <linux/rss_container.h>
-+
- int core_uses_pid;
- char core_pattern[128] = "core";
- int suid_dumpable = 0;
-@@ -309,27 +311,34 @@ void install_arg_page(struct vm_area_str
- 	struct mm_struct *mm = vma->vm_mm;
- 	pte_t * pte;
- 	spinlock_t *ptl;
-+	struct page_container *pcont;
- 
- 	if (unlikely(anon_vma_prepare(vma)))
- 		goto out;
- 
-+	if (container_rss_prepare(page, vma, &pcont))
-+		goto out;
-+
- 	flush_dcache_page(page);
- 	pte = get_locked_pte(mm, address, &ptl);
- 	if (!pte)
--		goto out;
-+		goto out_release;
- 	if (!pte_none(*pte)) {
- 		pte_unmap_unlock(pte, ptl);
--		goto out;
-+		goto out_release;
- 	}
- 	inc_mm_counter(mm, anon_rss);
- 	lru_cache_add_active(page);
- 	set_pte_at(mm, address, pte, pte_mkdirty(pte_mkwrite(mk_pte(
- 					page, vma->vm_page_prot))));
--	page_add_new_anon_rmap(page, vma, address);
-+	page_add_new_anon_rmap(page, vma, address, pcont);
- 	pte_unmap_unlock(pte, ptl);
- 
- 	/* no need for flush_tlb */
- 	return;
-+
-+out_release:
-+	container_rss_release(pcont);
- out:
- 	__free_page(page);
- 	force_sig(SIGKILL, current);
-diff -upr linux-2.6.20.orig/include/linux/rmap.h linux-2.6.20-2/include/linux/rmap.h
---- linux-2.6.20.orig/include/linux/rmap.h	2007-03-06 19:09:50.000000000 +0300
-+++ linux-2.6.20-2/include/linux/rmap.h	2007-04-09 11:26:06.000000000 +0400
-@@ -69,9 +69,13 @@ void __anon_vma_link(struct vm_area_stru
- /*
-  * rmap interfaces called when adding or removing pte of page
-  */
--void page_add_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
--void page_add_new_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
--void page_add_file_rmap(struct page *);
-+struct page_container;
-+
-+void page_add_anon_rmap(struct page *, struct vm_area_struct *,
-+		unsigned long, struct page_container *);
-+void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
-+		unsigned long, struct page_container *);
-+void page_add_file_rmap(struct page *, struct page_container *);
- void page_remove_rmap(struct page *, struct vm_area_struct *);
- 
- /**
-diff -upr linux-2.6.20.orig/mm/fremap.c linux-2.6.20-2/mm/fremap.c
---- linux-2.6.20.orig/mm/fremap.c	2007-03-06 19:09:50.000000000 +0300
-+++ linux-2.6.20-2/mm/fremap.c	2007-04-09 11:26:06.000000000 +0400
-@@ -20,6 +20,8 @@
- #include <asm/cacheflush.h>
- #include <asm/tlbflush.h>
- 
-+#include <linux/rss_container.h>
-+
- static int zap_pte(struct mm_struct *mm, struct vm_area_struct *vma,
- 			unsigned long addr, pte_t *ptep)
- {
-@@ -57,6 +59,10 @@ int install_page(struct mm_struct *mm, s
- 	pte_t *pte;
- 	pte_t pte_val;
- 	spinlock_t *ptl;
-+	struct page_container *pcont;
-+
-+	if (container_rss_prepare(page, vma, &pcont))
-+		goto out_release;
- 
- 	pte = get_locked_pte(mm, addr, &ptl);
- 	if (!pte)
-@@ -81,13 +87,16 @@ int install_page(struct mm_struct *mm, s
- 	flush_icache_page(vma, page);
- 	pte_val = mk_pte(page, prot);
- 	set_pte_at(mm, addr, pte, pte_val);
--	page_add_file_rmap(page);
-+	page_add_file_rmap(page, pcont);
- 	update_mmu_cache(vma, addr, pte_val);
- 	lazy_mmu_prot_update(pte_val);
- 	err = 0;
- unlock:
- 	pte_unmap_unlock(pte, ptl);
- out:
-+	if (err != 0)
-+		container_rss_release(pcont);
-+out_release:
- 	return err;
- }
- EXPORT_SYMBOL(install_page);
-diff -upr linux-2.6.20.orig/mm/memory.c linux-2.6.20-2/mm/memory.c
---- linux-2.6.20.orig/mm/memory.c	2007-03-06 19:09:50.000000000 +0300
-+++ linux-2.6.20-2/mm/memory.c	2007-04-09 11:26:06.000000000 +0400
-@@ -60,6 +60,8 @@
- #include <linux/swapops.h>
- #include <linux/elf.h>
- 
-+#include <linux/rss_container.h>
-+
- #ifndef CONFIG_NEED_MULTIPLE_NODES
- /* use the per-pgdat data instead for discontigmem - mbligh */
- unsigned long max_mapnr;
-@@ -1126,7 +1128,7 @@ static int zeromap_pte_range(struct mm_s
- 			break;
- 		}
- 		page_cache_get(page);
--		page_add_file_rmap(page);
-+		page_add_file_rmap(page, NULL);
- 		inc_mm_counter(mm, file_rss);
- 		set_pte_at(mm, addr, pte, zero_pte);
- 	} while (pte++, addr += PAGE_SIZE, addr != end);
-@@ -1234,7 +1236,7 @@ static int insert_page(struct mm_struct 
- 	/* Ok, finally just insert the thing.. */
- 	get_page(page);
- 	inc_mm_counter(mm, file_rss);
--	page_add_file_rmap(page);
-+	page_add_file_rmap(page, NULL);
- 	set_pte_at(mm, addr, pte, mk_pte(page, prot));
- 
- 	retval = 0;
-@@ -1495,6 +1497,7 @@ static int do_wp_page(struct mm_struct *
- 	pte_t entry;
- 	int reuse = 0, ret = VM_FAULT_MINOR;
- 	struct page *dirty_page = NULL;
-+	struct page_container *pcont;
- 
- 	old_page = vm_normal_page(vma, address, orig_pte);
- 	if (!old_page)
-@@ -1580,6 +1583,9 @@ gotten:
- 		cow_user_page(new_page, old_page, address, vma);
- 	}
- 
-+	if (container_rss_prepare(new_page, vma, &pcont))
-+		goto oom;
-+
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
-@@ -1607,12 +1613,14 @@ gotten:
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
- 		lru_cache_add_active(new_page);
--		page_add_new_anon_rmap(new_page, vma, address);
-+		page_add_new_anon_rmap(new_page, vma, address, pcont);
- 
- 		/* Free the old page.. */
- 		new_page = old_page;
- 		ret |= VM_FAULT_WRITE;
--	}
-+	} else
-+		container_rss_release(pcont);
-+
- 	if (new_page)
- 		page_cache_release(new_page);
- 	if (old_page)
-@@ -1988,6 +1996,7 @@ static int do_swap_page(struct mm_struct
- 	swp_entry_t entry;
- 	pte_t pte;
- 	int ret = VM_FAULT_MINOR;
-+	struct page_container *pcont;
- 
- 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
- 		goto out;
-@@ -2020,6 +2029,11 @@ static int do_swap_page(struct mm_struct
- 		count_vm_event(PGMAJFAULT);
- 	}
- 
-+	if (container_rss_prepare(page, vma, &pcont)) {
-+		ret = VM_FAULT_OOM;
-+		goto out;
-+	}
-+
- 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
- 	mark_page_accessed(page);
- 	lock_page(page);
-@@ -2033,6 +2047,7 @@ static int do_swap_page(struct mm_struct
- 
- 	if (unlikely(!PageUptodate(page))) {
- 		ret = VM_FAULT_SIGBUS;
-+		container_rss_release(pcont);
- 		goto out_nomap;
- 	}
- 
-@@ -2047,7 +2062,7 @@ static int do_swap_page(struct mm_struct
- 
- 	flush_icache_page(vma, page);
- 	set_pte_at(mm, address, page_table, pte);
--	page_add_anon_rmap(page, vma, address);
-+	page_add_anon_rmap(page, vma, address, pcont);
- 
- 	swap_free(entry);
- 	if (vm_swap_full())
-@@ -2069,6 +2084,7 @@ unlock:
- out:
- 	return ret;
- out_nomap:
-+	container_rss_release(pcont);
- 	pte_unmap_unlock(page_table, ptl);
- 	unlock_page(page);
- 	page_cache_release(page);
-@@ -2087,6 +2103,7 @@ static int do_anonymous_page(struct mm_s
- 	struct page *page;
- 	spinlock_t *ptl;
- 	pte_t entry;
-+	struct page_container *pcont;
- 
- 	if (write_access) {
- 		/* Allocate our own private page. */
-@@ -2098,15 +2115,19 @@ static int do_anonymous_page(struct mm_s
- 		if (!page)
- 			goto oom;
- 
-+		if (container_rss_prepare(page, vma, &pcont))
-+			goto oom_release;
-+
- 		entry = mk_pte(page, vma->vm_page_prot);
- 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 
- 		page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 		if (!pte_none(*page_table))
--			goto release;
-+			goto release_container;
-+
- 		inc_mm_counter(mm, anon_rss);
- 		lru_cache_add_active(page);
--		page_add_new_anon_rmap(page, vma, address);
-+		page_add_new_anon_rmap(page, vma, address, pcont);
- 	} else {
- 		/* Map the ZERO_PAGE - vm_page_prot is readonly */
- 		page = ZERO_PAGE(address);
-@@ -2118,7 +2139,7 @@ static int do_anonymous_page(struct mm_s
- 		if (!pte_none(*page_table))
- 			goto release;
- 		inc_mm_counter(mm, file_rss);
--		page_add_file_rmap(page);
-+		page_add_file_rmap(page, NULL);
- 	}
- 
- 	set_pte_at(mm, address, page_table, entry);
-@@ -2129,9 +2150,14 @@ static int do_anonymous_page(struct mm_s
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
- 	return VM_FAULT_MINOR;
-+release_container:
-+	container_rss_release(pcont);
- release:
- 	page_cache_release(page);
- 	goto unlock;
-+
-+oom_release:
-+	page_cache_release(page);
- oom:
- 	return VM_FAULT_OOM;
- }
-@@ -2161,6 +2187,7 @@ static int do_no_page(struct mm_struct *
- 	int ret = VM_FAULT_MINOR;
- 	int anon = 0;
- 	struct page *dirty_page = NULL;
-+	struct page_container *pcont;
- 
- 	pte_unmap(page_table);
- 	BUG_ON(vma->vm_flags & VM_PFNMAP);
-@@ -2218,6 +2245,9 @@ retry:
- 		}
- 	}
- 
-+	if (container_rss_prepare(new_page, vma, &pcont))
-+		goto oom;
-+
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 	/*
- 	 * For a file-backed vma, someone could have truncated or otherwise
-@@ -2226,6 +2256,7 @@ retry:
- 	 */
- 	if (mapping && unlikely(sequence != mapping->truncate_count)) {
- 		pte_unmap_unlock(page_table, ptl);
-+		container_rss_release(pcont);
- 		page_cache_release(new_page);
- 		cond_resched();
- 		sequence = mapping->truncate_count;
-@@ -2253,10 +2284,10 @@ retry:
- 		if (anon) {
- 			inc_mm_counter(mm, anon_rss);
- 			lru_cache_add_active(new_page);
--			page_add_new_anon_rmap(new_page, vma, address);
-+			page_add_new_anon_rmap(new_page, vma, address, pcont);
- 		} else {
- 			inc_mm_counter(mm, file_rss);
--			page_add_file_rmap(new_page);
-+			page_add_file_rmap(new_page, pcont);
- 			if (write_access) {
- 				dirty_page = new_page;
- 				get_page(dirty_page);
-@@ -2264,6 +2295,7 @@ retry:
- 		}
- 	} else {
- 		/* One of our sibling threads was faster, back out. */
-+		container_rss_release(pcont);
- 		page_cache_release(new_page);
- 		goto unlock;
- 	}
-diff -upr linux-2.6.20.orig/mm/migrate.c linux-2.6.20-2/mm/migrate.c
---- linux-2.6.20.orig/mm/migrate.c	2007-03-06 19:09:50.000000000 +0300
-+++ linux-2.6.20-2/mm/migrate.c	2007-04-09 11:26:06.000000000 +0400
-@@ -28,6 +28,7 @@
- #include <linux/mempolicy.h>
- #include <linux/vmalloc.h>
- #include <linux/security.h>
-+#include <linux/rss_container.h>
+diff -upr linux-2.6.20.orig/mm/vmscan.c linux-2.6.20-2/mm/vmscan.c
+--- linux-2.6.20.orig/mm/vmscan.c	2007-03-06 19:09:50.000000000 +0300
++++ linux-2.6.20-2/mm/vmscan.c	2007-04-09 11:26:06.000000000 +0400
+@@ -45,6 +45,8 @@
  
  #include "internal.h"
  
-@@ -134,6 +135,7 @@ static void remove_migration_pte(struct 
- 	pte_t *ptep, pte;
-  	spinlock_t *ptl;
- 	unsigned long addr = page_address_in_vma(new, vma);
-+	struct page_container *pcont;
- 
- 	if (addr == -EFAULT)
- 		return;
-@@ -157,6 +159,11 @@ static void remove_migration_pte(struct 
-  		return;
-  	}
- 
-+	if (container_rss_prepare(new, vma, &pcont)) {
-+		pte_unmap(ptep);
-+		return;
-+	}
++#include <linux/rss_container.h>
 +
-  	ptl = pte_lockptr(mm, pmd);
-  	spin_lock(ptl);
- 	pte = *ptep;
-@@ -175,16 +182,19 @@ static void remove_migration_pte(struct 
- 	set_pte_at(mm, addr, ptep, pte);
+ struct scan_control {
+ 	/* Incremented by the number of inactive pages that were scanned */
+ 	unsigned long nr_scanned;
+@@ -66,6 +68,10 @@ struct scan_control {
+ 	int swappiness;
  
- 	if (PageAnon(new))
--		page_add_anon_rmap(new, vma, addr);
-+		page_add_anon_rmap(new, vma, addr, pcont);
- 	else
--		page_add_file_rmap(new);
-+		page_add_file_rmap(new, pcont);
- 
- 	/* No need to invalidate - it was non-present before */
- 	update_mmu_cache(vma, addr, pte);
- 	lazy_mmu_prot_update(pte);
-+	pte_unmap_unlock(ptep, ptl);
-+	return;
- 
- out:
- 	pte_unmap_unlock(ptep, ptl);
-+	container_rss_release(pcont);
- }
+ 	int all_unreclaimable;
++	struct rss_container *cnt;
++	unsigned long (*isolate_pages)(unsigned long nr, struct list_head *dst,
++			unsigned long *scanned, struct zone *zone,
++			struct rss_container *cont, int active);
+ };
  
  /*
-diff -upr linux-2.6.20.orig/mm/rmap.c linux-2.6.20-2/mm/rmap.c
---- linux-2.6.20.orig/mm/rmap.c	2007-03-06 19:09:50.000000000 +0300
-+++ linux-2.6.20-2/mm/rmap.c	2007-04-09 11:26:06.000000000 +0400
-@@ -51,6 +51,8 @@
+@@ -654,6 +660,17 @@ static unsigned long isolate_lru_pages(u
+ 	return nr_taken;
+ }
  
- #include <asm/tlbflush.h>
- 
-+#include <linux/rss_container.h>
++static unsigned long isolate_pages_global(unsigned long nr,
++		struct list_head *dst, unsigned long *scanned,
++		struct zone *z, struct rss_container *cont,
++		int active)
++{
++	if (active)
++		return isolate_lru_pages(nr, &z->active_list, dst, scanned);
++	else
++		return isolate_lru_pages(nr, &z->inactive_list, dst, scanned);
++}
 +
- struct kmem_cache *anon_vma_cachep;
+ /*
+  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+  * of reclaimed pages
+@@ -676,9 +693,9 @@ static unsigned long shrink_inactive_lis
+ 		unsigned long nr_scan;
+ 		unsigned long nr_freed;
  
- static inline void validate_anon_vma(struct vm_area_struct *find_vma)
-@@ -526,14 +528,19 @@ static void __page_set_anon_rmap(struct 
-  * @page:	the page to add the mapping to
-  * @vma:	the vm area in which the mapping is added
-  * @address:	the user virtual address mapped
-+ * @pcont:	the page beancounter to charge page with
-  *
-  * The caller needs to hold the pte lock.
-  */
- void page_add_anon_rmap(struct page *page,
--	struct vm_area_struct *vma, unsigned long address)
-+	struct vm_area_struct *vma, unsigned long address,
-+	struct page_container *pcont)
- {
--	if (atomic_inc_and_test(&page->_mapcount))
-+	if (atomic_inc_and_test(&page->_mapcount)) {
-+		container_rss_add(pcont);
- 		__page_set_anon_rmap(page, vma, address);
-+	} else
-+		container_rss_release(pcont);
- 	/* else checking page index and mapping is racy */
- }
- 
-@@ -542,27 +549,35 @@ void page_add_anon_rmap(struct page *pag
-  * @page:	the page to add the mapping to
-  * @vma:	the vm area in which the mapping is added
-  * @address:	the user virtual address mapped
-+ * @pcont:	the page beancounter to charge page with
-  *
-  * Same as page_add_anon_rmap but must only be called on *new* pages.
-  * This means the inc-and-test can be bypassed.
-  */
- void page_add_new_anon_rmap(struct page *page,
--	struct vm_area_struct *vma, unsigned long address)
-+	struct vm_area_struct *vma, unsigned long address,
-+	struct page_container *pcont)
- {
- 	atomic_set(&page->_mapcount, 0); /* elevate count by 1 (starts at -1) */
-+	container_rss_add(pcont);
- 	__page_set_anon_rmap(page, vma, address);
- }
- 
- /**
-  * page_add_file_rmap - add pte mapping to a file page
-- * @page: the page to add the mapping to
-+ * @page:	the page to add the mapping to
-+ * @pcont:	the page beancounter to charge page with
-  *
-  * The caller needs to hold the pte lock.
-  */
--void page_add_file_rmap(struct page *page)
-+void page_add_file_rmap(struct page *page, struct page_container *pcont)
- {
--	if (atomic_inc_and_test(&page->_mapcount))
-+	if (atomic_inc_and_test(&page->_mapcount)) {
-+		if (pcont)
-+			container_rss_add(pcont);
- 		__inc_zone_page_state(page, NR_FILE_MAPPED);
-+	} else if (pcont)
-+		container_rss_release(pcont);
- }
- 
- /**
-@@ -573,6 +588,9 @@ void page_add_file_rmap(struct page *pag
-  */
- void page_remove_rmap(struct page *page, struct vm_area_struct *vma)
- {
-+	struct page_container *pcont;
+-		nr_taken = isolate_lru_pages(sc->swap_cluster_max,
+-					     &zone->inactive_list,
+-					     &page_list, &nr_scan);
++		nr_taken = sc->isolate_pages(sc->swap_cluster_max, &page_list,
++				&nr_scan, zone, sc->cnt, 0);
 +
-+	pcont = page_container(page);
- 	if (atomic_add_negative(-1, &page->_mapcount)) {
- 		if (unlikely(page_mapcount(page) < 0)) {
- 			printk (KERN_EMERG "Eeek! page_mapcount(page) went negative! (%d)\n", page_mapcount(page));
-@@ -588,6 +606,8 @@ void page_remove_rmap(struct page *page,
- 			BUG();
+ 		zone->nr_inactive -= nr_taken;
+ 		zone->pages_scanned += nr_scan;
+ 		spin_unlock_irq(&zone->lru_lock);
+@@ -822,8 +839,8 @@ force_reclaim_mapped:
+ 
+ 	lru_add_drain();
+ 	spin_lock_irq(&zone->lru_lock);
+-	pgmoved = isolate_lru_pages(nr_pages, &zone->active_list,
+-				    &l_hold, &pgscanned);
++	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, zone,
++			sc->cnt, 1);
+ 	zone->pages_scanned += pgscanned;
+ 	zone->nr_active -= pgmoved;
+ 	spin_unlock_irq(&zone->lru_lock);
+@@ -1012,7 +1031,9 @@ static unsigned long shrink_zones(int pr
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
+  */
+-unsigned long try_to_free_pages(struct zone **zones, gfp_t gfp_mask)
++
++static unsigned long do_try_to_free_pages(struct zone **zones, gfp_t gfp_mask,
++		struct scan_control *sc)
+ {
+ 	int priority;
+ 	int ret = 0;
+@@ -1021,13 +1042,6 @@ unsigned long try_to_free_pages(struct z
+ 	struct reclaim_state *reclaim_state = current->reclaim_state;
+ 	unsigned long lru_pages = 0;
+ 	int i;
+-	struct scan_control sc = {
+-		.gfp_mask = gfp_mask,
+-		.may_writepage = !laptop_mode,
+-		.swap_cluster_max = SWAP_CLUSTER_MAX,
+-		.may_swap = 1,
+-		.swappiness = vm_swappiness,
+-	};
+ 
+ 	count_vm_event(ALLOCSTALL);
+ 
+@@ -1041,17 +1055,18 @@ unsigned long try_to_free_pages(struct z
+ 	}
+ 
+ 	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+-		sc.nr_scanned = 0;
++		sc->nr_scanned = 0;
+ 		if (!priority)
+ 			disable_swap_token();
+-		nr_reclaimed += shrink_zones(priority, zones, &sc);
+-		shrink_slab(sc.nr_scanned, gfp_mask, lru_pages);
++		nr_reclaimed += shrink_zones(priority, zones, sc);
++		if (sc->cnt == NULL)
++			shrink_slab(sc->nr_scanned, gfp_mask, lru_pages);
+ 		if (reclaim_state) {
+ 			nr_reclaimed += reclaim_state->reclaimed_slab;
+ 			reclaim_state->reclaimed_slab = 0;
  		}
- 
-+		if (pcont)
-+			container_rss_del(pcont);
- 		/*
- 		 * It would be tidy to reset the PageAnon mapping here,
- 		 * but that might overwrite a racing page_add_anon_rmap
-diff -upr linux-2.6.20.orig/mm/swapfile.c linux-2.6.20-2/mm/swapfile.c
---- linux-2.6.20.orig/mm/swapfile.c	2007-03-06 19:09:50.000000000 +0300
-+++ linux-2.6.20-2/mm/swapfile.c	2007-04-09 11:26:06.000000000 +0400
-@@ -32,6 +32,8 @@
- #include <asm/tlbflush.h>
- #include <linux/swapops.h>
- 
-+#include <linux/rss_container.h>
-+
- DEFINE_SPINLOCK(swap_lock);
- unsigned int nr_swapfiles;
- long total_swap_pages;
-@@ -507,13 +509,14 @@ unsigned int count_swap_pages(int type, 
-  * force COW, vm_page_prot omits write permission from any private vma.
-  */
- static void unuse_pte(struct vm_area_struct *vma, pte_t *pte,
--		unsigned long addr, swp_entry_t entry, struct page *page)
-+		unsigned long addr, swp_entry_t entry, struct page *page,
-+		struct page_container *pcont)
- {
- 	inc_mm_counter(vma->vm_mm, anon_rss);
- 	get_page(page);
- 	set_pte_at(vma->vm_mm, addr, pte,
- 		   pte_mkold(mk_pte(page, vma->vm_page_prot)));
--	page_add_anon_rmap(page, vma, addr);
-+	page_add_anon_rmap(page, vma, addr, pcont);
- 	swap_free(entry);
- 	/*
- 	 * Move the page to the active list so it is not
-@@ -530,6 +533,10 @@ static int unuse_pte_range(struct vm_are
- 	pte_t *pte;
- 	spinlock_t *ptl;
- 	int found = 0;
-+	struct page_container *pcont;
-+
-+	if (container_rss_prepare(page, vma, &pcont))
-+		return 0;
- 
- 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
- 	do {
-@@ -538,12 +545,14 @@ static int unuse_pte_range(struct vm_are
- 		 * Test inline before going to call unuse_pte.
+-		total_scanned += sc.nr_scanned;
+-		if (nr_reclaimed >= sc.swap_cluster_max) {
++		total_scanned += sc->nr_scanned;
++		if (nr_reclaimed >= sc->swap_cluster_max) {
+ 			ret = 1;
+ 			goto out;
+ 		}
+@@ -1063,18 +1078,18 @@ unsigned long try_to_free_pages(struct z
+ 		 * that's undesirable in laptop mode, where we *want* lumpy
+ 		 * writeout.  So in laptop mode, write out the whole world.
  		 */
- 		if (unlikely(pte_same(*pte, swp_pte))) {
--			unuse_pte(vma, pte++, addr, entry, page);
-+			unuse_pte(vma, pte++, addr, entry, page, pcont);
- 			found = 1;
- 			break;
+-		if (total_scanned > sc.swap_cluster_max +
+-					sc.swap_cluster_max / 2) {
++		if (total_scanned > sc->swap_cluster_max +
++					sc->swap_cluster_max / 2) {
+ 			wakeup_pdflush(laptop_mode ? 0 : total_scanned);
+-			sc.may_writepage = 1;
++			sc->may_writepage = 1;
  		}
- 	} while (pte++, addr += PAGE_SIZE, addr != end);
- 	pte_unmap_unlock(pte - 1, ptl);
-+	if (!found)
-+		container_rss_release(pcont);
- 	return found;
+ 
+ 		/* Take a nap, wait for some writeback to complete */
+-		if (sc.nr_scanned && priority < DEF_PRIORITY - 2)
++		if (sc->nr_scanned && priority < DEF_PRIORITY - 2)
+ 			congestion_wait(WRITE, HZ/10);
+ 	}
+ 	/* top priority shrink_caches still had more to do? don't OOM, then */
+-	if (!sc.all_unreclaimable)
++	if (!sc->all_unreclaimable)
+ 		ret = 1;
+ out:
+ 	/*
+@@ -1097,6 +1112,21 @@ out:
+ 	return ret;
  }
  
++unsigned long try_to_free_pages(struct zone **zones, gfp_t gfp_mask)
++{
++	struct scan_control sc = {
++		.gfp_mask = gfp_mask,
++		.may_writepage = !laptop_mode,
++		.swap_cluster_max = SWAP_CLUSTER_MAX,
++		.may_swap = 1,
++		.swappiness = vm_swappiness,
++		.cnt = NULL,
++		.isolate_pages = isolate_pages_global,
++	};
++
++	return do_try_to_free_pages(zones, gfp_mask, &sc);
++}
++
+ /*
+  * For kswapd, balance_pgdat() will work across all this node's zones until
+  * they are all at pages_high.
+@@ -1131,6 +1190,8 @@ static unsigned long balance_pgdat(pg_da
+ 		.may_swap = 1,
+ 		.swap_cluster_max = SWAP_CLUSTER_MAX,
+ 		.swappiness = vm_swappiness,
++		.cnt = NULL,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 	/*
+ 	 * temp_priority is used to remember the scanning priority at which
+@@ -1436,6 +1497,8 @@ unsigned long shrink_all_memory(unsigned
+ 		.swap_cluster_max = nr_pages,
+ 		.may_writepage = 1,
+ 		.swappiness = vm_swappiness,
++		.cnt = NULL,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 
+ 	current->reclaim_state = &reclaim_state;
+@@ -1619,6 +1682,8 @@ static int __zone_reclaim(struct zone *z
+ 					SWAP_CLUSTER_MAX),
+ 		.gfp_mask = gfp_mask,
+ 		.swappiness = vm_swappiness,
++		.cnt = NULL,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 	unsigned long slab_reclaimable;
+ 
 
-
---------------090507000600070005070507--
+--------------050701030700060407010302--
