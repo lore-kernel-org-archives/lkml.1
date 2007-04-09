@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbXDIFXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbXDIFfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752928AbXDIFXP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 01:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbXDIFXP
+	id S1752960AbXDIFfy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 01:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXDIFfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 01:23:15 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:45739 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752929AbXDIFXO (ORCPT
+	Mon, 9 Apr 2007 01:35:53 -0400
+Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:37261 "HELO
+	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752945AbXDIFfw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 01:23:14 -0400
-Date: Mon, 09 Apr 2007 01:23:06 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Ten percent test
-In-reply-to: <1176092356.6355.18.camel@Homer.simpson.net>
-To: linux-kernel@vger.kernel.org
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-Message-id: <200704090123.08259.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200703290237.38777.kernel@kolivas.org>
- <200704081357.43370.gene.heskett@gmail.com>
- <1176092356.6355.18.camel@Homer.simpson.net>
-User-Agent: KMail/1.9.6
+	Mon, 9 Apr 2007 01:35:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=34bHMKMjSg4ct5/l8uvZgyUaZ6rOjDgYNg+I/rl9fUPtA/2xkq3otF0sPI4aXp0BcThWoiLFKPnROfcgqQYeTpjsjceBsW3FkTzQ+VDh2bcBh4gq4YfVSUpejexNDaPSi7vN1yf7/hcCJinD2yf/2U0cCzpX5t/1ipD7y97di58=  ;
+X-YMail-OSG: TJn1mEoVM1nJ3_wHUvdmdx.ao1uAu3TE31XKWdYYM26Ak56EuD_JTfjcdubHOLkDC6370eV4Pw--
+Date: Sun, 08 Apr 2007 22:35:49 -0700
+From: David Brownell <david-b@pacbell.net>
+To: rui.zhang@intel.com, greg@kroah.com
+Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org,
+       akpm@linux-foundation.org
+References: <200704031741.42273.david-b@pacbell.net>
+ <200704060843.30723.david-b@pacbell.net>
+ <20070407050131.GB25511@kroah.com>
+ <200704071308.07571.david-b@pacbell.net>
+ <1176086185.2650.28.camel@localhost.localdomain>
+In-Reply-To: <1176086185.2650.28.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070409053549.C7C64229527@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 April 2007, Mike Galbraith wrote:
->On Sun, 2007-04-08 at 13:57 -0400, Gene Heskett wrote:
->> On Sunday 08 April 2007, Mike Galbraith wrote:
->> >On Sun, 2007-04-08 at 13:40 +0200, Mike Galbraith wrote:
->> >> On Sun, 2007-04-08 at 07:33 -0400, Gene Heskett wrote:
->> >> > That seems to be the killer loading here, building a kernel (make
->> >> > -j3) doesn't seem to lag it all that bad.  One session of gzip
->> >> > -best makes it fall plumb over though, which was a
->> >> > disappointment.
->> >>
->> >> Can you make a testcase that doesn't require amanda?
->> >
->> >Or at least send me a couple of 5 or 10 second top snapshots (which
->> > also show CPU usage of sleeping tasks) while the system is
->> > misbehaving?
->> >
->> >	-Mike
->>
->> With what monitor utility?
+> On Sat, 2007-04-07 at 13:08 -0700, David Brownell wrote:
+> > On Friday 06 April 2007 10:01 pm, Greg KH wrote:
+> > 
+> > > Are you _sure_ you have a 1-to-1 relationship here?  No multiple devices
+> > > pointing to the same acpi node?  Or the other way around?  If so, you
+> > > are going to have to change the name to be something more unique.
+> > 
+> > I've wondered that too.  The short answer:  APCI only supports 1-1
+> > here.
 >
->Top.
+> Right.
 >
->	-Mike
+> >   It will emit warnings if it tries to bind more than one ACPI
+> > device to a given "real" device ... but errors the other way are
+> > silently ignored.
+>
+> My understanding is different.
+> First, one "real" device can only have one device.archdata.acpi_handle,
+> which means it can only be bound to one ACPI device.
+> Second, AE_ALREADY_EXISTS will be returned when ACPI tries to bind more
+> than one "real" devices to the same ACPI device.
 
-This may not be so informative, its almost behaving ATM.
+Exactly.  The "first" case emits a warning, the "second" case doesn't;
+no matter what it is (though I only saw ALREADY_EXISTS).
 
-29252 amanda    22   0  1856  572  220 R 76.4  0.1   1:07.24 gzip
-29235 amanda    15   0  2992 1224  888 S  5.6  0.1   0:02.80 chunker
-29500 root      18   0  2996 1164  788 S  4.0  0.1   0:02.40 tar
-10459 amanda    15   0  3340 1052  832 S  3.0  0.1   0:49.04 amandad
-10536 amanda    15   0  3276 1308 1004 S  2.3  0.1   0:40.92 dumper
-29496 amanda    18   0  2808  472  280 S  2.0  0.0   0:01.73 sendbackup
- 4057 gkrellmd  15   0 11568 1172  896 S  1.3  0.1   7:45.82 gkrellmd
-29498 amanda    18   0  2396  780  656 S  1.0  0.1   0:00.60 tar
-19183 root      15   0     0    0    0 S  0.7  0.0   0:01.92 pdflush
 
-I also note with some disdain that I'm half a megabyte into swap, but I've 
-had FF-2.0.0.3 busy for the last hour while amanda was trying to find a 
-few cycles at the same time.  Looking at a bunch of pdf's of circuit 
-boards to see if I wanna build them for my milling machine.
+When I added a warning to that case:
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Fatal Error: Found MS-Windows System -> Repartitioning Disk for Linux...
+> > By adding a warning over this create-links patch, I found that the
+> > system in the $SUBJECT patch (and likely every ACPI system) has
+> > two different nodes that correspond to one ACPI node:
+> > 
+> > 	/sys/devices/pci0000:00 ... pci root node
+> > 	/sys/devices/pnp0/00:00 ... id PNP0a03
+> > 	/sys/devices/acpi_system:00/device:00/PNP0A03:00 ... ditto
+> > 
+> > Arguably that's too many sysfs nodes for one device...
+
+Presumably you've noticed this same thing (not necessarily pnp0/00:00)
+on other systems ...
+
+
+> > Plus, there's the issue of flakey ACPI tables; in the $SUBJECT patch
+> > both MDM and AUD nodes exist in the ACPI namespace, but they could
+> > only refer to one PCI device (with MDM as the wakeup source, not AUD
+> > as listed in the table).  Or maybe that's another case where the ACPI
+> > code isn't handling the tables as sensibly as it might...
+>
+> Could you attach this acpidump please? :)
+
+Off-list; yes.
+
+- Dave
+
