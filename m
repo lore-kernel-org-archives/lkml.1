@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbXDISsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbXDIStO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbXDISsg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbXDISsg
+	id S932178AbXDIStO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXDIStN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:48:36 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55231 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbXDISsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:48:35 -0400
-Date: Mon, 9 Apr 2007 11:48:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, ak@suse.de
-Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
-Message-Id: <20070409114827.d3cbf705.akpm@linux-foundation.org>
-In-Reply-To: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Apr 2007 14:49:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53331 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753424AbXDIStM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 14:49:12 -0400
+Date: Mon, 9 Apr 2007 11:49:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
+ flag
+In-Reply-To: <20070409114545.3858d8f1.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704091146320.8783@schroedinger.engr.sgi.com>
+References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+ <20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
+ <20070406222336.4dcdd663.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
+ <20070407155148.94da92e8.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704071718530.31790@schroedinger.engr.sgi.com>
+ <20070407182506.4386dc13.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704071825510.32544@schroedinger.engr.sgi.com>
+ <20070407184801.b6f3f549.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704091105550.8331@schroedinger.engr.sgi.com>
+ <20070409114545.3858d8f1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  9 Apr 2007 11:25:09 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+On Mon, 9 Apr 2007, Andrew Morton wrote:
 
-> On x86_64 this cuts allocation overhead for page table pages down to
-> a fraction (kernel compile / editing load. TSC based measurement
-> of times spend in each function):
+> > The patch adds PageTail(page) and PageHead(page) to check if a page is the
+> > head or the tail of a compound page. This is done by masking the two
+> > bits describing the state of a compound page and then comparing them. So 
+> > one comparision and a branch instead of two bit checks and two branches.
+> > 
 > 
-> no quicklist
-> 
-> pte_alloc               1569048 4.3s(401ns/2.7us/179.7us)
-> pmd_alloc                780988 2.1s(337ns/2.7us/86.1us)
-> pud_alloc                780072 2.2s(424ns/2.8us/300.6us)
-> pgd_alloc                260022 1s(920ns/4us/263.1us)
-> 
-> quicklist:
-> 
-> pte_alloc                452436 573.4ms(8ns/1.3us/121.1us)
-> pmd_alloc                196204 174.5ms(7ns/889ns/46.1us)
-> pud_alloc                195688 172.4ms(7ns/881ns/151.3us)
-> pgd_alloc                 65228 9.8ms(8ns/150ns/6.1us)
-> 
-> pgd allocations are the most complex and there we see the most dramatic
-> improvement (may be we can cut down the amount of pgds cached somewhat?).
-> But even the pte allocations still see a doubling of performance.
+> OK.  I'm still a bit concerned about bypassing the bitops synchronisation:
+> barriers, volatile, etc.  We had lengthy ruminations on that a few years
+> ago, I think when working on free_pages_check().
 
-Was there any observeable change in overall runtime?
+Those are important for bits that are changing while a page is in use. 
+These are constant.
 
-What are the numbers in parentheses?
+> > +#define __SetPageTail(page)	page->flags |= PG_head_tail_mask
+> > +#define __ClearPageTail(page)	page->flags ~= PG_head_tail_mask
+> 
+> hm.  The lack of parenthesisation here _might_ be OK, but I haven't
+> thought it through.
+
+This is a command and not an expression. Ok will inline.
+ 
+> And I'd prefer not to have to, because I know that the do { } while (0)
+> thing works.  As do static inline functions.
+> 
+> > +#define PageHead(page)	((page->flags & PG_head_tail_mask) \
+> > +				== (1L << PG_compound))
+> > +#define __SetPageHead(page)	__SetCompoundPage(page)
+> > +#define __ClearPageHead(page)	__ClearCompoundPage(page)
+> 
+> You meant __SetPageCompound and __ClearPageCompound.
+
+Right.
+
