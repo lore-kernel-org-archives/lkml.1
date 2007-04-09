@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbXDIWBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXDIWDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbXDIWBn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 18:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbXDIWBm
+	id S1753025AbXDIWDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 18:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbXDIWDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 18:01:42 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38535 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbXDIWBk (ORCPT
+	Mon, 9 Apr 2007 18:03:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44740 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753025AbXDIWDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 18:01:40 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 10 Apr 2007 00:01:15 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: <linux/wait.h> uses definitions from <linux/sched.h> (was Re:
- 2.6.21-rc6-mm1)
-To: linux1394-devel@lists.sourceforge.net
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Torsten Kaiser <just.for.lkml@googlemail.com>
-In-Reply-To: <461AB361.5050207@s5r6.in-berlin.de>
-Message-ID: <tkrat.07a56906742bb41b@s5r6.in-berlin.de>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
- <64bb37e0704091203m7cb4adc9g1bf6bf179603cf4a@mail.gmail.com>
- <461AB361.5050207@s5r6.in-berlin.de>
+	Mon, 9 Apr 2007 18:03:20 -0400
+Date: Mon, 9 Apr 2007 15:03:19 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
+In-Reply-To: <20070409144107.21287fb8.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704091501230.2761@schroedinger.engr.sgi.com>
+References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
+ <20070409144107.21287fb8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote at lkml:
-> Torsten Kaiser wrote:
->> drivers/ieee1394/ieee1394_transactions.c fails for me if CONFIG_SMP=n
->> 
->> gcc complains:
->>  CC      drivers/ieee1394/ieee1394_transactions.o
->> drivers/ieee1394/ieee1394_transactions.c: In function 'hpsb_get_tlabel':
->> drivers/ieee1394/ieee1394_transactions.c:183: error:
->> 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
-> [...]
->> I fixed this by adding #include <linux/sched.h> before #include
->> <linux/wait.h>
->> But that is probably not the correct fix, but gives me a working kernel.
+On Mon, 9 Apr 2007, Andrew Morton wrote:
+
+> On Mon,  9 Apr 2007 11:25:09 -0700 (PDT)
+> Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> Thanks, I'll add this to linux1394-2.6.git (which exposed the problem)
-> ASAP.  On the other hand, the culprit is actually include/linux/wait.h
-> which IMO should include the headers it needs for itself.
+> > Quicklists for page table pages V5
+> 
+> So... we skipped i386 this time?
+> 
+> I'd have gone squeamish if it was included, due to the mystery crash when
+> we (effectively) set the list size to zero.  Someone(tm) should look into 
+> that - who knows, it might indicate a problem in generic code.
 
-And while I am at it:
-
-
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: ieee1394: some more includes
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/ieee1394_transactions.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-Index: linux/drivers/ieee1394/ieee1394_transactions.c
-===================================================================
---- linux.orig/drivers/ieee1394/ieee1394_transactions.c
-+++ linux/drivers/ieee1394/ieee1394_transactions.c
-@@ -10,13 +10,16 @@
-  */
- 
- #include <linux/bitops.h>
-+#include <linux/compiler.h>
- #include <linux/hardirq.h>
- #include <linux/spinlock.h>
-+#include <linux/string.h>
- #include <linux/sched.h>  /* because linux/wait.h is broken if CONFIG_SMP=n */
- #include <linux/wait.h>
- 
- #include <asm/bug.h>
- #include <asm/errno.h>
-+#include <asm/system.h>
- 
- #include "ieee1394.h"
- #include "ieee1394_types.h"
-
-
--- 
-Stefan Richter
--=====-=-=== -=-- -=--=
-http://arcgraph.de/sr/
+Yeah too many scary monsters in the i386 arch code. Maybe Bill Irwin can 
+take a look at how to make this work? He liked the benchmarking code that 
+I posted so he may have the tools to insure that it works right. Maybe he 
+can figure out some additional tricks on how to make quicklists work 
+better?
 
