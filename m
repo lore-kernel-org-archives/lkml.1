@@ -1,92 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965951AbXDIV13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030259AbXDIV2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965951AbXDIV13 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 17:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030258AbXDIV0v
+	id S1030259AbXDIV2E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 17:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965959AbXDIV1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 17:26:51 -0400
-Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:29279 "EHLO
-	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965940AbXDIV0R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 17:26:17 -0400
-X-ORBL: [67.117.73.34]
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Cc: Imre Deak <imre.deak@solidboot.com>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 4/6] ARM: OMAP: add SoSSI clock (remove manual checking of SoSSI state from idle)
-Date: Mon,  9 Apr 2007 17:25:42 -0400
-Message-Id: <11761539581152-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11761539553166-git-send-email-tony@atomide.com>
-References: <1176153944991-git-send-email-tony@atomide.com> <1176153948771-git-send-email-tony@atomide.com> <11761539511877-git-send-email-tony@atomide.com> <11761539553166-git-send-email-tony@atomide.com>
+	Mon, 9 Apr 2007 17:27:30 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:32895 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965880AbXDIV1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 17:27:15 -0400
+Date: Mon, 9 Apr 2007 14:27:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, ak@suse.de
+Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
+Message-Id: <20070409142705.55fa0f34.akpm@linux-foundation.org>
+In-Reply-To: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Imre Deak <imre.deak@solidboot.com>
+On Mon,  9 Apr 2007 11:25:09 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-The SoSSI driver should already take care of this by enabling / disabling
-its clock when necessary, so this legacy callout from the PM idle code
-is not needed any more.
+> Quicklists for page table pages V5
+> 
+> ...
+>
+> +/*
+> + * The two key functions quicklist_alloc and quicklist_free are inline so
+> + * that they may be custom compiled for the platform.
+> + * Specifying a NULL ctor can remove constructor support. Specifying
+> + * a constant quicklist allows the determination of the exact address
+> + * in the per cpu area.
+> + *
+> + * The fast patch in quicklist_alloc touched only a per cpu cacheline and
+> + * the first cacheline of the page itself. There is minmal overhead involved.
+> + */
+> +static inline void *quicklist_alloc(int nr, gfp_t flags, void (*ctor)(void *))
+> +{
+> +	struct quicklist *q;
+> +	void **p = NULL;
+> +
+> +	q =&get_cpu_var(quicklist)[nr];
+> +	p = q->page;
+> +	if (likely(p)) {
+> +		q->page = p[0];
+> +		p[0] = NULL;
+> +		q->nr_pages--;
+> +	}
+> +	put_cpu_var(quicklist);
+> +	if (likely(p))
+> +		return p;
+> +
+> +	p = (void *)__get_free_page(flags | __GFP_ZERO);
+> +	if (ctor && p)
+> +		ctor(p);
+> +	return p;
+> +}
+> +
+> +static inline void __quicklist_free(int nr, void (*dtor)(void *), void *p,
+> +	struct page *page)
+> +{
+> +	struct quicklist *q;
+> +	int nid = page_to_nid(page);
+> +
+> +	if (unlikely(nid != numa_node_id())) {
+> +		if (dtor)
+> +			dtor(p);
+> +		free_page((unsigned long)p);
 
-Signed-off-by: Imre Deak <imre.deak@solidboot.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap1/pm.c        |    5 +----
- arch/arm/plat-omap/dma.c        |    6 ------
- include/asm-arm/arch-omap/dma.h |    1 -
- 3 files changed, 1 insertions(+), 11 deletions(-)
+free_page() has to run virt_to_page(), but we already have the page*.
 
-Index: linux-2.6/arch/arm/mach-omap1/pm.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-omap1/pm.c	2007-04-09 16:38:12.000000000 -0400
-+++ linux-2.6/arch/arm/mach-omap1/pm.c	2007-04-09 16:39:10.000000000 -0400
-@@ -155,11 +155,8 @@ void omap_pm_idle(void)
- 	use_idlect1 = omap_dm_timer_modify_idlect_mask(use_idlect1);
- #endif
- 
--	if (omap_dma_running()) {
-+	if (omap_dma_running())
- 		use_idlect1 &= ~(1 << 6);
--		if (omap_lcd_dma_ext_running())
--			use_idlect1 &= ~(1 << 12);
--	}
- 
- 	/* We should be able to remove the do_sleep variable and multiple
- 	 * tests above as soon as drivers, timer and DMA code have been fixed.
-Index: linux-2.6/arch/arm/plat-omap/dma.c
-===================================================================
---- linux-2.6.orig/arch/arm/plat-omap/dma.c	2007-04-09 16:39:05.000000000 -0400
-+++ linux-2.6/arch/arm/plat-omap/dma.c	2007-04-09 16:39:10.000000000 -0400
-@@ -1347,11 +1347,6 @@ void omap_stop_lcd_dma(void)
- 	omap_writew(w, OMAP1610_DMA_LCD_CTRL);
- }
- 
--int omap_lcd_dma_ext_running(void)
--{
--	return lcd_dma.ext_ctrl && lcd_dma.active;
--}
--
- /*----------------------------------------------------------------------------*/
- 
- static int __init omap_init_dma(void)
-@@ -1493,7 +1488,6 @@ EXPORT_SYMBOL(omap_free_lcd_dma);
- EXPORT_SYMBOL(omap_enable_lcd_dma);
- EXPORT_SYMBOL(omap_setup_lcd_dma);
- EXPORT_SYMBOL(omap_stop_lcd_dma);
--EXPORT_SYMBOL(omap_lcd_dma_ext_running);
- EXPORT_SYMBOL(omap_set_lcd_dma_b1);
- EXPORT_SYMBOL(omap_set_lcd_dma_single_transfer);
- EXPORT_SYMBOL(omap_set_lcd_dma_ext_controller);
-Index: linux-2.6/include/asm-arm/arch-omap/dma.h
-===================================================================
---- linux-2.6.orig/include/asm-arm/arch-omap/dma.h	2007-04-09 16:38:12.000000000 -0400
-+++ linux-2.6/include/asm-arm/arch-omap/dma.h	2007-04-09 16:39:10.000000000 -0400
-@@ -417,7 +417,6 @@ extern void omap_free_lcd_dma(void);
- extern void omap_setup_lcd_dma(void);
- extern void omap_enable_lcd_dma(void);
- extern void omap_stop_lcd_dma(void);
--extern int  omap_lcd_dma_ext_running(void);
- extern void omap_set_lcd_dma_ext_controller(int external);
- extern void omap_set_lcd_dma_single_transfer(int single);
- extern void omap_set_lcd_dma_b1(unsigned long addr, u16 fb_xres, u16 fb_yres,
+> +		return;
+> +	}
+> +
+> +	q = &get_cpu_var(quicklist)[nr];
+> +	*(void **)p = q->page;
+> +	q->page = p;
+> +	q->nr_pages++;
+> +	put_cpu_var(quicklist);
+> +}
+> +
+> +static inline void quicklist_free(int nr, void (*dtor)(void *), void *pp)
+> +{
+> +	__quicklist_free(nr, dtor, pp, virt_to_page(pp));
+> +}
+> +
+> +static inline void quicklist_free_page(int nr, void (*dtor)(void *),
+> +							struct page *page)
+> +{
+> +	__quicklist_free(nr, dtor, page_address(page), page);
+> +}
+
+All this (still) seems way too big to be inlined.  I'm showing a 20-odd
+byte reduction in x86_64's memory.o text when it is uninlined.  Pretty
+modest I guess.
+
