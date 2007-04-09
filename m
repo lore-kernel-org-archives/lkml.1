@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbXDIU67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965564AbXDIVA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751615AbXDIU67 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXDIU67
+	id S965564AbXDIVA4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 17:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbXDIVA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:58:59 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:57078 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750999AbXDIU66 (ORCPT
+	Mon, 9 Apr 2007 17:00:56 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:34849 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752607AbXDIVAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:58:58 -0400
-Date: Mon, 9 Apr 2007 16:53:47 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: gerg@uclinux.org, uclinux-dev@uclinux.org, linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: m68knommu and vmlinux.lds.h RODATA
-Message-ID: <20070409205347.GA32267@Krystal>
+	Mon, 9 Apr 2007 17:00:55 -0400
+Subject: Re: [RFC][PATCH -mm] swsusp: Use rbtree for tracking allocated swap
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200704091503.57424.rjw@sisk.pl>
+References: <200704072320.40238.rjw@sisk.pl>
+	 <200704081847.16738.rjw@sisk.pl>
+	 <1176066445.10725.123.camel@nigel.suspend2.net>
+	 <200704091503.57424.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 10 Apr 2007 07:00:52 +1000
+Message-Id: <1176152452.10245.42.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 16:50:14 up 66 days, 10:57,  3 users,  load average: 1.56, 1.25, 1.13
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Hi.
 
-Is there any particular reason why m68knommu does not use the RODATA
-linker script macro defined in asm-generic/vmlinux.lds.h ? It makes it
-rather inconvenient to add new RO sections to the kernel.
+On Mon, 2007-04-09 at 15:03 +0200, Rafael J. Wysocki wrote:
+> On Sunday, 8 April 2007 23:07, Nigel Cunningham wrote:
+> [--snip--]
+> > > > Normal usage in both cases is simply iterating through the list, so I
+> > > > guess the cost would be approximately the same.
+> > > > 
+> > > > Deletion could would include rebalancing for the rb_nodes.
+> > > 
+> > > In swsusp the deletions are needed only if there's an error.
+> > 
+> > When freeing swap at the end of the cycle?
+> 
+> That depends on what you mean by 'the end'. :-)
+> 
+> We free swap if the image saving fails only, since it's allocated after we've
+> created the image.  After the resume, the state of swap from before the image
+> creation is the current one anyway.
 
-Regards,
+Ah, of course. I forgot that temporarily.
 
-Mathieu
+Nigel
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
