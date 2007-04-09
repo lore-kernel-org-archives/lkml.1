@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965997AbXDIVnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965967AbXDIVnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965997AbXDIVnd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 17:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965982AbXDIVnZ
+	id S965967AbXDIVnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 17:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbXDIVnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 17:43:25 -0400
-Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:32156 "EHLO
-	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965983AbXDIVaA (ORCPT
+	Mon, 9 Apr 2007 17:43:18 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37517 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932074AbXDIVnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 17:30:00 -0400
-X-ORBL: [67.117.73.34]
-From: Tony Lindgren <tony@atomide.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dirk Behme <dirk.behme@gmail.com>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 11/14] ARM: OMAP: H3 workqueue fixes
-Date: Mon,  9 Apr 2007 17:28:36 -0400
-Message-Id: <11761541721823-git-send-email-tony@atomide.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1176154169578-git-send-email-tony@atomide.com>
-References: <1176154119123-git-send-email-tony@atomide.com> <11761541231278-git-send-email-tony@atomide.com> <11761541282179-git-send-email-tony@atomide.com> <1176154139299-git-send-email-tony@atomide.com> <117615414325-git-send-email-tony@atomide.com> <1176154146826-git-send-email-tony@atomide.com> <11761541501423-git-send-email-tony@atomide.com> <1176154157419-git-send-email-tony@atomide.com> <117615416178-git-send-email-tony@atomide.com> <11761541643961-git-send-email-tony@atomide.com> <1176154169578-git-send-email-tony@atomide.com>
+	Mon, 9 Apr 2007 17:43:12 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <461AB361.5050207@s5r6.in-berlin.de>
+Date: Mon, 09 Apr 2007 23:42:57 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: <linux/wait.h> uses definitions from <linux/sched.h> (was Re: 2.6.21-rc6-mm1)
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <64bb37e0704091203m7cb4adc9g1bf6bf179603cf4a@mail.gmail.com>
+In-Reply-To: <64bb37e0704091203m7cb4adc9g1bf6bf179603cf4a@mail.gmail.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dirk Behme <dirk.behme@gmail.com>
+Torsten Kaiser wrote:
+> drivers/ieee1394/ieee1394_transactions.c fails for me if CONFIG_SMP=n
+> 
+> gcc complains:
+>  CC      drivers/ieee1394/ieee1394_transactions.o
+> drivers/ieee1394/ieee1394_transactions.c: In function 'hpsb_get_tlabel':
+> drivers/ieee1394/ieee1394_transactions.c:183: error:
+> 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+[...]
+> I fixed this by adding #include <linux/sched.h> before #include
+> <linux/wait.h>
+> But that is probably not the correct fix, but gives me a working kernel.
 
-Signed-off-by: Dirk Behme <dirk.behme@gmail.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap1/board-h3.c   |   12 +++++++-----
- include/asm-arm/arch-omap/irda.h |    1 +
- 2 files changed, 8 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/arch/arm/mach-omap1/board-h3.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-omap1/board-h3.c	2007-04-09 16:40:23.000000000 -0400
-+++ linux-2.6/arch/arm/mach-omap1/board-h3.c	2007-04-09 16:40:34.000000000 -0400
-@@ -296,9 +296,11 @@ static int h3_select_irda(struct device 
- 	return err;
- }
- 
--static void set_trans_mode(void *data)
-+static void set_trans_mode(struct work_struct *work)
- {
--	int *mode = data;
-+	struct omap_irda_config *irda_config =
-+		container_of(work, struct omap_irda_config, gpio_expa.work);
-+	int mode = irda_config->mode;
- 	unsigned char expa;
- 	int err = 0;
- 
-@@ -308,7 +310,7 @@ static void set_trans_mode(void *data)
- 
- 	expa &= ~0x03;
- 
--	if (*mode & IR_SIRMODE) {
-+	if (mode & IR_SIRMODE) {
- 		expa |= 0x01;
- 	} else { /* MIR/FIR */
- 		expa |= 0x03;
-@@ -323,9 +325,9 @@ static int h3_transceiver_mode(struct de
- {
- 	struct omap_irda_config *irda_config = dev->platform_data;
- 
-+	irda_config->mode = mode;
- 	cancel_delayed_work(&irda_config->gpio_expa);
--	PREPARE_WORK(&irda_config->gpio_expa, set_trans_mode, &mode);
--#error this is not permitted - mode is an argument variable
-+	PREPARE_DELAYED_WORK(&irda_config->gpio_expa, set_trans_mode);
- 	schedule_delayed_work(&irda_config->gpio_expa, 0);
- 
- 	return 0;
-Index: linux-2.6/include/asm-arm/arch-omap/irda.h
-===================================================================
---- linux-2.6.orig/include/asm-arm/arch-omap/irda.h	2007-04-09 16:38:12.000000000 -0400
-+++ linux-2.6/include/asm-arm/arch-omap/irda.h	2007-04-09 16:40:34.000000000 -0400
-@@ -31,6 +31,7 @@ struct omap_irda_config {
- 	unsigned long src_start;
- 	int tx_trigger;
- 	int rx_trigger;
-+	int mode;
- };
- 
- #endif
+Thanks, I'll add this to linux1394-2.6.git (which exposed the problem)
+ASAP.  On the other hand, the culprit is actually include/linux/wait.h
+which IMO should include the headers it needs for itself.
+-- 
+Stefan Richter
+-=====-=-=== -=-- -=--=
+http://arcgraph.de/sr/
