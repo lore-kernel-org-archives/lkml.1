@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751003AbXDIQi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbXDIQjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751003AbXDIQi2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 12:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXDIQi2
+	id S1752381AbXDIQjA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 12:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXDIQjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 12:38:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44400 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbXDIQi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 12:38:27 -0400
-Message-ID: <461A6679.7000206@redhat.com>
-Date: Mon, 09 Apr 2007 12:14:49 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.20.6
-References: <20070406202948.GU10574@sequoia.sous-sol.org>
-In-Reply-To: <20070406202948.GU10574@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Apr 2007 12:39:00 -0400
+Received: from lazybastard.de ([212.112.238.170]:60055 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbXDIQi6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 12:38:58 -0400
+Date: Mon, 9 Apr 2007 18:34:37 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: Interface for the new fallocate() system call
+Message-ID: <20070409163436.GA24012@lazybastard.org>
+References: <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071929.GC8365@osiris.boeblingen.de.ibm.com> <17932.54606.323431.491736@cargo.ozlabs.ibm.com> <20070330104449.GA9371@lazybastard.org> <17946.14646.808334.441833@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <17946.14646.808334.441833@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> We (the -stable team) are announcing the release of the 2.6.20.6 kernel.
-> This has 2 important fixes that should have been in 2.6.20.5.  They are
-> issues that were pointed with 2.6.20.5 patches during its review cycle,
-> but the patch updates were mistakenly dropped.  Please accept our
-> apologies for the mistake.
+On Mon, 9 April 2007 23:01:42 +1000, Paul Mackerras wrote:
+> Jörn Engel writes:
 > 
-> The diffstat and short summary of the fixes are below.
+> > Wouldn't that work be confined to fallocate()?  If I understand Heiko
+> > correctly, the alternative would slow s390 down for every syscall,
+> > including more performance-critical ones.
 > 
-> I'll also be replying to this message with a copy of the patch between
-> 2.6.20.5 and 2.6.20.6.
-> 
-> The updated 2.6.20.y git tree can be found at:
->         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
-> and can be browsed at the normal kernel.org git web browser:
->         www.kernel.org/git/
-> 
+> The alternative that Jakub suggested wouldn't slow s390 down.
 
-That tree is not up-to-date. So much for using it to track -stable --
-what should I use instead?
+True.  And it appears to be one of the least offensive options we have.
 
+Jörn
+
+-- 
+My second remark is that our intellectual powers are rather geared to
+master static relations and that our powers to visualize processes
+evolving in time are relatively poorly developed.
+-- Edsger W. Dijkstra
