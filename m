@@ -1,169 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbXDIRFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751743AbXDIRGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbXDIRFR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 13:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXDIRFR
+	id S1751743AbXDIRGe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 13:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXDIRGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 13:05:17 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:57413 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbXDIRFO (ORCPT
+	Mon, 9 Apr 2007 13:06:34 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44083 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbXDIRGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 13:05:14 -0400
-Date: Mon, 09 Apr 2007 13:05:08 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-In-reply-to: <20070409160047.GA609@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Dave Dillow <dave@thedillows.org>,
-       ray-gmail@madrabbit.org, amanda-hackers@amanda.org,
-       amanda-users@amanda.org
-Message-id: <200704091305.08779.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200704010100.19016.gene.heskett@verizon.net>
- <200704091133.44684.gene.heskett@gmail.com> <20070409160047.GA609@elte.hu>
-User-Agent: KMail/1.9.6
+	Mon, 9 Apr 2007 13:06:33 -0400
+Message-ID: <461A7246.60003@gmail.com>
+Date: Mon, 09 Apr 2007 19:05:10 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mike Galbraith <efault@gmx.de>, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Ten percent test
+References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu> <461939A4.2020305@gmail.com> <1176092598.6355.22.camel@Homer.simpson.net> <461A2E39.8060106@gmail.com> <20070409141516.GB11244@elte.hu>
+In-Reply-To: <20070409141516.GB11244@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 April 2007, Ingo Molnar wrote:
->* Gene Heskett <gene.heskett@gmail.com> wrote:
->> I'll try this, I just put both in the kernel command line for
->> 2.6.21-rc6, except I set it for the 238 it was at before the patch was
->> reverted.  I'd put the patch back in myself, but my searching of the
->> lkml corpus here hasn't turned it up.
->
->Andrew has already sent a revert patch to Linus and it's in -rc6. The
->commit is below.
->
-Is this not the patch that reverts it?  I want the patch that put it in, 
-because that will be a one time churn and be done with it, hopefully for 
-good.  As it is, its going crazy everytime I rebuild the kernel because 
-there are other "EXPERIMENTAL" things too, like md and pktcdvd that are 
-constantly sirring the pot and changing the device-mappers major, almost 
-on a per boot basis, and this is a hell of a lot less tolerable than a 1 
-time churn would have been.  Please note that the finger doing the 
-pointing here has two ends, one of which is pointed at the one who 
-started this fuss, aka me.  OTOH, that patch that apparently went in 
-sometime around 2.6.20.4-rc1 and 2.6.21-rc1, while it was a right patch, 
-needed a little more advertising as to what effect it might have.  You'll 
-recall I had several of you spinning wheels looking for the culprit, 
-something that _should_ have been deducible by looking at the changelog.
+On 04/09/2007 04:15 PM, Ingo Molnar wrote:
 
-As far as the churn is concerned someone has I believe started on a script 
-that will fix the churn by editing all the device numbers contained in 
-the reference files amanda feeds tar for its 'is it new' detection, to 
-whatever the current number is, hopefully something I can incorporate 
-into my GenesAmandaHelper package as a separate script to be run 10 
-minutes ahead of amdump, or even as a sequential execution.
+> * Rene Herman <rene.herman@gmail.com> wrote:
+> 
+>> To me, the example rather serves as confirmation of what Kolivas
+>> has been saying; endlessly tweaking the tweaks isn't going
+>> anywhere.
+> 
+> but ... SD clearly regresses in some areas, so by that logic SD isnt
+> going anywhere either?
 
-FWIW, contact with the tar folks has not been productive in this, their 
-attitude is that if the device number changed, its a new disk, and if its 
-not stable, then its a linux problem and linux should fix it.  And 
-grudgingly, I have to admit they are righter than we are in this 
-particular dogfight.  I have the -rc5 patch here, and if I thought I 
-would recognize it properly, I'd slice it out and use it on rc6 + plus, 
-until applying it breaks, indicating its been re-applied by you.  I 
-would, in the meantime, have a stable system again.
+No. The logic isn't that (performance and other) characteristics must 
+always be exactly the same between two schedulers, the logic is that 
+having one of them turn into a contrived heap of heuristics where every 
+progression on one front turns into a regression on another means that 
+one is on a dead-end road.
 
+Now ofcourse, while not needing to behave the same in all conceivable 
+situations, any alternative like SD needs to behave _well_ and for me, 
+it is currently, while just using it.
 
->	Ingo
->
->------------>
->commit 2363cc0264c42636e9e7622f78dde5c2f66beb8e
->Author: Andrew Morton <akpm@linux-foundation.org>
->Date:   Wed Apr 4 19:08:22 2007 -0700
->
->    [PATCH] remove protection of LANANA-reserved majors
->
->    Revert all this.  It can cause device-mapper to receive a different
-> major from earlier kernels and it turns out that the Amanda backup
-> program (via GNU tar, apparently) checks major numbers on files when
-> performing incremental backups.
->
->    Which is a bit broken of Amanda (or tar), but this feature isn't
-> important enough to justify the churn.
->
->    Cc: Ingo Molnar <mingo@elte.hu>
->    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
->
->diff --git a/block/genhd.c b/block/genhd.c
->index 050a1f0..441432a 100644
->--- a/block/genhd.c
->+++ b/block/genhd.c
->@@ -62,8 +62,6 @@ int register_blkdev(unsigned int major, const char
-> *name) /* temporary */
-> 	if (major == 0) {
-> 		for (index = ARRAY_SIZE(major_names)-1; index > 0; index--) {
->-			if (is_lanana_major(index))
->-				continue;
-> 			if (major_names[index] == NULL)
-> 				break;
-> 		}
->diff --git a/drivers/base/core.c b/drivers/base/core.c
->index ad0f4a2..d7fcf82 100644
->--- a/drivers/base/core.c
->+++ b/drivers/base/core.c
->@@ -28,20 +28,6 @@ int (*platform_notify)(struct device * dev) = NULL;
-> int (*platform_notify_remove)(struct device * dev) = NULL;
->
-> /*
->- * Detect the LANANA-assigned LOCAL/EXPERIMENTAL majors
->- */
->-bool is_lanana_major(unsigned int major)
->-{
->-	if (major >= 60 && major <= 63)
->-		return 1;
->-	if (major >= 120 && major <= 127)
->-		return 1;
->-	if (major >= 240 && major <= 254)
->-		return 1;
->-	return 0;
->-}
->-
->-/*
->  * sysfs bindings for devices.
->  */
->
->diff --git a/fs/char_dev.c b/fs/char_dev.c
->index 78ced72..164a45c 100644
->--- a/fs/char_dev.c
->+++ b/fs/char_dev.c
->@@ -109,8 +109,6 @@ __register_chrdev_region(unsigned int major,
-> unsigned int baseminor, /* temporary */
-> 	if (major == 0) {
-> 		for (i = ARRAY_SIZE(chrdevs)-1; i > 0; i--) {
->-			if (is_lanana_major(i))
->-				continue;
-> 			if (chrdevs[i] == NULL)
-> 				break;
-> 		}
->diff --git a/include/linux/kdev_t.h b/include/linux/kdev_t.h
->index 4c2c373..2dacab8 100644
->--- a/include/linux/kdev_t.h
->+++ b/include/linux/kdev_t.h
->@@ -87,8 +87,6 @@ static inline unsigned sysv_minor(u32 dev)
-> 	return dev & 0x3ffff;
-> }
->
->-bool is_lanana_major(unsigned int major);
->-
-> #else /* __KERNEL__ */
->
-> /*
+> note that i still like the basic idea about SD, that it is an
+> experiment that if the only conceptual focus is on "scheduling
+> fairness", we'll get a better scheduler. But for that to work out two
+> things have to be done i think:
+> 
+> - the code actually has to match that stated goal. Right now it 
+>   diverges from it (it is not a "fair" scheduler), and it's not clear 
+>   why.
 
+I read most of the discussion centering around that specific point as 
+well, and frankly, I mostly came away from it thinking "so what?". It 
+seems this is largely an issue of you and Kolivas disagreeing on what 
+needs to be called design and what needs to be called implementation, 
+but more importantly I feel a solution is to just shy away from the 
+inherently subjective word "fair". If you feel that some of the things 
+SD does need to be called "unfair" as much as mainline, so be it, but do 
+you think that SD is less _predictably_ fair or unfair than mainline?
 
+This is what I consider to be very important; if my retarted kid brother 
+sometimes walk left and sometimes right when I tell him to walk forward, 
+I can't go stand to the right and say "nono, forward I said". If on the 
+right there's a highway, you can imagine what that means... All software 
+is stupid, but the one that's predictably so allows you to compensate.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Q:	Why do the police always travel in threes?
-A:	One to do the reading, one to do the writing, and the other keeps
-	an eye on the two intellectuals.
+> this "provide fairness" goal is quite important, because if SD's code
+> is not only about providing fairness, what is the rest of the logic
+> doing? Are they "tweaks", to achieve interactivity? If yes, why are
+> they not marked as such? I.e. will we go down the _same_ road again,
+> but this time with a much less clearly defined rule for what a
+> "tweak" is?
+
+One answer to that is that it's much less important what a tweak is as 
+long as it's the same always. If I then don't like the definition I'll 
+just define it the other way around privately and be done with it. I do 
+believe that SDs objective is not fairness as such, it's predictability. 
+Being "fair" was postulated as a condition for being so, but let's not 
+put too much focus on that one point; it's a matter of definitions (and 
+taste) and secondary.
+
+> So _if_ we accept that scheduling must include a fair dose of
+> heuristics (which i tend to think it has to), we are perhaps better
+> off with an interactivity design that _accepts_ this fundamental fact
+> and separates heuristics from core scheduling.
+
+I agree that the demands on a (one) general purpose scheduler are so 
+diverse that it's impossible to have one that doesn't break down under 
+some set of conditions. The mainline scheduler does so, and SD does so. 
+What SD does is take some of the guesswork out of it. I haven't needed 
+anything like it yet, but I wouldn't feel particularly bad about, say, 
+renicing a kernel compile upon having audio stutter while I'm browsing eBay.
+
+The "I haven't needed anything like it" is important; I ofcourse only 
+wouldn't mind it under the condition that what I consider loads that my 
+desktop should be able to handle without problem don't need anything 
+special. If I'd transpose this load onto the Pentium 1 that's sitting at 
+my feet, I wouldn't mind at all though.
+
+> Right now i dont see the SD proponents even _accepting_ that even the
+> current SD code does include heuristics.
+> 
+> the other one is:
+> 
+>  - the code has to demonstrate that it can flexibly react to various 
+>    complaints of regressions.
+
+With one important point -- if every single _change_ in behaviour is 
+going to be defined a regression, then obviously noone will ever again 
+be able to change anything fundamental. Behaviour is being changed since 
+people see current behaviour as not being desireable. Predictability for 
+one is in my opinion a strong enough "progression" that I'm willing to 
+mark of a few "regressions" against it.
+
+> (I identified a few problem workloads that we tend to care about and
+> i havent seen much progress with them - but i really reserve
+> judgement about that, given Con's medical condition.)
+
+Indeed. Going forward with it while its main developer is out might be 
+unwise ofcourse. From his emails I gather he'll be out for some time, 
+but hey, after kernel N+1, there'll probably be a kernel N+2...
+
+I'd just hate to see this being blocked outright. It seems to be 
+performing so nicely for me.
+
+Rene.
+
