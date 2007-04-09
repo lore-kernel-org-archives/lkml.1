@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbXDIUQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555AbXDIUY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbXDIUQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbXDIUQn
+	id S1751555AbXDIUY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbXDIUY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:16:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56139 "EHLO ogre.sisk.pl"
+	Mon, 9 Apr 2007 16:24:28 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:58971 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752989AbXDIUQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:16:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Mon, 9 Apr 2007 22:20:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-References: <460B6E4B.3060004@gmail.com> <200704031250.07307.rjw@sisk.pl> <461A9D12.1060106@gmail.com>
-In-Reply-To: <461A9D12.1060106@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1751615AbXDIUY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:24:27 -0400
+Date: Mon, 9 Apr 2007 13:23:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       David Rientjes <rientjes@google.com>
+Cc: christoph@lameter.com, Andi Kleen <andi@firstfloor.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/2] x86_64: set node_possible_map at runtime.
+Message-Id: <20070409132341.18fe0565.akpm@linux-foundation.org>
+In-Reply-To: <20070409180145.GA3948@linux-os.sc.intel.com>
+References: <20070320213218.GA13952@one.firstfloor.org>
+	<Pine.LNX.4.64.0703201716440.17799@graphe.net>
+	<20070321024452.GA17532@one.firstfloor.org>
+	<Pine.LNX.4.64.0703202006230.20568@graphe.net>
+	<20070322212831.GA25665@linux-os.sc.intel.com>
+	<4602FF57.7030001@cosmosbay.com>
+	<20070322224045.GA3200@linux-os.sc.intel.com>
+	<20070323141210.GA20548@one.firstfloor.org>
+	<20070402225512.GA31026@linux-os.sc.intel.com>
+	<Pine.LNX.4.64.0704021722300.20493@graphe.net>
+	<20070409180145.GA3948@linux-os.sc.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704092220.10039.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
-> Rafael J. Wysocki napsal(a):
-> > Thanks for testing.
-> [...]
-> > --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
-> > +++ linux-2.6.21-rc5/kernel/power/swsusp.c
-> > @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
-> >  		size += highmem_size;
-> >  		for_each_zone (zone)
-> >  			if (populated_zone(zone)) {
-> > +				tmp += snapshot_additional_pages(zone);
-> >  				if (is_highmem(zone)) {
-> >  					highmem_size -=
-> >  					zone_page_state(zone, NR_FREE_PAGES);
-> >  				} else {
-> >  					tmp -= zone_page_state(zone, NR_FREE_PAGES);
-> >  					tmp += zone->lowmem_reserve[ZONE_NORMAL];
-> > -					tmp += snapshot_additional_pages(zone);
+On Mon, 9 Apr 2007 11:01:45 -0700
+"Siddha, Suresh B" <suresh.b.siddha@intel.com> wrote:
+
+> Set the node_possible_map at runtime on x86_64. On a non NUMA system,
+> num_possible_nodes() will now say '1'.
 > 
-> I have bad news for you :(. I thought I had unpatched kernel, but it happens
-> in -rc6 too.
 
-I guess you mean you're still seeing the 'not enough memory to suspend'
-problem?
- 
-> Next, when this occurs, kernel CPU1 is not brought up and next suspend hangs
-> on "Suspending consoles".
+I had to rework this a bit in the numa-emulation case due to changes in
+Andi's tree.  The change to numa_emulation() got moved into
+setup_node_range().
 
-Hm, there probably is a bug in an error path.  Do you use the built in swsusp
-or s2disk?
+We have 166 x86 patches pending at present - the chances of a patch against
+mainline applying and working against the development tree are reduced.
 
-Rafael
+
