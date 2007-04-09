@@ -1,176 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbXDINOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbXDINUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbXDINOV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 09:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbXDINOU
+	id S932195AbXDINUI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 09:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbXDINUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 09:14:20 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:30830 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753250AbXDINOT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 09:14:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
-        b=Ms88rMmmZpbWYVeMP4KePrUzZ1gAU4HoTIq0lM/NOGeEkim6VqW3D6mP992Q21zxC6/RKjk1z4SBjn+TtmDSEhhLqrZzr1SLIlZf3rJaBekJW0NIE2aQytcXZ+E9o9QGYh7JYKamXlKfBFLPRibM7juDT8PRxGinj6GUyOk5dPQ=
-Date: Mon, 9 Apr 2007 22:09:18 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Subject: [PATCH] use SLAB_PANIC flag cleanup
-Message-ID: <20070409130918.GA5060@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Apr 2007 09:20:07 -0400
+Received: from thunk.org ([69.25.196.29]:56383 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932195AbXDINUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 09:20:06 -0400
+Date: Mon, 9 Apr 2007 09:19:18 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: If not readdir() then what?
+Message-ID: <20070409131918.GC18580@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Ulrich Drepper <drepper@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Neil Brown <neilb@suse.de>
+References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com> <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com> <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org> <1176121897.6210.8.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1176121897.6210.8.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use SLAB_PANIC and delete duplicated panic().
+On Mon, Apr 09, 2007 at 08:31:37AM -0400, Trond Myklebust wrote:
+> On Mon, 2007-04-09 at 13:09 +0200, Jörn Engel wrote:
+> > That surely doesn't make life any easier for filesystem developers, I
+> > agree.  From that point of view, all telldir cookies should end their
+> > life at closedir time.  For "rm -r" it would be sufficient if the nfs
+> > client simply didn't seekdir at all.  For "ls -lR", this would return
+> > duplicate dentries.
+> 
+> Please go read the NFS spec. The only thing an NFS client has in order
+> to read a directory is a READDIR operation that in essence takes a
+> filehandle and a cookie as its arguments. Unless the server is able to
+> return the entire rest of the directory in one RPC reply, the client
+> needs to send a second READDIR operation with a cookie from the previous
+> READDIR operation. The server is expected to return cookies for _each_
+> entry in the directory.
+> 
+> That is a protocol limitation, not a client limitation.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+<Groan>
 
----
- arch/arm26/mm/memc.c          |    8 ++------
- arch/frv/mm/pgalloc.c         |    4 +---
- arch/i386/mm/init.c           |    8 ++------
- arch/ia64/ia32/ia32_support.c |    6 ++----
- arch/powerpc/mm/hugetlbpage.c |    5 ++---
- arch/powerpc/mm/init_64.c     |    6 ++----
- arch/sh/mm/pmb.c              |    6 +++---
- 7 files changed, 14 insertions(+), 29 deletions(-)
+And after quickly checking RFC 3010, I see this limitation hasn't been
+lifted in NFSv4.
 
-Index: 2.6-mm/arch/powerpc/mm/hugetlbpage.c
-===================================================================
---- 2.6-mm.orig/arch/powerpc/mm/hugetlbpage.c
-+++ 2.6-mm/arch/powerpc/mm/hugetlbpage.c
-@@ -1063,10 +1063,9 @@ static int __init hugetlbpage_init(void)
- 					       HUGEPTE_TABLE_SIZE,
- 					       HUGEPTE_TABLE_SIZE,
- 					       SLAB_HWCACHE_ALIGN |
--					       SLAB_MUST_HWCACHE_ALIGN,
-+					       SLAB_MUST_HWCACHE_ALIGN |
-+					       SLAB_PANIC,
- 					       zero_ctor, NULL);
--	if (! huge_pgtable_cache)
--		panic("hugetlbpage_init(): could not create hugepte cache\n");
- 
- 	return 0;
- }
-Index: 2.6-mm/arch/powerpc/mm/init_64.c
-===================================================================
---- 2.6-mm.orig/arch/powerpc/mm/init_64.c
-+++ 2.6-mm/arch/powerpc/mm/init_64.c
-@@ -184,11 +184,9 @@ void pgtable_cache_init(void)
- 		pgtable_cache[i] = kmem_cache_create(name,
- 						     size, size,
- 						     SLAB_HWCACHE_ALIGN |
--						     SLAB_MUST_HWCACHE_ALIGN,
-+						     SLAB_MUST_HWCACHE_ALIGN |
-+						     SLAB_PANIC,
- 						     zero_ctor,
- 						     NULL);
--		if (! pgtable_cache[i])
--			panic("pgtable_cache_init(): could not create %s!\n",
--			      name);
- 	}
- }
-Index: 2.6-mm/arch/i386/mm/init.c
-===================================================================
---- 2.6-mm.orig/arch/i386/mm/init.c
-+++ 2.6-mm/arch/i386/mm/init.c
-@@ -705,20 +705,16 @@ void __init pgtable_cache_init(void)
- 		pmd_cache = kmem_cache_create("pmd",
- 					PTRS_PER_PMD*sizeof(pmd_t),
- 					PTRS_PER_PMD*sizeof(pmd_t),
--					0,
-+					SLAB_PANIC,
- 					pmd_ctor,
- 					NULL);
--		if (!pmd_cache)
--			panic("pgtable_cache_init(): cannot create pmd cache");
- 	}
- 	pgd_cache = kmem_cache_create("pgd",
- 				PTRS_PER_PGD*sizeof(pgd_t),
- 				PTRS_PER_PGD*sizeof(pgd_t),
--				0,
-+				SLAB_PANIC,
- 				pgd_ctor,
- 				PTRS_PER_PMD == 1 ? pgd_dtor : NULL);
--	if (!pgd_cache)
--		panic("pgtable_cache_init(): Cannot create pgd cache");
- }
- 
- /*
-Index: 2.6-mm/arch/arm26/mm/memc.c
-===================================================================
---- 2.6-mm.orig/arch/arm26/mm/memc.c
-+++ 2.6-mm/arch/arm26/mm/memc.c
-@@ -176,13 +176,9 @@ void __init pgtable_cache_init(void)
- {
- 	pte_cache = kmem_cache_create("pte-cache",
- 				sizeof(pte_t) * PTRS_PER_PTE,
--				0, 0, pte_cache_ctor, NULL);
--	if (!pte_cache)
--		BUG();
-+				0, SLAB_PANIC, pte_cache_ctor, NULL);
- 
- 	pgd_cache = kmem_cache_create("pgd-cache", MEMC_TABLE_SIZE +
- 				sizeof(pgd_t) * PTRS_PER_PGD,
--				0, 0, pgd_cache_ctor, NULL);
--	if (!pgd_cache)
--		BUG();
-+				0, SLAB_PANIC, pgd_cache_ctor, NULL);
- }
-Index: 2.6-mm/arch/frv/mm/pgalloc.c
-===================================================================
---- 2.6-mm.orig/arch/frv/mm/pgalloc.c
-+++ 2.6-mm/arch/frv/mm/pgalloc.c
-@@ -151,9 +151,7 @@ void __init pgtable_cache_init(void)
- 	pgd_cache = kmem_cache_create("pgd",
- 				      PTRS_PER_PGD * sizeof(pgd_t),
- 				      PTRS_PER_PGD * sizeof(pgd_t),
--				      0,
-+				      SLAB_PANIC,
- 				      pgd_ctor,
- 				      pgd_dtor);
--	if (!pgd_cache)
--		panic("pgtable_cache_init(): Cannot create pgd cache");
- }
-Index: 2.6-mm/arch/ia64/ia32/ia32_support.c
-===================================================================
---- 2.6-mm.orig/arch/ia64/ia32/ia32_support.c
-+++ 2.6-mm/arch/ia64/ia32/ia32_support.c
-@@ -252,10 +252,8 @@ ia32_init (void)
- 		extern struct kmem_cache *partial_page_cachep;
- 
- 		partial_page_cachep = kmem_cache_create("partial_page_cache",
--							sizeof(struct partial_page), 0, 0,
--							NULL, NULL);
--		if (!partial_page_cachep)
--			panic("Cannot create partial page SLAB cache");
-+						sizeof(struct partial_page),
-+						0, SLAB_PANIC, NULL, NULL);
- 	}
- #endif
- 	return 0;
-Index: 2.6-mm/arch/sh/mm/pmb.c
-===================================================================
---- 2.6-mm.orig/arch/sh/mm/pmb.c
-+++ 2.6-mm/arch/sh/mm/pmb.c
-@@ -311,9 +311,9 @@ static int __init pmb_init(void)
- 
- 	BUG_ON(unlikely(nr_entries >= NR_PMB_ENTRIES));
- 
--	pmb_cache = kmem_cache_create("pmb", sizeof(struct pmb_entry),
--				      0, 0, pmb_cache_ctor, pmb_cache_dtor);
--	BUG_ON(!pmb_cache);
-+	pmb_cache = kmem_cache_create("pmb", sizeof(struct pmb_entry), 0,
-+				      SLAB_PANIC, pmb_cache_ctor,
-+				      pmb_cache_dtor);
- 
- 	jump_to_P2();
- 
+Speaking of which, right now ext3 doesn't know whether it's talking to
+an NFSv2 or NFS v3/v4 server, so it's always passing a 32-bit cookie.
+If NFSv3/v4 could use an explicit interface to request a 64-bit
+cookie, instead of just relying on the f_pos field in the file handle,
+we can reduce the chance of hash collisions when reading an ext3
+directory significantly.   
+
+If there are 2 or 3 directory entries that have a hash collision,
+would the NFS protocol allow the server to juggle things so that those
+2-3 directory entries with the hash collision are sent back in a
+single readdir RPC reply?  Is it aceptable/legal to have multiple
+entries in the same READDIR reply packet have the same cookie value?
+
+						- Ted
