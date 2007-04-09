@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbXDILDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXDILNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbXDILDp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 07:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXDILDp
+	id S1752812AbXDILNJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 07:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXDILNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 07:03:45 -0400
-Received: from mail.screens.ru ([213.234.233.54]:35531 "EHLO mail.screens.ru"
+	Mon, 9 Apr 2007 07:13:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53489 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbXDILDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 07:03:44 -0400
-Date: Mon, 9 Apr 2007 15:03:33 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] scheduler: first timeslice of the exiting thread
-Message-ID: <20070409110333.GA253@tv-sign.ru>
-References: <20070409102922.GA216@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070409102922.GA216@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	id S1752812AbXDILNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 07:13:07 -0400
+Message-ID: <461A1FC1.50809@garzik.org>
+Date: Mon, 09 Apr 2007 07:13:05 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] pata_icside driver
+References: <20070330110022.GA21653@flint.arm.linux.org.uk>	<20070330110800.GB21653@flint.arm.linux.org.uk>	<20070408101826.GA5431@flint.arm.linux.org.uk>	<20070408195956.4e7d50c0@the-village.bc.nu>	<461990CE.8080609@pobox.com> <20070409105638.6b131b72@the-village.bc.nu> <461A1BEA.7000002@pobox.com>
+In-Reply-To: <461A1BEA.7000002@pobox.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/09, Oleg Nesterov wrote:
->
-> Satoru Takeuchi wrote:
-> >
-> >   a) On sched_fork, the creator share its timeslice with new process.
-> >   b) On sched_exit, if the exiting process didn't exhaust its first
-> >      timeslice yet, it gives its timeslice to the parent.
-> >
-> > It has no problem on the process model since the creator is the parent.
-> > However, on the thread model, the creator is not the parent, it is same
-> > as the creator's parent. Hence, on this kind of program, the creator
-> > can't retrieve shared timeslice and exausts its timeslice at a rate of
-> > knots. In addition, somehow, the parent (typically shell?) gets extra
-> > timeslice.
-> 
-> Yes, this is an old oddity.
+It should be noted, mainly for russell's benefit, that the ->irq_ack() 
+hook is only called if a debug define is manually enabled in libata.h, 
+in a single callsite.
 
-Perhaps
+The number of people that actually use the hook -- kernel hackers 
+debugging screaming interrupts -- can probably be counted on one hand.
 
-	void sched_exit(struct task_struct *p)
-	{
-		task_t *t, *did_fork = p->parent;
+	Jeff
 
-		if (!thread_group_leader(p))
-			list_for_each_entry(t, p->thread_group)
-				if (!t->exit_state) {
-					did_fork = t;
-					break;
-				}
 
-		... give time_slice to did_fork ..
-	}
-
-may improve things a little bit, because the rest of time_slice doesn't leak
-off the thread group.
-
-However this is not very nice and we have the same problem with CLONE_PARENT.
-
-Oleg.
 
