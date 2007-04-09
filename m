@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXDIUlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965606AbXDIUnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965576AbXDIUlO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965578AbXDIUlN
+	id S965606AbXDIUnP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965589AbXDIUnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:41:13 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:59481 "EHLO smtp.osdl.org"
+	Mon, 9 Apr 2007 16:43:14 -0400
+Received: from mga03.intel.com ([143.182.124.21]:48893 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965576AbXDIUlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:41:13 -0400
-Date: Mon, 9 Apr 2007 13:40:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [patch] sched: align rq to cacheline boundary
-Message-Id: <20070409134057.2d249f0c.akpm@linux-foundation.org>
-In-Reply-To: <20070409180853.GC3948@linux-os.sc.intel.com>
-References: <20070409180853.GC3948@linux-os.sc.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S965583AbXDIUnN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:43:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,388,1170662400"; 
+   d="scan'208"; a="210575006:sNHT19219410"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2] NET: Multiqueue network device support.
+Date: Mon, 9 Apr 2007 13:43:11 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329029E3EE5@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <20070409.133753.108740229.davem@davemloft.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] NET: Multiqueue network device support.
+Thread-Index: Acd65vT21ZXZsWFyScS0FxoUc9C8VgAACZXA
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <jgarzik@pobox.com>, "cramerj" <cramerj@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+X-OriginalArrivalTime: 09 Apr 2007 20:43:11.0906 (UTC) FILETIME=[B0691820:01C77AE7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Apr 2007 11:08:53 -0700
-"Siddha, Suresh B" <suresh.b.siddha@intel.com> wrote:
-
-> Align the per cpu runqueue to the cacheline boundary. This will minimize the
-> number of cachelines touched during remote wakeup.
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net] 
+> Sent: Monday, April 09, 2007 1:38 PM
+> To: Waskiewicz Jr, Peter P
+> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
+> jgarzik@pobox.com; cramerj; Kok, Auke-jan H; Leech, Christopher
+> Subject: Re: [PATCH 2/2] NET: Multiqueue network device support.
 > 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> ---
+> From: Peter P.Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
+> Date: Mon, 09 Apr 2007 13:50:52 -0700
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index b9a6837..eca33c5 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -278,7 +278,7 @@ struct rq {
->  	struct lock_class_key rq_lock_key;
->  };
->  
-> -static DEFINE_PER_CPU(struct rq, runqueues);
-> +static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
+> > From: Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
+> > 
+> > Added an API and associated supporting routines for 
+> multiqueue network devices.
+> > This allows network devices supporting multiple TX queues 
+> to configure 
+> > each queue within the netdevice and manage each queue 
+> independantly.  
+> > Changes to the PRIO Qdisc also allow a user to map multiple 
+> flows to 
+> > individual TX queues, taking advantage of each queue on the device.
+> > 
+> > Signed-off-by: Peter P. Waskiewicz Jr 
+> > <peter.p.waskiewicz.jr@intel.com>
+> > Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+> 
+> This looks definitely better than the previous 
+> implementation, myself and others will review this in more 
+> depth though.
+> 
+> > + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
+> > + 
+> > + 	p = kzalloc(alloc_size, GFP_KERNEL);
+> > + 	if (!p) {
+> > + 		printk(KERN_ERR "alloc_netdev: Unable to 
+> allocate queues.\n");
+> > + 		return NULL;
+> > + 	}
+> > + 
+> > + 	dev->egress_subqueue = (struct net_device_subqueue *)p;
+> 
+> No need for a cast, 'p' is "void *".
 
-Remember that this can consume up to (linesize-4 * NR_CPUS) bytes, which is
-rather a lot.
+True, but the assignment for "dev" above also casts this void * to
+struct net_device *:
 
-Remember also that the linesize on VSMP is 4k.
+        dev = (struct net_device *)
+                (((long)p + NETDEV_ALIGN_CONST) & ~NETDEV_ALIGN_CONST);
+        dev->padded = (char *)dev - (char *)p;
 
-And that putting a gap in the per-cpu memory like this will reduce its
-overall cache-friendliness.
+Shall I remove my cast?
 
-Need more convincing, please.
+Thanks for the feedback,
+
+-PJ Waskiewicz
