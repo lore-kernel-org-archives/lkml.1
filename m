@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXDIPhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbXDIPg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965379AbXDIPhZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXDIPhY
+	id S933869AbXDIPg2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXDIPg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:37:24 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:42596 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965379AbXDIPhW (ORCPT
+	Mon, 9 Apr 2007 11:36:28 -0400
+Received: from ozlabs.org ([203.10.76.45]:44304 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753512AbXDIPg0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:37:22 -0400
-Date: Mon, 09 Apr 2007 11:37:00 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: I give up
-In-reply-to: <461A5204.1050206@garzik.org>
-To: linux-kernel@vger.kernel.org
-Cc: Jeff Garzik <jeff@garzik.org>
-Message-id: <200704091137.01336.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200704091007.58535.gene.heskett@gmail.com>
- <461A5204.1050206@garzik.org>
-User-Agent: KMail/1.9.6
+	Mon, 9 Apr 2007 11:36:26 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <17946.14646.808334.441833@cargo.ozlabs.ibm.com>
+Date: Mon, 9 Apr 2007 23:01:42 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: Interface for the new fallocate() system call
+In-Reply-To: <20070330104449.GA9371@lazybastard.org>
+References: <20070225022326.137b4875.akpm@linux-foundation.org>
+	<20070301183445.GA7911@amitarora.in.ibm.com>
+	<20070316143101.GA10152@amitarora.in.ibm.com>
+	<20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
+	<20070317111036.GC29931@parisc-linux.org>
+	<20070321120425.GA27273@amitarora.in.ibm.com>
+	<20070329115126.GB7374@amitarora.in.ibm.com>
+	<20070329101010.7a2b8783.akpm@linux-foundation.org>
+	<20070330071929.GC8365@osiris.boeblingen.de.ibm.com>
+	<17932.54606.323431.491736@cargo.ozlabs.ibm.com>
+	<20070330104449.GA9371@lazybastard.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 April 2007, Jeff Garzik wrote:
->Gene Heskett wrote:
->> Now the 64k$ question: While running with LVM2 managed disks, is it
->> possible to run without dm_mod, the device-mapper?  If so, please tell
->> me how to achieve this.
->
->No; device mapper is the kernel portion of LVM2.
->
->	Jeff, who actively avoids LVM on home computers
+Jörn Engel writes:
 
-Ya shoulda warned me.  :-)
+> Wouldn't that work be confined to fallocate()?  If I understand Heiko
+> correctly, the alternative would slow s390 down for every syscall,
+> including more performance-critical ones.
 
-It should have lots bigger warning labels, in bright red self-illuminating 
-signs, than it does.  It in fact seems to work well, but it is a major 
-breakage for some common apps, like doing backups...
+The alternative that Jakub suggested wouldn't slow s390 down.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Gates' Law: Every 18 months, the speed of software halves. 
-
-   -- From a Slashdot.org post
+Paul.
