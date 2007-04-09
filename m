@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbXDISUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbXDISUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbXDISUN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXDISTo
+	id S1753324AbXDISUR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXDISUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:19:44 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:38296 "EHLO
+	Mon, 9 Apr 2007 14:20:13 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:38300 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbXDISTj (ORCPT
+	with ESMTP id S1752875AbXDISTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:19:39 -0400
-Date: Mon, 9 Apr 2007 14:14:42 -0400
+	Mon, 9 Apr 2007 14:19:50 -0400
+Date: Mon, 9 Apr 2007 14:14:41 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 4/4] UML - Convert libc layer to call read and write
-Message-ID: <20070409181442.GA7277@c2.user-mode-linux.org>
+Subject: [PATCH 2/4] UML - Start fixing os_read_file and os_write_file
+Message-ID: <20070409181441.GA7267@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,451 +24,518 @@ User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts calls in the os layer to os_{read,write}_file to
-calls directly to libc read() and write() where it is clear that the
-I/O buffer is in the kernel.
+This patch starts the removal of a very old, very broken piece of
+code.  This stems from the problem of passing a userspace buffer into
+read() or write() on the host.  If that buffer had not yet been faulted
+in, read and write will return -EFAULT.
 
-We can do that here instead of calling os_{read,write}_file_k since we
-are in libc code and can call libc directly.
+To avoid this problem, the solution was to fault the buffer in before
+the system call by touching the pages that hold the buffer by doing a
+copy-user of a byte to each page.  This is obviously bogus, but it
+does usually work, in tt mode, since the kernel and process are in the
+same address space and userspace addresses can be accessed directly in
+the kernel.
 
-With the change in the calls, error handling needs to be changed to
-refer to errno directly rather than the return value of the call.
+In skas mode, where the kernel and process are in separate address
+spaces, it is completely bogus because the userspace address, which is
+invalid in the kernel, is passed into the system call instead of the
+corresponding physical address, which would be valid.  Here, it
+appears that this code, on every host read() or write(), tries to
+fault in a random process page.  This doesn't seem to cause any
+correctness problems, but there is a performance impact.  This patch,
+and the ones following, result in a 10-15% performance gain on a
+kernel build.
 
-CATCH_EINTR wrappers were also added where needed.
+This code can't be immediately tossed out because when it is, you
+can't log in.  Apparently, there is some code in the console driver
+which depends on this somehow.
+
+However, we can start removing it by switching the code which does I/O
+using kernel addresses to using plain read() and write().  This patch
+introduces os_read_file_k and os_write_file_k for use with kernel
+buffers and converts all call locations which use obvious kernel
+buffers to use them.  These include I/O using buffers which are local
+variables which are on the stack or kmalloc-ed.  Later patches will
+handle the less obvious cases, followed by a mass conversion back to
+the original interface.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/os-Linux/aio.c                   |   36 +++++++++++++++++--------------
- arch/um/os-Linux/drivers/ethertap_user.c |   11 +++++----
- arch/um/os-Linux/helper.c                |    5 ++--
- arch/um/os-Linux/mem.c                   |    5 +---
- arch/um/os-Linux/process.c               |    8 +++---
- arch/um/os-Linux/sigio.c                 |   21 +++++++++---------
- arch/um/os-Linux/skas/mem.c              |   19 +++++++++++-----
- arch/um/os-Linux/skas/process.c          |    9 ++++---
- arch/um/os-Linux/tty_log.c               |   14 ++++++------
- 9 files changed, 71 insertions(+), 57 deletions(-)
+ arch/um/drivers/chan_user.c       |   10 +++++-----
+ arch/um/drivers/daemon_user.c     |    4 ++--
+ arch/um/drivers/harddog_user.c    |    4 ++--
+ arch/um/drivers/hostaudio_kern.c  |    4 ++--
+ arch/um/drivers/net_user.c        |    2 +-
+ arch/um/drivers/port_kern.c       |    2 +-
+ arch/um/drivers/random.c          |    2 +-
+ arch/um/drivers/ubd_kern.c        |   17 ++++++++---------
+ arch/um/include/os.h              |    2 ++
+ arch/um/kernel/ksyms.c            |    2 ++
+ arch/um/kernel/physmem.c          |    2 +-
+ arch/um/kernel/sigio.c            |    2 +-
+ arch/um/kernel/smp.c              |   12 ++++++------
+ arch/um/kernel/tt/process_kern.c  |    7 ++++---
+ arch/um/kernel/tt/ptproxy/proxy.c |    9 +++++----
+ arch/um/kernel/tt/tracer.c        |    2 +-
+ arch/um/os-Linux/file.c           |   10 ++++++++++
+ arch/um/sys-i386/bugs.c           |    2 +-
+ arch/um/sys-i386/ldt.c            |    2 +-
+ 19 files changed, 56 insertions(+), 41 deletions(-)
 
-Index: linux-2.6.21-mm/arch/um/os-Linux/aio.c
+Index: linux-2.6.21-mm/arch/um/drivers/ubd_kern.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/aio.c	2007-04-09 13:35:21.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/aio.c	2007-04-09 13:36:21.000000000 -0400
-@@ -132,10 +132,10 @@ static int aio_thread(void *arg)
- 				{ .data = (void *) (long) event.data,
- 						.err	= event.res });
- 			reply_fd = ((struct aio_context *) reply.data)->reply_fd;
--			err = os_write_file(reply_fd, &reply, sizeof(reply));
-+			err = write(reply_fd, &reply, sizeof(reply));
- 			if(err != sizeof(reply))
- 				printk("aio_thread - write failed, fd = %d, "
--				       "err = %d\n", reply_fd, -err);
-+				       "err = %d\n", reply_fd, errno);
+--- linux-2.6.21-mm.orig/arch/um/drivers/ubd_kern.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/ubd_kern.c	2007-04-09 13:10:41.000000000 -0400
+@@ -504,7 +504,7 @@ static void ubd_handler(void)
+ 	struct ubd *dev;
+ 	int n;
+ 
+-	n = os_read_file(thread_fd, &req, sizeof(req));
++	n = os_read_file_k(thread_fd, &req, sizeof(req));
+ 	if(n != sizeof(req)){
+ 		printk(KERN_ERR "Pid %d - spurious interrupt in ubd_handler, "
+ 		       "err = %d\n", os_getpid(), -n);
+@@ -1092,8 +1092,7 @@ static void do_ubd_request(request_queue
+ 		err = prepare_request(req, &io_req);
+ 		if(!err){
+ 			dev->active = 1;
+-			n = os_write_file(thread_fd, (char *) &io_req,
+-					 sizeof(io_req));
++			n = os_write_file_k(thread_fd, &io_req, sizeof(io_req));
+ 			if(n != sizeof(io_req))
+ 				printk("write to io thread failed, "
+ 				       "errno = %d\n", -n);
+@@ -1336,8 +1335,8 @@ static int update_bitmap(struct io_threa
+ 		return(1);
+ 	}
+ 
+-	n = os_write_file(req->fds[1], &req->bitmap_words,
+-		          sizeof(req->bitmap_words));
++	n = os_write_file_k(req->fds[1], &req->bitmap_words,
++			    sizeof(req->bitmap_words));
+ 	if(n != sizeof(req->bitmap_words)){
+ 		printk("do_io - bitmap update failed, err = %d fd = %d\n", -n,
+ 		       req->fds[1]);
+@@ -1381,7 +1380,7 @@ void do_io(struct io_thread_req *req)
+ 			do {
+ 				buf = &buf[n];
+ 				len -= n;
+-				n = os_read_file(req->fds[bit], buf, len);
++				n = os_read_file_k(req->fds[bit], buf, len);
+ 				if (n < 0) {
+ 					printk("do_io - read failed, err = %d "
+ 					       "fd = %d\n", -n, req->fds[bit]);
+@@ -1391,7 +1390,7 @@ void do_io(struct io_thread_req *req)
+ 			} while((n < len) && (n != 0));
+ 			if (n < len) memset(&buf[n], 0, len - n);
+ 		} else {
+-			n = os_write_file(req->fds[bit], buf, len);
++			n = os_write_file_k(req->fds[bit], buf, len);
+ 			if(n != len){
+ 				printk("do_io - write failed err = %d "
+ 				       "fd = %d\n", -n, req->fds[bit]);
+@@ -1421,7 +1420,7 @@ int io_thread(void *arg)
+ 
+ 	ignore_sigwinch_sig();
+ 	while(1){
+-		n = os_read_file(kernel_fd, &req, sizeof(req));
++		n = os_read_file_k(kernel_fd, &req, sizeof(req));
+ 		if(n != sizeof(req)){
+ 			if(n < 0)
+ 				printk("io_thread - read failed, fd = %d, "
+@@ -1434,7 +1433,7 @@ int io_thread(void *arg)
  		}
- 	}
- 	return 0;
-@@ -147,7 +147,7 @@ static int do_not_aio(struct aio_thread_
- {
- 	char c;
- 	unsigned long long actual;
--	int err;
-+	int n;
+ 		io_count++;
+ 		do_io(&req);
+-		n = os_write_file(kernel_fd, &req, sizeof(req));
++		n = os_write_file_k(kernel_fd, &req, sizeof(req));
+ 		if(n != sizeof(req))
+ 			printk("io_thread - write failed, fd = %d, err = %d\n",
+ 			       kernel_fd, -n);
+Index: linux-2.6.21-mm/arch/um/include/os.h
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/include/os.h	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/include/os.h	2007-04-09 13:10:41.000000000 -0400
+@@ -145,7 +145,9 @@ extern int os_mode_fd(int fd, int mode);
+ extern int os_seek_file(int fd, __u64 offset);
+ extern int os_open_file(char *file, struct openflags flags, int mode);
+ extern int os_read_file(int fd, void *buf, int len);
++extern int os_read_file_k(int fd, void *buf, int len);
+ extern int os_write_file(int fd, const void *buf, int count);
++extern int os_write_file_k(int fd, const void *buf, int len);
+ extern int os_file_size(char *file, unsigned long long *size_out);
+ extern int os_file_modtime(char *file, unsigned long *modtime);
+ extern int os_pipe(int *fd, int stream, int close_on_exec);
+Index: linux-2.6.21-mm/arch/um/os-Linux/file.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/os-Linux/file.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/os-Linux/file.c	2007-04-09 13:16:24.000000000 -0400
+@@ -334,12 +334,30 @@ int os_read_file(int fd, void *buf, int 
+ 		       copy_from_user_proc);
+ }
  
- 	actual = lseek64(req->io_fd, req->offset, SEEK_SET);
- 	if(actual != req->offset)
-@@ -155,21 +155,22 @@ static int do_not_aio(struct aio_thread_
- 
- 	switch(req->type){
- 	case AIO_READ:
--		err = os_read_file(req->io_fd, req->buf, req->len);
-+		n = read(req->io_fd, req->buf, req->len);
- 		break;
- 	case AIO_WRITE:
--		err = os_write_file(req->io_fd, req->buf, req->len);
-+		n = write(req->io_fd, req->buf, req->len);
- 		break;
- 	case AIO_MMAP:
--		err = os_read_file(req->io_fd, &c, sizeof(c));
-+		n = read(req->io_fd, &c, sizeof(c));
- 		break;
- 	default:
- 		printk("do_not_aio - bad request type : %d\n", req->type);
--		err = -EINVAL;
--		break;
-+		return -EINVAL;
- 	}
- 
--	return err;
++int os_read_file_k(int fd, void *buf, int len)
++{
++	int n = read(fd, buf, len);
++
 +	if(n < 0)
 +		return -errno;
-+	return 0;
++	return n;
++}
++
+ int os_write_file(int fd, const void *buf, int len)
+ {
+ 	return file_io(fd, (void *) buf, len,
+ 		       (int (*)(int, void *, int)) write, copy_to_user_proc);
  }
  
- /* These are initialized in initcalls and not changed */
-@@ -185,12 +186,12 @@ static int not_aio_thread(void *arg)
- 
- 	signal(SIGWINCH, SIG_IGN);
- 	while(1){
--		err = os_read_file(aio_req_fd_r, &req, sizeof(req));
-+		err = read(aio_req_fd_r, &req, sizeof(req));
- 		if(err != sizeof(req)){
- 			if(err < 0)
- 				printk("not_aio_thread - read failed, "
- 				       "fd = %d, err = %d\n", aio_req_fd_r,
--				       -err);
-+				       errno);
- 			else {
- 				printk("not_aio_thread - short read, fd = %d, "
- 				       "length = %d\n", aio_req_fd_r, err);
-@@ -200,10 +201,10 @@ static int not_aio_thread(void *arg)
- 		err = do_not_aio(&req);
- 		reply = ((struct aio_thread_reply) { .data 	= req.aio,
- 						     .err	= err });
--		err = os_write_file(req.aio->reply_fd, &reply, sizeof(reply));
-+		err = write(req.aio->reply_fd, &reply, sizeof(reply));
- 		if(err != sizeof(reply))
- 			printk("not_aio_thread - write failed, fd = %d, "
--			       "err = %d\n", req.aio->reply_fd, -err);
-+			       "err = %d\n", req.aio->reply_fd, errno);
- 	}
- 
- 	return 0;
-@@ -277,10 +278,12 @@ static int submit_aio_26(enum aio_type t
- 	if(err){
- 		reply = ((struct aio_thread_reply) { .data = aio,
- 					 .err  = err });
--		err = os_write_file(aio->reply_fd, &reply, sizeof(reply));
--		if(err != sizeof(reply))
-+		err = write(aio->reply_fd, &reply, sizeof(reply));
-+		if(err != sizeof(reply)){
-+			err = -errno;
- 			printk("submit_aio_26 - write failed, "
- 			       "fd = %d, err = %d\n", aio->reply_fd, -err);
-+		}
- 		else err = 0;
- 	}
- 
-@@ -375,9 +378,10 @@ static int submit_aio_24(enum aio_type t
- 	};
- 	int err;
- 
--	err = os_write_file(aio_req_fd_w, &req, sizeof(req));
-+	err = write(aio_req_fd_w, &req, sizeof(req));
- 	if(err == sizeof(req))
- 		err = 0;
-+	else err = -errno;
- 
- 	return err;
- }
-Index: linux-2.6.21-mm/arch/um/os-Linux/drivers/ethertap_user.c
++int os_write_file_k(int fd, const void *buf, int len)
++{
++	int n = write(fd, (void *) buf, len);
++
++	if(n < 0)
++		return -errno;
++	return n;
++}
++
+ int os_file_size(char *file, unsigned long long *size_out)
+ {
+ 	struct uml_stat buf;
+Index: linux-2.6.21-mm/arch/um/drivers/chan_user.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/drivers/ethertap_user.c	2007-04-09 13:32:48.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/drivers/ethertap_user.c	2007-04-09 13:36:21.000000000 -0400
-@@ -48,9 +48,9 @@ static void etap_change(int op, unsigned
- 	change.what = op;
- 	memcpy(change.addr, addr, sizeof(change.addr));
- 	memcpy(change.netmask, netmask, sizeof(change.netmask));
--	n = os_write_file(fd, &change, sizeof(change));
-+	CATCH_EINTR(n = write(fd, &change, sizeof(change)));
- 	if(n != sizeof(change)){
--		printk("etap_change - request failed, err = %d\n", -n);
-+		printk("etap_change - request failed, err = %d\n", errno);
- 		return;
+--- linux-2.6.21-mm.orig/arch/um/drivers/chan_user.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/chan_user.c	2007-04-09 13:10:41.000000000 -0400
+@@ -85,7 +85,7 @@ static int winch_thread(void *arg)
+ 
+ 	pty_fd = data->pty_fd;
+ 	pipe_fd = data->pipe_fd;
+-	count = os_write_file(pipe_fd, &c, sizeof(c));
++	count = os_write_file_k(pipe_fd, &c, sizeof(c));
+ 	if(count != sizeof(c))
+ 		printk("winch_thread : failed to write synchronization "
+ 		       "byte, err = %d\n", -count);
+@@ -120,7 +120,7 @@ static int winch_thread(void *arg)
+ 	 * host - since they are not different kernel threads, we cannot use
+ 	 * kernel semaphores. We don't use SysV semaphores because they are
+ 	 * persistent. */
+-	count = os_read_file(pipe_fd, &c, sizeof(c));
++	count = os_read_file_k(pipe_fd, &c, sizeof(c));
+ 	if(count != sizeof(c))
+ 		printk("winch_thread : failed to read synchronization byte, "
+ 		       "err = %d\n", -count);
+@@ -130,7 +130,7 @@ static int winch_thread(void *arg)
+ 		 * are blocked.*/
+ 		sigsuspend(&sigs);
+ 
+-		count = os_write_file(pipe_fd, &c, sizeof(c));
++		count = os_write_file_k(pipe_fd, &c, sizeof(c));
+ 		if(count != sizeof(c))
+ 			printk("winch_thread : write failed, err = %d\n",
+ 			       -count);
+@@ -162,7 +162,7 @@ static int winch_tramp(int fd, struct tt
  	}
  
-@@ -123,10 +123,11 @@ static int etap_tramp(char *dev, char *g
- 		err = pid;
- 	os_close_file(data_remote);
- 	os_close_file(control_remote);
--	n = os_read_file(control_me, &c, sizeof(c));
-+	CATCH_EINTR(n = read(control_me, &c, sizeof(c)));
+ 	*fd_out = fds[0];
+-	n = os_read_file(fds[0], &c, sizeof(c));
++	n = os_read_file_k(fds[0], &c, sizeof(c));
  	if(n != sizeof(c)){
--		printk("etap_tramp : read of status failed, err = %d\n", -n);
--		return -EINVAL;
-+		err = -errno;
-+		printk("etap_tramp : read of status failed, err = %d\n", -err);
-+		return err;
- 	}
- 	if(c != 1){
- 		printk("etap_tramp : uml_net failed\n");
-Index: linux-2.6.21-mm/arch/um/os-Linux/helper.c
+ 		printk("winch_tramp : failed to read synchronization byte\n");
+ 		printk("read failed, err = %d\n", -n);
+@@ -195,7 +195,7 @@ void register_winch(int fd, struct tty_s
+ 		if(thread > 0){
+ 			register_winch_irq(thread_fd, fd, thread, tty);
+ 
+-			count = os_write_file(thread_fd, &c, sizeof(c));
++			count = os_write_file_k(thread_fd, &c, sizeof(c));
+ 			if(count != sizeof(c))
+ 				printk("register_winch : failed to write "
+ 				       "synchronization byte, err = %d\n",
+Index: linux-2.6.21-mm/arch/um/drivers/daemon_user.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/helper.c	2007-04-09 13:32:48.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/helper.c	2007-04-09 13:36:21.000000000 -0400
-@@ -36,7 +36,7 @@ static int helper_child(void *arg)
- 	errval = execvp_noalloc(data->buf, argv[0], argv);
- 	printk("helper_child - execvp of '%s' failed - errno = %d\n", argv[0],
- 	       -errval);
--	os_write_file(data->fd, &errval, sizeof(errval));
-+	write(data->fd, &errval, sizeof(errval));
- 	kill(os_getpid(), SIGKILL);
- 	return 0;
- }
-@@ -92,11 +92,12 @@ int run_helper(void (*pre_exec)(void *),
- 	 * Read the errno value from the child, if the exec failed, or get 0 if
- 	 * the exec succeeded because the pipe fd was set as close-on-exec.
+--- linux-2.6.21-mm.orig/arch/um/drivers/daemon_user.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/daemon_user.c	2007-04-09 13:10:41.000000000 -0400
+@@ -94,7 +94,7 @@ static int connect_to_switch(struct daem
+ 	req.version = SWITCH_VERSION;
+ 	req.type = REQ_NEW_CONTROL;
+ 	req.sock = *local_addr;
+-	n = os_write_file(pri->control, &req, sizeof(req));
++	n = os_write_file_k(pri->control, &req, sizeof(req));
+ 	if(n != sizeof(req)){
+ 		printk("daemon_open : control setup request failed, err = %d\n",
+ 		       -n);
+@@ -102,7 +102,7 @@ static int connect_to_switch(struct daem
+ 		goto out_free;
+ 	}
+ 
+-	n = os_read_file(pri->control, sun, sizeof(*sun));
++	n = os_read_file_k(pri->control, sun, sizeof(*sun));
+ 	if(n != sizeof(*sun)){
+ 		printk("daemon_open : read of data socket failed, err = %d\n",
+ 		       -n);
+Index: linux-2.6.21-mm/arch/um/drivers/harddog_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/harddog_user.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/harddog_user.c	2007-04-09 13:10:41.000000000 -0400
+@@ -79,7 +79,7 @@ int start_watchdog(int *in_fd_ret, int *
+ 		goto out_close_out;
+ 	}
+ 
+-	n = os_read_file(in_fds[0], &c, sizeof(c));
++	n = os_read_file_k(in_fds[0], &c, sizeof(c));
+ 	if(n == 0){
+ 		printk("harddog_open - EOF on watchdog pipe\n");
+ 		helper_wait(pid);
+@@ -118,7 +118,7 @@ int ping_watchdog(int fd)
+ 	int n;
+ 	char c = '\n';
+ 
+-	n = os_write_file(fd, &c, sizeof(c));
++	n = os_write_file_k(fd, &c, sizeof(c));
+ 	if(n != sizeof(c)){
+ 		printk("ping_watchdog - write failed, err = %d\n", -n);
+ 		if(n < 0)
+Index: linux-2.6.21-mm/arch/um/drivers/hostaudio_kern.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/hostaudio_kern.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/hostaudio_kern.c	2007-04-09 13:10:41.000000000 -0400
+@@ -84,7 +84,7 @@ static ssize_t hostaudio_read(struct fil
+ 	if(kbuf == NULL)
+ 		return(-ENOMEM);
+ 
+-	err = os_read_file(state->fd, kbuf, count);
++	err = os_read_file_k(state->fd, kbuf, count);
+ 	if(err < 0)
+ 		goto out;
+ 
+@@ -115,7 +115,7 @@ static ssize_t hostaudio_write(struct fi
+ 	if(copy_from_user(kbuf, buffer, count))
+ 		goto out;
+ 
+-	err = os_write_file(state->fd, kbuf, count);
++	err = os_write_file_k(state->fd, kbuf, count);
+ 	if(err < 0)
+ 		goto out;
+ 	*ppos += err;
+Index: linux-2.6.21-mm/arch/um/drivers/net_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/net_user.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/net_user.c	2007-04-09 13:10:41.000000000 -0400
+@@ -63,7 +63,7 @@ void read_output(int fd, char *output, i
+ 	}
+ 		
+ 	*output = '\0';
+-	ret = os_read_file(fd, &remain, sizeof(remain));
++	ret = os_read_file_k(fd, &remain, sizeof(remain));
+ 
+ 	if (ret != sizeof(remain)) {
+ 		expected = sizeof(remain);
+Index: linux-2.6.21-mm/arch/um/drivers/port_kern.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/port_kern.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/port_kern.c	2007-04-09 13:10:41.000000000 -0400
+@@ -113,7 +113,7 @@ static int port_accept(struct port_list 
+ 	}
+ 
+ 	if(atomic_read(&port->wait_count) == 0){
+-		os_write_file(fd, NO_WAITER_MSG, sizeof(NO_WAITER_MSG));
++		os_write_file_k(fd, NO_WAITER_MSG, sizeof(NO_WAITER_MSG));
+ 		printk("No one waiting for port\n");
+ 	}
+ 	list_add(&conn->list, &port->pending);
+Index: linux-2.6.21-mm/arch/um/drivers/random.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/random.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/random.c	2007-04-09 13:10:41.000000000 -0400
+@@ -44,7 +44,7 @@ static ssize_t rng_dev_read (struct file
+         int n, ret = 0, have_data;
+ 
+         while(size){
+-                n = os_read_file(random_fd, &data, sizeof(data));
++                n = os_read_file_k(random_fd, &data, sizeof(data));
+                 if(n > 0){
+                         have_data = n;
+                         while (have_data && size) {
+Index: linux-2.6.21-mm/arch/um/kernel/ksyms.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/kernel/ksyms.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/ksyms.c	2007-04-09 13:10:41.000000000 -0400
+@@ -62,7 +62,9 @@ EXPORT_SYMBOL(os_get_exec_close);
+ EXPORT_SYMBOL(os_set_exec_close);
+ EXPORT_SYMBOL(os_getpid);
+ EXPORT_SYMBOL(os_open_file);
++EXPORT_SYMBOL(os_read_file_k);
+ EXPORT_SYMBOL(os_read_file);
++EXPORT_SYMBOL(os_write_file_k);
+ EXPORT_SYMBOL(os_write_file);
+ EXPORT_SYMBOL(os_seek_file);
+ EXPORT_SYMBOL(os_lock_file);
+Index: linux-2.6.21-mm/arch/um/kernel/physmem.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/kernel/physmem.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/physmem.c	2007-04-09 13:10:41.000000000 -0400
+@@ -341,7 +341,7 @@ void setup_physmem(unsigned long start, 
+ 	 * from physmem_fd, so it needs to be written out there.
  	 */
--	n = os_read_file(fds[0], &ret, sizeof(ret));
-+	n = read(fds[0], &ret, sizeof(ret));
- 	if (n == 0) {
- 		ret = pid;
- 	} else {
- 		if (n < 0) {
-+			n = -errno;
- 			printk("run_helper : read on pipe failed, ret = %d\n",
- 			       -n);
- 			ret = n;
-Index: linux-2.6.21-mm/arch/um/os-Linux/mem.c
+ 	os_seek_file(physmem_fd, __pa(&__syscall_stub_start));
+-	os_write_file(physmem_fd, &__syscall_stub_start, PAGE_SIZE);
++	os_write_file_k(physmem_fd, &__syscall_stub_start, PAGE_SIZE);
+ 
+ 	bootmap_size = init_bootmem(pfn, pfn + delta);
+ 	free_bootmem(__pa(reserve_end) + bootmap_size,
+Index: linux-2.6.21-mm/arch/um/kernel/sigio.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/mem.c	2007-04-09 13:32:16.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/mem.c	2007-04-09 13:36:21.000000000 -0400
-@@ -232,10 +232,9 @@ int __init create_tmp_file(unsigned long
- 
- 	zero = 0;
- 
--	err = os_write_file(fd, &zero, 1);
-+	err = write(fd, &zero, 1);
- 	if(err != 1){
--		errno = -err;
--		perror("os_write_file");
-+		perror("write");
- 		exit(1);
- 	}
- 
-Index: linux-2.6.21-mm/arch/um/os-Linux/process.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/process.c	2007-04-09 13:32:48.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/process.c	2007-04-09 13:36:21.000000000 -0400
-@@ -42,10 +42,10 @@ unsigned long os_process_pc(int pid)
- 		       proc_stat, -fd);
- 		return ARBITRARY_ADDR;
- 	}
--	err = os_read_file(fd, buf, sizeof(buf));
-+	CATCH_EINTR(err = read(fd, buf, sizeof(buf)));
- 	if(err < 0){
- 		printk("os_process_pc - couldn't read '%s', err = %d\n",
--		       proc_stat, -err);
-+		       proc_stat, errno);
- 		os_close_file(fd);
- 		return ARBITRARY_ADDR;
- 	}
-@@ -75,11 +75,11 @@ int os_process_parent(int pid)
- 		return FAILURE_PID;
- 	}
- 
--	n = os_read_file(fd, data, sizeof(data));
-+	CATCH_EINTR(n = read(fd, data, sizeof(data)));
- 	os_close_file(fd);
- 
- 	if(n < 0){
--		printk("Couldn't read '%s', err = %d\n", stat, -n);
-+		printk("Couldn't read '%s', err = %d\n", stat, errno);
- 		return FAILURE_PID;
- 	}
- 
-Index: linux-2.6.21-mm/arch/um/os-Linux/sigio.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/sigio.c	2007-04-09 13:32:48.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/sigio.c	2007-04-09 13:36:21.000000000 -0400
-@@ -69,11 +69,12 @@ static int write_sigio_thread(void *unus
- 			p = &fds->poll[i];
- 			if(p->revents == 0) continue;
- 			if(p->fd == sigio_private[1]){
--				n = os_read_file(sigio_private[1], &c, sizeof(c));
-+				CATCH_EINTR(n = read(sigio_private[1], &c,
-+						     sizeof(c)));
- 				if(n != sizeof(c))
- 					printk("write_sigio_thread : "
- 					       "read on socket failed, "
--					       "err = %d\n", -n);
-+					       "err = %d\n", errno);
- 				tmp = current_poll;
- 				current_poll = next_poll;
- 				next_poll = tmp;
-@@ -86,10 +87,10 @@ static int write_sigio_thread(void *unus
- 					(fds->used - i) * sizeof(*fds->poll));
- 			}
- 
--			n = os_write_file(respond_fd, &c, sizeof(c));
-+			CATCH_EINTR(n = write(respond_fd, &c, sizeof(c)));
- 			if(n != sizeof(c))
- 				printk("write_sigio_thread : write on socket "
--				       "failed, err = %d\n", -n);
-+				       "failed, err = %d\n", errno);
- 		}
- 	}
- 
-@@ -127,15 +128,15 @@ static void update_thread(void)
+--- linux-2.6.21-mm.orig/arch/um/kernel/sigio.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/sigio.c	2007-04-09 13:10:41.000000000 -0400
+@@ -21,7 +21,7 @@ static irqreturn_t sigio_interrupt(int i
+ {
  	char c;
  
- 	flags = set_signals(0);
--	n = os_write_file(sigio_private[0], &c, sizeof(c));
-+	n = write(sigio_private[0], &c, sizeof(c));
- 	if(n != sizeof(c)){
--		printk("update_thread : write failed, err = %d\n", -n);
-+		printk("update_thread : write failed, err = %d\n", errno);
- 		goto fail;
- 	}
- 
--	n = os_read_file(sigio_private[0], &c, sizeof(c));
-+	CATCH_EINTR(n = read(sigio_private[0], &c, sizeof(c)));
- 	if(n != sizeof(c)){
--		printk("update_thread : read failed, err = %d\n", -n);
-+		printk("update_thread : read failed, err = %d\n", errno);
- 		goto fail;
- 	}
- 
-@@ -459,10 +460,10 @@ static void tty_output(int master, int s
- 
- 	memset(buf, 0, sizeof(buf));
- 
--	while(os_write_file(master, buf, sizeof(buf)) > 0) ;
-+	while(write(master, buf, sizeof(buf)) > 0) ;
- 	if(errno != EAGAIN)
- 		panic("tty_output : write failed, errno = %d\n", errno);
--	while(((n = os_read_file(slave, buf, sizeof(buf))) > 0) && !got_sigio) ;
-+	while(((n = read(slave, buf, sizeof(buf))) > 0) && !got_sigio) ;
- 
- 	if(got_sigio){
- 		printk("Yes\n");
-Index: linux-2.6.21-mm/arch/um/os-Linux/skas/mem.c
+-	os_read_file(sigio_irq_fd, &c, sizeof(c));
++	os_read_file_k(sigio_irq_fd, &c, sizeof(c));
+ 	reactivate_fd(sigio_irq_fd, SIGIO_WRITE_IRQ);
+ 	return IRQ_HANDLED;
+ }
+Index: linux-2.6.21-mm/arch/um/kernel/smp.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/skas/mem.c	2007-04-09 13:32:16.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/skas/mem.c	2007-04-09 13:36:21.000000000 -0400
-@@ -6,6 +6,7 @@
- #include <signal.h>
- #include <errno.h>
- #include <string.h>
-+#include <unistd.h>
- #include <sys/mman.h>
- #include <sys/wait.h>
- #include <asm/page.h>
-@@ -199,9 +200,11 @@ int map(struct mm_id * mm_idp, unsigned 
- 					   .fd	= phys_fd,
- 					   .offset= offset
- 					 } } } );
--		ret = os_write_file(fd, &map, sizeof(map));
--		if(ret != sizeof(map))
-+		CATCH_EINTR(ret = write(fd, &map, sizeof(map)));
-+		if(ret != sizeof(map)){
-+			ret = -errno;
- 			printk("map : /proc/mm map failed, err = %d\n", -ret);
-+		}
- 		else ret = 0;
- 	}
- 	else {
-@@ -231,9 +234,11 @@ int unmap(struct mm_id * mm_idp, void *a
- 					   { .addr	=
- 					     (unsigned long) addr,
- 					     .len		= len } } } );
--		ret = os_write_file(fd, &unmap, sizeof(unmap));
--		if(ret != sizeof(unmap))
-+		CATCH_EINTR(ret = write(fd, &unmap, sizeof(unmap)));
-+		if(ret != sizeof(unmap)){
-+			ret = -errno;
- 			printk("unmap - proc_mm write returned %d\n", ret);
-+		}
- 		else ret = 0;
- 	}
- 	else {
-@@ -266,9 +271,11 @@ int protect(struct mm_id * mm_idp, unsig
- 					       .len	= len,
- 					       .prot	= prot } } } );
+--- linux-2.6.21-mm.orig/arch/um/kernel/smp.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/smp.c	2007-04-09 13:10:41.000000000 -0400
+@@ -47,7 +47,7 @@ struct task_struct *idle_threads[NR_CPUS
  
--		ret = os_write_file(fd, &protect, sizeof(protect));
--		if(ret != sizeof(protect))
-+		CATCH_EINTR(ret = write(fd, &protect, sizeof(protect)));
-+		if(ret != sizeof(protect)){
-+			ret = -errno;
- 			printk("protect failed, err = %d", -ret);
-+		}
- 		else ret = 0;
- 	}
- 	else {
-Index: linux-2.6.21-mm/arch/um/os-Linux/skas/process.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/skas/process.c	2007-04-09 13:32:48.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/skas/process.c	2007-04-09 13:36:21.000000000 -0400
-@@ -431,12 +431,13 @@ void map_stub_pages(int fd, unsigned lon
- 					  .fd      = code_fd,
- 					  .offset  = code_offset
- 	} } });
--	n = os_write_file(fd, &mmop, sizeof(mmop));
-+	CATCH_EINTR(n = write(fd, &mmop, sizeof(mmop)));
- 	if(n != sizeof(mmop)){
-+		n = errno;
- 		printk("mmap args - addr = 0x%lx, fd = %d, offset = %llx\n",
- 		       code, code_fd, (unsigned long long) code_offset);
- 		panic("map_stub_pages : /proc/mm map for code failed, "
--		      "err = %d\n", -n);
-+		      "err = %d\n", n);
- 	}
- 
- 	if ( stack ) {
-@@ -453,10 +454,10 @@ void map_stub_pages(int fd, unsigned lon
- 				      .fd      = map_fd,
- 				      .offset  = map_offset
- 		} } });
--		n = os_write_file(fd, &mmop, sizeof(mmop));
-+		CATCH_EINTR(n = write(fd, &mmop, sizeof(mmop)));
- 		if(n != sizeof(mmop))
- 			panic("map_stub_pages : /proc/mm map for data failed, "
--			      "err = %d\n", -n);
-+			      "err = %d\n", errno);
- 	}
+ void smp_send_reschedule(int cpu)
+ {
+-	os_write_file(cpu_data[cpu].ipi_pipe[1], "R", 1);
++	os_write_file_k(cpu_data[cpu].ipi_pipe[1], "R", 1);
+ 	num_reschedules_sent++;
  }
  
-Index: linux-2.6.21-mm/arch/um/os-Linux/tty_log.c
+@@ -59,7 +59,7 @@ void smp_send_stop(void)
+ 	for(i = 0; i < num_online_cpus(); i++){
+ 		if(i == current_thread->cpu)
+ 			continue;
+-		os_write_file(cpu_data[i].ipi_pipe[1], "S", 1);
++		os_write_file_k(cpu_data[i].ipi_pipe[1], "S", 1);
+ 	}
+ 	printk("done\n");
+ }
+@@ -108,8 +108,8 @@ static struct task_struct *idle_thread(i
+ 		          { .pid = 	new_task->thread.mode.tt.extern_pid,
+ 			    .task = 	new_task } );
+ 	idle_threads[cpu] = new_task;
+-	CHOOSE_MODE(os_write_file(new_task->thread.mode.tt.switch_pipe[1], &c,
+-			  sizeof(c)),
++	CHOOSE_MODE(os_write_file_k(new_task->thread.mode.tt.switch_pipe[1], &c,
++				    sizeof(c)),
+ 		    ({ panic("skas mode doesn't support SMP"); }));
+ 	return(new_task);
+ }
+@@ -179,7 +179,7 @@ void IPI_handler(int cpu)
+ 	int fd;
+ 
+ 	fd = cpu_data[cpu].ipi_pipe[0];
+-	while (os_read_file(fd, &c, 1) == 1) {
++	while (os_read_file_k(fd, &c, 1) == 1) {
+ 		switch (c) {
+ 		case 'C':
+ 			smp_call_function_slave(cpu);
+@@ -239,7 +239,7 @@ int smp_call_function(void (*_func)(void
+ 	info = _info;
+ 
+ 	for_each_online_cpu(i)
+-		os_write_file(cpu_data[i].ipi_pipe[1], "C", 1);
++		os_write_file_k(cpu_data[i].ipi_pipe[1], "C", 1);
+ 
+ 	while (atomic_read(&scf_started) != cpus)
+ 		barrier();
+Index: linux-2.6.21-mm/arch/um/kernel/tt/process_kern.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/tty_log.c	2007-04-09 13:32:48.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/tty_log.c	2007-04-09 13:36:21.000000000 -0400
-@@ -53,8 +53,8 @@ int open_tty_log(void *tty, void *curren
- 					       .direction = 0,
- 					       .sec = tv.tv_sec,
- 					       .usec = tv.tv_usec } );
--		os_write_file(tty_log_fd, &data, sizeof(data));
--		os_write_file(tty_log_fd, &current_tty, data.len);
-+		write(tty_log_fd, &data, sizeof(data));
-+		write(tty_log_fd, &current_tty, data.len);
- 		return tty_log_fd;
- 	}
+--- linux-2.6.21-mm.orig/arch/um/kernel/tt/process_kern.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/tt/process_kern.c	2007-04-09 13:10:41.000000000 -0400
+@@ -57,14 +57,15 @@ void switch_to_tt(void *prev, void *next
+ 	 * nor the value in "to" (since it was the task which stole us the CPU,
+ 	 * which we don't care about). */
  
-@@ -83,7 +83,7 @@ void close_tty_log(int fd, void *tty)
- 					       .direction = 0,
- 					       .sec = tv.tv_sec,
- 					       .usec = tv.tv_usec } );
--		os_write_file(tty_log_fd, &data, sizeof(data));
-+		write(tty_log_fd, &data, sizeof(data));
- 		return;
- 	}
- 	os_close_file(fd);
-@@ -98,10 +98,10 @@ static int log_chunk(int fd, const char 
- 		try = (len > sizeof(chunk)) ? sizeof(chunk) : len;
- 		missed = copy_from_user_proc(chunk, (char *) buf, try);
- 		try -= missed;
--		n = os_write_file(fd, chunk, try);
-+		n = write(fd, chunk, try);
- 		if(n != try) {
- 			if(n < 0)
--				return n;
-+				return -errno;
- 			return -EIO;
+-	err = os_write_file(to->thread.mode.tt.switch_pipe[1], &c, sizeof(c));
++	err = os_write_file_k(to->thread.mode.tt.switch_pipe[1], &c, sizeof(c));
+ 	if(err != sizeof(c))
+ 		panic("write of switch_pipe failed, err = %d", -err);
+ 
+ 	if(from->thread.mode.tt.switch_pipe[0] == -1)
+ 		os_kill_process(os_getpid(), 0);
+ 
+-	err = os_read_file(from->thread.mode.tt.switch_pipe[0], &c, sizeof(c));
++	err = os_read_file_k(from->thread.mode.tt.switch_pipe[0], &c,
++			     sizeof(c));
+ 	if(err != sizeof(c))
+ 		panic("read of switch_pipe failed, errno = %d", -err);
+ 
+@@ -113,7 +114,7 @@ void suspend_new_thread(int fd)
+ 	char c;
+ 
+ 	os_stop_process(os_getpid());
+-	err = os_read_file(fd, &c, sizeof(c));
++	err = os_read_file_k(fd, &c, sizeof(c));
+ 	if(err != sizeof(c))
+ 		panic("read failed in suspend_new_thread, err = %d", -err);
+ }
+Index: linux-2.6.21-mm/arch/um/kernel/tt/ptproxy/proxy.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/kernel/tt/ptproxy/proxy.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/tt/ptproxy/proxy.c	2007-04-09 13:10:41.000000000 -0400
+@@ -338,13 +338,14 @@ int start_debugger(char *prog, int start
+ 			       "err = %d\n", -fd);
+ 			exit(1);
  		}
- 		if(missed != 0)
-@@ -130,7 +130,7 @@ int write_tty_log(int fd, const char *bu
- 					       .direction = direction,
- 					       .sec = tv.tv_sec,
- 					       .usec = tv.tv_usec } );
--		os_write_file(tty_log_fd, &data, sizeof(data));
-+		write(tty_log_fd, &data, sizeof(data));
- 	}
+-		os_write_file(fd, gdb_init_string, sizeof(gdb_init_string) - 1);
++		os_write_file_k(fd, gdb_init_string,
++				sizeof(gdb_init_string) - 1);
+ 		if(startup){
+ 			if(stop){
+-				os_write_file(fd, "b start_kernel\n",
+-				      strlen("b start_kernel\n"));
++				os_write_file_k(fd, "b start_kernel\n",
++						strlen("b start_kernel\n"));
+ 			}
+-			os_write_file(fd, "c\n", strlen("c\n"));
++			os_write_file_k(fd, "c\n", strlen("c\n"));
+ 		}
+ 		if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0){
+ 			printk("start_debugger :  PTRACE_TRACEME failed, "
+Index: linux-2.6.21-mm/arch/um/kernel/tt/tracer.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/kernel/tt/tracer.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/tt/tracer.c	2007-04-09 13:10:41.000000000 -0400
+@@ -44,7 +44,7 @@ static void tracer_winch_handler(int sig
+ 	int n;
+ 	char c = 1;
  
- 	return log_chunk(fd, buf, len);
-@@ -161,7 +161,7 @@ void log_exec(char **argv, void *tty)
- 				       .direction = 0,
- 				       .sec = tv.tv_sec,
- 				       .usec = tv.tv_usec } );
--	os_write_file(tty_log_fd, &data, sizeof(data));
-+	write(tty_log_fd, &data, sizeof(data));
+-	n = os_write_file(tracer_winch[1], &c, sizeof(c));
++	n = os_write_file_k(tracer_winch[1], &c, sizeof(c));
+ 	if(n != sizeof(c))
+ 		printk("tracer_winch_handler - write failed, err = %d\n", -n);
+ }
+Index: linux-2.6.21-mm/arch/um/sys-i386/bugs.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/sys-i386/bugs.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/sys-i386/bugs.c	2007-04-09 13:10:41.000000000 -0400
+@@ -67,7 +67,7 @@ static int find_cpuinfo_line(int fd, cha
+ 			return 1;
  
- 	for(ptr = argv; ; ptr++){
- 		if(copy_from_user_proc(&arg, ptr, sizeof(arg)))
+ 		do {
+-			n = os_read_file(fd, &c, sizeof(c));
++			n = os_read_file_k(fd, &c, sizeof(c));
+ 			if(n != sizeof(c)){
+ 				printk("Failed to find newline in "
+ 				       "/proc/cpuinfo, err = %d\n", -n);
+Index: linux-2.6.21-mm/arch/um/sys-i386/ldt.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/sys-i386/ldt.c	2007-04-09 13:03:08.000000000 -0400
++++ linux-2.6.21-mm/arch/um/sys-i386/ldt.c	2007-04-09 13:10:41.000000000 -0400
+@@ -517,7 +517,7 @@ long init_new_ldt(struct mmu_context_ska
+ 					      .u 	=
+ 					      { .copy_segments =
+ 							from_mm->id.u.mm_fd } } );
+-		i = os_write_file(new_mm->id.u.mm_fd, &copy, sizeof(copy));
++		i = os_write_file_k(new_mm->id.u.mm_fd, &copy, sizeof(copy));
+ 		if(i != sizeof(copy))
+ 			printk("new_mm : /proc/mm copy_segments failed, "
+ 			       "err = %d\n", -i);
