@@ -1,192 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966022AbXDIVdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966010AbXDIVdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966022AbXDIVdV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 17:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966010AbXDIVcz
+	id S966010AbXDIVdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 17:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966013AbXDIVcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 17:32:55 -0400
-Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:33464 "EHLO
+	Mon, 9 Apr 2007 17:32:53 -0400
+Received: from nlpi015.sbcis.sbc.com ([207.115.36.44]:33608 "EHLO
 	nlpi015.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030302AbXDIVb4 (ORCPT
+	with ESMTP id S966010AbXDIVcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 17:31:56 -0400
+	Mon, 9 Apr 2007 17:32:08 -0400
 X-ORBL: [67.117.73.34]
 From: Tony Lindgren <tony@atomide.com>
 To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 9/18] ARM: OMAP: abstract debug card setup (smc, leds)
-Date: Mon,  9 Apr 2007 17:30:52 -0400
-Message-Id: <1176154294883-git-send-email-tony@atomide.com>
+Cc: Syed Mohammed Khasim <x0khasim@ti.com>, Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 10/18] ARM: OMAP: Add minimal OMAP2430 support
+Date: Mon,  9 Apr 2007 17:30:53 -0400
+Message-Id: <11761542981742-git-send-email-tony@atomide.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11761542912185-git-send-email-tony@atomide.com>
-References: <1176154261668-git-send-email-tony@atomide.com> <11761542642563-git-send-email-tony@atomide.com> <11761542683139-git-send-email-tony@atomide.com> <11761542712251-git-send-email-tony@atomide.com> <11761542731458-git-send-email-tony@atomide.com> <1176154277435-git-send-email-tony@atomide.com> <11761542841909-git-send-email-tony@atomide.com> <1176154286590-git-send-email-tony@atomide.com> <11761542912185-git-send-email-tony@atomide.com>
+In-Reply-To: <1176154294883-git-send-email-tony@atomide.com>
+References: <1176154261668-git-send-email-tony@atomide.com> <11761542642563-git-send-email-tony@atomide.com> <11761542683139-git-send-email-tony@atomide.com> <11761542712251-git-send-email-tony@atomide.com> <11761542731458-git-send-email-tony@atomide.com> <1176154277435-git-send-email-tony@atomide.com> <11761542841909-git-send-email-tony@atomide.com> <1176154286590-git-send-email-tony@atomide.com> <11761542912185-git-send-email-tony@atomide.com> <1176154294883-git-send-email-tony@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: Syed Mohammed Khasim <x0khasim@ti.com>
 
-Additional cleanup for debug boards on H2/P2/H3/H4:  move the init
-code that's not board-specific into a new file where it can be easily
-shared between all the different boards (avoiding code duplication,
-and making it easier to support more devices).  Make H4 use that.
+This patch adds minimal OMAP2430 support to get the kernel booting on 2430SDP.
 
-This should be easy to drop in to the OMAP1 boards using these debug
-cards; the only difference seems to be that the p2 does an extra reset
-of the smc using the fpga (probably all boards could do that, if it's
-necessary) and doesn't use the gpio mux or request APIs.
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Syed Mohammed Khasim <x0khasim@ti.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/Kconfig        |    2 +-
- arch/arm/mach-omap2/board-h4.c     |   46 +------------------
- arch/arm/plat-omap/Kconfig         |    9 +++-
- arch/arm/plat-omap/Makefile        |    1 +
- arch/arm/plat-omap/debug-devices.c |   86 ++++++++++++++++++++++++++++++++++++
- include/asm-arm/arch-omap/board.h  |    4 ++
- 6 files changed, 102 insertions(+), 46 deletions(-)
+ arch/arm/mach-omap2/Kconfig               |    8 +
+ arch/arm/mach-omap2/Makefile              |    1 +
+ arch/arm/mach-omap2/board-2430sdp.c       |  226 +++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/devices.c             |    2 +-
+ arch/arm/mach-omap2/gpmc.c                |    7 +
+ arch/arm/mach-omap2/id.c                  |    6 +
+ arch/arm/mach-omap2/io.c                  |   20 +++
+ include/asm-arm/arch-omap/board-2430sdp.h |   41 +++++
+ include/asm-arm/arch-omap/hardware.h      |    4 +
+ include/asm-arm/arch-omap/io.h            |   10 ++
+ include/asm-arm/arch-omap/omap24xx.h      |   12 ++
+ 12 files changed, 337 insertions(+), 1 deletions(-)
 
 Index: linux-2.6/arch/arm/mach-omap2/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-omap2/Kconfig	2007-04-09 15:12:08.000000000 -0400
-+++ linux-2.6/arch/arm/mach-omap2/Kconfig	2007-04-09 15:25:03.000000000 -0400
-@@ -21,7 +21,7 @@ config MACH_OMAP_GENERIC
- config MACH_OMAP_H4
- 	bool "OMAP 2420 H4 board"
- 	depends on ARCH_OMAP2 && ARCH_OMAP24XX
--	select OMAP_DEBUG_LEDS if LEDS || LEDS_OMAP_DEBUG
-+	select OMAP_DEBUG_DEVICES
+--- linux-2.6.orig/arch/arm/mach-omap2/Kconfig	2007-04-09 16:36:46.000000000 -0400
++++ linux-2.6/arch/arm/mach-omap2/Kconfig	2007-04-09 16:36:48.000000000 -0400
+@@ -11,6 +11,10 @@ config ARCH_OMAP2420
+ 	select OMAP_DM_TIMER
+ 	select ARCH_OMAP_OTG
  
++config ARCH_OMAP2430
++	bool "OMAP2430 support"
++	depends on ARCH_OMAP24XX
++
+ comment "OMAP Board Type"
+ 	depends on ARCH_OMAP2
+ 
+@@ -26,3 +30,7 @@ config MACH_OMAP_H4
  config MACH_OMAP_APOLLON
  	bool "OMAP 2420 Apollon board"
-Index: linux-2.6/arch/arm/mach-omap2/board-h4.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-omap2/board-h4.c	2007-04-09 15:12:08.000000000 -0400
-+++ linux-2.6/arch/arm/mach-omap2/board-h4.c	2007-04-09 15:25:03.000000000 -0400
-@@ -131,26 +131,6 @@ static struct platform_device h4_flash_d
- 	.resource	= &h4_flash_resource,
- };
- 
--static struct resource h4_smc91x_resources[] = {
--	[0] = {
--		.start  = OMAP24XX_ETHR_START,          /* Physical */
--		.end    = OMAP24XX_ETHR_START + 0xf,
--		.flags  = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start  = OMAP_GPIO_IRQ(OMAP24XX_ETHR_GPIO_IRQ),
--		.end    = OMAP_GPIO_IRQ(OMAP24XX_ETHR_GPIO_IRQ),
--		.flags  = IORESOURCE_IRQ,
--	},
--};
--
--static struct platform_device h4_smc91x_device = {
--	.name		= "smc91x",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(h4_smc91x_resources),
--	.resource	= h4_smc91x_resources,
--};
--
- /* Select between the IrDA and aGPS module
-  */
- static int h4_select_irda(struct device *dev, int state)
-@@ -266,29 +246,14 @@ static struct platform_device h4_lcd_dev
- 	.id		= -1,
- };
- 
--static struct resource h4_led_resources[] = {
--	[0] = {
--		.flags	= IORESOURCE_MEM,
--	},
--};
--
--static struct platform_device h4_led_device = {
--	.name		= "omap_dbg_led",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(h4_led_resources),
--	.resource	= h4_led_resources,
--};
--
- static struct platform_device *h4_devices[] __initdata = {
--	&h4_smc91x_device,
- 	&h4_flash_device,
- 	&h4_irda_device,
- 	&h4_kp_device,
- 	&h4_lcd_device,
--	&h4_led_device,
- };
- 
--static inline void __init h4_init_smc91x(void)
-+static inline void __init h4_init_debug(void)
- {
- 	/* Make sure CS1 timings are correct */
- 	GPMC_CONFIG1_1 = 0x00011200;
-@@ -301,12 +266,8 @@ static inline void __init h4_init_smc91x
- 	udelay(100);
- 
- 	omap_cfg_reg(M15_24XX_GPIO92);
--	if (omap_request_gpio(OMAP24XX_ETHR_GPIO_IRQ) < 0) {
--		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
--			OMAP24XX_ETHR_GPIO_IRQ);
--		return;
--	}
--	omap_set_gpio_direction(OMAP24XX_ETHR_GPIO_IRQ, 1);
-+	if (debug_card_init(cs_mem_base, OMAP24XX_ETHR_GPIO_IRQ) < 0)
-+		gpmc_cs_free(eth_cs);
- }
- 
- static void __init omap_h4_init_irq(void)
-@@ -314,7 +275,6 @@ static void __init omap_h4_init_irq(void
- 	omap2_init_common_hw();
- 	omap_init_irq();
- 	omap_gpio_init();
--	h4_init_smc91x();
- }
- 
- static struct omap_uart_config h4_uart_config __initdata = {
-Index: linux-2.6/arch/arm/plat-omap/Kconfig
-===================================================================
---- linux-2.6.orig/arch/arm/plat-omap/Kconfig	2007-04-09 15:12:08.000000000 -0400
-+++ linux-2.6/arch/arm/plat-omap/Kconfig	2007-04-09 15:25:03.000000000 -0400
-@@ -19,10 +19,15 @@ endchoice
- 
- comment "OMAP Feature Selections"
- 
--config OMAP_DEBUG_LEDS
-+config OMAP_DEBUG_DEVICES
- 	bool
- 	help
--	  For debug card leds on TI reference boards.
-+	  For debug cards on TI reference boards.
+ 	depends on ARCH_OMAP2 && ARCH_OMAP24XX
 +
-+config OMAP_DEBUG_LEDS
-+	bool
-+	depends on OMAP_DEBUG_DEVICES
-+	default y if LEDS || LEDS_OMAP_DEBUG
- 
- config OMAP_RESET_CLOCKS
- 	bool "Reset unused clocks during boot"
-Index: linux-2.6/arch/arm/plat-omap/Makefile
++config MACH_OMAP_2430SDP
++	bool "OMAP 2430 SDP board"
++	depends on ARCH_OMAP2 && ARCH_OMAP24XX
+\ No newline at end of file
+Index: linux-2.6/arch/arm/mach-omap2/Makefile
 ===================================================================
---- linux-2.6.orig/arch/arm/plat-omap/Makefile	2007-04-09 15:12:08.000000000 -0400
-+++ linux-2.6/arch/arm/plat-omap/Makefile	2007-04-09 15:25:03.000000000 -0400
-@@ -17,4 +17,5 @@ obj-$(CONFIG_ARCH_OMAP16XX) += ocpi.o
+--- linux-2.6.orig/arch/arm/mach-omap2/Makefile	2007-04-09 16:36:47.000000000 -0400
++++ linux-2.6/arch/arm/mach-omap2/Makefile	2007-04-09 16:36:48.000000000 -0400
+@@ -14,5 +14,6 @@ obj-$(CONFIG_PM) += pm.o pm-domain.o sle
+ # Specific board support
+ obj-$(CONFIG_MACH_OMAP_GENERIC)		+= board-generic.o
+ obj-$(CONFIG_MACH_OMAP_H4)		+= board-h4.o
++obj-$(CONFIG_MACH_OMAP_2430SDP)		+= board-2430sdp.o
+ obj-$(CONFIG_MACH_OMAP_APOLLON)		+= board-apollon.o
  
- obj-$(CONFIG_CPU_FREQ) += cpu-omap.o
- obj-$(CONFIG_OMAP_DM_TIMER) += dmtimer.o
-+obj-$(CONFIG_OMAP_DEBUG_DEVICES) += debug-devices.o
- obj-$(CONFIG_OMAP_DEBUG_LEDS) += debug-leds.o
-Index: linux-2.6/arch/arm/plat-omap/debug-devices.c
+Index: linux-2.6/arch/arm/mach-omap2/board-2430sdp.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/arch/arm/plat-omap/debug-devices.c	2007-04-09 15:25:03.000000000 -0400
-@@ -0,0 +1,86 @@
++++ linux-2.6/arch/arm/mach-omap2/board-2430sdp.c	2007-04-09 16:36:48.000000000 -0400
+@@ -0,0 +1,218 @@
 +/*
-+ * linux/arch/arm/plat-omap/debug-devices.c
++ * linux/arch/arm/mach-omap2/board-2430sdp.c
 + *
-+ * Copyright (C) 2005 Nokia Corporation
-+ * Modified from mach-omap2/board-h4.c
++ * Copyright (C) 2006 Texas Instruments
++ *
++ * Modified from mach-omap2/board-generic.c
++ *
++ * Initial Code : Based on a patch from Komal Shah and Richard Woodruff
++ * Updated the Code for 2430 SDP : Syed Mohammed Khasim
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -196,88 +101,420 @@ Index: linux-2.6/arch/arm/plat-omap/debug-devices.c
 +#include <linux/kernel.h>
 +#include <linux/init.h>
 +#include <linux/platform_device.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/partitions.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/clk.h>
 +
 +#include <asm/hardware.h>
++#include <asm/mach-types.h>
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++#include <asm/mach/flash.h>
++
++#include <asm/arch/gpio.h>
++#include <asm/arch/mux.h>
++#include <asm/arch/board.h>
++#include <asm/arch/common.h>
++#include <asm/arch/gpmc.h>
++#include "prcm-regs.h"
++
 +#include <asm/io.h>
 +
-+#include <asm/arch/board.h>
-+#include <asm/arch/gpio.h>
 +
++#define	SDP2430_FLASH_CS	0
++#define	SDP2430_SMC91X_CS	5
 +
-+/* Many OMAP development platforms reuse the same "debug board"; these
-+ * platforms include H2, H3, H4, and Perseus2.
-+ */
-+
-+static struct resource smc91x_resources[] = {
-+	[0] = {
-+		.flags  = IORESOURCE_MEM,
++static struct mtd_partition sdp2430_partitions[] = {
++	/* bootloader (U-Boot, etc) in first sector */
++	{
++		.name		= "bootloader",
++		.offset		= 0,
++		.size		= SZ_256K,
++		.mask_flags	= MTD_WRITEABLE,	/* force read-only */
++	 },
++	/* bootloader params in the next sector */
++	{
++		.name		= "params",
++		.offset		= MTDPART_OFS_APPEND,
++		.size		= SZ_128K,
++		.mask_flags	= 0,
++	 },
++	/* kernel */
++	{
++		.name		= "kernel",
++		.offset		= MTDPART_OFS_APPEND,
++		.size		= SZ_2M,
++		.mask_flags	= 0
 +	},
-+	[1] = {
-+		.flags  = IORESOURCE_IRQ,
-+	},
++	/* file system */
++	{
++		.name		= "filesystem",
++		.offset		= MTDPART_OFS_APPEND,
++		.size		= MTDPART_SIZ_FULL,
++		.mask_flags	= 0
++	}
 +};
 +
-+static struct platform_device smc91x_device = {
-+	.name		= "smc91x",
-+	.id		= -1,
-+	.num_resources	= ARRAY_SIZE(smc91x_resources),
-+	.resource	= smc91x_resources,
++static struct flash_platform_data sdp2430_flash_data = {
++	.map_name	= "cfi_probe",
++	.width		= 2,
++	.parts		= sdp2430_partitions,
++	.nr_parts	= ARRAY_SIZE(sdp2430_partitions),
 +};
 +
-+static struct resource led_resources[] = {
++static struct resource sdp2430_flash_resource = {
++	.start		= SDP2430_CS0_BASE,
++	.end		= SDP2430_CS0_BASE + SZ_64M - 1,
++	.flags		= IORESOURCE_MEM,
++};
++
++static struct platform_device sdp2430_flash_device = {
++	.name		= "omapflash",
++	.id		= 0,
++	.dev = {
++		.platform_data	= &sdp2430_flash_data,
++	},
++	.num_resources	= 1,
++	.resource	= &sdp2430_flash_resource,
++};
++
++static struct resource sdp2430_smc91x_resources[] = {
 +	[0] = {
++		.start	= SDP2430_CS0_BASE,
++		.end	= SDP2430_CS0_BASE + SZ_64M - 1,
 +		.flags	= IORESOURCE_MEM,
 +	},
++	[1] = {
++		.start	= OMAP_GPIO_IRQ(OMAP24XX_ETHR_GPIO_IRQ),
++		.end	= OMAP_GPIO_IRQ(OMAP24XX_ETHR_GPIO_IRQ),
++		.flags	= IORESOURCE_IRQ,
++	},
 +};
 +
-+static struct platform_device led_device = {
-+	.name		= "omap_dbg_led",
++static struct platform_device sdp2430_smc91x_device = {
++	.name		= "smc91x",
 +	.id		= -1,
-+	.num_resources	= ARRAY_SIZE(led_resources),
-+	.resource	= led_resources,
++	.num_resources	= ARRAY_SIZE(sdp2430_smc91x_resources),
++	.resource	= sdp2430_smc91x_resources,
 +};
 +
-+static struct platform_device *debug_devices[] __initdata = {
-+	&smc91x_device,
-+	&led_device,
-+	/* ps2 kbd + mouse ports */
-+	/* 4 extra uarts */
-+	/* 6 input dip switches */
-+	/* 8 output pins */
++static struct platform_device *sdp2430_devices[] __initdata = {
++	&sdp2430_smc91x_device,
++	&sdp2430_flash_device,
 +};
 +
-+int __init debug_card_init(u32 addr, unsigned gpio)
++static inline void __init sdp2430_init_smc91x(void)
 +{
-+	int	status;
++	int eth_cs;
++	unsigned long cs_mem_base;
++	unsigned int rate;
++	struct clk *l3ck;
 +
-+	smc91x_resources[0].start = addr + 0x300;
-+	smc91x_resources[0].end   = addr + 0x30f;
++	eth_cs = SDP2430_SMC91X_CS;
 +
-+	smc91x_resources[1].start = OMAP_GPIO_IRQ(gpio);
-+	smc91x_resources[1].end   = OMAP_GPIO_IRQ(gpio);
++	l3ck = clk_get(NULL, "core_l3_ck");
++	if (IS_ERR(l3ck))
++		rate = 100000000;
++	else
++		rate = clk_get_rate(l3ck);
 +
-+	status = omap_request_gpio(gpio);
-+	if (status < 0) {
-+		printk(KERN_ERR "GPIO%d unavailable for smc91x IRQ\n", gpio);
-+		return status;
++	/* Make sure CS1 timings are correct, for 2430 always muxed */
++	gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG1, 0x00011200);
++
++	if (rate >= 160000000) {
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG2, 0x001f1f01);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG3, 0x00080803);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG4, 0x1c0b1c0a);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG5, 0x041f1F1F);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG6, 0x000004C4);
++	} else if (rate >= 130000000) {
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG2, 0x001f1f00);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG3, 0x00080802);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG4, 0x1C091C09);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG5, 0x041f1F1F);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG6, 0x000004C4);
++	} else { /* rate = 100000000 */
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG2, 0x001f1f00);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG3, 0x00080802);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG4, 0x1C091C09);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG5, 0x031A1F1F);
++		gpmc_cs_write_reg(eth_cs, GPMC_CS_CONFIG6, 0x000003C2);
 +	}
-+	omap_set_gpio_direction(gpio, 1);
 +
-+	led_resources[0].start = addr;
-+	led_resources[0].end   = addr + SZ_4K - 1;
++	if (gpmc_cs_request(eth_cs, SZ_16M, &cs_mem_base) < 0) {
++		printk(KERN_ERR "Failed to request GPMC mem for smc91x\n");
++		return;
++	}
 +
-+	return platform_add_devices(debug_devices, ARRAY_SIZE(debug_devices));
++	sdp2430_smc91x_resources[0].start = cs_mem_base + 0x300;
++	sdp2430_smc91x_resources[0].end = cs_mem_base + 0x30f;
++	udelay(100);
++
++	if (omap_request_gpio(OMAP24XX_ETHR_GPIO_IRQ) < 0) {
++		printk(KERN_ERR "Failed to request GPIO%d for smc91x IRQ\n",
++			OMAP24XX_ETHR_GPIO_IRQ);
++		gpmc_cs_free(eth_cs);
++		return;
++	}
++	omap_set_gpio_direction(OMAP24XX_ETHR_GPIO_IRQ, 1);
++
 +}
-Index: linux-2.6/include/asm-arm/arch-omap/board.h
++
++static void __init omap_2430sdp_init_irq(void)
++{
++	omap2_init_common_hw();
++	omap_init_irq();
++	omap_gpio_init();
++	sdp2430_init_smc91x();
++}
++
++static struct omap_uart_config sdp2430_uart_config __initdata = {
++	.enabled_uarts = ((1 << 0) | (1 << 1) | (1 << 2)),
++};
++
++static struct omap_board_config_kernel sdp2430_config[] = {
++	{OMAP_TAG_UART, &sdp2430_uart_config},
++};
++
++static void __init omap_2430sdp_init(void)
++{
++	platform_add_devices(sdp2430_devices, ARRAY_SIZE(sdp2430_devices));
++	omap_board_config = sdp2430_config;
++	omap_board_config_size = ARRAY_SIZE(sdp2430_config);
++	omap_serial_init();
++}
++
++static void __init omap_2430sdp_map_io(void)
++{
++	omap2_map_common_io();
++}
++
++MACHINE_START(OMAP_2430SDP, "OMAP2430 sdp2430 board")
++	/* Maintainer: Syed Khasim - Texas Instruments Inc */
++	.phys_io	= 0x48000000,
++	.io_pg_offst	= ((0xd8000000) >> 18) & 0xfffc,
++	.boot_params	= 0x80000100,
++	.map_io		= omap_2430sdp_map_io,
++	.init_irq	= omap_2430sdp_init_irq,
++	.init_machine	= omap_2430sdp_init,
++	.timer		= &omap_timer,
++MACHINE_END
+Index: linux-2.6/arch/arm/mach-omap2/devices.c
 ===================================================================
---- linux-2.6.orig/include/asm-arm/arch-omap/board.h	2007-04-09 15:12:08.000000000 -0400
-+++ linux-2.6/include/asm-arm/arch-omap/board.h	2007-04-09 15:25:03.000000000 -0400
-@@ -179,4 +179,8 @@ extern const void *omap_get_var_config(u
- extern struct omap_board_config_kernel *omap_board_config;
- extern int omap_board_config_size;
+--- linux-2.6.orig/arch/arm/mach-omap2/devices.c	2007-04-09 16:36:46.000000000 -0400
++++ linux-2.6/arch/arm/mach-omap2/devices.c	2007-04-09 16:36:48.000000000 -0400
+@@ -55,8 +55,10 @@ static void omap_init_i2c(void)
+ 	if (machine_is_omap_h4())
+ 		return;
  
+-	omap_cfg_reg(J15_24XX_I2C2_SCL);
+-	omap_cfg_reg(H19_24XX_I2C2_SDA);
++	if (!cpu_is_omap2430()) {
++		omap_cfg_reg(J15_24XX_I2C2_SCL);
++		omap_cfg_reg(H19_24XX_I2C2_SDA);
++	}
+ 	(void) platform_device_register(&omap_i2c_device2);
+ }
+ 
+Index: linux-2.6/arch/arm/mach-omap2/gpmc.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-omap2/gpmc.c	2007-04-09 16:36:46.000000000 -0400
++++ linux-2.6/arch/arm/mach-omap2/gpmc.c	2007-04-09 16:36:48.000000000 -0400
+@@ -22,7 +22,14 @@
+ 
+ #undef DEBUG
+ 
++#ifdef CONFIG_ARCH_OMAP2420
+ #define GPMC_BASE		0x6800a000
++#endif
 +
-+/* for TI reference platforms sharing the same debug card */
-+extern int debug_card_init(u32 addr, unsigned gpio);
++#ifdef CONFIG_ARCH_OMAP2430
++#define GPMC_BASE		0x6E000000
++#endif
 +
+ #define GPMC_REVISION		0x00
+ #define GPMC_SYSCONFIG		0x10
+ #define GPMC_SYSSTATUS		0x14
+Index: linux-2.6/arch/arm/mach-omap2/id.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-omap2/id.c	2007-04-09 16:36:47.000000000 -0400
++++ linux-2.6/arch/arm/mach-omap2/id.c	2007-04-09 16:36:48.000000000 -0400
+@@ -17,7 +17,13 @@
+ 
+ #include <asm/io.h>
+ 
++#if defined(CONFIG_ARCH_OMAP2420)
+ #define OMAP24XX_TAP_BASE	io_p2v(0x48014000)
++#endif
++
++#if defined(CONFIG_ARCH_OMAP2430)
++#define OMAP24XX_TAP_BASE	io_p2v(0x4900A000)
++#endif
+ 
+ #define OMAP_TAP_IDCODE		0x0204
+ #define OMAP_TAP_PROD_ID	0x0208
+Index: linux-2.6/arch/arm/mach-omap2/io.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-omap2/io.c	2007-04-09 16:36:46.000000000 -0400
++++ linux-2.6/arch/arm/mach-omap2/io.c	2007-04-09 16:36:48.000000000 -0400
+@@ -5,6 +5,7 @@
+  *
+  * Copyright (C) 2005 Nokia Corporation
+  * Author: Juha Yrjölä <juha.yrjola@nokia.com>
++ * Updated map desc to add 2430 support : <x0khasim@ti.com>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+@@ -41,6 +42,20 @@ static struct map_desc omap2_io_desc[] _
+ 		.length		= L3_24XX_SIZE,
+ 		.type		= MT_DEVICE
+ 	},
++#ifdef CONFIG_ARCH_OMAP2430
++	{
++		.virtual	= L4_WK_243X_VIRT,
++		.pfn		= __phys_to_pfn(L4_WK_243X_PHYS),
++		.length		= L4_WK_243X_SIZE,
++		.type		= MT_DEVICE
++	},
++	{
++		.virtual	= OMAP243X_GPMC_VIRT,
++		.pfn		= __phys_to_pfn(OMAP243X_GPMC_PHYS),
++		.length		= OMAP243X_GPMC_SIZE,
++		.type		= MT_DEVICE
++	},
++#endif
+ 	{
+ 		.virtual	= DSP_MEM_24XX_VIRT,
+ 		.pfn		= __phys_to_pfn(DSP_MEM_24XX_PHYS),
+@@ -81,6 +96,11 @@ void __init omap2_init_common_hw(void)
+ {
+ 	omap2_mux_init();
+ 	omap2_clk_init();
++/*
++ * Need to Fix this for 2430
++ */
++#ifndef CONFIG_ARCH_OMAP2430
+ 	omap2_init_memory();
++#endif
+ 	gpmc_init();
+ }
+Index: linux-2.6/include/asm-arm/arch-omap/board-2430sdp.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/include/asm-arm/arch-omap/board-2430sdp.h	2007-04-09 16:36:48.000000000 -0400
+@@ -0,0 +1,44 @@
++/*
++ * linux/include/asm-arm/arch-omap/board-2430sdp.h
++ *
++ * Hardware definitions for TI OMAP2430 SDP board.
++ *
++ * Based on board-h4.h by Dirk Behme <dirk.behme@de.bosch.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ *
++ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
++ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
++ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
++ * NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
++ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
++ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
++ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
++ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
++ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#ifndef __ASM_ARCH_OMAP_2430SDP_H
++#define __ASM_ARCH_OMAP_2430SDP_H
++
++/* Placeholder for 2430SDP specific defines */
++#define OMAP24XX_ETHR_START		 0x08000300
++#define OMAP24XX_ETHR_GPIO_IRQ		149
++#define SDP2430_CS0_BASE		0x04000000
++
++#define TWL4030_IRQNUM			INT_24XX_SYS_NIRQ
++
++/* TWL4030 Primary Interrupt Handler (PIH) interrupts */
++#define IH_TWL4030_BASE			IH_BOARD_BASE
++#define IH_TWL4030_END			(IH_TWL4030_BASE+8)
++#define NR_IRQS				(IH_TWL4030_END)
++
++#endif /* __ASM_ARCH_OMAP_2430SDP_H */
+Index: linux-2.6/include/asm-arm/arch-omap/hardware.h
+===================================================================
+--- linux-2.6.orig/include/asm-arm/arch-omap/hardware.h	2007-04-09 16:36:47.000000000 -0400
++++ linux-2.6/include/asm-arm/arch-omap/hardware.h	2007-04-09 16:36:48.000000000 -0400
+@@ -318,6 +318,10 @@
+ #include "board-h4.h"
  #endif
+ 
++#ifdef CONFIG_MACH_OMAP_2430SDP
++#include "board-2430sdp.h"
++#endif
++
+ #ifdef CONFIG_MACH_OMAP_APOLLON
+ #include "board-apollon.h"
+ #endif
+Index: linux-2.6/include/asm-arm/arch-omap/io.h
+===================================================================
+--- linux-2.6.orig/include/asm-arm/arch-omap/io.h	2007-04-09 16:36:47.000000000 -0400
++++ linux-2.6/include/asm-arm/arch-omap/io.h	2007-04-09 16:36:48.000000000 -0400
+@@ -72,6 +72,16 @@
+ #define L4_24XX_PHYS	L4_24XX_BASE	/* 0x48000000 */
+ #define L4_24XX_VIRT	0xd8000000
+ #define L4_24XX_SIZE	SZ_1M		/* 1MB of 128MB used, want 1MB sect */
++
++#ifdef CONFIG_ARCH_OMAP2430
++#define L4_WK_243X_PHYS		L4_WK_243X_BASE		/* 0x49000000 */
++#define L4_WK_243X_VIRT		0xd9000000
++#define L4_WK_243X_SIZE		SZ_1M
++#define OMAP243X_GPMC_PHYS	OMAP243X_GPMC_BASE	/* 0x49000000 */
++#define OMAP243X_GPMC_VIRT	0xFE000000
++#define OMAP243X_GPMC_SIZE	SZ_1M
++#endif
++
+ #define IO_OFFSET	0x90000000
+ #define IO_ADDRESS(pa)	((pa) + IO_OFFSET)	/* Works for L3 and L4 */
+ #define io_p2v(pa)	((pa) + IO_OFFSET)	/* Works for L3 and L4 */
+Index: linux-2.6/include/asm-arm/arch-omap/omap24xx.h
+===================================================================
+--- linux-2.6.orig/include/asm-arm/arch-omap/omap24xx.h	2007-04-09 16:36:47.000000000 -0400
++++ linux-2.6/include/asm-arm/arch-omap/omap24xx.h	2007-04-09 16:36:48.000000000 -0400
+@@ -8,6 +8,7 @@
+  */
+ 
+ #define L4_24XX_BASE		0x48000000
++#define L4_WK_243X_BASE		0x49000000
+ #define L3_24XX_BASE		0x68000000
+ 
+ /* interrupt controller */
+@@ -16,9 +17,20 @@
+ #define OMAP24XX_IVA_INTC_BASE	0x40000000
+ #define IRQ_SIR_IRQ		0x0040
+ 
++#ifdef CONFIG_ARCH_OMAP2420
+ #define OMAP24XX_32KSYNCT_BASE	(L4_24XX_BASE + 0x4000)
+ #define OMAP24XX_PRCM_BASE	(L4_24XX_BASE + 0x8000)
+ #define OMAP24XX_SDRC_BASE	(L3_24XX_BASE + 0x9000)
++#define OMAP242X_CONTROL_STATUS	(L4_24XX_BASE + 0x2f8)
++#endif
++
++#ifdef CONFIG_ARCH_OMAP2430
++#define OMAP24XX_32KSYNCT_BASE	(L4_WK_243X_BASE + 0x20000)
++#define OMAP24XX_PRCM_BASE	(L4_WK_243X_BASE + 0x6000)
++#define OMAP24XX_SDRC_BASE	(0x6D000000)
++#define OMAP242X_CONTROL_STATUS	(L4_24XX_BASE + 0x2f8)
++#define OMAP243X_GPMC_BASE	0x6E000000
++#endif
+ 
+ /* DSP SS */
+ #define OMAP24XX_DSP_BASE	0x58000000
