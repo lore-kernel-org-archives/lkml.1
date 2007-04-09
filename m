@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965393AbXDIUsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965397AbXDIUxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965393AbXDIUsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXDIUsT
+	id S965397AbXDIUxY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXDIUxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:48:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60408 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965393AbXDIUsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:48:17 -0400
-Message-ID: <461AA681.50605@redhat.com>
-Date: Mon, 09 Apr 2007 16:48:01 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
+	Mon, 9 Apr 2007 16:53:24 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:56351 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965397AbXDIUxX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:53:23 -0400
+Message-ID: <461AA737.5020508@zytor.com>
+Date: Mon, 09 Apr 2007 13:51:03 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] unable to handle kernel paging request at virtual address
- 0800000e
-References: <4616CBF4.8020205@m3y3r.de>
-In-Reply-To: <4616CBF4.8020205@m3y3r.de>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Jeff Garzik <jeff@garzik.org>
+CC: Ralf Baechle <ralf@linux-mips.org>, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org, John Stoffel <john@stoffel.org>
+Subject: Re: I give up
+References: <200704091007.58535.gene.heskett@gmail.com> <200704091137.01336.gene.heskett@gmail.com> <17946.29660.368403.553290@smtp.charter.net> <200704091549.51805.gene.heskett@gmail.com> <461A9D42.9000008@garzik.org> <20070409203201.GA20376@linux-mips.org> <461AA5C8.7090202@garzik.org>
+In-Reply-To: <461AA5C8.7090202@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Meyer wrote:
-> dmesg output:
+Jeff Garzik wrote:
 > 
-> pktcdvd: pkt_get_last_written failed
-> BUG: unable to handle kernel paging request at virtual address 0800000e
-<SNIP>
-> EFLAGS: 00010203   (2.6.21-rc6 #295)
-<SNIP>
-> cdrom: This disc doesn't have any tracks I recognize!
+>> mounted into fairly bulky subsystems, tapes can be easily handled by
+>> robots.
 > 
-> This happens while calling command pktsetup.
+> Actually there are HD robots now :)
 > 
 
-Well that's very strange.
+The best part is you can just electrify each slot, no need for 
+mechanical arms.
 
-long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
-{
-        char *tmp = getname(filename);
-        int fd = PTR_ERR(tmp);
-
-        if (!IS_ERR(tmp)) {
-                fd = get_unused_fd();
-                if (fd >= 0) {
-============>           struct file *f = do_filp_open(dfd, tmp, flags, mode);
-                        if (IS_ERR(f)) {
-                                put_unused_fd(fd);
-                                fd = PTR_ERR(f);
-                        } else {
-                                fsnotify_open(f->f_path.dentry);
-                                fd_install(fd, f);
-                        }
-                }
-                putname(tmp);
-        }
-
-do_filp_open has returned 0x8000002
-
-Isn't that a SCSI error of some kind?
-
-IAC we have tried to do fsnotify_open(f->f_path.dentry) with that result...
+	-hpa
