@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965396AbXDIUGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965419AbXDIUHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965396AbXDIUGv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965419AbXDIUGv
+	id S965419AbXDIUHt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965456AbXDIUHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:06:51 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:3705 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965396AbXDIUGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:06:49 -0400
-X-IronPort-AV: i="4.14,388,1170651600"; 
-   d="scan'208"; a="34355825:sNHT22238825"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
-Date: Mon, 9 Apr 2007 16:08:22 -0400
-User-Agent: KMail/1.9.5
-Cc: bryan.wu@analog.com, alan@lxorguk.ukuu.org.uk, waltje@uwalt.nl.mugnet.org,
-       aubreylee@gmail.com, netdev@vger.kernel.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, "David Howells" <dhowells@redhat.com>
-References: <6d6a94c50704082001y5c13c865ic3d70217aba7d181@mail.gmail.com> <20070409.095523.122833625.davem@davemloft.net> <20070409.114323.78734391.davem@davemloft.net>
-In-Reply-To: <20070409.114323.78734391.davem@davemloft.net>
+	Mon, 9 Apr 2007 16:07:49 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:46811 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965452AbXDIUHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:07:48 -0400
+Message-ID: <461A9D12.1060106@gmail.com>
+Date: Mon, 09 Apr 2007 22:07:46 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+References: <460B6E4B.3060004@gmail.com> <200704022318.28451.rjw@sisk.pl> <46120449.7070302@gmail.com> <200704031250.07307.rjw@sisk.pl>
+In-Reply-To: <200704031250.07307.rjw@sisk.pl>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704091608.23270.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 09 Apr 2007 20:06:44.0157 (UTC) FILETIME=[986916D0:01C77AE2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 9 Apr 2007 14:43, David Miller pondered:
-> From: David Miller <davem@davemloft.net>
-> Date: Mon, 09 Apr 2007 09:55:23 -0700 (PDT)
-> >
-> > I will apply this patch.
->
-> Actually I won't, the other comments in this thread make a lot
-> of sense, we should try to make it build and work just as we
-> do for other similar things on no-MMU.
+Rafael J. Wysocki napsal(a):
+> Thanks for testing.
+[...]
+> --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
+> +++ linux-2.6.21-rc5/kernel/power/swsusp.c
+> @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
+>  		size += highmem_size;
+>  		for_each_zone (zone)
+>  			if (populated_zone(zone)) {
+> +				tmp += snapshot_additional_pages(zone);
+>  				if (is_highmem(zone)) {
+>  					highmem_size -=
+>  					zone_page_state(zone, NR_FREE_PAGES);
+>  				} else {
+>  					tmp -= zone_page_state(zone, NR_FREE_PAGES);
+>  					tmp += zone->lowmem_reserve[ZONE_NORMAL];
+> -					tmp += snapshot_additional_pages(zone);
 
-Great. Any pointers in the right direction to remove the requirement of 
-vm_insert_page() in the noMMU case?
+I have bad news for you :(. I thought I had unpatched kernel, but it happens
+in -rc6 too.
 
-Thanks
--Robin
+Next, when this occurs, kernel CPU1 is not brought up and next suspend hangs
+on "Suspending consoles".
+
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
