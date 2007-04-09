@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbXDIRMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752100AbXDIRQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbXDIRMH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 13:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbXDIRMG
+	id S1752100AbXDIRQK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 13:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXDIRQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 13:12:06 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:61800 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbXDIRME (ORCPT
+	Mon, 9 Apr 2007 13:16:10 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46548 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752076AbXDIRQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 13:12:04 -0400
+	Mon, 9 Apr 2007 13:16:08 -0400
+Date: Mon, 9 Apr 2007 10:16:06 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Andy Whitcroft <apw@shadowen.org>, Martin Bligh <mbligh@google.com>,
+       Dave Hansen <hansendc@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/4] x86_64: (SPARSE_VIRTUAL doubles sparsemem speed)
+In-Reply-To: <20070409164029.GT2986@holomorphy.com>
+Message-ID: <Pine.LNX.4.64.0704091014350.4878@schroedinger.engr.sgi.com>
+References: <20070401071029.23757.78021.sendpatchset@schroedinger.engr.sgi.com>
+ <200704011246.52238.ak@suse.de> <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com>
+ <1175544797.22373.62.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com>
+ <461169CF.6060806@google.com> <Pine.LNX.4.64.0704021345110.1224@schroedinger.engr.sgi.com>
+ <4614E293.3010908@shadowen.org> <Pine.LNX.4.64.0704051119400.9800@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0704071455060.31468@schroedinger.engr.sgi.com>
+ <20070409164029.GT2986@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17946.29660.368403.553290@smtp.charter.net>
-Date: Mon, 9 Apr 2007 13:11:56 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-Subject: Re: I give up
-In-Reply-To: <200704091137.01336.gene.heskett@gmail.com>
-References: <200704091007.58535.gene.heskett@gmail.com>
-	<461A5204.1050206@garzik.org>
-	<200704091137.01336.gene.heskett@gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Gene" == Gene Heskett <gene.heskett@gmail.com> writes:
+On Mon, 9 Apr 2007, William Lee Irwin III wrote:
 
-Gene> On Monday 09 April 2007, Jeff Garzik wrote:
->> Gene Heskett wrote:
->>> Now the 64k$ question: While running with LVM2 managed disks, is it
->>> possible to run without dm_mod, the device-mapper?  If so, please tell
->>> me how to achieve this.
->> 
->> No; device mapper is the kernel portion of LVM2.
->> 
->> Jeff, who actively avoids LVM on home computers
+> Whatever's going on with the rest of this, I really like this
+> instrumentation patch. It may be worthwhile to allow pc_start() to be
+> overridden so things like performance counter MSR's are usable, but
+> the framework looks very useful.
 
-Gene> Ya shoulda warned me.  :-)
+Yeah. I also did some measurements on quicklists on x86_64 and it seems 
+that caching page table pages is also useful:
 
-Gene> It should have lots bigger warning labels, in bright red
-Gene> self-illuminating signs, than it does.  It in fact seems to work
-Gene> well, but it is a major breakage for some common apps, like
-Gene> doing backups...
+no quicklist
 
->From the GNU info doc on the tar program:
+pte_alloc               1569048 4.3s(401ns/2.7us/179.7us)
+pmd_alloc                780988 2.1s(337ns/2.7us/86.1us)
+pud_alloc                780072 2.2s(424ns/2.8us/300.6us)
+pgd_alloc                260022 1s(920ns/4us/263.1us)
 
-    Metadata stored in snapshot files include device numbers, which,
-    obviously is supposed to be a non-volatile value. However, it turns
-    out that NFS devices have undependable values when an automounter gets
-    in the picture. This can lead to a great deal of spurious redumping in
-    incremental dumps, so it is somewhat useless to compare two NFS
-    devices numbers over time. The solution implemented currently is to
-    considers all NFS devices as being equal when it comes to comparing
-    directories; this is fairly gross, but there does not seem to be a
-    better way to go.
+quicklist:
 
-This to me, seems to be another borkage of the tar program.  Can you
-tell Amanda to use 'dump/restore' instead of tar instead?  Or heck,
-just move to Bacula, it's smarter than amanda/tar and it supports
-writing to DVDs, etc.  http://www.bacula.org
+pte_alloc                452436 573.4ms(8ns/1.3us/121.1us)
+pmd_alloc                196204 174.5ms(7ns/889ns/46.1us)
+pud_alloc                195688 172.4ms(7ns/881ns/151.3us)
+pgd_alloc                 65228 9.8ms(8ns/150ns/6.1us)
 
-This tar borkness is pretty annoying, since Amanda (from the docs
-page) only keeps indexes in terms of host/filesystem/path/date,
-nothing about the major/minor (device) numbers.
 
-It just re-inforces my desire to never use Amanda again.
-
-John
-john@stoffel.org
