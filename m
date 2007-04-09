@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbXDIS0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbXDIS1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbXDIS0i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbXDIS0i
+	id S1753411AbXDIS1D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXDIS1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:26:38 -0400
-Received: from holomorphy.com ([66.93.40.71]:35132 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753349AbXDIS0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:26:36 -0400
-Date: Mon, 9 Apr 2007 11:20:12 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andy Whitcroft <apw@shadowen.org>, Martin Bligh <mbligh@google.com>,
-       Dave Hansen <hansendc@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/4] x86_64: (SPARSE_VIRTUAL doubles sparsemem speed)
-Message-ID: <20070409182012.GW2986@holomorphy.com>
-References: <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com> <1175544797.22373.62.camel@localhost.localdomain> <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com> <461169CF.6060806@google.com> <Pine.LNX.4.64.0704021345110.1224@schroedinger.engr.sgi.com> <4614E293.3010908@shadowen.org> <Pine.LNX.4.64.0704051119400.9800@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0704071455060.31468@schroedinger.engr.sgi.com> <20070409164029.GT2986@holomorphy.com> <Pine.LNX.4.64.0704091014350.4878@schroedinger.engr.sgi.com>
+	Mon, 9 Apr 2007 14:27:01 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45342 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753386AbXDIS06 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 14:26:58 -0400
+Message-ID: <461A84FD.6010400@zytor.com>
+Date: Mon, 09 Apr 2007 11:25:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704091014350.4878@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ram Pai <linuxram@us.ibm.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/8] unprivileged mount syscall
+References: <20070404183012.429274832@szeredi.hu>	 <20070406160238.f3178189.akpm@linux-foundation.org>	 <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu>	 <20070409143802.GB4891@sergelap.austin.ibm.com>	 <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu>	 <20070409170743.GF24415@sergelap.austin.ibm.com> <1176140785.2842.18.camel@ram.us.ibm.com>
+In-Reply-To: <1176140785.2842.18.camel@ram.us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Apr 2007, William Lee Irwin III wrote:
->> Whatever's going on with the rest of this, I really like this
->> instrumentation patch. It may be worthwhile to allow pc_start() to be
->> overridden so things like performance counter MSR's are usable, but
->> the framework looks very useful.
+Ram Pai wrote:
+> 
+> It is in FC6. I dont know the status off upstream util-linux. I did
+> submit the patch many times to Adrian Bunk (the then util-linux
+> maintainer) and got no response. I have not pushed the patches to the
+> new maintainer(Karel Zak?) though.
+> 
 
-On Mon, Apr 09, 2007 at 10:16:06AM -0700, Christoph Lameter wrote:
-> Yeah. I also did some measurements on quicklists on x86_64 and it seems 
-> that caching page table pages is also useful:
-[...]
+Well, do that, then :)
 
-Sadly these timings will not address the arguments made on behalf of
-eager zeroing, which are essentially that "precharging the cache" will
-benefit fork(). I personally still find them meaningful.
+Seriously.  The whole point of util-linux-ng is to make forward progress.
 
-I think a demonstration that will deal with more of others' concerns
-might be instrumenting fault latency after a fresh execve() and
-comparing fork() timings. This is clearly awkward given the scheduling
-opportunities in these areas, but a virtual time measurement may suffice
-to cope with those.
-
-The fault latency after a fresh execve() is particularly relevant
-because it's a scenario where incremental pagetable construction occurs
-in "real life." It's actually less common for processes to merely fork()
-than to fork() then execve() and then perform most of their work in the
-context set up in execve(). The pagetables set up for fork() are most
-commonly short-lived and the utility of caching them or even
-constructing them so questionable that pagetable sharing and other
-methods of avoiding the copy are quite plausible, though perhaps in
-need of some heuristics to avoid new faults for the purposes of merely
-copying pagetables where possible (AIUI such are considered or
-implemented in pagetable sharing patches; of course, Dave McCracken has
-far more detailed knowledge of the performance considerations there).
-
-I daresay it's highly dubious to consider pagetable construction for
-fork() in isolation when the common case is to almost immediately flush
-all those pagetables down the toilet via execve().
-
-Basically, if we can establish that (1) pagetable caching doesn't hurt
-fork() or maybe even speeds it up then (2) it speeds up post-execve()
-faults, then things look good. Raw timings on the pagetable allocation
-primitives are unfortunately too micro to adequately make our case.
-
-
--- wli
+	-hpa
