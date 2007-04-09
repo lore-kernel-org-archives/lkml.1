@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750882AbXDIJ5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXDIKOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750882AbXDIJ5j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 05:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbXDIJ5j
+	id S932097AbXDIKOo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 06:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932128AbXDIKOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 05:57:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50771 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750882AbXDIJ5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 05:57:38 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+YckdjxV+YNlnQeKkU9XtVq1UFvKL594l5RZR1n1
-	c7YlFlOp0CjzG9
-Subject: Re: SD scheduler testing hitch
-From: Mike Galbraith <efault@gmx.de>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <b647ffbd0704090220p60c49ec9w8eb1083943526155@mail.gmail.com>
-References: <200704082134.43029.a1426z@gawab.com>
-	 <1176099797.6355.122.camel@Homer.simpson.net>
-	 <b647ffbd0704090220p60c49ec9w8eb1083943526155@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 09 Apr 2007 11:57:32 +0200
-Message-Id: <1176112652.10120.19.camel@Homer.simpson.net>
+	Mon, 9 Apr 2007 06:14:43 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:54997 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932097AbXDIKOm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 06:14:42 -0400
+Date: Mon, 9 Apr 2007 04:14:40 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Add a norecovery option to ext3/4?
+Message-ID: <20070409101440.GM5967@schatzie.adilger.int>
+Mail-Followup-To: Eric Sandeen <sandeen@redhat.com>,
+	Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070409000556.GA13980@implementation> <4619B202.3050601@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4619B202.3050601@redhat.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-09 at 11:20 +0200, Dmitry Adamushko wrote:
-> On 09/04/07, Mike Galbraith <efault@gmx.de> wrote:
-> > On Sun, 2007-04-08 at 21:34 +0300, Al Boldi wrote:
-> > > Mike Galbraith wrote:
-> > > > On Sat, 2007-04-07 at 19:17 +0200, Mike Galbraith wrote:
-> > > > > I lowered the time to 500us, and ran at nice -10.. it starves tenpercent
-> > > > > here every time.  (ran as taskset -c 1 nice -n -10 ./fairtest)  The
-> > > > > starving 10% duty cycle task has trouble getting 1% CPU.
-> > > >
-> > > > Hmm.  Playing with it some more today, it still happens, but it's not
-> > > > very repeatable.  Something is odd.  I wonder if any SD using readers
-> > > > will try it.
-> > >
-> > > Tried it on mainline 2.6.20.3.
-> > > It's not easily repeatable, but it's got the same problem.
+On Apr 08, 2007  22:24 -0500, Eric Sandeen wrote:
+> Samuel Thibault wrote:
+> >Distribution installers usually try to probe OSes for building a suited
+> >grub menu.  Unfortunately, mounting an ext3 partition, even in read-only
+> >mode, does perform some operations on the filesystem (log recovery).
+> >This is not a good idea since it may silently garbage data.  
 > 
-> In my case, it's easily reproducible. Below is a mainline 2.6.19.
-> 
-> Look at both %CPU and TIME+ (sched_time).
+> Can you elaborate?  Under what circumstances is log replay going to harm 
+> data?  Do you mean that the installer mounts partitions, looking for 
+> what OS is installed?  How is that harmful?
 
-Yeah, 23.7% idle.  Hrm.
+If that disk was actually in use on another system but just exported
+via a SAN to this node you've potentially corrupted the filesystem.
 
-> top - 10:55:00 up 33 min,  8 users,  load average: 1.07, 0.61, 0.51
-> Tasks:  76 total,   2 running,  74 sleeping,   0 stopped,   0 zombie
-> Cpu(s): 76.0% us,  0.3% sy,  0.0% ni, 23.7% id,  0.0% wa,  0.0% hi,  0.0% si
-> Mem:    256592k total,   251888k used,     4704k free,    46516k buffers
-> Swap:   272120k total,     4924k used,   267196k free,    90048k cached
-> 
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->  8113 dimm      15   0  1460  436  360 R 74.4  0.2   1:43.63 fairtest_xx
->  8114 dimm      15   0  1460  108   32 S  0.3  0.0   0:00.15 fairtest_xx
-> 
-> 
-> If you take a look at my previous report, you'll also notice
-> "strangeness" with both cpu% and sched_time.
-> 
-> sched_clock() is based on "tsc" and it's available for my CPU. So
-> maybe something fishy is going on with accounting.
+It's a bad idea to just go ahead and mount filesystems that you aren't
+told to mount.
 
-Yeah.  There's a patch floating around that is supposed to fix some of
-the error.  I'm going to test with it, and I'm rummaging around a bit as
-well.  I know for sure that frequency scaling will screw up the test
-proggy's calibration here, but I test with it locked to max, and in any
-case the hog half should eat any cpu not being used by the tenp half.
-
-	-Mike
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
