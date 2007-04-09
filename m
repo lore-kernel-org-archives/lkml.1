@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbXDISnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbXDISn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbXDISnZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXDISnZ
+	id S1753388AbXDISn3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbXDISn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:43:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40185
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753394AbXDISnX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:43:23 -0400
-Date: Mon, 09 Apr 2007 11:43:23 -0700 (PDT)
-Message-Id: <20070409.114323.78734391.davem@davemloft.net>
-To: bryan.wu@analog.com
-Cc: alan@lxorguk.ukuu.org.uk, waltje@uWalt.NL.Mugnet.ORG, aubreylee@gmail.com,
-       netdev@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070409.095523.122833625.davem@davemloft.net>
-References: <6d6a94c50704082001y5c13c865ic3d70217aba7d181@mail.gmail.com>
-	<1176112223.17975.8.camel@roc-desktop>
-	<20070409.095523.122833625.davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 9 Apr 2007 14:43:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53314 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753388AbXDISn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 14:43:28 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [QUICKLIST 3/4] Quicklist support for x86_64
+Date: Mon, 9 Apr 2007 20:43:14 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com> <20070409182520.8559.33529.sendpatchset@schroedinger.engr.sgi.com>
+In-Reply-To: <20070409182520.8559.33529.sendpatchset@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704092043.14335.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Mon, 09 Apr 2007 09:55:23 -0700 (PDT)
+On Monday 09 April 2007 20:25:20 Christoph Lameter wrote:
 
-> From: "Wu, Bryan" <bryan.wu@analog.com>
-> Date: Mon, 09 Apr 2007 17:50:22 +0800
-> 
-> > On Mon, 2007-04-09 at 11:01 +0800, Aubrey Li wrote:
-> > > The option CONFIG_PACKET_MMAP should depend on MMU.
-> > > 
-> > > Signed-off-by: Aubrey.Li <aubreylee@gmail.com>
-> > > ---
-> > >  net/packet/Kconfig |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/net/packet/Kconfig b/net/packet/Kconfig
-> > > index 34ff93f..959c272 100644
-> > > --- a/net/packet/Kconfig
-> > > +++ b/net/packet/Kconfig
-> > > @@ -17,7 +17,7 @@ config PACKET
-> > > 
-> > >  config PACKET_MMAP
-> > >  	bool "Packet socket: mmapped IO"
-> > > -	depends on PACKET
-> > > +	depends on PACKET && MMU
-> > >  	help
-> > >  	  If you say Y here, the Packet protocol driver will use an IO
-> > >  	  mechanism that results in faster communication.
-> > 
-> > Yeah, this is a bug found on blackfin arch and it is also for other
-> > NOMMU arch. Is there any solution for this? We think Aubrey's idea
-> > works.
-> 
-> I will apply this patch.
+>  #endif /* _X86_64_PGALLOC_H */
+> Index: linux-2.6.21-rc5-mm4/arch/x86_64/kernel/process.c
+> ===================================================================
+> --- linux-2.6.21-rc5-mm4.orig/arch/x86_64/kernel/process.c	2007-04-07 18:07:47.000000000 -0700
+> +++ linux-2.6.21-rc5-mm4/arch/x86_64/kernel/process.c	2007-04-07 18:09:30.000000000 -0700
+> @@ -207,6 +207,7 @@
+>  			if (__get_cpu_var(cpu_idle_state))
+>  				__get_cpu_var(cpu_idle_state) = 0;
+>  
+> +			check_pgt_cache();
 
-Actually I won't, the other comments in this thread make a lot
-of sense, we should try to make it build and work just as we
-do for other similar things on no-MMU.
+Wouldn't it be better to do that on memory pressure only (register
+it as a shrinker)?
+
+>  		rmb();
+>  			idle = pm_idle;
+>  			if (!idle)
+> Index: linux-2.6.21-rc5-mm4/arch/x86_64/kernel/smp.c
+> ===================================================================
+> --- linux-2.6.21-rc5-mm4.orig/arch/x86_64/kernel/smp.c	2007-04-07 18:07:47.000000000 -0700
+> +++ linux-2.6.21-rc5-mm4/arch/x86_64/kernel/smp.c	2007-04-07 18:09:30.000000000 -0700
+> @@ -241,7 +241,7 @@
+>  	}
+>  	if (!cpus_empty(cpu_mask))
+>  		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
+> -
+> +	check_pgt_cache();
+
+Why is that here?
+
+>  	preempt_enable();
+>  }
+
+
+-Andi
