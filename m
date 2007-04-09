@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbXDIIYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXDIIYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752141AbXDIIYq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 04:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbXDIIYq
+	id S1752320AbXDIIYt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 04:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXDIIYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 04:24:46 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58867 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751555AbXDIIYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 04:24:45 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19WWnV75shWBsW1vW6o+W1n5nttB/Me00Uy3H5Htq
-	vVYNZA26b92mJg
-Subject: Re: Ten percent test
-From: Mike Galbraith <efault@gmx.de>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-In-Reply-To: <200704090116.37329.gene.heskett@gmail.com>
-References: <200703290237.38777.kernel@kolivas.org>
-	 <200704081356.48843.gene.heskett@gmail.com>
-	 <1176092271.6355.16.camel@Homer.simpson.net>
-	 <200704090116.37329.gene.heskett@gmail.com>
-Content-Type: text/plain
-Date: Mon, 09 Apr 2007 10:24:40 +0200
-Message-Id: <1176107081.9909.17.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Mon, 9 Apr 2007 04:24:49 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:39421 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbXDIIYr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 04:24:47 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [RFC] pata_icside driver
+X-Message-Flag: Warning: May contain useful information
+References: <20070330110022.GA21653@flint.arm.linux.org.uk>
+	<20070330110800.GB21653@flint.arm.linux.org.uk>
+	<20070408101826.GA5431@flint.arm.linux.org.uk>
+	<20070408210917.6e306851@the-village.bc.nu>
+	<20070409081824.GA28366@flint.arm.linux.org.uk>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 09 Apr 2007 01:24:45 -0700
+In-Reply-To: <20070409081824.GA28366@flint.arm.linux.org.uk> (Russell King's message of "Mon, 9 Apr 2007 09:18:24 +0100")
+Message-ID: <adahcrq550y.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Apr 2007 08:24:45.0496 (UTC) FILETIME=[87BB7380:01C77A80]
+Authentication-Results: sj-dkim-8; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim8002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-09 at 01:16 -0400, Gene Heskett wrote:
-> On Monday 09 April 2007, Mike Galbraith wrote:
-> >
-> >So tar -cvf - / | gzip --best | tar -tvzf - should reproduce the
-> >problem?
-> >
-> That looks as if it should demo it pretty well if I understand correctly 
-> everything you're doing there.
+ > Lets say that we want to do MW DMA mode 2.  This has the minimum timing
+ > of 70ns active, 25ns recovery, 120ns cycle time.
+ > 
+ > When you quantise those figures using a clock period of 62.5ns (16MHz)
+ > you end up with: 2 clocks active (2*62.5 > 70), 1 clock recovery
+ > (1*62.5 > 25) and 2 clocks cycle (2*62.5 > 120).
+ > 
+ > Last time I checked, active + recovery must always be equal to the cycle
+ > time, and unless my math is failing me, 2 + 1 does not equal 2.
 
-Ok, I can't reproduce any bad interactivity here with that workload
-either with SMP or UP kernel.  That said however, gzip does attain
-interactive status, which it really should not - that gives it an unfair
-advantage over it's peers.
+Do you mean active + recovery must be less than or equal to the cycle
+time?  Because 70ns + 25ns does not equal 120ns either...
 
-With my throttled tree, it gets pushed back down to where it belongs.
-I'm going to try to tighten the tolerance on behavior to evict the
-riffraff who don't really belong in the elite interactive club sooner,
-and guarantee that even fast/light tasks can't dominate the CPU without
-paying heavily.
-
-(to close the many fast/light tasks wakeup scenario that the "untested"
-patch someone mentioned did, but was shown to be too painful to bare).
-
-	-Mike
-
+ - R.
