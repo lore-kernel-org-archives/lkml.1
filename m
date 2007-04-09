@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbXDISZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbXDISZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbXDISZr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbXDISZr
+	id S1753338AbXDISZs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbXDISZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:25:47 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51547 "EHLO
+	Mon, 9 Apr 2007 14:25:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51540 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753338AbXDISZ0 (ORCPT
+	with ESMTP id S1753343AbXDISZV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:25:26 -0400
+	Mon, 9 Apr 2007 14:25:21 -0400
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, ak@suse.de, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-Message-Id: <20070409182525.8559.53694.sendpatchset@schroedinger.engr.sgi.com>
+Cc: linux-mm@kvack.org, ak@suse.de, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org
+Message-Id: <20070409182520.8559.33529.sendpatchset@schroedinger.engr.sgi.com>
 In-Reply-To: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
 References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [QUICKLIST 4/4] Quicklist support for sparc64
-Date: Mon,  9 Apr 2007 11:25:25 -0700 (PDT)
+Subject: [QUICKLIST 3/4] Quicklist support for x86_64
+Date: Mon,  9 Apr 2007 11:25:20 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
+Conver x86_64 to using quicklists
 
-[QUICKLIST]: Add sparc64 quicklist support.
+This adds caching of pgds and puds, pmds, pte. That way we can
+avoid costly zeroing and initialization of special mappings in the
+pgd.
 
-I ported this to sparc64 as per the patch below, tested on
-UP SunBlade1500 and 24 cpu Niagara T1000.
+A second quicklist is useful to separate out PGD handling. We can carry
+the initialized pgds over to the next process needing them.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Also clean up the pgd_list handling to use regular list macros.
+There is no need anymore to avoid the lru field.
 
-Index: linux-2.6.21-rc5-mm4/arch/sparc64/Kconfig
+Move the add/removal of the pgds to the pgdlist into the
+constructor / destructor. That way the implementation is
+congruent with i386.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ arch/x86_64/Kconfig          |    4 ++
+ arch/x86_64/kernel/process.c |    1 
+ arch/x86_64/kernel/smp.c     |    2 -
+ arch/x86_64/mm/fault.c       |    5 +-
+ include/asm-x86_64/pgalloc.h |   76 +++++++++++++++++++++----------------------
+ include/asm-x86_64/pgtable.h |    3 -
+ mm/Kconfig                   |    5 ++
+ 7 files changed, 52 insertions(+), 44 deletions(-)
+
+Index: linux-2.6.21-rc5-mm4/arch/x86_64/Kconfig
 ===================================================================
---- linux-2.6.21-rc5-mm4.orig/arch/sparc64/Kconfig	2007-04-07 16:20:07.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/arch/sparc64/Kconfig	2007-04-07 18:03:06.000000000 -0700
-@@ -26,6 +26,10 @@
+--- linux-2.6.21-rc5-mm4.orig/arch/x86_64/Kconfig	2007-04-07 18:09:17.000000000 -0700
++++ linux-2.6.21-rc5-mm4/arch/x86_64/Kconfig	2007-04-07 18:09:30.000000000 -0700
+@@ -56,6 +56,14 @@
  	bool
  	default y
  
@@ -43,139 +62,191 @@ Index: linux-2.6.21-rc5-mm4/arch/sparc64/Kconfig
 +	bool
 +	default y
 +
- config STACKTRACE_SUPPORT
++config NR_QUICK
++	int
++	default 2
++
+ config ISA
  	bool
- 	default y
-Index: linux-2.6.21-rc5-mm4/arch/sparc64/mm/init.c
+ 
+Index: linux-2.6.21-rc5-mm4/include/asm-x86_64/pgalloc.h
 ===================================================================
---- linux-2.6.21-rc5-mm4.orig/arch/sparc64/mm/init.c	2007-03-25 15:56:23.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/arch/sparc64/mm/init.c	2007-04-07 18:03:06.000000000 -0700
-@@ -178,30 +178,6 @@
- 
- int bigkernel = 0;
- 
--struct kmem_cache *pgtable_cache __read_mostly;
--
--static void zero_ctor(void *addr, struct kmem_cache *cache, unsigned long flags)
--{
--	clear_page(addr);
--}
--
--extern void tsb_cache_init(void);
--
--void pgtable_cache_init(void)
--{
--	pgtable_cache = kmem_cache_create("pgtable_cache",
--					  PAGE_SIZE, PAGE_SIZE,
--					  SLAB_HWCACHE_ALIGN |
--					  SLAB_MUST_HWCACHE_ALIGN,
--					  zero_ctor,
--					  NULL);
--	if (!pgtable_cache) {
--		prom_printf("Could not create pgtable_cache\n");
--		prom_halt();
--	}
--	tsb_cache_init();
--}
--
- #ifdef CONFIG_DEBUG_DCFLUSH
- atomic_t dcpage_flushes = ATOMIC_INIT(0);
- #ifdef CONFIG_SMP
-Index: linux-2.6.21-rc5-mm4/arch/sparc64/mm/tsb.c
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/arch/sparc64/mm/tsb.c	2007-03-25 15:56:23.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/arch/sparc64/mm/tsb.c	2007-04-07 18:03:06.000000000 -0700
-@@ -252,7 +252,7 @@
- 	"tsb_1MB",
- };
- 
--void __init tsb_cache_init(void)
-+void __init pgtable_cache_init(void)
- {
- 	unsigned long i;
- 
-Index: linux-2.6.21-rc5-mm4/include/asm-sparc64/pgalloc.h
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/include/asm-sparc64/pgalloc.h	2007-03-25 15:56:23.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/include/asm-sparc64/pgalloc.h	2007-04-07 18:03:07.000000000 -0700
-@@ -6,6 +6,7 @@
- #include <linux/sched.h>
+--- linux-2.6.21-rc5-mm4.orig/include/asm-x86_64/pgalloc.h	2007-04-07 18:07:47.000000000 -0700
++++ linux-2.6.21-rc5-mm4/include/asm-x86_64/pgalloc.h	2007-04-07 18:47:03.000000000 -0700
+@@ -4,6 +4,10 @@
+ #include <asm/pda.h>
+ #include <linux/threads.h>
  #include <linux/mm.h>
- #include <linux/slab.h>
 +#include <linux/quicklist.h>
++
++#define QUICK_PGD 0	/* We preserve special mappings over free */
++#define QUICK_PT 1	/* Other page table pages that are zero on free */
  
- #include <asm/spitfire.h>
- #include <asm/cpudata.h>
-@@ -13,52 +14,50 @@
- #include <asm/page.h>
- 
- /* Page table allocation/freeing. */
--extern struct kmem_cache *pgtable_cache;
- 
- static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ #define pmd_populate_kernel(mm, pmd, pte) \
+ 		set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)))
+@@ -20,23 +24,23 @@
+ static inline void pmd_free(pmd_t *pmd)
  {
--	return kmem_cache_alloc(pgtable_cache, GFP_KERNEL);
-+	return quicklist_alloc(0, GFP_KERNEL, NULL);
+ 	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
+-	free_page((unsigned long)pmd);
++	quicklist_free(QUICK_PT, NULL, pmd);
+ }
+ 
+ static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
+ {
+-	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
++	return (pmd_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+ }
+ 
+ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return (pud_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
++	return (pud_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+ }
+ 
+ static inline void pud_free (pud_t *pud)
+ {
+ 	BUG_ON((unsigned long)pud & (PAGE_SIZE-1));
+-	free_page((unsigned long)pud);
++	quicklist_free(QUICK_PT, NULL, pud);
+ }
+ 
+ static inline void pgd_list_add(pgd_t *pgd)
+@@ -57,41 +61,57 @@
+ 	spin_unlock(&pgd_lock);
+ }
+ 
+-static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++static inline void pgd_ctor(void *x)
+ {
+ 	unsigned boundary;
+-	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT);
+-	if (!pgd)
+-		return NULL;
+-	pgd_list_add(pgd);
++	pgd_t *pgd = x;
++	struct page *page = virt_to_page(pgd);
++
+ 	/*
+ 	 * Copy kernel pointers in from init.
+-	 * Could keep a freelist or slab cache of those because the kernel
+-	 * part never changes.
+ 	 */
+ 	boundary = pgd_index(__PAGE_OFFSET);
+-	memset(pgd, 0, boundary * sizeof(pgd_t));
+ 	memcpy(pgd + boundary,
+-	       init_level4_pgt + boundary,
+-	       (PTRS_PER_PGD - boundary) * sizeof(pgd_t));
++		init_level4_pgt + boundary,
++		(PTRS_PER_PGD - boundary) * sizeof(pgd_t));
++
++	spin_lock(&pgd_lock);
++	list_add(&page->lru, &pgd_list);
++	spin_unlock(&pgd_lock);
++}
++
++static inline void pgd_dtor(void *x)
++{
++	pgd_t *pgd = x;
++	struct page *page = virt_to_page(pgd);
++
++        spin_lock(&pgd_lock);
++	list_del(&page->lru);
++	spin_unlock(&pgd_lock);
++}
++
++static inline pgd_t *pgd_alloc(struct mm_struct *mm)
++{
++	pgd_t *pgd = (pgd_t *)quicklist_alloc(QUICK_PGD,
++		GFP_KERNEL|__GFP_REPEAT, pgd_ctor);
+ 	return pgd;
  }
  
  static inline void pgd_free(pgd_t *pgd)
  {
--	kmem_cache_free(pgtable_cache, pgd);
-+	quicklist_free(0, NULL, pgd);
+ 	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
+-	pgd_list_del(pgd);
+-	free_page((unsigned long)pgd);
++	quicklist_free(QUICK_PGD, pgd_dtor, pgd);
  }
  
- #define pud_populate(MM, PUD, PMD)	pud_set(PUD, PMD)
- 
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
  {
--	return kmem_cache_alloc(pgtable_cache,
--				GFP_KERNEL|__GFP_REPEAT);
-+	return quicklist_alloc(0, GFP_KERNEL, NULL);
+-	return (pte_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
++	return (pte_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
  }
  
- static inline void pmd_free(pmd_t *pmd)
+ static inline struct page *pte_alloc_one(struct mm_struct *mm, unsigned long address)
  {
--	kmem_cache_free(pgtable_cache, pmd);
-+	quicklist_free(0, NULL, pmd);
- }
- 
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
- 					  unsigned long address)
- {
--	return kmem_cache_alloc(pgtable_cache,
--				GFP_KERNEL|__GFP_REPEAT);
-+	return quicklist_alloc(0, GFP_KERNEL, NULL);
- }
- 
- static inline struct page *pte_alloc_one(struct mm_struct *mm,
- 					 unsigned long address)
- {
--	return virt_to_page(pte_alloc_one_kernel(mm, address));
-+	void *pg = quicklist_alloc(0, GFP_KERNEL, NULL);
-+	return pg ? virt_to_page(pg) : NULL;
- }
- 		
+-	void *p = (void *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
++	void *p = (void *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
++
+ 	if (!p)
+ 		return NULL;
+ 	return virt_to_page(p);
+@@ -103,17 +123,22 @@
  static inline void pte_free_kernel(pte_t *pte)
  {
--	kmem_cache_free(pgtable_cache, pte);
-+	quicklist_free(0, NULL, pte);
+ 	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
+-	free_page((unsigned long)pte); 
++	quicklist_free(QUICK_PT, NULL, pte);
  }
  
- static inline void pte_free(struct page *ptepage)
+ static inline void pte_free(struct page *pte)
  {
--	pte_free_kernel(page_address(ptepage));
-+	quicklist_free_page(0, NULL, ptepage);
- }
- 
- 
-@@ -66,6 +65,9 @@
- #define pmd_populate(MM,PMD,PTE_PAGE)		\
- 	pmd_populate_kernel(MM,PMD,page_address(PTE_PAGE))
- 
--#define check_pgt_cache()	do { } while (0)
-+static inline void check_pgt_cache(void)
-+{
-+	quicklist_trim(0, NULL, 25, 16);
+-	__free_page(pte);
+-} 
++	quicklist_free_page(QUICK_PT, NULL, pte);
 +}
  
- #endif /* _SPARC64_PGALLOC_H */
+-#define __pte_free_tlb(tlb,pte) tlb_remove_page((tlb),(pte))
++#define __pte_free_tlb(tlb,pte) quicklist_free_page(QUICK_PT, NULL,(pte))
+ 
+-#define __pmd_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
+-#define __pud_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
++#define __pmd_free_tlb(tlb,x)   quicklist_free(QUICK_PT, NULL, (x))
++#define __pud_free_tlb(tlb,x)   quicklist_free(QUICK_PT, NULL, (x))
+ 
++static inline void check_pgt_cache(void)
++{
++	quicklist_trim(QUICK_PGD, pgd_dtor, 25, 16);
++	quicklist_trim(QUICK_PT, NULL, 25, 16);
++}
+ #endif /* _X86_64_PGALLOC_H */
+Index: linux-2.6.21-rc5-mm4/arch/x86_64/kernel/process.c
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/arch/x86_64/kernel/process.c	2007-04-07 18:07:47.000000000 -0700
++++ linux-2.6.21-rc5-mm4/arch/x86_64/kernel/process.c	2007-04-07 18:09:30.000000000 -0700
+@@ -207,6 +207,7 @@
+ 			if (__get_cpu_var(cpu_idle_state))
+ 				__get_cpu_var(cpu_idle_state) = 0;
+ 
++			check_pgt_cache();
+ 			rmb();
+ 			idle = pm_idle;
+ 			if (!idle)
+Index: linux-2.6.21-rc5-mm4/arch/x86_64/kernel/smp.c
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/arch/x86_64/kernel/smp.c	2007-04-07 18:07:47.000000000 -0700
++++ linux-2.6.21-rc5-mm4/arch/x86_64/kernel/smp.c	2007-04-07 18:09:30.000000000 -0700
+@@ -241,7 +241,7 @@
+ 	}
+ 	if (!cpus_empty(cpu_mask))
+ 		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
+-
++	check_pgt_cache();
+ 	preempt_enable();
+ }
+ EXPORT_SYMBOL(flush_tlb_mm);
+Index: linux-2.6.21-rc5-mm4/include/asm-x86_64/pgtable.h
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/include/asm-x86_64/pgtable.h	2007-04-07 18:07:47.000000000 -0700
++++ linux-2.6.21-rc5-mm4/include/asm-x86_64/pgtable.h	2007-04-07 18:09:30.000000000 -0700
+@@ -424,7 +424,6 @@
+ #define HAVE_ARCH_UNMAPPED_AREA
+ 
+ #define pgtable_cache_init()   do { } while (0)
+-#define check_pgt_cache()      do { } while (0)
+ 
+ #define PAGE_AGP    PAGE_KERNEL_NOCACHE
+ #define HAVE_PAGE_AGP 1
