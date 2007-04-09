@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965345AbXDIUDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXDIUFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965345AbXDIUDU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965352AbXDIUDU
+	id S965352AbXDIUFW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965393AbXDIUFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:03:20 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:34872 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965345AbXDIUDT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:03:19 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 9 Apr 2007 13:03:17 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Kyle Moffett <mrmacman_g4@mac.com>, Bill Davidsen <davidsen@tmr.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-In-Reply-To: <Pine.LNX.4.64.0704091239030.6730@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704091302300.5940@alien.or.mcafeemobile.com>
-References: <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
- <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
- <20070406163100.GA554@tv-sign.ru> <Pine.LNX.4.64.0704061119090.8738@alien.or.mcafeemobile.com>
- <m1wt0p5o1y.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704061214450.8738@alien.or.mcafeemobile.com>
- <20070406191945.GA18255@elte.hu> <Pine.LNX.4.64.0704061427130.8738@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0704061449231.6730@woody.linux-foundation.org>
- <20070409082847.GA2228@elte.hu> <461A816F.4050507@tmr.com>
- <9B6136A3-52B4-4AE2-9805-21634E25530A@mac.com>
- <Pine.LNX.4.64.0704091239030.6730@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Apr 2007 16:05:22 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:58014 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965352AbXDIUFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:05:21 -0400
+Date: Mon, 9 Apr 2007 13:04:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicolas Boichat <nicolas@boichat.ch>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, rlove@rlove.org, linux-kernel@hansmi.ch,
+       Jean Delvare <khali@linux-fr.org>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Apple SMC driver - fix input device
+Message-Id: <20070409130432.f4902155.akpm@linux-foundation.org>
+In-Reply-To: <461A455C.9040508@boichat.ch>
+References: <45F7C083.7090504@boichat.ch>
+	<45FE1D44.8000805@boichat.ch>
+	<200703221137.35906.dtor@insightbb.com>
+	<461A455C.9040508@boichat.ch>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Apr 2007, Linus Torvalds wrote:
+On Mon, 09 Apr 2007 21:53:32 +0800
+Nicolas Boichat <nicolas@boichat.ch> wrote:
 
-> On Mon, 9 Apr 2007, Kyle Moffett wrote:
-> > 
-> > Maybe "struct posix_process" is more descriptive?  "struct process_posix"?
-> > "Ugly POSIX process semantics data" seems simple enough to stick in a struct
-> > name.  "struct uglyposix_process"?
+> Fixed all these. Thanks.
 > 
-> Guys, you didn't read my message.
+> Andrew, could you please push this patch in mm too?
 > 
-> It's *not* about "process" stuff.  Anything that tries to call it a 
-> "process" is *by*definition* worse than what it is now. Processes have all 
-> the things that we've cleanly separated out for filesystem, VM, SysV 
-> semaphore state, namespaces etc.
+> Best regards,
 > 
-> The "struct signal_struct" is the random *leftovers* from all the other 
-> stuff. It's *not* about "processes". Never has been, and never will be. 
+> Nicolas
+> 
+> - Invert y axis on input device.
+> - Only activate the input device polling timer when the device is open.
+> - Others minor fixes asked by Dmitry Torokhov.
+> 
+> Signed-off-by: Nicolas Boichat <nicolas@boichat.ch>
 
-I proposed "struct task_shared_ctx" but you ducked :)
+Thanks.
 
+I've been assuming that this patch will go via Jean, since it is in
+drivers/hwmon/applesmc.c.  But perhaps that is inappropriate, and it is
+more a Paul or Dmitry thing.  Or a me thing.
 
-- Davide
-
-
+Who wants to take it??
