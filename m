@@ -1,58 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXDITL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965194AbXDITTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbXDITL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 15:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbXDITL1
+	id S965194AbXDITTJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 15:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965164AbXDITTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 15:11:27 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:46400 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbXDITL0 (ORCPT
+	Mon, 9 Apr 2007 15:19:09 -0400
+Received: from cmx2.usace.army.mil ([140.194.245.34]:26146 "EHLO
+	cmx2.usace.army.mil" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965105AbXDITTH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 15:11:26 -0400
-Message-ID: <461A8F83.90107@gmail.com>
-Date: Mon, 09 Apr 2007 21:09:55 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Mon, 9 Apr 2007 15:19:07 -0400
+X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Apr 2007 15:19:07 EDT
+Message-ID: <461A8E56.6020002@bellsouth.net>
+Date: Mon, 09 Apr 2007 14:04:54 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+Reply-To: jacliburn@bellsouth.net
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mike Galbraith <efault@gmx.de>, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Ten percent test
-References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu> <461939A4.2020305@gmail.com> <1176092598.6355.22.camel@Homer.simpson.net> <461A2E39.8060106@gmail.com> <20070409141516.GB11244@elte.hu> <461A7246.60003@gmail.com> <20070409174803.GA10189@elte.hu>
-In-Reply-To: <20070409174803.GA10189@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: APIC error on 32-bit kernel
+References: <20070323200817.1f3e39b9@osprey.hogchain.net> <20070408133822.3868e6ff@osprey.hogchain.net> <461A7F14.1080105@redhat.com>
+In-Reply-To: <461A7F14.1080105@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+X-OriginalArrivalTime: 09 Apr 2007 19:04:54.0720 (UTC) FILETIME=[F569EC00:01C77AD9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/09/2007 07:48 PM, Ingo Molnar wrote:
+Chuck Ebbert wrote:
 
-> i didnt say that, in fact my first lkml comment about RSDL on lkml
-> was the exact opposite, but you SD advocates are _still_ bickering
-> about (and not accepting) fundamental things like Mike's make -j5
-> workload and flagging it as unrealistic, so until there's so much
-> reality disconnect there's not much chance for this issue to progress
-> i'm afraid.
+> Where is the text of the oops?
 
-I suppose I'm lumped in with the "SD advocates" now but you will note 
-that I haven't been bickering about make -j5 loads. You cut away the 
-entire meat of my reply which was all that predictability harping.
+In one of the files on the website I referenced.  Here's the text...
 
-What I did say about make -j5 loads is that I do not think that they, 
-under all circumstances, on all machines and at all cost, need to 
-perform the same as currently if other situations improve. Do I want 
-heuristics? Sure, I'm just saying the kernel is fundamentally incapable 
-of getting it right all of the time and as such it should provide me 
-with as many opportunities as possible at stepping in. That is, let me 
-understand what it is and is going to be doing and then listen to me.
+[  173.584000] APIC error on CPU1: 08(08)
+[  173.665000] APIC error on CPU0: 08(08)
+[  173.665000] APIC error on CPU1: 08(08)
+[  173.746000] APIC error on CPU0: 08(08)
+[  173.746000] APIC error on CPU1: 08(08)
+[  173.827000] APIC error on CPU0: 08(08)
+[  173.827000] APIC error on CPU1: 08(08)
+[  173.908000] APIC error on CPU0: 08(08)
+[  173.908000] APIC error on CPU1: 08(08)
+[  173.989000] APIC error on CPU0: 08(08)
+[  173.989000] APIC error on CPU1: 08(08)
 
-I agree not a lot of progress is to be made if people keep ignoring each 
-other like that but also while SD's author is offline. Let's just shelve 
-it until he's back. Not bury though...
+pinged my router somewhere along about here...
 
-Rene.
+[  174.069000] BUG: unable to handle kernel NULL pointer 
+dereference<1>BUG: unable to 0
+[  174.069000]  printing eip:
+[  174.069000] 00000000
+[  174.069000] *pde = 1feb8067
+[  174.069000] Oops: 0000 [#1]
+[  174.069000] SMP
+[  174.069000] Modules linked in: nf_conntrack_netbios_ns ipt_REJECT 
+nf_conntrack_ipv4d
+[  174.069000] CPU:    1
+[  174.069000] EIP:    0060:[<00000000>]    Not tainted VLI
+[  174.069000] EFLAGS: 00010006   (2.6.21-rc5-git1 #1)
+[  174.069000] EIP is at 0x0
+[  174.069000] eax: 000000a0   ebx: dfe99f98   ecx: c07bb000   edx: c074de00
+[  174.069000] esi: 000000a0   edi: 00000000   ebp: 00000000   esp: c07bbffc
+[  174.069000] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+[  174.069000] Process beagled-helper (pid: 3393, ti=c07bb000 
+task=dfe28270 task.ti=df)
+[  174.069000] Stack: c040704b
+[  174.069000] Call Trace:
+[  174.069000]  [<c040704b>] do_IRQ+0xac/0xd1
+[  174.069000]  [<c040580e>] common_interrupt+0x2e/0x34
+[  174.069000]  =======================
+[  174.069000] Code:  Bad EIP value.
+[  174.069000] EIP: [<00000000>] 0x0 SS:ESP 0068:c07bbffc
+[  174.069000] Kernel panic - not syncing: Fatal exception in interrupt
+[  174.069000] BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
+[  174.069000]  [<c0417b4f>] smp_call_function+0x5c/0xc8
+[  174.069000]  [<c054052e>] do_unblank_screen+0x2a/0x120
+[  174.069000]  [<c0417bd6>] smp_send_stop+0x1b/0x2e
+[  174.069000]  [<c04271ca>] panic+0x54/0xf2
+[  174.069000]  [<c04062c5>] die+0x1f8/0x22c
+[  174.069000]  [<c0623d13>] do_page_fault+0x40c/0x4df
+[  174.069000]  [<c0623907>] do_page_fault+0x0/0x4df
+[  174.069000]  [<c0622574>] error_code+0x7c/0x84
+[  174.069000]  [<c040704b>] do_IRQ+0xac/0xd1
+[  174.069000]  [<c040580e>] common_interrupt+0x2e/0x34
+[  174.069000]  =======================
+[  174.069000]  at virtual address 00000000
+[  174.069000]  printing eip:
+[  174.069000] 00000000
+[  174.069000] *pde = 20bd3067
+[  174.069000] Oops: 0000 [#2]
+[  174.069000] SMP
+[  174.069000] Modules linked in: nf_conntrack_netbios_ns ipt_REJECT 
+nf_conntrack_ipv4d
+[  174.069000] CPU:    0
+[  174.069000] EIP:    0060:[<00000000>]    Not tainted VLI
+[  174.069000] EFLAGS: 00010087   (2.6.21-rc5-git1 #1)
+[  174.069000] EIP is at 0x0
+[  174.069000] eax: 000000a0   ebx: c0753f74   ecx: c07ba000   edx: c074de00
+[  174.069000] esi: 000000a0   edi: 00000000   ebp: 00000000   esp: c07baffc
+[  174.069000] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+[  174.069000] Process swapper (pid: 0, ti=c07ba000 task=c07094c0 
+task.ti=c0753000)
+[  174.069000] Stack: c040704b
+[  174.069000] Call Trace:
+[  174.069000]  [<c040704b>] do_IRQ+0xac/0xd1
+[  174.069000]  [<c040580e>] common_interrupt+0x2e/0x34
+[  174.069000]  [<c0403c74>] default_idle+0x3d/0x54
+[  174.069000]  [<c040339b>] cpu_idle+0xa3/0xbc
+[  174.069000]  [<c0758a37>] start_kernel+0x45d/0x465
+[  174.069000]  [<c07581ae>] unknown_bootoption+0x0/0x202
+[  174.069000]  =======================
+[  174.069000] Code:  Bad EIP value.
+[  174.069000] EIP: [<00000000>] 0x0 SS:ESP 0068:c07baffc
+[  174.069000] Kernel panic - not syncing: Fatal exception in interrupt
+
+Short hang, then spontaneous reboot.
+
 
