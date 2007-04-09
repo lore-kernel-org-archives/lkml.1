@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965419AbXDIUHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965452AbXDIUIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965419AbXDIUHt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965456AbXDIUHt
+	id S965452AbXDIUIi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965456AbXDIUIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:07:49 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:46811 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965452AbXDIUHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:07:48 -0400
-Message-ID: <461A9D12.1060106@gmail.com>
-Date: Mon, 09 Apr 2007 22:07:46 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Mon, 9 Apr 2007 16:08:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57533 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965452AbXDIUIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:08:37 -0400
+Message-ID: <461A9D42.9000008@garzik.org>
+Date: Mon, 09 Apr 2007 16:08:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-References: <460B6E4B.3060004@gmail.com> <200704022318.28451.rjw@sisk.pl> <46120449.7070302@gmail.com> <200704031250.07307.rjw@sisk.pl>
-In-Reply-To: <200704031250.07307.rjw@sisk.pl>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
+To: Gene Heskett <gene.heskett@gmail.com>
+CC: linux-kernel@vger.kernel.org, John Stoffel <john@stoffel.org>
+Subject: Re: I give up
+References: <200704091007.58535.gene.heskett@gmail.com> <200704091137.01336.gene.heskett@gmail.com> <17946.29660.368403.553290@smtp.charter.net> <200704091549.51805.gene.heskett@gmail.com>
+In-Reply-To: <200704091549.51805.gene.heskett@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> Thanks for testing.
-[...]
-> --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
-> +++ linux-2.6.21-rc5/kernel/power/swsusp.c
-> @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
->  		size += highmem_size;
->  		for_each_zone (zone)
->  			if (populated_zone(zone)) {
-> +				tmp += snapshot_additional_pages(zone);
->  				if (is_highmem(zone)) {
->  					highmem_size -=
->  					zone_page_state(zone, NR_FREE_PAGES);
->  				} else {
->  					tmp -= zone_page_state(zone, NR_FREE_PAGES);
->  					tmp += zone->lowmem_reserve[ZONE_NORMAL];
-> -					tmp += snapshot_additional_pages(zone);
+Gene Heskett wrote:
+> For those of you with big tapes that can hold a complete dump of every 
+> partition (and partitions is the only way dump works in case some have 
+> forgotten), go ahead and use dump/restore.  Tar quite simply, allows one 
+> to break his backup files down into small enough pieces that a tape drive 
+> that's only 20% of the system drives size is totally usable.  I ran dds2 
+> tapes for a long time, and it wasn't at all unusual to have amanda fill 
+> those to the 95% or better mark every night for a week running, without 
+> ever hitting EOT.
 
-I have bad news for you :(. I thought I had unpatched kernel, but it happens
-in -rc6 too.
 
-Next, when this occurs, kernel CPU1 is not brought up and next suspend hangs
-on "Suspending consoles".
+Wow, people still use tapes for backup?
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+With current hard drive prices (200GB @ US$55, 500GB @ US$120) you can 
+just keep buying hard drives :)
 
-Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+Surely tape price/GB is higher than hard drive price/GB...
+
+	Jeff
+
+
