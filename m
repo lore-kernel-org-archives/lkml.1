@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbXDIDBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXDIDFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752437AbXDIDBE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 23:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbXDIDBE
+	id S1752549AbXDIDFJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 23:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXDIDFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 23:01:04 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:41215 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752462AbXDIDBC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 23:01:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=cxQvXeyhJU9sa1dV51kMrQDYtt366E32eel4PYo/RtgdGKcAgeSnGLAG1v68a/VDurNaff5yUZYO6TAZ0raiy2Tc6MVFcuDIVeJ2m70oLZzpUzn3BL3szZ9A+qUJk/R3TyQfPevhhT5BrAGLb4XHvD1r5rKLQswEzgASArCuhxQ=
-Message-ID: <6d6a94c50704082001y5c13c865ic3d70217aba7d181@mail.gmail.com>
-Date: Mon, 9 Apr 2007 11:01:01 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: netdev@vger.kernel.org, "Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Sun, 8 Apr 2007 23:05:09 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:53532 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbXDIDFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 23:05:07 -0400
+Date: Mon, 9 Apr 2007 08:34:59 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu, dipankar@in.ibm.com,
+       dino@in.ibm.com, masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH 1/8] Enhance process freezer interface for usage beyond software suspend
+Message-ID: <20070409030459.GC30109@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402053705.GA12962@in.ibm.com> <20070402135632.GC6739@ucw.cz> <200704022248.25948.rjw@sisk.pl> <20070402205127.GF3840@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070402205127.GF3840@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The option CONFIG_PACKET_MMAP should depend on MMU.
+On Mon, Apr 02, 2007 at 10:51:27PM +0200, Pavel Machek wrote:
+> > > 
+> > > Should we create CONFIG_FREEZER?
+> > 
+> > Why do you think so?  I think the freezer should be compiled automatically
+> > if any of the above is set, which is what this directive really means.
+> 
+> Kconfig can do that. ("select statement"). If we have one such ifdef,
+> it is okay, but if it would be more of them.
+> 
 
-Signed-off-by: Aubrey.Li <aubreylee@gmail.com>
----
- net/packet/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Ok.
 
-diff --git a/net/packet/Kconfig b/net/packet/Kconfig
-index 34ff93f..959c272 100644
---- a/net/packet/Kconfig
-+++ b/net/packet/Kconfig
-@@ -17,7 +17,7 @@ config PACKET
+> > > Eh? Why does kprobes code depend on config_pm?
+> > 
+> > Because it uses the freezer? ;-)
+> 
+> That is no longer true after this patch... Ugly ifdef above makes sure
+> freezer is there for kprobes. I'm trying to say that #if above is
+> now broken. Actually it was probably always broken, but it just became
+> more so.
 
- config PACKET_MMAP
- 	bool "Packet socket: mmapped IO"
--	depends on PACKET
-+	depends on PACKET && MMU
- 	help
- 	  If you say Y here, the Packet protocol driver will use an IO
- 	  mechanism that results in faster communication.
+I have already removed it from in my version 3.
+
+Thanks and Regards
+gautham.
 -- 
-1.5.1
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
