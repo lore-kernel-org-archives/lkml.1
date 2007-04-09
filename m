@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXDIUdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXDIUhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964810AbXDIUdZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965030AbXDIUdZ
+	id S965522AbXDIUhy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965338AbXDIUhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:33:25 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55148 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964810AbXDIUdY (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:33:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       John Stoffel <john@stoffel.org>
-Subject: Re: I give up
-In-Reply-To: Your message of "Mon, 09 Apr 2007 16:08:34 EDT."
-             <461A9D42.9000008@garzik.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200704091007.58535.gene.heskett@gmail.com> <200704091137.01336.gene.heskett@gmail.com> <17946.29660.368403.553290@smtp.charter.net> <200704091549.51805.gene.heskett@gmail.com>
-            <461A9D42.9000008@garzik.org>
+	Mon, 9 Apr 2007 16:37:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50872
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S965522AbXDIUhx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:37:53 -0400
+Date: Mon, 09 Apr 2007 13:37:53 -0700 (PDT)
+Message-Id: <20070409.133753.108740229.davem@davemloft.net>
+To: peter.p.waskiewicz.jr@intel.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       cramerj@intel.com, auke-jan.h.kok@intel.com,
+       christopher.leech@intel.com
+Subject: Re: [PATCH 2/2] NET: Multiqueue network device support.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070409205052.31370.97137.stgit@gitlost.site>
+References: <20070409204908.31370.9954.stgit@gitlost.site>
+	<20070409205052.31370.97137.stgit@gitlost.site>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1176150799_3763P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Mon, 09 Apr 2007 16:33:19 -0400
-Message-ID: <6624.1176150799@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1176150799_3763P
-Content-Type: text/plain; charset=us-ascii
+From: Peter P.Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
+Date: Mon, 09 Apr 2007 13:50:52 -0700
 
-On Mon, 09 Apr 2007 16:08:34 EDT, Jeff Garzik said:
-> With current hard drive prices (200GB @ US$55, 500GB @ US$120) you can 
-> just keep buying hard drives :)
+> From: Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
 > 
-> Surely tape price/GB is higher than hard drive price/GB...
+> Added an API and associated supporting routines for multiqueue network devices.
+> This allows network devices supporting multiple TX queues to configure each
+> queue within the netdevice and manage each queue independantly.  Changes to the
+> PRIO Qdisc also allow a user to map multiple flows to individual TX queues,
+> taking advantage of each queue on the device.
+> 
+> Signed-off-by: Peter P. Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
 
-Erm. No.  We're in the middle of installing an StorageTek SL8500 for backups,
-simply because an LTO3 tape holds 300G at a price point of $100 or so.
-And there's no sane way to build a half-petabyte disk farm at that price.
-(And yes, our tape backup service is well into the half-petabyte range, and
-will probably shoot over that as soon as the SL8500 is in production and we
-deal with all the backlogged requests for backup service).
+This looks definitely better than the previous implementation,
+myself and others will review this in more depth though.
 
-Don't forget to factor in the cost of disk shelves, power, cooling, and all
-that when you're building something to hold 2,500 200G drives.  Oh. and
-controllers.  And machines to put the controllers in... and all the rest of it.
+> + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
+> + 
+> + 	p = kzalloc(alloc_size, GFP_KERNEL);
+> + 	if (!p) {
+> + 		printk(KERN_ERR "alloc_netdev: Unable to allocate queues.\n");
+> + 		return NULL;
+> + 	}
+> + 
+> + 	dev->egress_subqueue = (struct net_device_subqueue *)p;
 
-And remember - you *dont* want to be backing up critical data on the sort of
-hard drives that cost $55 for 200G - you'll want multiple copies, probably
-some RAID, etc etc.  
-
---==_Exmh_1176150799_3763P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGGqMPcC3lWbTT17ARAmtBAKDGjkg93Y8UaEnmJLb6MCJcJ19SjwCg7mo7
-4O25OGPeilUTuDS1JaoPWgg=
-=6kmR
------END PGP SIGNATURE-----
-
---==_Exmh_1176150799_3763P--
+No need for a cast, 'p' is "void *".
