@@ -1,137 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964959AbXDITDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXDITL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964959AbXDITDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 15:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964960AbXDITDS
+	id S1753413AbXDITL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 15:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbXDITL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 15:03:18 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:11576 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964959AbXDITDR (ORCPT
+	Mon, 9 Apr 2007 15:11:27 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:46400 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbXDITL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 15:03:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jw/g0jgKCMEou9SYZHmr5PXza+IQdloI+O8y+Md2vEPq+uWIkEGWxKYp779k34ou7/4m+d9z0GiAhQUCku8Fx1KundEZXlm4ICxCs7vmWZLDKreM8Z6GcvgjL6i2Tg4IxCdRrQ5QQKO5pDqhMT/+XcVMCnlQRi7udv+wRXsnVVk=
-Message-ID: <64bb37e0704091203m7cb4adc9g1bf6bf179603cf4a@mail.gmail.com>
-Date: Mon, 9 Apr 2007 21:03:15 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc6-mm1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070408143559.f5014629.akpm@linux-foundation.org>
+	Mon, 9 Apr 2007 15:11:26 -0400
+Message-ID: <461A8F83.90107@gmail.com>
+Date: Mon, 09 Apr 2007 21:09:55 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Mike Galbraith <efault@gmx.de>, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Ten percent test
+References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu> <461939A4.2020305@gmail.com> <1176092598.6355.22.camel@Homer.simpson.net> <461A2E39.8060106@gmail.com> <20070409141516.GB11244@elte.hu> <461A7246.60003@gmail.com> <20070409174803.GA10189@elte.hu>
+In-Reply-To: <20070409174803.GA10189@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/8/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/
+On 04/09/2007 07:48 PM, Ingo Molnar wrote:
 
-drivers/ieee1394/ieee1394_transactions.c fails for me if CONFIG_SMP=n
+> i didnt say that, in fact my first lkml comment about RSDL on lkml
+> was the exact opposite, but you SD advocates are _still_ bickering
+> about (and not accepting) fundamental things like Mike's make -j5
+> workload and flagging it as unrealistic, so until there's so much
+> reality disconnect there's not much chance for this issue to progress
+> i'm afraid.
 
-gcc complains:
-  CC      drivers/ieee1394/ieee1394_transactions.o
-drivers/ieee1394/ieee1394_transactions.c: In function 'hpsb_get_tlabel':
-drivers/ieee1394/ieee1394_transactions.c:183: error:
-'TASK_INTERRUPTIBLE' undeclared (first use in this function)
-drivers/ieee1394/ieee1394_transactions.c:183: error: (Each undeclared
-identifier is reported only once
-drivers/ieee1394/ieee1394_transactions.c:183: error: for each function
-it appears in.)
-drivers/ieee1394/ieee1394_transactions.c:183: warning: implicit
-declaration of function 'signal_pending'
-drivers/ieee1394/ieee1394_transactions.c:183: warning: implicit
-declaration of function 'schedule'
-drivers/ieee1394/ieee1394_transactions.c: In function 'hpsb_free_tlabel':
-drivers/ieee1394/ieee1394_transactions.c:213: error:
-'TASK_INTERRUPTIBLE' undeclared (first use in this function)
-make[2]: *** [drivers/ieee1394/ieee1394_transactions.o] Error 1
-make[1]: *** [drivers/ieee1394] Error 2
-make: *** [drivers] Error 2
+I suppose I'm lumped in with the "SD advocates" now but you will note 
+that I haven't been bickering about make -j5 loads. You cut away the 
+entire meat of my reply which was all that predictability harping.
 
+What I did say about make -j5 loads is that I do not think that they, 
+under all circumstances, on all machines and at all cost, need to 
+perform the same as currently if other situations improve. Do I want 
+heuristics? Sure, I'm just saying the kernel is fundamentally incapable 
+of getting it right all of the time and as such it should provide me 
+with as many opportunities as possible at stepping in. That is, let me 
+understand what it is and is going to be doing and then listen to me.
 
-I fixed this by adding #include <linux/sched.h> before #include <linux/wait.h>
-But that is probably not the correct fix, but gives me a working kernel.
+I agree not a lot of progress is to be made if people keep ignoring each 
+other like that but also while SD's author is offline. Let's just shelve 
+it until he's back. Not bury though...
 
-Diff between a working .config and a failing one:
-(created by switching SMP off with menuconfig)
- --- config.works        2007-04-09 20:54:30.182374075 +0200
-+++ .config     2007-04-09 20:54:47.317863059 +0200
-@@ -3,3 +3,3 @@
- # Linux kernel version: 2.6.21-rc6-mm1
--# Mon Apr  9 16:01:11 2007
-+# Mon Apr  9 20:54:47 2007
- #
-@@ -36,3 +36,3 @@
- CONFIG_EXPERIMENTAL=y
--CONFIG_LOCK_KERNEL=y
-+CONFIG_BROKEN_ON_SMP=y
- CONFIG_INIT_ENV_ARG_LIMIT=32
-@@ -57,3 +57,2 @@
- CONFIG_IKCONFIG_PROC=y
--CONFIG_CPUSETS=y
- # CONFIG_SYSFS_DEPRECATED is not set
-@@ -104,3 +103,2 @@
- CONFIG_KMOD=y
--CONFIG_STOP_MACHINE=y
+Rene.
 
-@@ -151,5 +149,3 @@
- CONFIG_MTRR=y
--CONFIG_SMP=y
--# CONFIG_SCHED_SMT is not set
--CONFIG_SCHED_MC=y
-+# CONFIG_SMP is not set
- CONFIG_PREEMPT_NONE=y
-@@ -157,21 +153,12 @@
- # CONFIG_PREEMPT is not set
--CONFIG_PREEMPT_BKL=y
--CONFIG_NUMA=y
--# CONFIG_K8_NUMA is not set
--CONFIG_NODES_SHIFT=6
--CONFIG_X86_64_ACPI_NUMA=y
--# CONFIG_NUMA_EMU is not set
--CONFIG_ARCH_DISCONTIGMEM_ENABLE=y
--CONFIG_ARCH_DISCONTIGMEM_DEFAULT=y
- CONFIG_ARCH_SPARSEMEM_ENABLE=y
-+CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_SELECT_MEMORY_MODEL=y
--# CONFIG_FLATMEM_MANUAL is not set
--CONFIG_DISCONTIGMEM_MANUAL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
- # CONFIG_SPARSEMEM_MANUAL is not set
--CONFIG_DISCONTIGMEM=y
-+CONFIG_FLATMEM=y
- CONFIG_FLAT_NODE_MEM_MAP=y
--CONFIG_NEED_MULTIPLE_NODES=y
- # CONFIG_SPARSEMEM_STATIC is not set
- CONFIG_SPLIT_PTLOCK_CPUS=4
--CONFIG_MIGRATION=y
- CONFIG_RESOURCES_64BIT=y
-@@ -180,6 +167,2 @@
- # CONFIG_DEBUG_READAHEAD is not set
--CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
--CONFIG_OUT_OF_LINE_PFN_TO_PAGE=y
--CONFIG_NR_CPUS=4
--CONFIG_HOTPLUG_CPU=y
- CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-@@ -209,3 +192,2 @@
- CONFIG_ISA_DMA_API=y
--CONFIG_GENERIC_PENDING_IRQ=y
-
-@@ -220,3 +202,2 @@
- CONFIG_PM_STD_PARTITION=""
--CONFIG_SUSPEND_SMP=y
-
-@@ -236,5 +217,3 @@
- CONFIG_ACPI_PROCESSOR=y
--CONFIG_ACPI_HOTPLUG_CPU=y
- CONFIG_ACPI_THERMAL=y
--CONFIG_ACPI_NUMA=y
- # CONFIG_ACPI_ASUS is not set
