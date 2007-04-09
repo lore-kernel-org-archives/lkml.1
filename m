@@ -1,116 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbXDIEMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbXDIERF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbXDIEMl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 00:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbXDIEMl
+	id S1752696AbXDIERF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 00:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbXDIERF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 00:12:41 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:40154 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbXDIEMk (ORCPT
+	Mon, 9 Apr 2007 00:17:05 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:45587 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752691AbXDIERC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 00:12:40 -0400
-Date: Mon, 9 Apr 2007 09:46:08 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, srinivasa@in.ibm.com,
-       akpm@linux-foundation.org,
-       Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
-       davem@davemloft.net, richardj_moore@uk.ibm.com
-Subject: Re: [RFC][PATCH] Kprobes: The ON/OFF knob thru debugfs
-Message-ID: <20070409041608.GA17066@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070404121349.GA26313@in.ibm.com> <20070408102231.GA2297@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Apr 2007 00:17:02 -0400
+Message-Id: <1176092219.12458.1183612420@webmail.messagingengine.com>
+X-Sasl-Enc: gpg6BuIr2+FGXaZ+SYjpaZLL99ifoi4dDCjY3F+FqauQ 1176092219
+From: johnrobertbanks@fastmail.fm
+To: linux-kernel@vger.kernel.org
+Cc: dhlii@comcast.net, linux-fsdevel@vger.kernel.org
 Content-Disposition: inline
-In-Reply-To: <20070408102231.GA2297@infradead.org>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: REISER4 FOR INCLUSION IN THE LINUX KERNEL.
+Date: Sun, 08 Apr 2007 21:16:59 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 08, 2007 at 11:22:31AM +0100, Christoph Hellwig wrote:
-> On Wed, Apr 04, 2007 at 05:43:49PM +0530, Ananth N Mavinakayanahalli wrote:
-> > This patch provides a debugfs knob to turn kprobes on/off
+REISER4 FOR INCLUSION IN THE LINUX KERNEL.
+
+Dave Lynch takes a reasoned approach to REISER4.
+
+Dave Lynch wrote:
+> 
+> Jeff Garzik wrote:
 > > 
-> > o A new file /debug/kprobes/enabled indicates if kprobes is enabled or
-> >   not (default enabled)
-> > o Echoing 0 to this file will disarm all installed probes
-> > o Any new probe registration when disabled will register the probe but
-> >   not arm it. A message will be printed out in such a case.
-> > o When a value 1 is echoed to the file, all probes (including ones
-> >   registered in the intervening period) will be enabled
-> > o Unregistration will happen irrespective of whether probes are globally
-> >   enabled or not.
-> > o Update Documentation/kprobes.txt to reflect these changes. While there
-> >   also update the doc to make it current.
+> > If the compelling reason is that it needs a test, I'd say its not ready.
+> > 
 > 
-> Looks good.
+> Can you please elaborate ? I am not sure I understand what you are
+> arguing ?
+
+Jeff Garzik is "saying" that he wants REISER4 to stay out of the main
+kernel, for reasons he is not willing to tell you.
+
+>     Despite his substantially less than polite rhetoric, I have read
+> Hans's post from months if not years ago.
 > 
-> When I suggested a user interface to enable/disable probes was nice to
-> have I was more thinking about a interface to enable/disable individual
-> probes.  Any chance you could try to implement that aswell as see if
-> any code can be shared with this feature?
+>     Aside from the pissing contests - which where not entirely one
+> sided, 
 
-Thats on the TODO list - any preferences on what the debugfs control
-should look like? One file per kprobe seems simplest, but it'd be
-unwieldly if there are hundreds of active probes.
+On the basis of what I have seen here,... Hans Reiser was probably an
+angel.
 
-> > -	arch_arm_kprobe(p);
-> > +		arch_arm_kprobe(p);
-> > +	} else
-> > +		printk("Kprobes are globally disabled. This kprobe [@ %p] "
-> > +			"will be enabled with all other probes\n", p->addr);
+> I actually beleive that Hans made a reasonable case that 
+> Reiser4 had gone about as far as it could reasonably go with regard 
+> to testing, robustness, ... without the broader base of use that 
+> even an experimental filesystem in distribution tree would get.
+
+Of course, this is an entirely reasonable request of Reiser's.
+One meet with an array of unreasonable actions, but mainly STALLING 
+which has led to REISER4 never becoming part of the main kernel.
+
+It has also lead to many false claims about REISER4. Claims that are
+never backed up with solid statistics, but used to keep REISER4 out of
+the kernel and tar its reputation.
+
+>     I for one would at least play with it if it were in the distribution
+> tree.
+
+I AM SURE THERE ARE A HUGE NUMBER OF PEOPLE WHO WOULD GIVE IT A TRY.
+ 
+>     As far as I could tell Hans pretty much everything else that 
+> was demanded. Hans eventually caved and provided - albeit with much 
+> pissing and moaning, and holy than thou rhetoric.
+
+It was not his pissing and moaning, etc,... these were just excuses to
+keep REISER4 from succeeding. The truth is, that any excuse would do.
+
+The real reasons are financial and backed by big money (sometimes, big
+egos).
+
+>     The argument that anything that needs testing can't get into the
+> distribution tree's is specious. There is alot of poorly tested crap in
+> the distribution trees.
+
+Yes, the argument that anything that needs testing can't get in is
+indeed stupid.
+
+But stupid things often work. Is REISER4 in the kernel? Is REISER4 a
+success?
+ 
+>     But separately, there is the issue of scale. Namesys claims that
+> they have no currently know bugs, faults ... - with their base of
+> internal and external users.
 > 
-> This printk seems far too verbose.  Just remove it and make sure
-> the debugfs interface has an indicator of whether probes are en- or
-> disabled.
+>     I would fully expect new failures to crop up with any filesystem,
+> driver, ... moving  up an order of magnitude in users.
+>  
+>     Are you going to subject all filesystems and drivers to the same
+> high standards you are placing on Reiser4 ? If so then we need to strip
+> the distribution tree now.
 
-Agreed... and "enabled" file is the indicator.
+No. Only those things that threaten big money.
+   
+>     I am not looking to defend Hans - he is likely to be in jail and no
+> longer a factor for a long time. Nor am I looking to make or support
+> claims for Reiser4.
 
-Andrew, please include this incremental patch against 2.6.21-rc6-mm1
-that removes the verbose printk.
+Why not defend Hans? He is in jail on what appear to be trumped-up
+charges, just like the trumped-up complainants about his filesystem.
 
-o Remove verbose printk during registration with kprobes globally
-  disabled
-o Print out a message when kprobes are enabled/disabled globally
+>     But I am asking - why we can not get past the bad blood, rhetoric,
+> and zealotry -which to my eyes has not been all one sided.
 
-Signed-off-by: Ananth N Mavinakyanahalli <ananth@in.ibm.com>
+Money talks, BS walks. Reiser4 is a little guy. You should play in my
+league.
 
----
- kernel/kprobes.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+>     I am NOT looking for a technical explanation of all the relative
+> merits and demerits of Reiser4.
+> 
+>     I do not care for arguments about whether it compresses 0's well, or
+> that tail combining is a bad thing. They may have merit, but there is
+> not a filesystem that is going to be all things to all people.
 
-Index: linux-2.6.21-rc6/kernel/kprobes.c
-===================================================================
---- linux-2.6.21-rc6.orig/kernel/kprobes.c
-+++ linux-2.6.21-rc6/kernel/kprobes.c
-@@ -574,10 +574,7 @@ static int __kprobes __register_kprobe(s
- 			register_page_fault_notifier(&kprobe_page_fault_nb);
+Yeap.
  
- 		arch_arm_kprobe(p);
--	} else
--		printk("Kprobes are globally disabled. This kprobe [@ %p] "
--			"will be enabled with all other probes\n", p->addr);
--
-+	}
- out:
- 	mutex_unlock(&kprobe_mutex);
- 
-@@ -928,6 +925,7 @@ static void __kprobes enable_all_kprobes
- 	}
- 
- 	kprobe_enabled = true;
-+	printk("Kprobes globally enabled\n");
- 
- already_enabled:
- 	mutex_unlock(&kprobe_mutex);
-@@ -948,6 +946,7 @@ static void __kprobes disable_all_kprobe
- 		goto already_disabled;
- 
- 	kprobe_enabled = false;
-+	printk("Kprobes globally disabled\n");
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
+> Whether Reiser4 is a small niche filesystem or a significant general 
+> use one, is a decision that should be reached by its performance 
+> in practice, not it rhetoric. Regardless, even as a niche filesystem, 
+> I beleive at this point it merits inclusion.
+
+Yeap. REISER4 merits inclusion.
+
+John.
+-- 
+  
+  johnrobertbanks@fastmail.fm
+
+-- 
+http://www.fastmail.fm - The professional email service
+
