@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbXDISG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbXDISJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbXDISG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbXDISG4
+	id S1752702AbXDISJQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXDISJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:06:56 -0400
-Received: from web32503.mail.mud.yahoo.com ([68.142.207.213]:35945 "HELO
-	web32503.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753317AbXDISGz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:06:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=nG9KOnQZy9Bms5PS3SrJ4CGvYbKKRB9YduHwk8yKyhkiHNVDAH4jmmD8gTvk+CJl6XBR0R8+ZWDmJxY6QKqk0IBQCxmNqmCPjx1t8FnP6n2hSRVL7x89QNHKoKDHMaVIFxu8YbWpdIz/h0l0fGuy6fY50YPkg2Uyqax0IGIMQYY=;
-X-YMail-OSG: YXrkOCgVM1mWxfF85K1MVMXVYl6j_3kDHVYk6X_RdBxK3Ty6IJQ4GYwgt7QlKVYMG6ZHjamqyvClVLwnfty97eAnb84.eEzMxHFcmeaV78CLrwF6uUh1WHLLx3EeRg--
-Date: Mon, 9 Apr 2007 11:06:54 -0700 (PDT)
-From: Pat <patchu1@yahoo.com>
-Subject: Re: Invalid operand: kernel BUG at mm/rmap.c:434! and arch/i386/mm/highmem.c:42!)
-To: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0704051949280.20591@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <593671.91760.qm@web32503.mail.mud.yahoo.com>
+	Mon, 9 Apr 2007 14:09:16 -0400
+Received: from mga09.intel.com ([134.134.136.24]:38559 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752702AbXDISJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 14:09:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,388,1170662400"; 
+   d="scan'208"; a="70845947:sNHT20940552"
+Date: Mon, 9 Apr 2007 11:07:44 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: akpm@linux-foundation.org
+Cc: christoph@lameter.com, Andi Kleen <andi@firstfloor.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       linux kernel <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
+Subject: [patch 2/2] slab, x86_64: skip cache_free_alien() on non NUMA
+Message-ID: <20070409180743.GB3948@linux-os.sc.intel.com>
+References: <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com> <4602FF57.7030001@cosmosbay.com> <20070322224045.GA3200@linux-os.sc.intel.com> <20070323141210.GA20548@one.firstfloor.org> <20070402225512.GA31026@linux-os.sc.intel.com> <Pine.LNX.4.64.0704021722300.20493@graphe.net> <20070409180145.GA3948@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070409180145.GA3948@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Hugh Dickins <hugh@veritas.com> wrote:
-> > The app which is kernel panicing is the only
-> > application which makes use of the fusedriver. I'd
-> > like to confirm my suspicions on the driver. Do
-> you
-> > have any suggestions on how I could trace the
-> kernel
-> > panic to that specific driver?
-> 
-> Indeed, yes, get its source and look to see what
-> it's doing
-> with PageReserved - or mail it to me privately and
-> I'll take
-> a look.  But my Google for fusedriver didn't show
-> anything,
-> and clearly it has nothing to do with the FUSE
-> filesystems.
-> 
-> Hugh
-> 
+set use_alien_caches to 0 on non NUMA platforms. And avoid calling
+the cache_free_alien() when use_alien_caches is not set. This will avoid
+the cache miss that happens while dereferencing slabp to get nodeid.
 
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-Sorry for the late reply, I was on vacation with the
-family for a few days.
-
-fusedriver is a driver for a customized fpga pci card
-used in our systems. I'm not sure how open the
-manufacturer will be in sending me the source for the
-drivers. I'll contact them though to get their input,
-specifically on their use of PageReserved. 
-
-Thanks,
-Pat
-
-
+diff --git a/mm/slab.c b/mm/slab.c
+index 8fdaffa..146082d 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1146,7 +1146,7 @@ static inline int cache_free_alien(struct kmem_cache *cachep, void *objp)
+ 	 * Make sure we are not freeing a object from another node to the array
+ 	 * cache on this cpu.
+ 	 */
+-	if (likely(slabp->nodeid == node) || unlikely(!use_alien_caches))
++	if (likely(slabp->nodeid == node))
+ 		return 0;
  
-____________________________________________________________________________________
-Sucker-punch spam with award-winning protection. 
-Try the free Yahoo! Mail Beta.
-http://advision.webevents.yahoo.com/mailbeta/features_spam.html
+ 	l3 = cachep->nodelists[node];
+@@ -1394,6 +1394,9 @@ void __init kmem_cache_init(void)
+ 	int order;
+ 	int node;
+ 
++	if (num_possible_nodes() == 1)
++		use_alien_caches = 0;
++
+ 	for (i = 0; i < NUM_INIT_LISTS; i++) {
+ 		kmem_list3_init(&initkmem_list3[i]);
+ 		if (i < MAX_NUMNODES)
+@@ -3563,7 +3566,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
+ 	check_irq_off();
+ 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
+ 
+-	if (cache_free_alien(cachep, objp))
++	if (use_alien_caches && cache_free_alien(cachep, objp))
+ 		return;
+ 
+ 	if (likely(ac->avail < ac->limit)) {
