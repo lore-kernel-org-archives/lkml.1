@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965657AbXDIPo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965749AbXDIPpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965657AbXDIPo5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965748AbXDIPo4
+	id S965749AbXDIPpF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965778AbXDIPpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:44:56 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:36315 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965657AbXDIPoz (ORCPT
+	Mon, 9 Apr 2007 11:45:05 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:54322 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965749AbXDIPpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:44:55 -0400
-X-IronPort-AV: i="4.14,388,1170651600"; 
-   d="scan'208"; a="34320818:sNHT24712737"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: bryan.wu@analog.com, "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
-Date: Mon, 9 Apr 2007 11:46:31 -0400
-User-Agent: KMail/1.9.5
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, waltje@uwalt.nl.mugnet.org,
-       "Aubrey Li" <aubreylee@gmail.com>, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-References: <6d6a94c50704082001y5c13c865ic3d70217aba7d181@mail.gmail.com> <1176112223.17975.8.camel@roc-desktop>
-In-Reply-To: <1176112223.17975.8.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 9 Apr 2007 11:45:03 -0400
+Date: Mon, 9 Apr 2007 08:45:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [PATCH 1/2] Clean up asm-x86_64/bugs.h
+Message-Id: <20070409084557.28748317.randy.dunlap@oracle.com>
+In-Reply-To: <4617D339.3080801@goop.org>
+References: <4617D339.3080801@goop.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704091146.32346.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 09 Apr 2007 15:44:53.0585 (UTC) FILETIME=[042E0C10:01C77ABE]
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 9 Apr 2007 05:50, Wu, Bryan pondered:
-> On Mon, 2007-04-09 at 11:01 +0800, Aubrey Li wrote:
-> > The option CONFIG_PACKET_MMAP should depend on MMU.
-> >
-> > Signed-off-by: Aubrey.Li <aubreylee@gmail.com>
-> > ---
-> >  net/packet/Kconfig |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/net/packet/Kconfig b/net/packet/Kconfig
-> > index 34ff93f..959c272 100644
-> > --- a/net/packet/Kconfig
-> > +++ b/net/packet/Kconfig
-> > @@ -17,7 +17,7 @@ config PACKET
-> >
-> >  config PACKET_MMAP
-> >  	bool "Packet socket: mmapped IO"
-> > -	depends on PACKET
-> > +	depends on PACKET && MMU
-> >  	help
-> >  	  If you say Y here, the Packet protocol driver will use an IO
-> >  	  mechanism that results in faster communication.
->
-> Yeah, this is a bug found on blackfin arch and it is also for other
-> NOMMU arch. Is there any solution for this? We think Aubrey's idea
-> works.
->
+On Sat, 07 Apr 2007 10:22:01 -0700 Jeremy Fitzhardinge wrote:
 
-I would hardly say that disabling a feature should be classified as "works". 
+> Most of asm-x86_64/bugs.h is code which should be in a C file, so put it there.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> ---
+>  arch/x86_64/kernel/Makefile      |    3 ++-
+>  arch/x86_64/kernel/bugs.c        |   28 ++++++++++++++++++++++++++++
+>  include/asm-x86_64/alternative.h |    1 +
+>  include/asm-x86_64/bugs.h        |   30 ++++--------------------------
+>  4 files changed, 35 insertions(+), 27 deletions(-)
+> 
+> ===================================================================
+> --- /dev/null
+> +++ b/arch/x86_64/kernel/bugs.c
+> @@ -0,0 +1,28 @@
+> +/*
+> + *  arch/x86_64/kernel/bugs.c
+> + *
+> + *  Copyright (C) 1994  Linus Torvalds
+> + *  Copyright (C) 2000  SuSE
+> + *
+> + * This is included by init/main.c to check for architecture-dependent bugs.
 
-"works" would be re-writing packet/af_packet.c:packet_mmap() so it doesn't use 
-vm_insert_page (which I think is the major/only problem) or putting some 
-proper #ifdef MMU to get the intended functionality.
+drop comment.
 
-David - I know you have been reworking the noMMU vma handling - is there a 
-solution to vm_insert_page?
+Are you going to tackle asm-i386/bugs.h also?
 
--Robin
+Thanks.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
