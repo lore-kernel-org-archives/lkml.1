@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1749667AbXDIJwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750848AbXDIJxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1749667AbXDIJwE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 05:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbXDIJwE
+	id S1750848AbXDIJxw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 05:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXDIJxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 05:52:04 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:25399 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbXDIJwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 05:52:03 -0400
-Message-ID: <461A0DDC.5060709@sw.ru>
-Date: Mon, 09 Apr 2007 13:56:44 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Lockdep treats down_write_trylock like regular down_write
-Content-Type: multipart/mixed;
- boundary="------------080507010603020204060803"
+	Mon, 9 Apr 2007 05:53:52 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58974 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750848AbXDIJxv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 05:53:51 -0400
+Date: Mon, 9 Apr 2007 10:56:38 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] pata_icside driver
+Message-ID: <20070409105638.6b131b72@the-village.bc.nu>
+In-Reply-To: <461990CE.8080609@pobox.com>
+References: <20070330110022.GA21653@flint.arm.linux.org.uk>
+	<20070330110800.GB21653@flint.arm.linux.org.uk>
+	<20070408101826.GA5431@flint.arm.linux.org.uk>
+	<20070408195956.4e7d50c0@the-village.bc.nu>
+	<461990CE.8080609@pobox.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080507010603020204060803
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Sun, 08 Apr 2007 21:03:10 -0400
+Jeff Garzik <jgarzik@pobox.com> wrote:
+> > ata_irq_ack is part of the SFF layer so its fine that it assumes SFF but
+> > its wrong that it is used unconditionally and it shouldn't be used this
+> > way. It just needs a (!ap->ioaddr.bmdma_addr) test adding (assuming thats
+> > valid for iomap)
+> 
+> No.  It does not need such a test, as it requires BMDMA, not just an 
+> SFF-style Status register.  It is up to the driver to decide whether or 
+> not ata_irq_ack() is appropriate for your hardware.
 
-This causes constructions like
+Then no SFF hardware can use ata_irq_ack. Not one card: Because in every
+case it is permissible that BAR4 is not allocated and the device is
+running non-DMA, or that the SFF hardware does not support DMA.
 
-down_write(&mm1->mmap_sem);
-if (down_write_trylock(&mm2->mmap_sem)) {
-       ...
-       up_write(&mm2->mmap_sem);
-}
-up_write(&mm1->mmap_sem);
+> pata_icside needs its own ata_irq_ack -- which may just be as simple as 
+> reading the Status register to clear the interrupt condition.
+> 
+> If others need this as well, ata_sff_irq_ack() would be a good generic 
+> function to create.
 
-generate a lockdep warning about circular locking dependence.
+We should just rename ata_irq_ack(). It is in libata-sff, so it's either
+wrong (missing a test), or in the wrong file completely.
 
-Call rwsem_acquire() with trylock set to 1.
-
---------------080507010603020204060803
-Content-Type: text/plain;
- name="diff-lockdep-rwsem-trylock"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff-lockdep-rwsem-trylock"
-
---- ./kernel/rwsem.c.pbonrem	2007-03-06 19:09:50.000000000 +0300
-+++ ./kernel/rwsem.c	2007-04-06 14:02:18.000000000 +0400
-@@ -60,7 +60,7 @@ int down_write_trylock(struct rw_semapho
- 	int ret = __down_write_trylock(sem);
- 
- 	if (ret == 1)
--		rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
-+		rwsem_acquire(&sem->dep_map, 0, 1, _RET_IP_);
- 	return ret;
- }
- 
-
-
---------------080507010603020204060803--
+Alan
