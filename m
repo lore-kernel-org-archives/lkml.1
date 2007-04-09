@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXDIT6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965337AbXDIUBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965287AbXDIT6u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 15:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965309AbXDIT6u
+	id S965337AbXDIUBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965312AbXDIUBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 15:58:50 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:39187 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965287AbXDIT6t (ORCPT
+	Mon, 9 Apr 2007 16:01:46 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52839 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965337AbXDIUBp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 15:58:49 -0400
-Date: Mon, 09 Apr 2007 15:58:40 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
-In-reply-to: <20070409175009.GB10189@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Dave Dillow <dave@thedillows.org>,
-       ray-gmail@madrabbit.org, amanda-hackers@amanda.org,
-       amanda-users@amanda.org
-Message-id: <200704091558.40225.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200704010100.19016.gene.heskett@verizon.net>
- <200704091305.08779.gene.heskett@gmail.com> <20070409175009.GB10189@elte.hu>
-User-Agent: KMail/1.9.6
+	Mon, 9 Apr 2007 16:01:45 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+References: <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
+	<20070406104301.GB19755@lnx-holt.americas.sgi.com>
+	<m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
+	<20070406163100.GA554@tv-sign.ru>
+	<Pine.LNX.4.64.0704061119090.8738@alien.or.mcafeemobile.com>
+	<m1wt0p5o1y.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.64.0704061214450.8738@alien.or.mcafeemobile.com>
+	<20070406191945.GA18255@elte.hu>
+	<Pine.LNX.4.64.0704061427130.8738@alien.or.mcafeemobile.com>
+	<Pine.LNX.4.64.0704061449231.6730@woody.linux-foundation.org>
+	<20070409082847.GA2228@elte.hu> <461A816F.4050507@tmr.com>
+	<9B6136A3-52B4-4AE2-9805-21634E25530A@mac.com>
+Date: Mon, 09 Apr 2007 14:00:38 -0600
+In-Reply-To: <9B6136A3-52B4-4AE2-9805-21634E25530A@mac.com> (Kyle Moffett's
+	message of "Mon, 9 Apr 2007 15:28:44 -0400")
+Message-ID: <m1irc51fo9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 April 2007, Ingo Molnar wrote:
->* Gene Heskett <gene.heskett@gmail.com> wrote:
->> > Andrew has already sent a revert patch to Linus and it's in -rc6.
->> > The commit is below.
->>
->> Is this not the patch that reverts it?  I want the patch that put it
->> in, because that will be a one time churn and be done with it,
->> hopefully for good. [...]
->
->any patch can be reverse-applied by doing "patch -R ...".
+Kyle Moffett <mrmacman_g4@mac.com> writes:
 
-Duh!, old farts short term memory strikes again.  However I finally do 
-have that nailed down to 238 now.  I had a typu in my modprobe.conf  :(
+> Maybe "struct posix_process" is more descriptive?  "struct process_posix"?
+> "Ugly POSIX process semantics data" seems simple  enough to stick in a struct
+> name.  "struct uglyposix_process"?
 
->	Ingo
+Nack.
 
+Linux internally doesn't have processes it has tasks with different
+properties.  Anything that talks about processes will be even more
+confusing.
 
+The only thing really wrong with struct signal is that it is easy to
+confuse with struct sighand.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-	WARNING TO ALL PERSONNEL:
-
-Firings will continue until morale improves.
+Eric
