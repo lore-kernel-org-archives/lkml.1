@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXDIPAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbXDIPAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbXDIPAy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbXDIPAv
+	id S933700AbXDIPAz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933681AbXDIPAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:00:51 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43994 "EHLO
+	Mon, 9 Apr 2007 11:00:47 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:44003 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933673AbXDIOyc (ORCPT
+	with ESMTP id S933699AbXDIOyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 10:54:32 -0400
+	Mon, 9 Apr 2007 10:54:36 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 03/21] Unionfs: Documentation updates for branch-management
-Date: Mon,  9 Apr 2007 10:53:54 -0400
-Message-Id: <1176130453277-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 08/21] Unionfs: Introduce branch-id code
+Date: Mon,  9 Apr 2007 10:53:59 -0400
+Message-Id: <11761304543898-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.0.3.268.g3dda
 In-Reply-To: <11761304521844-git-send-email-jsipek@cs.sunysb.edu>
 References: <11761304521844-git-send-email-jsipek@cs.sunysb.edu>
@@ -25,142 +25,240 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Erez Zadok <ezk@cs.sunysb.edu>
 
-Describe dynamic branch-management introduced by subsequent patches.
+Each branch gets a unique ID, which helps during branch additions,
+deletions, and changes, to locate where branches were moved to, and perform
+proper reference-counting.  This is useful even if the same directory was
+added more than once to union.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- Documentation/filesystems/unionfs/concepts.txt |    5 ++
- Documentation/filesystems/unionfs/issues.txt   |   22 +++++++-
- Documentation/filesystems/unionfs/usage.txt    |   61 +++++++++++++++++++++++-
- 3 files changed, 84 insertions(+), 4 deletions(-)
+ fs/unionfs/commonfops.c |   62 +++++++++++++++++++++++++++++++++++++++++++++-
+ fs/unionfs/fanout.h     |   22 ++++++++++++++++-
+ fs/unionfs/main.c       |    1 +
+ fs/unionfs/union.h      |    4 ++-
+ 4 files changed, 85 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/filesystems/unionfs/concepts.txt b/Documentation/filesystems/unionfs/concepts.txt
-index d417576..83d45b9 100644
---- a/Documentation/filesystems/unionfs/concepts.txt
-+++ b/Documentation/filesystems/unionfs/concepts.txt
-@@ -1,3 +1,6 @@
-+Unionfs 2.0 CONCEPTS:
-+=====================
-+
- This file describes the concepts needed by a namespace unification file
- system.
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index aa7c75d..8d0f8d1 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -86,6 +86,31 @@ out:
+ 	return err;
+ }
  
-@@ -68,3 +71,5 @@ though to this copy. The copy must be made on a higher priority branch so
- that lookup and readdir return this newer "version" of the file rather than
- the original (see duplicate elimination).
++/*
++ * Find new index of matching branch with an open file, since branches could
++ * have been added/deleted causing the one with open files to shift.
++ *
++ * @file: current file whose branches may have changed
++ * @bindex: index of branch within current file (could be old branch)
++ * @new_sb: the new superblock which may have new branch IDs
++ * Returns index of newly found branch (0 or greater), -1 otherwise.
++ */
++static int find_new_branch_index(struct file *file, int bindex,
++				 struct super_block *new_sb)
++{
++	int old_branch_id = UNIONFS_F(file)->saved_branch_ids[bindex];
++	int i;
++
++	for (i = 0; i < sbmax(new_sb); i++)
++		if (old_branch_id == branch_id(new_sb, i))
++			return i;
++	/*
++	 * XXX: maybe we should BUG_ON if not found new branch index?
++	 * (really that should never happen).
++	 */
++	return -1;
++}
++
+ /* put all references held by upper struct file and free lower file pointer
+  * array
+  */
+@@ -93,6 +118,7 @@ static void cleanup_file(struct file *file)
+ {
+ 	int bindex, bstart, bend;
+ 	struct file **lf;
++	struct super_block *sb = file->f_dentry->d_sb;
  
-+
-+For more information, see <http://unionfs.filesystems.org/>.
-diff --git a/Documentation/filesystems/unionfs/issues.txt b/Documentation/filesystems/unionfs/issues.txt
-index b070175..a434fee 100644
---- a/Documentation/filesystems/unionfs/issues.txt
-+++ b/Documentation/filesystems/unionfs/issues.txt
-@@ -1,5 +1,5 @@
--KNOWN Unionfs ISSUES:
--=====================
-+KNOWN Unionfs 2.0 ISSUES:
-+=========================
+ 	lf = UNIONFS_F(file)->lower_files;
+ 	bstart = fbstart(file);
+@@ -100,13 +126,29 @@ static void cleanup_file(struct file *file)
  
- 1. The NFS server returns -EACCES for read-only exports, instead of -EROFS.
-    This means we can't reliably detect a read-only NFS export.
-@@ -14,10 +14,26 @@ KNOWN Unionfs ISSUES:
-    introducing small VFS/MM changes that would allow a file system to handle
-    cache coherency correctly.
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+ 		if (unionfs_lower_file_idx(file, bindex)) {
+-			branchput(file->f_dentry->d_sb, bindex);
++			int i;	/* holds (possibly) updated branch index */
++			i = find_new_branch_index(file, bindex, sb);
++			if (i < 0)
++				printk(KERN_ERR "unionfs: no supberlock for file %p\n",
++				       file);
++			else {
++				unionfs_read_lock(sb);
++				branchput(sb, i);
++				unionfs_read_unlock(sb);
++				/* XXX: is it correct to use sb->s_root here? */
++				unionfs_mntput(sb->s_root, i);
++				/* XXX: mntget b/c fput below will call mntput */
++				unionfs_mntget(sb->s_root, bindex);
++			}
+ 			fput(unionfs_lower_file_idx(file, bindex));
+ 		}
+ 	}
  
-+   Unionfs 2.0 has a temporary workaround for this.  You can force Unionfs
-+   to increase the superblock generation number, and hence purge all cached
-+   Unionfs objects, which would then  be re-gotten from the lower branches.
-+   This should ensure cache consistency.  To increase the generation number,
-+   executed the command:
-+
-+	mount -t unionfs -o remount,incgen none MOUNTPOINT
-+
-+   Note that the older way of incrementing the generation number using an
-+   ioctl, is no longer supported in Unionfs 2.0.  Ioctls in general are not
-+   encouraged.  Plus, an ioctl is per-file concept, whereas the generation
-+   number is a per-file-system concept.  Worse, such an ioctl requires an
-+   open file, which then has to be invalidated by the very nature of the
-+   generation number increase (read: the old generation increase ioctl was
-+   pretty racy).
-+
- 3. Unionfs should not use lookup_one_len() on the underlying f/s as it
-    confuses NFS.  Currently, unionfs_lookup() passes lookup intents to the
-    lower file-system, this eliminates part of the problem.  The remaining
-    calls to lookup_one_len may need to be changed to pass an intent.
+ 	UNIONFS_F(file)->lower_files = NULL;
+ 	kfree(lf);
++	kfree(UNIONFS_F(file)->saved_branch_ids);
++	/* set to NULL because caller needs to know if to kfree on error */
++	UNIONFS_F(file)->saved_branch_ids = NULL;
+ }
  
+ /* open all lower files for a given file */
+@@ -270,6 +312,12 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
+ 			err = -ENOMEM;
+ 			goto out;
+ 		}
++		size = sizeof(int) * sbmax(sb);
++		UNIONFS_F(file)->saved_branch_ids = kzalloc(size, GFP_KERNEL);
++		if (!UNIONFS_F(file)->saved_branch_ids) {
++			err = -ENOMEM;
++			goto out;
++		}
  
--For more information, see <unionfs.filesystems.org>.
-+For more information, see <http://unionfs.filesystems.org/>.
-diff --git a/Documentation/filesystems/unionfs/usage.txt b/Documentation/filesystems/unionfs/usage.txt
-index 14e0856..13fbcea 100644
---- a/Documentation/filesystems/unionfs/usage.txt
-+++ b/Documentation/filesystems/unionfs/usage.txt
-@@ -28,4 +28,63 @@ Example:
- 	dirs=/writable_branch=rw:/read-only_branch=ro
+ 		if (S_ISDIR(dentry->d_inode->i_mode)) {
+ 			/* We need to open all the files. */
+@@ -297,8 +345,10 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
+ 	}
  
+ out:
+-	if (err)
++	if (err) {
+ 		kfree(UNIONFS_F(file)->lower_files);
++		kfree(UNIONFS_F(file)->saved_branch_ids);
++	}
+ out_nofree:
+ 	unionfs_unlock_dentry(dentry);
+ 	unionfs_read_unlock(dentry->d_sb);
+@@ -418,6 +468,12 @@ int unionfs_open(struct inode *inode, struct file *file)
+ 		err = -ENOMEM;
+ 		goto out;
+ 	}
++	size = sizeof(int) * sbmax(inode->i_sb);
++	UNIONFS_F(file)->saved_branch_ids = kzalloc(size, GFP_KERNEL);
++	if (!UNIONFS_F(file)->saved_branch_ids) {
++		err = -ENOMEM;
++		goto out;
++	}
  
--For more information, see unionfs.filesystems.org.
-+DYNAMIC BRANCH MANAGEMENT AND REMOUNTS
-+======================================
+ 	dentry = file->f_dentry;
+ 	unionfs_lock_dentry(dentry);
+@@ -456,6 +512,7 @@ int unionfs_open(struct inode *inode, struct file *file)
+ out:
+ 	if (err) {
+ 		kfree(UNIONFS_F(file)->lower_files);
++		kfree(UNIONFS_F(file)->saved_branch_ids);
+ 		kfree(UNIONFS_F(file));
+ 	}
+ out_nofree:
+@@ -487,6 +544,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 		}
+ 	}
+ 	kfree(fileinfo->lower_files);
++	kfree(fileinfo->saved_branch_ids);
+ 
+ 	if (fileinfo->rdstate) {
+ 		fileinfo->rdstate->access = jiffies;
+diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
+index e8c0fee..9e4a35f 100644
+--- a/fs/unionfs/fanout.h
++++ b/fs/unionfs/fanout.h
+@@ -32,12 +32,29 @@ static inline struct unionfs_inode_info *UNIONFS_I(const struct inode *inode)
+ #define sbstart(sb) 0
+ #define sbend(sb) (UNIONFS_SB(sb)->bend)
+ #define sbmax(sb) (UNIONFS_SB(sb)->bend + 1)
++#define sbhbid(sb) (UNIONFS_SB(sb)->high_branch_id)
+ 
+ /* File to private Data */
+ #define UNIONFS_F(file) ((struct unionfs_file_info *)((file)->private_data))
+ #define fbstart(file) (UNIONFS_F(file)->bstart)
+ #define fbend(file) (UNIONFS_F(file)->bend)
+ 
++/* macros to manipulate branch IDs in stored in our superblock */
++static inline int branch_id(struct super_block *sb, int index)
++{
++	return UNIONFS_SB(sb)->data[index].branch_id;
++}
 +
-+You can remount a union and change its overall mode, or reconfigure the
-+branches, as follows.
++static inline void set_branch_id(struct super_block *sb, int index, int val)
++{
++	UNIONFS_SB(sb)->data[index].branch_id = val;
++}
 +
-+To downgrade a union from read-write to read-only:
++static inline void new_branch_id(struct super_block *sb, int index)
++{
++	set_branch_id(sb, index, ++UNIONFS_SB(sb)->high_branch_id);
++}
 +
-+# mount -t unionfs -o remount,ro none MOUNTPOINT
-+
-+To upgrade a union from read-only to read-write:
-+
-+# mount -t unionfs -o remount,rw none MOUNTPOINT
-+
-+To delete a branch /foo, regardless where it is in the current union:
-+
-+# mount -t unionfs -o del=/foo none MOUNTPOINT
-+
-+To insert (add) a branch /foo before /bar:
-+
-+# mount -t unionfs -o remount,add=/bar:/foo none MOUNTPOINT
-+
-+To insert (add) a branch /foo (with the "rw" mode flag) before /bar:
-+
-+# mount -t unionfs -o remount,add=/bar:/foo=rw none MOUNTPOINT
-+
-+To insert (add) a branch /foo (in "rw" mode) at the very beginning (i.e., a
-+new highest-priority branch), you can use the above syntax, or use a short
-+hand version as follows:
-+
-+# mount -t unionfs -o remount,add=/foo none MOUNTPOINT
-+
-+To append a branch to the very end (new lowest-priority branch):
-+
-+# mount -t unionfs -o remount,add=:/foo none MOUNTPOINT
-+
-+To append a branch to the very end (new lowest-priority branch), in
-+read-only mode:
-+
-+# mount -t unionfs -o remount,add=:/foo:ro none MOUNTPOINT
-+
-+Finally, to change the mode of one existing branch, say /foo, from read-only
-+to read-write, and change /bar from read-write to read-only:
-+
-+# mount -t unionfs -o remount,mode=/foo=rw,mode=/bar=ro none MOUNTPOINT
-+
-+
-+CACHE CONSISTENCY
-+=================
-+
-+If you modify any file on any of the lower branches directly, while there is
-+a Unionfs 2.0 mounted above any of those branches, you should tell Unionfs
-+to purge its caches and re-get the objects.  To do that, you have to
-+incremenet the generation number of the superblock using the following
-+command:
-+
-+# mount -t unionfs -o remount,remount,incgen none MOUNTPOINT
-+
-+
-+For more information, see <http://unionfs.filesystems.org/>.
+ /* File to lower file. */
+ static inline struct file *unionfs_lower_file(const struct file *f)
+ {
+@@ -52,11 +69,14 @@ static inline struct file *unionfs_lower_file_idx(const struct file *f, int inde
+ static inline void unionfs_set_lower_file_idx(struct file *f, int index, struct file *val)
+ {
+ 	UNIONFS_F(f)->lower_files[index] = val;
++	/* save branch ID (may be redundant?) */
++	UNIONFS_F(f)->saved_branch_ids[index] =
++		branch_id((f)->f_dentry->d_sb, index);
+ }
+ 
+ static inline void unionfs_set_lower_file(struct file *f, struct file *val)
+ {
+-	UNIONFS_F(f)->lower_files[fbstart(f)] = val;
++	unionfs_set_lower_file_idx((f), fbstart(f), (val));
+ }
+ 
+ /* Inode to lower inode. */
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index a37916d..ed264c7 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -515,6 +515,7 @@ static int unionfs_read_super(struct super_block *sb, void *raw_data,
+ 	UNIONFS_SB(sb)->bend = -1;
+ 	atomic_set(&UNIONFS_SB(sb)->generation, 1);
+ 	init_rwsem(&UNIONFS_SB(sb)->rwsem);
++	UNIONFS_SB(sb)->high_branch_id = -1; /* -1 == invalid branch ID */
+ 
+ 	hidden_root_info = unionfs_parse_options(sb, raw_data);
+ 	if (IS_ERR(hidden_root_info)) {
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index df9b8c0..7bd6306 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -80,6 +80,7 @@ struct unionfs_file_info {
+ 
+ 	struct unionfs_dir_state *rdstate;
+ 	struct file **lower_files;
++	int *saved_branch_ids; /* IDs of branches when file was opened */
+ };
+ 
+ /* unionfs inode data in memory */
+@@ -123,6 +124,7 @@ struct unionfs_data {
+ 	struct super_block *sb;
+ 	atomic_t open_files;	/* number of open files on branch */
+ 	int branchperms;
++	int branch_id;		/* unique branch ID at re/mount time */
+ };
+ 
+ /* unionfs super-block data in memory */
+@@ -131,7 +133,7 @@ struct unionfs_sb_info {
+ 
+ 	atomic_t generation;
+ 	struct rw_semaphore rwsem; /* protects access to data+id fields */
+-
++	int high_branch_id;	/* last unique branch ID given */
+ 	struct unionfs_data *data;
+ };
+ 
 -- 
 1.5.0.3.268.g3dda
 
