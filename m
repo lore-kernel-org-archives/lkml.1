@@ -1,54 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbXDIM3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbXDIMcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624AbXDIM3u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 08:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbXDIM3u
+	id S1751664AbXDIMcG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 08:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXDIMcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 08:29:50 -0400
-Received: from pat.uio.no ([129.240.10.15]:51137 "EHLO pat.uio.no"
+	Mon, 9 Apr 2007 08:32:05 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:45074 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbXDIM3t convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 08:29:49 -0400
-Subject: Re: If not readdir() then what?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-In-Reply-To: <20070409110927.GA23240@lazybastard.org>
-References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com>
-	 <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org>
-	 <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org>
-	 <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com>
-	 <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 09 Apr 2007 08:29:29 -0400
-Message-Id: <1176121769.6210.5.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 8BIT
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.050)
-X-UiO-Scanned: 07517EA8B3239AEBB57779201F8DAC211D04F597
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 353 total 936234 max/h 7466 blacklist 0 greylist 0 ratelimit 0
+	id S1751664AbXDIMcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 08:32:03 -0400
+Message-ID: <461A332D.8060908@sw.ru>
+Date: Mon, 09 Apr 2007 16:35:57 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
+CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: [PATCH 1/8] Resource counters
+References: <461A3010.90403@sw.ru>
+In-Reply-To: <461A3010.90403@sw.ru>
+Content-Type: multipart/mixed;
+ boundary="------------090108000900050503090305"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-09 at 13:09 +0200, Jörn Engel wrote:
-> That surely doesn't make life any easier for filesystem developers, I
-> agree.  From that point of view, all telldir cookies should end their
-> life at closedir time.  For "rm -r" it would be sufficient if the nfs
-> client simply didn't seekdir at all.  For "ls -lR", this would return
-> duplicate dentries.
+This is a multi-part message in MIME format.
+--------------090108000900050503090305
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Please go read the NFS spec. The only thing an NFS client has in order
-to read a directory is a READDIR operation that in essence takes a
-filehandle and a cookie as its arguments. Unless the server is able to
-return the entire directory in one RPC reply, the client That is a
-protocol limitation, not a client limitation.
+Introduce generic structures and routines for resource accounting.
 
-Trond
+Each resource accounting container is supposed to aggregate it,
+container_subsystem_state and its resource-specific members within.
 
+--------------090108000900050503090305
+Content-Type: text/plain;
+ name="diff-res-counters"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff-res-counters"
+
+diff -upr linux-2.6.20.orig/include/linux/res_counter.h linux-2.6.20-2/include/linux/res_counter.h
+--- linux-2.6.20.orig/include/linux/res_counter.h	2007-04-09 11:26:12.000000000 +0400
++++ linux-2.6.20-2/include/linux/res_counter.h	2007-04-09 11:26:06.000000000 +0400
+@@ -0,0 +1,83 @@
++#ifndef __RES_COUNTER_H__
++#define __RES_COUNTER_H__
++/*
++ * resource counters
++ *
++ * Copyright 2007 OpenVZ SWsoft Inc
++ *
++ * Author: Pavel Emelianov <xemul@openvz.org>
++ *
++ */
++
++#include <linux/container.h>
++
++struct res_counter {
++	unsigned long usage;
++	unsigned long limit;
++	unsigned long failcnt;
++	spinlock_t lock;
++};
++
++enum {
++	RES_USAGE,
++	RES_LIMIT,
++	RES_FAILCNT,
++};
++
++ssize_t res_counter_read(struct res_counter *cnt, int member,
++		const char __user *buf, size_t nbytes, loff_t *pos);
++ssize_t res_counter_write(struct res_counter *cnt, int member,
++		const char __user *buf, size_t nbytes, loff_t *pos);
++
++static inline void res_counter_init(struct res_counter *cnt)
++{
++	spin_lock_init(&cnt->lock);
++	cnt->limit = (unsigned long)LONG_MAX;
++}
++
++static inline int res_counter_charge_locked(struct res_counter *cnt,
++		unsigned long val)
++{
++	if (cnt->usage <= cnt->limit - val) {
++		cnt->usage += val;
++		return 0;
++	}
++
++	cnt->failcnt++;
++	return -ENOMEM;
++}
++
++static inline int res_counter_charge(struct res_counter *cnt,
++		unsigned long val)
++{
++	int ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	ret = res_counter_charge_locked(cnt, val);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return ret;
++}
++
++static inline void res_counter_uncharge_locked(struct res_counter *cnt,
++		unsigned long val)
++{
++	if (unlikely(cnt->usage < val)) {
++		WARN_ON(1);
++		val = cnt->usage;
++	}
++
++	cnt->usage -= val;
++}
++
++static inline void res_counter_uncharge(struct res_counter *cnt,
++		unsigned long val)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	res_counter_uncharge_locked(cnt, val);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++}
++
++#endif
+diff -upr linux-2.6.20.orig/init/Kconfig linux-2.6.20-2/init/Kconfig
+--- linux-2.6.20.orig/init/Kconfig	2007-04-09 11:26:06.000000000 +0400
++++ linux-2.6.20-2/init/Kconfig	2007-04-09 11:26:06.000000000 +0400
+@@ -253,6 +253,10 @@ config CPUSETS
+ 
+ 	  Say N if unsure.
+ 
++config RESOURCE_COUNTERS
++	bool
++	select CONTAINERS
++
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+ 	default y
+diff -upr linux-2.6.20.orig/kernel/Makefile linux-2.6.20-2/kernel/Makefile
+--- linux-2.6.20.orig/kernel/Makefile	2007-04-09 11:26:06.000000000 +0400
++++ linux-2.6.20-2/kernel/Makefile	2007-04-09 11:26:06.000000000 +0400
+@@ -51,6 +51,7 @@ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_UTS_NS) += utsname.o
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
++obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
+ 
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+diff -upr linux-2.6.20.orig/kernel/res_counter.c linux-2.6.20-2/kernel/res_counter.c
+--- linux-2.6.20.orig/kernel/res_counter.c	2007-04-09 11:26:12.000000000 +0400
++++ linux-2.6.20-2/kernel/res_counter.c	2007-04-09 11:26:06.000000000 +0400
+@@ -0,0 +1,72 @@
++/*
++ * resource containers
++ *
++ * Copyright 2007 OpenVZ SWsoft Inc
++ *
++ * Author: Pavel Emelianov <xemul@openvz.org>
++ *
++ */
++
++#include <linux/parser.h>
++#include <linux/fs.h>
++#include <linux/res_counter.h>
++#include <asm/uaccess.h>
++
++static inline unsigned long *res_counter_member(struct res_counter *cnt, int member)
++{
++	switch (member) {
++	case RES_USAGE:
++		return &cnt->usage;
++	case RES_LIMIT:
++		return &cnt->limit;
++	case RES_FAILCNT:
++		return &cnt->failcnt;
++	};
++
++	BUG();
++	return NULL;
++}
++
++ssize_t res_counter_read(struct res_counter *cnt, int member, 
++		const char __user *userbuf, size_t nbytes, loff_t *pos)
++{
++	unsigned long *val;
++	char buf[64], *s;
++
++	s = buf;
++	val = res_counter_member(cnt, member);
++	s += sprintf(s, "%lu\n", *val);
++	return simple_read_from_buffer((void __user *)userbuf, nbytes,
++			pos, buf, s - buf);
++}
++
++ssize_t res_counter_write(struct res_counter *cnt, int member,
++		const char __user *userbuf, size_t nbytes, loff_t *pos)
++{
++	int ret;
++	char *buf, *end;
++	unsigned long tmp, *val;
++
++	buf = kmalloc(nbytes + 1, GFP_KERNEL);
++	ret = -ENOMEM;
++	if (buf == NULL)
++		goto out;
++
++	buf[nbytes] = 0;
++	ret = -EFAULT;
++	if (copy_from_user(buf, userbuf, nbytes))
++		goto out_free;
++
++	ret = -EINVAL;
++	tmp = simple_strtoul(buf, &end, 10);
++	if (*end != '\0')
++		goto out_free;
++
++	val = res_counter_member(cnt, member);
++	*val = tmp;
++	ret = nbytes;
++out_free:
++	kfree(buf);
++out:
++	return ret;
++}
+
+
+--------------090108000900050503090305--
