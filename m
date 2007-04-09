@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965778AbXDIVKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965847AbXDIVMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965778AbXDIVKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 17:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965780AbXDIVKl
+	id S965847AbXDIVMi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 17:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965851AbXDIVMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 17:10:41 -0400
-Received: from inetc.connecttech.com ([64.7.140.42]:3560 "EHLO
-	inetc.connecttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965778AbXDIVKk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 17:10:40 -0400
-From: "Stuart MacDonald" <stuartm@connecttech.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Alternative to 'git bisect visualize'?
-Date: Mon, 9 Apr 2007 17:10:23 -0400
-Organization: Connect Tech Inc.
-Message-ID: <04fe01c77aeb$7d3cd370$294b82ce@stuartm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook, Build 10.0.6626
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
+	Mon, 9 Apr 2007 17:12:38 -0400
+Received: from [63.64.152.142] ([63.64.152.142]:1756 "EHLO gitlost.site"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965847AbXDIVMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 17:12:37 -0400
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Subject: [PATCH 0/2] REPOST: Multiqueue network device support
+Date: Mon, 09 Apr 2007 14:27:23 -0700
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       cramerj@intel.com, auke-jan.h.kok@intel.com,
+       christopher.leech@intel.com
+Message-Id: <20070409212723.31670.27976.stgit@gitlost.site>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The git mailing list seems to be git-dev, and I can't find a git-users
-list anywhere. If there's somewhere better to ask this, please point
-me in the right direction.
+Reposting due to the patches getting bounced by majordomo:
 
-I've been learning git over the last few days. Specifically, I'm
-trying out git bisect to locate a change between 2.6.17 and 2.6.18
-that broke something.
+This is a redesign and repost of the multiqueue network device support
+patches.  The new API for base drivers allows multiqueue-capable devices to
+manage their individual queues in the network stack.  The stack now handles
+both non-multiqueue and multiqueue devices on the same codepath.  Also,
+allocation and deallocation of the queues is handled by the kernel instead
+of the driver.
 
-I've reached a point where the kernel I build does not boot. Linus
-says
-http://www.kernel.org/pub/software/scm/git/docs/howto/isolate-bugs-with-bisect.txt
-"you should try to find another commit close-by". Other docs I've read
-imply this is done with git bisect visualize.
+Documentation is also included describing in more detail how this works, as
+well as how a base driver can use the API to implement multiple queues.
 
-My problem is that I don't have wish/tk installed. Is there a
-text-based alternative to visualize that I can use? Or is there a
-different method to locate a nearby commit?
+These patches can also be pulled from my git repository at:
 
-The answer may involve something as simple as looking at some git
-state; I am a git newbie, and reading the docs hasn't helped any, so I
-won't be surprised to find out I'm overlooking something really
-obvious.
+        git-pull git://lost.foo-projects.org/~ppwaskie/git/net-2.6.22 mq
 
-Thanks in advance for any and all help,
-..Stu
-
+--
+Peter P. Waskiewicz Jr.
+peter.p.waskiewicz.jr@intel.com
