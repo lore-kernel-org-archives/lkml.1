@@ -1,120 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbXDINBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbXDINCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbXDINBu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 09:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXDINBu
+	id S1753179AbXDINCI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 09:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXDINCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 09:01:50 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45448 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753152AbXDINBt (ORCPT
+	Mon, 9 Apr 2007 09:02:08 -0400
+Received: from vms048pub.verizon.net ([206.46.252.48]:48810 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbXDINCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 09:01:49 -0400
-Date: Mon, 9 Apr 2007 15:01:55 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Johannes Bauer <JohannesBauer@gmx.de>,
-       linux-kernel@vger.kernel.org, schwab@suse.de,
-       Stable Kernel Team <stable@kernel.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] hrtimer: prevent overrun DoS in hrtimer_forward()
-Message-ID: <20070409130155.GF3582@stusta.de>
-References: <45F6F3A6.9060405@gmx.de> <45F7033B.2030204@redhat.com> <1173817985.13341.120.camel@localhost.localdomain> <1173866413.13341.154.camel@localhost.localdomain> <20070404211159.GT27660@stusta.de> <1175722249.28263.343.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1175722249.28263.343.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 9 Apr 2007 09:02:06 -0400
+Date: Mon, 09 Apr 2007 09:01:48 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Ten percent test
+In-reply-to: <1176098379.6355.106.camel@Homer.simpson.net>
+To: linux-kernel@vger.kernel.org
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+Message-id: <200704090901.48688.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200703290237.38777.kernel@kolivas.org>
+ <200704090009.02587.gene.heskett@gmail.com>
+ <1176098379.6355.106.camel@Homer.simpson.net>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 11:30:48PM +0200, Thomas Gleixner wrote:
-> On Wed, 2007-04-04 at 23:11 +0200, Adrian Bunk wrote:
-> > On Wed, Mar 14, 2007 at 11:00:12AM +0100, Thomas Gleixner wrote:
-> > > hrtimer_forward() does not check for the possible overflow of
-> > > timer->expires. This can happen on 64 bit machines with large interval
-> > > values and results currently in an endless loop in the softirq because
-> > > the expiry value becomes negative and therefor the timer is expired all
-> > > the time.
-> > > 
-> > > Check for this condition and set the expiry value to the max. expiry
-> > > time in the future.
-> > > 
-> > > The fix should be applied to stable kernel series as well.
-> > 
-> > 
-> > Is this relevant for 2.6.16?
-> > 
-> > I'm asking since KTIME_SEC_MAX is not used in 2.6.16, and therefore the 
-> > check in ktime_set() is also missing.
-> 
-> KTIME_SEC_MAX was introduced with commit
-> 96dd7421a06a5bc6eb731323b95efcb2fd864854
-> 
-> to fix a conversion problem on 64 bit machines, which is also present in
-> 2.6.16 AFAICT.
-> 
-> The patch just makes use of this constant. So you need to pull it as
-> well.
+On Monday 09 April 2007, Mike Galbraith wrote:
+>On Mon, 2007-04-09 at 00:08 -0400, Gene Heskett wrote:
+>> On Monday 09 April 2007, Mike Galbraith wrote:
+>> >Actually, there was practically nil interest in testing.  We made a
+>> >couple of minor adjustments to the interactivity logic, and all went
+>> >quiet, so I didn't think it was enough of a problem to require more
+>> >intrusive countermeasures.
+>> >
+>> >	-Mike
+>>
+>> Does one of these messages have a url so I can test the latest of your
+>> patches for -rc6?  Or was the one Ingo sent the most recent?
+>
+>No, my tree has a bugfix and some other adjustments that try to move the
+>balance closer to fair without sacrificing interactivity.
+>
+>> Putting that url in your sig would be nice, and might result in its
+>> getting a lot more exersize which should = more feedback.
+>
+>When I get it cleaned up and better tested, I'll post again.  If you
+>want, I'll CC you... willing victims are a highly valued commodity :)
+>
+>	-Mike
 
-Thanks, below is what I applied.
+:) Put me on that list, Mike.
 
-> 	tglx
-
-cu
-Adrian
-
-
-Thomas Gleixner (3):
-      prevent timespec/timeval to ktime_t overflow
-      fix MTIME_SEC_MAX on 32-bit
-      hrtimer: prevent overrun DoS in hrtimer_forward()
-
-
-diff --git a/include/linux/ktime.h b/include/linux/ktime.h
-index f3dec45..4548ddb 100644
---- a/include/linux/ktime.h
-+++ b/include/linux/ktime.h
-@@ -56,7 +56,12 @@ typedef union {
- #endif
- } ktime_t;
- 
--#define KTIME_MAX			(~((u64)1 << 63))
-+#define KTIME_MAX			((s64)~((u64)1 << 63))
-+#if (BITS_PER_LONG == 64)
-+# define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
-+#else
-+# define KTIME_SEC_MAX			LONG_MAX
-+#endif
- 
- /*
-  * ktime_t definitions when using the 64-bit scalar representation:
-@@ -77,6 +82,10 @@ typedef union {
-  */
- static inline ktime_t ktime_set(const long secs, const unsigned long nsecs)
- {
-+#if (BITS_PER_LONG == 64)
-+	if (unlikely(secs >= KTIME_SEC_MAX))
-+		return (ktime_t){ .tv64 = KTIME_MAX };
-+#endif
- 	return (ktime_t) { .tv64 = (s64)secs * NSEC_PER_SEC + (s64)nsecs };
- }
- 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 14bc9cf..a29ceb0 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -316,6 +316,12 @@ hrtimer_forward(struct hrtimer *timer, ktime_t interval)
- 		orun++;
- 	}
- 	timer->expires = ktime_add(timer->expires, interval);
-+	/*
-+	 * Make sure, that the result did not wrap with a very large
-+	 * interval.
-+	 */
-+	if (timer->expires.tv64 < 0)
-+		timer->expires = ktime_set(KTIME_SEC_MAX, 0);
- 
- 	return orun;
- }
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The box said "Requires Windows 95 or better."  I can't understand    
+why it won't work on my Linux computer.
