@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXDIUsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965393AbXDIUsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965693AbXDIUsG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 16:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXDIUsF
+	id S965393AbXDIUsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 16:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXDIUsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 16:48:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:31697 "EHLO mga02.intel.com"
+	Mon, 9 Apr 2007 16:48:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60408 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965388AbXDIUsD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 16:48:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,388,1170662400"; 
-   d="scan'208"; a="224449359:sNHT24926727"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S965393AbXDIUsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 16:48:17 -0400
+Message-ID: <461AA681.50605@redhat.com>
+Date: Mon, 09 Apr 2007 16:48:01 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2/2] NET: Multiqueue network device support.
-Date: Mon, 9 Apr 2007 13:47:58 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC329029E3EFE@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <20070409.134631.71091422.davem@davemloft.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/2] NET: Multiqueue network device support.
-Thread-Index: Acd66CwGD2IHwVDYQgul91Ng+N4zjgAAA8rQ
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <jgarzik@pobox.com>, "cramerj" <cramerj@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-X-OriginalArrivalTime: 09 Apr 2007 20:47:59.0483 (UTC) FILETIME=[5BD1DCB0:01C77AE8]
+To: Thomas Meyer <thomas@m3y3r.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] unable to handle kernel paging request at virtual address
+ 0800000e
+References: <4616CBF4.8020205@m3y3r.de>
+In-Reply-To: <4616CBF4.8020205@m3y3r.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: David Miller [mailto:davem@davemloft.net] 
-> Sent: Monday, April 09, 2007 1:47 PM
-> To: Waskiewicz Jr, Peter P
-> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> jgarzik@pobox.com; cramerj; Kok, Auke-jan H; Leech, Christopher
-> Subject: Re: [PATCH 2/2] NET: Multiqueue network device support.
+Thomas Meyer wrote:
+> dmesg output:
 > 
-> From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-> Date: Mon, 9 Apr 2007 13:43:11 -0700
+> pktcdvd: pkt_get_last_written failed
+> BUG: unable to handle kernel paging request at virtual address 0800000e
+<SNIP>
+> EFLAGS: 00010203   (2.6.21-rc6 #295)
+<SNIP>
+> cdrom: This disc doesn't have any tracks I recognize!
 > 
-> > True, but the assignment for "dev" above also casts this void * to 
-> > struct net_device *:
-> > 
-> >         dev = (struct net_device *)
-> >                 (((long)p + NETDEV_ALIGN_CONST) & 
-> ~NETDEV_ALIGN_CONST);
-> >         dev->padded = (char *)dev - (char *)p;
-> > 
-> > Shall I remove my cast?
+> This happens while calling command pktsetup.
 > 
-> I think so.  Casts tend to be red flags during patch review, 
-> so don't add them when not necessary and let's remove the 
-> unnecessary ones too.
 
-Will do.  On a side note, I don't see my patches landing on vger again.
-Did they get munched, or is majordomo lagging a bit?
+Well that's very strange.
 
-Thanks,
+long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
+{
+        char *tmp = getname(filename);
+        int fd = PTR_ERR(tmp);
 
--PJ Waskiewicz
+        if (!IS_ERR(tmp)) {
+                fd = get_unused_fd();
+                if (fd >= 0) {
+============>           struct file *f = do_filp_open(dfd, tmp, flags, mode);
+                        if (IS_ERR(f)) {
+                                put_unused_fd(fd);
+                                fd = PTR_ERR(f);
+                        } else {
+                                fsnotify_open(f->f_path.dentry);
+                                fd_install(fd, f);
+                        }
+                }
+                putname(tmp);
+        }
+
+do_filp_open has returned 0x8000002
+
+Isn't that a SCSI error of some kind?
+
+IAC we have tried to do fsnotify_open(f->f_path.dentry) with that result...
