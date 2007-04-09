@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbXDIE7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbXDIFLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbXDIE7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 00:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXDIE7U
+	id S1752443AbXDIFLp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 01:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXDIFLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 00:59:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51828 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752851AbXDIE7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 00:59:19 -0400
-Message-ID: <4619C826.5060505@garzik.org>
-Date: Mon, 09 Apr 2007 00:59:18 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: johnrobertbanks@fastmail.fm
-CC: linux-kernel@vger.kernel.org, "David H. Lynch Jr" <dhlii@comcast.net>,
-       linux-fsdevel@vger.kernel.org
+	Mon, 9 Apr 2007 01:11:45 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:55339 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbXDIFLo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 01:11:44 -0400
+Date: Mon, 09 Apr 2007 01:11:19 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
 Subject: Re: REISER4 FOR INCLUSION IN THE LINUX KERNEL.
-References: <1176092219.12458.1183612420@webmail.messagingengine.com> <1176093552.13670.1183613872@webmail.messagingengine.com>
-In-Reply-To: <1176093552.13670.1183613872@webmail.messagingengine.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+In-reply-to: <1176092219.12458.1183612420@webmail.messagingengine.com>
+To: linux-kernel@vger.kernel.org
+Cc: johnrobertbanks@fastmail.fm, dhlii@comcast.net,
+       linux-fsdevel@vger.kernel.org
+Message-id: <200704090111.20246.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <1176092219.12458.1183612420@webmail.messagingengine.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-johnrobertbanks@fastmail.fm wrote:
-> YOU GUYS WILL LAUGH ABOUT THIS:
+On Monday 09 April 2007, johnrobertbanks@fastmail.fm wrote:
+>
+>I AM SURE THERE ARE A HUGE NUMBER OF PEOPLE WHO WOULD GIVE IT A TRY.
+>
+Many of us have, and recall the pain.  We'll pass thank you.
 
-Yes, we are laughing at you.
-
-You keep using bonnie++ after being told it's a poor benchmark.
-
-	Jeff
-
-
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+It is indeed desirable to be well descended, but the glory belongs to
+our ancestors.
+		-- Plutarch
