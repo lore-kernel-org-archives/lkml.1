@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbXDIPWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbXDIPd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbXDIPWM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbXDIPWL
+	id S1753500AbXDIPd4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbXDIPd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:22:11 -0400
-Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:29690 "HELO
-	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753459AbXDIPWK (ORCPT
+	Mon, 9 Apr 2007 11:33:56 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:38899 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbXDIPdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:22:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=i4pxYAyzFReSm6FEwvAzihxIyHEEgCXSAQAdT8fGtfDEScEXEmxSnuR4Qa68Mxux7acpwWo0m6o+01DhrGztgSeihqkObUPnxxWlx87THpUbsd32dyuE8+cKKjJIA81M/LK8yO8Qde57Uzqb4131nRpDvqI96gnqPqFRWIu5qDw=  ;
-X-YMail-OSG: iU5tGWYVM1nrrDnWRuzBZKtSXqrqbJ8HSBvKfDjUSGZ1vTGS8yKx0F59ZJgpp88IgXx7TqqiKQ--
-From: David Brownell <david-b@pacbell.net>
-To: Junio C Hamano <junkio@cox.net>
-Subject: Re: coding style for long conditions
-Date: Mon, 9 Apr 2007 08:14:17 -0700
-User-Agent: KMail/1.7.1
-Cc: linux-kernel@vger.kernel.org
-References: <11757099691323-git-send-email-tony@atomide.com> <200704061634.39344.david-b@pacbell.net> <7v8xd4fwap.fsf@assigned-by-dhcp.cox.net>
-In-Reply-To: <7v8xd4fwap.fsf@assigned-by-dhcp.cox.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704090814.18137.david-b@pacbell.net>
+	Mon, 9 Apr 2007 11:33:55 -0400
+Date: Mon, 09 Apr 2007 11:33:42 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: plain 2.6.21-rc5 (1) vs amanda (0)
+In-reply-to: <1175661256.31439.23.camel@obelisk.thedillows.org>
+To: linux-kernel@vger.kernel.org
+Cc: Dave Dillow <dave@thedillows.org>, ray-gmail@madrabbit.org,
+       Ingo Molnar <mingo@elte.hu>, amanda-hackers@amanda.org,
+       amanda-users@amanda.org
+Message-id: <200704091133.44684.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200704010100.19016.gene.heskett@verizon.net>
+ <1175488272.3161.28.camel@obelisk.thedillows.org>
+ <1175661256.31439.23.camel@obelisk.thedillows.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 04 April 2007, Dave Dillow wrote:
+>On Mon, 2007-04-02 at 00:31 -0400, Dave Dillow wrote:
+>> On Mon, 2007-04-02 at 00:20 -0400, Gene Heskett wrote:
+>
+>[snipped for brevity]
+>
+>> > [root@coyote music]# stat .
+>> > Device: fd00h/64768d    Inode: 10354963    Links: 39
+>> >
+>> > Now rebooted to 2.6.21-rc5:
+>> > Device: ee00h/60928d    Inode: 10354963    Links: 39
+>>
+>> For those playing along at home, I believe the issue is that GNU tar
+>> sees a different device number for the directories than what is listed
+>> in the listed-incremental snapshot file, and thinks all of the
+>> directories are new. I've asked Gene to make a few back-to-back runs
+>> of the tar command under the same kernel to see if the subsequent runs
+>> figure out that there's nothing to do, as expected.
+>
+>Gene has confirmed that GNU tar figures it out as expected.
+>
+>> Then it is a matter of figuring out why the device number changed --
+>> I'm thinking it is device-mapper, but will look closer tomorrow.
+>
+>This commit is the one that changed it:
+>
+>commit fdf892be32d84a1745fa0aee5fc60517421b8038
+>Author: Andrew Morton <akpm@osdl.org>
+>Date:   Mon Feb 12 00:51:44 2007 -0800
+>
+>    [PATCH] register_blkdev(): don't hand out the LOCAL/EXPERIMENTAL
+> majors
+>
+>    As pointed out in http://bugzilla.kernel.org/show_bug.cgi?id=7922,
+> dynamic blockdev major allocation can hand out majors which LANANA has
+> defined as being for local/experimental use.
+>
+>
+>I'm not sure I could argue for that to be reverted, so here's a possible
+>workaround for Fedora -- completely untested.
+>
+>Add the following to /etc/modprobe.conf:
+>options dm_mod major=253
 
-> > So in practical terms "\n \t" and "\n\t" are identical;
-> > although the former "should not" be used, it doesn't
-> > actually affect what CodingStyle is primarily trying to
-> > control (i.e. what the code looks like).
-> 
-> That's not what CodingStyle is trying to control.  Not "what the
-> code looks like" at all.
+This does not work.
 
-That's news to many folk.  "What the code looks like" has always
-been the fundamental reason to have coding conventions.  If you
-look at coding convention documents over the last fifty years or
-so you will notice that's what they're about ... even back in the
-days when "text" came on punched cards or line printer output.
+>And make a new initrd for the problematic kernel. This assumes that
+>you're using device mapper as a module.
+>
+>If you're building it in, then either dm.major=253 or dm_mod.major=253
+>should work on the kernel command line, but I'm not sure which it is.
+
+I'll try this, I just put both in the kernel command line for 2.6.21-rc6, 
+except I set it for the 238 it was at before the patch was reverted.  I'd 
+put the patch back in myself, but my searching of the lkml corpus here 
+hasn't turned it up.
+
+>Dave
 
 
-The "extraneous hidden whitespace" stuff is sort of a new issue.
-I happened across a discussion of it on the GCC list last month ...
-it's a meme that wasn't widespread even five years ago.
 
-That "get a decent editor" thing is because some editors are so deeply
-broken that they think it's actually OK to replace tabs with whitespace,
-or automatically add extraneous whitespace.  Also, because some emailer
-tools do the same thing.  (Yet another reason to dislike Microsoft, sigh.)
-
-Secondarily, it's also because having "hidden" spaces can cause hassles
-when maintaining code.
-
-Me, i've always been offended by all the wasted disk space, but I think
-I'm a minority there.  ;)
-
-- Dave
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Do not drink coffee in early A.M.  It will keep you awake until noon.
