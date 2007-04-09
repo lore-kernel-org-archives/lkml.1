@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXDIOiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXDIOps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933327AbXDIOiM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 10:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbXDIOiM
+	id S933265AbXDIOps (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 10:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933320AbXDIOps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 10:38:12 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:38381 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933265AbXDIOiJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 10:38:09 -0400
-Date: Mon, 9 Apr 2007 09:38:02 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/8] unprivileged mount syscall
-Message-ID: <20070409143802.GB4891@sergelap.austin.ibm.com>
-References: <20070404183012.429274832@szeredi.hu> <20070406160238.f3178189.akpm@linux-foundation.org> <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu>
+	Mon, 9 Apr 2007 10:45:48 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:48248 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933265AbXDIOpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 10:45:47 -0400
+Message-ID: <461A51D0.3000708@cfl.rr.com>
+Date: Mon, 09 Apr 2007 10:46:40 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mark Lord <lkml@rtr.ca>
+CC: Chris Snook <csnook@redhat.com>, Paa Paa <paapaa125@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Lower HD transfer rate with NCQ enabled?
+References: <BAY20-F50719E454DCCF2309DA1AF9670@phx.gbl> <46128175.2090506@redhat.com> <4612852C.2030801@rtr.ca> <4612A854.1070702@cfl.rr.com> <4613C612.5040600@rtr.ca> <4615160A.4090506@cfl.rr.com> <46151FCD.6000700@rtr.ca>
+In-Reply-To: <46151FCD.6000700@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Apr 2007 14:46:41.0030 (UTC) FILETIME=[E2747260:01C77AB5]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15106.000
+X-TM-AS-Result: No--5.142600-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > This patchset adds support for keeping mount ownership information in
-> > > the kernel, and allow unprivileged mount(2) and umount(2) in certain
-> > > cases.
-> > 
-> > No replies, huh?
+Mark Lord wrote:
+> Phillip Susi wrote:
+>> Sounds like this is a serious bug in the WD firmware.
 > 
-> All we need is a comment from Andrew, and the replies come flooding in ;)
+> For personal systems, yes.  For servers, probably not a bug.
 > 
-> > My knowledge of the code which you're touching is not strong, and my spare
-> > reviewing capacity is not high.  And this work does need close review by
-> > people who are familar with the code which you're changing.
-> > 
-> > So could I suggest that you go for a dig through the git history, identify
-> > some individuals who look like they know this code, then do a resend,
-> > cc'ing those people?  Please also cc linux-kernel on that resend.
-> 
-> OK.
-> 
-> > > One thing that is missing from this series is the ability to restrict
-> > > user mounts to private namespaces.  The reason is that private
-> > > namespaces have still not gained the momentum and support needed for
-> > > painless user experience.  So such a feature would not yet get enough
-> > > attention and testing.  However adding such an optional restriction
-> > > can be done with minimal changes in the future, once private
-> > > namespaces have matured.
-> > 
-> > I suspect the people who developed and maintain nsproxy would disagree ;)
-> 
-> Well, they better show me some working and simple-to-use userspace
-> code, because I've not seen anything like that related to mount
-> namespaces.
+> Disabling readahead means faster execution queued commands,
+> since it doesn't have to "linger" and do unwanted read-ahead.
+> So this bug is a "feature" for random access servers.
+> And a big nuisance for everything else.
 
-If you mean to test/exploit them, see
-http://lxc.sourceforge.net/patches/2.6.20/2.6.20-lxc8/broken-out/tests/
+I think you misunderstand the bug.  The bug is not that the drive 
+disables internal readahead; the bug is that host supplied readahead 
+requests work so horribly.  It is a good thing that the drive allows the 
+host to control the readahead, but something is wrong if the drive's 
+readahead is WAY better than any the host can perform.
 
-Compile the ns_exec.c program and do
 
-	ns_exec -m /bin/sh
+In other words, if the host is sending down multiple sequential reads 
+such that the queue always has a request for the next sector, the drive 
+should be hitting its maximum physical transfer rate.  If it doesn't, 
+then something is very broken with its firmware.
 
-to get a shell in a new mounts namespace.
-
-> pam_namespace.so is one example of a non-working, but probably-not-too-
-> hard-to-fix one.
-
-Non-working?  I sure hope the one used for LSPP certification is
-working...  As is the ugly version I wrote 18 mounts ago and use on my
-laptop.
-
-> I'm just saying this is not yet something that Joe Blow would just
-> enable by ticking a box in their desktop setup wizard, and it would
-> all work flawlessly thereafter.  There's still a _long_ way towards
-> that, and mostly in userspace.
-
-I'm not sure there's a that long a way to go, but clearly we need to be
-showing users what they can do, or they'll never work their way towards
-there.
-
-For instance, as you say, a user admin gui with a checkmark and text
-boxes saying 'enter new namespace on login', 'create private /tmp',
-and 'create private dmcrypted /home' would be trivial right now.
-
--serge
+It is still possible though, that the kernel is simply not issuing its 
+own readahead effectively so the queue ends up empty at times and the 
+disk goes idle.  This would be worth investigating before letting WD 
+know they have a serious firmware problem.
