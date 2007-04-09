@@ -1,70 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbXDISJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbXDISJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752702AbXDISJQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXDISJQ
+	id S1753325AbXDISJn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbXDISJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:09:16 -0400
-Received: from mga09.intel.com ([134.134.136.24]:38559 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752702AbXDISJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:09:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,388,1170662400"; 
-   d="scan'208"; a="70845947:sNHT20940552"
-Date: Mon, 9 Apr 2007 11:07:44 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: akpm@linux-foundation.org
-Cc: christoph@lameter.com, Andi Kleen <andi@firstfloor.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       linux kernel <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
-Subject: [patch 2/2] slab, x86_64: skip cache_free_alien() on non NUMA
-Message-ID: <20070409180743.GB3948@linux-os.sc.intel.com>
-References: <Pine.LNX.4.64.0703201716440.17799@graphe.net> <20070321024452.GA17532@one.firstfloor.org> <Pine.LNX.4.64.0703202006230.20568@graphe.net> <20070322212831.GA25665@linux-os.sc.intel.com> <4602FF57.7030001@cosmosbay.com> <20070322224045.GA3200@linux-os.sc.intel.com> <20070323141210.GA20548@one.firstfloor.org> <20070402225512.GA31026@linux-os.sc.intel.com> <Pine.LNX.4.64.0704021722300.20493@graphe.net> <20070409180145.GA3948@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070409180145.GA3948@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 9 Apr 2007 14:09:43 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50481 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753325AbXDISJl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 14:09:41 -0400
+Date: Mon, 9 Apr 2007 11:09:40 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       dgc@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
+ flag
+In-Reply-To: <20070407184801.b6f3f549.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704091105550.8331@schroedinger.engr.sgi.com>
+References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
+ <20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
+ <20070406222336.4dcdd663.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
+ <20070407155148.94da92e8.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704071718530.31790@schroedinger.engr.sgi.com>
+ <20070407182506.4386dc13.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704071825510.32544@schroedinger.engr.sgi.com>
+ <20070407184801.b6f3f549.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-set use_alien_caches to 0 on non NUMA platforms. And avoid calling
-the cache_free_alien() when use_alien_caches is not set. This will avoid
-the cache miss that happens while dereferencing slabp to get nodeid.
+Add PageTail / PageHead in order to avoid multiple branches when compound 
+pages are checked.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+The patch adds PageTail(page) and PageHead(page) to check if a page is the
+head or the tail of a compound page. This is done by masking the two
+bits describing the state of a compound page and then comparing them. So 
+one comparision and a branch instead of two bit checks and two branches.
+
+
 ---
+ include/linux/mm.h         |   11 ++---------
+ include/linux/page-flags.h |   28 +++++++++++++++++-----------
+ mm/page_alloc.c            |   10 ++++------
+ 3 files changed, 23 insertions(+), 26 deletions(-)
 
-diff --git a/mm/slab.c b/mm/slab.c
-index 8fdaffa..146082d 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -1146,7 +1146,7 @@ static inline int cache_free_alien(struct kmem_cache *cachep, void *objp)
- 	 * Make sure we are not freeing a object from another node to the array
- 	 * cache on this cpu.
- 	 */
--	if (likely(slabp->nodeid == node) || unlikely(!use_alien_caches))
-+	if (likely(slabp->nodeid == node))
+Index: linux-2.6.21-rc5-mm4/include/linux/mm.h
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/include/linux/mm.h	2007-04-09 11:04:15.000000000 -0700
++++ linux-2.6.21-rc5-mm4/include/linux/mm.h	2007-04-09 11:04:31.000000000 -0700
+@@ -299,14 +299,7 @@ static inline int get_page_unless_zero(s
+ 
+ static inline struct page *compound_head(struct page *page)
+ {
+-	/*
+-	 * We could avoid the PageCompound(page) check if
+-	 * we would not overload PageTail().
+-	 *
+-	 * This check has to be done in several performance critical
+-	 * paths of the slab etc. IMHO PageTail deserves its own flag.
+-	 */
+-	if (unlikely(PageCompound(page) && PageTail(page)))
++	if (unlikely(PageTail(page)))
+ 		return page->first_page;
+ 	return page;
+ }
+@@ -363,7 +356,7 @@ static inline compound_page_dtor *get_co
+ 
+ static inline int compound_order(struct page *page)
+ {
+-	if (!PageCompound(page) || PageTail(page))
++	if (!PageHead(page))
  		return 0;
+ 	return (unsigned long)page[1].lru.prev;
+ }
+Index: linux-2.6.21-rc5-mm4/include/linux/page-flags.h
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/include/linux/page-flags.h	2007-04-09 11:04:10.000000000 -0700
++++ linux-2.6.21-rc5-mm4/include/linux/page-flags.h	2007-04-09 11:04:31.000000000 -0700
+@@ -95,12 +95,6 @@
+ /* PG_owner_priv_1 users should have descriptive aliases */
+ #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
  
- 	l3 = cachep->nodelists[node];
-@@ -1394,6 +1394,9 @@ void __init kmem_cache_init(void)
- 	int order;
- 	int node;
+-/*
+- * Marks tail portion of a compound page. We currently do not reclaim
+- * compound pages so we can reuse a flag only used for reclaim here.
+- */
+-#define PG_tail			PG_reclaim
+-
+ #if (BITS_PER_LONG > 32)
+ /*
+  * 64-bit-only flags build down from bit 31
+@@ -221,12 +215,24 @@ static inline void SetPageUptodate(struc
+ #define __ClearPageCompound(page) __clear_bit(PG_compound, &(page)->flags)
  
-+	if (num_possible_nodes() == 1)
-+		use_alien_caches = 0;
+ /*
+- * Note: PG_tail is an alias of another page flag. The result of PageTail()
+- * is only valid if PageCompound(page) is true.
++ * PG_reclaim is used in combination with PG_compound to mark the
++ * head and tail of a compound page
++ *
++ * PG_compound & PG_reclaim	=> Tail page
++ * PG_compound & ~PG_reclaim	=> Head page
+  */
+-#define PageTail(page)	test_bit(PG_tail, &(page)->flags)
+-#define __SetPageTail(page)	__set_bit(PG_tail, &(page)->flags)
+-#define __ClearPageTail(page)	__clear_bit(PG_tail, &(page)->flags)
 +
- 	for (i = 0; i < NUM_INIT_LISTS; i++) {
- 		kmem_list3_init(&initkmem_list3[i]);
- 		if (i < MAX_NUMNODES)
-@@ -3563,7 +3566,7 @@ static inline void __cache_free(struct kmem_cache *cachep, void *objp)
- 	check_irq_off();
- 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
++#define PG_head_tail_mask ((1L << PG_compound) | (1L << PG_reclaim))
++
++#define PageTail(page)	((page->flags & PG_head_tail_mask) \
++				== PG_head_tail_mask)
++#define __SetPageTail(page)	page->flags |= PG_head_tail_mask
++#define __ClearPageTail(page)	page->flags ~= PG_head_tail_mask
++
++#define PageHead(page)	((page->flags & PG_head_tail_mask) \
++				== (1L << PG_compound))
++#define __SetPageHead(page)	__SetCompoundPage(page)
++#define __ClearPageHead(page)	__ClearCompoundPage(page)
  
--	if (cache_free_alien(cachep, objp))
-+	if (use_alien_caches && cache_free_alien(cachep, objp))
- 		return;
+ #ifdef CONFIG_SWAP
+ #define PageSwapCache(page)	test_bit(PG_swapcache, &(page)->flags)
+Index: linux-2.6.21-rc5-mm4/mm/page_alloc.c
+===================================================================
+--- linux-2.6.21-rc5-mm4.orig/mm/page_alloc.c	2007-04-09 11:04:10.000000000 -0700
++++ linux-2.6.21-rc5-mm4/mm/page_alloc.c	2007-04-09 11:04:31.000000000 -0700
+@@ -300,12 +300,11 @@ static void prep_compound_page(struct pa
  
- 	if (likely(ac->avail < ac->limit)) {
+ 	set_compound_page_dtor(page, free_compound_page);
+ 	set_compound_order(page, order);
+-	__SetPageCompound(page);
++	__SetPageHead(page);
+ 	for (i = 1; i < nr_pages; i++) {
+ 		struct page *p = page + i;
+ 
+ 		__SetPageTail(p);
+-		__SetPageCompound(p);
+ 		p->first_page = page;
+ 	}
+ }
+@@ -318,17 +317,16 @@ static void destroy_compound_page(struct
+ 	if (unlikely(compound_order(page) != order))
+ 		bad_page(page);
+ 
+-	if (unlikely(!PageCompound(page)))
++	if (unlikely(!PageHead(page)))
+ 			bad_page(page);
+-	__ClearPageCompound(page);
++	__ClearPageHead(page);
+ 	for (i = 1; i < nr_pages; i++) {
+ 		struct page *p = page + i;
+ 
+-		if (unlikely(!PageCompound(p) | !PageTail(p) |
++		if (unlikely(!PageTail(p) |
+ 				(p->first_page != page)))
+ 			bad_page(page);
+ 		__ClearPageTail(p);
+-		__ClearPageCompound(p);
+ 	}
+ }
+ 
