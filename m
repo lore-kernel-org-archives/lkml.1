@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXDIK4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbXDILDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbXDIK4s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 06:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbXDIK4s
+	id S1752678AbXDILDp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 07:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXDILDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 06:56:48 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53394 "EHLO mail.dvmed.net"
+	Mon, 9 Apr 2007 07:03:45 -0400
+Received: from mail.screens.ru ([213.234.233.54]:35531 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694AbXDIK4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 06:56:47 -0400
-Message-ID: <461A1BEA.7000002@pobox.com>
-Date: Mon, 09 Apr 2007 06:56:42 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] pata_icside driver
-References: <20070330110022.GA21653@flint.arm.linux.org.uk>	<20070330110800.GB21653@flint.arm.linux.org.uk>	<20070408101826.GA5431@flint.arm.linux.org.uk>	<20070408195956.4e7d50c0@the-village.bc.nu>	<461990CE.8080609@pobox.com> <20070409105638.6b131b72@the-village.bc.nu>
-In-Reply-To: <20070409105638.6b131b72@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S1751052AbXDILDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 07:03:44 -0400
+Date: Mon, 9 Apr 2007 15:03:33 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] scheduler: first timeslice of the exiting thread
+Message-ID: <20070409110333.GA253@tv-sign.ru>
+References: <20070409102922.GA216@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070409102922.GA216@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Then no SFF hardware can use ata_irq_ack. Not one card: Because in every
+On 04/09, Oleg Nesterov wrote:
+>
+> Satoru Takeuchi wrote:
+> >
+> >   a) On sched_fork, the creator share its timeslice with new process.
+> >   b) On sched_exit, if the exiting process didn't exhaust its first
+> >      timeslice yet, it gives its timeslice to the parent.
+> >
+> > It has no problem on the process model since the creator is the parent.
+> > However, on the thread model, the creator is not the parent, it is same
+> > as the creator's parent. Hence, on this kind of program, the creator
+> > can't retrieve shared timeslice and exausts its timeslice at a rate of
+> > knots. In addition, somehow, the parent (typically shell?) gets extra
+> > timeslice.
+> 
+> Yes, this is an old oddity.
 
-OK
+Perhaps
 
+	void sched_exit(struct task_struct *p)
+	{
+		task_t *t, *did_fork = p->parent;
 
-> We should just rename ata_irq_ack(). It is in libata-sff, so it's either
-> wrong (missing a test), or in the wrong file completely.
+		if (!thread_group_leader(p))
+			list_for_each_entry(t, p->thread_group)
+				if (!t->exit_state) {
+					did_fork = t;
+					break;
+				}
 
-There is plenty of BMDMA-specific stuff in libata-sff, so neither 
-assertion is correct.
+		... give time_slice to did_fork ..
+	}
 
-It's fine to rename it, though.
+may improve things a little bit, because the rest of time_slice doesn't leak
+off the thread group.
 
-	Jeff
+However this is not very nice and we have the same problem with CLONE_PARENT.
 
+Oleg.
 
