@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbXDIWWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbXDIWeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbXDIWWX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 18:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXDIWWX
+	id S1753566AbXDIWeH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 18:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXDIWeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 18:22:23 -0400
-Received: from iasrv1.idleaire.net ([63.78.244.180]:52516 "EHLO
-	iasrv1.idleaire.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbXDIWWW (ORCPT
+	Mon, 9 Apr 2007 18:34:07 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50845 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753564AbXDIWeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 18:22:22 -0400
-Subject: Re: I give up
-From: Dave Dillow <dave@thedillows.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <Pine.LNX.4.61.0704092334410.22295@yvahk01.tjqt.qr>
-References: <200704091007.58535.gene.heskett@gmail.com>
-	 <Pine.LNX.4.61.0704091848150.21426@yvahk01.tjqt.qr>
-	 <461A71FA.40900@zytor.com> <200704091538.44253.gene.heskett@gmail.com>
-	 <Pine.LNX.4.61.0704092334410.22295@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Mon, 09 Apr 2007 18:22:10 -0400
-Message-Id: <1176157330.4767.12.camel@dillow.idleaire.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-1.fc5.5) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Apr 2007 22:21:37.0494 (UTC) FILETIME=[706A4F60:01C77AF5]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1345-3.6.1039-14858.000
-X-TM-AS-Result: No--8.354800-8.000000-31
+	Mon, 9 Apr 2007 18:34:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       shai@scalex86.org
+Subject: Re: [patch] Pad irq_desc to internode cacheline size
+References: <20070409195356.GA5275@localhost.localdomain>
+	<20070409135729.a466e9cb.akpm@linux-foundation.org>
+	<m1ejmt1apj.fsf@ebiederm.dsl.xmission.com>
+	<20070409220936.GD5275@localhost.localdomain>
+Date: Mon, 09 Apr 2007 16:33:25 -0600
+In-Reply-To: <20070409220936.GD5275@localhost.localdomain> (Ravikiran
+	G. Thirumalai's message of "Mon, 9 Apr 2007 15:09:36 -0700")
+Message-ID: <m1abxh18lm.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-09 at 23:35 +0200, Jan Engelhardt wrote:
-> On Apr 9 2007 15:38, Gene Heskett wrote:
-> >On Monday 09 April 2007, H. Peter Anvin wrote:
-> >>Jan Engelhardt wrote:
-> >>> dm is on 254 for me.. in opensuse with a 2.6.20 that is. I wonder why
-> >>> it even moves around. However, even then, those who use udev and
-> >>> device names rather than (major,minor) tuples should not have any
-> >>> problem.
-> >>
-> >>It moves around because someone at some point thought it was a great
-> >>idea to assign dynamic majors to core functionality.
-> >>
-> >What were they smoking, I want some of that!
-> 
-> Do you actually use udev?
+Ravikiran G Thirumalai <kiran@scalex86.org> writes:
 
-udev doesn't help the problem he is having (and he is using it, since he
-is using Fedora).
+> !!! No. internode aligned is 4k only if CONFIG_X86_VSMP is chosen.  The
+> internode line size defaults to SMP_CACHE_BYTES for all other machine types.
+> Please note that an INTERNODE_CACHE_SHIFT of 12 is defined under 
+> #ifdef CONFIG_X86_VSMP in include/asm-x86_64/cache.h
 
-His problem is that GNU tar stores the device number of the file in a
-database that it uses to perform incremental updates, and considers the
-file new (and re-dumps it) when the device number changes.
+You are right.  I got confused by the single definition in
+asm-x86_64/cache.h
 
-So, when he changes the kernel config, adding any block device that uses
-a dynamic major (and is loaded before device-mapper), or goes between
-kernels that have the reserve-LANANA numbers patch, his incremental
-dumps become full ones because device-mapper gets a different dynamic
-major.
--- 
-Dave Dillow <dave@thedillows.org>
+Think you can rewrite that concept so it is readable and maintainable?
+Maybe all in Kconfig like INTERNODE_CACHE_BYTES or all in an sub
+architecture specific header?
 
+>> I believe this ups our worst case memory consumption for
+>> the array from 1M to 32M.  Although the low end might be 2M.
+>> I can't recall if an irq_desc takes one cache line or two
+>> after we have put the cpu masks in it.
+>> 
+>> My gut feel says that what we want to do is delay this until
+>> we are dynamically allocating the array members.  Then we can at
+>> least have the chance of allocating the memory on the proper NUMA
+>> node, and won't need the extra NUMA alignment.
+>
+> I was thinking on those lines as well.  But, until we get there, can we have
+> this in as stop gap?  The patch does not increase the memory footprint for
+> any other architecture other than vSMPowered systems.
+
+I don't think so because it doesn't make sense, and we are talking
+about extremely generic code.  And several other architectures are
+already using the INTERNODE_CACHE_SHIFT concept.  So even if VSMP
+is the only architecture that defines it today, it doesn't look like
+the only architecture that will define it tomorrow.
+
+If you are sufficient NUMA to care you will destroy your performance
+by handling the irq on the wrong node.  So it make no sense to have
+an irq_desc that is optimized for handling an irq on the wrong node.
+
+So until we can handle this cleanly let's not let your platform
+specific pain and insanity spill into other architectures.
+
+I'm about half way there towards a patchset to get irq_desc
+dynamically allocated, and if can find a day or two in the next
+couple of weeks I 2.6.23 sounds like a possibility.  So this shouldn't
+be something that is impossibly distant.
+
+Eric
