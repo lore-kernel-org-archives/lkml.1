@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXDILNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbXDILNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbXDILNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 07:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXDILNJ
+	id S1753091AbXDILNu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 07:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXDILNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 07:13:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53489 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752812AbXDILNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 07:13:07 -0400
-Message-ID: <461A1FC1.50809@garzik.org>
-Date: Mon, 09 Apr 2007 07:13:05 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 9 Apr 2007 07:13:50 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46996 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753106AbXDILNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 07:13:49 -0400
+Date: Mon, 9 Apr 2007 13:13:39 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
+       MarekVa@ucw.cz
+Subject: Re: [PATCH 29/90] ARM: OMAP: Palm Tungsten|T support
+Message-ID: <20070409111339.GB4894@elf.ucw.cz>
+References: <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <117!57100403021-git-send-email-tony@atomide.com> <11757100423982-git-send-email-tony@atomide.com> <20070406120923.GB3866@ucw.cz> <20070408120740.GC5431@flint.arm.linux.org.uk> <20070408121238.GB4310@ucw.cz> <20070408144029.GB20065@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] pata_icside driver
-References: <20070330110022.GA21653@flint.arm.linux.org.uk>	<20070330110800.GB21653@flint.arm.linux.org.uk>	<20070408101826.GA5431@flint.arm.linux.org.uk>	<20070408195956.4e7d50c0@the-village.bc.nu>	<461990CE.8080609@pobox.com> <20070409105638.6b131b72@the-village.bc.nu> <461A1BEA.7000002@pobox.com>
-In-Reply-To: <461A1BEA.7000002@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070408144029.GB20065@flint.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It should be noted, mainly for russell's benefit, that the ->irq_ack() 
-hook is only called if a debug define is manually enabled in libata.h, 
-in a single callsite.
+Hi!
 
-The number of people that actually use the hook -- kernel hackers 
-debugging screaming interrupts -- can probably be counted on one hand.
+> > > > > From: =?utf-8?q?Marek_Va=C5=A1ut?= <marek.vasut@gmail.com>
+> > > > 
+> > > > EEk.
+> > > > 
+> > > > > Signed-off-by: Marek Vašut <marek.vasut@gmail.com>
+> > > > 
+> > > > Eek2.
+> > > 
+> > > As I see it, that eek2 is correct UTF-8, and since the body charset was
+> > > utf-8 I don't see this as a problem.
+> > 
+> > I do not think eek2 is correct utf-8. It seems to short for that. (It
+> > should be s with v over it.
 
-	Jeff
+Ok, I'm seeing something completely different from everyone else...
 
+> BTW, your mailer appears to be rather broken.
+> 
+> The thread previous to your reply was being sent to Marek Vašut
+> <marek.vasut@gmail.com>.
+> >From your reply onwards, that address magically changed to
+> MarekVa@ucw.cz, which returns a non-delivery error.
 
-
+And yes, it seems mutt on zaurus is really broken; sorry about that,
+I'll try to be more careful in future.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
