@@ -1,57 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXDIMIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932140AbXDIMMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbXDIMIk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 08:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbXDIMIk
+	id S932140AbXDIMMN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 08:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbXDIMMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 08:08:40 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4237 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753132AbXDIMIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 08:08:39 -0400
-Date: Mon, 9 Apr 2007 14:03:52 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFD] CPU hotplug and suspend
-Message-ID: <20070409140352.GB3864@ucw.cz>
-References: <200704061732.32712.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Apr 2007 08:12:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:31597 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753119AbXDIMML (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 08:12:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:date:user-agent:mime-version:content-disposition:subject:to:cc:content-type:content-transfer-encoding:message-id;
+        b=P6Rwvig5rhqP5ikl87AtSqMu9jCfO8cDum/Kk+BbdEuAWSb7mpHFsJbJldDyPSeQ7sWxd1iyYc2d1062175eIIWFsf6CU96TS3Psx8iLzXzLHmK7NRZyu1MPOlQ6PmVB2WFAVTfd7YdRjT+WOkp4V24jMsnGyr8tV7TRVL7YQqo=
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Date: Mon, 9 Apr 2007 09:23:09 +0200
+User-Agent: KMail/1.8.2
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <200704061732.32712.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+Subject: [PATCH 2.6.21-rc6] sched: modification of TASK_PREEMPTS_CURRENT to avoid redundant reschedules (e.g. in set_user_nice)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, dmitry.adamushko@gmail.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704090923.10495.dmitry.adamushko@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
 
-> Currently, we use the CPU hotplug to disable nonboot CPUs in the suspend code
-> paths, but with the recent change of code ordering (ie. nonboot CPUs are
-> disabled after freezing tasks _and_ devices) it has become quite troublesome.
-> The reason of this is that there are some CPU hotplug notifiers registered and
-> called on each run of cpu_up()/cpu_down() that assume the system to be fully
-> functional, which is not the case during the suspend.  Moreover, at least some
-> of them do things that are not really necessary for disabling or enabling the
-> nonboot CPUs.
+o  Fixed a mail client (shouldn't be white-space damaged now);
+o  Andrew, a patch against SD will follow.
 
-Right.
+---
 
-> The advantage of using the CPU hotplug (in its current form) for suspending is
-> that if some CPUs don't reappear during the resume, we are safe.  Still, I
-> think it would be more appropriate, and simpler in the long run, to notify the
-> interested subsystems _only_ if one (or more) CPUs are not functional after the
-> resume. 
+o  Make TASK_PREEMPTS_CURR(task, rq) return "true" only if the task's
+prio is higher than the current's one and the task is in the "active"
+array.
+This ensures we don't make redundant resched_task() calls when the
+task is in the "expired" array (as may happen now in set_user_prio(),
+rt_mutex_setprio() and pull_task() ) ;
 
-I'm afraid that adding 'cpu not there so simulate unplug' path will
-make it complex, and prone to failure, as _noone_ is going to test it.
+o  generilise conditions for a call to resched_task() in
+set_user_nice(), rt_mutex_setprio() and sched_setscheduler()
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+---
+
+--- linux-2.6.21-rc6/kernel/sched-orig.c	2007-04-07 17:16:16.000000000 +0200
++++ linux-2.6.21-rc6/kernel/sched.c	2007-04-07 18:13:49.000000000 +0200
+@@ -168,7 +168,7 @@ unsigned long long __attribute__((weak))
+ 		(MAX_BONUS / 2 + DELTA((p)) + 1) / MAX_BONUS - 1))
+ 
+ #define TASK_PREEMPTS_CURR(p, rq) \
+-	((p)->prio < (rq)->curr->prio)
++	(((p)->prio < (rq)->curr->prio) && ((p)->array == (rq)->active))
+ 
+ #define SCALE_PRIO(x, prio) \
+ 	max(x * (MAX_PRIO - prio) / (MAX_USER_PRIO / 2), MIN_TIMESLICE)
+@@ -3847,13 +3847,13 @@ void rt_mutex_setprio(struct task_struct
+ 	struct prio_array *array;
+ 	unsigned long flags;
+ 	struct rq *rq;
+-	int oldprio;
++	int delta;
+ 
+ 	BUG_ON(prio < 0 || prio > MAX_PRIO);
+ 
+ 	rq = task_rq_lock(p, &flags);
+ 
+-	oldprio = p->prio;
++	delta = prio - p->prio;
+ 	array = p->array;
+ 	if (array)
+ 		dequeue_task(p, array);
+@@ -3869,13 +3869,11 @@ void rt_mutex_setprio(struct task_struct
+ 		enqueue_task(p, array);
+ 		/*
+ 		 * Reschedule if we are currently running on this runqueue and
+-		 * our priority decreased, or if we are not currently running on
+-		 * this runqueue and our priority is higher than the current's
++		 * our priority decreased, or if our priority became higher
++		 * than the current's.
+ 		 */
+-		if (task_running(rq, p)) {
+-			if (p->prio > oldprio)
+-				resched_task(rq->curr);
+-		} else if (TASK_PREEMPTS_CURR(p, rq))
++		if (TASK_PREEMPTS_CURR(p, rq) ||
++				(delta > 0 && task_running(rq, p)))
+ 			resched_task(rq->curr);
+ 	}
+ 	task_rq_unlock(rq, &flags);
+@@ -3923,10 +3921,12 @@ void set_user_nice(struct task_struct *p
+ 		enqueue_task(p, array);
+ 		inc_raw_weighted_load(rq, p);
+ 		/*
+-		 * If the task increased its priority or is running and
+-		 * lowered its priority, then reschedule its CPU:
++		 * Reschedule if we are currently running on this runqueue and
++		 * our priority decreased, or if our priority became higher
++		 * than the current's.
+ 		 */
+-		if (delta < 0 || (delta > 0 && task_running(rq, p)))
++		if (TASK_PREEMPTS_CURR(p, rq) ||
++				(delta > 0 && task_running(rq, p)))
+ 			resched_task(rq->curr);
+ 	}
+ out_unlock:
+@@ -4153,13 +4153,11 @@ recheck:
+ 		__activate_task(p, rq);
+ 		/*
+ 		 * Reschedule if we are currently running on this runqueue and
+-		 * our priority decreased, or if we are not currently running on
+-		 * this runqueue and our priority is higher than the current's
++		 * our priority decreased, or our priority became higher
++		 * than the current's.
+ 		 */
+-		if (task_running(rq, p)) {
+-			if (p->prio > oldprio)
+-				resched_task(rq->curr);
+-		} else if (TASK_PREEMPTS_CURR(p, rq))
++		if (TASK_PREEMPTS_CURR(p, rq) ||
++				(task_running(rq, p) && p->prio > oldprio))
+ 			resched_task(rq->curr);
+ 	}
+ 	__task_rq_unlock(rq);
