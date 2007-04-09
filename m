@@ -1,224 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbXDIOzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933635AbXDIO4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933805AbXDIOzM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 10:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933807AbXDIOzL
+	id S933635AbXDIO4F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 10:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933826AbXDIOz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 10:55:11 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:44011 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933688AbXDIOyl (ORCPT
+	Mon, 9 Apr 2007 10:55:56 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:48809 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933814AbXDIOzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 10:54:41 -0400
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 20/21] Unionfs: Added several BUG_ONs to assert dentry validity
-Date: Mon,  9 Apr 2007 10:54:11 -0400
-Message-Id: <11761304561019-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.0.3.268.g3dda
-In-Reply-To: <11761304521844-git-send-email-jsipek@cs.sunysb.edu>
-References: <11761304521844-git-send-email-jsipek@cs.sunysb.edu>
+	Mon, 9 Apr 2007 10:55:35 -0400
+Date: Mon, 9 Apr 2007 10:55:34 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Matthias Andree <matthias.andree@gmx.de>
+cc: linux-kernel@vger.kernel.org, <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] 2.6.21-rc6 USB Keyboard hangs (EHCI/UHCI/HID)
+In-Reply-To: <20070409142941.GA8178@merlin.emma.line.org>
+Message-ID: <Pine.LNX.4.44L0.0704091052060.3561-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Erez Zadok <ezk@cs.sunysb.edu>
+On Mon, 9 Apr 2007, Matthias Andree wrote:
 
-This should help catch races between the VFS and the branch-management code.
+> Please Cc: me on replies, as I read linux-kernel sporadically and am not
+> subscribed to linux-usb-devel at all.
+> 
+> Greetings,
+> 
+> I have seen my USB keyboard drivers lock up several times now with my M$
+> Natural Ergonomic Keyboard, both on SUSE 10.2's current kernel as well
+> as 2.6.21-rc6 today. I don't ever recall this happen with older SUSE
+> 10.0 kernels. The keyboard is connected to a USB2.0 hub with single
+> transaction translator (at least that's what FreeBSD 6.2 says), which is
+> connected to a via root hub.
+> 
+> Symptoms are that the keyboard LEDs go off and no further input is
+> impossible (I'm typing this into a PS/2 keyboard). Replugging does not
+> help. Trying to unload ehci-hcd hangs modprobe, and additionally I've
+> got a stuck khubd (not sure if that's related), else no logging.
+> 
+> I'm rebuilding the kernel with HID/USB debugging cranked up to see if I
+> can get some detail out of the situation. Any specific kernel debugging
+> options that might help me debug this further?
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
----
- fs/unionfs/inode.c  |   15 +++++++++++++++
- fs/unionfs/rename.c |    3 +++
- fs/unionfs/super.c  |    2 ++
- fs/unionfs/union.h  |   13 +++++++++++++
- fs/unionfs/unlink.c |    4 ++++
- fs/unionfs/xattr.c  |    8 ++++++++
- 6 files changed, 45 insertions(+), 0 deletions(-)
+It would help to see a trace from usbmon showing what happens during a 
+lockup.  You can find the instructions in the kernel source file 
+Documentation/usb/usbmon.txt.
 
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 5c452b6..97dad8c 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -249,6 +249,9 @@ static int unionfs_link(struct dentry *old_dentry, struct inode *dir,
- 	struct dentry *whiteout_dentry;
- 	char *name = NULL;
- 
-+	BUG_ON(!is_valid_dentry(new_dentry));
-+	BUG_ON(!is_valid_dentry(old_dentry));
-+
- 	double_lock_dentry(new_dentry, old_dentry);
- 
- 	hidden_new_dentry = unionfs_lower_dentry(new_dentry);
-@@ -373,6 +376,8 @@ static int unionfs_symlink(struct inode *dir, struct dentry *dentry,
- 	int bindex = 0, bstart;
- 	char *name = NULL;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 
- 	/* We start out in the leftmost branch. */
-@@ -495,6 +500,8 @@ static int unionfs_mkdir(struct inode *parent, struct dentry *dentry, int mode)
- 	int whiteout_unlinked = 0;
- 	struct sioq_args args;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 	bstart = dbstart(dentry);
- 
-@@ -622,6 +629,8 @@ static int unionfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
- 	char *name = NULL;
- 	int whiteout_unlinked = 0;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 	bstart = dbstart(dentry);
- 
-@@ -724,6 +733,8 @@ static int unionfs_readlink(struct dentry *dentry, char __user * buf,
- 	int err;
- 	struct dentry *hidden_dentry;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 	hidden_dentry = unionfs_lower_dentry(dentry);
- 
-@@ -749,6 +760,8 @@ static void *unionfs_follow_link(struct dentry *dentry, struct nameidata *nd)
- 	int len = PAGE_SIZE, err;
- 	mm_segment_t old_fs;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	/* This is freed by the put_link method assuming a successful call. */
- 	buf = kmalloc(len, GFP_KERNEL);
- 	if (!buf) {
-@@ -908,6 +921,8 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
- 	int i;
- 	int copyup = 0;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 	bstart = dbstart(dentry);
- 	bend = dbend(dentry);
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index c9aa040..0044492 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -379,6 +379,9 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	int err = 0;
- 	struct dentry *wh_dentry;
- 
-+	BUG_ON(!is_valid_dentry(old_dentry));
-+	BUG_ON(!is_valid_dentry(new_dentry));
-+
- 	double_lock_dentry(old_dentry, new_dentry);
- 
- 	if (!S_ISDIR(old_dentry->d_inode->i_mode))
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index 5d11908..ec5706b 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -129,6 +129,8 @@ static int unionfs_statfs(struct dentry *dentry, struct kstatfs *buf)
- 	int err	= 0;
- 	struct super_block *sb, *hidden_sb;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	sb = dentry->d_sb;
- 
- 	unionfs_read_lock(sb);
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index faaa87e..b6fa0a2 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -399,6 +399,19 @@ static inline int is_robranch(const struct dentry *dentry)
- 	return is_robranch_idx(dentry, index);
- }
- 
-+/*
-+ * Check if dentry is valid or not, as per our generation numbers.
-+ * @dentry: dentry to check.
-+ * Returns 1 (valid) or 0 (invalid/stale).
-+ */
-+static inline int is_valid_dentry(struct dentry *dentry)
-+{
-+	BUG_ON(!UNIONFS_D(dentry));
-+	BUG_ON(!UNIONFS_SB(dentry->d_sb));
-+	return (atomic_read(&UNIONFS_D(dentry)->generation) ==
-+		atomic_read(&UNIONFS_SB(dentry->d_sb)->generation));
-+}
-+
- /* What do we use for whiteouts. */
- #define UNIONFS_WHPFX ".wh."
- #define UNIONFS_WHLEN 4
-diff --git a/fs/unionfs/unlink.c b/fs/unionfs/unlink.c
-index f5b250a..dd1dd9c 100644
---- a/fs/unionfs/unlink.c
-+++ b/fs/unionfs/unlink.c
-@@ -74,6 +74,8 @@ int unionfs_unlink(struct inode *dir, struct dentry *dentry)
- {
- 	int err = 0;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 
- 	err = unionfs_unlink_whiteout(dir, dentry);
-@@ -122,6 +124,8 @@ int unionfs_rmdir(struct inode *dir, struct dentry *dentry)
- 	int err = 0;
- 	struct unionfs_dir_state *namelist = NULL;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 
- 	/* check if this unionfs directory is empty or not */
-diff --git a/fs/unionfs/xattr.c b/fs/unionfs/xattr.c
-index d57f079..6e1f4bd 100644
---- a/fs/unionfs/xattr.c
-+++ b/fs/unionfs/xattr.c
-@@ -56,6 +56,8 @@ ssize_t unionfs_getxattr(struct dentry * dentry, const char *name, void *value,
- 	struct dentry *hidden_dentry = NULL;
- 	int err = -EOPNOTSUPP;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 
- 	hidden_dentry = unionfs_lower_dentry(dentry);
-@@ -75,6 +77,8 @@ int unionfs_setxattr(struct dentry *dentry, const char *name, const void *value,
- 	struct dentry *hidden_dentry = NULL;
- 	int err = -EOPNOTSUPP;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 	hidden_dentry = unionfs_lower_dentry(dentry);
- 
-@@ -92,6 +96,8 @@ int unionfs_removexattr(struct dentry *dentry, const char *name)
- 	struct dentry *hidden_dentry = NULL;
- 	int err = -EOPNOTSUPP;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 	hidden_dentry = unionfs_lower_dentry(dentry);
- 
-@@ -110,6 +116,8 @@ ssize_t unionfs_listxattr(struct dentry * dentry, char *list, size_t size)
- 	int err = -EOPNOTSUPP;
- 	char *encoded_list = NULL;
- 
-+	BUG_ON(!is_valid_dentry(dentry));
-+
- 	unionfs_lock_dentry(dentry);
- 
- 	hidden_dentry = unionfs_lower_dentry(dentry);
--- 
-1.5.0.3.268.g3dda
+To help keep the trace simple, try to avoid plugging any other USB devices
+into that hub or any other high-speed USB devices into the computer.
+
+Also, it might help to see a stack trace of khubd (Alt-SysRq-T) when it 
+gets stuck.
+
+Alan Stern
 
