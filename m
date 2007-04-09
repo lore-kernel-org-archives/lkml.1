@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965907AbXDIPuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965977AbXDIPzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965907AbXDIPuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965898AbXDIPuV
+	id S965977AbXDIPzl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965985AbXDIPzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:50:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:37034 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965907AbXDIPuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:50:18 -0400
-Message-ID: <461A6072.9040207@goop.org>
-Date: Mon, 09 Apr 2007 08:49:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 9 Apr 2007 11:55:40 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:49663 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965977AbXDIPzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 11:55:39 -0400
+Message-ID: <461A602D.2030306@cfl.rr.com>
+Date: Mon, 09 Apr 2007 11:47:57 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: [PATCH 1/2] Clean up asm-x86_64/bugs.h
-References: <4617D339.3080801@goop.org> <20070409084557.28748317.randy.dunlap@oracle.com>
-In-Reply-To: <20070409084557.28748317.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ronni Nielsen <theronni@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
+Subject: Re: Troll Of The Year (Was: REISER4 FOR INCLUSION IN THE LINUX KERNEL.)
+References: <1176092219.12458.1183612420@webmail.messagingengine.com> <461A1B95.6090506@gmail.com>
+In-Reply-To: <461A1B95.6090506@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Apr 2007 15:47:49.0055 (UTC) FILETIME=[6CC4A4F0:01C77ABE]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15106.000
+X-TM-AS-Result: No--6.240800-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Sat, 07 Apr 2007 10:22:01 -0700 Jeremy Fitzhardinge wrote:
->
->   
->> Most of asm-x86_64/bugs.h is code which should be in a C file, so put it there.
->>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
->> Cc: Andi Kleen <ak@suse.de>
->> Cc: Linus Torvalds <torvalds@linux-foundation.org>
->>
->> ---
->>  arch/x86_64/kernel/Makefile      |    3 ++-
->>  arch/x86_64/kernel/bugs.c        |   28 ++++++++++++++++++++++++++++
->>  include/asm-x86_64/alternative.h |    1 +
->>  include/asm-x86_64/bugs.h        |   30 ++++--------------------------
->>  4 files changed, 35 insertions(+), 27 deletions(-)
->>
->> ===================================================================
->> --- /dev/null
->> +++ b/arch/x86_64/kernel/bugs.c
->> @@ -0,0 +1,28 @@
->> +/*
->> + *  arch/x86_64/kernel/bugs.c
->> + *
->> + *  Copyright (C) 1994  Linus Torvalds
->> + *  Copyright (C) 2000  SuSE
->> + *
->> + * This is included by init/main.c to check for architecture-dependent bugs.
->>     
->
-> drop comment.
+I second that award.  Three threads in as many days, all idiotic 
+trolling.  Can this idiot be banned from the list?  Sheesh!
 
-I'll edit it, but I won't remove the copyrights.
+Ronni Nielsen wrote:
+> johnrobertbanks@fastmail.fm wrote:
+> [snip arguments FUBAR]
+> 
+> <oscar>
+> And the award as Troll Of The Year goes to: johnrobertbanks.
+> </oscar>
+> 
+> /ronni
+> 
+> +----------+
+> |  PLEASE  |
+> |  DO NOT  |
+> | FEED THE |
+> |  TROLLS  |
+> +----------+
+>    |  |       |  |     .\|.||/..
 
-    J
