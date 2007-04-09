@@ -1,252 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbXDISZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbXDIS0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbXDISZs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 14:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbXDISZs
+	id S1753343AbXDIS0i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 14:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbXDIS0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 14:25:48 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51540 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753343AbXDISZV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 14:25:21 -0400
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, ak@suse.de, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org
-Message-Id: <20070409182520.8559.33529.sendpatchset@schroedinger.engr.sgi.com>
-In-Reply-To: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
-References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [QUICKLIST 3/4] Quicklist support for x86_64
-Date: Mon,  9 Apr 2007 11:25:20 -0700 (PDT)
+	Mon, 9 Apr 2007 14:26:38 -0400
+Received: from holomorphy.com ([66.93.40.71]:35132 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753349AbXDIS0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 14:26:36 -0400
+Date: Mon, 9 Apr 2007 11:20:12 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andy Whitcroft <apw@shadowen.org>, Martin Bligh <mbligh@google.com>,
+       Dave Hansen <hansendc@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-mm@kvack.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/4] x86_64: (SPARSE_VIRTUAL doubles sparsemem speed)
+Message-ID: <20070409182012.GW2986@holomorphy.com>
+References: <Pine.LNX.4.64.0704020832320.30394@schroedinger.engr.sgi.com> <1175544797.22373.62.camel@localhost.localdomain> <Pine.LNX.4.64.0704021324480.31842@schroedinger.engr.sgi.com> <461169CF.6060806@google.com> <Pine.LNX.4.64.0704021345110.1224@schroedinger.engr.sgi.com> <4614E293.3010908@shadowen.org> <Pine.LNX.4.64.0704051119400.9800@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0704071455060.31468@schroedinger.engr.sgi.com> <20070409164029.GT2986@holomorphy.com> <Pine.LNX.4.64.0704091014350.4878@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704091014350.4878@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Conver x86_64 to using quicklists
+On Mon, 9 Apr 2007, William Lee Irwin III wrote:
+>> Whatever's going on with the rest of this, I really like this
+>> instrumentation patch. It may be worthwhile to allow pc_start() to be
+>> overridden so things like performance counter MSR's are usable, but
+>> the framework looks very useful.
 
-This adds caching of pgds and puds, pmds, pte. That way we can
-avoid costly zeroing and initialization of special mappings in the
-pgd.
+On Mon, Apr 09, 2007 at 10:16:06AM -0700, Christoph Lameter wrote:
+> Yeah. I also did some measurements on quicklists on x86_64 and it seems 
+> that caching page table pages is also useful:
+[...]
 
-A second quicklist is useful to separate out PGD handling. We can carry
-the initialized pgds over to the next process needing them.
+Sadly these timings will not address the arguments made on behalf of
+eager zeroing, which are essentially that "precharging the cache" will
+benefit fork(). I personally still find them meaningful.
 
-Also clean up the pgd_list handling to use regular list macros.
-There is no need anymore to avoid the lru field.
+I think a demonstration that will deal with more of others' concerns
+might be instrumenting fault latency after a fresh execve() and
+comparing fork() timings. This is clearly awkward given the scheduling
+opportunities in these areas, but a virtual time measurement may suffice
+to cope with those.
 
-Move the add/removal of the pgds to the pgdlist into the
-constructor / destructor. That way the implementation is
-congruent with i386.
+The fault latency after a fresh execve() is particularly relevant
+because it's a scenario where incremental pagetable construction occurs
+in "real life." It's actually less common for processes to merely fork()
+than to fork() then execve() and then perform most of their work in the
+context set up in execve(). The pagetables set up for fork() are most
+commonly short-lived and the utility of caching them or even
+constructing them so questionable that pagetable sharing and other
+methods of avoiding the copy are quite plausible, though perhaps in
+need of some heuristics to avoid new faults for the purposes of merely
+copying pagetables where possible (AIUI such are considered or
+implemented in pagetable sharing patches; of course, Dave McCracken has
+far more detailed knowledge of the performance considerations there).
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+I daresay it's highly dubious to consider pagetable construction for
+fork() in isolation when the common case is to almost immediately flush
+all those pagetables down the toilet via execve().
 
----
- arch/x86_64/Kconfig          |    4 ++
- arch/x86_64/kernel/process.c |    1 
- arch/x86_64/kernel/smp.c     |    2 -
- arch/x86_64/mm/fault.c       |    5 +-
- include/asm-x86_64/pgalloc.h |   76 +++++++++++++++++++++----------------------
- include/asm-x86_64/pgtable.h |    3 -
- mm/Kconfig                   |    5 ++
- 7 files changed, 52 insertions(+), 44 deletions(-)
+Basically, if we can establish that (1) pagetable caching doesn't hurt
+fork() or maybe even speeds it up then (2) it speeds up post-execve()
+faults, then things look good. Raw timings on the pagetable allocation
+primitives are unfortunately too micro to adequately make our case.
 
-Index: linux-2.6.21-rc5-mm4/arch/x86_64/Kconfig
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/arch/x86_64/Kconfig	2007-04-07 18:09:17.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/arch/x86_64/Kconfig	2007-04-07 18:09:30.000000000 -0700
-@@ -56,6 +56,14 @@
- 	bool
- 	default y
- 
-+config QUICKLIST
-+	bool
-+	default y
-+
-+config NR_QUICK
-+	int
-+	default 2
-+
- config ISA
- 	bool
- 
-Index: linux-2.6.21-rc5-mm4/include/asm-x86_64/pgalloc.h
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/include/asm-x86_64/pgalloc.h	2007-04-07 18:07:47.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/include/asm-x86_64/pgalloc.h	2007-04-07 18:47:03.000000000 -0700
-@@ -4,6 +4,10 @@
- #include <asm/pda.h>
- #include <linux/threads.h>
- #include <linux/mm.h>
-+#include <linux/quicklist.h>
-+
-+#define QUICK_PGD 0	/* We preserve special mappings over free */
-+#define QUICK_PT 1	/* Other page table pages that are zero on free */
- 
- #define pmd_populate_kernel(mm, pmd, pte) \
- 		set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)))
-@@ -20,23 +24,23 @@
- static inline void pmd_free(pmd_t *pmd)
- {
- 	BUG_ON((unsigned long)pmd & (PAGE_SIZE-1));
--	free_page((unsigned long)pmd);
-+	quicklist_free(QUICK_PT, NULL, pmd);
- }
- 
- static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
- {
--	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-+	return (pmd_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
- }
- 
- static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return (pud_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-+	return (pud_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
- }
- 
- static inline void pud_free (pud_t *pud)
- {
- 	BUG_ON((unsigned long)pud & (PAGE_SIZE-1));
--	free_page((unsigned long)pud);
-+	quicklist_free(QUICK_PT, NULL, pud);
- }
- 
- static inline void pgd_list_add(pgd_t *pgd)
-@@ -57,41 +61,57 @@
- 	spin_unlock(&pgd_lock);
- }
- 
--static inline pgd_t *pgd_alloc(struct mm_struct *mm)
-+static inline void pgd_ctor(void *x)
- {
- 	unsigned boundary;
--	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT);
--	if (!pgd)
--		return NULL;
--	pgd_list_add(pgd);
-+	pgd_t *pgd = x;
-+	struct page *page = virt_to_page(pgd);
-+
- 	/*
- 	 * Copy kernel pointers in from init.
--	 * Could keep a freelist or slab cache of those because the kernel
--	 * part never changes.
- 	 */
- 	boundary = pgd_index(__PAGE_OFFSET);
--	memset(pgd, 0, boundary * sizeof(pgd_t));
- 	memcpy(pgd + boundary,
--	       init_level4_pgt + boundary,
--	       (PTRS_PER_PGD - boundary) * sizeof(pgd_t));
-+		init_level4_pgt + boundary,
-+		(PTRS_PER_PGD - boundary) * sizeof(pgd_t));
-+
-+	spin_lock(&pgd_lock);
-+	list_add(&page->lru, &pgd_list);
-+	spin_unlock(&pgd_lock);
-+}
-+
-+static inline void pgd_dtor(void *x)
-+{
-+	pgd_t *pgd = x;
-+	struct page *page = virt_to_page(pgd);
-+
-+        spin_lock(&pgd_lock);
-+	list_del(&page->lru);
-+	spin_unlock(&pgd_lock);
-+}
-+
-+static inline pgd_t *pgd_alloc(struct mm_struct *mm)
-+{
-+	pgd_t *pgd = (pgd_t *)quicklist_alloc(QUICK_PGD,
-+		GFP_KERNEL|__GFP_REPEAT, pgd_ctor);
- 	return pgd;
- }
- 
- static inline void pgd_free(pgd_t *pgd)
- {
- 	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
--	pgd_list_del(pgd);
--	free_page((unsigned long)pgd);
-+	quicklist_free(QUICK_PGD, pgd_dtor, pgd);
- }
- 
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
--	return (pte_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-+	return (pte_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
- }
- 
- static inline struct page *pte_alloc_one(struct mm_struct *mm, unsigned long address)
- {
--	void *p = (void *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-+	void *p = (void *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
-+
- 	if (!p)
- 		return NULL;
- 	return virt_to_page(p);
-@@ -103,17 +123,22 @@
- static inline void pte_free_kernel(pte_t *pte)
- {
- 	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
--	free_page((unsigned long)pte); 
-+	quicklist_free(QUICK_PT, NULL, pte);
- }
- 
- static inline void pte_free(struct page *pte)
- {
--	__free_page(pte);
--} 
-+	quicklist_free_page(QUICK_PT, NULL, pte);
-+}
- 
--#define __pte_free_tlb(tlb,pte) tlb_remove_page((tlb),(pte))
-+#define __pte_free_tlb(tlb,pte) quicklist_free_page(QUICK_PT, NULL,(pte))
- 
--#define __pmd_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
--#define __pud_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
-+#define __pmd_free_tlb(tlb,x)   quicklist_free(QUICK_PT, NULL, (x))
-+#define __pud_free_tlb(tlb,x)   quicklist_free(QUICK_PT, NULL, (x))
- 
-+static inline void check_pgt_cache(void)
-+{
-+	quicklist_trim(QUICK_PGD, pgd_dtor, 25, 16);
-+	quicklist_trim(QUICK_PT, NULL, 25, 16);
-+}
- #endif /* _X86_64_PGALLOC_H */
-Index: linux-2.6.21-rc5-mm4/arch/x86_64/kernel/process.c
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/arch/x86_64/kernel/process.c	2007-04-07 18:07:47.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/arch/x86_64/kernel/process.c	2007-04-07 18:09:30.000000000 -0700
-@@ -207,6 +207,7 @@
- 			if (__get_cpu_var(cpu_idle_state))
- 				__get_cpu_var(cpu_idle_state) = 0;
- 
-+			check_pgt_cache();
- 			rmb();
- 			idle = pm_idle;
- 			if (!idle)
-Index: linux-2.6.21-rc5-mm4/arch/x86_64/kernel/smp.c
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/arch/x86_64/kernel/smp.c	2007-04-07 18:07:47.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/arch/x86_64/kernel/smp.c	2007-04-07 18:09:30.000000000 -0700
-@@ -241,7 +241,7 @@
- 	}
- 	if (!cpus_empty(cpu_mask))
- 		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
--
-+	check_pgt_cache();
- 	preempt_enable();
- }
- EXPORT_SYMBOL(flush_tlb_mm);
-Index: linux-2.6.21-rc5-mm4/include/asm-x86_64/pgtable.h
-===================================================================
---- linux-2.6.21-rc5-mm4.orig/include/asm-x86_64/pgtable.h	2007-04-07 18:07:47.000000000 -0700
-+++ linux-2.6.21-rc5-mm4/include/asm-x86_64/pgtable.h	2007-04-07 18:09:30.000000000 -0700
-@@ -424,7 +424,6 @@
- #define HAVE_ARCH_UNMAPPED_AREA
- 
- #define pgtable_cache_init()   do { } while (0)
--#define check_pgt_cache()      do { } while (0)
- 
- #define PAGE_AGP    PAGE_KERNEL_NOCACHE
- #define HAVE_PAGE_AGP 1
+
+-- wli
