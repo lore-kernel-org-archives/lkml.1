@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965977AbXDIPzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965985AbXDIP4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965977AbXDIPzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965985AbXDIPzk
+	id S965985AbXDIP4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966014AbXDIP4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:55:40 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:49663 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965977AbXDIPzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:55:39 -0400
-Message-ID: <461A602D.2030306@cfl.rr.com>
-Date: Mon, 09 Apr 2007 11:47:57 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Ronni Nielsen <theronni@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
-Subject: Re: Troll Of The Year (Was: REISER4 FOR INCLUSION IN THE LINUX KERNEL.)
-References: <1176092219.12458.1183612420@webmail.messagingengine.com> <461A1B95.6090506@gmail.com>
-In-Reply-To: <461A1B95.6090506@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Apr 2007 11:56:14 -0400
+Received: from amsfep20-int.chello.nl ([62.179.120.15]:37817 "EHLO
+	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965985AbXDIP4N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 11:56:13 -0400
+Subject: Re: [PATCH 0/8] RSS controller based on process containers (v2)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Linux Containers <containers@lists.osdl.org>
+In-Reply-To: <461A3010.90403@sw.ru>
+References: <461A3010.90403@sw.ru>
+Content-Type: text/plain
+Date: Mon, 09 Apr 2007 17:54:50 +0200
+Message-Id: <1176134091.22676.96.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Apr 2007 15:47:49.0055 (UTC) FILETIME=[6CC4A4F0:01C77ABE]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15106.000
-X-TM-AS-Result: No--6.240800-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I second that award.  Three threads in as many days, all idiotic 
-trolling.  Can this idiot be banned from the list?  Sheesh!
 
-Ronni Nielsen wrote:
-> johnrobertbanks@fastmail.fm wrote:
-> [snip arguments FUBAR]
-> 
-> <oscar>
-> And the award as Troll Of The Year goes to: johnrobertbanks.
-> </oscar>
-> 
-> /ronni
-> 
-> +----------+
-> |  PLEASE  |
-> |  DO NOT  |
-> | FEED THE |
-> |  TROLLS  |
-> +----------+
->    |  |       |  |     .\|.||/..
+*ugh* /me no like.
+
+The basic premises seems to be that we can track page owners perfectly
+(although this patch set does not yet do so), through get/release
+operations (on _mapcount).
+
+This is simply not true for unmapped pagecache pages. Those receive no
+'release' event; (the usage by find_get_page() could be seen as 'get').
+
+Also, you don't seem to balance the active/inactive scanning on a per
+container basis. This skews the per container working set logic.
+
+Lastly, you don't call the slab shrinker for container reclaim; which
+would leave slab reclaim only for those few non process specific
+allocations, which would greatly skew the pagecache/slab balance.
+
+
+
+Let us call 
+
+struct reclaim_struct {
+	struct list_head active_list;
+	struct list_head inactive_list;
+	unsigned long nr_active;
+	unsigned long nr_inactive;
+}
+
+Lets recognise three distinct page categories:
+ - anonymous memory,
+ - mapped pagecache, and
+ - unmapped pagecache.
+
+
+We then keep anonymous pages on a per container reclaim_struct, these
+pages are fully accounted to each container.
+
+We keep mapped pagecache pages on per inode reclaim_structs, these files
+could be shared between containers and we could either just account all
+pages belonging to each file proportional to the number of containers
+involved, or do a more precise accounting.
+
+We keep unmapped pagecache pages on a global reclaim_struct, these pages
+can, in general, not be pinned to a specific container; all we can do is
+keep a floating proportion relative to container 'get' events
+(find_get_page() and perhaps add_to_page_cache()).
+
+Reclaim will then have to fairly reclaim pages from all of these lists.
+If we schedule such that it appears that these lists are parallel
+instead of serial - that is a each tail is really a tail, not the head
+of another list - the current reclaim semantics are preserved.
+
+The slab shrinker should be called proportional to the containers size
+relative to the machine.
+
+Global reclaim will have to call each container reclaim in proportional
+fashion.
+
+The biggest problem with this approach is that there is no per zone
+reclaim left, which is relied upon by the allocator to provide free
+pages in a given physical address range. However there has been talk to
+create a proper range allocator independent of zones.
+
+Just my 0.02 euro..
+
+Peter
+
 
