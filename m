@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751738AbXDIJHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751793AbXDIJUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751738AbXDIJHV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 05:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXDIJHV
+	id S1751793AbXDIJUU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 05:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXDIJUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 05:07:21 -0400
-Received: from mail.screens.ru ([213.234.233.54]:54475 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537AbXDIJHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 05:07:20 -0400
-Date: Mon, 9 Apr 2007 13:06:43 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [RFC, PATCH 1/3] introduce SYS_CLONE_MASK
-Message-ID: <20070409090643.GA121@tv-sign.ru>
-References: <20070408155337.GA126@tv-sign.ru> <m1lkh23kkb.fsf@ebiederm.dsl.xmission.com> <20070408165750.GA149@tv-sign.ru> <m1d52e2w86.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Apr 2007 05:20:20 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:6309 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbXDIJUS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 05:20:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ptoRiPue7sqy4nSs/UsUYkYn3JVk/1pxsOGgVEsnQKI/8U7U3l62ZVkN0Gd9uW6LtrFERPRv8yHcuYZPgeL6aIVJXFGaMMqgG8uDUBxQaZInhAlWX50gGFGevUPjv5R5dxQseHeOkPL+uuPiDAJnk0Ej6HUWaLSvuK0gKwioqyk=
+Message-ID: <b647ffbd0704090220p60c49ec9w8eb1083943526155@mail.gmail.com>
+Date: Mon, 9 Apr 2007 11:20:16 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Mike Galbraith" <efault@gmx.de>
+Subject: Re: SD scheduler testing hitch
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1176099797.6355.122.camel@Homer.simpson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1d52e2w86.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+References: <200704082134.43029.a1426z@gawab.com>
+	 <1176099797.6355.122.camel@Homer.simpson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/08, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
-> 
-> > Perhaps it is better to add reparent_kthread() (next patch) to kthread()
-> > and forget about CLONE_KERNEL_THREAD.
-> 
-> Please. 
+On 09/04/07, Mike Galbraith <efault@gmx.de> wrote:
+> On Sun, 2007-04-08 at 21:34 +0300, Al Boldi wrote:
+> > Mike Galbraith wrote:
+> > > On Sat, 2007-04-07 at 19:17 +0200, Mike Galbraith wrote:
+> > > > I lowered the time to 500us, and ran at nice -10.. it starves tenpercent
+> > > > here every time.  (ran as taskset -c 1 nice -n -10 ./fairtest)  The
+> > > > starving 10% duty cycle task has trouble getting 1% CPU.
+> > >
+> > > Hmm.  Playing with it some more today, it still happens, but it's not
+> > > very repeatable.  Something is odd.  I wonder if any SD using readers
+> > > will try it.
+> >
+> > Tried it on mainline 2.6.20.3.
+> > It's not easily repeatable, but it's got the same problem.
 
-OK, will do tomorrow.
+In my case, it's easily reproducible. Below is a mainline 2.6.19.
 
-> > Anyway, re-parenting to swapper breaks pstree, it doesn't show kernel
-> > threads. And if ->parent == /sbin/init, we can't remove us from ->children
-> > (unless we forbid sub-thread-of-init exec). So the only safe change is
-> > set ->exit_state = -1.
-> 
-> Yes.  We certainly need ->exit_state = -1.
-> Earlier I had forgotten about second the use of ->children to update
-> the parent pointer of processes when their parent exits.
-> 
-> There is a practical question how much we care about pstree being
-> confused (I assume it doesn't crash).  If this is just a confusion
-> issue then I say go for it.  PPID == 0 is a very legitimate way to say
-> the kernel is the parent process.
+Look at both %CPU and TIME+ (sched_time).
 
-No, it doesn't crash. It just doesn't show kernel threads (ps ax is OK).
-I didn't look into the sources, but I guess the reason is that pstree
-assumes that the "root" of the tree is "pid == 1" process.
+top - 10:55:00 up 33 min,  8 users,  load average: 1.07, 0.61, 0.51
+Tasks:  76 total,   2 running,  74 sleeping,   0 stopped,   0 zombie
+Cpu(s): 76.0% us,  0.3% sy,  0.0% ni, 23.7% id,  0.0% wa,  0.0% hi,  0.0% si
+Mem:    256592k total,   251888k used,     4704k free,    46516k buffers
+Swap:   272120k total,     4924k used,   267196k free,    90048k cached
 
-I personally think this is acceptable (and Roland seems to think the same).
-Still, to be safe, I'll break this into 2 patches, the first one sets
-->exit_state, the second re-parents to swapper.
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 8113 dimm      15   0  1460  436  360 R 74.4  0.2   1:43.63 fairtest_xx
+ 8114 dimm      15   0  1460  108   32 S  0.3  0.0   0:00.15 fairtest_xx
 
-In fact, we can do some odd things to make pstree happy. We need ->parent
-only because /proc needs some ->parent fields. But I'd prefer to avoid
-these hacks.
 
-Still, it is sad that we can't have additional flags for kernel_thread().
-However, I agree with your and Roland's objections.
+If you take a look at my previous report, you'll also notice
+"strangeness" with both cpu% and sched_time.
 
-Oleg.
+sched_clock() is based on "tsc" and it's available for my CPU. So
+maybe something fishy is going on with accounting.
 
+I just wonder, why it's so easily reproducible in my case for both
+mainline and SD (besides a 2.6.13 mainline, but I have to re-run all
+the tests letting tenp run longer for the "sched_time" to be
+accumulated)...
+
+-- 
+Best regards,
+Dmitry Adamushko
