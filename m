@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXDIPi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXDIPmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965550AbXDIPi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965578AbXDIPi3
+	id S965654AbXDIPmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965655AbXDIPmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:38:29 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:47645 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965550AbXDIPi2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:38:28 -0400
-Message-ID: <461A5DA2.7090001@gmail.com>
-Date: Mon, 09 Apr 2007 17:37:06 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Mon, 9 Apr 2007 11:42:13 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:49400 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965654AbXDIPmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 11:42:13 -0400
+Message-ID: <461A5F13.7040705@cfl.rr.com>
+Date: Mon, 09 Apr 2007 11:43:15 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-Subject: Re: Ten percent test
-References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu> <461939A4.2020305@gmail.com> <20070409135355.GA11244@elte.hu>
-In-Reply-To: <20070409135355.GA11244@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Add a norecovery option to ext3/4?
+References: <20070409000556.GA13980@implementation>
+In-Reply-To: <20070409000556.GA13980@implementation>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+X-OriginalArrivalTime: 09 Apr 2007 15:43:07.0870 (UTC) FILETIME=[C52B37E0:01C77ABD]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15106.000
+X-TM-AS-Result: No--7.027500-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/09/2007 03:53 PM, Ingo Molnar wrote:
+Samuel Thibault wrote:
+> Hi,
+> 
+> Distribution installers usually try to probe OSes for building a suited
+> grub menu.  Unfortunately, mounting an ext3 partition, even in read-only
+> mode, does perform some operations on the filesystem (log recovery).
+> This is not a good idea since it may silently garbage data.  XFS has a
+> norecovery option that allows to disable that, I'd say ext3/4 should
+> have it too.
 
-> In any case, it would be very nice if you could try Mike's latest
-> patch, how does it work on your setup? (i've attached it)
+When the filesystem is told to mount the disk read only, that means it 
+should not write to it.  The fact that ext3 goes ahead and does anyway 
+is a bug and should be fixed.  There is no need for a norecovery option, 
+because read only is a sufficient directive to tell the filesystem not 
+to write to the disk.
 
-Can do. Note that "my setup" in that case consisted of browsing around 
-eBay in firefox with ogg123 playing audio directly to ALSA in an xterm 
-as the only other thing running. That is, just about as basic a Linux 
-desktop as imagineable.
+As someone else pointed out, this behavior causes havoc if you hibernate 
+a system and then boot up another system which mounts the disk of the 
+hibernated system.  Under all conditions it should be safe to mount a 
+disk read only, but here it is not because the journal playback trashes 
+the disk out from under the hibernated system.
 
-Testing Mike's latest will have to wait a bit though; I'm currently 
-testing the latest incarnation of SD (against 2.6.20.6). For people 
-who've lost track of what and where, it's available as:
-
-http://ck.kolivas.org/patches/staircase-deadline/2.6.20.5-sd-0.39.patch
-
-and versus 2.6.21-rc5 as:
-
-http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc5-sd-0.39.patch
-
-For the moment it is giving me a snappy feeling desktop on this Duron 
-1300, with ogg123 playing in an xterm without audio underruns, with a 
-make -j2 kernel compile running (not niced) and me browsing around in 
-firefox.
-
-Mike latest would probably also support this load without much problem. 
-Given that I feel the basic idea of SD is better than mainline though, 
-I'll be concentrating on using SD for a bit for now.
-
-Rene.
 
