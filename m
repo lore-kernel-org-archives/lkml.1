@@ -1,73 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbXDIVow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965975AbXDIV3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbXDIVow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 17:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbXDIVoX
+	id S965975AbXDIV3z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 17:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030295AbXDIV3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 17:44:23 -0400
-Received: from nlpi012.sbcis.sbc.com ([207.115.36.41]:25036 "EHLO
-	nlpi012.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966007AbXDIVnd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 17:43:33 -0400
-X-ORBL: [67.117.73.34]
-Date: Mon, 9 Apr 2007 17:42:59 -0400
-From: Tony Lindgren <tony@atomide.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH 28/90] ARM: OMAP: USB peripheral support on H4
-Message-ID: <20070409214252.GG7818@atomide.com>
-References: <11757100163760-git-send-email-tony@atomide.com> <11757100181189-git-send-email-tony@atomide.com> <11757100214151-git-send-email-tony@atomide.com> <11757100242980-git-send-email-tony@atomide.com> <1175710026446-git-send-email-tony@atomide.com> <11757100281957-git-send-email-tony@atomide.com> <11757100302964-git-send-email-tony@atomide.com> <1175710033286-git-send-email-tony@atomide.com> <11757100403021-git-send-email-tony@atomide.com> <20070406120749.GA3866@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070406120749.GA3866@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 9 Apr 2007 17:29:50 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:32957 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030250AbXDIV26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 17:28:58 -0400
+Date: Mon, 9 Apr 2007 14:28:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [QUICKLIST 3/4] Quicklist support for x86_64
+Message-Id: <20070409142852.40da5add.akpm@linux-foundation.org>
+In-Reply-To: <20070409182520.8559.33529.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
+	<20070409182520.8559.33529.sendpatchset@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Machek <pavel@ucw.cz> [070408 08:02]:
-> Hi!
-> 
-> > From: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > H4 has two peripheral ports, one for "download" and one for OTG.
-> > The one to use is selected through Kconfig.
-> > 
-> > NOTE:  not yet working; I suspect there's a clock still turned off
-> > or something like that, since neither port responds.
-> 
-> Hmm, it would be nice to merge this with patch that makes it
-> working... for easier review.
+On Mon,  9 Apr 2007 11:25:20 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-I've merged the later fixes into this patch, please see the reposted
-series and renumbered patch:
+> -static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+> +static inline void pgd_ctor(void *x)
+> +static inline void pgd_dtor(void *x)
 
-[PATCH 1/7] ARM: OMAP: USB peripheral support on H4
+Seems dumb to inline these - they're only ever called indirectly, aren't
+they?
 
-And it is working now, so I've updated the commit message too.
-
-> But it is new code, so maybe it can just go in....
-> 
-> > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> 
-> > +#else
-> > +	/* S1.10 OFF -- usb "download port"
-> > +	 * usb0 switched to Mini-B port and isp1105 transceiver;
-> > +	 * S2.POS3 = ON, S2.POS4 = OFF ... to enable battery charging
-> > +	 */
-> > +	.register_dev	= 1,
-> > +	.pins[0]	= 3,
-> > +//	.hmc_mode	= 0x14,	/* 0:dev 1:host 2:disable */
-> > +	.hmc_mode	= 0x00,	/* 0:dev|otg 1:disable 2:disable */
-> 
-> No c++ comments, please... but I somehow suspect this one is fixed
-> later in series.
-
-That was fixed in the later patch too.
-
-Regards,
-
-Tony
+This means (I think) that the compiler will need to generate an out-of-line
+copy of these within each compilation unit which passes the address of these
+functions into some other function.
