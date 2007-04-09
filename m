@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964976AbXDIPAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXDIPAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964976AbXDIPAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933701AbXDIOyg
+	id S933673AbXDIPAy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbXDIPAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 10:54:36 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43999 "EHLO
+	Mon, 9 Apr 2007 11:00:51 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:43994 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933660AbXDIOye (ORCPT
+	with ESMTP id S933673AbXDIOyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 10:54:34 -0400
+	Mon, 9 Apr 2007 10:54:32 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 05/21] Unionfs: Rename unionfs_data sbcount field to more appropriate open_files
-Date: Mon,  9 Apr 2007 10:53:56 -0400
-Message-Id: <11761304531531-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 03/21] Unionfs: Documentation updates for branch-management
+Date: Mon,  9 Apr 2007 10:53:54 -0400
+Message-Id: <1176130453277-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.0.3.268.g3dda
 In-Reply-To: <11761304521844-git-send-email-jsipek@cs.sunysb.edu>
 References: <11761304521844-git-send-email-jsipek@cs.sunysb.edu>
@@ -25,57 +25,142 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Erez Zadok <ezk@cs.sunysb.edu>
 
+Describe dynamic branch-management introduced by subsequent patches.
+
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/fanout.h |    8 ++++----
- fs/unionfs/union.h  |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ Documentation/filesystems/unionfs/concepts.txt |    5 ++
+ Documentation/filesystems/unionfs/issues.txt   |   22 +++++++-
+ Documentation/filesystems/unionfs/usage.txt    |   61 +++++++++++++++++++++++-
+ 3 files changed, 84 insertions(+), 4 deletions(-)
 
-diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
-index e2acb75..3d1dd4c 100644
---- a/fs/unionfs/fanout.h
-+++ b/fs/unionfs/fanout.h
-@@ -106,22 +106,22 @@ static inline void unionfs_set_lower_super(struct super_block *sb, struct super_
- /* Branch count macros. */
- static inline int branch_count(const struct super_block *sb, int index)
- {
--	return atomic_read(&UNIONFS_SB(sb)->data[index].sbcount);
-+	return atomic_read(&UNIONFS_SB(sb)->data[index].open_files);
- }
+diff --git a/Documentation/filesystems/unionfs/concepts.txt b/Documentation/filesystems/unionfs/concepts.txt
+index d417576..83d45b9 100644
+--- a/Documentation/filesystems/unionfs/concepts.txt
++++ b/Documentation/filesystems/unionfs/concepts.txt
+@@ -1,3 +1,6 @@
++Unionfs 2.0 CONCEPTS:
++=====================
++
+ This file describes the concepts needed by a namespace unification file
+ system.
  
- static inline void set_branch_count(struct super_block *sb, int index, int val)
- {
--	atomic_set(&UNIONFS_SB(sb)->data[index].sbcount, val);
-+	atomic_set(&UNIONFS_SB(sb)->data[index].open_files, val);
- }
+@@ -68,3 +71,5 @@ though to this copy. The copy must be made on a higher priority branch so
+ that lookup and readdir return this newer "version" of the file rather than
+ the original (see duplicate elimination).
  
- static inline void branchget(struct super_block *sb, int index)
- {
--	atomic_inc(&UNIONFS_SB(sb)->data[index].sbcount);
-+	atomic_inc(&UNIONFS_SB(sb)->data[index].open_files);
- }
++
++For more information, see <http://unionfs.filesystems.org/>.
+diff --git a/Documentation/filesystems/unionfs/issues.txt b/Documentation/filesystems/unionfs/issues.txt
+index b070175..a434fee 100644
+--- a/Documentation/filesystems/unionfs/issues.txt
++++ b/Documentation/filesystems/unionfs/issues.txt
+@@ -1,5 +1,5 @@
+-KNOWN Unionfs ISSUES:
+-=====================
++KNOWN Unionfs 2.0 ISSUES:
++=========================
  
- static inline void branchput(struct super_block *sb, int index)
- {
--	atomic_dec(&UNIONFS_SB(sb)->data[index].sbcount);
-+	atomic_dec(&UNIONFS_SB(sb)->data[index].open_files);
- }
+ 1. The NFS server returns -EACCES for read-only exports, instead of -EROFS.
+    This means we can't reliably detect a read-only NFS export.
+@@ -14,10 +14,26 @@ KNOWN Unionfs ISSUES:
+    introducing small VFS/MM changes that would allow a file system to handle
+    cache coherency correctly.
  
- /* Dentry macros */
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index 5676394..df9b8c0 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -121,7 +121,7 @@ struct unionfs_dentry_info {
- /* These are the pointers to our various objects. */
- struct unionfs_data {
- 	struct super_block *sb;
--	atomic_t sbcount;
-+	atomic_t open_files;	/* number of open files on branch */
- 	int branchperms;
- };
++   Unionfs 2.0 has a temporary workaround for this.  You can force Unionfs
++   to increase the superblock generation number, and hence purge all cached
++   Unionfs objects, which would then  be re-gotten from the lower branches.
++   This should ensure cache consistency.  To increase the generation number,
++   executed the command:
++
++	mount -t unionfs -o remount,incgen none MOUNTPOINT
++
++   Note that the older way of incrementing the generation number using an
++   ioctl, is no longer supported in Unionfs 2.0.  Ioctls in general are not
++   encouraged.  Plus, an ioctl is per-file concept, whereas the generation
++   number is a per-file-system concept.  Worse, such an ioctl requires an
++   open file, which then has to be invalidated by the very nature of the
++   generation number increase (read: the old generation increase ioctl was
++   pretty racy).
++
+ 3. Unionfs should not use lookup_one_len() on the underlying f/s as it
+    confuses NFS.  Currently, unionfs_lookup() passes lookup intents to the
+    lower file-system, this eliminates part of the problem.  The remaining
+    calls to lookup_one_len may need to be changed to pass an intent.
  
+ 
+-For more information, see <unionfs.filesystems.org>.
++For more information, see <http://unionfs.filesystems.org/>.
+diff --git a/Documentation/filesystems/unionfs/usage.txt b/Documentation/filesystems/unionfs/usage.txt
+index 14e0856..13fbcea 100644
+--- a/Documentation/filesystems/unionfs/usage.txt
++++ b/Documentation/filesystems/unionfs/usage.txt
+@@ -28,4 +28,63 @@ Example:
+ 	dirs=/writable_branch=rw:/read-only_branch=ro
+ 
+ 
+-For more information, see unionfs.filesystems.org.
++DYNAMIC BRANCH MANAGEMENT AND REMOUNTS
++======================================
++
++You can remount a union and change its overall mode, or reconfigure the
++branches, as follows.
++
++To downgrade a union from read-write to read-only:
++
++# mount -t unionfs -o remount,ro none MOUNTPOINT
++
++To upgrade a union from read-only to read-write:
++
++# mount -t unionfs -o remount,rw none MOUNTPOINT
++
++To delete a branch /foo, regardless where it is in the current union:
++
++# mount -t unionfs -o del=/foo none MOUNTPOINT
++
++To insert (add) a branch /foo before /bar:
++
++# mount -t unionfs -o remount,add=/bar:/foo none MOUNTPOINT
++
++To insert (add) a branch /foo (with the "rw" mode flag) before /bar:
++
++# mount -t unionfs -o remount,add=/bar:/foo=rw none MOUNTPOINT
++
++To insert (add) a branch /foo (in "rw" mode) at the very beginning (i.e., a
++new highest-priority branch), you can use the above syntax, or use a short
++hand version as follows:
++
++# mount -t unionfs -o remount,add=/foo none MOUNTPOINT
++
++To append a branch to the very end (new lowest-priority branch):
++
++# mount -t unionfs -o remount,add=:/foo none MOUNTPOINT
++
++To append a branch to the very end (new lowest-priority branch), in
++read-only mode:
++
++# mount -t unionfs -o remount,add=:/foo:ro none MOUNTPOINT
++
++Finally, to change the mode of one existing branch, say /foo, from read-only
++to read-write, and change /bar from read-write to read-only:
++
++# mount -t unionfs -o remount,mode=/foo=rw,mode=/bar=ro none MOUNTPOINT
++
++
++CACHE CONSISTENCY
++=================
++
++If you modify any file on any of the lower branches directly, while there is
++a Unionfs 2.0 mounted above any of those branches, you should tell Unionfs
++to purge its caches and re-get the objects.  To do that, you have to
++incremenet the generation number of the superblock using the following
++command:
++
++# mount -t unionfs -o remount,remount,incgen none MOUNTPOINT
++
++
++For more information, see <http://unionfs.filesystems.org/>.
 -- 
 1.5.0.3.268.g3dda
 
