@@ -1,188 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbXDIWFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbXDIWH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbXDIWFx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 18:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbXDIWFx
+	id S1753549AbXDIWH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 18:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbXDIWH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 18:05:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44851 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753541AbXDIWFv (ORCPT
+	Mon, 9 Apr 2007 18:07:27 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:59206 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753539AbXDIWH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 18:05:51 -0400
-Date: Mon, 9 Apr 2007 15:05:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       dgc@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Optimize compound_head() by avoiding a shared page
- flag
-In-Reply-To: <20070409114545.3858d8f1.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704091505050.2836@schroedinger.engr.sgi.com>
-References: <20070405223651.21698.77505.sendpatchset@schroedinger.engr.sgi.com>
- <20070405223657.21698.32754.sendpatchset@schroedinger.engr.sgi.com>
- <20070406222336.4dcdd663.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704071509550.31503@schroedinger.engr.sgi.com>
- <20070407155148.94da92e8.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704071718530.31790@schroedinger.engr.sgi.com>
- <20070407182506.4386dc13.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704071825510.32544@schroedinger.engr.sgi.com>
- <20070407184801.b6f3f549.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704091105550.8331@schroedinger.engr.sgi.com>
- <20070409114545.3858d8f1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Apr 2007 18:07:26 -0400
+Date: Mon, 9 Apr 2007 15:09:36 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       shai@scalex86.org
+Subject: Re: [patch] Pad irq_desc to internode cacheline size
+Message-ID: <20070409220936.GD5275@localhost.localdomain>
+References: <20070409195356.GA5275@localhost.localdomain> <20070409135729.a466e9cb.akpm@linux-foundation.org> <m1ejmt1apj.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1ejmt1apj.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.1i
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is another rev on that one. Inlined the two functions but that
-required #including <mm_types.h>
+On Mon, Apr 09, 2007 at 03:47:52PM -0600, Eric W. Biederman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > This will consume nearly 4k per irq won't it?  What is the upper bound
+> > here, across all configs and all hardware?
+> >
+> > Is VSMP the only arch which has ____cacheline_internodealigned_in_smp
+> > larger than ____cacheline_aligned_in_smp?
+> 
+> Ugh. We set internode aligned to 4k for all of x86_64.
 
+!!! No. internode aligned is 4k only if CONFIG_X86_VSMP is chosen.  The
+internode line size defaults to SMP_CACHE_BYTES for all other machine types.
+Please note that an INTERNODE_CACHE_SHIFT of 12 is defined under 
+#ifdef CONFIG_X86_VSMP in include/asm-x86_64/cache.h
 
-Add PageTail / PageHead in order to avoid multiple branches when compound
-pages are checked.
+> 
+> I believe this ups our worst case memory consumption for
+> the array from 1M to 32M.  Although the low end might be 2M.
+> I can't recall if an irq_desc takes one cache line or two
+> after we have put the cpu masks in it.
+> 
+> My gut feel says that what we want to do is delay this until
+> we are dynamically allocating the array members.  Then we can at
+> least have the chance of allocating the memory on the proper NUMA
+> node, and won't need the extra NUMA alignment.
 
-The patch adds PageTail(page) and PageHead(page) to check if a page is the
-head or the tail of a compound page. This is done by masking the two
-bits describing the state of a compound page and then comparing them. So
-one comparision and a branch instead of two bit checks and two branches.
-
----
- include/linux/mm.h         |   11 ++---------
- include/linux/page-flags.h |   28 +++++++++++++++++-----------
- mm/page_alloc.c            |   10 ++++------
- 3 files changed, 23 insertions(+), 26 deletions(-)
-
-Index: linux-2.6.21-rc6-mm1/include/linux/mm.h
-===================================================================
---- linux-2.6.21-rc6-mm1.orig/include/linux/mm.h	2007-04-09 12:08:33.000000000 -0700
-+++ linux-2.6.21-rc6-mm1/include/linux/mm.h	2007-04-09 12:09:50.000000000 -0700
-@@ -299,14 +299,7 @@ static inline int get_page_unless_zero(s
- 
- static inline struct page *compound_head(struct page *page)
- {
--	/*
--	 * We could avoid the PageCompound(page) check if
--	 * we would not overload PageTail().
--	 *
--	 * This check has to be done in several performance critical
--	 * paths of the slab etc. IMHO PageTail deserves its own flag.
--	 */
--	if (unlikely(PageCompound(page) && PageTail(page)))
-+	if (unlikely(PageTail(page)))
- 		return page->first_page;
- 	return page;
- }
-@@ -363,7 +356,7 @@ static inline compound_page_dtor *get_co
- 
- static inline int compound_order(struct page *page)
- {
--	if (!PageCompound(page) || PageTail(page))
-+	if (!PageHead(page))
- 		return 0;
- 	return (unsigned long)page[1].lru.prev;
- }
-Index: linux-2.6.21-rc6-mm1/include/linux/page-flags.h
-===================================================================
---- linux-2.6.21-rc6-mm1.orig/include/linux/page-flags.h	2007-04-09 12:08:33.000000000 -0700
-+++ linux-2.6.21-rc6-mm1/include/linux/page-flags.h	2007-04-09 12:13:36.000000000 -0700
-@@ -6,6 +6,7 @@
- #define PAGE_FLAGS_H
- 
- #include <linux/types.h>
-+#include <linux/mm_types.h>
- 
- /*
-  * Various page->flags bits:
-@@ -95,12 +96,6 @@
- /* PG_owner_priv_1 users should have descriptive aliases */
- #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
- 
--/*
-- * Marks tail portion of a compound page. We currently do not reclaim
-- * compound pages so we can reuse a flag only used for reclaim here.
-- */
--#define PG_tail			PG_reclaim
--
- #if (BITS_PER_LONG > 32)
- /*
-  * 64-bit-only flags build down from bit 31
-@@ -221,12 +216,32 @@ static inline void SetPageUptodate(struc
- #define __ClearPageCompound(page) __clear_bit(PG_compound, &(page)->flags)
- 
- /*
-- * Note: PG_tail is an alias of another page flag. The result of PageTail()
-- * is only valid if PageCompound(page) is true.
-+ * PG_reclaim is used in combination with PG_compound to mark the
-+ * head and tail of a compound page
-+ *
-+ * PG_compound & PG_reclaim	=> Tail page
-+ * PG_compound & ~PG_reclaim	=> Head page
-  */
--#define PageTail(page)	test_bit(PG_tail, &(page)->flags)
--#define __SetPageTail(page)	__set_bit(PG_tail, &(page)->flags)
--#define __ClearPageTail(page)	__clear_bit(PG_tail, &(page)->flags)
-+
-+#define PG_head_tail_mask ((1L << PG_compound) | (1L << PG_reclaim))
-+
-+#define PageTail(page)	((page->flags & PG_head_tail_mask) \
-+				== PG_head_tail_mask)
-+
-+static inline void __SetPageTail(struct page *page)
-+{
-+	page->flags |= PG_head_tail_mask;
-+}
-+
-+static inline void __ClearPageTail(struct page *page)
-+{
-+	page->flags &= ~PG_head_tail_mask;
-+}
-+
-+#define PageHead(page)	((page->flags & PG_head_tail_mask) \
-+				== (1L << PG_compound))
-+#define __SetPageHead(page)	__SetPageCompound(page)
-+#define __ClearPageHead(page)	__ClearPageCompound(page)
- 
- #ifdef CONFIG_SWAP
- #define PageSwapCache(page)	test_bit(PG_swapcache, &(page)->flags)
-Index: linux-2.6.21-rc6-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.21-rc6-mm1.orig/mm/page_alloc.c	2007-04-09 12:08:33.000000000 -0700
-+++ linux-2.6.21-rc6-mm1/mm/page_alloc.c	2007-04-09 12:09:50.000000000 -0700
-@@ -300,12 +300,11 @@ static void prep_compound_page(struct pa
- 
- 	set_compound_page_dtor(page, free_compound_page);
- 	set_compound_order(page, order);
--	__SetPageCompound(page);
-+	__SetPageHead(page);
- 	for (i = 1; i < nr_pages; i++) {
- 		struct page *p = page + i;
- 
- 		__SetPageTail(p);
--		__SetPageCompound(p);
- 		p->first_page = page;
- 	}
- }
-@@ -318,17 +317,16 @@ static void destroy_compound_page(struct
- 	if (unlikely(compound_order(page) != order))
- 		bad_page(page);
- 
--	if (unlikely(!PageCompound(page)))
-+	if (unlikely(!PageHead(page)))
- 			bad_page(page);
--	__ClearPageCompound(page);
-+	__ClearPageHead(page);
- 	for (i = 1; i < nr_pages; i++) {
- 		struct page *p = page + i;
- 
--		if (unlikely(!PageCompound(p) | !PageTail(p) |
-+		if (unlikely(!PageTail(p) |
- 				(p->first_page != page)))
- 			bad_page(page);
- 		__ClearPageTail(p);
--		__ClearPageCompound(p);
- 	}
- }
- 
-
+I was thinking on those lines as well.  But, until we get there, can we have
+this in as stop gap?  The patch does not increase the memory footprint for
+any other architecture other than vSMPowered systems.
