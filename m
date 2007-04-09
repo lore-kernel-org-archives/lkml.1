@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbXDIESz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbXDIETX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbXDIESz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 00:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXDIESz
+	id S1752837AbXDIETX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 00:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXDIETA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 00:18:55 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:34239 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbXDIESx (ORCPT
+	Mon, 9 Apr 2007 00:19:00 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:60306 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbXDIESy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 00:18:53 -0400
+	Mon, 9 Apr 2007 00:18:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=ddED/s068AdIlr8B3scL34slj3VA0qRAlfFZwM1B/9w12MvroPG1Bpa2/9nLqqgy+Ie2V9Ii8U78gB0QpG05G1nMQhY+Pzo28y9gmtJZoLUodHdwtyWXrpRwQ2Krx6FCOOydrJPCyTSnoBPxwy5GjD55prBOJssiadWGgoJVz1I=
-Subject: [PATCHSET #master] sysfs: make sysfs disconnect immediately on deletion, take 2
-In-Reply-To: 
+        b=s7X6VVKQFnlnebGH6MaBkOXuQ2Z2T/Ze8qCp9dR653vennwUriyOZ+N/Cdv5iWIIJ+pO2Zh7+xhLWB7d5PSOkLc8yd1EN1vQdXNKFu0T8BcZnAGE4vh52z9csIxKas/20JDMMVVV5nBkoUCJ9xr5RU/4zotCh/QWEMmGg12Dhbk=
+Cc: Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 04/14] sysfs: flatten cleanup paths in sysfs_add_link() and create_dir()
+In-Reply-To: <11760923261269-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Mon, 9 Apr 2007 13:18:46 +0900
-Message-Id: <11760923261269-git-send-email-htejun@gmail.com>
+Date: Mon, 9 Apr 2007 13:18:47 +0900
+Message-Id: <1176092327182-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,61 +32,155 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, all.
+Flatten cleanup paths in sysfs_add_link() and create_dir() to improve
+readability and ease further changes to these functions.  This is in
+preparation of object reference simplification.
 
-This is the second take of sysfs-immediate-disconnct patchset.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+ fs/sysfs/dir.c     |   73 ++++++++++++++++++++++++++++++---------------------
+ fs/sysfs/symlink.c |   27 ++++++++++--------
+ 2 files changed, 58 insertions(+), 42 deletions(-)
 
-In the last take, rwsem was added to s_elem.dir to protect kobj only.
-This wasn't enough because attr and bin_attr need to hold onto not
-only the kobject of their parents but also the module backing
-themselves and ops too, so the first set still needed separate and
-duplicate attribute file orphaning mechanism.
-
-In this take, the rwsem is generalized to become active reference
-count.  Now each sysfs_dirent has two reference counts - s_count and
-s_active.  s_count is a regular reference count which guarantees that
-the containing sysfs_dirent is accessible.  As long as s_count
-reference is held, all sysfs internal fields in sysfs_dirent are
-accessible including s_parent and s_name.
-
-The newly added s_active is active reference count.  This is acquired
-by invoking sysfs_get_active() and it's the caller's responsibility to
-ensure sysfs_dirent itself is accessible (should be holding s_count
-one way or the other).  Dereferencing sysfs_dirent to access objects
-out of sysfs proper requires active reference.  This includes access
-to the associated kobjects, attributes and ops.
-
-Because attr/bin_attr ops access both the node itself and its parent
-for kobject, they need to hold active references to both.
-sysfs_get/put_active_two() helpers are provided to help grabbing both
-references.  Parent's is acquired first and released last.
-
-Basically, s_count provides the reference counted objects to the upper
-layer while s_active guards low level access such that low level
-objects can just go away when they want to, and the same mechanism is
-applied to all types of sysfs nodes.  I think it's conceptually
-cleaner and thus easier to understand this way.
-
-With all the patches applied, the same test used in the last take ran
-9+hrs without any problem.
-
-Change from the last take are...
-
-* Patch 3 now doesn't move sysfs_get_kobject() as the it's replaced by
-  active references later.
-
-* Patch 12 updated such that sdir->rwsem is generalized into active
-  reference count.
-
-Please read the original lifetime rules discussion[1] and description
-of the last take[2] for more info.
-
-Thanks.
-
---
-tejun
-
-[1] http://thread.gmane.org/gmane.linux.kernel/510293
-[2] http://thread.gmane.org/gmane.linux.kernel/513334
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 2d630bf..0005117 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -159,40 +159,53 @@ static int init_symlink(struct inode * inode)
+ 	return 0;
+ }
+ 
+-static int create_dir(struct kobject * k, struct dentry * p,
+-		      const char * n, struct dentry ** d)
++static int create_dir(struct kobject *kobj, struct dentry *parent,
++		      const char *name, struct dentry **p_dentry)
+ {
+ 	int error;
+ 	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
++	struct dentry *dentry;
++	struct sysfs_dirent *sd;
+ 
+-	mutex_lock(&p->d_inode->i_mutex);
+-	*d = lookup_one_len(n, p, strlen(n));
+-	if (!IS_ERR(*d)) {
+- 		if (sysfs_dirent_exist(p->d_fsdata, n))
+-  			error = -EEXIST;
+-  		else
+-			error = sysfs_make_dirent(p->d_fsdata, *d, k, mode,
+-								SYSFS_DIR);
+-		if (!error) {
+-			error = sysfs_create(*d, mode, init_dir);
+-			if (!error) {
+-				inc_nlink(p->d_inode);
+-				(*d)->d_op = &sysfs_dentry_ops;
+-				d_rehash(*d);
+-			}
+-		}
+-		if (error && (error != -EEXIST)) {
+-			struct sysfs_dirent *sd = (*d)->d_fsdata;
+-			if (sd) {
+- 				list_del_init(&sd->s_sibling);
+-				sysfs_put(sd);
+-			}
+-			d_drop(*d);
+-		}
+-		dput(*d);
+-	} else
+-		error = PTR_ERR(*d);
+-	mutex_unlock(&p->d_inode->i_mutex);
++	mutex_lock(&parent->d_inode->i_mutex);
++
++	dentry = lookup_one_len(name, parent, strlen(name));
++	if (IS_ERR(dentry)) {
++		error = PTR_ERR(dentry);
++		goto out_unlock;
++	}
++
++	error = -EEXIST;
++	if (sysfs_dirent_exist(parent->d_fsdata, name))
++		goto out_dput;
++
++	error = sysfs_make_dirent(parent->d_fsdata, dentry, kobj, mode,
++				  SYSFS_DIR);
++	if (error)
++		goto out_drop;
++
++	error = sysfs_create(dentry, mode, init_dir);
++	if (error)
++		goto out_sput;
++
++	inc_nlink(parent->d_inode);
++	dentry->d_op = &sysfs_dentry_ops;
++	d_rehash(dentry);
++
++	*p_dentry = dentry;
++	error = 0;
++	goto out_dput;
++
++ out_sput:
++	sd = dentry->d_fsdata;
++	list_del_init(&sd->s_sibling);
++	sysfs_put(sd);
++ out_drop:
++	d_drop(dentry);
++ out_dput:
++	dput(dentry);
++ out_unlock:
++	mutex_unlock(&parent->d_inode->i_mutex);
+ 	return error;
+ }
+ 
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 7b9c5bf..b463f17 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -49,30 +49,33 @@ static int sysfs_add_link(struct dentry * parent, const char * name, struct kobj
+ {
+ 	struct sysfs_dirent * parent_sd = parent->d_fsdata;
+ 	struct sysfs_symlink * sl;
+-	int error = 0;
++	int error;
+ 
+ 	error = -ENOMEM;
+-	sl = kmalloc(sizeof(*sl), GFP_KERNEL);
++	sl = kzalloc(sizeof(*sl), GFP_KERNEL);
+ 	if (!sl)
+-		goto exit1;
++		goto err_out;
+ 
+ 	sl->link_name = kmalloc(strlen(name) + 1, GFP_KERNEL);
+ 	if (!sl->link_name)
+-		goto exit2;
++		goto err_out;
+ 
+ 	strcpy(sl->link_name, name);
+ 	sl->target_kobj = kobject_get(target);
+ 
+ 	error = sysfs_make_dirent(parent_sd, NULL, sl, S_IFLNK|S_IRWXUGO,
+ 				SYSFS_KOBJ_LINK);
+-	if (!error)
+-		return 0;
+-
+-	kobject_put(target);
+-	kfree(sl->link_name);
+-exit2:
+-	kfree(sl);
+-exit1:
++	if (error)
++		goto err_out;
++
++	return 0;
++
++ err_out:
++	if (sl) {
++		kobject_put(sl->target_kobj);
++		kfree(sl->link_name);
++		kfree(sl);
++	}
+ 	return error;
+ }
+ 
+-- 
+1.5.0.3
 
 
