@@ -1,140 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbXDIRHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbXDIRKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbXDIRHt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 13:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbXDIRHs
+	id S1752041AbXDIRKa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 13:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbXDIRKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 13:07:48 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:47961 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbXDIRHq (ORCPT
+	Mon, 9 Apr 2007 13:10:30 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44617 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbXDIRK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 13:07:46 -0400
-Date: Mon, 9 Apr 2007 12:07:43 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [patch 0/8] unprivileged mount syscall
-Message-ID: <20070409170743.GF24415@sergelap.austin.ibm.com>
-References: <20070404183012.429274832@szeredi.hu> <20070406160238.f3178189.akpm@linux-foundation.org> <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu> <20070409143802.GB4891@sergelap.austin.ibm.com> <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu>
+	Mon, 9 Apr 2007 13:10:29 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 9 Apr 2007 19:10:13 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [GIT PULL] ieee1394: change deprecation status of dv1394
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+In-Reply-To: <tkrat.c0b0fd71777944c3@s5r6.in-berlin.de>
+Message-ID: <tkrat.7ff85515f8b78cff@s5r6.in-berlin.de>
+References: <tkrat.792fbaf365daed11@s5r6.in-berlin.de>
+ <tkrat.b2b116c1f23637be@s5r6.in-berlin.de>
+ <tkrat.c0b0fd71777944c3@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > > > One thing that is missing from this series is the ability to restrict
-> > > > > user mounts to private namespaces.  The reason is that private
-> > > > > namespaces have still not gained the momentum and support needed for
-> > > > > painless user experience.  So such a feature would not yet get enough
-> > > > > attention and testing.  However adding such an optional restriction
-> > > > > can be done with minimal changes in the future, once private
-> > > > > namespaces have matured.
-> > > > 
-> > > > I suspect the people who developed and maintain nsproxy would disagree ;)
-> > > 
-> > > Well, they better show me some working and simple-to-use userspace
-> > > code, because I've not seen anything like that related to mount
-> > > namespaces.
-> > 
-> > If you mean to test/exploit them, see
-> > http://lxc.sourceforge.net/patches/2.6.20/2.6.20-lxc8/broken-out/tests/
-> > 
-> > Compile the ns_exec.c program and do
-> > 
-> > 	ns_exec -m /bin/sh
-> > 
-> > to get a shell in a new mounts namespace.
-> 
-> Cool, thanks.  This is a very nice utility for testing, but for the
-> end user rather useless:
+Linus, please pull from the for-linus branch at
 
-Well that depends on which end-user.  Those wanting to create a vserver
-or checkpoint-restart job will want this, but clearly we have a long way
-to go for that upstream anyway.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
->   - user starts up a private namespace in a shell, mounts something
-> 
->   - then opens app from menu, tries to access mount, but the mount is
->     not there
-> 
->   - user unhappy
-> 
-> BTW, looking at -mm unshare() on namespace is not privileged any more.
-> Why is that?  Or rather, what's the reason, that clone() is privileged
-> and unshare() is not?
+to receive the appended clarification (?) about the dv1394 driver and
+ABI.  It has been discussed on linux1394-devel and linux1394-user.
+Or apply from this mail.  Thanks.
 
-The check is still there - see kernel/nsproxy.c:unshare_nsproxy_namespaces().
+ Documentation/ABI/obsolete/dv1394          |    9 +++++++++
+ Documentation/feature-removal-schedule.txt |   11 -----------
+ drivers/ieee1394/Kconfig                   |    6 +++---
+ drivers/ieee1394/dv1394.c                  |    4 ++--
+ 4 files changed, 14 insertions(+), 16 deletions(-)
+ create mode 100644 Documentation/ABI/obsolete/dv1394
 
-> > > pam_namespace.so is one example of a non-working, but probably-not-too-
-> > > hard-to-fix one.
-> > 
-> > Non-working?  I sure hope the one used for LSPP certification is
-> > working...  As is the ugly version I wrote 18 mounts ago and use on my
-> > laptop.
-> 
-> The one in pam-0.99.6.3-29.1 in opensuse-10.2 is totally broken.  Are
-> you interested in the details?  I can reproduce it, but forgot to note
-> down the details of the brokenness.
 
-I don't know how far removed that is from the one being used by redhat,
-but assuming it's the same, then redhat-lspp@redhat.com will be
-very interested.
 
-> > > I'm just saying this is not yet something that Joe Blow would just
-> > > enable by ticking a box in their desktop setup wizard, and it would
-> > > all work flawlessly thereafter.  There's still a _long_ way towards
-> > > that, and mostly in userspace.
-> > 
-> > I'm not sure there's a that long a way to go, but clearly we need to be
-> > showing users what they can do, or they'll never work their way towards
-> > there.
-> 
-> There _is_ a long way to go.  Random things that spring to my mind:
-> 
->  - using /etc/mtab is broken with private namespaces, using
->    /proc/mounts is missing various functionality, that /etc/mtab has,
->    for example the "user" option, which this patchset adds
+commit 199c1167f5e8123a9b0a9ab1e8b78a6aa4b2733f
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Thu Mar 22 00:40:06 2007 +0100
 
-Agreed those need fixing.
+ieee1394: change deprecation status of dv1394
 
->  - need to set up mount propagation from global namespace to private
->    ones, mount(8) does not yet have options to configure propagation
+Nobody ported ffmpeg from dv1394 to rawiso yet, and there is no
+justification to remove dv1394 right now.
 
-Hmm, I guess I get lost using my own little systems, and just assumed
-that shared subtree functionality was making its way up into mount(8).
-Ram, have you been working on that?
+Nevertheless, a strong deprecation of this ABI makes a lot of sense,
+especially as Kristian H's drivers shape up to be an attractive
+alternative to the existing ones.  But we don't have a schedule at the
+moment.
 
->  - user namespace setup: what if user has multiple sessions?
-> 
->    1) namespaces are shared?  That's tricky because the session needs to
->    be a child of a namespace server, not of login.  I'm not sure PAM
->    can handle this
-> 
->    2) or mounts are copied on login?  That's not possible currently,
->    as there's no way to send a mount between namespaces.  Also it's
->    tricky to make sure that new mounts are also shared
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+diff --git a/Documentation/ABI/obsolete/dv1394 b/Documentation/ABI/obsolete/dv1394
+new file mode 100644
+index 0000000..2ee3686
+--- /dev/null
++++ b/Documentation/ABI/obsolete/dv1394
+@@ -0,0 +1,9 @@
++What:		dv1394 (a.k.a. "OHCI-DV I/O support" for FireWire)
++Contact:	linux1394-devel@lists.sourceforge.net
++Description:
++	New application development should use raw1394 + userspace libraries
++	instead, notably libiec61883 which is functionally equivalent.
++
++Users:
++	ffmpeg/libavformat (used by a variety of media players)
++	dvgrab v1.x (replaced by dvgrab2 on top of raw1394 and resp. libraries)
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 0bc8b0b..19b4c96 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -39,17 +39,6 @@ Who:	Dan Dennedy <dan@dennedy.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+ 
+ ---------------------------
+ 
+-What:	dv1394 driver (CONFIG_IEEE1394_DV1394)
+-When:	June 2007
+-Why:	Replaced by raw1394 + userspace libraries, notably libiec61883.  This
+-	shift of application support has been indicated on www.linux1394.org
+-	and developers' mailinglists for quite some time.  Major applications
+-	have been converted, with the exception of ffmpeg and hence xine.
+-	Piped output of dvgrab2 is a partial equivalent to dv1394.
+-Who:	Dan Dennedy <dan@dennedy.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+-
+----------------------------
+-
+ What:	Video4Linux API 1 ioctls and video_decoder.h from Video devices.
+ When:	December 2006
+ Why:	V4L1 AP1 was replaced by V4L2 API. during migration from 2.4 to 2.6
+diff --git a/drivers/ieee1394/Kconfig b/drivers/ieee1394/Kconfig
+index b8a4734..cd84a55 100644
+--- a/drivers/ieee1394/Kconfig
++++ b/drivers/ieee1394/Kconfig
+@@ -138,9 +138,9 @@ config IEEE1394_DV1394
+ 	tristate "OHCI-DV I/O support (deprecated)"
+ 	depends on IEEE1394 && IEEE1394_OHCI1394
+ 	help
+-	  The dv1394 driver will be removed from Linux in a future release.
+-	  Its functionality is now provided by raw1394 together with libraries
+-	  such as libiec61883.
++	  The dv1394 driver is unsupported and may be removed from Linux in a
++	  future release.  Its functionality is now provided by raw1394 together
++	  with libraries such as libiec61883.
+ 
+ config IEEE1394_RAWIO
+ 	tristate "Raw IEEE1394 I/O support"
+diff --git a/drivers/ieee1394/dv1394.c b/drivers/ieee1394/dv1394.c
+index dee9529..026e38f 100644
+--- a/drivers/ieee1394/dv1394.c
++++ b/drivers/ieee1394/dv1394.c
+@@ -2564,8 +2564,8 @@ static int __init dv1394_init_module(void)
+ 	int ret;
+ 
+ 	printk(KERN_WARNING
+-	       "WARNING: The dv1394 driver is unsupported and will be removed "
+-	       "from Linux soon. Use raw1394 instead.\n");
++	       "NOTE: The dv1394 driver is unsupported and may be removed in a "
++	       "future Linux release. Use raw1394 instead.\n");
+ 
+ 	cdev_init(&dv1394_cdev, &dv1394_fops);
+ 	dv1394_cdev.owner = THIS_MODULE;
 
-See toward the end of the 'shared subtrees' OLS paper from last year for
-a suggestion on how to let users effectively 'log in to' an existing
-private mounts ns.
 
-> > For instance, as you say, a user admin gui with a checkmark and text
-> > boxes saying 'enter new namespace on login', 'create private /tmp',
-> > and 'create private dmcrypted /home' would be trivial right now.
-> 
-> Trivial modulo the above slightly non-trivial exemptions ;)
+-- 
+Stefan Richter
+-=====-=-=== -=-- -=--=
+http://arcgraph.de/sr/
 
-Ok, so it can use some very non-trivial fine-tuning...
-
-But I've been using the above - minus the trivial gui - for over a year
-without ever worrying about any of these short-comings.
-
-> Miklos
-
--serge
