@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbXDIMcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751627AbXDIMiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbXDIMcM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 08:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbXDIMcM
+	id S1751627AbXDIMiH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 08:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbXDIMiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 08:32:12 -0400
-Received: from pat.uio.no ([129.240.10.15]:52838 "EHLO pat.uio.no"
+	Mon, 9 Apr 2007 08:38:07 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:33553 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753127AbXDIMcK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 08:32:10 -0400
-Subject: Re: If not readdir() then what?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-In-Reply-To: <20070409110927.GA23240@lazybastard.org>
-References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com>
-	 <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org>
-	 <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org>
-	 <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com>
-	 <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 09 Apr 2007 08:31:37 -0400
-Message-Id: <1176121897.6210.8.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 8BIT
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, AWL=0.024)
-X-UiO-Scanned: 1A3840D9B3B2F1F406449A1B346525F8741FCA72
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 397 total 936278 max/h 7466 blacklist 0 greylist 0 ratelimit 0
+	id S1751627AbXDIMiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 08:38:05 -0400
+Message-ID: <461A3483.10402@sw.ru>
+Date: Mon, 09 Apr 2007 16:41:39 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
+CC: devel@openvz.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: [PATCH 2/8] Add container pointer on struct page
+References: <461A3010.90403@sw.ru>
+In-Reply-To: <461A3010.90403@sw.ru>
+Content-Type: multipart/mixed;
+ boundary="------------020306010801040802000602"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-09 at 13:09 +0200, Jörn Engel wrote:
-> That surely doesn't make life any easier for filesystem developers, I
-> agree.  From that point of view, all telldir cookies should end their
-> life at closedir time.  For "rm -r" it would be sufficient if the nfs
-> client simply didn't seekdir at all.  For "ls -lR", this would return
-> duplicate dentries.
+This is a multi-part message in MIME format.
+--------------020306010801040802000602
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Please go read the NFS spec. The only thing an NFS client has in order
-to read a directory is a READDIR operation that in essence takes a
-filehandle and a cookie as its arguments. Unless the server is able to
-return the entire rest of the directory in one RPC reply, the client
-needs to send a second READDIR operation with a cookie from the previous
-READDIR operation. The server is expected to return cookies for _each_
-entry in the directory.
+Each page is supposed to have an owner - the container
+that touched the page first. The owner stays alive during
+the page lifetime even if the task that touched the page
+dies or moves to another container.
 
-That is a protocol limitation, not a client limitation.
+This ownership is the forerunner for the "fair" page sharing
+accounting, in which page has as may owners as it is really
+used by.
 
-Trond
+--------------020306010801040802000602
+Content-Type: text/plain;
+ name="diff-rss-container-on-page"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff-rss-container-on-page"
 
+diff -upr linux-2.6.20.orig/include/linux/mm.h linux-2.6.20-2/include/linux/mm.h
+--- linux-2.6.20.orig/include/linux/mm.h	2007-03-06 19:09:50.000000000 +0300
++++ linux-2.6.20-2/include/linux/mm.h	2007-04-09 11:26:06.000000000 +0400
+@@ -220,6 +220,12 @@ struct vm_operations_struct {
+ struct mmu_gather;
+ struct inode;
+ 
++#ifdef CONFIG_RSS_CONTAINER
++#define page_container(page)	(page->rss_container)
++#else
++#define page_container(page)	(NULL)
++#endif
++
+ #define page_private(page)		((page)->private)
+ #define set_page_private(page, v)	((page)->private = (v))
+ 
+diff -upr linux-2.6.20.orig/include/linux/mm_types.h linux-2.6.20-2/include/linux/mm_types.h
+--- linux-2.6.20.orig/include/linux/mm_types.h	2007-03-06 19:09:50.000000000 +0300
++++ linux-2.6.20-2/include/linux/mm_types.h	2007-04-09 11:26:06.000000000 +0400
+@@ -62,6 +62,9 @@ struct page {
+ 	void *virtual;			/* Kernel virtual address (NULL if
+ 					   not kmapped, ie. highmem) */
+ #endif /* WANT_PAGE_VIRTUAL */
++#ifdef CONFIG_RSS_CONTAINER
++	struct page_container *rss_container;
++#endif
+ };
+ 
+ #endif /* _LINUX_MM_TYPES_H */
+
+
+--------------020306010801040802000602--
