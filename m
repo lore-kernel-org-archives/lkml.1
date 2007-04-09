@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbXDIEUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbXDIEUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbXDIEUK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 00:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbXDIETn
+	id S1752803AbXDIEUL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 00:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbXDIETk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 00:19:43 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:34386 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbXDIES7 (ORCPT
+	Mon, 9 Apr 2007 00:19:40 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:51502 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbXDIES7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 9 Apr 2007 00:18:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=TNEM2iDHHdwvt7GFn8ozN2Jx9D4YLJGioKCSQUo+cP+5nNH9liuXWeDeBkKGCaJEmE4yAPIpbv1WEeCze1gra+3WycuDkzMLlq7h45ZcsUcvYLnCId+GA/4STci68qdp/zMx3zzrSzsVeNXuyuMVGr0QbAFTPycFU6FAnFYP1GY=
+        b=uE3lKblyXXTZe7K2USq1hEnVGlvL9F+rmnRtocGUJkEChhgCuWehk36iLLvfLRpOHyD1HknK0vQoqJQG2mRhB+Z2CABLAHo/ZftPPxE4w689WQjSNyQticXPAig9jNTUQGqKBVodbQxTpRSN0re6k61YThmq6CQDzGf691TdSN4=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 07/14] sysfs: add sysfs_dirent->s_name
+Subject: [PATCH 10/14] sysfs: reimplement symlink using sysfs_dirent tree
 In-Reply-To: <11760923261269-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Mon, 9 Apr 2007 13:18:48 +0900
-Message-Id: <1176092328640-git-send-email-htejun@gmail.com>
+Message-Id: <11760923283310-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -32,276 +32,240 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add s_name to sysfs_dirent.  This is to further reduce dependency to
-the associated dentry.  Name is copied for directories and symlinks
-but not for attributes.
+sysfs symlink is implemented by referencing dentry and kobject from
+sysfs_dirent - symlink entry references kobject, dentry is used to
+walk the tree.  This complicates object lifetimes rules and is
+dangerous - for example, there is no way to tell to which module the
+target of a symlink belongs and referencing that kobject can make it
+linger after the module is gone.
 
-Where possible, name dereferences are converted to use sd->s_name.
-sysfs_symlink->link_name and sysfs_get_name() are unused now and
-removed.
+This patch reimplements symlink using only sysfs_dirent tree.  sd for
+a symlink points and holds reference to the target sysfs_dirent and
+all walking is done using sysfs_dirent tree.  Simpler and safer.
 
-This change allows symlink to be implemented using sysfs_dirent tree
-proper, which is the last remaining dentry-dependent sysfs walk.
+Please read the following message for more info.
+
+  http://article.gmane.org/gmane.linux.kernel/510293
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/dir.c        |   33 +++++++++++++++++++++------------
- fs/sysfs/file.c       |    2 +-
- fs/sysfs/inode.c      |   33 +--------------------------------
- fs/sysfs/symlink.c    |    8 +-------
- fs/sysfs/sysfs.h      |    7 +++----
- include/linux/sysfs.h |    1 +
- 6 files changed, 28 insertions(+), 56 deletions(-)
+ fs/sysfs/dir.c     |    2 +-
+ fs/sysfs/symlink.c |   88 +++++++++++++++++++++++++++------------------------
+ fs/sysfs/sysfs.h   |    9 +++--
+ 3 files changed, 53 insertions(+), 46 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 8c35a60..525c0e7 100644
+index 707eba9..5b337c7 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -23,10 +23,11 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
+@@ -23,7 +23,7 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
+ 	parent_sd = sd->s_parent;
  
- 	if (sd->s_type & SYSFS_KOBJ_LINK) {
- 		struct sysfs_symlink * sl = sd->s_element;
--		kfree(sl->link_name);
- 		kobject_put(sl->target_kobj);
- 		kfree(sl);
- 	}
-+	if (sd->s_type & SYSFS_COPY_NAME)
-+		kfree(sd->s_name);
+ 	if (sd->s_type & SYSFS_KOBJ_LINK)
+-		kobject_put(sd->s_elem.symlink.target_kobj);
++		sysfs_put(sd->s_elem.symlink.target_sd);
+ 	if (sd->s_type & SYSFS_COPY_NAME)
+ 		kfree(sd->s_name);
  	kfree(sd->s_iattr);
- 	kmem_cache_free(sysfs_dir_cachep, sd);
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 27df635..ff605d3 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -11,50 +11,49 @@
  
-@@ -51,19 +52,30 @@ static struct dentry_operations sysfs_dentry_ops = {
- 	.d_iput		= sysfs_d_iput,
- };
+ #include "sysfs.h"
  
--struct sysfs_dirent *sysfs_new_dirent(void *element, umode_t mode, int type)
-+struct sysfs_dirent *sysfs_new_dirent(const char *name, void *element,
-+				      umode_t mode, int type)
+-static int object_depth(struct kobject * kobj)
++static int object_depth(struct sysfs_dirent *sd)
  {
-+	char *dup_name = NULL;
- 	struct sysfs_dirent * sd;
- 
-+	if (type & SYSFS_COPY_NAME) {
-+		name = dup_name = kstrdup(name, GFP_KERNEL);
-+		if (!name)
-+			return NULL;
-+	}
+-	struct kobject * p = kobj;
+ 	int depth = 0;
+-	do { depth++; } while ((p = p->parent));
 +
- 	sd = kmem_cache_zalloc(sysfs_dir_cachep, GFP_KERNEL);
--	if (!sd)
-+	if (!sd) {
-+		kfree(dup_name);
- 		return NULL;
-+	}
++	for (; sd->s_parent; sd = sd->s_parent)
++		depth++;
++
+ 	return depth;
+ }
  
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_event, 1);
- 	INIT_LIST_HEAD(&sd->s_children);
- 	INIT_LIST_HEAD(&sd->s_sibling);
+-static int object_path_length(struct kobject * kobj)
++static int object_path_length(struct sysfs_dirent * sd)
+ {
+-	struct kobject * p = kobj;
+ 	int length = 1;
+-	do {
+-		length += strlen(kobject_name(p)) + 1;
+-		p = p->parent;
+-	} while (p);
++
++	for (; sd->s_parent; sd = sd->s_parent)
++		length += strlen(sd->s_name) + 1;
++
+ 	return length;
+ }
  
-+	sd->s_name = name;
- 	sd->s_element = element;
- 	sd->s_mode = mode;
- 	sd->s_type = type;
-@@ -100,8 +112,7 @@ int sysfs_dirent_exist(struct sysfs_dirent *parent_sd,
- 
- 	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
- 		if (sd->s_element) {
--			const unsigned char *existing = sysfs_get_name(sd);
--			if (strcmp(existing, new))
-+			if (strcmp(sd->s_name, new))
- 				continue;
- 			else
- 				return -EEXIST;
-@@ -155,7 +166,7 @@ static int create_dir(struct kobject *kobj, struct dentry *parent,
- 		goto out_dput;
- 
- 	error = -ENOMEM;
--	sd = sysfs_new_dirent(kobj, mode, SYSFS_DIR);
-+	sd = sysfs_new_dirent(name, kobj, mode, SYSFS_DIR);
- 	if (!sd)
- 		goto out_drop;
- 	sysfs_attach_dirent(sd, parent->d_fsdata, dentry);
-@@ -280,9 +291,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 
- 	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
- 		if (sd->s_type & SYSFS_NOT_PINNED) {
--			const unsigned char * name = sysfs_get_name(sd);
+-static void fill_object_path(struct kobject * kobj, char * buffer, int length)
++static void fill_object_path(struct sysfs_dirent *sd, char *buffer, int length)
+ {
+-	struct kobject * p;
 -
--			if (strcmp(name, dentry->d_name.name))
-+			if (strcmp(sd->s_name, dentry->d_name.name))
- 				continue;
+ 	--length;
+-	for (p = kobj; p; p = p->parent) {
+-		int cur = strlen(kobject_name(p));
++	for (; sd->s_parent; sd = sd->s_parent) {
++		int cur = strlen(sd->s_name);
  
- 			if (sd->s_type & SYSFS_KOBJ_LINK)
-@@ -472,7 +481,7 @@ static int sysfs_dir_open(struct inode *inode, struct file *file)
+ 		/* back up enough to print this bus id with '/' */
+ 		length -= cur;
+-		strncpy(buffer + length,kobject_name(p),cur);
++		strncpy(buffer + length, sd->s_name, cur);
+ 		*(buffer + --length) = '/';
+ 	}
+ }
+ 
+-static int sysfs_add_link(struct dentry * parent, const char * name, struct kobject * target)
++static int sysfs_add_link(struct sysfs_dirent * parent_sd, const char * name,
++			  struct sysfs_dirent * target_sd)
+ {
+-	struct sysfs_dirent * parent_sd = parent->d_fsdata;
  	struct sysfs_dirent * sd;
+ 
+ 	sd = sysfs_new_dirent(name, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
+ 	if (!sd)
+ 		return -ENOMEM;
+ 
+-	sd->s_elem.symlink.target_kobj = kobject_get(target);
++	sd->s_elem.symlink.target_sd = target_sd;
+ 	sysfs_attach_dirent(sd, parent_sd, NULL);
+ 	return 0;
+ }
+@@ -68,6 +67,8 @@ static int sysfs_add_link(struct dentry * parent, const char * name, struct kobj
+ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
+ {
+ 	struct dentry *dentry = NULL;
++	struct sysfs_dirent *parent_sd = NULL;
++	struct sysfs_dirent *target_sd = NULL;
+ 	int error = -EEXIST;
+ 
+ 	BUG_ON(!name);
+@@ -80,11 +81,27 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
+ 
+ 	if (!dentry)
+ 		return -EFAULT;
++	parent_sd = dentry->d_fsdata;
++
++	/* target->dentry can go away beneath us but is protected with
++	 * kobj_sysfs_assoc_lock.  Fetch target_sd from it.
++	 */
++	spin_lock(&kobj_sysfs_assoc_lock);
++	if (target->dentry)
++		target_sd = sysfs_get(target->dentry->d_fsdata);
++	spin_unlock(&kobj_sysfs_assoc_lock);
++
++	if (!target_sd)
++		return -ENOENT;
  
  	mutex_lock(&dentry->d_inode->i_mutex);
--	sd = sysfs_new_dirent(NULL, 0, 0);
-+	sd = sysfs_new_dirent("_DIR_", NULL, 0, 0);
- 	if (sd)
- 		sysfs_attach_dirent(sd, parent_sd, NULL);
+ 	if (!sysfs_dirent_exist(dentry->d_fsdata, name))
+-		error = sysfs_add_link(dentry, name, target);
++		error = sysfs_add_link(parent_sd, name, target_sd);
  	mutex_unlock(&dentry->d_inode->i_mutex);
-@@ -539,7 +548,7 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
- 				if (!next->s_element)
- 					continue;
- 
--				name = sysfs_get_name(next);
-+				name = next->s_name;
- 				len = strlen(name);
- 				ino = (unsigned long)next;
- 
-@@ -651,7 +660,7 @@ struct dentry *sysfs_create_shadow_dir(struct kobject *kobj)
- 	if (!shadow)
- 		goto nomem;
- 
--	sd = sysfs_new_dirent(kobj, inode->i_mode, SYSFS_DIR);
-+	sd = sysfs_new_dirent("_SHADOW_", kobj, inode->i_mode, SYSFS_DIR);
- 	if (!sd)
- 		goto nomem;
- 	/* point to parent_sd but don't attach to it */
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index f6b86a8..62ab272 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -484,7 +484,7 @@ int sysfs_add_file(struct dentry * dir, const struct attribute * attr, int type)
- 		goto out_unlock;
- 	}
- 
--	sd = sysfs_new_dirent((void *)attr, mode, type);
-+	sd = sysfs_new_dirent(attr->name, (void *)attr, mode, type);
- 	if (!sd) {
- 		error = -ENOMEM;
- 		goto out_unlock;
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index b8b010c..4960be8 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -190,37 +190,6 @@ int sysfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
++
++	if (error)
++		sysfs_put(target_sd);
++
  	return error;
  }
  
--/*
-- * Get the name for corresponding element represented by the given sysfs_dirent
-- */
--const unsigned char * sysfs_get_name(struct sysfs_dirent *sd)
--{
--	struct attribute * attr;
--	struct bin_attribute * bin_attr;
--	struct sysfs_symlink  * sl;
--
--	BUG_ON(!sd || !sd->s_element);
--
--	switch (sd->s_type) {
--		case SYSFS_DIR:
--			/* Always have a dentry so use that */
--			return sd->s_dentry->d_name.name;
--
--		case SYSFS_KOBJ_ATTR:
--			attr = sd->s_element;
--			return attr->name;
--
--		case SYSFS_KOBJ_BIN_ATTR:
--			bin_attr = sd->s_element;
--			return bin_attr->attr.name;
--
--		case SYSFS_KOBJ_LINK:
--			sl = sd->s_element;
--			return sl->link_name;
--	}
--	return NULL;
--}
--
- static inline void orphan_all_buffers(struct inode *node)
+@@ -100,14 +117,14 @@ void sysfs_remove_link(struct kobject * kobj, const char * name)
+ 	sysfs_hash_and_remove(kobj->dentry,name);
+ }
+ 
+-static int sysfs_get_target_path(struct kobject * kobj, struct kobject * target,
+-				 char *path)
++static int sysfs_get_target_path(struct sysfs_dirent * parent_sd,
++				 struct sysfs_dirent * target_sd, char *path)
  {
- 	struct sysfs_buffer_collection *set;
-@@ -288,7 +257,7 @@ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
- 	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
- 		if (!sd->s_element)
- 			continue;
--		if (!strcmp(sysfs_get_name(sd), name)) {
-+		if (!strcmp(sd->s_name, name)) {
- 			list_del_init(&sd->s_sibling);
- 			sysfs_drop_dentry(sd, dir);
- 			sysfs_put(sd);
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index d96bb9c..c728204 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -57,14 +57,9 @@ static int sysfs_add_link(struct dentry * parent, const char * name, struct kobj
- 	if (!sl)
- 		goto err_out;
+ 	char * s;
+ 	int depth, size;
  
--	sl->link_name = kmalloc(strlen(name) + 1, GFP_KERNEL);
--	if (!sl->link_name)
--		goto err_out;
+-	depth = object_depth(kobj);
+-	size = object_path_length(target) + depth * 3 - 1;
++	depth = object_depth(parent_sd);
++	size = object_path_length(target_sd) + depth * 3 - 1;
+ 	if (size > PATH_MAX)
+ 		return -ENAMETOOLONG;
+ 
+@@ -116,7 +133,7 @@ static int sysfs_get_target_path(struct kobject * kobj, struct kobject * target,
+ 	for (s = path; depth--; s += 3)
+ 		strcpy(s,"../");
+ 
+-	fill_object_path(target, path, size);
++	fill_object_path(target_sd, path, size);
+ 	pr_debug("%s: path = '%s'\n", __FUNCTION__, path);
+ 
+ 	return 0;
+@@ -124,27 +141,16 @@ static int sysfs_get_target_path(struct kobject * kobj, struct kobject * target,
+ 
+ static int sysfs_getlink(struct dentry *dentry, char * path)
+ {
+-	struct kobject *kobj, *target_kobj;
+-	int error = 0;
 -
--	strcpy(sl->link_name, name);
- 	sl->target_kobj = kobject_get(target);
+-	kobj = sysfs_get_kobject(dentry->d_parent);
+-	if (!kobj)
+-		return -EINVAL;
+-
+-	target_kobj = sysfs_get_kobject(dentry);
+-	if (!target_kobj) {
+-		kobject_put(kobj);
+-		return -EINVAL;
+-	}
++	struct sysfs_dirent *sd = dentry->d_fsdata;
++	struct sysfs_dirent *parent_sd = sd->s_parent;
++	struct sysfs_dirent *target_sd = sd->s_elem.symlink.target_sd;
++	int error;
  
--	sd = sysfs_new_dirent(sl, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
-+	sd = sysfs_new_dirent(name, sl, S_IFLNK|S_IRWXUGO, SYSFS_KOBJ_LINK);
- 	if (!sd)
- 		goto err_out;
- 	sysfs_attach_dirent(sd, parent_sd, NULL);
-@@ -74,7 +69,6 @@ static int sysfs_add_link(struct dentry * parent, const char * name, struct kobj
-  err_out:
- 	if (sl) {
- 		kobject_put(sl->target_kobj);
--		kfree(sl->link_name);
- 		kfree(sl);
- 	}
- 	return error;
+ 	down_read(&sysfs_rename_sem);
+-	error = sysfs_get_target_path(kobj, target_kobj, path);
++	error = sysfs_get_target_path(parent_sd, target_sd, path);
+ 	up_read(&sysfs_rename_sem);
+-	
+-	kobject_put(kobj);
+-	kobject_put(target_kobj);
+-	return error;
+ 
++	return error;
+ }
+ 
+ static void *sysfs_follow_link(struct dentry *dentry, struct nameidata *nd)
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index f95ab31..8b9f139 100644
+index 5c41fc5..0a740f6 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -3,6 +3,7 @@ struct sysfs_dirent {
- 	struct sysfs_dirent	* s_parent;
- 	struct list_head	s_sibling;
- 	struct list_head	s_children;
-+	const char		* s_name;
- 	void 			* s_element;
- 	int			s_type;
- 	umode_t			s_mode;
-@@ -20,8 +21,8 @@ extern int sysfs_create(struct dentry *, int mode, int (*init)(struct inode *));
- 
- extern void release_sysfs_dirent(struct sysfs_dirent * sd);
- extern int sysfs_dirent_exist(struct sysfs_dirent *, const unsigned char *);
--extern struct sysfs_dirent *sysfs_new_dirent(void *element, umode_t mode,
--					     int type);
-+extern struct sysfs_dirent *sysfs_new_dirent(const char *name, void *element,
-+					     umode_t mode, int type);
- extern void sysfs_attach_dirent(struct sysfs_dirent *sd,
- 				struct sysfs_dirent *parent_sd,
- 				struct dentry *dentry);
-@@ -33,7 +34,6 @@ extern struct sysfs_dirent *sysfs_find(struct sysfs_dirent *dir, const char * na
- extern int sysfs_create_subdir(struct kobject *, const char *, struct dentry **);
- extern void sysfs_remove_subdir(struct dentry *);
- 
--extern const unsigned char * sysfs_get_name(struct sysfs_dirent *sd);
- extern void sysfs_drop_dentry(struct sysfs_dirent *sd, struct dentry *parent);
- extern int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
- 
-@@ -46,7 +46,6 @@ extern const struct inode_operations sysfs_dir_inode_operations;
- extern const struct inode_operations sysfs_symlink_inode_operations;
- 
- struct sysfs_symlink {
--	char * link_name;
- 	struct kobject * target_kobj;
+@@ -3,7 +3,7 @@ struct sysfs_elem_dir {
  };
  
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index fea9a6b..c79944a 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -76,6 +76,7 @@ struct sysfs_ops {
- #define SYSFS_KOBJ_BIN_ATTR	0x0008
- #define SYSFS_KOBJ_LINK 	0x0020
- #define SYSFS_NOT_PINNED	(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR | SYSFS_KOBJ_LINK)
-+#define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
+ struct sysfs_elem_symlink {
+-	struct kobject		* target_kobj;
++	struct sysfs_dirent	* target_sd;
+ };
  
- #ifdef CONFIG_SYSFS
+ struct sysfs_elem_attr {
+@@ -98,10 +98,11 @@ static inline struct kobject *sysfs_get_kobject(struct dentry *dentry)
+ 	spin_lock(&dcache_lock);
+ 	if (!d_unhashed(dentry)) {
+ 		struct sysfs_dirent * sd = dentry->d_fsdata;
++
+ 		if (sd->s_type & SYSFS_KOBJ_LINK)
+-			kobj = kobject_get(sd->s_elem.symlink.target_kobj);
+-		else
+-			kobj = kobject_get(sd->s_elem.dir.kobj);
++			sd = sd->s_elem.symlink.target_sd;
++
++		kobj = kobject_get(sd->s_elem.dir.kobj);
+ 	}
+ 	spin_unlock(&dcache_lock);
  
 -- 
 1.5.0.3
