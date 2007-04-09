@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933869AbXDIPg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXDIPi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933869AbXDIPg2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXDIPg2
+	id S965550AbXDIPi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965578AbXDIPi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:36:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:44304 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbXDIPg0 convert rfc822-to-8bit (ORCPT
+	Mon, 9 Apr 2007 11:38:29 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:47645 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965550AbXDIPi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:36:26 -0400
+	Mon, 9 Apr 2007 11:38:28 -0400
+Message-ID: <461A5DA2.7090001@gmail.com>
+Date: Mon, 09 Apr 2007 17:37:06 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <17946.14646.808334.441833@cargo.ozlabs.ibm.com>
-Date: Mon, 9 Apr 2007 23:01:42 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: Interface for the new fallocate() system call
-In-Reply-To: <20070330104449.GA9371@lazybastard.org>
-References: <20070225022326.137b4875.akpm@linux-foundation.org>
-	<20070301183445.GA7911@amitarora.in.ibm.com>
-	<20070316143101.GA10152@amitarora.in.ibm.com>
-	<20070316161704.GE8525@osiris.boeblingen.de.ibm.com>
-	<20070317111036.GC29931@parisc-linux.org>
-	<20070321120425.GA27273@amitarora.in.ibm.com>
-	<20070329115126.GB7374@amitarora.in.ibm.com>
-	<20070329101010.7a2b8783.akpm@linux-foundation.org>
-	<20070330071929.GC8365@osiris.boeblingen.de.ibm.com>
-	<17932.54606.323431.491736@cargo.ozlabs.ibm.com>
-	<20070330104449.GA9371@lazybastard.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
+Subject: Re: Ten percent test
+References: <200703290237.38777.kernel@kolivas.org> <200704071423.47790.gene.heskett@gmail.com> <20070407185220.GA31725@elte.hu> <200704071630.25830.gene.heskett@gmail.com> <20070408104125.GB11123@elte.hu> <461939A4.2020305@gmail.com> <20070409135355.GA11244@elte.hu>
+In-Reply-To: <20070409135355.GA11244@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel writes:
+On 04/09/2007 03:53 PM, Ingo Molnar wrote:
 
-> Wouldn't that work be confined to fallocate()?  If I understand Heiko
-> correctly, the alternative would slow s390 down for every syscall,
-> including more performance-critical ones.
+> In any case, it would be very nice if you could try Mike's latest
+> patch, how does it work on your setup? (i've attached it)
 
-The alternative that Jakub suggested wouldn't slow s390 down.
+Can do. Note that "my setup" in that case consisted of browsing around 
+eBay in firefox with ogg123 playing audio directly to ALSA in an xterm 
+as the only other thing running. That is, just about as basic a Linux 
+desktop as imagineable.
 
-Paul.
+Testing Mike's latest will have to wait a bit though; I'm currently 
+testing the latest incarnation of SD (against 2.6.20.6). For people 
+who've lost track of what and where, it's available as:
+
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20.5-sd-0.39.patch
+
+and versus 2.6.21-rc5 as:
+
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc5-sd-0.39.patch
+
+For the moment it is giving me a snappy feeling desktop on this Duron 
+1300, with ogg123 playing in an xterm without audio underruns, with a 
+make -j2 kernel compile running (not niced) and me browsing around in 
+firefox.
+
+Mike latest would probably also support this load without much problem. 
+Given that I feel the basic idea of SD is better than mainline though, 
+I'll be concentrating on using SD for a bit for now.
+
+Rene.
+
