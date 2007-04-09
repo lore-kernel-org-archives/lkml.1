@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbXDIAmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbXDIAxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbXDIAmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Apr 2007 20:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXDIAmZ
+	id S1752185AbXDIAxd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Apr 2007 20:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbXDIAxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Apr 2007 20:42:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35555 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbXDIAmY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Apr 2007 20:42:24 -0400
-Date: Sun, 8 Apr 2007 17:42:08 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: Linux 2.6.21-rc6
-Message-ID: <20070409004208.GA6092@kroah.com>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070408160954.edd248d1.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Sun, 8 Apr 2007 20:53:33 -0400
+Received: from mga01.intel.com ([192.55.52.88]:3124 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752209AbXDIAxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Apr 2007 20:53:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,386,1170662400"; 
+   d="scan'208"; a="226801466:sNHT28567147"
+Date: Mon, 9 Apr 2007 08:51:36 +0800
+From: Wang Zhenyu <zhenyu.z.wang@intel.com>
+To: Dave Jones <davej@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>,
+       Keith Packard <keithp@keithp.com>
+Subject: [PATCH] intel_agp: PCI id update for Intel 965GM
+Message-ID: <20070409005136.GA22124@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>,
+	Keith Packard <keithp@keithp.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070408160954.edd248d1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+User-Agent: Mutt/1.4.2.1i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 08, 2007 at 04:09:54PM -0700, Andrew Morton wrote:
-> 
-> I'm sitting on five patches which look like 2.6.21 material, but which
-> would normally go through subsystem maintainers:
-> 
-> driver core:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/broken-out/update-documentation-driver-model-platformtxt.patch
 
-Feel free to forward it on with:
-	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+[AGPGART] intel: Add 965GM chipset support
 
-As it was just a documentation update, I figured it was safe to wait for
-2.6.22, but I have no objection to it going in now.
+Update PCI id info for Intel 965GM chipset.
 
-thanks,
+Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
 
-greg k-h
+---
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index e542a62..a9fdbf9 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -18,11 +18,14 @@
+ #define PCI_DEVICE_ID_INTEL_82965Q_IG       0x2992
+ #define PCI_DEVICE_ID_INTEL_82965G_HB       0x29A0
+ #define PCI_DEVICE_ID_INTEL_82965G_IG       0x29A2
++#define PCI_DEVICE_ID_INTEL_82965GM_HB      0x2A00
++#define PCI_DEVICE_ID_INTEL_82965GM_IG      0x2A02
+ 
+ #define IS_I965 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82946GZ_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_1_HB || \
+                  agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
+-                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB)
++                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
++                 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB)
+ 
+ 
+ extern int agp_memory_reserved;
+@@ -1921,7 +1924,13 @@ static int __devinit agp_intel_probe(struct pci_dev *pdev,
+ 			bridge->driver = &intel_845_driver;
+ 		name = "965G";
+ 		break;
+-
++	case PCI_DEVICE_ID_INTEL_82965GM_HB:
++		if (find_i830(PCI_DEVICE_ID_INTEL_82965GM_IG))
++			bridge->driver = &intel_i965_driver;
++		else
++			bridge->driver = &intel_845_driver;
++		name = "965GM";
++		break;
+ 	case PCI_DEVICE_ID_INTEL_7505_0:
+ 		bridge->driver = &intel_7505_driver;
+ 		name = "E7505";
+@@ -2080,6 +2089,7 @@ static struct pci_device_id agp_intel_pci_table[] = {
+ 	ID(PCI_DEVICE_ID_INTEL_82965G_1_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965Q_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82965G_HB),
++	ID(PCI_DEVICE_ID_INTEL_82965GM_HB),
+ 	{ }
+ };
+ 
