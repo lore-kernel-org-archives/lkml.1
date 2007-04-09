@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXDIPg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXDIPhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbXDIPg0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 11:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXDIPg0
+	id S965379AbXDIPhZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 11:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXDIPhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 11:36:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:44299 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753515AbXDIPgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 11:36:25 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17946.5545.663353.735623@cargo.ozlabs.ibm.com>
-Date: Mon, 9 Apr 2007 20:30:01 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] move die notifier handling to common code
-In-Reply-To: <20070326065524.GA1163@lst.de>
-References: <20070319160218.GA27462@lst.de>
-	<17927.8857.752570.69739@cargo.ozlabs.ibm.com>
-	<20070326065524.GA1163@lst.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Mon, 9 Apr 2007 11:37:24 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:42596 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965379AbXDIPhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 11:37:22 -0400
+Date: Mon, 09 Apr 2007 11:37:00 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: I give up
+In-reply-to: <461A5204.1050206@garzik.org>
+To: linux-kernel@vger.kernel.org
+Cc: Jeff Garzik <jeff@garzik.org>
+Message-id: <200704091137.01336.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200704091007.58535.gene.heskett@gmail.com>
+ <461A5204.1050206@garzik.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig writes:
+On Monday 09 April 2007, Jeff Garzik wrote:
+>Gene Heskett wrote:
+>> Now the 64k$ question: While running with LVM2 managed disks, is it
+>> possible to run without dm_mod, the device-mapper?  If so, please tell
+>> me how to achieve this.
+>
+>No; device mapper is the kernel portion of LVM2.
+>
+>	Jeff, who actively avoids LVM on home computers
 
-> I tend to agree.  Unfortunately powers higher than me like these
-> horrible notifier schemes.  Then again at least the die path is not
-> performance critical unlike the page faul path where I still need a
-> comment for you on getting rid of the notifier.
+Ya shoulda warned me.  :-)
 
-Sounds reasonable.  If you posted a patch I missed it. :)
+It should have lots bigger warning labels, in bright red self-illuminating 
+signs, than it does.  It in fact seems to work well, but it is a major 
+breakage for some common apps, like doing backups...
 
-Paul.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Gates' Law: Every 18 months, the speed of software halves. 
+
+   -- From a Slashdot.org post
