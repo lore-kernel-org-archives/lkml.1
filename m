@@ -1,39 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbXDIJ1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbXDIJsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbXDIJ1b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 05:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXDIJ1b
+	id S1752821AbXDIJsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 05:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXDIJsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 05:27:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:27126 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbXDIJ1a (ORCPT
+	Mon, 9 Apr 2007 05:48:20 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:15196 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752689AbXDIJsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 05:27:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=UPJs5fE/iXaDMWEzvLS5SFPcM0dMIASKu8WWRiTndfQwr9ovuYiJQ4k06v7rvFJ1lkK5sC0LlaFv+8+e59CQcffHuPr4+05wqWt5W8dHlbrpfKq41k8FxZspnSCZCxtbcCUHBHIgBu/WqIBQ1amtZCHoOaTgzcT9PDXctPMk0bo=
-Message-ID: <84144f020704090227mdbd9629i8cd16a1d92592365@mail.gmail.com>
-Date: Mon, 9 Apr 2007 12:27:28 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "johnrobertbanks@fastmail.fm" <johnrobertbanks@fastmail.fm>
-Subject: Re: REISER4 FOR INCLUSION IN THE LINUX KERNEL.
-Cc: linux-kernel@vger.kernel.org, "David H. Lynch Jr" <dhlii@comcast.net>,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <1176093552.13670.1183613872@webmail.messagingengine.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Apr 2007 05:48:19 -0400
+X-IronPort-AV: i="4.14,387,1170651600"; 
+   d="scan'208"; a="26724133:sNHT22553706"
+Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, waltje@uWalt.NL.Mugnet.ORG,
+       Aubrey Li <aubreylee@gmail.com>
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <6d6a94c50704082001y5c13c865ic3d70217aba7d181@mail.gmail.com>
+References: <6d6a94c50704082001y5c13c865ic3d70217aba7d181@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1176092219.12458.1183612420@webmail.messagingengine.com>
-	 <1176093552.13670.1183613872@webmail.messagingengine.com>
-X-Google-Sender-Auth: 1c6ead6951429c14
+Organization: Analog Devices, Inc.
+Date: Mon, 09 Apr 2007 17:50:22 +0800
+Message-Id: <1176112223.17975.8.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/9/07, johnrobertbanks@fastmail.fm <johnrobertbanks@fastmail.fm> wrote:
-> YOU GUYS WILL LAUGH ABOUT THIS:
+On Mon, 2007-04-09 at 11:01 +0800, Aubrey Li wrote:
+> The option CONFIG_PACKET_MMAP should depend on MMU.
+> 
+> Signed-off-by: Aubrey.Li <aubreylee@gmail.com>
+> ---
+>  net/packet/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/packet/Kconfig b/net/packet/Kconfig
+> index 34ff93f..959c272 100644
+> --- a/net/packet/Kconfig
+> +++ b/net/packet/Kconfig
+> @@ -17,7 +17,7 @@ config PACKET
+> 
+>  config PACKET_MMAP
+>  	bool "Packet socket: mmapped IO"
+> -	depends on PACKET
+> +	depends on PACKET && MMU
+>  	help
+>  	  If you say Y here, the Packet protocol driver will use an IO
+>  	  mechanism that results in faster communication.
 
-No, I am crying actually. Dear post-masters, can we have this thread
-shit-canned, please?
+Yeah, this is a bug found on blackfin arch and it is also for other
+NOMMU arch. Is there any solution for this? We think Aubrey's idea
+works.
+
+Thanks
+-Bryan
