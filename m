@@ -1,72 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030519AbXDJOQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030574AbXDJORZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030519AbXDJOQv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030522AbXDJOQv
+	id S1030574AbXDJORZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030579AbXDJORY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:16:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2112 "EHLO spitz.ucw.cz"
+	Tue, 10 Apr 2007 10:17:24 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2115 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030519AbXDJOQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:16:50 -0400
-Date: Mon, 9 Apr 2007 12:39:20 +0000
+	id S1030521AbXDJOQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 10:16:57 -0400
+Date: Mon, 9 Apr 2007 20:10:51 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [RFC][PATCH -mm] swsusp: Use rbtree for tracking allocated swap
-Message-ID: <20070409123920.GA4251@ucw.cz>
-References: <200704072320.40238.rjw@sisk.pl> <20070408125636.GB4404@ucw.cz> <200704081902.35857.rjw@sisk.pl>
+To: Alan Hourihane <alanh@fairlite.demon.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/01] New FBDev driver for Intel Vermilion Range
+Message-ID: <20070409201050.GA4302@ucw.cz>
+References: <1175769886.10382.29.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704081902.35857.rjw@sisk.pl>
+In-Reply-To: <1175769886.10382.29.camel@localhost>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > > Some time ago we discussed the possibility of simplifying the swsusp's approach
-> > > towards tracking the swap pages allocated by it for saving the image (so that
-> > > they can be freed if there's an error).
-> > > 
-> > > I think we can get back to it now, as it is a nice optimization that should
-> > > allow us to use less memory (almost always) and improve performance a bit.
-> > > 
-> > 
-> > Well, I do not think you can measure the difference, but...
-> 
-> As far as the memory usage is concerned, I can. :-)  Usually, it takes 1 extent
-> (40 B on x86_64) to register all of the allocated swap pages.  If bitmaps are
-> used, we need as many bits as there are swap pages available (for 1 GB swap
-> and 4 KB pages that would be ~250000 bits, which gives ~8 pages, and we can
-> save more than 800 extents using that much memory).
+> +struct cr_sys {
+> +	struct vml_sys sys;
+> +	struct pci_dev *mch_dev;
+> +	struct pci_dev *lpc_dev;
+> +	__u32 mch_bar;
+> +	__u8 *mch_regs_base;
+> +	__u32 gpio_bar;
+> +	__u32 saved_panel_state;
+> +	__u32 saved_clock;
 
-Well... obviously it works for the best case. OTOH, for the worst, it
-needs 40bytes for every 2 bits. That's 16000% worse. And for that
-nightmare-fragmented 1GB swap, you'll need 5000000bytes... which is
-pretty bad.
+u32/u8 is right type to use here.
 
-OTOH 5MB RAM per 1GB swap is not _too_ bad... so we can do it...
+> +static struct vml_sys *my_sys = NULL;
 
-> > >  kernel/power/power.h  |   27 +---------
-> > >  kernel/power/swap.c   |   18 +-----
-> > >  kernel/power/swsusp.c |  135 ++++++++++++++++++++++++++------------------------
-> > >  kernel/power/user.c   |   22 +-------
-> > >  4 files changed, 85 insertions(+), 117 deletions(-)
+No need for zero initing.
 
-...and call it 'cleanup' not 'speedup'.
+> +static int crvml_sysinit(struct cr_sys *crsys)
+> +{
+> +	__u32 dev_en;
+> +	__u8 dev_en8;
+
+u8/u32, please.
+
+> +static void crvml_panel_on(const struct vml_sys *sys)
+> +{
+> +	const struct cr_sys *crsys = container_of(sys, struct cr_sys, sys);
+> +	__u32 addr = crsys->gpio_bar + CRVML_PANEL_PORT;
+> +	__u32 cur = inl(addr);
+
+here too, and everywhere outside headers.
+
+> +static void crvml_backlight_on(const struct vml_sys *sys)
+> +{
+> +	const struct cr_sys *crsys = container_of(sys, struct cr_sys, sys);
+> +	__u32 addr = crsys->gpio_bar + CRVML_PANEL_PORT;
+> +	__u32 cur = inl(addr);
+> +
+> +	if (cur & CRVML_BACKLIGHT_OFF) {
+> +		cur &= ~CRVML_BACKLIGHT_OFF;
+> +		outl(cur, addr);
+> +	}
+> +}
+> +
+> +static void crvml_backlight_off(const struct vml_sys *sys)
+> +{
+> +	const struct cr_sys *crsys = container_of(sys, struct cr_sys, sys);
+> +	__u32 addr = crsys->gpio_bar + CRVML_PANEL_PORT;
+> +	__u32 cur = inl(addr);
+> +
+> +	if (!(cur & CRVML_BACKLIGHT_OFF)) {
+> +		cur |= CRVML_BACKLIGHT_OFF;
+> +		outl(cur, addr);
+> +	}
+> +}
 
 
-> > ....as it removes code... I think we can do that. But it is 2.6.23+
-> > material.
-> 
-> Yes, I think so, but still we can ask Andrew to include it into -mm earlier? ;-)
+Should this go to driv*/video/backlight?
 
-Yes, that's okay with me.
+> +static int crvml_false(const struct vml_sys *sys)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int crvml_true(const struct vml_sys *sys)
+> +{
+> +	return 1;
+> +}
 
+Ugly but useful... should be done once for all fbdevs?
+
+> +#if (defined(CONFIG_X86) && defined(X86_FEATURE_PAT) && defined(X86_FEATURE_MSR))
+> +
+> +/*
+> + * Use the i386 Page Attribute Table for write-combining.
+> + * We can't include this code in the kernel submission, since some of it
+> + * belongs at kernel startup.
+> + */
+> +
+> +#define USE_PAT_WC
+> +#else
+> +#undef USE_PAT_WC
+> +#endif
+
+Eh? Did you want to remove this?
+
+
+> +/**************************************************************************
+> + * 
+> + * Copyright (c) Intel Corp. 2007.
+> + * All Rights Reserved.
+> + * 
+> + * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
+> + * develop this driver.
+> + *
+> + * Permission is hereby granted, free of charge, to any person obtaining a
+> + * copy of this software and associated documentation files (the
+> + * "Software"), to deal in the Software without restriction, including
+> + * without limitation the rights to use, copy, modify, merge, publish,
+> + * distribute, sub license, and/or sell copies of the Software, and to
+> + * permit persons to whom the Software is furnished to do so, subject to
+> + * the following conditions:
+> + * 
+> + * The above copyright notice and this permission notice (including the
+> + * next paragraph) shall be included in all copies or substantial portions
+> + * of the Software.
+> + *
+> + * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> + * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> + * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+> + * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
+> + * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+> + * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+> + * USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Can you just use GPL here?
+
+> +#ifdef __KERNEL__
+> +#include<linux/ioctl.h>
+> +#include<linux/types.h>
+
+Missingspaces.
+
+> +#define __u64 uint64_t
+
+No.
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
