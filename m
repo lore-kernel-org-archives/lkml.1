@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbXDIR4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbXDIR74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbXDIR4L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 13:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbXDIR4K
+	id S1752221AbXDIR74 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 13:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbXDIR74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 13:56:10 -0400
-Received: from waste.org ([66.93.16.53]:55149 "EHLO waste.org"
+	Mon, 9 Apr 2007 13:59:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52607 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753309AbXDIR4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 13:56:09 -0400
-Date: Mon, 9 Apr 2007 12:43:02 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: /proc/*/pagemap BUG: sleeping function called from invalid context
-Message-ID: <20070409174302.GP4892@waste.org>
-References: <20070409082554.GB6532@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070409082554.GB6532@localhost.sw.ru>
-User-Agent: Mutt/1.5.9i
+	id S1752205AbXDIR7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 13:59:55 -0400
+Message-ID: <461A7F14.1080105@redhat.com>
+Date: Mon, 09 Apr 2007 13:59:48 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: APIC error on 32-bit kernel
+References: <20070323200817.1f3e39b9@osprey.hogchain.net> <20070408133822.3868e6ff@osprey.hogchain.net>
+In-Reply-To: <20070408133822.3868e6ff@osprey.hogchain.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 09, 2007 at 12:25:54PM +0400, Alexey Dobriyan wrote:
-> After
-> 	cat /proc/self/pagemap
+Jay Cliburn wrote:
+> [Adding linux-kernel to the cc list, hoping for wider exposure.]
 > 
-> BUG: sleeping function called from invalid context at include/asm/uaccess.h:453
-> in_atomic():1, irqs_disabled():0
-> 1 lock held by cat/14183:
->  #0:  (&mm->mmap_sem){----}, at: [<c017d17b>] pagemap_read+0x11f/0x21b
->  [<c01b7bc7>] copy_to_user+0x37/0x4c
->  [<c017cf92>] add_to_pagemap+0x49/0x6f
->  [<c017d034>] pagemap_pte_range+0x56/0x7e
->  [<c017cfde>] pagemap_pte_range+0x0/0x7e
->  [<c01b481d>] walk_page_range+0xf1/0x1a0
->  [<c017d1e3>] pagemap_read+0x187/0x21b
->  [<c01fdafa>] tty_write+0x1bb/0x1cc
->  [<c017d05c>] pagemap_read+0x0/0x21b
->  [<c01589b0>] vfs_read+0x72/0x95
->  [<c0158cce>] sys_read+0x41/0x67
->  [<c0103d96>] sysenter_past_esp+0x8f/0x99
->  [<c0103d66>] sysenter_past_esp+0x5f/0x99
+> On Fri, 23 Mar 2007 20:08:17 -0500
+> Jay Cliburn <jacliburn@bellsouth.net> wrote:
+> 
+>> We're trying to track down the source of a problem that occurs
+>> whenever the atl1 network driver is activated on a 32-bit 2.6.21-rc4
+> 
+> and -rc5, -rc6, 2.6.20.x, 2.6.19.3, and probably others.
+> 
+>> We can load the driver just fine, but whenever we activate the
+>> network, we see APIC errors (a sample of them are shown here,
+>> captured from a serial console):
+>>
+>> [root@hawk ~]# echo 8 > /proc/sys/kernel/printk
+>> [root@hawk ~]# [   93.942012] process `sysctl' is using deprecated
+>> sysctl (sysc.
+>> [   94.396609] atl1: eth0 link is up 1000 Mbps full duplex
+>> [   94.498887] APIC error on CPU0: 00(08)
+>> [   94.498534] APIC error on CPU1: 00(08)
+>> [   94.550079] APIC error on CPU0: 08(08)
+>> [   94.549725] APIC error on CPU1: 08(08)
+>> [   94.600915] APIC error on CPU1: 08(08)
+>> [   94.601276] APIC error on CPU0: 08(08)
+>> [   94.652108] APIC error on CPU1: 08(08)
+>> [   94.652470] APIC error on CPU0: 08(08)
+>> [   94.703659] APIC error on CPU0: 08(08)
+>> [   94.703305] APIC error on CPU1: 08(08)
+>> [   94.754852] APIC error on CPU0: 08(40)
+>> [   94.806045] APIC error on CPU0: 40(08)
+>> [   94.805692] APIC error on CPU1: 08(08)
+>> [   94.857238] APIC error on CPU0: 08(08)
+>> [   94.856884] APIC error on CPU1: 08(08)
+>> [   94.908432] APIC error on CPU0: 08(08)
+>> [   94.908078] APIC error on CPU1: 08(08)
+>> [snip, more of the same]
+>> [   98.901156] APIC error on CPU1: 08(08)
+>> [   98.952702] APIC error on CPU0: 08(08)
+>> [   98.952349] APIC error on CPU1: 08(08)
+>> [   99.003895] APIC error on CPU0: 08(08)
+>> [   99.003542] APIC error on CPU1: 08(08)
+>>
+>> The machine hangs for about 5-10 seconds, then spontaneously reboots
+>> without further console output.
+> 
+> I can prompt an oops by pinging my router while the apic errors are
+> scrolling by.
 
-I'm still waking up but this is odd. mm->mmap_sem is an rwsem,
-sleeping inside of it should be perfectly valid.
+Where is the text of the oops?
 
-Oh. You've got CONFIG_HIGHPTE and the note is really about the
-kmap_atomic inside pte_offset_map. I'll fix that up.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> 
+
