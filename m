@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031249AbXDJRd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031280AbXDJRgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031249AbXDJRd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 13:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031267AbXDJRdz
+	id S1031280AbXDJRgb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 13:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031279AbXDJRga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 13:33:55 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36387 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031249AbXDJRdy (ORCPT
+	Tue, 10 Apr 2007 13:36:30 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:41530 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031270AbXDJRg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 13:33:54 -0400
-Date: Tue, 10 Apr 2007 18:36:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Egmont Koblinger <egmont@uhulinux.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-Message-ID: <20070410183659.7341eeec@the-village.bc.nu>
-In-Reply-To: <20070410171924.GA18314@uhulinux.hu>
-References: <20070406191245.GA11974@uhulinux.hu>
-	<4616A2C7.3030000@zytor.com>
-	<20070407092451.GA8779@uhulinux.hu>
-	<Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr>
-	<20070407172603.GA25351@uhulinux.hu>
-	<4617DBF7.5060009@zytor.com>
-	<20070410094325.GB9143@uhulinux.hu>
-	<461BB092.3070201@zytor.com>
-	<20070410171924.GA18314@uhulinux.hu>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 10 Apr 2007 13:36:29 -0400
+Date: Tue, 10 Apr 2007 13:35:52 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Shaya Potter <spotter@cs.columbia.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL -mm] Unionfs branch management code
+Message-ID: <20070410173552.GB9105@filer.fsl.cs.sunysb.edu>
+References: <11761304521844-git-send-email-jsipek@cs.sunysb.edu> <20070409104948.2bc99202.akpm@linux-foundation.org> <461BC7EC.5080101@cs.columbia.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <461BC7EC.5080101@cs.columbia.edu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What do you exactly mean by this? Doing a binary search in a table of 11
-> intervals to find out whether a character is double-wide? Adding
-> approximately 30 lines of code (including the table and the binary search
-> routine) to the kernel to handle this case? I don't think it's bloat. It's a
+On Tue, Apr 10, 2007 at 01:22:52PM -0400, Shaya Potter wrote:
+> Andrew Morton wrote:
+> >On Mon,  9 Apr 2007 10:53:51 -0400 "Josef 'Jeff' Sipek" 
+> ><jsipek@cs.sunysb.edu> wrote:
+> >
+> >>The following patches introduce new branch-management code into Unionfs as
+> >>well as fix a number of stability issues and resource leaks.
+> >
+> >I have a mental note that unionfs is in the "stuck" state, due to general
+> >agreement that we should implement this functionality at the VFS level, one
+> >reason for which is unionfs's upper-vs-lower coherency problems.
+> 
+> How can a union file system with a decent set of useful semantics be 
+> fully implemented at the VFS layer in a "clean" manner?
 
-I don't have a problem with it. It is a situation people find themselves
-in and framebuffer consoles can handle CJK although PC text mode ones
-can't do it well. It all comes down to a clean and small implementation.
+Unioning is quite odd. It uses concepts, some of which do indeed belong in
+the VFS (like actual merging of the lower directories), but others that most
+definitely do not (like whiteouts).
 
-Alan
+> For instance, a major use of unionfs is live CDs, namely unionfs w/ a 
+> read-only and read-write layer.  Unionfs enables files to be copied up 
+> from the read-only layer to the read-write layer.
+> 
+> Does one really want to implement "copyup" in the VFS?
+ 
+I don't think that copyup is the problem, but whiteouts...oh boy.
+Whiteouts/some kind of persistent storage is most definitely a filesystem
+construct, and it does not belong in the VFS.
+
+Josef "Jeff" Sipek.
+
+-- 
+If I have trouble installing Linux, something is wrong. Very wrong.
+		- Linus Torvalds
