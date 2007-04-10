@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbXDJNrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbXDJNsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753753AbXDJNrH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 09:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbXDJNrH
+	id S1753754AbXDJNsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 09:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbXDJNsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 09:47:07 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:39771 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753743AbXDJNrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 09:47:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=dF+vApJa1EIfuW0DcOcTxw3fAITUfIIAEaYCr58MR5m5O0YQHg8MJtJ080sl29tN1cGvED1G4M0B+aDW8eh3ercjhsgpQW3cVqF98ptS0QoB6bijUJHE760EnLZpmS5IxiGtaVbvYoOSj/3dRhEpWVf46DCkY5fsPMGSrVXZvOw=
-Subject: Re: [PATCH] epson1355fb.c, kernel 2.6.21-rc6-git3
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Roland Stigge <stigge@antcom.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <461B86F2.4070907@antcom.de>
-References: <461B86F2.4070907@antcom.de>
-Content-Type: text/plain
-Date: Tue, 10 Apr 2007 21:46:54 +0800
-Message-Id: <1176212814.16120.21.camel@daplas>
+	Tue, 10 Apr 2007 09:48:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50284 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753750AbXDJNsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 09:48:40 -0400
+Date: Tue, 10 Apr 2007 15:48:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+Message-ID: <20070410134814.GA28016@elte.hu>
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org> <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m11wix73ut.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-10 at 14:45 +0200, Roland Stigge wrote:
-> Hi,
+
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
+
+> Ingo Molnar <mingo@elte.hu> writes:
 > 
-> I'm attaching a fix for the error handling code in epson1355fb.c.
+> > no. Two _completely separate_ lists.
+> >
+> > i.e. a to-be-reaped task will still be on the main list _too_. The 
+> > main list is for all the PID semantics rules. The reap-list is just 
+> > for wait4() processing. The two would be completely separate.
+> 
+> And what pray tell except for heuristics is the list of children used 
+> for?
 
-I already responded to your entry in Kernel Bugzilla.
+on a second thought: the p->children list is needed for the whole 
+child/parent task tree, which is needed for sys_getppid(). The question 
+is, does anything require us to reparent to within the same thread 
+group?
 
-Thanks.
-
-Tony
-
-
+	Ingo
