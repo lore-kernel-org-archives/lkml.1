@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031067AbXDJQh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030921AbXDJQmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031067AbXDJQh5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031092AbXDJQh5
+	id S1030921AbXDJQmK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031098AbXDJQmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:37:57 -0400
-Received: from mail.screens.ru ([213.234.233.54]:48744 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031067AbXDJQh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:37:56 -0400
-Date: Tue, 10 Apr 2007 20:37:14 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>,
-       Roland McGrath <roland@redhat.com>, acahalan@gmail.com
-Subject: Re: [PATCH] Only send pdeath_signal when getppid changes.
-Message-ID: <20070410163714.GA104@tv-sign.ru>
-References: <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com> <20070410134814.GA28016@elte.hu> <20070410133808.GA163@tv-sign.ru> <m1y7l0xns0.fsf_-_@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Apr 2007 12:42:10 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:33790 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030921AbXDJQmI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:42:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Aq5qVxtFg29UEkhUHcb+yXDCNplmJksCbHV6QToxsZbBE/lkSLFtNURnuzwnWJbsTON0tN5qBBzuMS96RXCXZMe4V7gJW6h8zr586z8IEaKQLat/Ai51G2/vFzBKqkBBSeqC6tIoTrTP4Jb3i1kQjnD5uHfWF7V1XXwP9OMDkVs=
+Message-ID: <a36005b50704100942t3602e92ar9a4362ad3d45434a@mail.gmail.com>
+Date: Tue, 10 Apr 2007 09:42:07 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: If not readdir() then what?
+Cc: "Theodore Tso" <tytso@mit.edu>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>
+In-Reply-To: <461BB1C1.5050709@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1y7l0xns0.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+References: <20070407233037.GA16508@infradead.org> <46194260.3050900@zytor.com>
+	 <20070409014426.GA18580@thunk.org>
+	 <20070409110927.GA23240@lazybastard.org>
+	 <1176121897.6210.8.camel@heimdal.trondhjem.org>
+	 <20070409131918.GC18580@thunk.org>
+	 <1176127395.6210.34.camel@heimdal.trondhjem.org>
+	 <20070410135641.GG13650@thunk.org>
+	 <a36005b50704100710i28d5681fsdab6deb1d5161e28@mail.gmail.com>
+	 <461BB1C1.5050709@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/10, Eric W. Biederman wrote:
-> 
-> So this patch fixes the pdeath_signal behaviour only sending a signal
-> when the results of getppid would change.
+On 4/10/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> It rather makes any user space accesses irrelevant.  The main question
+> seems to be if we can realistically increase the cookie size even to 64
+> bits.
 
-Don't get me wrong, I personally like this patch very much. However,
+On 32-bit platforms, *not* using _FILE_OFFSET_BITS=64 is already today
+a stupid thing to do.  There are several places where things simply
+break in today's world.
 
-A long ago, Albert Cahalan (cc-ed) wrote:
->
-> I rely on thread-to-thread pdeath notification for my emulator.
-> I also need notification on loss of a thread-group or mm, so I do
-> my best to emulate those based on thread-to-thread notification.
->
-> ...
->
-> The way I use it pdeath_signal:
->
-> The parent is one of many tasks within a task group.
-> The child is not within that thread group, but shares VM.
-> (the child is single threaded, existing only to get the signal)
-> For each task in the thread group, there is a child task
-> waiting for parent death notification. (there are two other
-> tasks sharing VM but not in the task group: one to do
-> async memory searching, and one to communicate with
-> a user interface for debugging -- like an interactive valgrind)
-
-Oleg.
-
+Once you do use 53-bit offsets (and we always do this for 64-bit
+platforms) telldir returns a 64-bit cookie.  So, no problem.  The one
+big issue is that there are no error values for telldir.  There was no
+need so far.  But a) we can change this or b) we can really go
+stronger in the direction to deprecate 32-bit ops and force people to
+update their code.
