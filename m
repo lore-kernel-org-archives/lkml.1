@@ -1,192 +1,438 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXDJALO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbXDJAQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081AbXDJALO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 20:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932313AbXDJALN
+	id S1753675AbXDJAQq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 20:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbXDJAQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 20:11:13 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:41907 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753682AbXDJAK5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 20:10:57 -0400
-Date: Mon, 9 Apr 2007 17:06:30 -0700
-Message-Id: <200704100006.l3A06UlW020650@zach-dev.vmware.com>
-Subject: [PATCH 10/10] Fix BusLogic to stop using check_region
-From: Zachary Amsden <zach@vmware.com>
-To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>
-CC: "Lenoard N. Zubkoff" <lnz@dandelion.com>
-CC: Michael Clay <claym@osuosl.org>
-X-OriginalArrivalTime: 10 Apr 2007 00:10:06.0612 (UTC) FILETIME=[9826E540:01C77B04]
+	Mon, 9 Apr 2007 20:16:46 -0400
+Received: from [63.64.152.142] ([63.64.152.142]:1777 "EHLO gitlost.site"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753674AbXDJAQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 20:16:43 -0400
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Subject: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
+Date: Mon, 09 Apr 2007 17:32:43 -0700
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       cramerj@intel.com, auke-jan.h.kok@intel.com,
+       christopher.leech@intel.com
+Message-Id: <20070410003243.32106.98266.stgit@gitlost.site>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got so sick of seing the check_region warnings from BusLogic.c I actually
-fixed it properly.  Never use check region, reserve it before the probe
-with request region instead and check the error result; free region if
-setup fails.  Should be functionally identical to the original except for
-fixing the potential race.
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
 
-Subject: Fix BusLogic to stop using check_region
-Signed-off-by: Zachary Amsden <zach@vmware.com>
+Update: Fixed a typecast in free_netdev() for the egress_subqueue list.
 
-diff -r 15645892b508 drivers/scsi/BusLogic.c
---- a/drivers/scsi/BusLogic.c	Mon Apr 09 13:43:06 2007 -0700
-+++ b/drivers/scsi/BusLogic.c	Mon Apr 09 14:52:00 2007 -0700
-@@ -579,17 +579,17 @@ static void __init BusLogic_InitializePr
- 	/*
- 	   Append the list of standard BusLogic MultiMaster ISA I/O Addresses.
- 	 */
--	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe330 : check_region(0x330, BusLogic_MultiMasterAddressCount) == 0)
-+	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe330)
- 		BusLogic_AppendProbeAddressISA(0x330);
--	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe334 : check_region(0x334, BusLogic_MultiMasterAddressCount) == 0)
-+	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe334)
- 		BusLogic_AppendProbeAddressISA(0x334);
--	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe230 : check_region(0x230, BusLogic_MultiMasterAddressCount) == 0)
-+	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe230)
- 		BusLogic_AppendProbeAddressISA(0x230);
--	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe234 : check_region(0x234, BusLogic_MultiMasterAddressCount) == 0)
-+	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe234)
- 		BusLogic_AppendProbeAddressISA(0x234);
--	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe130 : check_region(0x130, BusLogic_MultiMasterAddressCount) == 0)
-+	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe130)
- 		BusLogic_AppendProbeAddressISA(0x130);
--	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe134 : check_region(0x134, BusLogic_MultiMasterAddressCount) == 0)
-+	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe134)
- 		BusLogic_AppendProbeAddressISA(0x134);
+Added an API and associated supporting routines for multiqueue network devices.
+This allows network devices supporting multiple TX queues to configure each
+queue within the netdevice and manage each queue independantly.  Changes to the
+PRIO Qdisc also allow a user to map multiple flows to individual TX queues,
+taking advantage of each queue on the device.
+
+Signed-off-by: Peter P. Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+---
+
+ include/linux/etherdevice.h |    3 +-
+ include/linux/netdevice.h   |   66 ++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/skbuff.h      |    2 +
+ net/core/dev.c              |   25 +++++++++++++---
+ net/core/skbuff.c           |    3 ++
+ net/ethernet/eth.c          |    9 +++---
+ net/sched/sch_generic.c     |    4 +--
+ net/sched/sch_prio.c        |   55 +++++++++++++++++++++++++++++++-----
+ 8 files changed, 146 insertions(+), 21 deletions(-)
+
+diff --git a/include/linux/etherdevice.h b/include/linux/etherdevice.h
+index 745c988..446de39 100644
+--- a/include/linux/etherdevice.h
++++ b/include/linux/etherdevice.h
+@@ -39,7 +39,8 @@ extern void		eth_header_cache_update(struct hh_cache *hh, struct net_device *dev
+ extern int		eth_header_cache(struct neighbour *neigh,
+ 					 struct hh_cache *hh);
+ 
+-extern struct net_device *alloc_etherdev(int sizeof_priv);
++extern struct net_device *alloc_etherdev_mq(int sizeof_priv, int queue_count);
++#define alloc_etherdev(sizeof_priv) alloc_etherdev_mq(sizeof_priv, 1)
+ static inline void eth_copy_and_sum (struct sk_buff *dest, 
+ 				     const unsigned char *src, 
+ 				     int len, int base)
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 71fc8ff..db06169 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -106,6 +106,14 @@ struct netpoll_info;
+ #define MAX_HEADER (LL_MAX_HEADER + 48)
+ #endif
+ 
++struct net_device_subqueue
++{
++	/* Give a control state for each queue.  This struct may contain
++	 * per-queue locks in the future.
++	 */
++	unsigned long	state;
++};
++
+ /*
+  *	Network device statistics. Akin to the 2.0 ether stats but
+  *	with byte counters.
+@@ -324,6 +332,7 @@ struct net_device
+ #define NETIF_F_GSO		2048	/* Enable software GSO. */
+ #define NETIF_F_LLTX		4096	/* LockLess TX */
+ #define NETIF_F_INTERNAL_STATS	8192	/* Use stats structure in net_device */
++#define NETIF_F_MULTI_QUEUE	16384	/* Has multiple TX/RX queues */
+ 
+ 	/* Segmentation offload features */
+ #define NETIF_F_GSO_SHIFT	16
+@@ -534,6 +543,14 @@ struct net_device
+ 	struct device		dev;
+ 	/* space for optional statistics and wireless sysfs groups */
+ 	struct attribute_group  *sysfs_groups[3];
++
++	/* To retrieve statistics per subqueue - FOR FUTURE USE */
++	struct net_device_stats* (*get_subqueue_stats)(struct net_device *dev,
++							int queue_index);
++
++	/* The TX queue control structures */
++	struct net_device_subqueue	*egress_subqueue;
++	int				egress_subqueue_count;
+ };
+ #define to_net_dev(d) container_of(d, struct net_device, dev)
+ 
+@@ -675,6 +692,48 @@ static inline int netif_running(const struct net_device *dev)
+ 	return test_bit(__LINK_STATE_START, &dev->state);
  }
  
-@@ -795,7 +795,9 @@ static int __init BusLogic_InitializeMul
- 	   host adapters are probed.
- 	 */
- 	if (!BusLogic_ProbeOptions.NoProbeISA)
--		if (PrimaryProbeInfo->IO_Address == 0 && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe330 : check_region(0x330, BusLogic_MultiMasterAddressCount) == 0)) {
-+		if (PrimaryProbeInfo->IO_Address == 0 &&
-+				(!BusLogic_ProbeOptions.LimitedProbeISA ||
-+				 BusLogic_ProbeOptions.Probe330)) {
- 			PrimaryProbeInfo->HostAdapterType = BusLogic_MultiMaster;
- 			PrimaryProbeInfo->HostAdapterBusType = BusLogic_ISA_Bus;
- 			PrimaryProbeInfo->IO_Address = 0x330;
-@@ -805,15 +807,25 @@ static int __init BusLogic_InitializeMul
- 	   omitting the Primary I/O Address which has already been handled.
- 	 */
- 	if (!BusLogic_ProbeOptions.NoProbeISA) {
--		if (!StandardAddressSeen[1] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe334 : check_region(0x334, BusLogic_MultiMasterAddressCount) == 0))
-+		if (!StandardAddressSeen[1] &&
-+				(!BusLogic_ProbeOptions.LimitedProbeISA ||
-+				 BusLogic_ProbeOptions.Probe334))
- 			BusLogic_AppendProbeAddressISA(0x334);
--		if (!StandardAddressSeen[2] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe230 : check_region(0x230, BusLogic_MultiMasterAddressCount) == 0))
-+		if (!StandardAddressSeen[2] &&
-+				(!BusLogic_ProbeOptions.LimitedProbeISA ||
-+				 BusLogic_ProbeOptions.Probe230))
- 			BusLogic_AppendProbeAddressISA(0x230);
--		if (!StandardAddressSeen[3] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe234 : check_region(0x234, BusLogic_MultiMasterAddressCount) == 0))
-+		if (!StandardAddressSeen[3] &&
-+				(!BusLogic_ProbeOptions.LimitedProbeISA ||
-+				 BusLogic_ProbeOptions.Probe234))
- 			BusLogic_AppendProbeAddressISA(0x234);
--		if (!StandardAddressSeen[4] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe130 : check_region(0x130, BusLogic_MultiMasterAddressCount) == 0))
-+		if (!StandardAddressSeen[4] &&
-+				(!BusLogic_ProbeOptions.LimitedProbeISA ||
-+				 BusLogic_ProbeOptions.Probe130))
- 			BusLogic_AppendProbeAddressISA(0x130);
--		if (!StandardAddressSeen[5] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe134 : check_region(0x134, BusLogic_MultiMasterAddressCount) == 0))
-+		if (!StandardAddressSeen[5] &&
-+				(!BusLogic_ProbeOptions.LimitedProbeISA ||
-+				 BusLogic_ProbeOptions.Probe134))
- 			BusLogic_AppendProbeAddressISA(0x134);
- 	}
- 	/*
-@@ -2220,22 +2232,35 @@ static int __init BusLogic_init(void)
- 		HostAdapter->PCI_Device = ProbeInfo->PCI_Device;
- 		HostAdapter->IRQ_Channel = ProbeInfo->IRQ_Channel;
- 		HostAdapter->AddressCount = BusLogic_HostAdapterAddressCount[HostAdapter->HostAdapterType];
++/*
++ * Routines to manage the subqueues on a device.  We only need start
++ * stop, and a check if it's stopped.  All other device management is
++ * done at the overall netdevice level.
++ * Also test the device if we're multiqueue.
++ */
++static inline void netif_start_subqueue(struct net_device *dev, u16 queue_index)
++{
++	clear_bit(__LINK_STATE_XOFF, &dev->egress_subqueue[queue_index].state);
++}
 +
-+		/*
-+		   Make sure region is free prior to probing.
-+		 */
-+		if (!request_region(HostAdapter->IO_Address, HostAdapter->AddressCount,
-+					"BusLogic"))
-+			continue;
- 		/*
- 		   Probe the Host Adapter.  If unsuccessful, abort further initialization.
- 		 */
--		if (!BusLogic_ProbeHostAdapter(HostAdapter))
-+		if (!BusLogic_ProbeHostAdapter(HostAdapter)) {
-+			release_region(HostAdapter->IO_Address, HostAdapter->AddressCount);
- 			continue;
-+		}
- 		/*
- 		   Hard Reset the Host Adapter.  If unsuccessful, abort further
- 		   initialization.
- 		 */
--		if (!BusLogic_HardwareResetHostAdapter(HostAdapter, true))
-+		if (!BusLogic_HardwareResetHostAdapter(HostAdapter, true)) {
-+			release_region(HostAdapter->IO_Address, HostAdapter->AddressCount);
- 			continue;
-+		}
- 		/*
- 		   Check the Host Adapter.  If unsuccessful, abort further initialization.
- 		 */
--		if (!BusLogic_CheckHostAdapter(HostAdapter))
-+		if (!BusLogic_CheckHostAdapter(HostAdapter)) {
-+			release_region(HostAdapter->IO_Address, HostAdapter->AddressCount);
- 			continue;
-+		}
- 		/*
- 		   Initialize the Driver Options field if provided.
- 		 */
-@@ -2247,16 +2272,6 @@ static int __init BusLogic_init(void)
- 		 */
- 		BusLogic_AnnounceDriver(HostAdapter);
- 		/*
--		   Register usage of the I/O Address range.  From this point onward, any
--		   failure will be assumed to be due to a problem with the Host Adapter,
--		   rather than due to having mistakenly identified this port as belonging
--		   to a BusLogic Host Adapter.  The I/O Address range will not be
--		   released, thereby preventing it from being incorrectly identified as
--		   any other type of Host Adapter.
--		 */
--		if (!request_region(HostAdapter->IO_Address, HostAdapter->AddressCount, "BusLogic"))
--			continue;
--		/*
- 		   Register the SCSI Host structure.
- 		 */
- 
-@@ -2280,6 +2295,12 @@ static int __init BusLogic_init(void)
- 		   Acquire the System Resources necessary to use the Host Adapter, then
- 		   Create the Initial CCBs, Initialize the Host Adapter, and finally
- 		   perform Target Device Inquiry.
-+
-+		   From this point onward, any failure will be assumed to be due to a
-+		   problem with the Host Adapter, rather than due to having mistakenly
-+		   identified this port as belonging to a BusLogic Host Adapter.  The
-+		   I/O Address range will not be released, thereby preventing it from
-+		   being incorrectly identified as any other type of Host Adapter.
- 		 */
- 		if (BusLogic_ReadHostAdapterConfiguration(HostAdapter) &&
- 		    BusLogic_ReportHostAdapterConfiguration(HostAdapter) &&
-@@ -3598,6 +3619,7 @@ static void __exit BusLogic_exit(void)
- 
- __setup("BusLogic=", BusLogic_Setup);
- 
-+#ifdef MODULE
- static struct pci_device_id BusLogic_pci_tbl[] __devinitdata = {
- 	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-@@ -3607,6 +3629,7 @@ static struct pci_device_id BusLogic_pci
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{ }
- };
++static inline void netif_stop_subqueue(struct net_device *dev, u16 queue_index)
++{
++#ifdef CONFIG_NETPOLL_TRAP
++	if (netpoll_trap())
++		return;
 +#endif
- MODULE_DEVICE_TABLE(pci, BusLogic_pci_tbl);
++	set_bit(__LINK_STATE_XOFF, &dev->egress_subqueue[queue_index].state);
++}
++
++static inline int netif_subqueue_stopped(const struct net_device *dev,
++                                         u16 queue_index)
++{
++	return test_bit(__LINK_STATE_XOFF,
++	                &dev->egress_subqueue[queue_index].state);
++}
++
++static inline void netif_wake_subqueue(struct net_device *dev, u16 queue_index)
++{
++#ifdef CONFIG_NETPOLL_TRAP
++	if (netpoll_trap())
++		return;
++#endif
++	if (test_and_clear_bit(__LINK_STATE_XOFF,
++	                       &dev->egress_subqueue[queue_index].state))
++		__netif_schedule(dev);
++}
++
++static inline int netif_is_multiqueue(const struct net_device *dev)
++{
++	return (!!(NETIF_F_MULTI_QUEUE & dev->features));
++}
  
- module_init(BusLogic_init);
+ /* Use this variant when it is known for sure that it
+  * is executing from interrupt context.
+@@ -968,8 +1027,11 @@ static inline void netif_tx_disable(struct net_device *dev)
+ extern void		ether_setup(struct net_device *dev);
+ 
+ /* Support for loadable net-drivers */
+-extern struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+-				       void (*setup)(struct net_device *));
++extern struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
++					  void (*setup)(struct net_device *),
++					  int queue_count);
++#define alloc_netdev(sizeof_priv, name, setup) \
++	alloc_netdev_mq(sizeof_priv, name, setup, 1)
+ extern int		register_netdev(struct net_device *dev);
+ extern void		unregister_netdev(struct net_device *dev);
+ /* Functions used for multicast support */
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index 08fa5c8..96fd263 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -212,6 +212,7 @@ typedef unsigned char *sk_buff_data_t;
+  *	@pkt_type: Packet class
+  *	@fclone: skbuff clone status
+  *	@ip_summed: Driver fed us an IP checksum
++ *	@queue_mapping: Queue mapping for multiqueue devices
+  *	@priority: Packet queueing priority
+  *	@users: User count - see {datagram,tcp}.c
+  *	@protocol: Packet protocol from driver
+@@ -264,6 +265,7 @@ struct sk_buff {
+ 		__wsum		csum;
+ 		__u32		csum_offset;
+ 	};
++	__u16			queue_mapping;
+ 	__u32			priority;
+ 	__u8			local_df:1,
+ 				cloned:1,
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 219a57f..c11c8fa 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -3292,16 +3292,18 @@ static struct net_device_stats *maybe_internal_stats(struct net_device *dev)
+ }
+ 
+ /**
+- *	alloc_netdev - allocate network device
++ *	alloc_netdev_mq - allocate network device
+  *	@sizeof_priv:	size of private data to allocate space for
+  *	@name:		device name format string
+  *	@setup:		callback to initialize device
++ *	@queue_count:	the number of subqueues to allocate
+  *
+  *	Allocates a struct net_device with private data area for driver use
+- *	and performs basic initialization.
++ *	and performs basic initialization.  Also allocates subqueue structs
++ *	for each queue on the device.
+  */
+-struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+-		void (*setup)(struct net_device *))
++struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
++		void (*setup)(struct net_device *), int queue_count)
+ {
+ 	void *p;
+ 	struct net_device *dev;
+@@ -3326,12 +3328,23 @@ struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+ 	if (sizeof_priv)
+ 		dev->priv = netdev_priv(dev);
+ 
++ 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
++ 
++ 	p = kzalloc(alloc_size, GFP_KERNEL);
++ 	if (!p) {
++ 		printk(KERN_ERR "alloc_netdev: Unable to allocate queues.\n");
++ 		return NULL;
++ 	}
++ 
++ 	dev->egress_subqueue = p;
++ 	dev->egress_subqueue_count = queue_count;
++
+ 	dev->get_stats = maybe_internal_stats;
+ 	setup(dev);
+ 	strcpy(dev->name, name);
+ 	return dev;
+ }
+-EXPORT_SYMBOL(alloc_netdev);
++EXPORT_SYMBOL(alloc_netdev_mq);
+ 
+ /**
+  *	free_netdev - free network device
+@@ -3345,6 +3358,7 @@ void free_netdev(struct net_device *dev)
+ {
+ #ifdef CONFIG_SYSFS
+ 	/*  Compatibility with error handling in drivers */
++	kfree(dev->egress_subqueue);
+ 	if (dev->reg_state == NETREG_UNINITIALIZED) {
+ 		kfree((char *)dev - dev->padded);
+ 		return;
+@@ -3356,6 +3370,7 @@ void free_netdev(struct net_device *dev)
+ 	/* will free via device release */
+ 	put_device(&dev->dev);
+ #else
++	kfree(dev->egress_subqueue);
+ 	kfree((char *)dev - dev->padded);
+ #endif
+ }
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index e60864e..642aab9 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -474,6 +474,7 @@ struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
+ 	n->nohdr = 0;
+ 	C(pkt_type);
+ 	C(ip_summed);
++	C(queue_mapping);
+ 	C(priority);
+ #if defined(CONFIG_IP_VS) || defined(CONFIG_IP_VS_MODULE)
+ 	C(ipvs_property);
+@@ -516,6 +517,7 @@ static void copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
+ #endif
+ 	new->sk		= NULL;
+ 	new->dev	= old->dev;
++	new->queue_mapping = old->queue_mapping;
+ 	new->priority	= old->priority;
+ 	new->protocol	= old->protocol;
+ 	new->dst	= dst_clone(old->dst);
+@@ -1974,6 +1976,7 @@ struct sk_buff *skb_segment(struct sk_buff *skb, int features)
+ 		tail = nskb;
+ 
+ 		nskb->dev = skb->dev;
++		nskb->queue_mapping = skb->queue_mapping;
+ 		nskb->priority = skb->priority;
+ 		nskb->protocol = skb->protocol;
+ 		nskb->dst = dst_clone(skb->dst);
+diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
+index 0ac2524..87a509c 100644
+--- a/net/ethernet/eth.c
++++ b/net/ethernet/eth.c
+@@ -316,9 +316,10 @@ void ether_setup(struct net_device *dev)
+ EXPORT_SYMBOL(ether_setup);
+ 
+ /**
+- * alloc_etherdev - Allocates and sets up an Ethernet device
++ * alloc_etherdev_mq - Allocates and sets up an Ethernet device
+  * @sizeof_priv: Size of additional driver-private structure to be allocated
+  *	for this Ethernet device
++ * @queue_count: The number of queues this device has.
+  *
+  * Fill in the fields of the device structure with Ethernet-generic
+  * values. Basically does everything except registering the device.
+@@ -328,8 +329,8 @@ EXPORT_SYMBOL(ether_setup);
+  * this private data area.
+  */
+ 
+-struct net_device *alloc_etherdev(int sizeof_priv)
++struct net_device *alloc_etherdev_mq(int sizeof_priv, int queue_count)
+ {
+-	return alloc_netdev(sizeof_priv, "eth%d", ether_setup);
++	return alloc_netdev_mq(sizeof_priv, "eth%d", ether_setup, queue_count);
+ }
+-EXPORT_SYMBOL(alloc_etherdev);
++EXPORT_SYMBOL(alloc_etherdev_mq);
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index 52eb343..8f0063a 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -133,7 +133,8 @@ static inline int qdisc_restart(struct net_device *dev)
+ 			/* And release queue */
+ 			spin_unlock(&dev->queue_lock);
+ 
+-			if (!netif_queue_stopped(dev)) {
++			if (!netif_queue_stopped(dev) &&
++			    !netif_subqueue_stopped(dev, skb->queue_mapping)) {
+ 				int ret;
+ 
+ 				ret = dev_hard_start_xmit(skb, dev);
+@@ -149,7 +150,6 @@ static inline int qdisc_restart(struct net_device *dev)
+ 					goto collision;
+ 				}
+ 			}
+-
+ 			/* NETDEV_TX_BUSY - we need to requeue */
+ 			/* Release the driver */
+ 			if (!nolock) {
+diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c
+index 5cfe60b..7365621 100644
+--- a/net/sched/sch_prio.c
++++ b/net/sched/sch_prio.c
+@@ -43,6 +43,7 @@ struct prio_sched_data
+ 	struct tcf_proto *filter_list;
+ 	u8  prio2band[TC_PRIO_MAX+1];
+ 	struct Qdisc *queues[TCQ_PRIO_BANDS];
++	u16 band2queue[TC_PRIO_MAX + 1];
+ };
+ 
+ 
+@@ -63,20 +64,26 @@ prio_classify(struct sk_buff *skb, struct Qdisc *sch, int *qerr)
+ 		case TC_ACT_SHOT:
+ 			return NULL;
+ 		};
+-
+ 		if (!q->filter_list ) {
+ #else
+ 		if (!q->filter_list || tc_classify(skb, q->filter_list, &res)) {
+ #endif
+ 			if (TC_H_MAJ(band))
+ 				band = 0;
++			skb->queue_mapping =
++				  q->prio2band[q->band2queue[band&TC_PRIO_MAX]];
++
+ 			return q->queues[q->prio2band[band&TC_PRIO_MAX]];
+ 		}
+ 		band = res.classid;
+ 	}
+ 	band = TC_H_MIN(band) - 1;
+-	if (band > q->bands)
++	if (band > q->bands) {
++		skb->queue_mapping = q->prio2band[q->band2queue[0]];
+ 		return q->queues[q->prio2band[0]];
++	}
++
++	skb->queue_mapping = q->band2queue[band];
+ 
+ 	return q->queues[band];
+ }
+@@ -144,11 +151,17 @@ prio_dequeue(struct Qdisc* sch)
+ 	struct Qdisc *qdisc;
+ 
+ 	for (prio = 0; prio < q->bands; prio++) {
+-		qdisc = q->queues[prio];
+-		skb = qdisc->dequeue(qdisc);
+-		if (skb) {
+-			sch->q.qlen--;
+-			return skb;
++		/* Check if the target subqueue is available before
++		 * pulling an skb.  This way we avoid excessive requeues
++		 * for slower queues.
++		 */
++		if (!netif_subqueue_stopped(sch->dev, q->band2queue[prio])) {
++			qdisc = q->queues[prio];
++			skb = qdisc->dequeue(qdisc);
++			if (skb) {
++				sch->q.qlen--;
++				return skb;
++			}
+ 		}
+ 	}
+ 	return NULL;
+@@ -200,6 +213,10 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
+ 	struct prio_sched_data *q = qdisc_priv(sch);
+ 	struct tc_prio_qopt *qopt = RTA_DATA(opt);
+ 	int i;
++	int queue;
++	int qmapoffset;
++	int offset;
++	int mod;
+ 
+ 	if (opt->rta_len < RTA_LENGTH(sizeof(*qopt)))
+ 		return -EINVAL;
+@@ -242,6 +259,30 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
+ 			}
+ 		}
+ 	}
++	/* setup queue to band mapping */
++	if (q->bands < sch->dev->egress_subqueue_count) {
++		qmapoffset = 1;
++		mod = 0;
++	} else {
++		mod = q->bands % sch->dev->egress_subqueue_count;
++		qmapoffset = q->bands / sch->dev->egress_subqueue_count +
++				((mod) ? 1 : 0);
++	}
++
++	queue = 0;
++	offset = 0;
++	for (i = 0; i < q->bands; i++) {
++		q->band2queue[i] = queue;
++		if ( ((i + 1) - offset) == qmapoffset) {
++			queue++;
++			offset += qmapoffset;
++			if (mod)
++				mod--;
++			qmapoffset = q->bands /
++				sch->dev->egress_subqueue_count +
++				((mod) ? 1 : 0);
++		}
++	}
+ 	return 0;
+ }
+ 
+
