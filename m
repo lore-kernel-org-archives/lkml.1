@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbXDJIeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbXDJIew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209AbXDJIeV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 04:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbXDJIeU
+	id S1753252AbXDJIew (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 04:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXDJIew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 04:34:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37682 "EHLO hera.kernel.org"
+	Tue, 10 Apr 2007 04:34:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33728 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753209AbXDJIeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 04:34:17 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Lu, Yinghai" <yinghai.lu@amd.com>
-Subject: Re: [PATCH] x86_64/acpi: make kernel to be compiled when CONFIG_ACPI_NUMA is set and power management with acpi is not enabled
-Date: Tue, 10 Apr 2007 04:32:42 -0400
-User-Agent: KMail/1.9.5
-Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <86802c440704032055q43691a64v9eefb2a625c095ed@mail.gmail.com> <5986589C150B2F49A46483AC44C7BCA4907513@ssvlexmb2.amd.com> <5986589C150B2F49A46483AC44C7BCA490751D@ssvlexmb2.amd.com>
-In-Reply-To: <5986589C150B2F49A46483AC44C7BCA490751D@ssvlexmb2.amd.com>
+	id S1753276AbXDJIev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 04:34:51 -0400
+Message-ID: <461B4C28.4010806@garzik.org>
+Date: Tue, 10 Apr 2007 04:34:48 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Shaohua Li <shaohua.li@intel.com>
+CC: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/8] [Intel IOMMU] Support for Intel Virtualization	Technology
+ for Directed I/O
+References: <20070409215552.221374000@intel.com>	 <461B4925.9080005@garzik.org> <1176193673.6781.24.camel@sli10-conroe.sh.intel.com>
+In-Reply-To: <1176193673.6781.24.camel@sli10-conroe.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704100432.42545.lenb@kernel.org>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-grep ACPI .config
-# CONFIG_X86_64_ACPI_NUMA is not set
-# CONFIG_PNPACPI is not set
+Shaohua Li wrote:
+> DMA remapping just uses ACPI table to tell which dma remapping engine a
+> pci device is controlled by at boot time. At run time, DMA remapping
+> hasn't any interactive with ACPI.
 
-This config builds fine.
+The Linux kernel _really_ wants a non-ACPI way to detect this.
 
-Let me know if you have one that doesn't.
+Just use the hardware registers themselves, you don't need an ACPI table.
 
-thanks,
--Len
+	Jeff
+
+
