@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbXDJLgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751308AbXDJLne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbXDJLgI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 07:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbXDJLgI
+	id S1751308AbXDJLne (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 07:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXDJLne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 07:36:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:37279 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752999AbXDJLgH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 07:36:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=biwl8SAOSRlPbAmUShoHUGqmwskpF5nWewX9VWHTAXS80O8+SB+OrbcOT4vLlF2WpnTmwviXN9i/VvVGpseFqCFfMRv/MRTO2zHLC57p3spBA9z5HjtM+HanmVqGIfMIyNTYm5MDlZdNTyzygUyVI3BC1rCGTiO08LS+yRZK584=
-Message-ID: <84144f020704100436y3405f104x8345c72556d961e9@mail.gmail.com>
-Date: Tue, 10 Apr 2007 14:36:05 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: PATCH 7/8] lguest: the block driver
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       "Andi Kleen" <ak@muc.de>, jens.axboe@oracle.com
-In-Reply-To: <84144f020704100428r6e35e34cued8758c94728a6a0@mail.gmail.com>
+	Tue, 10 Apr 2007 07:43:34 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:59342 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751308AbXDJLnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 07:43:33 -0400
+Message-ID: <461B7855.9050500@gmail.com>
+Date: Tue, 10 Apr 2007 13:43:17 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: John Stoffel <john@stoffel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] Char: cyclades, remove volatiles
+References: <16309194841640222796@karneval.cz>	<25307199761334218148@karneval.cz>	<20070406171406.317ea28a.akpm@linux-foundation.org>	<46174825.4050509@gmail.com> <17946.19347.748203.428318@smtp.charter.net>
+In-Reply-To: <17946.19347.748203.428318@smtp.charter.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1176203068.26372.21.camel@localhost.localdomain>
-	 <1176203130.26372.23.camel@localhost.localdomain>
-	 <1176203176.26372.25.camel@localhost.localdomain>
-	 <1176203231.26372.27.camel@localhost.localdomain>
-	 <1176203285.26372.29.camel@localhost.localdomain>
-	 <1176203333.26372.31.camel@localhost.localdomain>
-	 <1176203475.26372.37.camel@localhost.localdomain>
-	 <1176203528.26372.40.camel@localhost.localdomain>
-	 <84144f020704100428r6e35e34cued8758c94728a6a0@mail.gmail.com>
-X-Google-Sender-Auth: bd99ede8d346d4c4
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 10 Apr 2007 13:43:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/10/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > +/* Jens gave me this nice helper to end all chunks of a request. */
-> > +static void end_entire_request(struct request *req, int uptodate)
-> > +{
-> > +       if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
-> > +               BUG();
-> > +       add_disk_randomness(req->rq_disk);
-> > +       blkdev_dequeue_request(req);
-> > +       end_that_request_last(req, uptodate);
-> > +}
+John Stoffel napsal(a):
+>>>>>> "Jiri" == Jiri Slaby <jirislaby@gmail.com> writes:
+> 
+> Jiri> Andrew Morton napsal(a):
+>>> On Wed,  4 Apr 2007 23:45:38 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
+>>>
+>>>> cyclades, remove volatiles
+>>> The other changes seem uncontroversial, but this one has the potential
+>>> to change runtime behaviour.  And cyclades.c is a driver which some people
+>>> actually use ;)
+> 
+> Jiri> Well, don't you know anybody with Z card, please?
+> 
+> I've got an old Cyclom-Y card (ISA) that I use, should I bother trying
+> out your changes?
 
-On 4/10/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Perhaps we should move this to generic code (i.e. block/ll_rw_blk.c)?
+No, don't bother with these. If you are willing to test, please test next
+patchset -- I'll post it shortly. Or do you prefer external patched module?
 
-Uhm, I am bit confused now. Why don't you just use end_request() here?
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
