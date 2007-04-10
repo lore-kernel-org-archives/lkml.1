@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031302AbXDJRrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031304AbXDJRte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031302AbXDJRrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 13:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031304AbXDJRrX
+	id S1031304AbXDJRte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 13:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031318AbXDJRte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 13:47:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:52220 "EHLO mail.goop.org"
+	Tue, 10 Apr 2007 13:49:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55358 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031302AbXDJRrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 13:47:23 -0400
-Message-ID: <461BCDA9.2060206@goop.org>
-Date: Tue, 10 Apr 2007 10:47:21 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1031304AbXDJRtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 13:49:33 -0400
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add spaces on either side of case "..." operator.
-References: <Pine.LNX.4.64.0704100721050.13729@CPE00045a9c397f-CM001225dbafb6> <20070410090555.d847d466.akpm@linux-foundation.org>
-In-Reply-To: <20070410090555.d847d466.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>, acahalan@gmail.com
+Subject: Re: [PATCH] Only send pdeath_signal when getppid changes.
+In-Reply-To: Eric W. Biederman's message of  Tuesday, 10 April 2007 11:41:20 -0600 <m1ejmsxh33.fsf@ebiederm.dsl.xmission.com>
+X-Zippy-Says: Let's all show human CONCERN for REVEREND MOON's legal difficulties!!
+Message-Id: <20070410174852.88661D82F8@pipsqueak.sf.frob.com>
+Date: Tue, 10 Apr 2007 10:48:51 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> #define AUDIT_FIRST_USER_MSG    1100    /* Userspace messages mostly uninteresting to kernel */
-> #define AUDIT_USER_AVC          1107    /* We filter this differently */
-> #define AUDIT_LAST_USER_MSG     1199
->
-> and CPP turns that into
->
->  case 1100 ...1199:
->  case 2100 ...2999:
->
-> and it does the same when the comments are stripped from the #defines.
->
-> So we were saved by the trailing space which cpp added to the expanded
-> macro.  I wonder why cpp did that, and to what extent one can rely cpp
-> doing that.
+> Does a parent death signal make most sense between separately written programs?
 
-I think its required to.  If it didn't, it would be effectively pasting
-two tokens together without the ## operator.  But putting spaces in is
-safer - or putting () around the numbers.
+I don't think it does.  It has always seemed an utterly cockamamy feature
+to me, and I've never understood what actually motivated it.
 
-    J
+> Does a parent death signal make most sense between processes that are part of
+> a larger program.
+
+That is the only way I can really see it being used.  The only actual
+example of use I know is what Albert Cahalan reported.  To my mind, the
+only semantics that matter for pdeath_signal are what previous uses
+expected in the past and still need for compatibility.  If we started with
+a fresh rationale from the ground up on what the feature is good for, I am
+rather skeptical it would pass muster to be added today.
+
+
+Thanks,
+Roland
