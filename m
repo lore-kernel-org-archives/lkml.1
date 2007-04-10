@@ -1,163 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752820AbXDJVgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbXDJVgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752820AbXDJVgh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXDJVgg
+	id S1752834AbXDJVgs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXDJVgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:36:36 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:55273 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752820AbXDJVgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:36:35 -0400
-Date: Tue, 10 Apr 2007 23:35:00 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Mike Phillips <mikep@linuxtr.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-tr@linuxtr.net
-Subject: [PATCH 22/30] Use menuconfig objects - toeknring
-In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704102333500.32056@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+	Tue, 10 Apr 2007 17:36:48 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:45677 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752834AbXDJVgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:36:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:x-priority:message-id:to:cc:subject:mime-version:content-type:content-transfer-encoding;
+        b=SVlgvHOtg1KzAbuoeT5QKJSuBYBlKgPkAef05JqvO/QRWrQtrfQdykCjdN/P4ahM9+WjX445N9YvJ0QzIY8yWSzLKH0zoTJVojjKeOyq2iypEBjTyTwsx5CdIIB+PMSJqx0JZMnvlrX9fK5YtHAkWrzKdPnDsQtpB/FmyntnZOs=
+Date: Wed, 11 Apr 2007 00:36:55 +0300
+From: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <869542577.20070411003655@gmail.com>
+To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+CC: David Brownell <david-b@pacbell.net>
+Subject: [RFC, PATCH 2/3] gpiodev - ARM PXA implementation
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello linux-arm-kernel,
 
-Use menuconfigs instead of menus, so the whole menu can be disabled at        
-once instead of going through all options.
+GPIODEV API: Support for ARM PXA2xx CPU. Implementation is based on
+Generic GPIO API. Generally, GPIODEV implementation should be provided
+by device driver. But CPU-builtin devices in the current code are
+treated is special manner ("arch devices"), so this approach is
+followed for GPIODEV too.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-Index: linux-2.6.21-rc5/drivers/net/tokenring/Kconfig
+Signed-off-by: Paul Sokolovsky <pmiscml@gmail.com>
+
+
+Index: arch/arm/mach-pxa/generic.c
 ===================================================================
---- linux-2.6.21-rc5.orig/drivers/net/tokenring/Kconfig
-+++ linux-2.6.21-rc5/drivers/net/tokenring/Kconfig
-@@ -2,12 +2,10 @@
- # Token Ring driver configuration
- #
+RCS file: /cvs/linux/kernel26/arch/arm/mach-pxa/generic.c,v
+retrieving revision 1.39
+retrieving revision 1.41
+diff -u -r1.39 -r1.41
+--- arch/arm/mach-pxa/generic.c 24 Feb 2007 13:14:41 -0000      1.39
++++ arch/arm/mach-pxa/generic.c 10 Apr 2007 15:35:33 -0000      1.41
+@@ -24,6 +24,7 @@
+ #include <linux/ioport.h>
+ #include <linux/pm.h>
+ #include <linux/string.h>
++#include <linux/gpiodev.h>
  
--menu "Token Ring devices"
--	depends on NETDEVICES && !UML
--
- # So far, we only have PCI, ISA, and MCA token ring devices
--config TR
-+menuconfig TR
- 	bool "Token Ring driver support"
-+	depends on NETDEVICES && !UML
- 	depends on (PCI || ISA || MCA || CCW)
- 	select LLC
- 	help
-@@ -20,9 +18,11 @@ config TR
- 	  from <http://www.tldp.org/docs.html#howto>. Most people can
- 	  say N here.
+ #include <linux/sched.h>
+ #include <asm/cnt32_to_63.h>
+@@ -530,6 +531,41 @@
+        .id             = -1,
+ };
  
-+if TR
 +
- config IBMTR
- 	tristate "IBM Tropic chipset based adapter support"
--	depends on TR && (ISA || MCA)
-+	depends on ISA || MCA
- 	---help---
- 	  This is support for all IBM Token Ring cards that don't use DMA. If
- 	  you have such a beast, say Y and read the Token-Ring mini-HOWTO,
-@@ -36,7 +36,7 @@ config IBMTR
++static int pxa_gpiodev_get_value(struct device *dev, int gpio)
++{
++       return __gpio_get_value(gpio);
++}
++
++static void pxa_gpiodev_set_value(struct device *dev, int gpio, int value)
++{
++       __gpio_set_value(gpio, value);
++}
++
++static int pxa_gpiodev_to_irq(struct device *dev, int gpio)
++{
++       return IRQ_GPIO(gpio);
++}
++
++
++struct pxagpio_platform_data {
++       struct gpiodev_ops gpiodev_ops;
++} pxagpio_platform_data = {
++       .gpiodev_ops = {
++               .get = pxa_gpiodev_get_value,
++               .set = pxa_gpiodev_set_value,
++               .to_irq = pxa_gpiodev_to_irq,
++       }
++};
++
++struct platform_device pxagpio_device = {
++       .name           = "pxa2xx-gpio",
++       .id             = -1,
++       .dev            = {
++               .platform_data = &pxagpio_platform_data
++       }
++};
++
+ static struct platform_device *devices[] __initdata = {
+        &pxamci_device,
+        &udc_device,
+@@ -541,6 +580,7 @@
+        &i2c_device,
+        &i2s_device,
+        &pxartc_device,
++       &pxagpio_device,
+ };
  
- config IBMOL
- 	tristate "IBM Olympic chipset PCI adapter support"
--	depends on TR && PCI
-+	depends on PCI
- 	---help---
- 	  This is support for all non-Lanstreamer IBM PCI Token Ring Cards.
- 	  Specifically this is all IBM PCI, PCI Wake On Lan, PCI II, PCI II
-@@ -54,7 +54,7 @@ config IBMOL
- 
- config IBMLS
- 	tristate "IBM Lanstreamer chipset PCI adapter support"
--	depends on TR && PCI && !64BIT
-+	depends on PCI && !64BIT
- 	help
- 	  This is support for IBM Lanstreamer PCI Token Ring Cards.
- 
-@@ -66,7 +66,7 @@ config IBMLS
- 
- config 3C359
- 	tristate "3Com 3C359 Token Link Velocity XL adapter support"
--	depends on TR && PCI
-+	depends on PCI
- 	---help---
- 	  This is support for the 3Com PCI Velocity XL cards, specifically
- 	  the 3Com 3C359, please note this is not for the 3C339 cards, you
-@@ -84,7 +84,7 @@ config 3C359
- 
- config TMS380TR
- 	tristate "Generic TMS380 Token Ring ISA/PCI adapter support"
--	depends on TR && (PCI || ISA && ISA_DMA_API || MCA)
-+	depends on PCI || ISA && ISA_DMA_API || MCA
- 	select FW_LOADER
- 	---help---
- 	  This driver provides generic support for token ring adapters
-@@ -108,7 +108,7 @@ config TMS380TR
- 
- config TMSPCI
- 	tristate "Generic TMS380 PCI support"
--	depends on TR && TMS380TR && PCI
-+	depends on TMS380TR && PCI
- 	---help---
- 	  This tms380 module supports generic TMS380-based PCI cards.
- 
-@@ -123,7 +123,7 @@ config TMSPCI
- 
- config SKISA
- 	tristate "SysKonnect TR4/16 ISA support"
--	depends on TR && TMS380TR && ISA
-+	depends on TMS380TR && ISA
- 	help
- 	  This tms380 module supports SysKonnect TR4/16 ISA cards.
- 
-@@ -135,7 +135,7 @@ config SKISA
- 
- config PROTEON
- 	tristate "Proteon ISA support"
--	depends on TR && TMS380TR && ISA
-+	depends on TMS380TR && ISA
- 	help
- 	  This tms380 module supports Proteon ISA cards.
- 
-@@ -148,7 +148,7 @@ config PROTEON
- 
- config ABYSS
- 	tristate "Madge Smart 16/4 PCI Mk2 support"
--	depends on TR && TMS380TR && PCI
-+	depends on TMS380TR && PCI
- 	help
- 	  This tms380 module supports the Madge Smart 16/4 PCI Mk2
- 	  cards (51-02).
-@@ -158,7 +158,7 @@ config ABYSS
- 
- config MADGEMC
- 	tristate "Madge Smart 16/4 Ringnode MicroChannel"
--	depends on TR && TMS380TR && MCA
-+	depends on TMS380TR && MCA
- 	help
- 	  This tms380 module supports the Madge Smart 16/4 MC16 and MC32
- 	  MicroChannel adapters.
-@@ -168,7 +168,7 @@ config MADGEMC
- 
- config SMCTR
- 	tristate "SMC ISA/MCA adapter support"
--	depends on TR && (ISA || MCA_LEGACY) && (BROKEN || !64BIT)
-+	depends on (ISA || MCA_LEGACY) && (BROKEN || !64BIT)
- 	---help---
- 	  This is support for the ISA and MCA SMC Token Ring cards,
- 	  specifically SMC TokenCard Elite (8115T) and SMC TokenCard Elite/A
-@@ -182,5 +182,4 @@ config SMCTR
- 	  To compile this driver as a module, choose M here: the module will be
- 	  called smctr.
- 
--endmenu
--
-+endif # TR
-#<EOF>
+ static int __init pxa_init(void)
+  
+
+-- 
+Best regards,
+ Paul                          mailto:pmiscml@gmail.com
+
