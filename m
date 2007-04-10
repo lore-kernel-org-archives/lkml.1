@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbXDJTVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXDJTXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbXDJTVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 15:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXDJTVb
+	id S1753327AbXDJTXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 15:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXDJTXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 15:21:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60956 "EHLO mx1.redhat.com"
+	Tue, 10 Apr 2007 15:23:30 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:49676 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753196AbXDJTVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 15:21:30 -0400
-Message-ID: <461BE2FB.5090101@redhat.com>
-Date: Tue, 10 Apr 2007 14:18:19 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1753306AbXDJTX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 15:23:29 -0400
+Date: Tue, 10 Apr 2007 21:22:41 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Len Brown <len.brown@intel.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH 01/30] Use menuconfig objects - ACPI
+In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704102119430.32056@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-To: Phillip Susi <psusi@cfl.rr.com>
-CC: Samuel Thibault <samuel.thibault@ens-lyon.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, joern@lazybastard.org, tytso@mit.edu
-Subject: Re: Add a norecovery option to ext3/4?
-References: <20070409000556.GA13980@implementation> <461A5F13.7040705@cfl.rr.com> <461A760B.1040103@redhat.com> <461BDD48.2000904@cfl.rr.com>
-In-Reply-To: <461BDD48.2000904@cfl.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Susi wrote:
-> Eric Sandeen wrote:
->> It means the filesystem should not be writeable when it is mounted.
->> This is not the same as saying that the filesystem itself should do no
->> IO in the course of making that read-only mount available.
-> 
-> I disagree.
-> 
->> I respectfully disagree, see above.
-> 
-> Based on what?  I argue that historically the primary use of the read 
-> only mount flag was to prevent the underlying filesystem from being 
-> modified and possibly damaged further before it can be fsck'ed.  It 
-> became common practice to mount the root filesystem read only and run a 
-> fsck on it, then either reboot or remount read-write depending on if 
-> fsck had to make changes.
 
-except in the case of a journaling filesystem, where the journal in
-theory obviates the need for a fsck.  (yes, I know... fsck still has a
-place...)  But, fsck is largely meaningless until the journal has been
-recovered anyway (fs can only be consistent if it includes uncommited
-transactions in the journal), so isn't this new territory?
+Use menuconfigs instead of menus, so the whole menu can be disabled at 
+once instead of going through all options.
 
-I guess looking to the man page for clarification of intent is no help...
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-              ro  Mount the file system read-only.
-
-
-> In this context, the meaning of the read only mount flag was clear: do 
-> not write to the disk.  If you wish to redefine it as "do not allow me 
-> write access to any files" then you fly in the face of convention, and 
-> the onus is on you to provide a compelling argument to make such a change.
-
-I'm admittedly playing devil's advocate here :)  but what, in the
-historical non-journalled filesystem case, would be writing to the
-device anyway, if all IO from the vfs were stopped?  Without the
-journal, isn't vfs-ro the same as bdev-ro, largely?
-
-As a counter example, if you had a filesystem which saves it's last
-mount time in the superblock; should a ro mount not update that time?
-(perhaps not, depending on how that timestamp was intended to be used.)
-
->> In that case you are mounting the same filesystem uner 2 different
->> operating systems simultaneously, which is, and always has been, a
->> recipe for disaster.  Flagging the fs as "mounted already" would
->> probably be a better solution, though it's harder than it sounds at
->> first glance.
-> 
-> No, it has not been.  Prior to poorly behaved journal playback, it was 
-> perfectly safe to mount a filesystem read only even if it was mounted 
-> read-write by another system ( possibly fsck or defrag ).  You might not 
-> read the correct data from it, but you would not damage the underlying 
-> data simply by mounting it read-only.
-
-You might not damage the underlying filesystem, but you could sure go
-off in the weeds trying to read it, if you stumbled upon some
-half-updated metadata... so while it may be safe for the filesystem, I'm
-not convinced that it's safe for the host reading the filesystem.
-
->> Under all conditions it should be safe to mount a read-only block
->> device, but that is not the same as mounting a filesystem read-only.
-> 
-> Historically it was the same thing.  I see no reason to change that 
-> behavior, do you?
-
-but it's already changed, and has been in linux since ext3 came on the
-scene.  mount -o ro -does- replay the journal.  Surely readonly does not
-imply that we want a corrupted filesystem if it was not cleanly shut
-down.  I suppose there is a place for the argument that a readonly mount
-of a journaled filesystem -should- present a recovered filesystem to the
-user, without actually recovering the log to disk.  I guess to me, it
-hardly seems worth the effort, as the precedent is long set for doing
-recovery on a read-only mount.
-
--Eric
+Index: linux-2.6.21-rc5/drivers/acpi/Kconfig
+===================================================================
+--- linux-2.6.21-rc5.orig/drivers/acpi/Kconfig
++++ linux-2.6.21-rc5/drivers/acpi/Kconfig
+@@ -2,16 +2,12 @@
+ # ACPI Configuration
+ #
+ 
+-menu "ACPI (Advanced Configuration and Power Interface) Support"
++menuconfig ACPI
++	bool "ACPI Support (Advanced Configuration and Power Interface) Support"
+ 	depends on !X86_NUMAQ
+ 	depends on !X86_VISWS
+ 	depends on !IA64_HP_SIM
+ 	depends on IA64 || X86
+-	depends on PM
+-
+-config ACPI
+-	bool "ACPI Support"
+-	depends on IA64 || X86
+ 	depends on PCI
+ 	depends on PM
+ 	select PNP
+@@ -49,7 +45,6 @@ if ACPI
+ config ACPI_SLEEP
+ 	bool "Sleep States"
+ 	depends on X86 && (!SMP || SUSPEND_SMP)
+-	depends on PM
+ 	default y
+ 	---help---
+ 	  This option adds support for ACPI suspend states. 
+@@ -82,7 +77,6 @@ config ACPI_SLEEP_PROC_SLEEP
+ 
+ config ACPI_PROCFS
+ 	bool "Procfs interface (deprecated)"
+-	depends on ACPI
+ 	default y
+ 	---help---
+ 	  Procfs interface for ACPI is made optional for back-compatible.
+@@ -367,7 +361,6 @@ config ACPI_CONTAINER
+ 
+ config ACPI_HOTPLUG_MEMORY
+ 	tristate "Memory Hotplug"
+-	depends on ACPI
+ 	depends on MEMORY_HOTPLUG
+ 	default n
+ 	help
+@@ -397,5 +390,3 @@ config ACPI_SBS
+ 	  to today's ACPI "Control Method" battery.
+ 
+ endif	# ACPI
+-
+-endmenu
+#<EOF>
