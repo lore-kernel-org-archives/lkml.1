@@ -1,94 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031161AbXDJRDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031164AbXDJRFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031161AbXDJRDP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 13:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031163AbXDJRDP
+	id S1031164AbXDJRFi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 13:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031175AbXDJRFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 13:03:15 -0400
-Received: from gw.goop.org ([64.81.55.164]:49666 "EHLO mail.goop.org"
+	Tue, 10 Apr 2007 13:05:38 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37009 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031161AbXDJRDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 13:03:14 -0400
-Message-ID: <461BC350.4040403@goop.org>
-Date: Tue, 10 Apr 2007 10:03:12 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Virtualization <virtualization@lists.linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Clean up x86 control register and MSR macros
-References: <200704101648.l3AGmT5e027601@tazenda.hos.anvin.org>
-In-Reply-To: <200704101648.l3AGmT5e027601@tazenda.hos.anvin.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1031164AbXDJRFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 13:05:37 -0400
+Date: Tue, 10 Apr 2007 22:42:57 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: "Paul Jackson" <pj@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Balbir Singh" <balbir@in.ibm.com>
+Subject: [PATCH] Fix race between attach_task and cpuset_exit
+Message-ID: <20070410171257.GC3611@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070325164746.GI11794@in.ibm.com> <20070325125025.b6e8f0d4.pj@sgi.com> <20070326115506.GL11794@in.ibm.com> <6599ad830704042255t5c126a0cj86d644cb8174e177@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830704042255t5c126a0cj86d644cb8174e177@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> [PATCH] Clean up x86 control register and MSR macros
->
-> This patch is based on Rusty's recent cleanup of the EFLAGS-related
-> macros; it extends the same kind of cleanup to control registers and
-> MSRs.
->
-> It also unifies these between i386 and x86-64; at least with regards
-> to MSRs, the two had definitely gotten out of sync.
->
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
->
-> diff -urN --exclude='o.*' stock/linux-2.6.21-rc6-mm1/include/asm-i386/Kbuild linux-2.6.21-rc6-mm1/include/asm-i386/Kbuild
-> --- stock/linux-2.6.21-rc6-mm1/include/asm-i386/Kbuild	2007-04-05 19:36:56.000000000 -0700
-> +++ linux-2.6.21-rc6-mm1/include/asm-i386/Kbuild	2007-04-09 23:28:36.000000000 -0700
-> @@ -3,8 +3,10 @@
->  header-y += boot.h
->  header-y += debugreg.h
->  header-y += ldt.h
-> +header-y += msr-index.h
->  header-y += ptrace-abi.h
->  header-y += ucontext.h
->  
-> +unifdef-y += msr.h
->  unifdef-y += mtrr.h
->  unifdef-y += vm86.h
-> diff -urN --exclude='o.*' stock/linux-2.6.21-rc6-mm1/include/asm-i386/msr-index.h linux-2.6.21-rc6-mm1/include/asm-i386/msr-index.h
-> --- stock/linux-2.6.21-rc6-mm1/include/asm-i386/msr-index.h	1969-12-31 16:00:00.000000000 -0800
-> +++ linux-2.6.21-rc6-mm1/include/asm-i386/msr-index.h	2007-04-09 18:14:04.000000000 -0700
-> @@ -0,0 +1,270 @@
-> +#ifndef __ASM_MSR_INDEX_H
-> +#define __ASM_MSR_INDEX_ H
->   
+On Wed, Apr 04, 2007 at 10:55:01PM -0700, Paul Menage wrote:
+> Shouldn't we just put a task_lock()/task_unlock() around these lines
+> and leave everything else as-is?
+> 
+> 	task_lock(tsk);
+> 	cs = tsk->cpuset;
+> 	tsk->cpuset = &top_cpuset;	/* the_top_cpuset_hack - see above */
+> 	task_unlock(tsk)
 
-Extra space.
+Andrew,
+	Can you drop fix-race-between-attach_task-and-cpuset_exit.patch
+and take this fix instead, which addresses some points raised by Paul
+Menage?
 
-> +
-> +/* x86-64 specific MSRs */
-> +#define MSR_EFER		0xc0000080 /* extended feature register */
-> +#define MSR_STAR		0xc0000081 /* legacy mode SYSCALL target */
-> +#define MSR_LSTAR		0xc0000082 /* long mode SYSCALL target */
-> +#define MSR_CSTAR		0xc0000083 /* compat mode SYSCALL target */
-> +#define MSR_SYSCALL_MASK	0xc0000084 /* EFLAGS mask for syscall */
-> +#define MSR_FS_BASE		0xc0000100 /* 64bit FS base */
-> +#define MSR_GS_BASE		0xc0000101 /* 64bit GS base */
-> +#define MSR_KERNEL_GS_BASE	0xc0000102 /* SwapGS GS shadow */
-> +
-> +/* EFER bits: */
-> +#define _EFER_SCE		0x00000000 /* SYSCALL/SYSRET */
-> +#define _EFER_LME		0x00000008 /* Long mode enable */
-> +#define _EFER_LMA		0x0000000a /* Long mode active (read-only) */
-> +#define _EFER_NX		0x0000000b /* No execute enable */
-> +
-> +#define EFER_SCE		(1<<_EFER_SCE)
-> +#define EFER_LME		(1<<_EFER_LME)
-> +#define EFER_LMA		(1<<_EFER_LMA)
-> +#define EFER_NX			(1<<_EFER_NX)
->   
 
-Is having separate bit numbers and masks useful?  If so, is it worth
-doing for the others?
 
-Looks OK.  Ack.
 
-    J
+
+Currently cpuset_exit() changes the exiting task's ->cpuset pointer w/o
+taking task_lock().  This can lead to ugly races between attach_task and
+cpuset_exit.  Details of the races are described at
+http://lkml.org/lkml/2007/3/24/132.
+
+Patch below closes those races.  It is against 2.6.21-rc6-mm1 and has
+undergone a simple compile/boot test on a x86_64 box.
+
+Signed-off-by : Srivatsa Vaddagiri <vatsa@in.ibm.com>
+
+
+---
+
+
+diff -puN kernel/cpuset.c~cpuset_race_fix kernel/cpuset.c
+--- linux-2.6.21-rc6/kernel/cpuset.c~cpuset_race_fix	2007-04-10 20:53:57.000000000 +0530
++++ linux-2.6.21-rc6-vatsa/kernel/cpuset.c	2007-04-10 22:08:46.000000000 +0530
+@@ -2119,10 +2119,6 @@ void cpuset_fork(struct task_struct *chi
+  * it is holding that mutex while calling check_for_release(),
+  * which calls kmalloc(), so can't be called holding callback_mutex().
+  *
+- * We don't need to task_lock() this reference to tsk->cpuset,
+- * because tsk is already marked PF_EXITING, so attach_task() won't
+- * mess with it, or task is a failed fork, never visible to attach_task.
+- *
+  * the_top_cpuset_hack:
+  *
+  *    Set the exiting tasks cpuset to the root cpuset (top_cpuset).
+@@ -2161,8 +2157,10 @@ void cpuset_exit(struct task_struct *tsk
+ {
+ 	struct cpuset *cs;
+ 
++	task_lock(current);
+ 	cs = tsk->cpuset;
+ 	tsk->cpuset = &top_cpuset;	/* the_top_cpuset_hack - see above */
++	task_unlock(current);
+ 
+ 	if (notify_on_release(cs)) {
+ 		char *pathbuf = NULL;
+_
+
+-- 
+Regards,
+vatsa
