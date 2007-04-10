@@ -1,205 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbXDJVoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbXDJVoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbXDJVoH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXDJVnp
+	id S1753846AbXDJVoL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:44:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXDJVoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:43:45 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:3836 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804AbXDJVnm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:43:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:mime-version:content-type:content-transfer-encoding;
-        b=hhKfuqzn/4YS0qZl2eBhONBmsmTdL6LjFkIq20d8ZjVoO8h5h3vruspJKw7PnzPzsCaZuB8Usc3Hoj2sQa80u4h/Of+Wufex/Zsyih/VY3Ym9p2gCR2bFSKKcwOsSo7cTAKWhjK3w/Gp+MYXhyzbieUIfhMiS2bW+0eVd1+NRsM=
-Date: Wed, 11 Apr 2007 00:43:50 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <1529351083.20070411004350@gmail.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-CC: David Brownell <david-b@pacbell.net>
-Subject: [RFC, PATCH 3/3] gpiodev - ASIC3 SoC implementation (informal)
+	Tue, 10 Apr 2007 17:44:08 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:58120 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753797AbXDJVns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:43:48 -0400
+Date: Tue, 10 Apr 2007 23:43:23 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 30/30] Use menuconfig objects - W1
+In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704102342480.32056@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello linux-arm-kernel,
 
-GPIODEV API: Support for ASIC3 SoC, found in several PDAs from HP and
-HTC.
-Note: ASIC3 driver is not yet in mainline (GPIODEV is one thing on
-critical path to have it submitted), and itself is pretty packaged
-System-on-Chip with many controllers, and thus big drivers. Patch
-below shows snippets relevant to its GPIO controller, as a sample what
-changes should be made to a generic driver for a GPIO-providing
-device to make it GPIODEV-compliant. Full driver can be found at
-http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/soc/asic3_base.c?content-type=text/plain&f=h
+Use menuconfigs instead of menus, so the whole menu can be disabled at        
+once instead of going through all options.
 
-Signed-off-by: Paul Sokolovsky <pmiscml@gmail.com>
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-
-Index: include/linux/soc/asic3_base.h
+Index: linux-2.6.21-rc5/drivers/w1/Kconfig
 ===================================================================
-RCS file: include/linux/soc/asic3_base.h
-diff -N include/linux/soc/asic3_base.h
---- /dev/null   1 Jan 1970 00:00:00 -0000
-+++ include/linux/soc/asic3_base.h      10 Apr 2007 15:35:33 -0000      1.12
-@@ -0,0 +1,98 @@
-+#include <linux/gpiodev.h>
+--- linux-2.6.21-rc5.orig/drivers/w1/Kconfig
++++ linux-2.6.21-rc5/drivers/w1/Kconfig
+@@ -1,7 +1,5 @@
+-menu "Dallas's 1-wire bus"
+-
+-config W1
+-	tristate "Dallas's 1-wire support"
++menuconfig W1
++	tristate "Dallas's 1-wire bus support"
+ 	---help---
+ 	  Dallas' 1-wire bus is useful to connect slow 1-pin devices
+ 	  such as iButtons and thermal sensors.
+@@ -11,8 +9,10 @@ config W1
+ 	  This W1 support can also be built as a module.  If so, the module
+ 	  will be called wire.ko.
+ 
++if W1
 +
-+/* Private defines - for internal use only */
-+#define HDR_IPAQ_ASIC3_ACTION(ACTION,action,fn,FN)                  \
-+u32  asic3_get_gpio_ ## action ## _ ## fn (struct device *dev);      \
-+void asic3_set_gpio_ ## action ## _ ## fn (struct device *dev, u32 bits, u32 val);
-+
-+#define HDR_IPAQ_ASIC3_FN(fn,FN)                       \
-+       HDR_IPAQ_ASIC3_ACTION ( MASK,mask,fn,FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( DIR, dir, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( OUT, out, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( LEVELTRI, trigtype, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( RISING, rising, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( LEVEL, triglevel, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( SLEEP_MASK, sleepmask, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( SLEEP_OUT, sleepout, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( BATT_FAULT_OUT, battfaultout, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( INT_STATUS, intstatus, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( ALT_FUNCTION, alt_fn, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( SLEEP_CONF, sleepconf, fn, FN)               \
-+       HDR_IPAQ_ASIC3_ACTION ( STATUS, status, fn, FN) 
-+
-+#define ASIC3_GPIOA_IRQ_BASE   0
-+#define ASIC3_GPIOB_IRQ_BASE   16
-+#define ASIC3_GPIOC_IRQ_BASE   32
-+#define ASIC3_GPIOD_IRQ_BASE   48
-+#define ASIC3_LED0_IRQ         64
-+#define ASIC3_LED1_IRQ         65
-+#define ASIC3_LED2_IRQ         66
-+#define ASIC3_SPI_IRQ          67
-+#define ASIC3_SMBUS_IRQ                68
-+#define ASIC3_OWM_IRQ          69
-+
-+#define ASIC3_NR_GPIO_IRQS     64       /* 16 bits each GPIO A...D banks */
-+#define ASIC3_NR_IRQS          (ASIC3_OWM_IRQ + 1)
-+
-+/* Public API */
-+
-+extern int asic3_irq_base (struct device *dev);
-+
-+void asic3_write_register (struct device *dev, unsigned int reg, unsigned long value);
-+unsigned long asic3_read_register (struct device *dev, unsigned int reg);
-+
-+/* old clock api */
-+extern void asic3_set_clock_sel (struct device *dev, unsigned long bits, unsigned long val);
-+extern u32  asic3_get_clock_cdex (struct device *dev);
-+extern void asic3_set_clock_cdex (struct device *dev, unsigned long bits, unsigned long val);
-+
-+extern void asic3_set_extcf_select (struct device *dev, unsigned long bits, unsigned long val);
-+extern void asic3_set_extcf_reset (struct device *dev, unsigned long bits, unsigned long val);
-+extern void asic3_set_sdhwctrl (struct device *dev, unsigned long bits, unsigned long val);
-+
-+void asic3_set_led( struct device *dev, int led_num, int duty_time, int cycle_time);
-+
-+extern int asic3_register_mmc (struct device *dev);
-+extern int asic3_unregister_mmc (struct device *dev);
-+
-+/* Accessors for GPIO banks */
-+HDR_IPAQ_ASIC3_FN(a, A)
-+HDR_IPAQ_ASIC3_FN(b, B)
-+HDR_IPAQ_ASIC3_FN(c, C)
-+HDR_IPAQ_ASIC3_FN(d, D)
-+
-+#define _IPAQ_ASIC3_GPIO_BANK_A      0
-+#define _IPAQ_ASIC3_GPIO_BANK_B      1
-+#define _IPAQ_ASIC3_GPIO_BANK_C      2
-+#define _IPAQ_ASIC3_GPIO_BANK_D      3
-+
-+#define ASIC3_GPIO_bit(gpio) (1 << (gpio & 0xf))
-+
-+extern int asic3_get_gpio_bit(struct device *dev, int gpio);
-+extern void asic3_set_gpio_bit(struct device *dev, int gpio, int val);
-+
-+
-+struct tmio_mmc_hwconfig;
-+
-+struct asic3_platform_data
-+{
-+       // Must be first member
-+       struct gpiodev_ops gpiodev_ops;
-+
-+       struct {
-+               u32 dir;
-+               u32 init;
-+               u32 sleep_mask;
-+               u32 sleep_out;
-+               u32 batt_fault_out;
-+               u32 sleep_conf;
-+               u32 alt_function;
-+       } gpio_a, gpio_b, gpio_c, gpio_d;
-+
-+       unsigned long bus_shift;
-+
-+       struct platform_device **child_platform_devs;
-+       int num_child_platform_devs;
-+
-+       struct tmio_mmc_hwconfig *tmio_mmc_hwconfig;
-+};
-Index: drivers/soc/asic3_base.c
+ config W1_CON
+-	depends on CONNECTOR && W1
++	depends on CONNECTOR
+ 	bool "Userspace communication over connector"
+ 	default y
+ 	--- help ---
+@@ -26,4 +26,4 @@ config W1_CON
+ source drivers/w1/masters/Kconfig
+ source drivers/w1/slaves/Kconfig
+ 
+-endmenu
++endif # W1
+Index: linux-2.6.21-rc5/drivers/w1/masters/Kconfig
 ===================================================================
-RCS file: /cvs/linux/kernel26/drivers/soc/asic3_base.c,v
-retrieving revision 1.40
-retrieving revision 1.42
-diff -u -p -r1.40 -r1.42
---- drivers/soc/asic3_base.c    14 Feb 2007 13:54:49 -0000      1.40
-+++ drivers/soc/asic3_base.c    10 Apr 2007 15:35:33 -0000      1.42
-@@ -145,6 +145,7 @@ ASIC3_GPIO_FUNCTIONS(d, D)
- int asic3_get_gpio_bit(struct device *dev, int gpio)
- {
-        u32 mask = ASIC3_GPIO_bit(gpio);
-+       printk("%s(%d)\n", __FUNCTION__, gpio);
-        switch (gpio >> 4) {
-                case _IPAQ_ASIC3_GPIO_BANK_A:
-                        return asic3_get_gpio_status_a(dev) & mask;
-@@ -166,6 +167,7 @@ void asic3_set_gpio_bit(struct device *d
-        u32 mask = ASIC3_GPIO_bit(gpio);
-        u32 bitval = 0;
-        if (val)  bitval = mask;
-+       printk("%s(%d, %d)\n", __FUNCTION__, gpio, val);
+--- linux-2.6.21-rc5.orig/drivers/w1/masters/Kconfig
++++ linux-2.6.21-rc5/drivers/w1/masters/Kconfig
+@@ -3,11 +3,10 @@
+ #
  
-        switch (gpio >> 4) {
-                case _IPAQ_ASIC3_GPIO_BANK_A:
-@@ -196,6 +198,14 @@ asic3_irq_base (struct device *dev)
+ menu "1-wire Bus Masters"
+-	depends on W1
  
- EXPORT_SYMBOL(asic3_irq_base);
+ config W1_MASTER_MATROX
+ 	tristate "Matrox G400 transport layer for 1-wire"
+-	depends on W1 && PCI
++	depends on PCI
+ 	help
+ 	  Say Y here if you want to communicate with your 1-wire devices
+ 	  using Matrox's G400 GPIO pins.
+@@ -17,7 +16,7 @@ config W1_MASTER_MATROX
  
-+int asic3_gpio_to_irq(struct device *dev, int gpio)
-+{
-+       struct asic3_data *asic = dev->driver_data;
-+       printk("%s(%d)\n", __FUNCTION__, gpio);
-+
-+       return asic->irq_base + gpio;
-+}
-+
- void 
- asic3_set_led (struct device *dev, int led_num, int duty_time, int cycle_time)
- {
-@@ -1027,6 +1037,10 @@ asic3_probe(struct platform_device *pdev
-        ds1wm_pd.bus_shift = asic->bus_shift;
- #endif
+ config W1_MASTER_DS2490
+ 	tristate "DS2490 USB <-> W1 transport layer for 1-wire"
+-  	depends on W1 && USB
++  	depends on USB
+   	help
+ 	  Say Y here if you want to have a driver for DS2490 based USB <-> W1 bridges,
+ 	  for example DS9490*.
+@@ -27,7 +26,7 @@ config W1_MASTER_DS2490
  
-+       pdata->gpiodev_ops.get = asic3_get_gpio_bit;
-+       pdata->gpiodev_ops.set = asic3_set_gpio_bit;
-+       pdata->gpiodev_ops.to_irq = asic3_gpio_to_irq;
-+       
-        soc_add_devices(pdev, asic3_blocks, ARRAY_SIZE(asic3_blocks),
-                        &pdev->resource[0], asic->bus_shift - ASIC3_DEFAULT_ADDR_SHIFT, asic->irq_base);
+ config W1_MASTER_DS2482
+ 	tristate "Maxim DS2482 I2C to 1-Wire bridge"
+-	depends on I2C && W1 && EXPERIMENTAL
++	depends on I2C && EXPERIMENTAL
+ 	help
+ 	  If you say yes here you get support for the Maxim DS2482
+ 	  I2C to 1-Wire bridge.
+Index: linux-2.6.21-rc5/drivers/w1/slaves/Kconfig
+===================================================================
+--- linux-2.6.21-rc5.orig/drivers/w1/slaves/Kconfig
++++ linux-2.6.21-rc5/drivers/w1/slaves/Kconfig
+@@ -3,25 +3,21 @@
+ #
  
-
-
--- 
-Best regards,
- Paul                          mailto:pmiscml@gmail.com
-
+ menu "1-wire Slaves"
+-	depends on W1
+ 
+ config W1_SLAVE_THERM
+ 	tristate "Thermal family implementation"
+-	depends on W1
+ 	help
+ 	  Say Y here if you want to connect 1-wire thermal sensors to your
+ 	  wire.
+ 
+ config W1_SLAVE_SMEM
+ 	tristate "Simple 64bit memory family implementation"
+-	depends on W1
+ 	help
+ 	  Say Y here if you want to connect 1-wire
+ 	  simple 64bit memory rom(ds2401/ds2411/ds1990*) to your wire.
+ 
+ config W1_SLAVE_DS2433
+ 	tristate "4kb EEPROM family support (DS2433)"
+-	depends on W1
+ 	help
+ 	  Say Y here if you want to use a 1-wire
+ 	  4kb EEPROM family device (DS2433).
+#<EOF>
