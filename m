@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbXDJWqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbXDJWtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753622AbXDJWqs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbXDJWqs
+	id S1753510AbXDJWtf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXDJWte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:46:48 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:61610 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752490AbXDJWqr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:46:47 -0400
-Date: Tue, 10 Apr 2007 18:46:46 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] markers-linker-m68k
-Message-ID: <20070410224646.GN7092@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Apr 2007 18:49:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:33853 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753510AbXDJWte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:49:34 -0400
+Message-ID: <461C1470.60308@goop.org>
+Date: Tue, 10 Apr 2007 15:49:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2/2] Allow percpu variables to be page-aligned
+References: <461BC4B8.40902@goop.org> <m16483yinf.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m16483yinf.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 18:46:04 up 67 days, 12:53,  6 users,  load average: 1.45, 1.45, 1.42
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add EXTRA_RWDATA to m68k.
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> Let's allow page-alignment in general for per-cpu data (wanted by Xen, and
+>> Ingo suggested KVM as well).
+>>
+>> Because larger alignments can use more room, we increase the max per-cpu
+>> memory to 64k rather than 32k: it's getting a little tight.
+>>     
+>
+> The second paragraph of the comment is dated.  You are not changing the per-cpu 
+> memory size at all now.
+>   
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Yup.
 
---- a/arch/m68k/kernel/vmlinux-std.lds
-+++ b/arch/m68k/kernel/vmlinux-std.lds
-@@ -29,6 +29,7 @@ SECTIONS
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
---- a/arch/m68k/kernel/vmlinux-sun3.lds
-+++ b/arch/m68k/kernel/vmlinux-sun3.lds
-@@ -24,6 +24,7 @@ SECTIONS
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	. = ALIGN(16);		/* Exception table */
- 	__start___ex_table = .;
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Although we should probably fail the module load if the requested alignment
+> is to great, but that is just picking nits, and is no worse than what we
+> do today.
+>   
+
+Yes.  And we barely support a module's use of page-aligned data, since
+it would potentially chew through the percpu space very quickly.
+
+    J
