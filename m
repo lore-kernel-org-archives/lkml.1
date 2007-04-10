@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932886AbXDJDKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964873AbXDJDK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932886AbXDJDKH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 23:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbXDJDKG
+	id S964873AbXDJDK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 23:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXDJDK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 23:10:06 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:23640 "EHLO
+	Mon, 9 Apr 2007 23:10:26 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:24160 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932886AbXDJDKF (ORCPT
+	with ESMTP id S932933AbXDJDKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 23:10:05 -0400
-Message-ID: <461B0005.7070801@chelsio.com>
-Date: Mon, 09 Apr 2007 20:09:57 -0700
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Mon, 9 Apr 2007 23:10:24 -0400
+From: divy@chelsio.com
+Subject: [PATCH 2.6.21 1/3] cxgb3 - avoid deadlock with mac watchdog
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Mon, 09 Apr 2007 20:10:22 -0700
+Message-ID: <20070410031022.12878.81342.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 2.6.21 0/3] cxgb3 - bug fixes
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Apr 2007 03:09:59.0449 (UTC) FILETIME=[B92F2090:01C77B1D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+From: Divy Le Ray <divy@chelsio.com>
 
-I'm submitting a set of bug fixes for inclusion in 2.6.21.
-The patches are built against Linus'git tree.
+Fix a deadlock when the interface s configured down and 
+the watchdog tack is sleeping on rtnl_lock.
 
-Here is a brief description:
-- Avoid deadlock when the interface is brought down
-- Rework the MAC hang workaround since it was failing
-  if the peer interface was brought down
-- add missing RNIC register setting and CPL handler
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Cheers,
-Divy
+ drivers/net/cxgb3/cxgb3_main.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 26240fd..c6ebe25 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -2119,7 +2119,9 @@ static void check_t3b2_mac(struct adapte
+ {
+ 	int i;
+ 
+-	rtnl_lock();                      /* synchronize with ifdown */
++	if (!rtnl_trylock())	/* synchronize with ifdown */
++		return;
++
+ 	for_each_port(adapter, i) {
+ 		struct net_device *dev = adapter->port[i];
+ 		struct port_info *p = netdev_priv(dev);
