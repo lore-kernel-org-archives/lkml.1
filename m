@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbXDJV6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXDJV6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbXDJV6c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXDJV6b
+	id S1753927AbXDJV6r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbXDJV6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:58:31 -0400
-Received: from mail.suse.de ([195.135.220.2]:45855 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753928AbXDJV6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:58:30 -0400
-To: Jan Kara <jack@suse.cz>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [PATCH] Improve heuristic detecting sequential reads
-References: <20070410155411.GF13445@duck.suse.cz>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 11 Apr 2007 00:56:51 +0200
-In-Reply-To: <20070410155411.GF13445@duck.suse.cz>
-Message-ID: <p73y7kzj0ss.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 10 Apr 2007 17:58:47 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:39843 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbXDJV6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:58:45 -0400
+X-IronPort-AV: i="4.14,391,1170662400"; 
+   d="scan'208"; a="134168432:sNHT45531297"
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Milind Arun Choudhary <milindchoudhary@gmail.com>,
+       kernel-janitors@lists.osdl.org, kernelnewbies@nl.linux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [KJ]remove SPIN_LOCK_UNLOCKED
+X-Message-Flag: Warning: May contain useful information
+References: <20070410181654.GA10525@arun.site>
+	<Pine.LNX.4.61.0704102249290.32056@yvahk01.tjqt.qr>
+	<Pine.LNX.4.64.0704101722030.24526@CPE00045a9c397f-CM001225dbafb6>
+	<Pine.LNX.4.61.0704102327460.32056@yvahk01.tjqt.qr>
+	<ada7isjq52p.fsf@cisco.com>
+	<Pine.LNX.4.64.0704101743520.24794@CPE00045a9c397f-CM001225dbafb6>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 10 Apr 2007 14:58:37 -0700
+In-Reply-To: <Pine.LNX.4.64.0704101743520.24794@CPE00045a9c397f-CM001225dbafb6> (Robert P. J. Day's message of "Tue, 10 Apr 2007 17:45:07 -0400 (EDT)")
+Message-ID: <ada3b37q4c2.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 10 Apr 2007 21:58:37.0985 (UTC) FILETIME=[6493B110:01C77BBB]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
+ > > Don't worry about the __RAW_SPIN_LOCK_UNLOCKED stuff, that's
+ > > obviously not for generic code to use.  The right answer (as I said
+ > > before) is to use DEFINE_SPINLOCK().
+ > 
+ > that works fine if you're defining a single spinlock, but what do you
+ > do in cases like this:
+ > 
+ > arch/sparc/lib/atomic32.c:      [0 ... (ATOMIC_HASH_SIZE-1)] = SPIN_LOCK_UNLOCKED
+ > 
+ > that is, when you're assigning an array of them?  you still need some
+ > kind of generic, unnamed spinlock in those circumstances, no?
 
->   Hello!
-> 
->   In thread http://lkml.org/lkml/2007/3/9/403, we discussed a problem
-> with the current heuristic for detecting sequential IO in
-> do_generic_mapping_read() - for small files a page is marked as accessed
-> only once which can cause a performance problems.
->   Attached is a patch that improves the heuristic by introducing a
-> ra.offset variable so now we can reliably detect sequetial reads.
-> The patch replaces Nick's patch from http://lkml.org/lkml/2007/3/15/177
-> (Nick has acked to replace the patch). Could you please put the patch
-> into -mm?
+Wow, I didn't realize there was code doing that.  I guess for that
+handful of cases, you indeed would probably want to convert them to
+raw_spinlock_t and use __RAW_SPIN_LOCK_UNLOCKED.  But in the vast
+majority of cases, DEFINE_SPINLOCK() is the right think to do.
 
-There's a much more complete patchkit for this that gets reposted
-regularly on l-k. Perhaps it would make sense to test that first?
-
--Andi
+ - R.
