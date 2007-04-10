@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031022AbXDJQUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031030AbXDJQWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031022AbXDJQUZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031018AbXDJQUY
+	id S1031030AbXDJQWM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031033AbXDJQWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:20:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38955 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031022AbXDJQTv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:19:51 -0400
-Date: Tue, 10 Apr 2007 17:22:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Wanted: irqpoll enhancement to show what is misrouted
-Message-ID: <20070410172253.0c6b437a@the-village.bc.nu>
-In-Reply-To: <461BAEFB.2020809@redhat.com>
-References: <461BAEFB.2020809@redhat.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Apr 2007 12:22:12 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:53657 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031030AbXDJQWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:22:11 -0400
+Message-ID: <461BB9CA.5010806@free.fr>
+Date: Tue, 10 Apr 2007 18:22:34 +0200
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, tglx@timesys.com,
+       John <linux.kernel@free.fr>
+Subject: Re: 2.6.20-rt8 patch tweaked for 2.6.20.5
+References: <461672D8.7090100@free.fr> <20070406173639.GA2929@elte.hu> <461B53CD.1030603@free.fr> <20070410131724.GA18553@elte.hu> <461B9CA6.8030707@free.fr> <20070410142302.GA1519@elte.hu>
+In-Reply-To: <20070410142302.GA1519@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Apr 2007 11:36:27 -0400
-Chuck Ebbert <cebbert@redhat.com> wrote:
+Ingo Molnar wrote:
 
-> Can irqpoll be enhanced to show which interrupts are being misrouted?
-> It looks like it should be possible to show the actual interrupt,
-> the driver that is handling it, and what interrupt it's expecting
-> in a /proc file -- just what happened last time irqpoll resolved
-> the interrupt would be better than nothing.
+> John wrote:
+> 
+>> Great! Can you tell me how you generate the original -rt patch, so I 
+>> can provide an updated version when a new 2.6.20 kernel is released?
+> 
+> they should be generated the way you did: apply the 2.6.20 baseline -rt 
+> kernel patch to the later patches and fix up rejects. For later kernels 
+> just do the same.
 
-You can take a guess at this, and Ingo did propose that it ought to be
-possible to dynamically deduce all the IRQ routing this way. There are
-problems however.
+What options do you give diff?
 
-- It is possible a given IRQ simply vanished. In this scenario we pick up
-the fact work needed doing from the timer tick
-- We will get a lot of false positives as we scan.
+The output of your patch is e.g.
 
-You could certainly collate statistical data and build counts of which
-stuck IRQ caused which IRQ events to be handled and which IRQ they are
-supposedly bound to.
+Index: linux/drivers/input/gameport/gameport.c
+===================================================================
+--- linux.orig/drivers/input/gameport/gameport.c
++++ linux/drivers/input/gameport/gameport.c
+@@ -21,6 +21,7 @@
+  #include <linux/slab.h>
+  #include <linux/delay.h>
+  #include <linux/kthread.h>
++#include <linux/interrupt.h>
+[...]
 
-You can also do similar things to count work done on a timer tick, which
-may help.
 
-It won't be perfect data - and with the timer stuff may be horribly
-inadequate, but it should give you a good guess.
+diff -upr gives me, e.g.
+
+diff -upr linux-2.6.20.5/drivers/input/gameport/gameport.c 
+linux-2.6.20.5-rt8/drivers/input/gameport/gameport.c
+--- linux-2.6.20.5/drivers/input/gameport/gameport.c    2007-04-06 
+12:44:59.000000000 +0200
++++ linux-2.6.20.5-rt8/drivers/input/gameport/gameport.c 
+2007-04-06 18:09:48.000000000 +0200
+@@ -21,6 +21,7 @@
+  #include <linux/slab.h>
+  #include <linux/delay.h>
+  #include <linux/kthread.h>
++#include <linux/interrupt.h>
+[...]
+
+How do I get diff not to print the file time stamps?
+
+How do I get diff not to print the command line for each file?
+
+Regards.
