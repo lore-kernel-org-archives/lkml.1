@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965940AbXDJAYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965826AbXDJAZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965940AbXDJAYA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 20:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965942AbXDJAX7
+	id S965826AbXDJAZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 20:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965942AbXDJAZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 20:23:59 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:38307 "EHLO smtp.osdl.org"
+	Mon, 9 Apr 2007 20:25:54 -0400
+Received: from holomorphy.com ([66.93.40.71]:60152 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965826AbXDJAX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 20:23:58 -0400
-Date: Mon, 9 Apr 2007 17:23:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robin Holt <holt@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-Message-Id: <20070409172339.48d661d6.akpm@linux-foundation.org>
-In-Reply-To: <4616CBF0.7090606@garzik.org>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
-	<4616CBF0.7090606@garzik.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S965826AbXDJAZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 20:25:53 -0400
+Date: Mon, 9 Apr 2007 17:26:05 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, ak@suse.de
+Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
+Message-ID: <20070410002605.GY2986@holomorphy.com>
+References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com> <20070409144107.21287fb8.akpm@linux-foundation.org> <Pine.LNX.4.64.0704091501230.2761@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704091501230.2761@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Apr 2007 18:38:40 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+On Mon, 9 Apr 2007, Andrew Morton wrote:
+>> So... we skipped i386 this time?
+>> I'd have gone squeamish if it was included, due to the mystery crash when
+>> we (effectively) set the list size to zero.  Someone(tm) should look into 
+>> that - who knows, it might indicate a problem in generic code.
 
-> Robin Holt wrote:
-> > We have been testing a new larger configuration and we are seeing a very
-> > large scan time of init's tsk->children list.  In the cases we are seeing,
-> > there are numerous kernel processes created for each cpu (ie: events/0
-> > ... events/<big number>, xfslogd/0 ... xfslogd/<big number>).  These are
-> > all on the list ahead of the processes we are currently trying to reap.
-> 
-> What about attacking the explosion of kernel threads?
-> 
-> As CPU counts increase, the number of per-CPU kernel threads gets really 
-> ridiculous.
-> 
-> I would rather change the implementation under the hood to start per-CPU 
-> threads on demand, similar to a thread-pool implementation.
-> 
-> Boxes with $BigNum CPUs probably won't ever use half of those threads.
+On Mon, Apr 09, 2007 at 03:03:19PM -0700, Christoph Lameter wrote:
+> Yeah too many scary monsters in the i386 arch code. Maybe Bill Irwin can 
+> take a look at how to make this work? He liked the benchmarking code that 
+> I posted so he may have the tools to insure that it works right. Maybe he 
+> can figure out some additional tricks on how to make quicklists work 
+> better?
 
-I suspect there are quite a few kernel threads which don't really need to
-be threads at all: the code would quite happily work if it was changed to
-use keventd, via schedule_work() and friends.  But kernel threads are
-somewhat easier to code for.
+There shouldn't be anything all that interesting in the i386 code apart
+from accommodations made for slab.c and pageattr.c. But yes, I can do
+the grunt work there since I'm familiar enough with its history.
 
-I also suspect that there are a number of workqueue threads which
-could/should have used create_singlethread_workqueue().  Often this is
-because the developer just didn't think to do it.
+I used the i386 pagetable caching backout code to help verify that
+nothing unusual was going on with generic code in this area. I can
+debug the altered quicklist code in like fashion to what that was.
 
-otoh, a lot of these inefficeincies are probably down in scruffy drivers
-rather than in core or top-level code.
+Basically, I'll help all this along.
 
-<I also wonder where all these parented-by-init,
-presumably-not-using-kthread kernel threads are coming from>
 
+-- wli
