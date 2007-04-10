@@ -1,157 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbXDJJiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbXDJJmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbXDJJiG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 05:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXDJJiF
+	id S1753234AbXDJJmL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 05:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXDJJmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 05:38:05 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:41607 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbXDJJiD (ORCPT
+	Tue, 10 Apr 2007 05:42:11 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44527 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753234AbXDJJmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 05:38:03 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070409231006.242a8304.akpm@linux-foundation.org>
-References: <20070410043137.19370.2295.patchbomb.py@localhost> <20070409231006.242a8304.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <964C9C13-69B7-4B05-968D-CAAFDDD3FFBF@cam.ac.uk>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Filesystems <linux-fsdevel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [PATCH 1/2] fs: use memclear_highpage_flush to zero page data
-Date: Tue, 10 Apr 2007 10:37:38 +0100
-To: Nate Diller <nate.diller@gmail.com>
-X-Mailer: Apple Mail (2.752.3)
+	Tue, 10 Apr 2007 05:42:10 -0400
+Date: Tue, 10 Apr 2007 04:42:04 -0500
+From: Robin Holt <holt@sgi.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
+       Robin Holt <holt@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+Message-ID: <20070410094203.GA17269@lnx-holt.americas.sgi.com>
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <4616CBF0.7090606@garzik.org> <20070409172339.48d661d6.akpm@linux-foundation.org> <m1mz1hyryh.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1mz1hyryh.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10 Apr 2007, at 07:10, Andrew Morton wrote:
-> On Mon, 09 Apr 2007 21:31:37 -0700 Nate Diller  
-> <nate.diller@gmail.com> wrote:
->> It's very common for file systems to need to zero part or all of a  
->> page, the
->> simplist way is just to use kmap_atomic() and memset().  There's  
->> actually a
->> library function in include/linux/highmem.h that does exactly  
->> that, but it's
->> confusingly named memclear_highpage_flush(), which is descriptive  
->> of *how*
->> it does the work rather than what the *purpose* is.  So this patch  
->> renames
->> the function to zero_page_data(), and calls it from the various  
->> places that
->> currently open code it.
->>
->> Compile tested in x86_64.
->>
->> signed-off-by: Nate Diller <nate.diller@gmail.com>
->>
->> ---
->>
->>  drivers/block/loop.c                     |    6 ---
->>  fs/affs/file.c                           |    6 ---
->>  fs/buffer.c                              |   53 ++++ 
->> +--------------------------
->>  fs/direct-io.c                           |    8 +---
->>  fs/ecryptfs/mmap.c                       |   14 +-------
->>  fs/ext3/inode.c                          |   12 +------
->>  fs/ext4/inode.c                          |   12 +------
->>  fs/ext4/writeback.c                      |   12 +------
->>  fs/gfs2/bmap.c                           |    6 ---
->>  fs/mpage.c                               |   11 +-----
->>  fs/nfs/read.c                            |   10 ++---
->>  fs/nfs/write.c                           |    2 -
->>  fs/ntfs/aops.c                           |   32 +++---------------
->>  fs/ntfs/file.c                           |   47 ++++ 
->> +----------------------
->>  fs/ocfs2/aops.c                          |    5 --
->>  fs/reiser4/plugin/file/cryptcompress.c   |   19 +----------
->>  fs/reiser4/plugin/file/file.c            |    6 ---
->>  fs/reiser4/plugin/item/ctail.c           |    6 ---
->>  fs/reiser4/plugin/item/extent_file_ops.c |   19 +++--------
->>  fs/reiser4/plugin/item/tail.c            |    8 +---
->>  fs/reiserfs/file.c                       |   39 +++++ 
->> +----------------
->>  fs/reiserfs/inode.c                      |   13 +------
->>  fs/xfs/linux-2.6/xfs_lrw.c               |    2 -
->>  include/linux/highmem.h                  |    2 -
->>  mm/filemap_xip.c                         |    7 ----
->>  mm/truncate.c                            |    2 -
->>  26 files changed, 78 insertions(+), 281 deletions(-)
->>
->
-> Not sure that I agree with the name zero_page_data().  People might  
-> use it
-> to, err, zero a page's data.  Whereas it is really only for use  
-> against
-> *user* pages.   zero_user_page(), perhaps.
->
-> Plus..
->
-> This patch as presented causes me surprising amounts of trouble.  I  
-> need to
-> split it up into
->
->   - core plus filesystems which don't have maintainers (for me to  
-> merge)
->
->   - filesystems which do have maintainers (one patch per), for
->     maintainers to merge.
->
->   - another patch for reiser4, to remain in -mm.
->
-> And this is actually not possible to do, because my merge and the  
-> subsystem
-> maintainers' merges will happen at different times.  In the  
-> intervening
-> window, the kernel won't compile.
->
-> So instead I need to
->
->   - split off the reiser4 bit
->
->   - get acks from fs maintainers on the rest
->
->   - merge the whole thing in one hit (minus reiser4)
->
-> And I can do that, but it is the less preferable option.
->
->
-> The better way to do this merge is:
->
-> patch #1:
->
-> static inline void memclear_highpage_flush(...) __deprecated
-> {
-> 	zero_user_page(...);
-> }
->
-> patch #2..n:  convert filesystems.
->
->
-> then, when all filesystems are converted, we're ready to remove
-> memclear_highpage_flush().  But we do that six months later - let's  
-> not
-> screw out-of-tree fs maintainers (and their users) unnecessarily.
+On Mon, Apr 09, 2007 at 06:48:54PM -0600, Eric W. Biederman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > I suspect there are quite a few kernel threads which don't really need to
+> > be threads at all: the code would quite happily work if it was changed to
+> > use keventd, via schedule_work() and friends.  But kernel threads are
+> > somewhat easier to code for.
+> >
+> > I also suspect that there are a number of workqueue threads which
+> > could/should have used create_singlethread_workqueue().  Often this is
+> > because the developer just didn't think to do it.
+> >
+> > otoh, a lot of these inefficeincies are probably down in scruffy drivers
+> > rather than in core or top-level code.
+> >
+> > <I also wonder where all these parented-by-init,
+> > presumably-not-using-kthread kernel threads are coming from>
+> 
+> 
+> >From another piece of this thread.
+> 
+> > > Robin how many kernel thread per cpu are you seeing?
+> > 
+> > 10.
+> > 
+> > FYI, pid 1539 is kthread.
+> > 
+> > a01:~ # ps -ef | egrep "\[.*\/255\]" 
+> > root       512     1  0 Apr08 ?        00:00:00 [migration/255]
+> > root       513     1  0 Apr08 ?        00:00:00 [ksoftirqd/255]
+> > root      1281     1  0 Apr08 ?        00:00:02 [events/255]
+> > root      2435  1539  0 Apr08 ?        00:00:00 [kblockd/255]
+> > root      3159  1539  0 Apr08 ?        00:00:00 [aio/255]
+> > root      4007  1539  0 Apr08 ?        00:00:00 [cqueue/255]
+> > root      8653  1539  0 Apr08 ?        00:00:00 [ata/255]
+> > root     17438  1539  0 Apr08 ?        00:00:00 [xfslogd/255]
+> > root     17950  1539  0 Apr08 ?        00:00:00 [xfsdatad/255]
+> > root     18426  1539  0 Apr08 ?        00:00:00 [rpciod/255]
+> 
+> 
+> So it looks like there were about 1500 kernel threads that started up before
+> kthread started.
 
-Nate, I think you either do not understand what the KM_* constants  
-passed to kmap_atomic() mean or you were overeager in your code  
-replacement...  You really, really cannot replace KM_BIO_SRC_IRQ with  
-KM_USER0 in the NTFS i/o completion handler without trashing people's  
-data left right an centre!
+I should have been more clear, this is from that 4096 broken down to a
+512 cpu partition.  This is the configuration the customer will receive
+the machine.  The 4096 was just to see if it worked.
 
-Best regards,
-
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+> So the kernel threads appear to have init as their parent is because
+> they started before kthread for the most part.
+> 
+> At 10 kernel threads per cpu there may be a little bloat but it isn't
+> out of control.  It is mostly that we are observing the kernel as
+> NR_CPUS approaches infinity.  4096 isn't infinity yet but it's easily
+> a 1000 fold bigger then most people are used to :)
+> 
+> Eric
