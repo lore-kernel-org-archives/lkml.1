@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbXDJDr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbXDJDsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932962AbXDJDr1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 23:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030332AbXDJDrZ
+	id S932950AbXDJDsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 23:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXDJDsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 23:47:25 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54670 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932950AbXDJDrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 23:47:24 -0400
-Date: Mon, 9 Apr 2007 20:46:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: Ashok Raj <ashok.raj@intel.com>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, ak@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       shaohua.li@intel.com
-Subject: Re: [patch 2/8] [Intel IOMMU] Some generic search functions
-	required to lookup device relationships.
-Message-ID: <20070410034617.GA30428@suse.de>
-References: <20070409215552.221374000@intel.com> <20070409215723.431381000@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070409215723.431381000@intel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 9 Apr 2007 23:48:20 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:45103 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932969AbXDJDsS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 23:48:18 -0400
+Date: Mon, 09 Apr 2007 23:47:57 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: I give up
+In-reply-to: <20070410012754.GD1994@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Dave Jones <davej@redhat.com>, Dave Dillow <dave@thedillows.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
+Message-id: <200704092347.57433.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200704091007.58535.gene.heskett@gmail.com>
+ <1176157330.4767.12.camel@dillow.idleaire.net>
+ <20070410012754.GD1994@redhat.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 09, 2007 at 02:55:54PM -0700, Ashok Raj wrote:
-> +/*
-> + * find the upstream PCIE-to-PCI bridge of a PCI device
-> + * if the device is PCIE, return NULL
-> + * if the device isn't connected to a PCIE bridge (that is its parent is a
-> + * legacy PCI bridge and the bridge is directly connected to bus 0), return its
-> + * parent
-> + */
-> +struct pci_dev *
-> +pci_find_upstream_pcie_bridge(struct pci_dev *pdev)
-> +{
-> +	struct pci_dev *tmp = NULL;
-> +
-> +	if (pdev->is_pcie)
-> +		return NULL;
-> +	while (1) {
-> +		if (!pdev->bus->self)
-> +			break;
-> +		pdev = pdev->bus->self;
-> +		/* a p2p bridge */
-> +		if (!pdev->is_pcie) {
-> +			tmp = pdev;
-> +			continue;
-> +		}
-> +		/* PCI device should connect to a PCIE bridge */
-> +		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
-> +		return pdev;
-> +	}
-> +
-> +	return tmp;
-> +}
+On Monday 09 April 2007, Dave Jones wrote:
+>On Mon, Apr 09, 2007 at 06:22:10PM -0400, Dave Dillow wrote:
+> > On Mon, 2007-04-09 at 23:35 +0200, Jan Engelhardt wrote:
+> > > On Apr 9 2007 15:38, Gene Heskett wrote:
+> > > >On Monday 09 April 2007, H. Peter Anvin wrote:
+> > > >>Jan Engelhardt wrote:
+> > > >>> dm is on 254 for me.. in opensuse with a 2.6.20 that is. I
+> > > >>> wonder why it even moves around. However, even then, those who
+> > > >>> use udev and device names rather than (major,minor) tuples
+> > > >>> should not have any problem.
+> > > >>
+> > > >>It moves around because someone at some point thought it was a
+> > > >> great idea to assign dynamic majors to core functionality.
+> > > >
+> > > >What were they smoking, I want some of that!
+> > >
+> > > Do you actually use udev?
+> >
+> > udev doesn't help the problem he is having (and he is using it, since
+> > he is using Fedora).
+>
+>However, it also doesn't explain what the point is of backing up /dev
+>when it's dynamically created.
+>
+>	Dave
 
-No locking while you walk up the bus list?
+I'm glad you mentioned that, I was, leftovers from RH7.3 probably. :(
 
-> --- linux-2.6.21-rc5.orig/include/linux/pci.h	2007-04-03 04:30:51.000000000 -0700
-> +++ linux-2.6.21-rc5/include/linux/pci.h	2007-04-03 06:58:58.000000000 -0700
-> @@ -126,6 +126,7 @@
->  	unsigned short	subsystem_device;
->  	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
->  	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
-> +	u8		pcie_type;	/* PCI-E device/port type */
->  	u8		rom_base_reg;	/* which config register controls the ROM */
->  	u8		pin;  		/* which interrupt pin this device uses */
->  
-> @@ -168,6 +169,7 @@
->  	unsigned int 	msi_enabled:1;
->  	unsigned int	msix_enabled:1;
->  	unsigned int	is_managed:1;
-> +	unsigned int	is_pcie:1;
-
-Do you really need both fields?  Wouldn't just the pcie_type one work
-(with some NOT_PCIE type being set for it if it isn't I suppose.)
-
-thanks,
-
-greg k-h
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Windows Tip of the Day:
+Add DEVICE=FNGRCROS.SYS to your CONFIG.SYS file.
