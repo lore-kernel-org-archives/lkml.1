@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030736AbXDJOej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030721AbXDJOfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030736AbXDJOej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030680AbXDJOej
+	id S1030721AbXDJOfm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030682AbXDJOfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:34:39 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43743 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030736AbXDJOeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:34:37 -0400
-Date: Tue, 10 Apr 2007 20:12:08 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: [PATCH 3/7] Containers (V8): Add generic multi-subsystem API to containers
-Message-ID: <20070410144208.GA3348@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070406233221.989528000@menage.corp.google.com> <20070407001324.271959000@menage.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Apr 2007 10:35:42 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:33950 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030722AbXDJOfl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 10:35:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mpDllzMVKPNgeP8OJWxO9a/cb44f1BsccqaCiwF9Odymyd/Zg201AJ/llvJ1ak9wVRYxo+RY1bAj539oYGJ022qZvX4ztiS9KUDsJFYSzhzg7+y4JaaI1qdh0w8P30oenexfm6i4VcXSZgEHDKC4tbttUrxu7Zk6b+pneRjhNI0=
+Message-ID: <b6a2187b0704100735s733e2499k421e27cf650001f8@mail.gmail.com>
+Date: Tue, 10 Apr 2007 22:35:40 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.21-rc6
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070407001324.271959000@menage.corp.google.com>
-User-Agent: Mutt/1.5.11
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 06, 2007 at 04:32:24PM -0700, menage@google.com wrote:
-> -static int container_create_dir(struct container *cont, const char *name, int mode)
-> +static int container_create_dir(struct container *cont, struct dentry *dentry,
-> +				int mode)
->  {
-> -	struct dentry *dentry = NULL;
->  	struct dentry *parent;
->  	int error = 0;
-> 
->  	parent = cont->parent->dentry;
-> -	dentry = container_get_dentry(parent, name);
+On 4/6/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-If you removed this line, then:
+> We should be getting close to a 2.6.21 release, so please update any
+> regression reports you've done,
 
->  	if (IS_ERR(dentry))
->  		return PTR_ERR(dentry);
-> -	error = container_create_file(dentry, S_IFDIR | mode);
-> +	error = container_create_file(dentry, S_IFDIR | mode, cont->root->sb);
->  	if (!error) {
->  		dentry->d_fsdata = cont;
-> -		parent->d_inode->i_nlink++;
-> +		inc_nlink(parent->d_inode);
->  		cont->dentry = dentry;
->  	}
->  	dput(dentry);
+I couldn't get suspend-to-disk to work with 2.6.21-rc6. I've tried
+set/unset CONFIG_NO_HZ/CONFIG_HPET_TIMER, but nothing worked.
 
-We should remove this dput as well, otherwise we will be short of
-required reference count on dentry by 1?
+With rc5 and Maxim's patch, it worked with CONFIG_NO_HZ unset.
 
-Basically, when user does:
+This is on ThinkPad X60s.
 
-        # cd /dev/container
-        # mkdir a
-
-and mkdir returns, what should be the (min) ref count of a's dentry? From my
-understanding it should be total number of files under a + 1. The dput
-above will cause this reqd count to be short by 1 ..
-
--- 
-Regards,
-vatsa
+Jeff.
