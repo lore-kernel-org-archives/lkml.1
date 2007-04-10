@@ -1,127 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbXDJUUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030579AbXDJU2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbXDJUUv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 16:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbXDJUUu
+	id S1030579AbXDJU2E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 16:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXDJU2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 16:20:50 -0400
-Received: from waste.org ([66.93.16.53]:51399 "EHLO waste.org"
+	Tue, 10 Apr 2007 16:28:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:49294 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753847AbXDJUUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 16:20:49 -0400
-Date: Tue, 10 Apr 2007 15:07:03 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: /proc/*/pagemap BUG: sleeping function called from invalid context
-Message-ID: <20070410200703.GA11115@waste.org>
-References: <20070409082554.GB6532@localhost.sw.ru>
+	id S1030579AbXDJU2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 16:28:02 -0400
+Message-ID: <461BF347.8070400@goop.org>
+Date: Tue, 10 Apr 2007 13:27:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070409082554.GB6532@localhost.sw.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andi Kleen <ak@suse.de>, "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Update smp_call_function* comments
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 09, 2007 at 12:25:54PM +0400, Alexey Dobriyan wrote:
-> After
-> 	cat /proc/self/pagemap
-> 
-> BUG: sleeping function called from invalid context at include/asm/uaccess.h:453
-> in_atomic():1, irqs_disabled():0
+Update documentation for i386 smp_call_function* functions.
 
-This should fix it:
+As reported by Randy Dunlap <rdunlap@xenotime.net>
 
-When CONFIG_HIGHPTE is enabled, use double-buffering in pagemap to
-avoid calling copy_to_user while preemption is disabled.
+[ I've posted this before but it seems to have been lost along the way. ]
 
-Tested on x86 with HIGHPTE with DEBUG_SPINLOCK_SLEEP and
-PROVE_LOCKING.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+---
+ arch/i386/kernel/smp.c |   27 ++++++++++++++++-----------
+ 1 file changed, 16 insertions(+), 11 deletions(-)
 
-Index: mm/fs/proc/task_mmu.c
 ===================================================================
---- mm.orig/fs/proc/task_mmu.c	2007-04-09 10:54:28.000000000 -0500
-+++ mm/fs/proc/task_mmu.c	2007-04-10 14:47:21.000000000 -0500
-@@ -535,6 +535,7 @@ struct pagemapread {
- 	struct mm_struct *mm;
- 	unsigned long next;
- 	unsigned long *buf;
-+	pte_t *ptebuf;
- 	unsigned long pos;
- 	size_t count;
- 	int index;
-@@ -573,6 +574,14 @@ static int pagemap_pte_range(pmd_t *pmd,
- 	int err;
- 
- 	pte = pte_offset_map(pmd, addr);
-+
-+#ifdef CONFIG_HIGHPTE
-+	/* copy PTE directory to temporary buffer and unmap it */
-+	memcpy(pm->ptebuf, pte, PAGE_ALIGN((unsigned long)pte) - (unsigned long)pte);
-+	pte_unmap(pte);
-+	pte = pm->ptebuf;
-+#endif
-+
- 	for (; addr != end; pte++, addr += PAGE_SIZE) {
- 		if (addr < pm->next)
- 			continue;
-@@ -583,7 +592,11 @@ static int pagemap_pte_range(pmd_t *pmd,
- 		if (err)
- 			return err;
- 	}
-+
-+#ifndef CONFIG_HIGHPTE
- 	pte_unmap(pte - 1);
-+#endif
-+
- 	return 0;
+--- a/arch/i386/kernel/smp.c
++++ b/arch/i386/kernel/smp.c
+@@ -570,8 +570,10 @@ static int __smp_call_function_mask(cpum
+  * @info: An arbitrary pointer to pass to the function.
+  * @wait: If true, wait (atomically) until function has completed on other CPUs.
+  *
+- * Returns 0 on success, else a negative status code. Does not return until
+- * remote CPUs are nearly ready to execute <<func>> or are or have finished.
++  * Returns 0 on success, else a negative status code.
++ *
++ * If @wait is true, then returns once @func has returned; otherwise
++ * it returns just before the target cpu calls @func.
+  *
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+@@ -593,11 +595,13 @@ int smp_call_function_mask(cpumask_t mas
+  * smp_call_function(): Run a function on all other CPUs.
+  * @func: The function to run. This must be fast and non-blocking.
+  * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: currently unused.
++ * @nonatomic: Unused.
+  * @wait: If true, wait (atomically) until function has completed on other CPUs.
+  *
+- * Returns 0 on success, else a negative status code. Does not return until
+- * remote CPUs are nearly ready to execute <<func>> or are or have executed.
++ * Returns 0 on success, else a negative status code.
++ *
++ * If @wait is true, then returns once @func has returned; otherwise
++ * it returns just before the target cpu calls @func.
+  *
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+@@ -609,17 +613,18 @@ int smp_call_function(void (*func) (void
  }
+ EXPORT_SYMBOL(smp_call_function);
  
-@@ -655,10 +668,16 @@ static ssize_t pagemap_read(struct file 
- 	if (!page)
- 		goto out;
- 
-+#ifdef CONFIG_HIGHPTE
-+	pm.ptebuf = kzalloc(PAGE_SIZE, GFP_USER);
-+	if (!pm.ptebuf)
-+		goto out_free;
-+#endif
-+
- 	ret = 0;
- 	mm = get_task_mm(task);
- 	if (!mm)
--		goto out_free;
-+		goto out_freepte;
- 
- 	pm.mm = mm;
- 	pm.next = addr;
-@@ -681,7 +700,7 @@ static ssize_t pagemap_read(struct file 
- 	while (pm.count > 0 && vma) {
- 		if (!ptrace_may_attach(task)) {
- 			ret = -EIO;
--			goto out;
-+			goto out_mm;
- 		}
- 		vend = min(vma->vm_start - 1, end - 1) + 1;
- 		ret = pagemap_fill(&pm, vend);
-@@ -700,8 +719,13 @@ static ssize_t pagemap_read(struct file 
- 	if (!ret)
- 		ret = pm.pos - src;
- 
-+out_mm:
- 	mmput(mm);
-+out_freepte:
-+#ifdef CONFIG_HIGHPTE
-+	kfree(pm.ptebuf);
- out_free:
-+#endif
- 	kfree(page);
- out:
- 	put_task_struct(task);
+-/*
++/**
+  * smp_call_function_single - Run a function on another CPU
++ * @cpu: The target CPU.  Cannot be the calling CPU.
+  * @func: The function to run. This must be fast and non-blocking.
+  * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: Currently unused.
++ * @nonatomic: Unused.
+  * @wait: If true, wait until function has completed on other CPUs.
+  *
+- * Retrurns 0 on success, else a negative status code.
+- *
+- * Does not return until the remote CPU is nearly ready to execute <func>
+- * or is or has executed.
++ * Returns 0 on success, else a negative status code.
++ *
++ * If @wait is true, then returns once @func has returned; otherwise
++ * it returns just before the target cpu calls @func.
+  */
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 			     int nonatomic, int wait)
 
-
--- 
-Mathematics is the supreme nostalgia of our time.
