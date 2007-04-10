@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbXDJXUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161042AbXDJXWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbXDJXUv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 19:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbXDJXUv
+	id S1161042AbXDJXWs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 19:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbXDJXWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 19:20:51 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:39896 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753395AbXDJXUu convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 19:20:50 -0400
-Date: Tue, 10 Apr 2007 19:20:48 -0400
+	Tue, 10 Apr 2007 19:22:48 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:59719 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753406AbXDJXWr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 19:22:47 -0400
+Date: Tue, 10 Apr 2007 19:22:45 -0400
 From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] markers-i386-doc-section-flags-optimized-state-change
-Message-ID: <20070410232048.GD7092@Krystal>
+Subject: [PATCH] markers-powerpc-doc-section-flags
+Message-ID: <20070410232245.GE7092@Krystal>
 References: <20070410231126.GC7092@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
 In-Reply-To: <20070410231126.GC7092@Krystal>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 19:17:09 up 67 days, 13:24,  6 users,  load average: 2.00, 2.00, 2.21
+X-Uptime: 19:20:52 up 67 days, 13:28,  6 users,  load average: 1.11, 1.51, 1.96
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document the i386 marker header, change it to use the __marker,
-__marker_data and __marker_strings sections. Change the flag usage to
-use MF_* directly (which is now a bitmask). In marker.c, for the i386
-optimized marker enabling, check the a simple test is the value will be
-changed. If not, simply return : we would set it to the same value
-anyway.
+Changes to the powerpc marker header : Use the new MF_* bitmask, use the
+__markers, __markers_data and __markers_strings sections, add
+documentation.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
---- a/include/asm-i386/marker.h
-+++ b/include/asm-i386/marker.h
+--- a/include/asm-powerpc/marker.h
++++ b/include/asm-powerpc/marker.h
 @@ -1,3 +1,6 @@
-+#ifndef _ASM_I386_MARKER_H
-+#define _ASM_I386_MARKER_H
++#ifndef _ASM_POWERPC_MARKER_H
++#define _ASM_POWERPC_MARKER_H
 +
  /*
   * marker.h
   *
-@@ -12,42 +15,54 @@
+@@ -14,42 +17,54 @@
  
  #ifdef CONFIG_MARKERS
  
@@ -77,14 +74,14 @@ Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
  		char condition; \
 -		asm volatile(	".section .markers, \"a\", @progbits;\n\t" \
 +		asm volatile(	".section __markers, \"a\", @progbits;\n\t" \
- 					".long %1, 0f;\n\t" \
+ 					PPC_LONG "%1, 0f;\n\t" \
  					".previous;\n\t" \
- 					".align 2\n\t" \
+ 					".align 4\n\t" \
  					"0:\n\t" \
- 					"movb $0,%0;\n\t" \
+ 					"li %0,0;\n\t" \
  				: "=r" (condition) \
--				: "m" (__mark_c_##name)); \
-+				: "m" (__mark_data_##name)); \
+-				: "i" (&__mark_c_##name)); \
++				: "i" (&__mark_data_##name)); \
  		__mark_check_format(format, ## args); \
  		if (unlikely(condition)) { \
  			preempt_disable(); \
@@ -99,8 +96,8 @@ Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 + * on the flags specified. */
  #define _MARK(flags, format, args...) \
  do { \
--	if (((flags) & _MF_LOCKDEP) && ((flags) & _MF_OPTIMIZED)) \
-+	if (((flags) & MF_LOCKDEP) && ((flags) & MF_OPTIMIZED)) \
+-	if ((flags) & _MF_OPTIMIZED) \
++	if ((flags) & MF_OPTIMIZED) \
  		MARK_OPTIMIZED(flags, format, ## args); \
  	else \
  		MARK_GENERIC(flags, format, ## args); \
@@ -113,38 +110,13 @@ Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 +/* Architecture dependant marker information, used internally for marker
 + * activation. */
  
- /* Offset of the immediate value from the start of the movb instruction, in
-  * bytes. */
-@@ -61,3 +76,4 @@ do { \
+ /* Offset of the immediate value from the start of the addi instruction (result
+  * of the li mnemonic), in bytes. */
+@@ -63,3 +78,4 @@ do { \
  extern int marker_optimized_set_enable(void *address, char enable);
  
  #endif
-+#endif //_ASM_I386_MARKER_H
---- a/arch/i386/kernel/marker.c
-+++ b/arch/i386/kernel/marker.c
-@@ -4,7 +4,9 @@
-  *
-  * Permits marker activation by XMC with correct serialization.
-  *
-- * Reentrant for NMI and trap handler instrumentation. :-)
-+ * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
-+ * location that has preemption enabled because it involves no temporary or
-+ * reused data structure.
-  *
-  * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-  */
-@@ -63,8 +65,10 @@ int marker_optimized_set_enable(void *address, char enable)
- 	int ret;
- 	char *dest = address;
- 
-+	if (!(enable ^ dest[1])) /* Must be a state change 0<->1 to execute */
-+		return 0;
-+
- 	mutex_lock(&mark_mutex);
--	BUG_ON(!(enable ^ dest[1]));	/* Must be a state change 0<->1 */
- 	target_eip = (long)address + BREAKPOINT_INS_LEN;
- 	/* register_die_notifier has memory barriers */
- 	register_die_notifier(&mark_notify);
++#endif //_ASM_POWERPC_MARKER_H
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
