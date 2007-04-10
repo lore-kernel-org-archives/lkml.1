@@ -1,102 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbXDJN4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbXDJN5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbXDJN4g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 09:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbXDJN4g
+	id S1753785AbXDJN5e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 09:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXDJN5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 09:56:36 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:28418 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753756AbXDJN4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 09:56:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HfbBVLnKNXAJeN93TLzjVGcJe5LoWx2eTc4krxoIg5uMDQ74sQF8wlynEcwNv8YiUBfBONgsQqqmrNjNxGenkc2F5+L+kyL72BdVSLTQh+8e6HVL1mnwbSGCb6MNmRiKhQX0c/ohudxC8/4itjkD8VBt8EIkAEsPiCthWKAZGvQ=
-Message-ID: <4dfa50520704100656n2b8382c5md48f433e460bf582@mail.gmail.com>
-Date: Tue, 10 Apr 2007 07:56:28 -0600
-From: "David Hubbard" <david.c.hubbard@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [lm-sensors] Hardware monitoring subsystem maintainer position is open
-Cc: "LM Sensors" <lm-sensors@lm-sensors.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       "Hans de Goede" <j.w.r.degoede@hhs.nl>
-In-Reply-To: <20070410150227.1bac05b5@hyperion.delvare>
+	Tue, 10 Apr 2007 09:57:34 -0400
+Received: from thunk.org ([69.25.196.29]:36388 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753785AbXDJN5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 09:57:32 -0400
+Date: Tue, 10 Apr 2007 09:56:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: If not readdir() then what?
+Message-ID: <20070410135641.GG13650@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Ulrich Drepper <drepper@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Neil Brown <neilb@suse.de>
+References: <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com> <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org> <1176121897.6210.8.camel@heimdal.trondhjem.org> <20070409131918.GC18580@thunk.org> <1176127395.6210.34.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070410150227.1bac05b5@hyperion.delvare>
+In-Reply-To: <1176127395.6210.34.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean,
+On Mon, Apr 09, 2007 at 10:03:15AM -0400, Trond Myklebust wrote:
+> We could perhaps teach nfsd to open the file without the O_LARGEFILE
+> attribute in the case of NFSv2?
 
-I for one will greatly miss your knowledge and helpful hints when I
-work on hardware monitoring drivers. I hope you find success in all
-the things you do!
+That might work.  But if in the long term we want to separate out what
+we can send back via telldir/seekdir, and some future new Posix
+interface, I wonder if we might be better off defining a formal
+interface which can be used by NFSv2 and NFSv3/v4 that isn't
+necessarily tied to f_pos.  Given that the semantics for what
+telldir/seekdir are different from what what NFS needs
+(telldir/seekdir cookies don't have to be persistent), it may be
+useful to allow filesystems the option of having two separate options
+for how to export this information.  
 
-I understand the difficult position you're in, and if there's any way
-I could convince you to stay, I would. Maybe you would be willing to
-answer a few low-bandwidth questions from time to time? Or jump on to
-#linux-sensors every once in a while?
+> Not really.
+> 
+> However on NFSv3 and v4 there is actually a mechanism for declaring that
+> the existing set of cookies have expired and are no longer valid: you
+> have an 8-byte opaque 'verifier' which is supplied by the server, and
+> which is supposed to be returned by the client on every call to READDIR.
+> If the server wants to change its cookie scheme, then it signals it to
+> the client by changing its verifier, and returning an error whenever the
+> client tries to use the old verifier. Upon receiving that error, the
+> client is supposed to clear out all cached cookies, and read the
+> directory in again from the start.
 
-Either way, thanks for everything!
+I looked at that, and it's not really helpful.  Basically if NFS
+demands that cookies never collide, and states that cookies must be
+some small (32 or 64) bit value that are persistent across time and
+server reboots, then that's fundmaentally incompatible with any kind
+of non-linear directory structure.  So whether the filesystem is
+ext3/htree, or ntfs, or reiserfs, people will be cheating one way or
+another.
 
-Cheers,
-David
+One of the things which they could do I suppose is use a linear
+offset, and then change the verifier every single time there is a
+b-tree split or merge which changes the configuration of the tree.  As
+you say, though, forcing the client to re-read the entire contents of
+the directory each time we change the verifier doesn't scale too well.
+But the fact of the matter is that if NFS protocols demands that a
+per-directory entry cookie can be uniquely and permanently (including
+across server reboots) identified with a small integer number, it's
+dreaming.  Filesystem authors will cheat one way or another, because
+there's nothing else for them to do.  
 
-On 4/10/07, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi all,
->
-> I am resigning from my role as hardware monitoring subsystem
-> (drivers/hwmon) maintainer. This is too much work for me, I do not have
-> the necessary bandwidth to review all the incoming patches, in
-> particular new drivers, in a timely manner. Patch authors have been
-> complaining about this repeatedly. This is no fun for them, and even
-> less for me, so I'd rather let someone else with more spare time take
-> care of it. If there are volunteers, this is the right time to speak up.
->
-> I will still be maintaining the individual hardware monitoring drivers
-> I am listed for in file MAINTAINERS (adm1025, f71805f, lm83 and lm90)
-> as well as the I2C subsystem. No change here.
->
-> I will continue to feed -mm with pending hwmon patches until 2.6.21
-> final is released, then I'll send everything I have to Linus for
-> 2.6.22-rc1, the last of which will be:
->
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> ---
->  MAINTAINERS |    5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
->
-> --- linux-2.6.21-rc6.orig/MAINTAINERS   2007-04-10 13:49:09.000000000 +0200
-> +++ linux-2.6.21-rc6/MAINTAINERS        2007-04-10 14:28:31.000000000 +0200
-> @@ -1467,12 +1467,9 @@ W:       http://gigaset307x.sourceforge.net/
->  S:     Maintained
->
->  HARDWARE MONITORING
-> -P:     Jean Delvare
-> -M:     khali@linux-fr.org
->  L:     lm-sensors@lm-sensors.org
->  W:     http://www.lm-sensors.org/
-> -T:     quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-hwmon/
-> -S:     Maintained
-> +S:     Orphan
->
->  HARDWARE RANDOM NUMBER GENERATOR CORE
->  P:     Michael Buesch
->
-> Then I'll probably keep an eye on hwmon in Linus' tree until 2.6.22
-> final is released, and after that I'm done with it.
->
-> --
-> Jean Delvare
->
-> _______________________________________________
-> lm-sensors mailing list
-> lm-sensors@lm-sensors.org
-> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
->
+> Note also that we would have to fix the client implementation. Nobody
+> has bothered working on the code to handle verifier changes since there
+> are no servers out there in the wild that use it.
+
+... which means changing the verifier every node merge/split operation
+would probably cause all sorts of interesting breakages, even more
+than the occasional hash collision (which as far as I know no one has
+complained about so far --- but with the 32-bit cookie, the birthday
+paradox states that the probability of a collision is 1 in 65536, so
+it's probably happened out in the wild already).
+
+Regards,
+
+						- Ted
