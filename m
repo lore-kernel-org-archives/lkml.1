@@ -1,43 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031433AbXDJSo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031446AbXDJSvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031433AbXDJSo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 14:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031389AbXDJSo4
+	id S1031446AbXDJSvQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 14:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031443AbXDJSvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 14:44:56 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:40544 "EHLO smtp.osdl.org"
+	Tue, 10 Apr 2007 14:51:16 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46351 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031433AbXDJSoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 14:44:55 -0400
-Date: Tue, 10 Apr 2007 11:44:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 4/6] Rename the parainstructions symbols to be
- consistent with the others
-Message-Id: <20070410114437.d1eb492e.akpm@linux-foundation.org>
-In-Reply-To: <200704102007.49163.ak@suse.de>
-References: <20070404010655.400913479@goop.org>
-	<20070404011453.598418421@goop.org>
-	<200704102007.49163.ak@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1031434AbXDJSvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 14:51:15 -0400
+Date: Tue, 10 Apr 2007 22:50:27 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] reduce reparent_to_init()
+Message-ID: <20070410185027.GA101@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Apr 2007 20:07:48 +0200 Andi Kleen <ak@suse.de> wrote:
+Move some random stuff which doesn't need tasklist_lock from reparent_to_init()
+to its caller, daemonize(). Strictly speaking, rlim is protected by task_lock()
+but we don't need it to copy init_task->rlim.
 
-> On Wednesday 04 April 2007 03:06:59 Jeremy Fitzhardinge wrote:
-> > The other symbols used to delineate the alt-instructions sections have
-> > the form __foo/__foo_end.  Rename parainstructions to match.
-> 
-> This patch breaks x86-64
-> 
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Fixed version is in 2.6.21-rc6-mm1.
+--- 2.6.21-rc5/kernel/exit.c~1_REDUCE	2007-04-05 12:18:28.000000000 +0400
++++ 2.6.21-rc5/kernel/exit.c	2007-04-10 21:32:44.000000000 +0400
+@@ -271,7 +271,6 @@ static void reparent_to_init(void)
+ 	write_lock_irq(&tasklist_lock);
+ 
+ 	ptrace_unlink(current);
+-	/* Reparent to init */
+ 	remove_parent(current);
+ 	current->parent = child_reaper(current);
+ 	current->real_parent = child_reaper(current);
+@@ -280,17 +279,8 @@ static void reparent_to_init(void)
+ 	/* Set the exit signal to SIGCHLD so we signal init on exit */
+ 	current->exit_signal = SIGCHLD;
+ 
+-	if (!has_rt_policy(current) && (task_nice(current) < 0))
+-		set_user_nice(current, 0);
+-	/* cpus_allowed? */
+-	/* rt_priority? */
+-	/* signals? */
+ 	security_task_reparent_to_init(current);
+-	memcpy(current->signal->rlim, init_task.signal->rlim,
+-	       sizeof(current->signal->rlim));
+-	atomic_inc(&(INIT_USER->__count));
+ 	write_unlock_irq(&tasklist_lock);
+-	switch_uid(INIT_USER);
+ }
+ 
+ void __set_special_pids(pid_t session, pid_t pgrp)
+@@ -402,6 +392,17 @@ void daemonize(const char *name, ...)
+ 	atomic_inc(&current->files->count);
+ 
+ 	reparent_to_init();
++
++	if (!has_rt_policy(current) && (task_nice(current) < 0))
++		set_user_nice(current, 0);
++	/* cpus_allowed? */
++	/* rt_priority? */
++	/* signals? */
++	memcpy(current->signal->rlim, init_task.signal->rlim,
++	       sizeof(current->signal->rlim));
++
++	atomic_inc(&(INIT_USER->__count));
++	switch_uid(INIT_USER);
+ }
+ 
+ EXPORT_SYMBOL(daemonize);
 
-Please let me know when you've uploaded your new tree...
