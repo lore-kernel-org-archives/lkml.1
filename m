@@ -1,207 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031052AbXDJQ12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031051AbXDJQ1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031052AbXDJQ12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031051AbXDJQ11
+	id S1031051AbXDJQ1p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031056AbXDJQ1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:27:27 -0400
-Received: from mga02.intel.com ([134.134.136.20]:17251 "EHLO mga02.intel.com"
+	Tue, 10 Apr 2007 12:27:45 -0400
+Received: from mga02.intel.com ([134.134.136.20]:42789 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031049AbXDJQ10 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:27:26 -0400
+	id S1031054AbXDJQ1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:27:43 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,390,1170662400"; 
-   d="scan'208"; a="224994772:sNHT31532018"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
-Date: Tue, 10 Apr 2007 09:27:17 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC329029E454C@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <461B5D79.9040307@trash.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
-Thread-Index: Acd7VYC/z90LYN8vT7KyhYqjyCpBjwANS+xQ
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Patrick McHardy" <kaber@trash.net>
-Cc: <davem@davemloft.net>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <jgarzik@pobox.com>,
-       "cramerj" <cramerj@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-X-OriginalArrivalTime: 10 Apr 2007 16:27:18.0425 (UTC) FILETIME=[1B6F9090:01C77B8D]
+   d="scan'208"; a="224994988:sNHT69722114"
+Date: Tue, 10 Apr 2007 09:26:27 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [patch 1/8] [Intel IOMMU] ACPI support for Intel Virtualization Technology for Directed I/O
+Message-ID: <20070410162626.GB31505@linux-os.sc.intel.com>
+References: <20070409215552.221374000@intel.com> <20070409215723.248187000@intel.com> <200704092339.19923.lenb@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704092339.19923.lenb@kernel.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Peter P Waskiewicz Jr wrote:
-> > +	/* To retrieve statistics per subqueue - FOR FUTURE USE */
-> > +	struct net_device_stats* (*get_subqueue_stats)(struct 
-> net_device *dev,
-> > +							int 
-> queue_index);
+On Mon, Apr 09, 2007 at 11:39:19PM -0400, Len Brown wrote:
+> On Monday 09 April 2007 17:55, Ashok Raj wrote:
+> > This patch contains basic ACPI parsing and enumeration support.
 > 
+> AFAICS, ACPI supplies the envelope which delivers the table,
+> and ACPI has some convenience structure definitions for that
+> table in include/acpi/actbl1.h (primarily for the acpixtract table dis-assembler),
+> but ACPI is otherwise not involved in IOMMU support.
 > 
-> Please no future use stuff, just add it when you need it.
+> Indeed, one might argue that all new functions in this patch series with
+> "acpi..." would more appropriately be called "pci...", since a cursory
+> scan of the IOMMU spec seems to suggest it is specific to PCI.
 
-Gotcha.  I'll remove this.
-
-> 
-> > diff --git a/net/core/dev.c b/net/core/dev.c index 219a57f..c11c8fa 
-> > 100644
-> > --- a/net/core/dev.c
-> > +++ b/net/core/dev.c
-> > @@ -3326,12 +3328,23 @@ struct net_device *alloc_netdev(int 
-> sizeof_priv, const char *name,
-> >  	if (sizeof_priv)
-> >  		dev->priv = netdev_priv(dev);
-> >  
-> > + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
-> > + 
-> > + 	p = kzalloc(alloc_size, GFP_KERNEL);
-> > + 	if (!p) {
-> > + 		printk(KERN_ERR "alloc_netdev: Unable to 
-> allocate queues.\n");
-> > + 		return NULL;
-> 
-> 
-> This leaks the device. You treat every single-queue device as 
-> having a single subqueue. If it doesn't get too ugly it would 
-> be nice to avoid this and only allocate the subqueue states 
-> for real multiqueue devices.
-
-We went back and forth on this.  The reason we allocate a queue in every
-case, even on single-queue devices, was to make the stack not have
-branching for multiqueue and non-multiqueue devices.  If we don't have
-at least one queue on a device, then we can't have
-netif_subqueue_stopped() in the hotpath unless we check if a device is
-multiqueue before.  The original patches I released had this branching,
-and I was asked to not do that.  I'd also like to see all queue-related
-stuff be pulled from net_device and put into net_device_subqueue at some
-point, even for single-queue devices.  Thoughts?
+Think we can migrate some of the code to make the core part just perform
+the get-table. We will do that in the next respin.
 
 > 
-> > --- a/net/sched/sch_generic.c
-> > +++ b/net/sched/sch_generic.c
-> > @@ -133,7 +133,8 @@ static inline int qdisc_restart(struct 
-> net_device *dev)
-> >  			/* And release queue */
-> >  			spin_unlock(&dev->queue_lock);
-> >  
-> > -			if (!netif_queue_stopped(dev)) {
-> > +			if (!netif_queue_stopped(dev) &&
-> > +			    !netif_subqueue_stopped(dev, 
-> skb->queue_mapping)) {
-> >  				int ret;
-> >  
-> >  				ret = dev_hard_start_xmit(skb, 
-> dev); @@ -149,7 +150,6 @@ static 
-> > inline int qdisc_restart(struct net_device *dev)
-> >  					goto collision;
-> >  				}
-> >  			}
-> > -
+> So on first blush, it looks like the only call to a function that begins with
+> "acpi" in this patch series should be acpi_get_table() from some IOMMU
+> specific file outside of drivers/acpi,
+> and the only modification to any code with an "acpi" in the file path or filename should
+> be any updates to the convenience structure definitions in acpitbl1.h
 > 
-> 
-> Unrelated whitespace change.
-
-I'll fix that.
-
-> 
-> >  			/* NETDEV_TX_BUSY - we need to requeue */
-> >  			/* Release the driver */
-> >  			if (!nolock) {
-> > diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c index 
-> > 5cfe60b..7365621 100644
-> > --- a/net/sched/sch_prio.c
-> > +++ b/net/sched/sch_prio.c
-> > @@ -43,6 +43,7 @@ struct prio_sched_data
-> >  	struct tcf_proto *filter_list;
-> >  	u8  prio2band[TC_PRIO_MAX+1];
-> >  	struct Qdisc *queues[TCQ_PRIO_BANDS];
-> > +	u16 band2queue[TC_PRIO_MAX + 1];
-> >  };
-> >  
-> >  
-> > @@ -63,20 +64,26 @@ prio_classify(struct sk_buff *skb, 
-> struct Qdisc *sch, int *qerr)
-> >  		case TC_ACT_SHOT:
-> >  			return NULL;
-> >  		};
-> > -
-> 
-> Same here
-
-I'll fix that too.
-
-> 
-> >  		if (!q->filter_list ) {
-> >  #else
-> >  		if (!q->filter_list || tc_classify(skb, 
-> q->filter_list, &res)) {  
-> > #endif
-> >  			if (TC_H_MAJ(band))
-> >  				band = 0;
-> > +			skb->queue_mapping =
-> > +				  
-> q->prio2band[q->band2queue[band&TC_PRIO_MAX]];
-> > +
-> 
-> 
-> Does this needs to be cleared at some point again? TC actions 
-> might redirect or mirror packets to other (multiqueue) devices.
-
-If an skb is redirected to another device, the skb should be filtered
-through that device's qdisc, yes?
-
-> 
-> > @@ -242,6 +259,30 @@ static int prio_tune(struct Qdisc 
-> *sch, struct rtattr *opt)
-> >  			}
-> >  		}
-> >  	}
-> > +	/* setup queue to band mapping */
-> > +	if (q->bands < sch->dev->egress_subqueue_count) {
-> > +		qmapoffset = 1;
-> > +		mod = 0;
-> > +	} else {
-> > +		mod = q->bands % sch->dev->egress_subqueue_count;
-> > +		qmapoffset = q->bands / 
-> sch->dev->egress_subqueue_count +
-> > +				((mod) ? 1 : 0);
-> > +	}
-> > +
-> > +	queue = 0;
-> > +	offset = 0;
-> > +	for (i = 0; i < q->bands; i++) {
-> > +		q->band2queue[i] = queue;
-> > +		if ( ((i + 1) - offset) == qmapoffset) {
-> > +			queue++;
-> > +			offset += qmapoffset;
-> > +			if (mod)
-> > +				mod--;
-> > +			qmapoffset = q->bands /
-> > +				sch->dev->egress_subqueue_count +
-> > +				((mod) ? 1 : 0);
-> > +		}
-> > +	}
-> 
-> 
-> Besides being quite ugly, I don't think this does what you want.
-> For bands < queues we get band2queue[0] = 0, all others map to 1.
-> 
-
-I see what's wrong with this.  If I removed "mod = 0;", the algorithm
-works as intended.  We also did go through a number of iterations of the
-best way to map queues to bands, using a simple hash, a complex
-assigment, etc., and this algorithm gives the best distribution given
-any combination of queues / bands (minus that small bug).  I'll fix this
-and resubmit.
-
-Thanks for the feedback,
-
--PJ Waskiewicz
+> thanks,
+> -Len
