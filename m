@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXDJBos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030192AbXDJBs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030297AbXDJBos (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 21:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030307AbXDJBor
+	id S1030192AbXDJBs3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 21:48:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030285AbXDJBs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 21:44:47 -0400
-Received: from mga01.intel.com ([192.55.52.88]:36731 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030297AbXDJBoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 21:44:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,388,1170662400"; 
-   d="scan'208"; a="227417440:sNHT17352818"
-Date: Tue, 10 Apr 2007 09:42:48 +0800
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-To: Dave Jones <davej@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>,
-       Keith Packard <keithp@keithp.com>
-Subject: [PATCH] intel_agp: fix G965 GTT size detect
-Message-ID: <20070410014248.GA17932@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>,
-	Keith Packard <keithp@keithp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
+	Mon, 9 Apr 2007 21:48:29 -0400
+Received: from 64-191-130-94.service.qx.net ([64.191.130.94]:32792 "EHLO
+	panacea.theblackmoor.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030192AbXDJBs1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 21:48:27 -0400
+Message-ID: <33389.192.168.0.107.1176169658.squirrel@panacea.theblackmoor.net>
+In-Reply-To: <20070409174700.2e0a14d8.akpm@linux-foundation.org>
+References: <11584.192.146.101.26.1175890435.squirrel@panacea.theblackmoor.net>
+    <20070409174700.2e0a14d8.akpm@linux-foundation.org>
+Date: Mon, 9 Apr 2007 21:47:38 -0400 (EDT)
+Subject: Re: PROBLEM:  ACPI Thermal Zone for CPU0 does not update after   
+     hibernation
+From: "Walter Francis" <wally@theblackmoor.net>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "Jung-Ik  Lee" <jilee@google.com>,
+       linux-acpi@vger.kernel.org
+Reply-To: wally@theblackmoor.net
+User-Agent: SquirrelMail/1.4.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Fri, 6 Apr 2007 16:13:55 -0400 (EDT)
+> "Walter Francis" <wally@theblackmoor.net> wrote:
 
-Dave, 
+>> After hibernating, the CPU0 thermal zone never updates.  It will stay at 59C
+>> forever for example.
 
-On G965, I810_PGETBL_CTL is a mmio offset, but we wrongly take it
-as pci config space offset in detecting GTT size. This one line patch
-fixs this. 
+> Yeah, John spotted a bug in there the other day.
+>
+> Does this fix it?
+>
+> --- a/drivers/acpi/thermal.c~acpi-thermal-fix-mod_timer-interval
+> +++ a/drivers/acpi/thermal.c
+> @@ -758,7 +758,8 @@ static void acpi_thermal_check(void *dat
+>  			del_timer(&(tz->timer));
+>  	} else {
+>  		if (timer_pending(&(tz->timer)))
+> -			mod_timer(&(tz->timer), (HZ * sleep_time) / 1000);
+> +			mod_timer(&(tz->timer),
+> +					jiffies + (HZ * sleep_time) / 1000);
+>  		else {
+>  			tz->timer.data = (unsigned long)tz;
+>  			tz->timer.function = acpi_thermal_run;
 
-Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
+No joy, didn't help.
 
----
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index a9fdbf9..4c05c71 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -431,9 +431,8 @@ static void intel_i830_init_gtt_entries(
- 
- 	if (IS_I965) {
- 		u32 pgetbl_ctl;
--
--		pci_read_config_dword(agp_bridge->dev, I810_PGETBL_CTL,
--				      &pgetbl_ctl);
-+		pgetbl_ctl = readl(intel_i830_private.registers+I810_PGETBL_CTL);
-+		    	
- 		/* The 965 has a field telling us the size of the GTT,
- 		 * which may be larger than what is necessary to map the
- 		 * aperture.
----
+Didn't apply clean to 21-pre6 (still latest I see on kernel.org), but here's
+the section that seemed right.
+
+        /*
+         * Schedule Next Poll
+         * ------------------
+         */
+        if (!sleep_time) {
+                if (timer_pending(&(tz->timer)))
+                        del_timer(&(tz->timer));
+        } else {
+                if (timer_pending(&(tz->timer)))
+                        mod_timer(&(tz->timer),jiffies + (HZ * sleep_time) /
+1000);
+                else {
+                        tz->timer.data = (unsigned long)tz;
+                        tz->timer.function = acpi_thermal_run;
+                        tz->timer.expires = jiffies + (HZ * sleep_time) / 1000;
+                        add_timer(&(tz->timer));
+
+Also, I think this is new with the line replaced..  Not sure exactly what's
+causing it, but when I restart the cpuspeed daemon:
+
+Starting cpuspeed: Error: Not an integer:
+/proc/acpi/thermal_zone/TZS1/temperature
+
+# cat /proc/acpi/thermal_zone/TZS1/temperature
+temperature:             41 C
+
+Looks normal to me?
+
+Thanks!
+
+-- 
+Walter Francis
+
+khayts.us
+theblackmoor.net
+unlimitedphoto.com
+
