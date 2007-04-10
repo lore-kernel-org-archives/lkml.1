@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbXDJCTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXDJCaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbXDJCTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 22:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966032AbXDJCTT
+	id S932664AbXDJCaA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 22:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXDJCaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 22:19:19 -0400
-Received: from 64-191-130-94.service.qx.net ([64.191.130.94]:33140 "EHLO
-	panacea.theblackmoor.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932508AbXDJCTS (ORCPT
+	Mon, 9 Apr 2007 22:30:00 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:15348 "EHLO
+	asav13.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932664AbXDJC37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 22:19:18 -0400
-X-Greylist: delayed 1851 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Apr 2007 22:19:18 EDT
-Message-ID: <33655.192.168.0.107.1176171513.squirrel@panacea.theblackmoor.net>
-In-Reply-To: <20070409185702.bbea2cb9.akpm@linux-foundation.org>
-References: <11584.192.146.101.26.1175890435.squirrel@panacea.theblackmoor.net>
-    <20070409174700.2e0a14d8.akpm@linux-foundation.org>
-    <33389.192.168.0.107.1176169658.squirrel@panacea.theblackmoor.net>
-    <20070409185702.bbea2cb9.akpm@linux-foundation.org>
-Date: Mon, 9 Apr 2007 22:18:33 -0400 (EDT)
-Subject: Re: PROBLEM:  ACPI Thermal Zone for CPU0 does not update after     
-     hibernation
-From: "Walter Francis" <wally@theblackmoor.net>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "Jung-Ik  Lee" <jilee@google.com>,
-       linux-acpi@vger.kernel.org
-Reply-To: wally@theblackmoor.net
-User-Agent: SquirrelMail/1.4.6
+	Mon, 9 Apr 2007 22:29:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aj0KAAyTGkZKhRO4UGdsb2JhbACHNohDAQEq
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Helge Hafting <helgehaf@aitel.hist.no>
+Subject: Re: usb touchscreen breakage in 2.6.21-rc5-mm4 ?
+Date: Mon, 9 Apr 2007 22:30:03 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+References: <20070407005458.GA18985@aitel.hist.no> <200704062237.13118.dtor@insightbb.com> <20070409223643.GB2198@aitel.hist.no>
+In-Reply-To: <20070409223643.GB2198@aitel.hist.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704092230.04144.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 9 Apr 2007 21:47:38 -0400 (EDT) "Walter Francis"
-> <wally@theblackmoor.net> wrote:
+On Monday 09 April 2007 18:36, Helge Hafting wrote:
+> On Fri, Apr 06, 2007 at 10:37:12PM -0400, Dmitry Torokhov wrote:
+> > On Friday 06 April 2007 20:54, Helge Hafting wrote:
+> > > I have an usb  touchscreen (egalax variety) that works with
+> > > the 2.6.18 kernel supplied by debian.
+> > > 
+> > > It fails when I compile 2.6.21-rc5-mm4, tuned to the machine
+> > > in question.  Unlike the debian kernel, this kernel don't use
+> > > modules in order to save boot time.
+> > > 
+> > > The strange thing is, 2.6.21-rc5-mm4 recognizes the device.
+> > > dmesg says things like 
+> > > usb 3-2: Manufacturer: eGalac Inc.
+> > > usb 3-2: Product: USB TouchController
+> > > 
+> > > and a lot more. Unlike 2.6.18, it never gets around to say
+> > > "usbcore: registered new driver usbtouchscreen"
+> > > which seems to indicate a problem.
+> > > usbcore registers several other drivers, such as usbserial and pl2303
+> > > that makes the gps work. It also registers other drivers like
+> > > usb-storage,usbfs,hub,libusual,hiddev,usbhid.  But not usbtouchscreen.
+> > > I believe I have turned on every config option for usb touchscreen,
+> > > this should not be missing.
+> > > 
+> > > Is there something wrong, or could there be a seemingly unrelated option
+> > > that I need to turn on?
+> > 
+> > Please make sure that you have CONFIG_USB_TOUCHSCREEN turned on.
+> > 
+> Unfortunately, I have:
+> CONFIG_USB_TOUCHSCREEN=y
+> CONFIG_USB_TOUCHSCREEN_EGALAX=y
+> 
+> Anything else I may have missed?
 >
->> > On Fri, 6 Apr 2007 16:13:55 -0400 (EDT)
->> > "Walter Francis" <wally@theblackmoor.net> wrote:
->>
->> >> After hibernating, the CPU0 thermal zone never updates.  It will stay at
->> 59C
->> >> forever for example.
 
-> Yes, the above looks like the correct change.
+Hmm, I am concerned because not only you don't have an input device created,
+you don't even see the driver being registered with usbcore. Could you please
+try booting with debug_initcall to see with what error code usbtouchscreen
+initialization fails?
 
-> Strange.  Maybe a timing thing.
-
-> Yes it does.  What happens of you stop and restart the daemon a second
-> time?
-
-Same thing, although I reverted the change and it still happens, so I must
-have overlooked it before.  Which is odd, because it's right at the end of my
-suspend script.  Looked to see if the cpuspeed daemon has updated recently and
-it hasn't.  Strange. :)
-
-> fwiw, /proc/acpi/thermal_zone/ATF0/temperature seems to do the right thing
-> here.
-
-SMP?  Not sure if it's directly tied to SMP, my other laptop I never could get
-to behave when suspending.
-
-If there's any more info I can provide or patches to try, let me know.
 
 -- 
-Walter Francis
-
-khayts.us
-theblackmoor.net
-unlimitedphoto.com
-
+Dmitry
