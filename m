@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964989AbXDJL43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965013AbXDJL5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964989AbXDJL43 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 07:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965013AbXDJL43
+	id S965013AbXDJL5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 07:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965042AbXDJL5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 07:56:29 -0400
-Received: from mail.musicgenome.com ([212.150.69.147]:60034 "EHLO
+	Tue, 10 Apr 2007 07:57:42 -0400
+Received: from mail.musicgenome.com ([212.150.69.147]:60037 "EHLO
 	mail.musicgenome.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964989AbXDJL42 (ORCPT
+	with ESMTP id S965013AbXDJL5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 07:56:28 -0400
-Date: Tue, 10 Apr 2007 14:48:39 +0300
+	Tue, 10 Apr 2007 07:57:39 -0400
+Date: Tue, 10 Apr 2007 14:49:42 +0300
 From: Tal Kelrich <tal@musicgenome.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [2.4] (updated Watchdog wdt83627 (Winbond W83627HF/F/HG/G)
+Subject: Re: [2.4] resent Watchdog wdt83627 (Winbond W83627HF/F/HG/G)
  driver, 2.6 backport
-Message-ID: <20070410144839.22d8d7fe@shodan.orpak.com>
+Message-ID: <20070410144942.76e16245@shodan.orpak.com>
 In-Reply-To: <20070401172424.5399d64c@shodan.orpak.com>
 References: <20070401172424.5399d64c@shodan.orpak.com>
 X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.6.10; i686-redhat-linux-gnu)
@@ -29,8 +29,7 @@ X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
 X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
 X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary=MP_Ici4SGe+EnUSCI_8XQNsjWD
 X-Musicgenome-MailScanner-Information: Please contact the ISP for more information
 X-Musicgenome-MailScanner: Found to be clean
 X-Musicgenome-MailScanner-SpamCheck: not spam, SpamAssassin (score=-5.899,
@@ -38,6 +37,11 @@ X-Musicgenome-MailScanner-SpamCheck: not spam, SpamAssassin (score=-5.899,
 X-Musicgenome-MailScanner-From: tal@musicgenome.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+--MP_Ici4SGe+EnUSCI_8XQNsjWD
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 On Sun, 1 Apr 2007 17:24:24 +0300
 Tal Kelrich <tal@musicgenome.com> wrote:
@@ -64,6 +68,8 @@ Tal Kelrich <tal@musicgenome.com> wrote:
 > Releases IO port regardless of having acquired it.
 > 
 
+(resent because I forgot to attach the patch :/ )
+
 Padraig's name still mangled, sorry (couldn't convince sylpheed-claws)
 
 Changes from previous:
@@ -77,3 +83,477 @@ Key Available at: http://www.hasturkun.com/pub.txt
 We come to bury DOS, not to praise it.
 	-- Paul Vojta, vojta@math.berkeley.edu
 ----
+
+--MP_Ici4SGe+EnUSCI_8XQNsjWD
+Content-Type: text/x-patch; name=linux-2.4.34.2-w83627hf.patch
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename=linux-2.4.34.2-w83627hf.patch
+
+--- linux-2.4.34.2/drivers/char/Config.in	Sat Mar 24 08:44:54 2007
++++ linux-2.4.34.2-w83627hf/drivers/char/Config.in	Sun Apr  1 16:23:01 2007
+@@ -263,6 +263,7 @@
+    tristate '  W83877F (EMACS) Watchdog Timer' CONFIG_W83877F_WDT
+    tristate '  WDT Watchdog timer' CONFIG_WDT
+    tristate '  WDT PCI Watchdog timer' CONFIG_WDTPCI
++   tristate '  W83627HF/F/HG/G Watchdog' CONFIG_WDT_W83627
+    if [ "$CONFIG_WDT" !=3D "n" ]; then
+       bool '    WDT501 features' CONFIG_WDT_501
+       if [ "$CONFIG_WDT_501" =3D "y" ]; then
+--- linux-2.4.34.2/drivers/char/Makefile	Sat Mar 24 08:44:54 2007
++++ linux-2.4.34.2-w83627hf/drivers/char/Makefile	Sun Apr  1 16:23:01 2007
+@@ -323,6 +323,7 @@
+ obj-$(CONFIG_SOFT_WATCHDOG) +=3D softdog.o
+ obj-$(CONFIG_INDYDOG) +=3D indydog.o
+ obj-$(CONFIG_8xx_WDT) +=3D mpc8xx_wdt.o
++obj-$(CONFIG_WDT_W83627) +=3D wdt83627.o
+=20
+ subdir-$(CONFIG_MWAVE) +=3D mwave
+ ifeq ($(CONFIG_MWAVE),y)
+--- linux-2.4.34.2/drivers/char/wdt83627.c	Thu Jan  1 02:00:00 1970
++++ linux-2.4.34.2-w83627hf/drivers/char/wdt83627.c	Sun Apr  1 16:22:35 2007
+@@ -0,0 +1,416 @@
++/*
++ *	w83627hf WDT driver
++ *
++ * 	backported from w83627hf_wdt.c kernel 2.6.20.1
++ * 	(c) Copyright 2007 Orpak Systems Ltd. (Tal Kelrich <tal@orpak.com>)
++ *
++ *	(c) Copyright 2003 Padraig Brady <P@draigBrady.com>
++ *
++ *	Based on advantechwdt.c which is based on wdt.c.
++ *	Original copyright messages:
++ *
++ *	(c) Copyright 2000-2001 Marek Michalkiewicz <marekm@linux.org.pl>
++ *
++ *	(c) Copyright 1996 Alan Cox <alan@redhat.com>, All Rights Reserved.
++ *				http://www.redhat.com
++ *
++ *	This program is free software; you can redistribute it and/or
++ *	modify it under the terms of the GNU General Public License
++ *	as published by the Free Software Foundation; either version
++ *	2 of the License, or (at your option) any later version.
++ *
++ *	Neither Alan Cox nor CymruNet Ltd. admit liability nor provide
++ *	warranty for any of this software. This material is provided
++ *	"AS-IS" and at no charge.
++ *
++ *	(c) Copyright 1995    Alan Cox <alan@redhat.com>
++ */
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/miscdevice.h>
++#include <linux/watchdog.h>
++#include <linux/fs.h>
++#include <linux/ioport.h>
++#include <linux/notifier.h>
++#include <linux/reboot.h>
++#include <linux/init.h>
++#include <linux/spinlock.h>
++#include <linux/proc_fs.h>
++
++#include <asm/io.h>
++#include <asm/uaccess.h>
++#include <asm/system.h>
++#include <asm/page.h>
++
++#define WATCHDOG_NAME "W83627HF WDT"
++#define PFX WATCHDOG_NAME ": "
++#define WATCHDOG_TIMEOUT 120		/* 120 sec default timeout */
++
++#ifdef CONFIG_WATCHDOG_NOWAYOUT
++#define WATCHDOG_NOWAYOUT 1
++#else
++#define WATCHDOG_NOWAYOUT 0
++#endif
++
++static unsigned long wdt_is_open;
++static char expect_close;
++static spinlock_t io_lock;
++
++/* You must set this - there is no sane way to probe for this board. */
++static int wdt_io =3D 0x2E;
++MODULE_PARM(wdt_io, "i");
++MODULE_PARM_DESC(wdt_io, "w83627hf WDT io port (default 0x2E)");
++
++static int timeout =3D WATCHDOG_TIMEOUT;	/* in seconds */
++MODULE_PARM(timeout, "i");
++MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds. 1<=3D timeout <=3D=
+255, default=3D" __MODULE_STRING(WATCHDOG_TIMEOUT) ".");
++
++static int nowayout =3D WATCHDOG_NOWAYOUT;
++MODULE_PARM(nowayout, "i");
++MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (defau=
+lt=3D" __MODULE_STRING(CONFIG_WATCHDOG_NOWAYOUT)")");
++
++/*
++ *	Kernel methods.
++ */
++
++#define WDT_EFER (wdt_io+0)   /* Extended Function Enable Registers */
++#define WDT_EFIR (wdt_io+0)   /* Extended Function Index Register (same as=
+ EFER) */
++#define WDT_EFDR (WDT_EFIR+1) /* Extended Function Data Register */
++
++/* Non standard proc bits, added by request, wanted some feedback */
++
++static int wdt_readproc(char *page, char **start, off_t off, int count,
++		int *eof, void *data)
++{
++	int len;
++	unsigned char remaining;
++	unsigned char fired;
++	spin_lock(&io_lock);
++	w83627hf_select_wd_register();
++	outb_p(0xF6, WDT_EFIR);/* get current timer val */
++	remaining=3Dinb_p(WDT_EFDR);
++	outb_p(0xF7, WDT_EFIR);
++	fired=3Dinb_p(WDT_EFDR);
++	/* clear that bit (bit 4) */
++	outb_p(fired&(~0x10),WDT_EFDR);
++	w83627hf_unselect_wd_register();
++	spin_unlock(&io_lock);
++	fired=3D(fired&0x10)!=3D0;
++	len=3Dsnprintf(page,PAGE_SIZE,
++			"W83627HF WDT\n"
++			"active=3D%d\n"
++			"iobase=3D%04X\n"
++			"nowayout=3D%d\n"
++			"timeout=3D%d\n"
++			"remaining=3D%d\n"
++			"fired=3D%d\n",
++			wdt_is_open,wdt_io,nowayout,timeout,remaining,fired);
++	*eof=3D1;
++	return len;
++}
++
++static void
++w83627hf_select_wd_register(void)
++{
++	outb_p(0x87, WDT_EFER); /* Enter extended function mode */
++	outb_p(0x87, WDT_EFER); /* Again according to manual */
++
++	outb_p(0x07, WDT_EFER); /* point to logical device number reg */
++	outb_p(0x08, WDT_EFDR); /* select logical device 8 (GPIO2) */
++	outb_p(0x30, WDT_EFER); /* select CR30 */
++	outb_p(0x01, WDT_EFDR); /* set bit 0 to activate GPIO2 */
++}
++
++static void
++w83627hf_unselect_wd_register(void)
++{
++	outb_p(0xAA, WDT_EFER); /* Leave extended function mode */
++}
++
++/* tyan motherboards seem to set F5 to 0x4C ?
++ * So explicitly init to appropriate value. */
++static void
++w83627hf_init(void)
++{
++	unsigned char t;
++
++	w83627hf_select_wd_register();
++
++	outb_p(0xF6, WDT_EFER); /* Select CRF6 */
++	outb_p(0, WDT_EFDR);    /* set to 0 initially */
++	outb_p(0xF5, WDT_EFER); /* Select CRF5 */
++	t=3Dinb_p(WDT_EFDR);      /* read CRF5 */
++	t&=3D~0x0C;               /* set second mode & disable keyboard turning o=
+ff watchdog */
++	outb_p(t, WDT_EFDR);    /* Write back to CRF5 */
++
++	w83627hf_unselect_wd_register();
++}
++
++static void
++wdt_ctrl(int timeout)
++{
++	spin_lock(&io_lock);
++=09
++	w83627hf_select_wd_register();
++
++	outb_p(0xF6, WDT_EFER);    /* Select CRF6 */
++	outb_p(timeout, WDT_EFDR); /* Write Timeout counter to CRF6 */
++
++	w83627hf_unselect_wd_register();
++
++	spin_unlock(&io_lock);
++}
++
++static int
++wdt_ping(void)
++{
++	wdt_ctrl(timeout);
++	return 0;
++}
++
++static int
++wdt_disable(void)
++{
++	wdt_ctrl(0);
++	return 0;
++}
++
++static int
++wdt_set_heartbeat(int t)
++{
++	if ((t < 1) || (t > 255))
++		return -EINVAL;
++
++	timeout =3D t;
++	return 0;
++}
++
++static ssize_t
++wdt_write(struct file *file, const char *buf, size_t count, loff_t *ppos)
++{
++	/*  Can't seek (pwrite) on this device  */
++        if (ppos !=3D &file->f_pos)
++                return -ESPIPE;
++	if (count) {
++		if (!nowayout) {
++			size_t i;
++
++			expect_close =3D 0;
++
++			for (i =3D 0; i !=3D count; i++) {
++				char c;
++				if (get_user(c, buf+i))
++					return -EFAULT;
++				if (c =3D=3D 'V')
++					expect_close =3D 42;
++			}
++		}
++		wdt_ping();
++	}
++	return count;
++}
++
++static int
++wdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
++	  unsigned long arg)
++{
++	void *argp =3D (void *)arg;
++	int *p =3D argp;
++	int new_timeout;
++	static struct watchdog_info ident =3D {
++		.options =3D WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE,
++		.firmware_version =3D 1,
++		.identity =3D "W83627HF WDT",
++	};
++
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++	  if (copy_to_user(argp, &ident, sizeof(ident)))
++	    return -EFAULT;
++	  break;
++
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++	  return put_user(0, p);
++
++	case WDIOC_KEEPALIVE:
++	  wdt_ping();
++	  break;
++
++	case WDIOC_SETTIMEOUT:
++	  if (get_user(new_timeout, p))
++		  return -EFAULT;
++	  if (wdt_set_heartbeat(new_timeout))
++		  return -EINVAL;
++	  wdt_ping();
++	  /* Fall */
++
++	case WDIOC_GETTIMEOUT:
++	  return put_user(timeout, p);
++
++	case WDIOC_SETOPTIONS:
++	{
++	  int options, retval =3D -EINVAL;
++
++	  if (get_user(options, p))
++	    return -EFAULT;
++
++	  if (options & WDIOS_DISABLECARD) {
++	    wdt_disable();
++	    retval =3D 0;
++	  }
++
++	  if (options & WDIOS_ENABLECARD) {
++	    wdt_ping();
++	    retval =3D 0;
++	  }
++
++	  return retval;
++	}
++
++	default:
++	  return -ENOTTY;
++	}
++	return 0;
++}
++
++static int
++wdt_open(struct inode *inode, struct file *file)
++{
++	if (test_and_set_bit(0, &wdt_is_open))
++		return -EBUSY;
++	/*
++	 *	Activate
++	 */
++
++	wdt_ping();
++	return 0;
++}
++
++static int
++wdt_close(struct inode *inode, struct file *file)
++{
++	if (expect_close =3D=3D 42) {
++		wdt_disable();
++	} else {
++		printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
++		wdt_ping();
++	}
++	expect_close =3D 0;
++	clear_bit(0, &wdt_is_open);
++	return 0;
++}
++
++/*
++ *	Notifier for system down
++ */
++
++static int
++wdt_notify_sys(struct notifier_block *this, unsigned long code,
++	void *unused)
++{
++	if (code =3D=3D SYS_DOWN || code =3D=3D SYS_HALT) {
++		/* Turn the WDT off */
++		wdt_disable();
++	}
++	return NOTIFY_DONE;
++}
++
++/*
++ *	Kernel Interfaces
++ */
++
++static const struct file_operations wdt_fops =3D {
++	.owner		=3D THIS_MODULE,
++	.write		=3D wdt_write,
++	.ioctl		=3D wdt_ioctl,
++	.open		=3D wdt_open,
++	.release	=3D wdt_close,
++};
++
++static struct miscdevice wdt_miscdev =3D {
++	.minor =3D WATCHDOG_MINOR,
++	.name =3D "watchdog",
++	.fops =3D &wdt_fops,
++};
++
++/*
++ *	The WDT needs to learn about soft shutdowns in order to
++ *	turn the timebomb registers off.
++ */
++
++static struct notifier_block wdt_notifier =3D {
++	.notifier_call =3D wdt_notify_sys,
++};
++
++static int __init
++wdt_init(void)
++{
++	int ret;
++
++	spin_lock_init(&io_lock);
++
++	printk(KERN_INFO "WDT driver for the Winbond(TM) W83627HF Super I/O chip =
+initialising.\n");
++
++	if (wdt_set_heartbeat(timeout)) {
++		wdt_set_heartbeat(WATCHDOG_TIMEOUT);
++		printk (KERN_INFO PFX "timeout value must be 1<=3Dtimeout<=3D63, using %=
+d\n",
++			WATCHDOG_TIMEOUT);
++	}
++	/* on the board I was working on, wdt_io consistently coincided with thin=
+gs already
++	 * being used, hence the continuing here.
++	 * there's probably a better solution to this */
++	if (!request_region(wdt_io, 1, WATCHDOG_NAME)) {
++		printk (KERN_WARNING PFX "I/O address 0x%04x already in use, continuing =
+anyway\n",
++			wdt_io);
++	}
++	if(!create_proc_read_entry("watchdog",0,NULL,&wdt_readproc,NULL))
++		goto unreg_regions;
++
++	w83627hf_init();
++
++	ret =3D register_reboot_notifier(&wdt_notifier);
++	if (ret !=3D 0) {
++		printk (KERN_ERR PFX "cannot register reboot notifier (err=3D%d)\n",
++			ret);
++		goto unreg_proc;
++	}
++
++	ret =3D misc_register(&wdt_miscdev);
++	if (ret !=3D 0) {
++		printk (KERN_ERR PFX "cannot register miscdev on minor=3D%d (err=3D%d)\n=
+",
++			WATCHDOG_MINOR, ret);
++		goto unreg_reboot;
++	}
++
++	printk (KERN_INFO PFX "initialized. timeout=3D%d sec (nowayout=3D%d)\n",
++		timeout, nowayout);
++
++out:
++	return ret;
++unreg_reboot:
++	unregister_reboot_notifier(&wdt_notifier);
++unreg_proc:
++	remove_proc_entry("watchdog",NULL);
++unreg_regions:
++	release_region(wdt_io, 1);
++	goto out;
++}
++
++static void __exit
++wdt_exit(void)
++{
++	remove_proc_entry("watchdog",NULL);
++	misc_deregister(&wdt_miscdev);
++	unregister_reboot_notifier(&wdt_notifier);
++	release_region(wdt_io,1);
++	/* we might not have gotten it... is this safe? */
++}
++
++module_init(wdt_init);
++module_exit(wdt_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Padraig Brady <P@draigBrady.com>");
++MODULE_DESCRIPTION("w83627hf WDT driver");
+--- linux-2.4.34.2/Documentation/Configure.help Tue Apr 10 13:01:27 2007
++++ linux-2.4.34.2-w83627hf/Documentation/Configure.help        Tue Apr 10 =
+13:01:01 2007
+@@ -20497,6 +20497,13 @@
+   say M here and read <file:Documentation/modules.txt>.  The module
+   will be called wdt_pci.o.
+=20
++W83627HF/F/HG/G Watchdog
++CONFIG_WDT_W83627
++  This is a driver for the hardware watchdog on the W83627HF chipset.
++  To compile this driver as a module say M here. The module will be
++  named wdt83627.o
++  Most people will say N.
++
+ WDT501 features
+ CONFIG_WDT_501
+   Saying Y here and creating a character special file /dev/temperature
+
+
+--MP_Ici4SGe+EnUSCI_8XQNsjWD--
