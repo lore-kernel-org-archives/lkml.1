@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030904AbXDJPrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030900AbXDJPuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030904AbXDJPrl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 11:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030902AbXDJPrk
+	id S1030900AbXDJPuN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 11:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030906AbXDJPuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 11:47:40 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:13574 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030889AbXDJPrj (ORCPT
+	Tue, 10 Apr 2007 11:50:12 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38488 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030900AbXDJPuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 11:47:39 -0400
-Subject: [Patch] statistics: fix string termination
-From: Martin Peschke <mp3@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 10 Apr 2007 17:47:38 +0200
-Message-Id: <1176220058.5572.11.camel@dix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+	Tue, 10 Apr 2007 11:50:10 -0400
+Message-ID: <461BB1C1.5050709@zytor.com>
+Date: Tue, 10 Apr 2007 08:48:17 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@gmail.com>
+CC: Theodore Tso <tytso@mit.edu>, Trond Myklebust <trond.myklebust@fys.uio.no>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: If not readdir() then what?
+References: <20070407233037.GA16508@infradead.org>	 <20070408184129.GA20871@lazybastard.org>	 <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com>	 <20070409014426.GA18580@thunk.org>	 <20070409110927.GA23240@lazybastard.org>	 <1176121897.6210.8.camel@heimdal.trondhjem.org>	 <20070409131918.GC18580@thunk.org>	 <1176127395.6210.34.camel@heimdal.trondhjem.org>	 <20070410135641.GG13650@thunk.org> <a36005b50704100710i28d5681fsdab6deb1d5161e28@mail.gmail.com>
+In-Reply-To: <a36005b50704100710i28d5681fsdab6deb1d5161e28@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure strsep() in statistic_release_def() finds a terminanal '\0' and
-doesn't attempt to access bytes outside the given buffer.
+Ulrich Drepper wrote:
+> On 4/10/07, Theodore Tso <tytso@mit.edu> wrote:
+>> That might work.  But if in the long term we want to separate out what
+>> we can send back via telldir/seekdir, and some future new Posix
+>> interface, [...]
+> 
+> With all these discussions about fixes for telldir, do we want to
+> persue an alternative interface where the user can explicitly specify
+> that no telldir/seekdir will ever be used?  From what I know so far it
+> would make technical sense since we could speed up/reduce the memory
+> footprint of readdir in 99% of most programs.  But is the benefit
+> large enough to warrant a second interface?
 
-(Patch fixes
-statistics-infrastructure-simplify-statistics-debugfs-write-function.patch)
+The real problem sounds like NFS is, in effect, doing telldir/seekdir on 
+every directory reference.
 
-Patch is against 2.6.21-rc6-mm1.
+It rather makes any user space accesses irrelevant.  The main question 
+seems to be if we can realistically increase the cookie size even to 64 
+bits.
 
-Signed-off-by: Martin Peschke <mp3@de.ibm.com>
----
-
- statistic.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux/lib/statistic.c
-===================================================================
---- linux.orig/lib/statistic.c
-+++ linux/lib/statistic.c
-@@ -627,9 +627,10 @@ static ssize_t statistic_write_def(struc
- 		return -EPIPE;
- 	if (*offset + len > 16 * PAGE_SIZE)
- 		return -ENOMEM;
--	larger = kmalloc(*offset + len, GFP_KERNEL);
-+	larger = kmalloc(*offset + len + 1, GFP_KERNEL);
- 	if (!larger)
- 		return -ENOMEM;
-+	larger[*offset + len] = '\0';
- 	memcpy(larger, seq_priv->w_buf, *offset);
- 	if (copy_from_user(larger + *offset, buf, len))
- 		return -EFAULT;
-
-
+	-hpa
