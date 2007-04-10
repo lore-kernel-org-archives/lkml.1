@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031301AbXDJRp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031302AbXDJRrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031301AbXDJRp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 13:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031298AbXDJRp3
+	id S1031302AbXDJRrY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 13:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031304AbXDJRrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 13:45:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:21473 "EHLO mga03.intel.com"
+	Tue, 10 Apr 2007 13:47:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:52220 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031301AbXDJRp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 13:45:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,390,1170662400"; 
-   d="scan'208"; a="211147670:sNHT21830620"
-Message-ID: <461BCD28.4000104@intel.com>
-Date: Tue, 10 Apr 2007 21:45:12 +0400
-From: akorolev <alexey.korolev@intel.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	id S1031302AbXDJRrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 13:47:23 -0400
+Message-ID: <461BCDA9.2060206@goop.org>
+Date: Tue, 10 Apr 2007 10:47:21 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Linux 2.4.x MTD CFI P30/P33 support
-References: <523F3D8D8C97554AA47E53DF1A05466A666249@nnsmsx411.ccr.corp.intel.com> <20070317064637.GA14739@1wt.eu> <45FECA26.7010905@intel.com>
-In-Reply-To: <45FECA26.7010905@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add spaces on either side of case "..." operator.
+References: <Pine.LNX.4.64.0704100721050.13729@CPE00045a9c397f-CM001225dbafb6> <20070410090555.d847d466.akpm@linux-foundation.org>
+In-Reply-To: <20070410090555.d847d466.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Apr 2007 17:45:12.0228 (UTC) FILETIME=[FD3D4E40:01C77B97]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Willy,
+Andrew Morton wrote:
+> #define AUDIT_FIRST_USER_MSG    1100    /* Userspace messages mostly uninteresting to kernel */
+> #define AUDIT_USER_AVC          1107    /* We filter this differently */
+> #define AUDIT_LAST_USER_MSG     1199
+>
+> and CPP turns that into
+>
+>  case 1100 ...1199:
+>  case 2100 ...2999:
+>
+> and it does the same when the comments are stripped from the #defines.
+>
+> So we were saved by the trailing space which cpp added to the expanded
+> macro.  I wonder why cpp did that, and to what extent one can rely cpp
+> doing that.
 
-What version of linux 2.4.x kernel do you expect P30/P33 support may be 
-included?
-May be something else I should do in addition. What should I do to get 
-the patch included into linux 2.4.x?
+I think its required to.  If it didn't, it would be effectively pasting
+two tokens together without the ## operator.  But putting spaces in is
+safer - or putting () around the numbers.
 
-Thanks,
-Alexey
-> Hi Willy,
->
->
->> OK, it seems trivial enough to me. I have no problem merging this. Your
->> mailer has wrapped lines, but I'll fix this by hand.
->>   
-> Oh thank you very much. Sorry for wrapped text. I've corrected it.
->
-> Signed-off-by: Alexey Korolev <alexey.korolev@intel.com
-> ------------------------
-> --- a/drivers/mtd/chips/cfi_cmdset_0001.c    2003-06-13 
-> 18:51:34.000000000 +0400
-> +++ b/drivers/mtd/chips/cfi_cmdset_0001.c    2007-02-16 
-> 21:39:50.000000000 +0300
-> @@ -152,7 +152,7 @@
->         }
->        
->         if (extp->MajorVersion != '1' || -            
-> (extp->MinorVersion < '0' || extp->MinorVersion > '3')) {
-> +            (extp->MinorVersion < '0' || extp->MinorVersion > '4')) {
->             printk(KERN_WARNING "  Unknown IntelExt Extended Query "
->                    "version %c.%c.\n",  extp->MajorVersion,
->                    extp->MinorVersion);
-> ------------------------
->
-> Thanks,
-> Alexey
->
->
+    J
