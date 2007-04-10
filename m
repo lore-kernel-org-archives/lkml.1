@@ -1,143 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030949AbXDJP6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030958AbXDJQAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030949AbXDJP6g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 11:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030948AbXDJP6g
+	id S1030958AbXDJQAQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030953AbXDJQAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 11:58:36 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:11096 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030946AbXDJP6f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 11:58:35 -0400
-Subject: [Patch] cleanup: use seq_release_private() where appropriate
-From: Martin Peschke <mp3@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 10 Apr 2007 17:58:34 +0200
-Message-Id: <1176220714.5572.24.camel@dix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Apr 2007 12:00:15 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:60024 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030950AbXDJQAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:00:13 -0400
+Date: Tue, 10 Apr 2007 17:47:33 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [RFC, PATCH 1/3] introduce SYS_CLONE_MASK
+In-Reply-To: <20070408165750.GA149@tv-sign.ru>
+Message-ID: <Pine.LNX.4.61.0704101743550.21664@yvahk01.tjqt.qr>
+References: <20070408155337.GA126@tv-sign.ru> <m1lkh23kkb.fsf@ebiederm.dsl.xmission.com>
+ <20070408165750.GA149@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can save some lines of code by using seq_release_private().
 
-Patch is against 2.6.21-rc6-mm1.
+On Apr 8 2007 20:57, Oleg Nesterov wrote:
+>
+>Anyway, re-parenting to swapper breaks pstree, it doesn't show kernel
+>threads. And if ->parent == /sbin/init, we can't remove us from ->children
+>(unless we forbid sub-thread-of-init exec). So the only safe change is
+>set ->exit_state = -1.
 
-Signed-off-by: Martin Peschke <mp3@de.ibm.com>
----
-
- drivers/md/md.c     |   11 +----------
- fs/proc/proc_misc.c |    9 +--------
- kernel/kallsyms.c   |    9 +--------
- net/sunrpc/cache.c  |   10 +---------
- 4 files changed, 4 insertions(+), 35 deletions(-)
-
-Index: linux/drivers/md/md.c
-===================================================================
---- linux.orig/drivers/md/md.c
-+++ linux/drivers/md/md.c
-@@ -4943,15 +4943,6 @@ static int md_seq_open(struct inode *ino
- 	return error;
- }
- 
--static int md_seq_release(struct inode *inode, struct file *file)
--{
--	struct seq_file *m = file->private_data;
--	struct mdstat_info *mi = m->private;
--	m->private = NULL;
--	kfree(mi);
--	return seq_release(inode, file);
--}
--
- static unsigned int mdstat_poll(struct file *filp, poll_table *wait)
- {
- 	struct seq_file *m = filp->private_data;
-@@ -4973,7 +4964,7 @@ static const struct file_operations md_s
- 	.open           = md_seq_open,
- 	.read           = seq_read,
- 	.llseek         = seq_lseek,
--	.release	= md_seq_release,
-+	.release	= seq_release_private,
- 	.poll		= mdstat_poll,
- };
- 
-Index: linux/kernel/kallsyms.c
-===================================================================
---- linux.orig/kernel/kallsyms.c
-+++ linux/kernel/kallsyms.c
-@@ -470,18 +470,11 @@ static int kallsyms_open(struct inode *i
- 	return ret;
- }
- 
--static int kallsyms_release(struct inode *inode, struct file *file)
--{
--	struct seq_file *m = (struct seq_file *)file->private_data;
--	kfree(m->private);
--	return seq_release(inode, file);
--}
--
- static const struct file_operations kallsyms_operations = {
- 	.open = kallsyms_open,
- 	.read = seq_read,
- 	.llseek = seq_lseek,
--	.release = kallsyms_release,
-+	.release = seq_release_private,
- };
- 
- static int __init kallsyms_init(void)
-Index: linux/net/sunrpc/cache.c
-===================================================================
---- linux.orig/net/sunrpc/cache.c
-+++ linux/net/sunrpc/cache.c
-@@ -1237,20 +1237,12 @@ static int content_open(struct inode *in
- 
- 	return res;
- }
--static int content_release(struct inode *inode, struct file *file)
--{
--	struct seq_file *m = (struct seq_file *)file->private_data;
--	struct handle *han = m->private;
--	kfree(han);
--	m->private = NULL;
--	return seq_release(inode, file);
--}
- 
- static const struct file_operations content_file_operations = {
- 	.open		= content_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
--	.release	= content_release,
-+	.release	= seq_release_private,
- };
- 
- static ssize_t read_flush(struct file *file, char __user *buf,
-Index: linux/fs/proc/proc_misc.c
-===================================================================
---- linux.orig/fs/proc/proc_misc.c
-+++ linux/fs/proc/proc_misc.c
-@@ -430,18 +430,11 @@ static int slabstats_open(struct inode *
- 	return ret;
- }
- 
--static int slabstats_release(struct inode *inode, struct file *file)
--{
--	struct seq_file *m = file->private_data;
--	kfree(m->private);
--	return seq_release(inode, file);
--}
--
- static const struct file_operations proc_slabstats_operations = {
- 	.open		= slabstats_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
--	.release	= slabstats_release,
-+	.release	= seq_release_private,
- };
- #endif
- #endif
+Then we have to fix pstree and all that. (In fact, I'm secretly
+trying to patch `ps f` to DTRT ;p)
 
 
+Jan
+-- 
