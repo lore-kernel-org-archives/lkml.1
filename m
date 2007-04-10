@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbXDJL1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXDJL2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932263AbXDJL1x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 07:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933075AbXDJL1w
+	id S933103AbXDJL2J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 07:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933075AbXDJL2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 07:27:52 -0400
-Received: from thunk.org ([69.25.196.29]:47615 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932255AbXDJL1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 07:27:51 -0400
-Date: Tue, 10 Apr 2007 07:27:18 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: Eric Sandeen <sandeen@redhat.com>, Phillip Susi <psusi@cfl.rr.com>,
-       Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Add a norecovery option to ext3/4?
-Message-ID: <20070410112718.GF13650@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-	Eric Sandeen <sandeen@redhat.com>, Phillip Susi <psusi@cfl.rr.com>,
-	Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070409000556.GA13980@implementation> <461A5F13.7040705@cfl.rr.com> <461A760B.1040103@redhat.com> <20070410072253.GA28665@lazybastard.org>
+	Tue, 10 Apr 2007 07:28:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:29801 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932280AbXDJL2G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 07:28:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FD3KoD6dQoiSsswBb5Az6nQFzU7db0GMXON8F7/p3oRwG/Iyo9TjAG5QicBOCoR1mqAIGUFe6/L552znDFO1M/FVTSNq0naGKTiKpWI2pELcDRMe0JRFGcv8IUVr27gyLJeUKLici/Z+iiVFxS3FRNmE1jpXcy1WoIWplkEi87E=
+Message-ID: <84144f020704100428r6e35e34cued8758c94728a6a0@mail.gmail.com>
+Date: Tue, 10 Apr 2007 14:28:05 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: PATCH 7/8] lguest: the block driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Andi Kleen" <ak@muc.de>
+In-Reply-To: <1176203528.26372.40.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070410072253.GA28665@lazybastard.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <1176203068.26372.21.camel@localhost.localdomain>
+	 <1176203130.26372.23.camel@localhost.localdomain>
+	 <1176203176.26372.25.camel@localhost.localdomain>
+	 <1176203231.26372.27.camel@localhost.localdomain>
+	 <1176203285.26372.29.camel@localhost.localdomain>
+	 <1176203333.26372.31.camel@localhost.localdomain>
+	 <1176203475.26372.37.camel@localhost.localdomain>
+	 <1176203528.26372.40.camel@localhost.localdomain>
+X-Google-Sender-Auth: 5d2598399933eaae
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 09:22:53AM +0200, Jörn Engel wrote:
-> > Under all conditions it should be safe to mount a read-only block
-> > device, but that is not the same as mounting a filesystem read-only.
-> 
-> In particular, it is a lame excuse when this claim is true.  If the
-> block-device is read-only, then journal replay will not work as expected
-> and all the "not so easy" work has to be done anyway.
-> 
-> Did I miss anything?  Is it actually easier to mount a read-only device
-> with unclean journal than mounting a read-write device and not replay
-> the journal?
+Hi Rusty,
 
-The problem is that ext3 defers writes even more than ext2 did in
-order to make journalling (a) possible, and (b) more efficient.  So if
-you mount the filesystem read-only without replaying the journal, you
-may get incorrect data; you could get data belonging to another user's
-file; the kernel could detect filesystem inconsistencies and decide
-that the filesystem has errors.  Now, at least in theory the kernel
-will not oops when it operates on an arbitrarily corrupted filesystem
-(which is what a filesystems whose journal has not been run can look
-like), BUT #1, this hasn't been as well tested we would probably like,
-and #2, if the filesystem is marked with an errors-behavior of "reboot
-on error", then system will reboot, because that's what you asked it
-to do!
+On 4/10/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> +/* Jens gave me this nice helper to end all chunks of a request. */
+> +static void end_entire_request(struct request *req, int uptodate)
+> +{
+> +       if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
+> +               BUG();
+> +       add_disk_randomness(req->rq_disk);
+> +       blkdev_dequeue_request(req);
+> +       end_that_request_last(req, uptodate);
+> +}
 
-I suppose what you could do is to read in the journal, and use it to
-create an remapping table so that when you want to read block #5126,
-and block number 5126 is in the journal, to read the journal version
-of the block instead of the one on disk.  That would allow for safe
-access to a filesystem being mounted read-only without the journal
-being present.
-
-Patches gratefully accepted....
-
-						- Ted
+Perhaps we should move this to generic code (i.e. block/ll_rw_blk.c)?
