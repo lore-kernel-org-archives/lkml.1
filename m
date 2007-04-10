@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbXDJVIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbXDJVIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753862AbXDJVIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXDJVIU
+	id S1753872AbXDJVIX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXDJVIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:08:20 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47006 "EHLO
+	Tue, 10 Apr 2007 17:08:23 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47009 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753862AbXDJVIT (ORCPT
+	with ESMTP id S1753872AbXDJVIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:08:19 -0400
-Date: Tue, 10 Apr 2007 23:08:26 +0200
+	Tue, 10 Apr 2007 17:08:22 -0400
+Date: Tue, 10 Apr 2007 23:08:29 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>
 Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] make struct proc_kpagemap static
-Message-ID: <20070410210826.GI28370@stusta.de>
+Subject: [-mm patch] make kernel/module.c:is_exported() static
+Message-ID: <20070410210829.GJ28370@stusta.de>
 References: <20070408143559.f5014629.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,26 +30,54 @@ On Sun, Apr 08, 2007 at 02:35:59PM -0700, Andrew Morton wrote:
 >...
 > Changes since 2.6.21-rc5-mm4:
 >...
-> +maps2-add-proc-kpagemap-interface.patch
-> 
->  New interfaces for inspecting process memory status
+> +fix-race-between-rmmod-and-cat-proc-kallsyms.patch
+>...
+>  Misc
 >...
 
 
-This patch makes the needlessly global truct proc_kpagemap static.
+is_exported() can now become static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.21-rc6-mm1/fs/proc/proc_misc.c.old	2007-04-10 00:52:35.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/fs/proc/proc_misc.c	2007-04-10 00:52:49.000000000 +0200
-@@ -732,7 +732,7 @@
- 	return ret;
+
+ include/linux/module.h |    7 -------
+ kernel/module.c        |    2 +-
+ 2 files changed, 1 insertion(+), 8 deletions(-)
+
+--- linux-2.6.21-rc6-mm1/include/linux/module.h.old	2007-04-10 01:04:03.000000000 +0200
++++ linux-2.6.21-rc6-mm1/include/linux/module.h	2007-04-10 01:05:09.000000000 +0200
+@@ -382,8 +382,6 @@
+ /* Look for this name: can be of form module:name. */
+ unsigned long module_kallsyms_lookup_name(const char *name);
+ 
+-int is_exported(const char *name, const struct module *mod);
+-
+ extern void __module_put_and_exit(struct module *mod, long code)
+ 	__attribute__((noreturn));
+ #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
+@@ -558,11 +556,6 @@
+ 	return 0;
  }
  
--struct proc_dir_entry *proc_kpagemap;
-+static struct proc_dir_entry *proc_kpagemap;
- static struct file_operations proc_kpagemap_operations = {
- 	.llseek = mem_lseek,
- 	.read = kpagemap_read,
+-static inline int is_exported(const char *name, const struct module *mod)
+-{
+-	return 0;
+-}
+-
+ static inline int register_module_notifier(struct notifier_block * nb)
+ {
+ 	/* no events will happen anyway, so this can always succeed */
+--- linux-2.6.21-rc6-mm1/kernel/module.c.old	2007-04-10 01:05:16.000000000 +0200
++++ linux-2.6.21-rc6-mm1/kernel/module.c	2007-04-10 01:05:36.000000000 +0200
+@@ -1746,7 +1746,7 @@
+ }
+ 
+ #ifdef CONFIG_KALLSYMS
+-int is_exported(const char *name, const struct module *mod)
++static int is_exported(const char *name, const struct module *mod)
+ {
+ 	if (!mod && lookup_symbol(name, __start___ksymtab, __stop___ksymtab))
+ 		return 1;
 
