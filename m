@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031058AbXDJQaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031071AbXDJQcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031058AbXDJQaV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031059AbXDJQaV
+	id S1031071AbXDJQcz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031093AbXDJQcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:30:21 -0400
-Received: from mga09.intel.com ([134.134.136.24]:46314 "EHLO mga09.intel.com"
+	Tue, 10 Apr 2007 12:32:55 -0400
+Received: from mga01.intel.com ([192.55.52.88]:6524 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031058AbXDJQaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:30:19 -0400
+	id S1031071AbXDJQcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:32:54 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,390,1170662400"; 
-   d="scan'208"; a="71402792:sNHT99202077"
-Message-ID: <461BBB66.4010303@linux.intel.com>
-Date: Tue, 10 Apr 2007 09:29:26 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: hch@infradead.org, ashok.raj@intel.com, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
+   d="scan'208"; a="227828550:sNHT17739141"
+Date: Tue, 10 Apr 2007 09:31:33 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, shaohua.li@intel.com
-Subject: Re: [patch 5/8] [Intel IOMMU] Graphics driver workarounds to provide
- unity map
-References: <20070409215552.221374000@intel.com>	<20070409215723.969189000@intel.com>	<20070410083351.GA19691@infradead.org> <20070410.020702.88477115.davem@davemloft.net>
-In-Reply-To: <20070410.020702.88477115.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com, keith.packard@intel.com
+Subject: Re: [patch 0/8] [Intel IOMMU] Support for Intel Virtualization Technology for Directed I/O
+Message-ID: <20070410163132.GC31505@linux-os.sc.intel.com>
+References: <20070409215552.221374000@intel.com> <200704100949.56130.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704100949.56130.ak@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Christoph Hellwig <hch@infradead.org>
-> Date: Tue, 10 Apr 2007 09:33:51 +0100
+On Tue, Apr 10, 2007 at 09:49:55AM +0200, Andi Kleen wrote:
+> On Monday 09 April 2007 23:55:52 Ashok Raj wrote:
 > 
->> On Mon, Apr 09, 2007 at 02:55:57PM -0700, Ashok Raj wrote:
->>> Most GFX drivers don't call standard PCI DMA APIs to allocate DMA buffer,
->>> Such drivers will be broken with IOMMU enabled. To workaround this issue, 
->>> we added two options.
->> All drm drivers do it.  If the usual out of tree crap vendors are too
->> stupid for their own sake it's their fault.
->>
->> So NACK to this patch.
+> > Please help review and provide feedback.
 > 
-> That's my feeling as well, everything we care about should be using
-> the proper APIs or else what is the point of them...
+> High level question: how did you solve the "user X server needs IOMMU bypass"
+> problem?
 
-that's too simple; X uses /dev/mem as well, even with something as 
-open as the Intel drivers.
+There is no special consideration for user space. Since all useful memeory is 
+mapped 1-1, guess user space would work as is. Unless iam missing something 
+here.. so yes.. there is no protection with 1-1, but guess its like 
+compatibility mode until the code gets converted over.
 
-Sad but true ;(
-
-(it's getting resolved on the X side but existing X is like this)
+Keith: cced says some of the user space side also is getting converted over with
+some driver support possibly. So this is an interim problem until X catches up
+with it.
+> 
+> -Andi
