@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030611AbXDJWbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030619AbXDJWbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030611AbXDJWbH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030619AbXDJWbH
+	id S1030619AbXDJWbT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030624AbXDJWbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:31:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40408 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030611AbXDJWas (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:30:48 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 1/2] Account for module percpu space separately from kernel percpu
-References: <461BC4B6.9060006@goop.org>
-	<m1abxfyiwk.fsf@ebiederm.dsl.xmission.com> <461C0D70.50005@goop.org>
-Date: Tue, 10 Apr 2007 16:30:03 -0600
-In-Reply-To: <461C0D70.50005@goop.org> (Jeremy Fitzhardinge's message of "Tue,
-	10 Apr 2007 15:19:28 -0700")
-Message-ID: <m1tzvnx3pw.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 10 Apr 2007 18:31:18 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:49682 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030619AbXDJWbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:31:08 -0400
+Date: Wed, 11 Apr 2007 00:30:47 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Al Boldi <a1426z@gawab.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/30] Use menuconfig objects
+In-Reply-To: <200704110112.39425.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.61.0704110026250.32056@yvahk01.tjqt.qr>
+References: <200704110112.39425.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-> Eric W. Biederman wrote:
->> I think I have already done this but in case I haven't.
->> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
->>
->> I see any problems there.
->>   
-> ^don't?
+On Apr 11 2007 01:12, Al Boldi wrote:
+>Jan Engelhardt wrote:
+>> the following patch series turns some menus into menuconfigs, so they
+>> can be disabled whilst "walking" thorugh the parent menu
+>
+>Great, but instead of making it a simple on/off, make it tri-state that would 
+>default select all child-options appropriately.  (see HW_RANDOM)
 
-Yep.  I did not see any problems with the patch.
+I do not remember having touched the Random Number Generators or Character
+Devices anywhere in this series.
 
-Eric
+Don't worry, I have paid attention (or at least I hope so ;-) to 
+'m'-able options, for example the SCSI, IEEE1394, or I2C stacks.
 
+But, for example you will see
+ [*] Old CD-ROM drivers (not SCSI, not IDE)
+
+which is because this entry in itself does not generate any object file.
+
+Generally, I just made the 'menuconfig' entry have the same state 
+(bool/tristate) as the original entry. If I have overseen that 
+somewhere, please let me know!
+
+
+Thank you,
+Jan
+-- 
