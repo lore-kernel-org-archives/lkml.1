@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030997AbXDJQK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031003AbXDJQLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030997AbXDJQK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031003AbXDJQK4
+	id S1031003AbXDJQLm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030932AbXDJQLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:10:56 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:58166 "EHLO 2ka.mipt.ru"
+	Tue, 10 Apr 2007 12:11:42 -0400
+Received: from ns.suse.de ([195.135.220.2]:52626 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030997AbXDJQKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:10:54 -0400
-Date: Tue, 10 Apr 2007 19:54:54 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, cramerj <cramerj@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-Subject: Re: [PATCH 2/2] NET: Multiqueue network device support implementation.
-Message-ID: <20070410155454.GA1949@2ka.mipt.ru>
-References: <20070410082049.GC16621@2ka.mipt.ru> <D5C1322C3E673F459512FB59E0DDC329029E448D@orsmsx414.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329029E448D@orsmsx414.amr.corp.intel.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 10 Apr 2007 19:55:16 +0400 (MSD)
+	id S1031003AbXDJQLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:11:41 -0400
+To: Christoph Hellwig <hch@lst.de>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cleanup compat ioctl handling
+References: <20070410112857.GA4581@lst.de>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 10 Apr 2007 19:10:02 +0200
+In-Reply-To: <20070410112857.GA4581@lst.de>
+Message-ID: <p73fy78jgut.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 08:41:49AM -0700, Waskiewicz Jr, Peter P (peter.p.waskiewicz.jr@intel.com) wrote:
-> > On Mon, Apr 09, 2007 at 02:28:41PM -0700, Peter P Waskiewicz 
-> > Jr (peter.p.waskiewicz.jr@intel.com) wrote:
-> > > + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
-> > > + 
-> > > + 	p = kzalloc(alloc_size, GFP_KERNEL);
-> > > + 	if (!p) {
-> > > + 		printk(KERN_ERR "alloc_netdev: Unable to 
-> > allocate queues.\n");
-> > > + 		return NULL;
-> > 
-> > I think you either do not want to print it, or want 
-> > additional details about device...
-> 
-> Ok.  This is essentially the same output printed if the netdev itself
-> cannot be allocated.  Should I update both strings to have more
-> device-specific information?
+Christoph Hellwig <hch@lst.de> writes:
 
-I wonder, if it is ever possible with gfp_kernel...
+> Merge all compat ioctl handling into compat_ioctl.c instead of splitting
+> it over compat.c and compat_ioctl.c.  This also allows to get rid of
+> ioctl32.h
 
-I think different patch would be ok.
+Looks good. 
 
--- 
-	Evgeniy Polyakov
+If someone feels the need to do more cleanup here -- it would be also
+nice to move more handlers to be in ->compat_ioctl and in their respective
+files than so much compat_ioctl.
+
+-Andi
