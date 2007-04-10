@@ -1,126 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbXDJMu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXDJM4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbXDJMu6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 08:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbXDJMu6
+	id S965461AbXDJM4L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 08:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXDJM4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 08:50:58 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:48817 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753086AbXDJMu5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 08:50:57 -0400
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-Organization: IBM
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       johannes@sipsolutions.net, linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] Build break on ppc64 for 2.6.21-rc6-mm1
-Date: Tue, 10 Apr 2007 18:20:47 +0530
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_ng4GGemdXD+cSQz"
-Message-Id: <200704101820.47509.srinivasa@in.ibm.com>
+	Tue, 10 Apr 2007 08:56:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54961 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753076AbXDJM4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 08:56:08 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200704091146.32346.rgetz@blackfin.uclinux.org> 
+References: <200704091146.32346.rgetz@blackfin.uclinux.org>  <6d6a94c50704082001y5c13c865ic3d70217aba7d181@mail.gmail.com> <1176112223.17975.8.camel@roc-desktop> 
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: bryan.wu@analog.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       waltje@uwalt.nl.mugnet.org, "Aubrey Li" <aubreylee@gmail.com>,
+       netdev@vger.kernel.org, "Andrew Morton" <akpm@osdl.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 10 Apr 2007 13:55:28 +0100
+Message-ID: <9561.1176209728@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_ng4GGemdXD+cSQz
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
+> David - I know you have been reworking the noMMU vma handling - is there a 
+> solution to vm_insert_page?
 
-When I tried to compile 2.6.21-rc6-mm1 on ppc64, I got the below error=20
-message.
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-arch/powerpc/sysdev/timer.c:51: error: variable =E2=80=98timer_sysclass=E2=
-=80=99 has=20
-initializer but incomplete type
-arch/powerpc/sysdev/timer.c:52: error: unknown field =E2=80=98resume=E2=80=
-=99 specified in=20
-initializer
-arch/powerpc/sysdev/timer.c:52: warning: excess elements in struct initiali=
-zer
-arch/powerpc/sysdev/timer.c:52: warning: (near initialization=20
-for =E2=80=98timer_sysclass=E2=80=99)
-arch/powerpc/sysdev/timer.c:53: error: unknown field =E2=80=98suspend=E2=80=
-=99 specified in=20
-initializer
-arch/powerpc/sysdev/timer.c:53: warning: excess elements in struct initiali=
-zer
-arch/powerpc/sysdev/timer.c:53: warning: (near initialization=20
-for =E2=80=98timer_sysclass=E2=80=99)
-arch/powerpc/sysdev/timer.c:54: error: unknown field =E2=80=98kset=E2=80=99=
- specified in=20
-initializer
-arch/powerpc/sysdev/timer.c:54: error: extra brace group at end of initiali=
-zer
-arch/powerpc/sysdev/timer.c:54: error: (near initialization=20
-for =E2=80=98timer_sysclass=E2=80=99)
-arch/powerpc/sysdev/timer.c:54: error: extra brace group at end of initiali=
-zer
-arch/powerpc/sysdev/timer.c:54: error: (near initialization=20
-for =E2=80=98timer_sysclass=E2=80=99)
-arch/powerpc/sysdev/timer.c:54: warning: excess elements in struct initiali=
-zer
-arch/powerpc/sysdev/timer.c:54: warning: (near initialization=20
-for =E2=80=98timer_sysclass=E2=80=99)
-arch/powerpc/sysdev/timer.c:57: error: variable =E2=80=98device_timer=E2=80=
-=99 has initializer=20
-but incomplete type
-arch/powerpc/sysdev/timer.c:58: error: unknown field =E2=80=98id=E2=80=99 s=
-pecified in=20
-initializer
-arch/powerpc/sysdev/timer.c:58: warning: excess elements in struct initiali=
-zer
-arch/powerpc/sysdev/timer.c:58: warning: (near initialization=20
-for =E2=80=98device_timer=E2=80=99)
-arch/powerpc/sysdev/timer.c:59: error: unknown field =E2=80=98cls=E2=80=99 =
-specified in=20
-initializer
-arch/powerpc/sysdev/timer.c:59: warning: excess elements in struct initiali=
-zer
-arch/powerpc/sysdev/timer.c:59: warning: (near initialization=20
-for =E2=80=98device_timer=E2=80=99)
-arch/powerpc/sysdev/timer.c: In function =E2=80=98time_init_device=E2=80=99:
-arch/powerpc/sysdev/timer.c:64: warning: implicit declaration of=20
-function =E2=80=98sysdev_class_register=E2=80=99
-arch/powerpc/sysdev/timer.c:66: warning: implicit declaration of=20
-function =E2=80=98sysdev_register=E2=80=99
-make[1]: *** [arch/powerpc/sysdev/timer.o] Error 1
-make: *** [arch/powerpc/sysdev] Error 2
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+The reason vm_insert_page() is being called, I imagine, is because
+packet_mmap() has to insert mappings to an already existing buffer.  All it
+does is munge the PTEs in that virtual region to point to the buffer.
 
-Below patch fixes this problem. please let me know comments on this.
+As long as the buffer is completely contiguous (which I don't know for
+certain), then this function can be trivially reduced in NOMMU-mode to
+something that just returns the address of the requested part of the buffer.
+No remapping would be required.
 
-Signed-off-by: Srinivasa Ds <srinivasa@in.ibm.com>
+However...  If the buffer is *not* completely contiguous, then you can still
+perform mmaps of it - but only where the desired part _is_ contiguous.
+Alternatively, you can arrange for the buffer to be completely contiguous
+upfront.
 
+Looking at alloc_pg_vec() in af_packet.c, I will place my bets on the latter
+case.  I don't know that this is a problem; it depends on how things work, and
+that I don't know offhand.  If someone can give me a simple test program, I
+would be able to evaluate it better.
 
---Boundary-00=_ng4GGemdXD+cSQz
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="build.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="build.patch"
-
----
- arch/powerpc/sysdev/timer.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6.21-rc6/arch/powerpc/sysdev/timer.c
-===================================================================
---- linux-2.6.21-rc6.orig/arch/powerpc/sysdev/timer.c
-+++ linux-2.6.21-rc6/arch/powerpc/sysdev/timer.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/time.h>
-+#include <linux/sysdev.h>
- #include <asm/rtc.h>
- 
- static unsigned long suspend_rtc_time;
-
---Boundary-00=_ng4GGemdXD+cSQz--
+David
