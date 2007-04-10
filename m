@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030921AbXDJQmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030889AbXDJQm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030921AbXDJQmK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031098AbXDJQmK
+	id S1030889AbXDJQm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031103AbXDJQm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:42:10 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:33790 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030921AbXDJQmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:42:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Aq5qVxtFg29UEkhUHcb+yXDCNplmJksCbHV6QToxsZbBE/lkSLFtNURnuzwnWJbsTON0tN5qBBzuMS96RXCXZMe4V7gJW6h8zr586z8IEaKQLat/Ai51G2/vFzBKqkBBSeqC6tIoTrTP4Jb3i1kQjnD5uHfWF7V1XXwP9OMDkVs=
-Message-ID: <a36005b50704100942t3602e92ar9a4362ad3d45434a@mail.gmail.com>
-Date: Tue, 10 Apr 2007 09:42:07 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: If not readdir() then what?
-Cc: "Theodore Tso" <tytso@mit.edu>,
-       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
-       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>
-In-Reply-To: <461BB1C1.5050709@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Apr 2007 12:42:28 -0400
+Received: from mga02.intel.com ([134.134.136.20]:6887 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031104AbXDJQm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:42:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,390,1170662400"; 
+   d="scan'208"; a="225006341:sNHT37548672"
+Date: Tue, 10 Apr 2007 09:40:54 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org
+Subject: Re: [patch] sched: align rq to cacheline boundary
+Message-ID: <20070410164054.GI3948@linux-os.sc.intel.com>
+References: <20070409180853.GC3948@linux-os.sc.intel.com> <20070410062421.GA23274@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070407233037.GA16508@infradead.org> <46194260.3050900@zytor.com>
-	 <20070409014426.GA18580@thunk.org>
-	 <20070409110927.GA23240@lazybastard.org>
-	 <1176121897.6210.8.camel@heimdal.trondhjem.org>
-	 <20070409131918.GC18580@thunk.org>
-	 <1176127395.6210.34.camel@heimdal.trondhjem.org>
-	 <20070410135641.GG13650@thunk.org>
-	 <a36005b50704100710i28d5681fsdab6deb1d5161e28@mail.gmail.com>
-	 <461BB1C1.5050709@zytor.com>
+In-Reply-To: <20070410062421.GA23274@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/10/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> It rather makes any user space accesses irrelevant.  The main question
-> seems to be if we can realistically increase the cookie size even to 64
-> bits.
+On Tue, Apr 10, 2007 at 08:24:22AM +0200, Ingo Molnar wrote:
+> 
+> * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+> 
+> > Align the per cpu runqueue to the cacheline boundary. This will 
+> > minimize the number of cachelines touched during remote wakeup.
+> 
+> > -static DEFINE_PER_CPU(struct rq, runqueues);
+> > +static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
+> 
+> ouch!! Now how did _that_ slip through. The runqueues had been 
+> cacheline-aligned for ages. Or at least, they were supposed to be.
 
-On 32-bit platforms, *not* using _FILE_OFFSET_BITS=64 is already today
-a stupid thing to do.  There are several places where things simply
-break in today's world.
+perhaps the per_cpu definition gave the impression of cacheline aligned too..
 
-Once you do use 53-bit offsets (and we always do this for 64-bit
-platforms) telldir returns a 64-bit cookie.  So, no problem.  The one
-big issue is that there are no error values for telldir.  There was no
-need so far.  But a) we can change this or b) we can really go
-stronger in the direction to deprecate 32-bit ops and force people to
-update their code.
+> 
+> could you see any improvement in profiles or workloads with this patch 
+> applied? (just curious - it's an obviously right fix)
+
+We have seen 0.5% perf improvement on database workload on a 2 node setup.
+0.5% is a very good improvement for this workload.
+
+thanks,
+suresh
