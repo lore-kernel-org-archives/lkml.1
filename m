@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbXDJOFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbXDJOGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbXDJOFs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbXDJOFs
+	id S1753810AbXDJOGg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbXDJOGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:05:48 -0400
-Received: from Apollo.christiedigital.com ([65.195.57.9]:59326 "EHLO
-	CDSCYPEXG01.cds.int" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753804AbXDJOFr convert rfc822-to-8bit (ORCPT
+	Tue, 10 Apr 2007 10:06:36 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:47255 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753805AbXDJOGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:05:47 -0400
-X-Greylist: delayed 852 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Apr 2007 10:05:47 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 10 Apr 2007 10:06:34 -0400
+Date: Tue, 10 Apr 2007 15:06:18 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kyle@canonical.com
+Message-ID: <20070410140617.GA5255@srcf.ucam.org>
+References: <20070405141352.12fddb6e@the-village.bc.nu> <20070406163707.GA25880@srcf.ucam.org> <20070409222241.6581ecc2@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Help Understanding Linux memory management
-Date: Tue, 10 Apr 2007 09:51:48 -0400
-Message-ID: <AD98412A5373CC4AA643D9C021922A541C4DC4@cdskitexg01.cds.int>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Help Understanding Linux memory management
-Thread-Index: Acd7d2IpHNDXYpTLSHSqtgeR0ZyFVw==
-From: "Mouawad, Tony" <Tony.Mouawad@christiedigital.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Apr 2007 13:51:49.0421 (UTC) FILETIME=[62EA85D0:01C77B77]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070409222241.6581ecc2@the-village.bc.nu>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] HPA support: Revised patch
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Apr 09, 2007 at 10:22:41PM +0100, Alan Cox wrote:
 
-I've been a MS Windows based programmer for a very long time and was
-recently tossed in an environment where I am developing embedded apps on
-the m68k / Linux platform.  That makes me a Linux newbie.  I started
-asking a few questions on various IRC channels and was directed to this
-group.  So, I will start asking:
+> Please apply Tejun's fix for LBA48 data and try again. Hopefully its just
+> that which is causing the problem.
 
-These are questions derived from observations on the MCF 5475 CPU
-running Linux 2.6.10 built for the m68k platform.  Disk swapping is
-disabled.
-
-1) When physical memory runs low, the memory manager will try to use
-memory currently allocated to the pagecache.  Is this true?
-
-2) When vm.overcommit_memory = 2 (overcommit disabled), and memory runs
-low, it appears that the memory manager does not try to use memory
-currently allocated to pagecache.  Is this true?
-
-3) Is it possible to disable the pagecache?
-
-Cheers,
-Tony
-
-
-
+Yes, that works absolutely fine now.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
