@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbXDJNox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbXDJNpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108AbXDJNox (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 09:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXDJNox
+	id S1753747AbXDJNpE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 09:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbXDJNpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 09:44:53 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:48418 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108AbXDJNow (ORCPT
+	Tue, 10 Apr 2007 09:45:03 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50971 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbXDJNpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 09:44:52 -0400
-Subject: Re: [PATCH] Build break on ppc64 for 2.6.21-rc6-mm1
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Srinivasa Ds <srinivasa@in.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, paulus@samba.org
-In-Reply-To: <200704101820.47509.srinivasa@in.ibm.com>
-References: <200704101820.47509.srinivasa@in.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-tjSVKLJg46V0RiastZOb"
-Date: Tue, 10 Apr 2007 15:45:21 +0200
-Message-Id: <1176212721.8459.97.camel@johannes.berg>
+	Tue, 10 Apr 2007 09:45:00 -0400
+Date: Tue, 10 Apr 2007 15:44:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Andika Triwidada <andika@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: CPU offline but power consumption increased?
+Message-ID: <20070410134458.GA723@one.firstfloor.org>
+References: <7e0bae390704062123i2dfaf030icd5a710677bc989a@mail.gmail.com> <p73odlzkb6h.fsf@bingen.suse.de> <200704100413.51637.lenb@kernel.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704100413.51637.lenb@kernel.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Speaking for all Intel hardware implemented from pre-history until now,
+> deep C-states is the best you can do, and there is no special offline
+> mode to save more power.
 
---=-tjSVKLJg46V0RiastZOb
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+We don't use deep c states currently; just HLT.
 
-On Tue, 2007-04-10 at 18:20 +0530, Srinivasa Ds wrote:
+Right now it doesn't make much difference because no multi socket
+servers do deep C states and secondary cores can normally not go
+deep on their own; but if any of this changes this code would
+need to be fixed.
 
-> Below patch fixes this problem. please let me know comments on this.
+But cpu off line is really a special case -- maybe it is even 
+possible to do something better on current hardware.
 
-+#include <linux/sysdev.h>
+> and if the BIOS is implemented properly, the core will be spinning in the
+> deepest available C-state.  Of course, it would probably be more interesting
+> to simply leave the core on-line and let it go idle...
 
+I don't see any BIOS call in play_dead()
 
-Yeah, I heard about that change but didn't have a chance to check it out
-yet. Patch looks good to me, of course.
-
-johannes
-
---=-tjSVKLJg46V0RiastZOb
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGG5Tw/ETPhpq3jKURAsexAJ4ohDHy4XFT9+4io0tp3RipW7QTqQCeLrZ1
-YNGdAvf7ly6rqunH1FvcmAI=
-=7mfY
------END PGP SIGNATURE-----
-
---=-tjSVKLJg46V0RiastZOb--
+-Andi
 
