@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXDJHhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbXDJHhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbXDJHhL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 03:37:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbXDJHhK
+	id S1752306AbXDJHhj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 03:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXDJHhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 03:37:10 -0400
-Received: from ns2.suse.de ([195.135.220.15]:36005 "EHLO mx2.suse.de"
+	Tue, 10 Apr 2007 03:37:38 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:47183 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbXDJHhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 03:37:09 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] sched: align rq to cacheline boundary
-Date: Tue, 10 Apr 2007 09:37:00 +0200
-User-Agent: KMail/1.9.6
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>
-References: <20070409180853.GC3948@linux-os.sc.intel.com> <20070409134057.2d249f0c.akpm@linux-foundation.org>
-In-Reply-To: <20070409134057.2d249f0c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1752277AbXDJHhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 03:37:37 -0400
+Date: Tue, 10 Apr 2007 00:37:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Dave Jones <davej@redhat.com>, Robin Holt <holt@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+Message-Id: <20070410003702.f8a49b75.akpm@linux-foundation.org>
+In-Reply-To: <461B3754.9040107@garzik.org>
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
+	<4616CBF0.7090606@garzik.org>
+	<20070409172339.48d661d6.akpm@linux-foundation.org>
+	<20070410015912.GE1994@redhat.com>
+	<20070409193056.6b52c354.akpm@linux-foundation.org>
+	<461B3754.9040107@garzik.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704100937.01399.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 10 Apr 2007 03:05:56 -0400 Jeff Garzik <jeff@garzik.org> wrote:
 
-> >  
-> > -static DEFINE_PER_CPU(struct rq, runqueues);
-> > +static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
-> 
-> Remember that this can consume up to (linesize-4 * NR_CPUS) bytes, 
+> My main 
+> worry with keventd is that we might get stuck behind an unrelated 
+> process for an undefined length of time.
 
-On x86 just the real possible map now -- that tends to be much smaller.
+I don't think it has ever been demonstrated that keventd latency is
+excessive, or a problem.  I guess we could instrument it and fix stuff
+easily enough.
 
-There might be some other architectures who still allocate per cpu
-for all of NR_CPUs (or always set possible map to that), but those
-should be just fixed.
+The main problem with keventd has been flush_scheduled_work() deadlocks: the
+caller of flush_scheduled_work() wants to flush work item A, but holds some
+lock which is also needed by unrelated work item B.  Most of the time, it
+works.  But if item B happens to be queued the flush_scheduled_work() will
+deadlock.
 
-> which is 
-> rather a lot.
+The fix is to flush-and-cancel just item A: if it's not running yet, cancel
+it.  If it is running, wait until it has finished.  Oleg's
 
-We should have solved the problem of limited per cpu space in .22 at least
-with some patches by Jeremy. I also plan a few other changes the will
-use more per CPU memory again.
+	void cancel_work_sync(struct work_struct *work)
 
-> Remember also that the linesize on VSMP is 4k.
-> 
-> And that putting a gap in the per-cpu memory like this will reduce its
-> overall cache-friendliness.
+is queued for 2.6.22 and should permit some kthread->keventd conversions
+which would previously been deadlocky.
 
-When he avoids false sharing on remote wakeup it should be more cache friendly.
 
-> Need more convincing, please.
+The thing to concentrate on here is the per-cpu threads, which is where the
+proliferation appears to be coming from.  Conversions to
+schedule_work()+cancel_work_sync() and conversions to
+create_singlethread_workqueue().
 
-Was this based on some benchmark where it showed?
 
--Andi
