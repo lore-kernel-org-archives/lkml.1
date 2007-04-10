@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031103AbXDJQoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031106AbXDJQpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031103AbXDJQoz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031106AbXDJQoz
+	id S1031106AbXDJQpJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031107AbXDJQpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:44:55 -0400
-Received: from mail.screens.ru ([213.234.233.54]:54078 "EHLO mail.screens.ru"
+	Tue, 10 Apr 2007 12:45:09 -0400
+Received: from mga02.intel.com ([134.134.136.20]:46134 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031103AbXDJQoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:44:54 -0400
-Date: Tue, 10 Apr 2007 20:44:41 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070410164441.GB104@tv-sign.ru>
-References: <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com> <20070410134814.GA28016@elte.hu> <m17iskz3i8.fsf@ebiederm.dsl.xmission.com>
+	id S1031106AbXDJQpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:45:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,390,1170662400"; 
+   d="scan'208"; a="225008976:sNHT6202631771"
+Date: Tue, 10 Apr 2007 09:43:26 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Shaohua Li <shaohua.li@intel.com>, Ashok Raj <ashok.raj@intel.com>,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, ak@suse.de, gregkh@suse.de,
+       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/8] [Intel IOMMU] Support for Intel Virtualization	Technology for Directed I/O
+Message-ID: <20070410164325.GD31505@linux-os.sc.intel.com>
+References: <20070409215552.221374000@intel.com> <461B4925.9080005@garzik.org> <1176193673.6781.24.camel@sli10-conroe.sh.intel.com> <461B4C28.4010806@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m17iskz3i8.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <461B4C28.4010806@garzik.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/10, Eric W. Biederman wrote:
+On Tue, Apr 10, 2007 at 04:34:48AM -0400, Jeff Garzik wrote:
+> Shaohua Li wrote:
+> >DMA remapping just uses ACPI table to tell which dma remapping engine a
+> >pci device is controlled by at boot time. At run time, DMA remapping
+> >hasn't any interactive with ACPI.
+> 
+> The Linux kernel _really_ wants a non-ACPI way to detect this.
+> 
+> Just use the hardware registers themselves, you don't need an ACPI table.
+> 
+> 	Jeff
 
-> I'm trying to remember what the story is now.  There is a nasty
-> race somewhere with reparenting, a threaded parent setting SIGCHLD to
-> SIGIGN, and non-default signals that results in an zombie that no one
-> can wait for and reap.  It requires being reparented twice to trigger.
+ACPI is required just not for identifying the DMA remapping hardware in the
+system. We also need them to identify which engines control which pci devices.
 
-reparent_thread:
+Also there are some reserved sections that BIOS uses for its purpose that it
+needs identity map.. say for legacy emulation via usb etc that needs
+to be passed to the OS. 
 
-	...
-
-        /* If we'd notified the old parent about this child's death,
-         * also notify the new parent.
-         */
-        if (!traced && p->exit_state == EXIT_ZOMBIE &&
-            p->exit_signal != -1 && thread_group_empty(p))
-                do_notify_parent(p, p->exit_signal);
-
-We notified /sbin/init. If it ignores SIGCHLD, we should release the task.
-We don't do this.
-
-The best fix I believe is to cleanup the forget_original_parent/reparent_thread
-interaction and factor out this "exit_state == EXIT_ZOMBIE && exit_signal == -1"
-checks.
-
-Oleg.
-
+not sure we can get away from using ACPI that easily.. its just only for setup
+information, once the identification is complete we dont bother ACPI anymore.
