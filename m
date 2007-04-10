@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030369AbXDJGYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030410AbXDJGYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030369AbXDJGYh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 02:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030410AbXDJGYh
+	id S1030410AbXDJGYm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 02:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030413AbXDJGYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 02:24:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44294 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030369AbXDJGYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 02:24:36 -0400
-Date: Tue, 10 Apr 2007 08:24:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] sched: align rq to cacheline boundary
-Message-ID: <20070410062421.GA23274@elte.hu>
-References: <20070409180853.GC3948@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070409180853.GC3948@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 10 Apr 2007 02:24:42 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:41533 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030410AbXDJGYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 02:24:41 -0400
+X-Greylist: delayed 1234 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Apr 2007 02:24:41 EDT
+Message-ID: <461B28CE.7070704@snapgear.com>
+Date: Tue, 10 Apr 2007 16:03:58 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: uclinux-dev@uclinux.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: m68knommu and vmlinux.lds.h RODATA
+References: <20070409205347.GA32267@Krystal>
+In-Reply-To: <20070409205347.GA32267@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Mathieu,
 
-* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+Mathieu Desnoyers wrote:
+> Is there any particular reason why m68knommu does not use the RODATA
+> linker script macro defined in asm-generic/vmlinux.lds.h ? It makes it
+> rather inconvenient to add new RO sections to the kernel.
 
-> Align the per cpu runqueue to the cacheline boundary. This will 
-> minimize the number of cachelines touched during remote wakeup.
+This is going back some way, but this was the original commit message:
 
-> -static DEFINE_PER_CPU(struct rq, runqueues);
-> +static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
+# --------------------------------------------
+# 03/02/18	gerg@snapgear.com	1.984
+# [PATCH] use local RODATA setup for m68knommu linker script
+#
+# This patch removes the use of the common RODATA define in the m68knommu
+# architecture. It cannot be used the same way for the m68knommu target.
+# For starters just inserting it here is syntactically wrong. All the read
+# only parts are grouped into a single "text" segment, and this is the root
+# cause of the problem. So for the m68knommu arch it makes sense to not
+# use the generic RODATA setup, but to list them locally.
 
-ouch!! Now how did _that_ slip through. The runqueues had been 
-cacheline-aligned for ages. Or at least, they were supposed to be.
+The problem looks to be the same today.
 
-could you see any improvement in profiles or workloads with this patch 
-applied? (just curious - it's an obviously right fix)
+The current vmlinux.lds.S for m68knommu directs sections out to ROM
+or RAM depending on whether we are building to be run from some type
+of read only memory (ROM, FLASH, etc) or RAM. The RODATA macro as it
+stands doesn't allow that.
 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Regards
+Greg
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
