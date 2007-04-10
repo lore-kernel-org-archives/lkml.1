@@ -1,36 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966054AbXDJAyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966057AbXDJAyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966054AbXDJAyA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 20:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966055AbXDJAyA
+	id S966057AbXDJAyX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 20:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966056AbXDJAyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 20:54:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59115 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966054AbXDJAyA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 20:54:00 -0400
-Date: Mon, 9 Apr 2007 17:53:59 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
+	Mon, 9 Apr 2007 20:54:23 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:39125 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966057AbXDJAyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 20:54:21 -0400
+Date: Mon, 9 Apr 2007 17:53:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: William Lee Irwin III <wli@holomorphy.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, ak@suse.de
-Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
-In-Reply-To: <20070410002605.GY2986@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0704091753480.28009@schroedinger.engr.sgi.com>
-References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
- <20070409144107.21287fb8.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704091501230.2761@schroedinger.engr.sgi.com>
- <20070410002605.GY2986@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+Subject: Re: per-thread rusage
+Message-Id: <20070409175352.0474a3c9.akpm@linux-foundation.org>
+In-Reply-To: <20070410004201.GA2986@holomorphy.com>
+References: <20070404172931.GM2986@holomorphy.com>
+	<20070404194829.1a93d8fd.dada1@cosmosbay.com>
+	<20070404181050.GN2986@holomorphy.com>
+	<20070409165315.4704021f.akpm@linux-foundation.org>
+	<20070410004201.GA2986@holomorphy.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Apr 2007, William Lee Irwin III wrote:
+On Mon, 9 Apr 2007 17:42:01 -0700
+William Lee Irwin III <wli@holomorphy.com> wrote:
 
-> Basically, I'll help all this along.
+>  My use for it is report generation in VM (and possibly other)
+> testcases.
 
-Thank you.
+OK.  The cool kids are using taskstats for this sort of thing now, but I
+note that taskstats is inexplicably missing the context-switch accounting,
+and perhaps other things?
 
+> The ack-in-concept is good enough for me to go about
+> sweeping up the OS/standards compatibility, testing, and documentation
+> issues in the near future prior to resubmission.
+
+Thanks.
