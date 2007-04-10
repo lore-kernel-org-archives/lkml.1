@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbXDJWxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965858AbXDJWyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbXDJWxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXDJWxt
+	id S965858AbXDJWyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965865AbXDJWyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:53:49 -0400
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:50561 "EHLO
+	Tue, 10 Apr 2007 18:54:17 -0400
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:50633 "EHLO
 	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753672AbXDJWxs (ORCPT
+	by vger.kernel.org with ESMTP id S965858AbXDJWyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:53:48 -0400
-Date: Tue, 10 Apr 2007 18:48:41 -0400
+	Tue, 10 Apr 2007 18:54:15 -0400
+Date: Tue, 10 Apr 2007 18:54:14 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] markers-linker-m68knommu
-Message-ID: <20070410224841.GO7092@Krystal>
+Subject: [PATCH] markers-linker-sh
+Message-ID: <20070410225414.GU7092@Krystal>
 References: <20070410223658.GC7092@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,25 +25,25 @@ In-Reply-To: <20070410223658.GC7092@Krystal>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 18:47:19 up 67 days, 12:54,  6 users,  load average: 1.38, 1.42, 1.41
+X-Uptime: 18:53:23 up 67 days, 13:00,  6 users,  load average: 1.17, 1.77, 1.63
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add EXTRA_RWDATA to m68knommu.
+Add EXTRA_RWDATA to sh.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
---- a/arch/m68knommu/kernel/vmlinux.lds.S
-+++ b/arch/m68knommu/kernel/vmlinux.lds.S
-@@ -134,6 +134,7 @@ SECTIONS {
- 		. = ALIGN(4);
- 		_sdata = . ;
- 		*(.data)
-+		EXTRA_RWDATA
- 		. = ALIGN(8192) ;
- 		*(.data.init_task)
- 		_edata = . ;
+--- a/arch/sh/kernel/vmlinux.lds.S
++++ b/arch/sh/kernel/vmlinux.lds.S
+@@ -40,6 +40,7 @@ SECTIONS
+ 
+   .data : {			/* Data */
+ 	*(.data)
++	EXTRA_RWDATA
+ 
+  	 /* Align the initial ramdisk image (INITRD) on page boundaries. */
+  	 . = ALIGN(PAGE_SIZE);
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
