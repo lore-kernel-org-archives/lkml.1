@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXDJDck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030327AbXDJDer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030181AbXDJDck (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 23:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbXDJDck
+	id S1030327AbXDJDer (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 23:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbXDJDer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 23:32:40 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:20228 "EHLO
-	asav16.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932900AbXDJDcj (ORCPT
+	Mon, 9 Apr 2007 23:34:47 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:37696 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932900AbXDJDeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 23:32:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAJShGkZKhRO4UGdsb2JhbACHNohDAQEq
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.21-rc6
-Date: Mon, 9 Apr 2007 23:32:36 -0400
-User-Agent: KMail/1.9.3
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070408160954.edd248d1.akpm@linux-foundation.org>
-In-Reply-To: <20070408160954.edd248d1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704092332.37065.dtor@insightbb.com>
+	Mon, 9 Apr 2007 23:34:46 -0400
+Date: Mon, 09 Apr 2007 23:34:44 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: I give up
+In-reply-to: <461A9D42.9000008@garzik.org>
+To: linux-kernel@vger.kernel.org
+Cc: Jeff Garzik <jeff@garzik.org>, John Stoffel <john@stoffel.org>
+Message-id: <200704092334.44883.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200704091007.58535.gene.heskett@gmail.com>
+ <200704091549.51805.gene.heskett@gmail.com> <461A9D42.9000008@garzik.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 April 2007 19:09, Andrew Morton wrote:
-> driver core:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/broken-out/update-documentation-driver-model-platformtxt.patch
-> 
+On Monday 09 April 2007, Jeff Garzik wrote:
+>Gene Heskett wrote:
+>> For those of you with big tapes that can hold a complete dump of every
+>> partition (and partitions is the only way dump works in case some have
+>> forgotten), go ahead and use dump/restore.  Tar quite simply, allows
+>> one to break his backup files down into small enough pieces that a
+>> tape drive that's only 20% of the system drives size is totally
+>> usable.  I ran dds2 tapes for a long time, and it wasn't at all
+>> unusual to have amanda fill those to the 95% or better mark every
+>> night for a week running, without ever hitting EOT.
+>
+>Wow, people still use tapes for backup?
+>
+>With current hard drive prices (200GB @ US$55, 500GB @ US$120) you can
+>just keep buying hard drives :)
+>
+>Surely tape price/GB is higher than hard drive price/GB...
+>
+>	Jeff
+I haven't seen any 200GB for $55 yet, more like $129 & maybe a rebate at 
+Circuit City.  We don't have a Fry's around here.
 
-We should not encourage using platform_device_register_simple as we want
-to obsolete this function.
 
 -- 
-Dmitry
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+You will be called upon to help a friend in trouble.
