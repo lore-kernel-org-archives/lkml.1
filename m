@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030603AbXDJUom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbXDJUpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030603AbXDJUom (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 16:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030614AbXDJUom
+	id S1753170AbXDJUpb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 16:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbXDJUpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 16:44:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:10515 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030603AbXDJUol (ORCPT
+	Tue, 10 Apr 2007 16:45:31 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:49194 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170AbXDJUp3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 16:44:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Sjf7atc/U7KTABzObiQDE4LDLjynEhM5QECghnW1+ddaTNisgevWHVdJVM1Hb67uAllXic+e4f43tf9GvCcJ/cGf1hTtLILZoSbJ21YiRy6Kar6dYrNDdXbw8heEvgHb5wUvpvIhGPHLFBMEohszFEUbMtczF8WtX3S+oa18SVA=
-Date: Wed, 11 Apr 2007 00:45:27 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add spaces on either side of case "..." operator.
-Message-ID: <20070410204527.GB5840@martell.zuzino.mipt.ru>
-References: <Pine.LNX.4.64.0704100721050.13729@CPE00045a9c397f-CM001225dbafb6> <20070410090555.d847d466.akpm@linux-foundation.org> <461BCDA9.2060206@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <461BCDA9.2060206@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 10 Apr 2007 16:45:29 -0400
+Date: Tue, 10 Apr 2007 16:45:18 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: I give up
+In-reply-to: <alpine.DEB.0.83.0704100821180.20185@sigma.j-a-k-j.com>
+To: linux-kernel@vger.kernel.org
+Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, Olaf Hering <olaf@aepfle.de>,
+       Dave Dillow <dave@thedillows.org>, Dave Jones <davej@redhat.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
+Message-id: <200704101645.20296.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200704091007.58535.gene.heskett@gmail.com>
+ <200704100353.14208.gene.heskett@gmail.com>
+ <alpine.DEB.0.83.0704100821180.20185@sigma.j-a-k-j.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 10:47:21AM -0700, Jeremy Fitzhardinge wrote:
-> Andrew Morton wrote:
-> > #define AUDIT_FIRST_USER_MSG    1100    /* Userspace messages mostly uninteresting to kernel */
-> > #define AUDIT_USER_AVC          1107    /* We filter this differently */
-> > #define AUDIT_LAST_USER_MSG     1199
-> >
-> > and CPP turns that into
-> >
-> >  case 1100 ...1199:
-> >  case 2100 ...2999:
-> >
-> > and it does the same when the comments are stripped from the #defines.
-> >
-> > So we were saved by the trailing space which cpp added to the expanded
-> > macro.  I wonder why cpp did that, and to what extent one can rely cpp
-> > doing that.
+On Tuesday 10 April 2007, John Anthony Kazos Jr. wrote:
+>> >So fix tar to not do silly things.
+>> >Kernel major:minor numbers are not stable.
+>>
+>> YOU Tell the tar people, they are flabbergasted that linux is
+>> apparently the only unstable OS that tar can be run on.
 >
-> I think its required to.  If it didn't, it would be effectively pasting
-> two tokens together without the ## operator.
+>Linux is not unstable. It's developmental! Linux is like one giant
+>international research project marching toward the future of computing.
+>MacOS (oh, how I miss System 7.5.5), Windows (shoot me, please), BSD
+>(wannabe GNU/Linux), and everything else are there just for companies to
+>spend money on and idiots to drool over until Linux is ready to stand up
+>and say "Yo. It's just bugfixes and improvements from here. You can put
+>the Legos down now."
 
-Internally, there are lists of tokens and no ambiguities. What gcc docs
-warn about is that
+I don't know who you are, but that's not germane to this discussion, what 
+is germane is that once the experimental label has been removed from 
+something as capable of screwing up the system as the LMV stuff is, then 
+there is no excuse not to give it a LANANA compatible address and quit 
+screwing up peoples backup systems just because they turned on pktcdvd or 
+md or some other similar option in a make xconfig.  FWIW, md, for raid 
+users, should get the same treatment since raids often can have 
+terrabytes of data to be backed up.
 
-	case 1...2:
+The patch to do that caught tar users totally off-guard, but once we(I) 
+understood why it was done, it was obviously a good patch.  But rather 
+than explaining WTF it was doing so we/I understood the reason for the 
+pain, the *&%^ patch was reverted, starting the backup related screwups 
+all over again from scratch.
 
-will be parsed as
+Now this thread has a life of its own, and the noise it continues to make 
+will prevent the re-application of that patch which WILL stabilize 
+things, probably until hell freezes over and pigs can use it for a 
+takeoff runway.
 
-	case
-	[space]
-	1.
-	.
-	.2
-	:
+I have a fix (thanks Dave D.) worked out for MY system, and you guys can 
+do as you damned well please, until you break my fix anyway.  In the 
+meantime, I have backup.sh, my amdump wrapper, running every 3 hours 
+around the clock without a verify stage until it has managed to update 
+all 118 (about 20 megs worth) of its reference files.  I expect that to 
+take 3 or 4 days.  Hopefully my drives are up to the torture, if not, 
+well they aren't that precious & I CAN drop the card for more & might 
+even do that yet tonight unless Circuit City or Staples think that a 
+500Gb is still worth its weight in gold bar.  Yes, I spend my money 
+locally where possible.
 
-which won't fly.
-
-> But putting spaces in is safer - or putting () around the numbers.
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+"Don't discount flying pigs before you have good air defense."
+-- jvh@clinet.FI
