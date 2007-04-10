@@ -1,124 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030404AbXDJWVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030405AbXDJWWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030404AbXDJWVe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030412AbXDJWVe
+	id S1030405AbXDJWWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXDJWWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:21:34 -0400
-Received: from mga09.intel.com ([134.134.136.24]:27421 "EHLO mga09.intel.com"
+	Tue, 10 Apr 2007 18:22:21 -0400
+Received: from ms.trustica.cz ([82.208.32.68]:45193 "EHLO ms.trustica.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030404AbXDJWVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:21:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,392,1170662400"; 
-   d="scan'208"; a="71584941:sNHT18956070"
-Date: Tue, 10 Apr 2007 15:20:09 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, lenb@kernel.org,
-       Adam Belay <abelay@novell.com>
-Subject: Re: 2.6.21-rc6-mm1
-Message-ID: <20070410222009.GA26607@linux-os.sc.intel.com>
-References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com> <200704091940.53439.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704091940.53439.rjw@sisk.pl>
-User-Agent: Mutt/1.4.1i
+	id S1030405AbXDJWWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:22:19 -0400
+Message-ID: <461C0E0E.5090008@assembler.cz>
+Date: Wed, 11 Apr 2007 00:22:06 +0200
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: LM Sensors <lm-sensors@lm-sensors.org>
+CC: David Hubbard <david.c.hubbard@gmail.com>,
+       Hans de Goede <j.w.r.degoede@hhs.nl>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [lm-sensors] Hardware monitoring subsystem maintainer position
+ is open
+References: <20070410150227.1bac05b5@hyperion.delvare>	<461BB006.9020308@hhs.nl> <4dfa50520704100846s7c031ab0i9da94a9e993cbbfc@mail.gmail.com>
+In-Reply-To: <4dfa50520704100846s7c031ab0i9da94a9e993cbbfc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 09, 2007 at 07:40:52PM +0200, Rafael J. Wysocki wrote:
-> On Monday, 9 April 2007 18:14, Pallipadi, Venkatesh wrote:
-> > 
-> > >-----Original Message-----
-> > >From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-> > >Sent: Monday, April 09, 2007 9:08 AM
-> > >To: Andrew Morton
-> > >Cc: linux-kernel@vger.kernel.org; randy.dunlap@oracle.com; 
-> > >lenb@kernel.org; Pallipadi, Venkatesh
-> > >Subject: Re: 2.6.21-rc6-mm1
-> > >
-> > >On Sunday, 8 April 2007 23:35, Andrew Morton wrote:
-> > >> 
-> > >> 
-> > >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2
-> > >.6.21-rc6/2.6.21-rc6-mm1/
-> > >> 
-> > >> 
-> > >> - Lots of x86 updates
-> > >> 
-> > >> - This is a 25MB diff against mainline, which is rather large.
-> > >
-> > >The cpuidle thing tends to hang my x86-64 machines on boot.
-> > >
-> > 
-> > Hi Rafael,
-> > 
-> > At what point during boot does it hang?
-> 
-> When mounting the root filesystem.  It hangs completely, even the magic SysRq
-> doesn't work
-> 
+Hello all,
 
-Rafael: Below patch should fix the hang.
-Len: Please include this patch in acpi-test.
+First I would like to thank Jean for his great work even if could be seen as 
+"slow". He did the perfect job, allowing only just perfect code to enter the trees.
+
+> I haven't seen anything from Rudolf Marek, but he is definitely
+> qualified if he wants to step up. I'm personally hoping Jean changes
+> his mind.
+
+Well I'm afraid Jean thought about this twice and I think his decision cannot be 
+changed easily. Personally I think that change of one person to another won't 
+change much. Problem we are facing is long delay between the post of the driver 
+to driver merge.
+
+Review of one complex driver takes hours and hours. If the fixes could be split 
+into critical and non-critical parts driver could be accepted earlier and marked 
+as EXPERIMENTAL in very new (for hwmon ;) meaning of the word. I mean Jean did 
+great job and spotted all troubles during the review, so there were nearly none 
+of bug fixes for already merged drivers.
+
+Maybe we could try following:
+
+1) person post the driver
+2) quick review could be done critical fixes only, driver goes to -mm
+3) review that goes deeper - check for interface conformity and all the stuff 
+which could break - fixes for non-critical stuff
+4) after this driver goes to Linus tree at the very beginning for the merge 
+cycle marked as EXPERIMENTAL
+5) if the person agrees to be in MAINTAINER final review may be done and 
+EXPERIMENTAL could be removed. (This is step which might involve all steps to 
+make the driver really perfect ;)
+
+Well this is just an idea. Neither it does solve the maintainer problem, nor it 
+is perfect solution.
+
+As for the proposal of David. I joined the list in 2004 with my very own driver 
+and learned a lot from Jean and others and on my own ;) During last year??? I 
+was doing some kind of "review preprocessor" to help Jean with that. I still 
+have feeling Jean is simply better. Second reason why I hesitating to say "I 
+will take it" is time. This would cost a lot of time, but unfortunately my free 
+time is very tight. I'm doing PhD and working for a embedded stuff company 
+(SYSGO). Moreover I would like to meet some nice girl for a life, which is quite 
+difficult and also quite time consumptive ;).
+
+Personally better would be go with Jean and some kind of scheme noted above, 
+which would solve our "takes too long problem" and preserve the high quality of 
+drivers. This would mean some co-maintainers to Jean, rather than to live 
+without Jean at all.
 
 Thanks,
-Venki
+Rudolf
 
-Prevent hang on x86-64, when ACPI processor driver is added as a module on
-a system that does not support C-states.
-
-x86-64 expects all idle handlers to enable interrupts before returning from
-idle handler. This is due to enter_idle(), exit_idle() races. Make
-cpuidle_idle_call() confirm to this when there is no pm_idle_old.
-
-Also, cpuidle look at the return values of attch_driver() and set
-current_driver to NULL if attach fails on all CPUs.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-
-Index: linux-2.6.21-rc6-mm1/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-2.6.21-rc6-mm1.orig/drivers/cpuidle/cpuidle.c
-+++ linux-2.6.21-rc6-mm1/drivers/cpuidle/cpuidle.c
-@@ -43,6 +43,8 @@ static void cpuidle_idle_call(void)
- 	if (dev->status != CPUIDLE_STATUS_DOIDLE) {
- 		if (pm_idle_old)
- 			pm_idle_old();
-+		else
-+			local_irq_enable();
- 		return;
- 	}
- 
-Index: linux-2.6.21-rc6-mm1/drivers/cpuidle/driver.c
-===================================================================
---- linux-2.6.21-rc6-mm1.orig/drivers/cpuidle/driver.c
-+++ linux-2.6.21-rc6-mm1/drivers/cpuidle/driver.c
-@@ -107,11 +107,20 @@ int cpuidle_switch_driver(struct cpuidle
- 	cpuidle_curr_driver = drv;
- 
- 	if (drv) {
-+		int ret = 1;
- 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
--			cpuidle_attach_driver(dev);
--		if (cpuidle_curr_governor)
-+			if (cpuidle_attach_driver(dev) == 0)
-+				ret = 0;
-+
-+		/* If attach on all devices fail, switch to NULL driver */
-+		if (ret)
-+			cpuidle_curr_driver = NULL;
-+
-+		if (cpuidle_curr_driver && cpuidle_curr_governor) {
-+			printk(KERN_INFO "cpuidle: using driver %s\n",
-+					drv->name);
- 			cpuidle_install_idle_handler();
--		printk(KERN_INFO "cpuidle: using driver %s\n", drv->name);
-+		}
- 	}
- 
- 	return 0;
