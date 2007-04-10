@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030581AbXDJOXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030609AbXDJOZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030581AbXDJOXO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030579AbXDJOXO
+	id S1030609AbXDJOZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030583AbXDJOZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:23:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36461 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Apr 2007 10:25:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60130 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030581AbXDJOXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:23:13 -0400
-Date: Tue, 10 Apr 2007 16:23:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: John <linux.kernel@free.fr>
-Cc: linux-kernel@vger.kernel.org, tglx@timesys.com
-Subject: Re: 2.6.20-rt8 patch tweaked for 2.6.20.5
-Message-ID: <20070410142302.GA1519@elte.hu>
-References: <461672D8.7090100@free.fr> <20070406173639.GA2929@elte.hu> <461B53CD.1030603@free.fr> <20070410131724.GA18553@elte.hu> <461B9CA6.8030707@free.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <461B9CA6.8030707@free.fr>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1030609AbXDJOZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 10:25:58 -0400
+Message-ID: <461B9E68.6040008@redhat.com>
+Date: Tue, 10 Apr 2007 10:25:44 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [patch] PCI: add debug information to resource collision message
+Content-Type: multipart/mixed;
+ boundary="------------060701080303030207050205"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------060701080303030207050205
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-* John <linux.kernel@free.fr> wrote:
 
-> > sure, i can put it there.
-> 
-> Great! Can you tell me how you generate the original -rt patch, so I 
-> can provide an updated version when a new 2.6.20 kernel is released?
+--------------060701080303030207050205
+Content-Type: text/plain;
+ name="i386_pci-add_debugging.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="i386_pci-add_debugging.patch"
 
-they should be generated the way you did: apply the 2.6.20 baseline -rt 
-kernel patch to the later patches and fix up rejects. For later kernels 
-just do the same.
+Add more information to PCI resource collision message
+to help with debugging.
 
-> If I understand correctly, removing that specific patch from 
-> patch-2.6.20-rt8 is the appropriate course of action then?
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+---
+ arch/i386/pci/i386.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-yes.
+--- linux-2.6.20.noarch.orig/arch/i386/pci/i386.c
++++ linux-2.6.20.noarch/arch/i386/pci/i386.c
+@@ -246,8 +246,8 @@ int pcibios_enable_resources(struct pci_
+ 			continue;
+ 		if (!r->start && r->end) {
+ 			printk(KERN_ERR "PCI: Device %s not available "
+-				"because of resource collisions\n",
+-				pci_name(dev));
++				"because of resource %d collisions\n",
++				pci_name(dev), idx);
+ 			return -EINVAL;
+ 		}
+ 		if (r->flags & IORESOURCE_IO)
 
-	Ingo
+--------------060701080303030207050205--
