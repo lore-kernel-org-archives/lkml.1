@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbXDJVZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030680AbXDJV0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbXDJVZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbXDJVZ4
+	id S1030680AbXDJV0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030687AbXDJV0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:25:56 -0400
-Received: from waste.org ([66.93.16.53]:40236 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753908AbXDJVZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:25:55 -0400
-Date: Tue, 10 Apr 2007 16:09:14 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] make struct proc_kpagemap static
-Message-ID: <20070410210914.GC11115@waste.org>
-References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070410210826.GI28370@stusta.de>
+	Tue, 10 Apr 2007 17:26:45 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:44141 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030680AbXDJV0o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:26:44 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Tue, 10 Apr 2007 17:25:16 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: Milind Arun Choudhary <milindchoudhary@gmail.com>,
+       kernel-janitors@lists.osdl.org, kernelnewbies@nl.linux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [KJ]remove SPIN_LOCK_UNLOCKED
+In-Reply-To: <Pine.LNX.4.61.0704102249290.32056@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.64.0704101722030.24526@CPE00045a9c397f-CM001225dbafb6>
+References: <20070410181654.GA10525@arun.site> <Pine.LNX.4.61.0704102249290.32056@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070410210826.GI28370@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 11:08:26PM +0200, Adrian Bunk wrote:
-> On Sun, Apr 08, 2007 at 02:35:59PM -0700, Andrew Morton wrote:
-> >...
-> > Changes since 2.6.21-rc5-mm4:
-> >...
-> > +maps2-add-proc-kpagemap-interface.patch
-> > 
-> >  New interfaces for inspecting process memory status
-> >...
-> 
-> 
-> This patch makes the needlessly global truct proc_kpagemap static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Acked-by: Matt Mackall <mpm@selenic.com>
+On Tue, 10 Apr 2007, Jan Engelhardt wrote:
 
+>
+> On Apr 10 2007 23:46, Milind Arun Choudhary wrote:
+>
+> >"use spin_lock_init instead of SPIN_LOCK_UNLOCKED"
+>
+> Fact is, we cannot remove SPIN_LOCK_UNLOCKED. It's needed for
+> variables outside functions:
+>
+> static spinlock_t foobar = SPIN_LOCK_UNLOCKED;
+
+but that's where you would use the more explicit
+__RAW_SPIN_LOCK_UNLOCKED, no?  AFAIK, you really can remove the macro
+SPIN_LOCK_UNLOCKED in its entirety.
+
+rday
 -- 
-Mathematics is the supreme nostalgia of our time.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
