@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbXDJLKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbXDJLMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753702AbXDJLKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 07:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXDJLKX
+	id S1753437AbXDJLMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 07:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbXDJLMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 07:10:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:57040 "EHLO ozlabs.org"
+	Tue, 10 Apr 2007 07:12:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:58630 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753634AbXDJLKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 07:10:20 -0400
-Subject: Re: [PATCH 5/8] lguest: the net driver
+	id S1753634AbXDJLMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 07:12:36 -0400
+Subject: [PATCH 6/8] lguest: the net driver
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -23,13 +23,15 @@ References: <1176203068.26372.21.camel@localhost.localdomain>
 	 <1176203285.26372.29.camel@localhost.localdomain>
 	 <1176203333.26372.31.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 10 Apr 2007 21:09:35 +1000
-Message-Id: <1176203375.26372.33.camel@localhost.localdomain>
+Date: Tue, 10 Apr 2007 21:11:15 +1000
+Message-Id: <1176203475.26372.37.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Lguest net driver
 
 A simple net driver for lguest.
 
