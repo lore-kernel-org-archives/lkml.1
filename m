@@ -1,160 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030583AbXDJUgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030584AbXDJUhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030583AbXDJUgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 16:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030555AbXDJUgR
+	id S1030584AbXDJUhA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 16:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030588AbXDJUg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 16:36:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:1788 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbXDJUgQ (ORCPT
+	Tue, 10 Apr 2007 16:36:59 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:64554 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030584AbXDJUg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 16:36:16 -0400
+	Tue, 10 Apr 2007 16:36:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=qM0QUJVOpifslnoLdHbLbSV+hZE/Jz4pWugqBXHu+FXnbuGxzq2pFVpnSVJ3MvDNbkMEqiQUcHksRC1FSud12TZhSne4U/ymLfO9NYR9ZITwDXSHsyQmldiog4JcNtcJJ4pjdnqEh+cHXYdHFYWlUOLpNXUz5H4GJsSyFWpID2k=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git patches] IDE fixes
-Date: Tue, 10 Apr 2007 22:45:37 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=jVq/qByQuHfpuW8sTsS4LUTPKmgZgF8urVJfDUHjuFvAOYvTGTFd+aYyBsdwQCBm4wNN20uqwfP29rmCVs5ydwDBAT8+F7V/Hs5OLyGZ9QOegNzXzmKNR+CIk9P66aysJ8sGdWqL+diqHjY2p5SF9m6n8LsyrmdldN3EjlXwJdQ=
+Date: Wed, 11 Apr 2007 00:37:44 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add spaces on either side of case "..." operator.
+Message-ID: <20070410203744.GA5840@martell.zuzino.mipt.ru>
+References: <Pine.LNX.4.64.0704100721050.13729@CPE00045a9c397f-CM001225dbafb6> <20070410090555.d847d466.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704102245.37696.bzolnier@gmail.com>
+In-Reply-To: <20070410090555.d847d466.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 10, 2007 at 09:05:55AM -0700, Andrew Morton wrote:
+> On Tue, 10 Apr 2007 07:23:35 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+> > Following the programming advice laid down in the gcc manual, make
+> > sure the case "..." operator has spaces on either side.
 
-Please pull from:
+> > http://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Case-Ranges.html#Case-Ranges:
+> >
+> >   "Be careful: Write spaces around the ..., for otherwise it may be
+> > parsed wrong when you use it with integer values."
 
-master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
+> > --- a/kernel/audit.c
+> > +++ b/kernel/audit.c
+> > @@ -515,8 +515,8 @@ static int audit_netlink_ok(struct sk_buff *skb, u16 msg_type)
+> >  			err = -EPERM;
+> >  		break;
+> >  	case AUDIT_USER:
+> > -	case AUDIT_FIRST_USER_MSG...AUDIT_LAST_USER_MSG:
+> > -	case AUDIT_FIRST_USER_MSG2...AUDIT_LAST_USER_MSG2:
+> > +	case AUDIT_FIRST_USER_MSG ... AUDIT_LAST_USER_MSG:
+> > +	case AUDIT_FIRST_USER_MSG2 ... AUDIT_LAST_USER_MSG2:
+>
+> hm... We have:
+>
+> #define AUDIT_FIRST_USER_MSG    1100    /* Userspace messages mostly uninteresting to kernel */
+> #define AUDIT_USER_AVC          1107    /* We filter this differently */
+> #define AUDIT_LAST_USER_MSG     1199
+>
+> and CPP turns that into
+>
+>  case 1100 ...1199:
+>  case 2100 ...2999:
+>
+> and it does the same when the comments are stripped from the #defines.
+>
+> So we were saved by the trailing space which cpp added to the expanded
+> macro.  I wonder why cpp did that, and to what extent one can rely cpp
+> doing that.
 
-to receive the following updates:
+The only reason I can come up with is temporary files with preprocessing
+output. Imagine the code:
 
- drivers/ide/ide-cd.c   |    9 +++++++++
- drivers/ide/ide-io.c   |    6 +++++-
- drivers/ide/ide-iops.c |    2 ++
- drivers/ide/ide.c      |    2 ++
- include/linux/ide.h    |    2 ++
- 5 files changed, 20 insertions(+), 1 deletions(-)
+	#define FOO 1
+	FOO.
 
+Here we have
+a) replacement list of token FOO consists of one token -- 1,
+b) pp-token list after preprocessing consists of 4 pp-tokens: newline, 1, .,
+   newline
 
-Danny Kukawka (1):
-      ide: add "optical" to sysfs "media" attribute
+BUT, write it to temporary file:
 
-Stuart Hayes (1):
-      ide: ugly messages trying to open CD drive with no media present
+	
+	1.
 
-Suleiman Souhlal (1):
-      ide: correctly prevent IDE timer expiry function to run if request was already handled
+Whoops, there are 3 or 4 pp-tokens? If you don't know history, there are
+3, if you do, there are 4.
 
-
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 45a928c..638becd 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -735,6 +735,15 @@ static int cdrom_decode_status(ide_drive_t *drive, int good_stat, int *stat_ret)
- 			cdrom_saw_media_change (drive);
- 			/*printk("%s: media changed\n",drive->name);*/
- 			return 0;
-+ 		} else if ((sense_key == ILLEGAL_REQUEST) &&
-+ 			   (rq->cmd[0] == GPCMD_START_STOP_UNIT)) {
-+ 			/*
-+ 			 * Don't print error message for this condition--
-+ 			 * SFF8090i indicates that 5/24/00 is the correct
-+ 			 * response to a request to close the tray if the
-+ 			 * drive doesn't have that capability.
-+ 			 * cdrom_log_sense() knows this!
-+ 			 */
- 		} else if (!(rq->cmd_flags & REQ_QUIET)) {
- 			/* Otherwise, print an error. */
- 			ide_dump_status(drive, "packet command error", stat);
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 0e02800..8670112 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -1226,6 +1226,7 @@ static void ide_do_request (ide_hwgroup_t *hwgroup, int masked_irq)
- #endif
- 				/* so that ide_timer_expiry knows what to do */
- 				hwgroup->sleeping = 1;
-+				hwgroup->req_gen_timer = hwgroup->req_gen;
- 				mod_timer(&hwgroup->timer, sleep);
- 				/* we purposely leave hwgroup->busy==1
- 				 * while sleeping */
-@@ -1411,7 +1412,8 @@ void ide_timer_expiry (unsigned long data)
- 
- 	spin_lock_irqsave(&ide_lock, flags);
- 
--	if ((handler = hwgroup->handler) == NULL) {
-+	if (((handler = hwgroup->handler) == NULL) ||
-+	    (hwgroup->req_gen != hwgroup->req_gen_timer)) {
- 		/*
- 		 * Either a marginal timeout occurred
- 		 * (got the interrupt just as timer expired),
-@@ -1439,6 +1441,7 @@ void ide_timer_expiry (unsigned long data)
- 				if ((wait = expiry(drive)) > 0) {
- 					/* reset timer */
- 					hwgroup->timer.expires  = jiffies + wait;
-+					hwgroup->req_gen_timer = hwgroup->req_gen;
- 					add_timer(&hwgroup->timer);
- 					spin_unlock_irqrestore(&ide_lock, flags);
- 					return;
-@@ -1653,6 +1656,7 @@ irqreturn_t ide_intr (int irq, void *dev_id)
- 		printk(KERN_ERR "%s: ide_intr: hwgroup->busy was 0 ??\n", drive->name);
- 	}
- 	hwgroup->handler = NULL;
-+	hwgroup->req_gen++;
- 	del_timer(&hwgroup->timer);
- 	spin_unlock(&ide_lock);
- 
-diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-index 1ee53a5..3caa176 100644
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -889,6 +889,7 @@ static void __ide_set_handler (ide_drive_t *drive, ide_handler_t *handler,
- 	hwgroup->handler	= handler;
- 	hwgroup->expiry		= expiry;
- 	hwgroup->timer.expires	= jiffies + timeout;
-+	hwgroup->req_gen_timer = hwgroup->req_gen;
- 	add_timer(&hwgroup->timer);
- }
- 
-@@ -929,6 +930,7 @@ void ide_execute_command(ide_drive_t *drive, task_ioreg_t cmd, ide_handler_t *ha
- 	hwgroup->handler	= handler;
- 	hwgroup->expiry		= expiry;
- 	hwgroup->timer.expires	= jiffies + timeout;
-+	hwgroup->req_gen_timer = hwgroup->req_gen;
- 	add_timer(&hwgroup->timer);
- 	hwif->OUTBSYNC(drive, cmd, IDE_COMMAND_REG);
- 	/* Drive takes 400nS to respond, we must avoid the IRQ being
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index a6f098f..ae5bf2b 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -1962,6 +1962,8 @@ static char *media_string(ide_drive_t *drive)
- 		return "tape";
- 	case ide_floppy:
- 		return "floppy";
-+	case ide_optical:
-+		return "optical";
- 	default:
- 		return "UNKNOWN";
- 	}
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 58564a1..d3bbc71 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -861,6 +861,8 @@ typedef struct hwgroup_s {
- 	int (*expiry)(ide_drive_t *);
- 		/* ide_system_bus_speed */
- 	int pio_clock;
-+	int req_gen;
-+	int req_gen_timer;
- 
- 	unsigned char cmd_buf[4];
- } ide_hwgroup_t;
