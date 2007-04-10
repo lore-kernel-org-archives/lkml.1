@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030891AbXDJPqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030904AbXDJPrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030891AbXDJPqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 11:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXDJPqj
+	id S1030904AbXDJPrl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 11:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030902AbXDJPrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 11:46:39 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:5640 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030891AbXDJPqh (ORCPT
+	Tue, 10 Apr 2007 11:47:40 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:13574 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030889AbXDJPrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 11:46:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TEUS1eF3MSjUFKfxlmDW7Yyc2FN6xx5v83HFu9o8r6gebeBolFSvu613Zeq7Hu3zYZAk9vcvufvH5QHuyjDRiVtRNfIzWwiXNa+WIpUlV0nNjlah5w35jFrhoxQvkPvceBQi9w9TOpQDQEi+ItRlKJ/hLUQLeNHoc2+hPtVl7LE=
-Message-ID: <4dfa50520704100846s7c031ab0i9da94a9e993cbbfc@mail.gmail.com>
-Date: Tue, 10 Apr 2007 08:46:36 -0700
-From: "David Hubbard" <david.c.hubbard@gmail.com>
-To: "Hans de Goede" <j.w.r.degoede@hhs.nl>
-Subject: Re: [lm-sensors] Hardware monitoring subsystem maintainer position is open
-Cc: "Jean Delvare" <khali@linux-fr.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "LM Sensors" <lm-sensors@lm-sensors.org>
-In-Reply-To: <461BB006.9020308@hhs.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 10 Apr 2007 11:47:39 -0400
+Subject: [Patch] statistics: fix string termination
+From: Martin Peschke <mp3@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 10 Apr 2007 17:47:38 +0200
+Message-Id: <1176220058.5572.11.camel@dix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070410150227.1bac05b5@hyperion.delvare>
-	 <461BB006.9020308@hhs.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
+Make sure strsep() in statistic_release_def() finds a terminanal '\0' and
+doesn't attempt to access bytes outside the given buffer.
 
-On 4/10/07, Hans de Goede <j.w.r.degoede@hhs.nl> wrote:
-> Jean Delvare wrote:
-> > Hi all,
-> >
-> > I am resigning from my role as hardware monitoring subsystem
-> > (drivers/hwmon) maintainer. This is too much work for me, I do not have
-> > the necessary bandwidth to review all the incoming patches, in
-> > particular new drivers, in a timely manner. Patch authors have been
-> > complaining about this repeatedly. This is no fun for them, and even
-> > less for me, so I'd rather let someone else with more spare time take
-> > care of it. If there are volunteers, this is the right time to speak up.
->
-> But alas, I'm afraid I cannot change your mind, so that brings us to the
-> question who will pickup the task. I've considered volunteering myself, but I'm
-> to inexperienced when it comes to kernel stuff and lm-sensors for me is kinda a
-> side project. I sink most of my spare time into Fedora where I maintain circa
-> 120 packages, which really means I have little time left for lm-sensors (to be
-> clear the average package maintainer maintains between 30 - 50 packages).
+(Patch fixes
+statistics-infrastructure-simplify-statistics-debugfs-write-function.patch)
 
-I haven't seen anything from Rudolf Marek, but he is definitely
-qualified if he wants to step up. I'm personally hoping Jean changes
-his mind.
+Patch is against 2.6.21-rc6-mm1.
 
-David
+Signed-off-by: Martin Peschke <mp3@de.ibm.com>
+---
+
+ statistic.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux/lib/statistic.c
+===================================================================
+--- linux.orig/lib/statistic.c
++++ linux/lib/statistic.c
+@@ -627,9 +627,10 @@ static ssize_t statistic_write_def(struc
+ 		return -EPIPE;
+ 	if (*offset + len > 16 * PAGE_SIZE)
+ 		return -ENOMEM;
+-	larger = kmalloc(*offset + len, GFP_KERNEL);
++	larger = kmalloc(*offset + len + 1, GFP_KERNEL);
+ 	if (!larger)
+ 		return -ENOMEM;
++	larger[*offset + len] = '\0';
+ 	memcpy(larger, seq_priv->w_buf, *offset);
+ 	if (copy_from_user(larger + *offset, buf, len))
+ 		return -EFAULT;
+
+
