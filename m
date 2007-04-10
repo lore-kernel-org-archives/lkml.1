@@ -1,100 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbXDJN5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbXDJOFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785AbXDJN5e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 09:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXDJN5e
+	id S1753792AbXDJOFV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbXDJOFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 09:57:34 -0400
-Received: from thunk.org ([69.25.196.29]:36388 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753785AbXDJN5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 09:57:32 -0400
-Date: Tue, 10 Apr 2007 09:56:41 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: If not readdir() then what?
-Message-ID: <20070410135641.GG13650@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Ulrich Drepper <drepper@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Neil Brown <neilb@suse.de>
-References: <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com> <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org> <1176121897.6210.8.camel@heimdal.trondhjem.org> <20070409131918.GC18580@thunk.org> <1176127395.6210.34.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
+	Tue, 10 Apr 2007 10:05:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:33387 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753792AbXDJOFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 10:05:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=AzfovgpS/RmhD3gOgJ36QVue2hHnHT6hRnhQKT0H9YfkQ+V1FSyWj4s8EiqcFV7GSFQjoEh/YDzi5S2kOmG/YJ6uKyCNu6ERDXtL4ustPN1ly+4YUuKIQa4XwbdVKb8MzmiplgnQH8SVdpz5qRsD2IlDDb8SHSi2Me2tlUq/jzM=
+Date: Tue, 10 Apr 2007 22:08:29 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       viro@zeniv.linux.org.uk
+Subject: Re: [-mm3 PATCH] (Retry) Check the return value of kobject_add and etc.
+Message-ID: <20070410140829.GA3382@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Cornelia Huck <cornelia.huck@de.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, viro@zeniv.linux.org.uk
+References: <2375c9f90704010032r119f4a1eqb24dd611d5ecd943@mail.gmail.com> <20070402130128.707c8c19@gondolin.boeblingen.de.ibm.com> <20070405045410.GA4692@localhost.localdomain> <20070405111142.4723035f@gondolin.boeblingen.de.ibm.com> <20070405144409.GA5294@localhost.localdomain> <20070405170514.481b765f@gondolin.boeblingen.de.ibm.com> <20070405152732.GA5569@localhost.localdomain> <20070405180016.5099e0cd@gondolin.boeblingen.de.ibm.com> <20070406025343.GA2407@localhost.localdomain> <20070410143106.03d62e7c@gondolin.boeblingen.de.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1176127395.6210.34.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20070410143106.03d62e7c@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 09, 2007 at 10:03:15AM -0400, Trond Myklebust wrote:
-> We could perhaps teach nfsd to open the file without the O_LARGEFILE
-> attribute in the case of NFSv2?
-
-That might work.  But if in the long term we want to separate out what
-we can send back via telldir/seekdir, and some future new Posix
-interface, I wonder if we might be better off defining a formal
-interface which can be used by NFSv2 and NFSv3/v4 that isn't
-necessarily tied to f_pos.  Given that the semantics for what
-telldir/seekdir are different from what what NFS needs
-(telldir/seekdir cookies don't have to be persistent), it may be
-useful to allow filesystems the option of having two separate options
-for how to export this information.  
-
-> Not really.
+On Tue, Apr 10, 2007 at 02:31:06PM +0200, Cornelia Huck wrote:
+>On Fri, 6 Apr 2007 10:53:43 +0800,
+>WANG Cong <xiyou.wangcong@gmail.com> wrote:
 > 
-> However on NFSv3 and v4 there is actually a mechanism for declaring that
-> the existing set of cookies have expired and are no longer valid: you
-> have an 8-byte opaque 'verifier' which is supplied by the server, and
-> which is supposed to be returned by the client on every call to READDIR.
-> If the server wants to change its cookie scheme, then it signals it to
-> the client by changing its verifier, and returning an error whenever the
-> client tries to use the old verifier. Upon receiving that error, the
-> client is supposed to clear out all cached cookies, and read the
-> directory in again from the start.
+>> OK. Then I send it again. Hopefully it can be accepted this time. ;-p
+>
+>Looks sane. (Note that there is still a pathological case where
+>kobject_put() is not enough to trigger release after the failed
+>kobject_add(). I'm sending a fix for that.)
+>
+><Maybe you want to add one or two lines of explanation for your patch
+>again?>
 
-I looked at that, and it's not really helpful.  Basically if NFS
-demands that cookies never collide, and states that cookies must be
-some small (32 or 64) bit value that are persistent across time and
-server reboots, then that's fundmaentally incompatible with any kind
-of non-linear directory structure.  So whether the filesystem is
-ext3/htree, or ntfs, or reiserfs, people will be cheating one way or
-another.
+Thanks! My explanation of the patch is already in the first mail of this thread. Now I copy it here and resubmit the patch. Hope you don't mind. ;-p This patch can also be applied to -rc6 tree.
 
-One of the things which they could do I suppose is use a linear
-offset, and then change the verifier every single time there is a
-b-tree split or merge which changes the configuration of the tree.  As
-you say, though, forcing the client to re-read the entire contents of
-the directory each time we change the verifier doesn't scale too well.
-But the fact of the matter is that if NFS protocols demands that a
-per-directory entry cookie can be uniquely and permanently (including
-across server reboots) identified with a small integer number, it's
-dreaming.  Filesystem authors will cheat one way or another, because
-there's nothing else for them to do.  
 
-> Note also that we would have to fix the client implementation. Nobody
-> has bothered working on the code to handle verifier changes since there
-> are no servers out there in the wild that use it.
 
-... which means changing the verifier every node merge/split operation
-would probably cause all sorts of interesting breakages, even more
-than the occasional hash collision (which as far as I know no one has
-complained about so far --- but with the 32-bit cookie, the birthday
-paradox states that the probability of a collision is 1 in 65536, so
-it's probably happened out in the wild already).
+Since kobject_add, sysfs_create_link and sysfs_create_file are marked as '__must_check', we must always check their return values.
 
-Regards,
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-						- Ted
+---
+--- linux-2.6.21-rc5-mm4/fs/partitions/check.c.orig     2007-04-05 12:48:29.000000000 +0800
++++ linux-2.6.21-rc5-mm4/fs/partitions/check.c  2007-04-05 23:15:41.000000000 +0800
+@@ -385,10 +385,18 @@ void add_partition(struct gendisk *disk,
+        p->kobj.parent = &disk->kobj;
+        p->kobj.ktype = &ktype_part;
+        kobject_init(&p->kobj);
+-       kobject_add(&p->kobj);
++       if (kobject_add(&p->kobj)) {
++               kobject_put(&p->kobj);
++               return;
++       }
+        if (!disk->part_uevent_suppress)
+                kobject_uevent(&p->kobj, KOBJ_ADD);
+-       sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem");
++       if (sysfs_create_link(&p->kobj, &block_subsys.kset.kobj, "subsystem")) {
++               kobject_uevent(&p->kobj, KOBJ_REMOVE);
++               kobject_del(&p->kobj);
++               kobject_put(&p->kobj);
++               return;
++       }
+        if (flags & ADDPART_FLAG_WHOLEDISK) {
+                static struct attribute addpartattr = {
+                        .name = "whole_disk",
+@@ -396,7 +404,13 @@ void add_partition(struct gendisk *disk,
+                        .owner = THIS_MODULE,
+                };
+
+-               sysfs_create_file(&p->kobj, &addpartattr);
++               if (sysfs_create_file(&p->kobj, &addpartattr)) {
++                       sysfs_remove_link(&p->kobj, "subsystem");
++                       kobject_uevent(&p->kobj, KOBJ_REMOVE);
++                       kobject_del(&p->kobj);
++                       kobject_put(&p->kobj);
++                       return;
++               }
+        }
+        partition_sysfs_add_subdir(p);
+        disk->part[part-1] = p;
+
+
