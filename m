@@ -1,182 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbXDJVIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbXDJVIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbXDJVIn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXDJVIn
+	id S1753873AbXDJVIy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbXDJVIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:08:43 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:47013 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753874AbXDJVIg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:08:45 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:44464 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753873AbXDJVIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Apr 2007 17:08:36 -0400
-Date: Tue, 10 Apr 2007 23:08:42 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, mark.fasheh@oracle.com,
-       kurt.hackel@oracle.com
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: [RFC: -mm patch] fs/ocfs2/: make 3 functions static
-Message-ID: <20070410210842.GK28370@stusta.de>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
+Date: Tue, 10 Apr 2007 23:07:50 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Arnaldo Carvalho de Melo <acme@mandriva.com>
+cc: dccp@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 08/30] Use menuconfig objects - DCCP
+In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704102305291.32056@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070408143559.f5014629.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	0.0 UPPERCASE_25_50        message body is 25-50% uppercase
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 08, 2007 at 02:35:59PM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc5-mm4:
->...
->  git-ocfs2.patch
->...
->  git trees.
->...
 
+Use menuconfigs instead of menus, so the whole menu can be disabled at        
+once instead of going through all options.
 
-This patch makes the following needlessly global functions static:
-- aops.c: ocfs2_write_data_page()
-- dlmglue.c: ocfs2_dump_meta_lvb_info()
-- file.c: ocfs2_set_inode_size()
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
-
- fs/ocfs2/aops.c    |    6 ++---
- fs/ocfs2/dlmglue.c |   54 ++++++++++++++++++++++++---------------------
- fs/ocfs2/dlmglue.h |    7 -----
- fs/ocfs2/file.c    |    8 +++---
- fs/ocfs2/file.h    |    5 ----
- 5 files changed, 36 insertions(+), 44 deletions(-)
-
---- linux-2.6.21-rc6-mm1/fs/ocfs2/aops.c.old	2007-04-10 00:38:47.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/fs/ocfs2/aops.c	2007-04-10 00:38:55.000000000 +0200
-@@ -934,9 +934,9 @@
-  * Returns a negative error code or the number of bytes copied into
-  * the page.
-  */
--int ocfs2_write_data_page(struct inode *inode, handle_t *handle,
--			  u64 *p_blkno, struct page *page,
--			  struct ocfs2_write_ctxt *wc, int new)
-+static int ocfs2_write_data_page(struct inode *inode, handle_t *handle,
-+				 u64 *p_blkno, struct page *page,
-+				 struct ocfs2_write_ctxt *wc, int new)
- {
- 	int ret, copied = 0;
- 	unsigned int from = 0, to = 0;
---- linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.h.old	2007-04-10 00:41:39.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.h	2007-04-10 00:47:06.000000000 +0200
-@@ -119,11 +119,4 @@
- struct ocfs2_dlm_debug *ocfs2_new_dlm_debug(void);
- void ocfs2_put_dlm_debug(struct ocfs2_dlm_debug *dlm_debug);
- 
--/* aids in debugging and tracking lvbs */
--void ocfs2_dump_meta_lvb_info(u64 level,
--			      const char *function,
--			      unsigned int line,
--			      struct ocfs2_lock_res *lockres);
--#define mlog_meta_lvb(__level, __lockres) ocfs2_dump_meta_lvb_info(__level, __PRETTY_FUNCTION__, __LINE__, __lockres)
+Index: linux-2.6.21-rc5/net/dccp/Kconfig
+===================================================================
+--- linux-2.6.21-rc5.orig/net/dccp/Kconfig
++++ linux-2.6.21-rc5/net/dccp/Kconfig
+@@ -1,8 +1,6 @@
+-menu "DCCP Configuration (EXPERIMENTAL)"
+-	depends on INET && EXPERIMENTAL
 -
- #endif	/* DLMGLUE_H */
---- linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.c.old	2007-04-10 00:42:19.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.c	2007-04-10 00:44:23.000000000 +0200
-@@ -103,6 +103,35 @@
- static void ocfs2_dentry_post_unlock(struct ocfs2_super *osb,
- 				     struct ocfs2_lock_res *lockres);
+-config IP_DCCP
++menuconfig IP_DCCP
+ 	tristate "The DCCP Protocol (EXPERIMENTAL)"
++	depends on INET && EXPERIMENTAL
+ 	---help---
+ 	  Datagram Congestion Control Protocol (RFC 4340)
  
-+
-+#define mlog_meta_lvb(__level, __lockres) ocfs2_dump_meta_lvb_info(__level, __PRETTY_FUNCTION__, __LINE__, __lockres)
-+
-+/* This aids in debugging situations where a bad LVB might be involved. */
-+static void ocfs2_dump_meta_lvb_info(u64 level,
-+				     const char *function,
-+				     unsigned int line,
-+				     struct ocfs2_lock_res *lockres)
-+{
-+	struct ocfs2_meta_lvb *lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
-+
-+	mlog(level, "LVB information for %s (called from %s:%u):\n",
-+	     lockres->l_name, function, line);
-+	mlog(level, "version: %u, clusters: %u, generation: 0x%x\n",
-+	     lvb->lvb_version, be32_to_cpu(lvb->lvb_iclusters),
-+	     be32_to_cpu(lvb->lvb_igeneration));
-+	mlog(level, "size: %llu, uid %u, gid %u, mode 0x%x\n",
-+	     (unsigned long long)be64_to_cpu(lvb->lvb_isize),
-+	     be32_to_cpu(lvb->lvb_iuid), be32_to_cpu(lvb->lvb_igid),
-+	     be16_to_cpu(lvb->lvb_imode));
-+	mlog(level, "nlink %u, atime_packed 0x%llx, ctime_packed 0x%llx, "
-+	     "mtime_packed 0x%llx iattr 0x%x\n", be16_to_cpu(lvb->lvb_inlink),
-+	     (long long)be64_to_cpu(lvb->lvb_iatime_packed),
-+	     (long long)be64_to_cpu(lvb->lvb_ictime_packed),
-+	     (long long)be64_to_cpu(lvb->lvb_imtime_packed),
-+	     be32_to_cpu(lvb->lvb_iattr));
-+}
-+
-+
- /*
-  * OCFS2 Lock Resource Operations
-  *
-@@ -3078,28 +3107,3 @@
+@@ -19,19 +17,20 @@ config IP_DCCP
  
- 	mlog_exit_void();
- }
--
--/* This aids in debugging situations where a bad LVB might be involved. */
--void ocfs2_dump_meta_lvb_info(u64 level,
--			      const char *function,
--			      unsigned int line,
--			      struct ocfs2_lock_res *lockres)
--{
--	struct ocfs2_meta_lvb *lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
--
--	mlog(level, "LVB information for %s (called from %s:%u):\n",
--	     lockres->l_name, function, line);
--	mlog(level, "version: %u, clusters: %u, generation: 0x%x\n",
--	     lvb->lvb_version, be32_to_cpu(lvb->lvb_iclusters),
--	     be32_to_cpu(lvb->lvb_igeneration));
--	mlog(level, "size: %llu, uid %u, gid %u, mode 0x%x\n",
--	     (unsigned long long)be64_to_cpu(lvb->lvb_isize),
--	     be32_to_cpu(lvb->lvb_iuid), be32_to_cpu(lvb->lvb_igid),
--	     be16_to_cpu(lvb->lvb_imode));
--	mlog(level, "nlink %u, atime_packed 0x%llx, ctime_packed 0x%llx, "
--	     "mtime_packed 0x%llx iattr 0x%x\n", be16_to_cpu(lvb->lvb_inlink),
--	     (long long)be64_to_cpu(lvb->lvb_iatime_packed),
--	     (long long)be64_to_cpu(lvb->lvb_ictime_packed),
--	     (long long)be64_to_cpu(lvb->lvb_imtime_packed),
--	     be32_to_cpu(lvb->lvb_iattr));
--}
---- linux-2.6.21-rc6-mm1/fs/ocfs2/file.h.old	2007-04-10 00:45:00.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/fs/ocfs2/file.h	2007-04-10 00:45:07.000000000 +0200
-@@ -56,11 +56,6 @@
- int ocfs2_permission(struct inode *inode, int mask,
- 		     struct nameidata *nd);
+ 	  If in doubt, say N.
  
--int ocfs2_set_inode_size(handle_t *handle,
--			 struct inode *inode,
--			 struct buffer_head *fe_bh,
--			 u64 new_i_size);
--
- int ocfs2_should_update_atime(struct inode *inode,
- 			      struct vfsmount *vfsmnt);
- int ocfs2_update_inode_atime(struct inode *inode,
---- linux-2.6.21-rc6-mm1/fs/ocfs2/file.c.old	2007-04-10 00:45:15.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/fs/ocfs2/file.c	2007-04-10 00:45:24.000000000 +0200
-@@ -207,10 +207,10 @@
- 	return ret;
- }
++if IP_DCCP
++
+ config INET_DCCP_DIAG
+-	depends on IP_DCCP && INET_DIAG
++	depends on INET_DIAG
+ 	def_tristate y if (IP_DCCP = y && INET_DIAG = y)
+ 	def_tristate m
  
--int ocfs2_set_inode_size(handle_t *handle,
--			 struct inode *inode,
--			 struct buffer_head *fe_bh,
--			 u64 new_i_size)
-+static int ocfs2_set_inode_size(handle_t *handle,
-+				struct inode *inode,
-+				struct buffer_head *fe_bh,
-+				u64 new_i_size)
- {
- 	int status;
+ config IP_DCCP_ACKVEC
+-	depends on IP_DCCP
+ 	bool
  
-
+ source "net/dccp/ccids/Kconfig"
+ 
+ menu "DCCP Kernel Hacking"
+-	depends on IP_DCCP && DEBUG_KERNEL=y
++	depends on DEBUG_KERNEL=y
+ 
+ config IP_DCCP_DEBUG
+ 	bool "DCCP debug messages"
+@@ -61,4 +60,4 @@ config NET_DCCPPROBE
+ 
+ endmenu
+ 
+-endmenu
++endif # IP_DDCP
+#<EOF>
