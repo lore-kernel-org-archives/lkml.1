@@ -1,75 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbXDJX3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbXDJX3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbXDJX3j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 19:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXDJX3j
+	id S1753926AbXDJX3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 19:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXDJX3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 19:29:39 -0400
-Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:43428 "HELO
-	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753670AbXDJX3h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 19:29:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ZwZywD8yK1FJHimqNozD0zyrkjlz67sMsnpc51easnyfEN4UlGYtO6q/M7EJv/rFrZ4QzPCmoJ7NHlAItzdhteGEdZR7BtQKQ182z27pBLXKRXtTTbtJtRDfMqWYQ7lD0BhOkt6uqPQ5dIWC5gSlKbJmDfdPCT6EH1rHMNdqVIg=  ;
-X-YMail-OSG: 6rMA9cgVM1mjh4JVfXevdPhKO6OMc_sa0SBv_KIgewhOP9eFLW55mLdiMH5_OG0S4kfluiu9Ow--
-From: David Brownell <david-b@pacbell.net>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
-Date: Tue, 10 Apr 2007 16:29:18 -0700
-User-Agent: KMail/1.7.1
-Cc: Zhang Rui <rui.zhang@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       lenb@kernel.org, "linux-acpi@vger" <linux-acpi@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <200704031741.42273.david-b@pacbell.net> <20070407050131.GB25511@kroah.com> <200704071308.07571.david-b@pacbell.net>
-In-Reply-To: <200704071308.07571.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 10 Apr 2007 19:29:41 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:57060 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753781AbXDJX3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 19:29:38 -0400
+Subject: [PATCH] v850 trivial conversion to GENERIC_TIME
+From: john stultz <johnstul@us.ibm.com>
+To: uclinux-v850@lsi.nec.co.jp
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 10 Apr 2007 16:29:36 -0700
+Message-Id: <1176247776.15198.78.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704101629.18412.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 April 2007 1:08 pm, David Brownell wrote:
+Here is a trivial conversion of the v850 arch to the GENERIC_TIME
+infrastructure. While the v850 does not currently have better then
+jiffies resolution, it does have some #if 0'ed infrastructure that looks
+like its being implemented, however I've not seen anything for a few
+months. 
 
-> By adding a warning over this create-links patch, I found that the
-> system in the $SUBJECT patch (and likely every ACPI system) has
-> two different nodes that correspond to one ACPI node:
-> 
-> 	/sys/devices/pci0000:00 ... pci root node
-> 	/sys/devices/pnp0/00:00 ... id PNP0a03
-> 	/sys/devices/acpi_system:00/device:00/PNP0A03:00 ... ditto
-> 
-> Arguably that's too many sysfs nodes for one device...
+I have not tested this at all, but it seems pretty straight forward
 
-On a different system, I found a more interesting issue.
+I'd appreciate any comments or feedback!
 
-Specifically, pnp0/00:01 and pnp0:00/03 both have ids ... the appended
-patch goes on top of the previous pnpacpi patch, and should (nyet tested!)
-fix another place I saw that warning.
 
-- Dave
+thanks
+-john
 
-=========	CUT HERE
-Handle PNP devices that have the same IDs a bit more sanely ... I suspect
-that pnp_dev.number should be compared with some acpi_device field to make
-it hook up to a particular ACPI device, but I'll leave that to someone who
-knows how that's supposed to work.  At least this will connect e.g. multiple
-PNP nodes to ACPI nodes sharing the same PNP0c02 id.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
---- g26.orig/drivers/pnp/pnpacpi/core.c	2007-04-10 01:38:53.000000000 -0700
-+++ g26/drivers/pnp/pnpacpi/core.c	2007-04-10 16:16:07.000000000 -0700
-@@ -243,6 +243,7 @@ static int __init acpi_pnp_match(struct 
+diff --git a/arch/v850/Kconfig b/arch/v850/Kconfig
+index 50ccc7f..5f54c12 100644
+--- a/arch/v850/Kconfig
++++ b/arch/v850/Kconfig
+@@ -37,6 +37,10 @@ config GENERIC_IRQ_PROBE
+ 	bool
+ 	default y
  
- 	/* true means it matched */
- 	return acpi->flags.hardware_id
-+		&& !dev->archdata.acpi_handle
- 		&& compare_pnp_id(pnp->id, acpi->pnp.hardware_id);
++config GENERIC_TIME
++	bool
++	default y
++
+ config TIME_LOW_RES
+ 	bool
+ 	default y
+diff --git a/arch/v850/kernel/time.c b/arch/v850/kernel/time.c
+index 486e3a4..f0905b0 100644
+--- a/arch/v850/kernel/time.c
++++ b/arch/v850/kernel/time.c
+@@ -90,81 +90,6 @@ #endif /* 0 */
+ 	return IRQ_HANDLED;
  }
  
+-/*
+- * This version of gettimeofday has near microsecond resolution.
+- */
+-void do_gettimeofday (struct timeval *tv)
+-{
+-#if 0 /* DAVIDM later if possible */
+-	extern volatile unsigned long lost_ticks;
+-	unsigned long lost;
+-#endif
+-	unsigned long flags;
+-	unsigned long usec, sec;
+-	unsigned long seq;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-
+-#if 0
+-		usec = mach_gettimeoffset ? mach_gettimeoffset () : 0;
+-#else
+-		usec = 0;
+-#endif
+-#if 0 /* DAVIDM later if possible */
+-		lost = lost_ticks;
+-		if (lost)
+-			usec += lost * (1000000/HZ);
+-#endif
+-		sec = xtime.tv_sec;
+-		usec += xtime.tv_nsec / 1000;
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irq (&xtime_lock);
+-
+-	/* This is revolting. We need to set the xtime.tv_nsec
+-	 * correctly. However, the value in this location is
+-	 * is value at the last tick.
+-	 * Discover what correction gettimeofday
+-	 * would have done, and then undo it!
+-	 */
+-#if 0
+-	tv->tv_nsec -= mach_gettimeoffset() * 1000;
+-#endif
+-
+-	while (tv->tv_nsec < 0) {
+-		tv->tv_nsec += NSEC_PER_SEC;
+-		tv->tv_sec--;
+-	}
+-
+-	xtime.tv_sec = tv->tv_sec;
+-	xtime.tv_nsec = tv->tv_nsec;
+-
+-	ntp_clear();
+-
+-	write_sequnlock_irq (&xtime_lock);
+-	clock_was_set();
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+-
+ static int timer_dev_id;
+ static struct irqaction timer_irqaction = {
+ 	timer_interrupt,
+
+
