@@ -1,96 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbXDJXYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161094AbXDJXZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbXDJXYe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 19:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXDJXYe
+	id S1161094AbXDJXZH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 19:25:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161095AbXDJXZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 19:24:34 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:40492 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753406AbXDJXYd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 19:24:33 -0400
-Date: Tue, 10 Apr 2007 19:24:32 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] markers-non-opt-arch-alpha-arm26-doc-flags
-Message-ID: <20070410232432.GF7092@Krystal>
-References: <20070410231126.GC7092@Krystal>
+	Tue, 10 Apr 2007 19:25:07 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42744 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161094AbXDJXZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 19:25:04 -0400
+Subject: [PATCH] h8300 trivial conversion to GENERIC_TIME
+From: john stultz <johnstul@us.ibm.com>
+To: ysato@users.sourceforge.jp
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 10 Apr 2007 16:25:00 -0700
+Message-Id: <1176247500.15198.72.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070410231126.GC7092@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 19:22:48 up 67 days, 13:30,  6 users,  load average: 1.52, 1.52, 1.90
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add alpha marker.h, add arm26 marker.h,  use the new MF_* bitmask for
-asm-generic/marker.h. Document asm-generic/marker.h.
+Here is a trivial conversion of the h8300 arch to the GENERIC_TIME
+infrastructure (h8300 does not have better then jiffies resolution, so
+there are no clocksources to add). I have not tested this at all, but it
+seems pretty straight forward
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+I'd appreciate any comments or feedback!
 
---- /dev/null
-+++ b/include/asm-alpha/marker.h
-@@ -0,0 +1,13 @@
-+/*
-+ * marker.h
-+ *
-+ * Code markup for dynamic and static tracing. Architecture specific
-+ * optimisations.
-+ * 
-+ * No optimisation implemented.
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm-generic/marker.h>
---- /dev/null
-+++ b/include/asm-arm26/marker.h
-@@ -0,0 +1,13 @@
-+/*
-+ * marker.h
-+ *
-+ * Code markup for dynamic and static tracing. Architecture specific
-+ * optimisations.
-+ * 
-+ * No optimisation implemented.
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm-generic/marker.h>
---- a/include/asm-generic/marker.h
-+++ b/include/asm-generic/marker.h
-@@ -13,11 +13,18 @@
-  * "used" attribute to fix a gcc 4.1.x bug.
-  */
+thanks
+-john
+
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+
+diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index 1734d96..86f6ca3 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -53,6 +53,10 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
  
--#define _MF_DEFAULT			(_MF_LOCKDEP | _MF_PRINTK)
-+/* Default flags, used by MARK() */
-+#define MF_DEFAULT			(MF_LOCKDEP | MF_PRINTK)
- 
-+/* Fallback on the generic markers, since no optimized version is available */
- #define MARK_OPTIMIZED			MARK_GENERIC
- #define _MARK				MARK_GENERIC
--#define MARK(format, args...)		_MARK(_MF_DEFAULT, format, ## args)
++config GENERIC_TIME
++	bool
++	default y
 +
-+/* Marker with default behavior */
-+#define MARK(format, args...)		_MARK(MF_DEFAULT, format, ## args)
-+
-+/* Architecture dependant marker information, used internally for marker
-+ * activation. */
+ config TIME_LOW_RES
+ 	bool
+ 	default y
+diff --git a/arch/h8300/kernel/time.c b/arch/h8300/kernel/time.c
+index d1ef615..91d3b56 100644
+--- a/arch/h8300/kernel/time.c
++++ b/arch/h8300/kernel/time.c
+@@ -66,55 +66,3 @@ void time_init(void)
  
- #define MARK_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET \
- 		MARK_GENERIC_ENABLE_IMMEDIATE_OFFSET
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ 	platform_timer_setup(timer_interrupt);
+ }
+-
+-/*
+- * This version of gettimeofday has near microsecond resolution.
+- */
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long usec, sec;
+-
+-	read_lock_irqsave(&xtime_lock, flags);
+-	usec = 0;
+-	sec = xtime.tv_sec;
+-	usec += (xtime.tv_nsec / 1000);
+-	read_unlock_irqrestore(&xtime_lock, flags);
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_lock_irq(&xtime_lock);
+-	/* This is revolting. We need to set the xtime.tv_usec
+-	 * correctly. However, the value in this location is
+-	 * is value at the last tick.
+-	 * Discover what correction gettimeofday
+-	 * would have done, and then undo it!
+-	 */
+-	while (tv->tv_nsec < 0) {
+-		tv->tv_nsec += NSEC_PER_SEC;
+-		tv->tv_sec--;
+-	}
+-
+-	xtime.tv_sec = tv->tv_sec;
+-	xtime.tv_nsec = tv->tv_nsec;
+-	ntp_clear();
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+
