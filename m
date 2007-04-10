@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbXDJVIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbXDJVIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbXDJVIX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXDJVIX
+	id S1753876AbXDJVIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXDJVIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:08:23 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47009 "EHLO
+	Tue, 10 Apr 2007 17:08:43 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47013 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753872AbXDJVIW (ORCPT
+	with ESMTP id S1753874AbXDJVIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:08:22 -0400
-Date: Tue, 10 Apr 2007 23:08:29 +0200
+	Tue, 10 Apr 2007 17:08:36 -0400
+Date: Tue, 10 Apr 2007 23:08:42 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] make kernel/module.c:is_exported() static
-Message-ID: <20070410210829.GJ28370@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, mark.fasheh@oracle.com,
+       kurt.hackel@oracle.com
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: [RFC: -mm patch] fs/ocfs2/: make 3 functions static
+Message-ID: <20070410210842.GK28370@stusta.de>
 References: <20070408143559.f5014629.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -30,54 +30,153 @@ On Sun, Apr 08, 2007 at 02:35:59PM -0700, Andrew Morton wrote:
 >...
 > Changes since 2.6.21-rc5-mm4:
 >...
-> +fix-race-between-rmmod-and-cat-proc-kallsyms.patch
+>  git-ocfs2.patch
 >...
->  Misc
+>  git trees.
 >...
 
 
-is_exported() can now become static.
+This patch makes the following needlessly global functions static:
+- aops.c: ocfs2_write_data_page()
+- dlmglue.c: ocfs2_dump_meta_lvb_info()
+- file.c: ocfs2_set_inode_size()
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- include/linux/module.h |    7 -------
- kernel/module.c        |    2 +-
- 2 files changed, 1 insertion(+), 8 deletions(-)
+ fs/ocfs2/aops.c    |    6 ++---
+ fs/ocfs2/dlmglue.c |   54 ++++++++++++++++++++++++---------------------
+ fs/ocfs2/dlmglue.h |    7 -----
+ fs/ocfs2/file.c    |    8 +++---
+ fs/ocfs2/file.h    |    5 ----
+ 5 files changed, 36 insertions(+), 44 deletions(-)
 
---- linux-2.6.21-rc6-mm1/include/linux/module.h.old	2007-04-10 01:04:03.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/include/linux/module.h	2007-04-10 01:05:09.000000000 +0200
-@@ -382,8 +382,6 @@
- /* Look for this name: can be of form module:name. */
- unsigned long module_kallsyms_lookup_name(const char *name);
+--- linux-2.6.21-rc6-mm1/fs/ocfs2/aops.c.old	2007-04-10 00:38:47.000000000 +0200
++++ linux-2.6.21-rc6-mm1/fs/ocfs2/aops.c	2007-04-10 00:38:55.000000000 +0200
+@@ -934,9 +934,9 @@
+  * Returns a negative error code or the number of bytes copied into
+  * the page.
+  */
+-int ocfs2_write_data_page(struct inode *inode, handle_t *handle,
+-			  u64 *p_blkno, struct page *page,
+-			  struct ocfs2_write_ctxt *wc, int new)
++static int ocfs2_write_data_page(struct inode *inode, handle_t *handle,
++				 u64 *p_blkno, struct page *page,
++				 struct ocfs2_write_ctxt *wc, int new)
+ {
+ 	int ret, copied = 0;
+ 	unsigned int from = 0, to = 0;
+--- linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.h.old	2007-04-10 00:41:39.000000000 +0200
++++ linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.h	2007-04-10 00:47:06.000000000 +0200
+@@ -119,11 +119,4 @@
+ struct ocfs2_dlm_debug *ocfs2_new_dlm_debug(void);
+ void ocfs2_put_dlm_debug(struct ocfs2_dlm_debug *dlm_debug);
  
--int is_exported(const char *name, const struct module *mod);
+-/* aids in debugging and tracking lvbs */
+-void ocfs2_dump_meta_lvb_info(u64 level,
+-			      const char *function,
+-			      unsigned int line,
+-			      struct ocfs2_lock_res *lockres);
+-#define mlog_meta_lvb(__level, __lockres) ocfs2_dump_meta_lvb_info(__level, __PRETTY_FUNCTION__, __LINE__, __lockres)
 -
- extern void __module_put_and_exit(struct module *mod, long code)
- 	__attribute__((noreturn));
- #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
-@@ -558,11 +556,6 @@
- 	return 0;
- }
+ #endif	/* DLMGLUE_H */
+--- linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.c.old	2007-04-10 00:42:19.000000000 +0200
++++ linux-2.6.21-rc6-mm1/fs/ocfs2/dlmglue.c	2007-04-10 00:44:23.000000000 +0200
+@@ -103,6 +103,35 @@
+ static void ocfs2_dentry_post_unlock(struct ocfs2_super *osb,
+ 				     struct ocfs2_lock_res *lockres);
  
--static inline int is_exported(const char *name, const struct module *mod)
++
++#define mlog_meta_lvb(__level, __lockres) ocfs2_dump_meta_lvb_info(__level, __PRETTY_FUNCTION__, __LINE__, __lockres)
++
++/* This aids in debugging situations where a bad LVB might be involved. */
++static void ocfs2_dump_meta_lvb_info(u64 level,
++				     const char *function,
++				     unsigned int line,
++				     struct ocfs2_lock_res *lockres)
++{
++	struct ocfs2_meta_lvb *lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
++
++	mlog(level, "LVB information for %s (called from %s:%u):\n",
++	     lockres->l_name, function, line);
++	mlog(level, "version: %u, clusters: %u, generation: 0x%x\n",
++	     lvb->lvb_version, be32_to_cpu(lvb->lvb_iclusters),
++	     be32_to_cpu(lvb->lvb_igeneration));
++	mlog(level, "size: %llu, uid %u, gid %u, mode 0x%x\n",
++	     (unsigned long long)be64_to_cpu(lvb->lvb_isize),
++	     be32_to_cpu(lvb->lvb_iuid), be32_to_cpu(lvb->lvb_igid),
++	     be16_to_cpu(lvb->lvb_imode));
++	mlog(level, "nlink %u, atime_packed 0x%llx, ctime_packed 0x%llx, "
++	     "mtime_packed 0x%llx iattr 0x%x\n", be16_to_cpu(lvb->lvb_inlink),
++	     (long long)be64_to_cpu(lvb->lvb_iatime_packed),
++	     (long long)be64_to_cpu(lvb->lvb_ictime_packed),
++	     (long long)be64_to_cpu(lvb->lvb_imtime_packed),
++	     be32_to_cpu(lvb->lvb_iattr));
++}
++
++
+ /*
+  * OCFS2 Lock Resource Operations
+  *
+@@ -3078,28 +3107,3 @@
+ 
+ 	mlog_exit_void();
+ }
+-
+-/* This aids in debugging situations where a bad LVB might be involved. */
+-void ocfs2_dump_meta_lvb_info(u64 level,
+-			      const char *function,
+-			      unsigned int line,
+-			      struct ocfs2_lock_res *lockres)
 -{
--	return 0;
--}
+-	struct ocfs2_meta_lvb *lvb = (struct ocfs2_meta_lvb *) lockres->l_lksb.lvb;
 -
- static inline int register_module_notifier(struct notifier_block * nb)
- {
- 	/* no events will happen anyway, so this can always succeed */
---- linux-2.6.21-rc6-mm1/kernel/module.c.old	2007-04-10 01:05:16.000000000 +0200
-+++ linux-2.6.21-rc6-mm1/kernel/module.c	2007-04-10 01:05:36.000000000 +0200
-@@ -1746,7 +1746,7 @@
+-	mlog(level, "LVB information for %s (called from %s:%u):\n",
+-	     lockres->l_name, function, line);
+-	mlog(level, "version: %u, clusters: %u, generation: 0x%x\n",
+-	     lvb->lvb_version, be32_to_cpu(lvb->lvb_iclusters),
+-	     be32_to_cpu(lvb->lvb_igeneration));
+-	mlog(level, "size: %llu, uid %u, gid %u, mode 0x%x\n",
+-	     (unsigned long long)be64_to_cpu(lvb->lvb_isize),
+-	     be32_to_cpu(lvb->lvb_iuid), be32_to_cpu(lvb->lvb_igid),
+-	     be16_to_cpu(lvb->lvb_imode));
+-	mlog(level, "nlink %u, atime_packed 0x%llx, ctime_packed 0x%llx, "
+-	     "mtime_packed 0x%llx iattr 0x%x\n", be16_to_cpu(lvb->lvb_inlink),
+-	     (long long)be64_to_cpu(lvb->lvb_iatime_packed),
+-	     (long long)be64_to_cpu(lvb->lvb_ictime_packed),
+-	     (long long)be64_to_cpu(lvb->lvb_imtime_packed),
+-	     be32_to_cpu(lvb->lvb_iattr));
+-}
+--- linux-2.6.21-rc6-mm1/fs/ocfs2/file.h.old	2007-04-10 00:45:00.000000000 +0200
++++ linux-2.6.21-rc6-mm1/fs/ocfs2/file.h	2007-04-10 00:45:07.000000000 +0200
+@@ -56,11 +56,6 @@
+ int ocfs2_permission(struct inode *inode, int mask,
+ 		     struct nameidata *nd);
+ 
+-int ocfs2_set_inode_size(handle_t *handle,
+-			 struct inode *inode,
+-			 struct buffer_head *fe_bh,
+-			 u64 new_i_size);
+-
+ int ocfs2_should_update_atime(struct inode *inode,
+ 			      struct vfsmount *vfsmnt);
+ int ocfs2_update_inode_atime(struct inode *inode,
+--- linux-2.6.21-rc6-mm1/fs/ocfs2/file.c.old	2007-04-10 00:45:15.000000000 +0200
++++ linux-2.6.21-rc6-mm1/fs/ocfs2/file.c	2007-04-10 00:45:24.000000000 +0200
+@@ -207,10 +207,10 @@
+ 	return ret;
  }
  
- #ifdef CONFIG_KALLSYMS
--int is_exported(const char *name, const struct module *mod)
-+static int is_exported(const char *name, const struct module *mod)
+-int ocfs2_set_inode_size(handle_t *handle,
+-			 struct inode *inode,
+-			 struct buffer_head *fe_bh,
+-			 u64 new_i_size)
++static int ocfs2_set_inode_size(handle_t *handle,
++				struct inode *inode,
++				struct buffer_head *fe_bh,
++				u64 new_i_size)
  {
- 	if (!mod && lookup_symbol(name, __start___ksymtab, __stop___ksymtab))
- 		return 1;
+ 	int status;
+ 
 
