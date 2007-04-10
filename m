@@ -1,68 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbXDJVhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbXDJVi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbXDJVhd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXDJVhd
+	id S1753349AbXDJVi3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbXDJVi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:37:33 -0400
-Received: from mail.suse.de ([195.135.220.2]:44735 "EHLO mx1.suse.de"
+	Tue, 10 Apr 2007 17:38:29 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:55884 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753441AbXDJVha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:37:30 -0400
-From: Neil Brown <neilb@suse.de>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Date: Wed, 11 Apr 2007 07:37:24 +1000
+	id S1753349AbXDJVi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:38:27 -0400
+Date: Tue, 10 Apr 2007 23:37:42 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: =?UTF-8?Q?Eberhard_M=C3=B6nkeberg?= <emoenke@gwdg.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 24/30] Use menuconfig objects - oldcd
+In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704102336550.32056@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17948.916.464492.881283@notabene.brown>
-Cc: Theodore Tso <tytso@mit.edu>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-In-Reply-To: message from Trond Myklebust on Tuesday April 10
-References: <20070407233037.GA16508@infradead.org>
-	<46193048.6000606@zytor.com>
-	<20070408184129.GA20871@lazybastard.org>
-	<20070408191955.GD29180@thunk.org>
-	<46194260.3050900@zytor.com>
-	<20070409014426.GA18580@thunk.org>
-	<20070409110927.GA23240@lazybastard.org>
-	<1176121897.6210.8.camel@heimdal.trondhjem.org>
-	<20070409131918.GC18580@thunk.org>
-	<1176127395.6210.34.camel@heimdal.trondhjem.org>
-	<20070410135641.GG13650@thunk.org>
-	<1176215836.14442.37.camel@heimdal.trondhjem.org>
-	<17947.64947.649081.411561@notabene.brown>
-	<1176239914.309.54.camel@heimdal.trondhjem.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday April 10, trond.myklebust@fys.uio.no wrote:
-> On Wed, 2007-04-11 at 07:12 +1000, Neil Brown wrote:
-> > 
-> > Is there something that makes that interface problematic?
-> 
-> File deletions...
 
-How are they a problem ?
+Use menuconfigs instead of menus, so the whole menu can be disabled at        
+once instead of going through all options.
 
-There are only two ways to organise a directory.
-1/ Unsorted linear list of entries in which no repacking is ever done.
-2/ Some data structure using an ordered search key that is based on
-  the filename (e.g. a B-tree with a search key that is a hash of the
-  filename). 
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-In the first case, you just use a fixed opaque cookie for location in
-a directory.
-In the second you use the filename.  If the file has been deleted,
-that shouldn't stop you finding the place where it would have been in
-the overall sort order.
-
-NeilBrown
+Index: linux-2.6.21-rc5/drivers/cdrom/Kconfig
+===================================================================
+--- linux-2.6.21-rc5.orig/drivers/cdrom/Kconfig
++++ linux-2.6.21-rc5/drivers/cdrom/Kconfig
+@@ -2,11 +2,9 @@
+ # CDROM driver configuration
+ #
+ 
+-menu "Old CD-ROM drivers (not SCSI, not IDE)"
++menuconfig CD_NO_IDESCSI
++	bool "Old CD-ROM drivers (not SCSI, not IDE)"
+ 	depends on ISA && BLOCK
+-
+-config CD_NO_IDESCSI
+-	bool "Support non-SCSI/IDE/ATAPI CDROM drives"
+ 	---help---
+ 	  If you have a CD-ROM drive that is neither SCSI nor IDE/ATAPI, say Y
+ 	  here, otherwise N. Read the CD-ROM-HOWTO, available from
+@@ -31,9 +29,10 @@ config CD_NO_IDESCSI
+ 	  answer will get "defaulted" for you if you enable any of the Linux
+ 	  CD-ROM drivers).
+ 
++if CD_NO_IDESCSI
++
+ config AZTCD
+ 	tristate "Aztech/Orchid/Okano/Wearnes/TXC/CyDROM  CDROM support"
+-	depends on CD_NO_IDESCSI
+ 	---help---
+ 	  This is your driver if you have an Aztech CDA268-01A, Orchid
+ 	  CD-3110, Okano or Wearnes CDD110, Conrad TXC, or CyCD-ROM CR520 or
+@@ -51,7 +50,6 @@ config AZTCD
+ 
+ config GSCD
+ 	tristate "Goldstar R420 CDROM support"
+-	depends on CD_NO_IDESCSI
+ 	---help---
+ 	  If this is your CD-ROM drive, say Y here.  As described in the file
+ 	  <file:Documentation/cdrom/gscd>, you might have to change a setting
+@@ -67,7 +65,7 @@ config GSCD
+ 
+ config SBPCD
+ 	tristate "Matsushita/Panasonic/Creative, Longshine, TEAC CDROM support"
+-	depends on CD_NO_IDESCSI && BROKEN_ON_SMP
++	depends on BROKEN_ON_SMP
+ 	---help---
+ 	  This driver supports most of the drives which use the Panasonic or
+ 	  Sound Blaster interface.  Please read the file
+@@ -105,7 +103,6 @@ config SBPCD
+ 
+ config MCDX
+ 	tristate "Mitsumi CDROM support"
+-	depends on CD_NO_IDESCSI
+ 	---help---
+ 	  Use this driver if you want to be able to use your Mitsumi LU-005,
+ 	  FX-001 or FX-001D CD-ROM drive.
+@@ -121,7 +118,6 @@ config MCDX
+ 
+ config OPTCD
+ 	tristate "Optics Storage DOLPHIN 8000AT CDROM support"
+-	depends on CD_NO_IDESCSI
+ 	---help---
+ 	  This is the driver for the 'DOLPHIN' drive with a 34-pin Sony
+ 	  compatible interface. It also works with the Lasermate CR328A. If
+@@ -138,7 +134,7 @@ config OPTCD
+ 
+ config CM206
+ 	tristate "Philips/LMS CM206 CDROM support"
+-	depends on CD_NO_IDESCSI && BROKEN_ON_SMP
++	depends on BROKEN_ON_SMP
+ 	---help---
+ 	  If you have a Philips/LMS CD-ROM drive cm206 in combination with a
+ 	  cm260 host adapter card, say Y here. Please also read the file
+@@ -153,7 +149,6 @@ config CM206
+ 
+ config SJCD
+ 	tristate "Sanyo CDR-H94A CDROM support"
+-	depends on CD_NO_IDESCSI
+ 	help
+ 	  If this is your CD-ROM drive, say Y here and read the file
+ 	  <file:Documentation/cdrom/sjcd>. You should then also say Y or M to
+@@ -165,7 +160,6 @@ config SJCD
+ 
+ config ISP16_CDI
+ 	tristate "ISP16/MAD16/Mozart soft configurable cdrom interface support"
+-	depends on CD_NO_IDESCSI
+ 	---help---
+ 	  These are sound cards with built-in cdrom interfaces using the OPTi
+ 	  82C928 or 82C929 chips. Say Y here to have them detected and
+@@ -178,7 +172,7 @@ config ISP16_CDI
+ 
+ config CDU31A
+ 	tristate "Sony CDU31A/CDU33A CDROM support"
+-	depends on CD_NO_IDESCSI && BROKEN_ON_SMP
++	depends on BROKEN_ON_SMP
+ 	---help---
+ 	  These CD-ROM drives have a spring-pop-out caddyless drawer, and a
+ 	  rectangular green LED centered beneath it.  NOTE: these CD-ROM
+@@ -198,7 +192,6 @@ config CDU31A
+ 
+ config CDU535
+ 	tristate "Sony CDU535 CDROM support"
+-	depends on CD_NO_IDESCSI
+ 	---help---
+ 	  This is the driver for the older Sony CDU-535 and CDU-531 CD-ROM
+ 	  drives. Please read the file <file:Documentation/cdrom/sonycd535>.
+@@ -210,4 +203,4 @@ config CDU535
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called sonycd535.
+ 
+-endmenu
++endif # CD_NO_IDESCSI
+#<EOF>
