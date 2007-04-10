@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030417AbXDJWW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030427AbXDJWXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030417AbXDJWW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030383AbXDJWW4
+	id S1030427AbXDJWXP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030457AbXDJWXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:22:56 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43920 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030417AbXDJWWz (ORCPT
+	Tue, 10 Apr 2007 18:23:15 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:58229 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030427AbXDJWXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:22:55 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/2] Allow percpu variables to be page-aligned
-References: <461BC4B8.40902@goop.org>
-Date: Tue, 10 Apr 2007 16:22:12 -0600
-In-Reply-To: <461BC4B8.40902@goop.org> (Jeremy Fitzhardinge's message of "Tue,
-	10 Apr 2007 10:09:12 -0700")
-Message-ID: <m16483yinf.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 10 Apr 2007 18:23:12 -0400
+Date: Tue, 10 Apr 2007 18:23:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] atomic-avr32-remove-cast
+Message-ID: <20070410222309.GA7092@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 18:18:25 up 67 days, 12:25,  4 users,  load average: 1.42, 1.43, 1.65
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+atomic-avr32-remove-cast
 
-> Let's allow page-alignment in general for per-cpu data (wanted by Xen, and
-> Ingo suggested KVM as well).
->
-> Because larger alignments can use more room, we increase the max per-cpu
-> memory to 64k rather than 32k: it's getting a little tight.
+This int cast is superfluous since system.h cmpxchg already casts it in
+(typeof(*(ptr))).
 
-The second paragraph of the comment is dated.  You are not changing the per-cpu 
-memory size at all now.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-The code itself looks sane.
-
-Although we should probably fail the module load if the requested alignment
-is to great, but that is just picking nits, and is no worse than what we
-do today.
-
-Eric
-
-> ===================================================================
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -346,10 +346,10 @@ static void *percpu_modalloc(unsigned lo
->  	unsigned int i;
->  	void *ptr;
->  
-> -	if (align > SMP_CACHE_BYTES) {
-> -		printk(KERN_WARNING "%s: per-cpu alignment %li > %i\n",
-> -		       name, align, SMP_CACHE_BYTES);
-> -		align = SMP_CACHE_BYTES;
-> +	if (align > PAGE_SIZE) {
-> +		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
-> +		       name, align, PAGE_SIZE);
-> +		align = PAGE_SIZE;
->  	}
->  
->  	ptr = __per_cpu_start;
+--- a/include/asm-avr32/atomic.h
++++ b/include/asm-avr32/atomic.h
+@@ -173,7 +173,7 @@ static inline int atomic_sub_if_positive(int i, atomic_t *v)
+ }
+ 
+ #define atomic_xchg(v, new)	(xchg(&((v)->counter), new))
+-#define atomic_cmpxchg(v, o, n)	((int)cmpxchg(&((v)->counter), (o), (n)))
++#define atomic_cmpxchg(v, o, n)	(cmpxchg(&((v)->counter), (o), (n)))
+ 
+ #define atomic_sub(i, v)	(void)atomic_sub_return(i, v)
+ #define atomic_add(i, v)	(void)atomic_add_return(i, v)
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
