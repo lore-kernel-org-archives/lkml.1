@@ -1,100 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030400AbXDJWVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030404AbXDJWVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030400AbXDJWVW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXDJWVV
+	id S1030404AbXDJWVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030412AbXDJWVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:21:21 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60314 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030400AbXDJWVU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:21:20 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <461C0DD0.5040805@s5r6.in-berlin.de>
-Date: Wed, 11 Apr 2007 00:21:04 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Ben Collins <bcollins@debian.org>, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/30] Use menuconfig objects - IEEE1394
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704102316160.32056@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0704102316160.32056@yvahk01.tjqt.qr>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Apr 2007 18:21:34 -0400
+Received: from mga09.intel.com ([134.134.136.24]:27421 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030404AbXDJWVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:21:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,392,1170662400"; 
+   d="scan'208"; a="71584941:sNHT18956070"
+Date: Tue, 10 Apr 2007 15:20:09 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, lenb@kernel.org,
+       Adam Belay <abelay@novell.com>
+Subject: Re: 2.6.21-rc6-mm1
+Message-ID: <20070410222009.GA26607@linux-os.sc.intel.com>
+References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com> <200704091940.53439.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704091940.53439.rjw@sisk.pl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> Use menuconfigs instead of menus, so the whole menu can be disabled at        
-> once instead of going through all options.
-
-If you excuse the nitpicking:  The patch description is not very
-precise.  You don't have to go through all options in the IEEE 1394 menu
-if you don't need them.  Once the first entry in the menu is disabled,
-all other options vanish.  (Of course with your patch you don't have to
-enter the submenu in the first place if you switch it off.)  I suppose
-it's the same with some more of the menus you edited.
-
-But even though, keeping such groups of options in a menu _without_ the
-possibility to switch the menu off helps to focus on these options.
-Less clutter in the display one is working with in a moment.  IMO,
-kernel configuration is not a sport where speed matters but a task where
-we want to present the user a very cleaned-up, calm display.
-
-In general though, I'm impartial on this kind of change.
-
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+On Mon, Apr 09, 2007 at 07:40:52PM +0200, Rafael J. Wysocki wrote:
+> On Monday, 9 April 2007 18:14, Pallipadi, Venkatesh wrote:
+> > 
+> > >-----Original Message-----
+> > >From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+> > >Sent: Monday, April 09, 2007 9:08 AM
+> > >To: Andrew Morton
+> > >Cc: linux-kernel@vger.kernel.org; randy.dunlap@oracle.com; 
+> > >lenb@kernel.org; Pallipadi, Venkatesh
+> > >Subject: Re: 2.6.21-rc6-mm1
+> > >
+> > >On Sunday, 8 April 2007 23:35, Andrew Morton wrote:
+> > >> 
+> > >> 
+> > >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2
+> > >.6.21-rc6/2.6.21-rc6-mm1/
+> > >> 
+> > >> 
+> > >> - Lots of x86 updates
+> > >> 
+> > >> - This is a 25MB diff against mainline, which is rather large.
+> > >
+> > >The cpuidle thing tends to hang my x86-64 machines on boot.
+> > >
+> > 
+> > Hi Rafael,
+> > 
+> > At what point during boot does it hang?
 > 
-> Index: linux-2.6.21-rc5/drivers/ieee1394/Kconfig
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/drivers/ieee1394/Kconfig
-> +++ linux-2.6.21-rc5/drivers/ieee1394/Kconfig
-> @@ -1,8 +1,6 @@
->  # -*- shell-script -*-
->  
-> -menu "IEEE 1394 (FireWire) support"
-> -
-> -config IEEE1394
-> +menuconfig IEEE1394
->  	tristate "IEEE 1394 (FireWire) support"
->  	depends on PCI || BROKEN
->  	select NET
-> @@ -19,12 +17,12 @@ config IEEE1394
+> When mounting the root filesystem.  It hangs completely, even the magic SysRq
+> doesn't work
+> 
 
-[...]
+Rafael: Below patch should fix the hang.
+Len: Please include this patch in acpi-test.
 
-For the readers of linux1394-devel:
+Thanks,
+Venki
 
-Jan Engelhardt wrote at lkml:
-Subject: [PATCH 0/30] Use menuconfig objects
-> Hello list,
->
->
-> the following patch series turns some menus into menuconfigs, so they
-> can be disabled whilst "walking" thorugh the parent menu (check the
-> videos [1], [2] to see what I mean), enabling for disabling lots of
-> options _quickly_.
->
-> I'll send the patches (as a reply to this mail) piece by piece out
-> when I figure out the maintainers to Cc for each.
->
-> [1] 6.04 MB(1000s) 70 sec http://jengelh.hopto.org/mc/without.ogg
-> [2] 1.96 MB(1000s) 44 sec http://jengelh.hopto.org/mc/with.ogg
-> (Ogg container, Theora Video, no audio)
->
-> I have not poked on all subsystems (it is quite a lot), but I can
-> already give a glimpse (`ls -1`) of who gets one and who does not.
-> And, I am not completely finished changing some subsystems - but
-> the patches are already big enough for a first wave. I want to get
-> some feedback first. Thanks!
->
+Prevent hang on x86-64, when ACPI processor driver is added as a module on
+a system that does not support C-states.
 
+x86-64 expects all idle handlers to enable interrupts before returning from
+idle handler. This is due to enter_idle(), exit_idle() races. Make
+cpuidle_idle_call() confirm to this when there is no pm_idle_old.
 
--- 
-Stefan Richter
--=====-=-=== -=-- -=-==
-http://arcgraph.de/sr/
+Also, cpuidle look at the return values of attch_driver() and set
+current_driver to NULL if attach fails on all CPUs.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+
+Index: linux-2.6.21-rc6-mm1/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-2.6.21-rc6-mm1.orig/drivers/cpuidle/cpuidle.c
++++ linux-2.6.21-rc6-mm1/drivers/cpuidle/cpuidle.c
+@@ -43,6 +43,8 @@ static void cpuidle_idle_call(void)
+ 	if (dev->status != CPUIDLE_STATUS_DOIDLE) {
+ 		if (pm_idle_old)
+ 			pm_idle_old();
++		else
++			local_irq_enable();
+ 		return;
+ 	}
+ 
+Index: linux-2.6.21-rc6-mm1/drivers/cpuidle/driver.c
+===================================================================
+--- linux-2.6.21-rc6-mm1.orig/drivers/cpuidle/driver.c
++++ linux-2.6.21-rc6-mm1/drivers/cpuidle/driver.c
+@@ -107,11 +107,20 @@ int cpuidle_switch_driver(struct cpuidle
+ 	cpuidle_curr_driver = drv;
+ 
+ 	if (drv) {
++		int ret = 1;
+ 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+-			cpuidle_attach_driver(dev);
+-		if (cpuidle_curr_governor)
++			if (cpuidle_attach_driver(dev) == 0)
++				ret = 0;
++
++		/* If attach on all devices fail, switch to NULL driver */
++		if (ret)
++			cpuidle_curr_driver = NULL;
++
++		if (cpuidle_curr_driver && cpuidle_curr_governor) {
++			printk(KERN_INFO "cpuidle: using driver %s\n",
++					drv->name);
+ 			cpuidle_install_idle_handler();
+-		printk(KERN_INFO "cpuidle: using driver %s\n", drv->name);
++		}
+ 	}
+ 
+ 	return 0;
