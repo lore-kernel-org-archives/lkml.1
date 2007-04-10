@@ -1,197 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030668AbXDJOag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030683AbXDJObW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030668AbXDJOag (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030669AbXDJOag
+	id S1030683AbXDJObW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030517AbXDJObW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:30:36 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:48029 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030668AbXDJOae (ORCPT
+	Tue, 10 Apr 2007 10:31:22 -0400
+Received: from Apollo.christiedigital.com ([65.195.57.9]:3022 "EHLO
+	CDSCYPEXG01.cds.int" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030683AbXDJObV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:30:34 -0400
-Message-ID: <461B9DFF.9080704@aitel.hist.no>
-Date: Tue, 10 Apr 2007 16:23:59 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Tue, 10 Apr 2007 10:31:21 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@insightbb.com>
-CC: Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: usb touchscreen breakage in 2.6.21-rc5-mm4 ?
-References: <20070407005458.GA18985@aitel.hist.no> <200704062237.13118.dtor@insightbb.com> <20070409223643.GB2198@aitel.hist.no> <200704092230.04144.dtor@insightbb.com>
-In-Reply-To: <200704092230.04144.dtor@insightbb.com>
-Content-Type: multipart/mixed;
- boundary="------------000602010701020700000708"
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Help Understanding Linux memory management
+Date: Tue, 10 Apr 2007 10:31:34 -0400
+Message-ID: <AD98412A5373CC4AA643D9C021922A541C4DC8@cdskitexg01.cds.int>
+In-Reply-To: <461B9BED.6030208@shaw.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Help Understanding Linux memory management
+Thread-Index: Acd7es4NDiiSP3jbS4ijE3xLnIAUqAAARC3w
+From: "Mouawad, Tony" <Tony.Mouawad@christiedigital.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 10 Apr 2007 14:31:35.0733 (UTC) FILETIME=[F144D650:01C77B7C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000602010701020700000708
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+When vm.overcommit_memory = 2 and there appears to be about 2M of memory
+readily available and about 12M of memory allocated to pagecache (this
+is info gathered from /proc/meminfo) , a call to malloc(5000000) returns
+NULL.  I would have expected that somehow, the call to malloc(5000000)
+would request the memory in pagecache to be released for use by the app.
 
-Dmitry Torokhov wrote:
-> Hmm, I am concerned because not only you don't have an input device created,
-> you don't even see the driver being registered with usbcore. Could you please
-> try booting with debug_initcall to see with what error code usbtouchscreen
-> initialization fails?
->   
-Here is the dmesg from a boot with debug_initcall.
-I can't see any messages from usbtouchscreen.
-For me, it looks like the touchscreen is discovered and then
-nothing happens to it.
 
-Helge Hafting
+-----Original Message-----
+From: Robert Hancock [mailto:hancockr@shaw.ca] 
+Sent: Tuesday, April 10, 2007 10:15 AM
+To: Mouawad, Tony
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Help Understanding Linux memory management
 
---------------000602010701020700000708
-Content-Type: application/gzip;
- name="debug_initcall.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="debug_initcall.gz"
+Mouawad, Tony wrote:
+> Hello,
+> 
+> I've been a MS Windows based programmer for a very long time and was
+> recently tossed in an environment where I am developing embedded apps
+on
+> the m68k / Linux platform.  That makes me a Linux newbie.  I started
+> asking a few questions on various IRC channels and was directed to
+this
+> group.  So, I will start asking:
+> 
+> These are questions derived from observations on the MCF 5475 CPU
+> running Linux 2.6.10 built for the m68k platform.  Disk swapping is
+> disabled.
+> 
+> 1) When physical memory runs low, the memory manager will try to use
+> memory currently allocated to the pagecache.  Is this true?
 
-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
-5pxBbQAA
---------------000602010701020700000708--
+Yes.
+
+> 2) When vm.overcommit_memory = 2 (overcommit disabled), and memory
+runs
+> low, it appears that the memory manager does not try to use memory
+> currently allocated to pagecache.  Is this true?
+
+Shouldn't be, what makes you think this is happening?
+
+> 3) Is it possible to disable the pagecache?
+
+Not as far as I know, it's unlikely this would be of any benefit.
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
