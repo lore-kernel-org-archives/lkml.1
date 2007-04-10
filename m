@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXDJLZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbXDJL1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932231AbXDJLZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 07:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXDJLZ6
+	id S932263AbXDJL1x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 07:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933075AbXDJL1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 07:25:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:20897 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932231AbXDJLZ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 07:25:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I/D6x0HZdeukextDhBGoUomhxgwvirBZvJ6FDcEeKfh9c73jCQMy09tJH5nWmovJgHrgEBUX3QHWQtky9SD/i497s88sdacNWwRavatisB+on28VPPHFPTEgqlSbZX/sG2D4XEsoFH+exYwGZHFn3+6p7dyq2FyY5Hm2ecv7Ktc=
-Message-ID: <9a8748490704100425t34ebafcdq866a923df80b9aca@mail.gmail.com>
-Date: Tue, 10 Apr 2007 13:25:56 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: Bartek <poemann@gmail.com>
-Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <19061b0b0704100219w4749e5fby9b400edca9bf334d@mail.gmail.com>
+	Tue, 10 Apr 2007 07:27:52 -0400
+Received: from thunk.org ([69.25.196.29]:47615 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932255AbXDJL1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 07:27:51 -0400
+Date: Tue, 10 Apr 2007 07:27:18 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
+Cc: Eric Sandeen <sandeen@redhat.com>, Phillip Susi <psusi@cfl.rr.com>,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Add a norecovery option to ext3/4?
+Message-ID: <20070410112718.GF13650@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+	Eric Sandeen <sandeen@redhat.com>, Phillip Susi <psusi@cfl.rr.com>,
+	Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070409000556.GA13980@implementation> <461A5F13.7040705@cfl.rr.com> <461A760B.1040103@redhat.com> <20070410072253.GA28665@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <19061b0b0704071111m65c70d1ei736de86ad2f09a82@mail.gmail.com>
-	 <20070407.234708.93384523.davem@davemloft.net>
-	 <19061b0b0704081315g3593d652s70e9b5b0dcfcf966@mail.gmail.com>
-	 <19061b0b0704100219w4749e5fby9b400edca9bf334d@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070410072253.GA28665@lazybastard.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/04/07, Bartek <poemann@gmail.com> wrote:
-> > Apr  8 21:47:22 localhost kernel: EIP:    0060:[<c021b4d7>]
-> > Tainted: P       VLI
->
-> Someone  in private took me a noticed of a still tainted kernel. I
-> didn't noticed that, I am sorry for that. I was sure that unloaded
-> proprietary modules should resolve the problem. My fault. I will try
-> to reproduce the crash  again.
->
+On Tue, Apr 10, 2007 at 09:22:53AM +0200, Jörn Engel wrote:
+> > Under all conditions it should be safe to mount a read-only block
+> > device, but that is not the same as mounting a filesystem read-only.
+> 
+> In particular, it is a lame excuse when this claim is true.  If the
+> block-device is read-only, then journal replay will not work as expected
+> and all the "not so easy" work has to be done anyway.
+> 
+> Did I miss anything?  Is it actually easier to mount a read-only device
+> with unclean journal than mounting a read-write device and not replay
+> the journal?
 
-It is not enough to unload proprietary modules. As long as they have
-ever been loaded at all the kernel is tainted.
-You need to ensure that the proprietary modules never get loaded at
-all. I guess you probably already worked that out, just wanted to
-point it out just in case :-)
+The problem is that ext3 defers writes even more than ext2 did in
+order to make journalling (a) possible, and (b) more efficient.  So if
+you mount the filesystem read-only without replaying the journal, you
+may get incorrect data; you could get data belonging to another user's
+file; the kernel could detect filesystem inconsistencies and decide
+that the filesystem has errors.  Now, at least in theory the kernel
+will not oops when it operates on an arbitrarily corrupted filesystem
+(which is what a filesystems whose journal has not been run can look
+like), BUT #1, this hasn't been as well tested we would probably like,
+and #2, if the filesystem is marked with an errors-behavior of "reboot
+on error", then system will reboot, because that's what you asked it
+to do!
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+I suppose what you could do is to read in the journal, and use it to
+create an remapping table so that when you want to read block #5126,
+and block number 5126 is in the journal, to read the journal version
+of the block instead of the one on disk.  That would allow for safe
+access to a filesystem being mounted read-only without the journal
+being present.
+
+Patches gratefully accepted....
+
+						- Ted
