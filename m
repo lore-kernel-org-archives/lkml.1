@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965084AbXDJERe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965744AbXDJE3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965084AbXDJERe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 00:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965336AbXDJERd
+	id S965744AbXDJE3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 00:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030332AbXDJE3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 00:17:33 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:10234 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965084AbXDJERc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 00:17:32 -0400
-To: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: RFC: "mlx4" drivers for Mellanox ConnectX HCAs
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 09 Apr 2007 21:17:30 -0700
-Message-ID: <adawt0k3lt1.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+	Tue, 10 Apr 2007 00:29:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34247 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965744AbXDJE3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 00:29:45 -0400
+Date: Tue, 10 Apr 2007 00:29:39 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: Preemption Broken:  centrino_target busted under SMP on 2.6.20.4
+Message-ID: <20070410042939.GA17179@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>,
+	Linux kernel <linux-kernel@vger.kernel.org>,
+	Venki Pallipadi <venkatesh.pallipadi@intel.com>
+References: <46155CFF.70701@wolfmountaingroup.com> <20070405205034.GB3605@redhat.com> <20070409172651.9bc619d6.akpm@linux-foundation.org> <20070410023108.GA14081@redhat.com> <20070409194142.88f0a5e5.akpm@linux-foundation.org> <20070410030500.GA15509@redhat.com> <20070410030823.GA16229@redhat.com> <20070409205136.75709d3e.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Apr 2007 04:17:30.0670 (UTC) FILETIME=[27E664E0:01C77B27]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20070409205136.75709d3e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd like to announce preliminary versions of a set of "mlx4" drivers
-for Mellanox's new ConnectX InfiniBand/10 gigabit ethernet adapters.
-(These are Mellanox's 4th generation of adapters, hence the mlx4 name)
-Because these adapters can operate as both an ethernet NIC and an
-InfiniBand HCA (at the same time!), the driver is split up into three
-pieces:
+On Mon, Apr 09, 2007 at 08:51:36PM -0700, Andrew Morton wrote:
+ > On Mon, 9 Apr 2007 23:08:23 -0400 Dave Jones <davej@redhat.com> wrote:
+ > 
+ > >  > This whole file is going away in .22, and we have a viable alternative in
+ > >  > .21 (acpi-cpufreq), so I'm not overly worried about fixing this up
+ > >  > given it only shows up in debug kernels, especially at this stage in -rc.
+ > >  > 
+ > >  > (Yeah, it's a cop-out, but unless someone with more interest in this problem
+ > >  >  steps up, I've bigger fishes to fry).
+ > > 
+ > > One last try...
+ > > (I didn't think too long about this, so this might be equally busted,
+ > >  but if so, see comment above).
+ > 
+ > Yes, I expect that should squish the warnings.  It looks all racy wrt cpu hotplug
+ > and against async set_cpus_allowed(), but if those are our worst problems, we're
+ > good.
 
-    mlx4_core: Basic support for hardware, managing resources, sending
-      commands to firmware, etc.  Lives in drivers/net/mlx4 (so that
-      it gets built in a natural way for ethernet support, even if
-      CONFIG_INFINIBAND=n) and exports its API in include/linux/mlx4.
+It probably needs a couple more preempt_enable()'s sprinkled throughout the function
+to take care of the break's. I also missed a goto case.
+Meh, this cure is as bad as the disease.
 
-    mlx4_ib: InfiniBand HCA driver, sits between the IB midlayer and
-      mlx4_core.  Lives in drivers/infiniband/hw/mlx4.
+	Dave
 
-    mlx4_eth: Ethernet NIC driver, sits between networking stack and
-      mlx4_core.  Also lives in drivers/net/mlx4.  This is just a stub
-      right now, because firmware support for ethernet mode is still
-      too immature.
-
-In fact, the ConnectX hardware has support for fibre channel stuff
-too, so in the future there may also be an FC HBA driver layered on
-top of mlx4_core as well.
-
-I will post a full set of patches for review via email once I've had a
-chance to clean things up and split things into reasonable sized
-chunks (the full patch is > 300 KB right now), but for those who are
-interested, you can grab the connectx branch of my infiniband.git tree:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git connectx
-
-I've also put this code in my for-mm branch, so it should appear in
-the next -mm kernel whenever Andrew has time to get one out.
-
-Any and all comments are appreciated; my current plan is to merge the
-mlx4_core and mlx4_ib drivers for 2.6.22, and I hope that mlx4_eth
-will be ready for 2.6.23.
-
-I've tried to flag areas that are not fully implemented or still need
-work, and there are quite a few places that need cleanup, but the
-driver is at least able to run IP-over-InfiniBand and some basic
-userspace direct access tests.
-
-Speaking of direct access, a preliminary version of a userspace driver
-that works with libibverbs is available from:
-
-    git://git.kernel.org/pub/scm/libs/infiniband/libmlx4.git
-
-
-Thanks to the crew at Mellanox for lots of help with sample code and
-debugging, as well as early access to the hardware!
+-- 
+http://www.codemonkey.org.uk
