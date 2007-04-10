@@ -1,45 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030591AbXDJWca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030636AbXDJWcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030591AbXDJWca (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030624AbXDJWc3
+	id S1030636AbXDJWcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030632AbXDJWcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:32:29 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:13805 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030591AbXDJWc2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:32:28 -0400
-X-IronPort-AV: i="4.14,392,1170662400"; 
-   d="scan'208"; a="52690504:sNHT85272534"
-To: "Bryan O'Sullivan" <bos@pathscale.com>
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14 of 33] IB/ipath - fix port sharing on powerpc
-X-Message-Flag: Warning: May contain useful information
-References: <62da2fb770b66310ac06.1173995098@iqa-25.internal.keyresearch.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 10 Apr 2007 15:32:19 -0700
-In-Reply-To: <62da2fb770b66310ac06.1173995098@iqa-25.internal.keyresearch.com> (Bryan O'Sullivan's message of "Thu, 15 Mar 2007 14:44:58 -0700")
-Message-ID: <adatzvnoo7g.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Apr 2007 22:32:19.0469 (UTC) FILETIME=[1979ABD0:01C77BC0]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Tue, 10 Apr 2007 18:32:52 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:49985 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030616AbXDJWcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:32:50 -0400
+Date: Tue, 10 Apr 2007 15:32:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Neil Brown <neilb@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>
+Subject: Re: [PATCH (revised)] device_schedule_callback needs a module
+ reference
+Message-Id: <20070410153208.ad523206.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704101141110.3614-100000@iolanthe.rowland.org>
+References: <20070410151337.03a6596a@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.44L0.0704101141110.3614-100000@iolanthe.rowland.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I applied this, but I still think there's some more work to do in this
-area:
+On Tue, 10 Apr 2007 12:46:11 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
- > The port sharing feature mixed kernel virtual addresses as well as
- > physical addresses for the offset used to describe the mmap address to map
- > the InfiniPath hardware into user space.  This had a conflict on powerpc.
- > The new scheme converts it to a physical address so it doesn't conflict
- > with chip addresses and yet still fits in 40/44 bits so it isn't truncated
- > by 32-bit applications calling mmap64().
+> On Tue, 10 Apr 2007, Cornelia Huck wrote:
+> 
+> > Whoops:
+> > 
+> > In file included from include/linux/interrupt.h:15,
+> >                  from include/asm/hardirq.h:18,
+> >                  from include/linux/hardirq.h:7,
+> >                  from include/asm-generic/local.h:5,
+> >                  from include/asm/local.h:1,
+> >                  from include/linux/module.h:19,
+> >                  from arch/s390/kernel/time.c:16:
+> > include/linux/device.h: In function 'device_schedule_callback':
+> > include/linux/device.h:374: error: 'THIS_MODULE' undeclared (first use in this function)
+> > include/linux/device.h:374: error: (Each undeclared identifier is reported only once
+> > include/linux/device.h:374: error: for each function it appears in.)
+> > 
+> > Maybe better move the implementation of device_schedule_callback() to
+> > drivers/base/core.c? (Though I'm not sure why
+> > include/asm-s390/hardirq.h includes linux/interrupt.h, and e.g.
+> > include/asm-i386/hardirq.h doesn't.)
+> 
+> I don't think moving device_schedule_callback() is the answer.  For one 
+> thing, the implementation _has_ to be compiled in the calling module so 
+> that THIS_MODULE will have the correct value.  If it were compiled in 
+> drivers/base/core.c then it wouldn't refer to the caller's module.
+> 
+> The real problem is bad nesting of #includes.  Maybe changing 
+> include/asm-s390/hardirq.h not to include linux/interrupt.h will be 
+> feasible.
+> 
+> Or perhaps it would be better to move the definition of THIS_MODULE in
+> linux/module.h up before all the #include lines, since it seems reasonable
+> that a file indirectly included by module.h might need to use THIS_MODULE.
+> 
 
-there's no guarantee that a physical address fits in 40 or 44 or 63
-bits on a 64 bit platform.  So you've fixed this problem on the
-platforms you test for now, but it could easily crop up again...
+<holds nose>
+
+
+--- a/include/linux/device.h~device_schedule_callback-needs-a-module-reference-fix
++++ a/include/linux/device.h
+@@ -369,11 +369,9 @@ extern void device_remove_bin_file(struc
+ extern int device_schedule_callback_owner(struct device *dev,
+ 		void (*func)(struct device *), struct module *owner);
+ 
+-static inline int device_schedule_callback(struct device *dev,
+-		void (*func)(struct device *))
+-{
+-	return device_schedule_callback_owner(dev, func, THIS_MODULE);
+-}
++/* This is a macro to avoid include problems with THIS_MODULE */
++#define device_schedule_callback(dev, func)			\
++	device_schedule_callback_owner(dev, func, THIS_MODULE)
+ 
+ /* device resource management */
+ typedef void (*dr_release_t)(struct device *dev, void *res);
+_
+
