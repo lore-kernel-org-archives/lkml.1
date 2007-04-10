@@ -1,117 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030624AbXDJWeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXDJWfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030624AbXDJWeH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030649AbXDJWeH
+	id S1030621AbXDJWfH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030649AbXDJWfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:34:07 -0400
-Received: from mail.suse.de ([195.135.220.2]:47761 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030624AbXDJWeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:34:04 -0400
-From: Neil Brown <neilb@suse.de>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Date: Wed, 11 Apr 2007 08:33:37 +1000
+	Tue, 10 Apr 2007 18:35:06 -0400
+Received: from smtprelay02.ispgateway.de ([80.67.18.14]:54732 "EHLO
+	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030621AbXDJWfE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:35:04 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: init's children list is long and slows reaping children.
+Date: Wed, 11 Apr 2007 00:35:35 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
+       Robin Holt <holt@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <20070410014102.fd730911.akpm@linux-foundation.org> <461B4F76.1010807@garzik.org>
+In-Reply-To: <461B4F76.1010807@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <17948.4289.176612.555587@notabene.brown>
-Cc: "Bob Copeland" <me@bobcopeland.com>, Theodore Tso <tytso@mit.edu>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-In-Reply-To: message from Trond Myklebust on Tuesday April 10
-References: <20070407233037.GA16508@infradead.org>
-	<46193048.6000606@zytor.com>
-	<20070408184129.GA20871@lazybastard.org>
-	<20070408191955.GD29180@thunk.org>
-	<46194260.3050900@zytor.com>
-	<20070409014426.GA18580@thunk.org>
-	<20070409110927.GA23240@lazybastard.org>
-	<1176121897.6210.8.camel@heimdal.trondhjem.org>
-	<20070409131918.GC18580@thunk.org>
-	<1176127395.6210.34.camel@heimdal.trondhjem.org>
-	<20070410135641.GG13650@thunk.org>
-	<1176215836.14442.37.camel@heimdal.trondhjem.org>
-	<17947.64947.649081.411561@notabene.brown>
-	<1176239914.309.54.camel@heimdal.trondhjem.org>
-	<17948.916.464492.881283@notabene.brown>
-	<1176242364.309.69.camel@heimdal.trondhjem.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+Message-Id: <200704110035.37563.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday April 10, trond.myklebust@fys.uio.no wrote:
-> On Wed, 2007-04-11 at 07:37 +1000, Neil Brown wrote:
-> > On Tuesday April 10, trond.myklebust@fys.uio.no wrote:
-> > > On Wed, 2007-04-11 at 07:12 +1000, Neil Brown wrote:
-> > > > 
-> > > > Is there something that makes that interface problematic?
-> > > 
-> > > File deletions...
-> > 
-> > How are they a problem ?
-> > 
-> > There are only two ways to organise a directory.
-> > 1/ Unsorted linear list of entries in which no repacking is ever done.
-> > 2/ Some data structure using an ordered search key that is based on
-> >   the filename (e.g. a B-tree with a search key that is a hash of the
-> >   filename). 
-> > 
-> > In the first case, you just use a fixed opaque cookie for location in
-> > a directory.
-> > In the second you use the filename.  If the file has been deleted,
-> > that shouldn't stop you finding the place where it would have been in
-> > the overall sort order.
-> 
-> I beg to differ. RAMFS is an instance of a filesystem which uses an
-> unsorted linear list of entries which is automatically repacked when you
-> delete a file.
+On Tuesday 10 April 2007, Jeff Garzik wrote:
+> Thus, rather than forcing authors to make their code more complex, we 
+> should find another solution.
 
-hmm... yes...
-RAMFS uses dcache_readdir which keeps a cursor in the list of entries
-such that delete/insert doesn't change the effective location of the
-cursor.
+What about sth. like the "pre-forking" concept? So just have a thread creator thread,
+which checks the amount of unused threads and keeps them within certain limits.
 
-Doing that in NFS would require the server keeping an open file on
-behalf of the client.  That wouldn't be too hard for NFSv4, except
-that you would still need some way to deal with server reboots.
+So that anything which needs a thread now simply queues up the work and
+specifies, that it wants a new thread, if possible.
 
-But then RAMFS wouldn't survive a server reboot anyway.
+One problem seems to be, that a thread is nothing else but a statement
+on what other tasks I can wait before doing my current one (e.g. I don't want to 
+mlseep() twice on the same reset timeout). 
+But we usually use locking to order that.
 
-> 
-> You may also have filesystems which are only partially sorted. The
-> dcache is for instance organised as a hashtable with multiple entries
-> per bucket...
+Do I miss anything fundamental here?
 
-That is like the filesystem Bob Copeland described.
+Regards
 
-And if the chains are not sorted, then I think the only way you could
-reliably implement getdents is to use a cursor, and that doesn't map
-over NFS very well.
-
-Even if the chains were sorted, they could conceivably be sorted by
-position-in-file in which case my 'cookie or filename' would not be
-enough.  You need 'cookie and filename'.
-
-So my new position is that:
-
-  A READDIR (aka getdents2) should take a directory handle, a cookie,
-  and a filename, and should return filenames and cookies.  The
-  cookies may all be identical or may not.  The filename might be used
-  by the filesystem, or it might not.
-
-  Filesystems that require a cursor in the 'struct file' to support
-  (local) getdents cannot be used with NFS.
-
-While it doesn't make it possible to support all conceivable
-filesystems, it should make it easier for some filesystems to support
-the demands of NFS.
-
-Thanks,
-NeilBrown
+Ingo Oeser
