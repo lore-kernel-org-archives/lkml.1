@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbXDJUFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030515AbXDJUKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbXDJUFr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 16:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234AbXDJUFh
+	id S1030515AbXDJUKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 16:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030517AbXDJUKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 16:05:37 -0400
-Received: from inetc.connecttech.com ([64.7.140.42]:2772 "EHLO
-	inetc.connecttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932227AbXDJUFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 16:05:35 -0400
-From: "Stuart MacDonald" <stuartm@connecttech.com>
-To: "'Randy Dunlap'" <randy.dunlap@oracle.com>
-Cc: "'Paolo Ornati'" <ornati@fastwebnet.it>, <linux-kernel@vger.kernel.org>
-Subject: RE: Alternative to 'git bisect visualize'?
-Date: Tue, 10 Apr 2007 16:04:47 -0400
-Organization: Connect Tech Inc.
-Message-ID: <05b001c77bab$7d315e80$294b82ce@stuartm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook, Build 10.0.6626
-In-Reply-To: <20070410130025.b16b5f7b.randy.dunlap@oracle.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
+	Tue, 10 Apr 2007 16:10:47 -0400
+Received: from mail.screens.ru ([213.234.233.54]:37553 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030515AbXDJUKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 16:10:46 -0400
+Date: Wed, 11 Apr 2007 00:10:36 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: wli@holomorphy.com
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: per-thread rusage
+Message-ID: <20070410201036.GA205@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
-> On Tue, 10 Apr 2007 15:45:33 -0400 Stuart MacDonald wrote:
-> > Where would be the appropriate place to submit this as a feature
-> > request, to complement "git bisect visualize"; git, LKML or 
-> somewhere
-> > else? I'm picturing an ncurses/menuconfig-style app.
-> 
-> see http://git.or.cz/, this section:  Community and Development
+William Lee Irwin III <wli@holomorphy.com> wrote:
+>
+>  	switch (who) {
+> +		case RUSAGE_THREAD:
+> +			utime = p->utime;
+> +			stime = p->stime;
+> +			r->ru_nvcsw = p->nvcsw;
+> +			r->ru_nivcsw = p->nivcsw;
+> +			r->ru_minflt = p->min_flt;
+> +			r->ru_majflt = p->maj_flt;
+> +			r->ru_inblock = task_io_get_inblock(p);
+> +			r->ru_oublock = task_io_get_oublock(p);
+> +			break;
 
-Thanks.
+Minor nit. Perhaps it makes sense to introduce
 
-..Stu
+	static void rusage_self(struct rusage *r, struct task_struct *p);
+
+for that. Could be re-used by "do {} while ()" below. Of course, we need
+s/=/+=/.
+
+Or, if we think the kernel code is too much clean,
+
+	--- kernel/sys.c~	2007-04-05 12:20:35.000000000 +0400
+	+++ kernel/sys.c	2007-04-11 00:08:53.000000000 +0400
+	@@ -2097,6 +2097,7 @@ static void k_getrusage(struct task_stru
+				r->ru_majflt += p->signal->maj_flt;
+				r->ru_inblock += p->signal->inblock;
+				r->ru_oublock += p->signal->oublock;
+	+		case RUSAGE_THREAD:
+				t = p;
+				do {
+					utime = cputime_add(utime, t->utime);
+	@@ -2107,7 +2108,9 @@ static void k_getrusage(struct task_stru
+					r->ru_majflt += t->maj_flt;
+					r->ru_inblock += task_io_get_inblock(t);
+					r->ru_oublock += task_io_get_oublock(t);
+	-				t = next_thread(t);
+	+
+	+				if (who != RUSAGE_THREAD)
+	+					t = next_thread(t);
+				} while (t != p);
+				break;
+	 
+
+Oleg.
 
