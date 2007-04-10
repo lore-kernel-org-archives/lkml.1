@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbXDJWna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXDJWo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965148AbXDJWna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXDJWn3
+	id S965558AbXDJWo0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965724AbXDJWo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:43:29 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:61115 "EHLO
+	Tue, 10 Apr 2007 18:44:26 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:61255 "EHLO
 	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965148AbXDJWn2 (ORCPT
+	by vger.kernel.org with ESMTP id S965558AbXDJWoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:43:28 -0400
-Date: Tue, 10 Apr 2007 18:43:27 -0400
+	Tue, 10 Apr 2007 18:44:24 -0400
+Date: Tue, 10 Apr 2007 18:44:24 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] markers-linker-h8300
-Message-ID: <20070410224327.GJ7092@Krystal>
+Subject: [PATCH] markers-linker-i386
+Message-ID: <20070410224424.GK7092@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -23,28 +23,25 @@ Content-Disposition: inline
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 18:42:36 up 67 days, 12:50,  6 users,  load average: 1.57, 1.44, 1.42
+X-Uptime: 18:43:29 up 67 days, 12:50,  6 users,  load average: 1.42, 1.42, 1.41
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add EXTRA_RWDATA to h8300.
+Add EXTRA_RWDATA to i386.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
---- a/arch/h8300/kernel/vmlinux.lds.S
-+++ b/arch/h8300/kernel/vmlinux.lds.S
-@@ -105,7 +105,9 @@ SECTIONS
- 	. = ALIGN(0x4) ;
- 		*(.data)
- 	. = ALIGN(0x4) ;
--		*(.data.*)	
-+		*(.data.*)
-+	. = ALIGN(0x4) ;
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -78,6 +78,7 @@ SECTIONS
+   . = ALIGN(4096);
+   .data : AT(ADDR(.data) - LOAD_OFFSET) {	/* Data */
+ 	*(.data)
 +	EXTRA_RWDATA
+ 	CONSTRUCTORS
+ 	} :data
  
- 	. = ALIGN(0x4) ;
- 	___init_begin = .;
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
