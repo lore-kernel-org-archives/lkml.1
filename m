@@ -1,62 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965451AbXDJMer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965440AbXDJMoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965451AbXDJMer (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 08:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbXDJMer
+	id S965440AbXDJMoG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 08:44:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965483AbXDJMoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 08:34:47 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49582 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965388AbXDJMeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 08:34:46 -0400
-Date: Tue, 10 Apr 2007 18:08:21 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-s390 <linux-s390@vger.kernel.org>
-Subject: Re: 2.6.21-rc6-mm1
-Message-ID: <20070410123821.GA24782@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070410142421.519eb62c@gondolin.boeblingen.de.ibm.com>
+	Tue, 10 Apr 2007 08:44:05 -0400
+Received: from p549F50C9.dip.t-dialin.net ([84.159.80.201]:21235 "EHLO
+	mail.linux-mips.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965440AbXDJMoE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 08:44:04 -0400
+X-Greylist: delayed 2174 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Apr 2007 08:44:03 EDT
+Date: Tue, 10 Apr 2007 14:07:23 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] MIPS:  Replace incorrect "__typeof" with "__typeof__".
+Message-ID: <20070410120723.GA10409@linux-mips.org>
+References: <Pine.LNX.4.64.0704100621550.13136@CPE00045a9c397f-CM001225dbafb6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070410142421.519eb62c@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.64.0704100621550.13136@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 02:24:21PM +0200, Cornelia Huck wrote:
-> On Sun, 8 Apr 2007 14:35:59 -0700,
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/
-> 
-> > +kprobes-the-on-off-knob-thru-debugfs-updated.patch
-> > +kprobes-the-on-off-knob-thru-debugfs-updated-fix.patch
-> > 
-> >  kprobes work
-> 
-> Add the missing arch_trampoline_kprobe() for s390.
+On Tue, Apr 10, 2007 at 06:23:27AM -0400, Robert P. J. Day wrote:
 
-Thanks Cornelia. My bad for missing s390.
+> Replace what appears to be an incorrect spelling of "__typeof" with
+> the correct spelling of "__typeof__".
 
-> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> 
-> ---
->  arch/s390/kernel/kprobes.c |    7 +++++++
->  1 files changed, 7 insertions(+)
-> 
-> --- linux-2.6.21-rc6-mm1.orig/arch/s390/kernel/kprobes.c
-> +++ linux-2.6.21-rc6-mm1/arch/s390/kernel/kprobes.c
-> @@ -662,3 +662,10 @@ int __init arch_init_kprobes(void)
->  {
->  	return register_kprobe(&trampoline_p);
->  }
-> +
-> +int __kprobes arch_trampoline_kprobe(struct kprobe *p)
-> +{
-> +	if (p->addr == (kprobe_opcode_t *) & kretprobe_trampoline)
-> +		return 1;
-> +	return 0;
-> +}
+Not a bug, just old fashioned.
+
+  Ralf
