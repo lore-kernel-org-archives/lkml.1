@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbXDJMdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965451AbXDJMer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751635AbXDJMdL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 08:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXDJMdK
+	id S965451AbXDJMer (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 08:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965440AbXDJMer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 08:33:10 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:51279 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbXDJMdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 08:33:09 -0400
-Date: Tue, 10 Apr 2007 14:35:27 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg K-H <greg@kroah.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, viro@zeniv.linux.org.uk
-Subject: [Patch -mm] kobject: kobject_add() reference leak
-Message-ID: <20070410143527.2b7718b8@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070410143106.03d62e7c@gondolin.boeblingen.de.ibm.com>
-References: <2375c9f90704010032r119f4a1eqb24dd611d5ecd943@mail.gmail.com>
-	<20070402130128.707c8c19@gondolin.boeblingen.de.ibm.com>
-	<20070405045410.GA4692@localhost.localdomain>
-	<20070405111142.4723035f@gondolin.boeblingen.de.ibm.com>
-	<20070405144409.GA5294@localhost.localdomain>
-	<20070405170514.481b765f@gondolin.boeblingen.de.ibm.com>
-	<20070405152732.GA5569@localhost.localdomain>
-	<20070405180016.5099e0cd@gondolin.boeblingen.de.ibm.com>
-	<20070406025343.GA2407@localhost.localdomain>
-	<20070410143106.03d62e7c@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Tue, 10 Apr 2007 08:34:47 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:49582 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965388AbXDJMeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 08:34:46 -0400
+Date: Tue, 10 Apr 2007 18:08:21 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-s390 <linux-s390@vger.kernel.org>
+Subject: Re: 2.6.21-rc6-mm1
+Message-ID: <20070410123821.GA24782@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070410142421.519eb62c@gondolin.boeblingen.de.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070410142421.519eb62c@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<This patch is the "pathological case" in the referenced mail.>
+On Tue, Apr 10, 2007 at 02:24:21PM +0200, Cornelia Huck wrote:
+> On Sun, 8 Apr 2007 14:35:59 -0700,
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/
+> 
+> > +kprobes-the-on-off-knob-thru-debugfs-updated.patch
+> > +kprobes-the-on-off-knob-thru-debugfs-updated-fix.patch
+> > 
+> >  kprobes work
+> 
+> Add the missing arch_trampoline_kprobe() for s390.
 
-We leak a reference if we attempt to add a kobject with no name.
+Thanks Cornelia. My bad for missing s390.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-
----
- lib/kobject.c |    1 +
- 1 files changed, 1 insertion(+)
-
---- linux-2.6.21-rc6-mm1.orig/lib/kobject.c
-+++ linux-2.6.21-rc6-mm1/lib/kobject.c
-@@ -218,6 +218,7 @@ int kobject_shadow_add(struct kobject * 
- 	if (!*kobj->k_name) {
- 		pr_debug("kobject attempted to be registered with no name!\n");
- 		WARN_ON(1);
-+		kobject_put(kobj);
- 		return -EINVAL;
- 	}
- 	parent = kobject_get(kobj->parent);
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> 
+> ---
+>  arch/s390/kernel/kprobes.c |    7 +++++++
+>  1 files changed, 7 insertions(+)
+> 
+> --- linux-2.6.21-rc6-mm1.orig/arch/s390/kernel/kprobes.c
+> +++ linux-2.6.21-rc6-mm1/arch/s390/kernel/kprobes.c
+> @@ -662,3 +662,10 @@ int __init arch_init_kprobes(void)
+>  {
+>  	return register_kprobe(&trampoline_p);
+>  }
+> +
+> +int __kprobes arch_trampoline_kprobe(struct kprobe *p)
+> +{
+> +	if (p->addr == (kprobe_opcode_t *) & kretprobe_trampoline)
+> +		return 1;
+> +	return 0;
+> +}
