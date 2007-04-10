@@ -1,199 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbXDJVD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbXDJVFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbXDJVD6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbXDJVD6
+	id S1753867AbXDJVFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbXDJVFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:03:58 -0400
-Received: from palrel11.hp.com ([156.153.255.246]:56689 "EHLO palrel11.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753856AbXDJVD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:03:57 -0400
-Date: Tue, 10 Apr 2007 16:03:56 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: akpm@linux-foundation.org, jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       steve.cameron@hp.com
-Subject: [PATCH 3/3] cciss: set rq->errors more correctly in driver
-Message-ID: <20070410210356.GC19579@beardog.cca.cpqcorp.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Apr 2007 17:05:05 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:22149 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753872AbXDJVFD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:05:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=O8N/ioZt2WVs+S9TYqjIJVtxGfMlPQSOs/cJRwfuyCIN7q7B04WMOuaI+SVGwMdYbrL6TECvmopFWUTscJZAH9733i/PT8vdC0z8baLxi1y+NYdFTUmpri9y8Cr62C/lrXsoVcbGan0IkdaXh30WEaOaC0tu+NGCQisIj3NL/ec=
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: "Con Kolivas" <kernel@kolivas.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: [PATCH 2.6.21-rc6-mm1] SD sched: avoid redundant reschedule in set_user_nice()
+Date: Tue, 10 Apr 2007 17:16:13 +0200
+User-Agent: KMail/1.8.2
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704101716.14372.dmitry.adamushko@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH 3/3
-Set rq->errors more correctly in cciss driver.  Previously
-we had set it synonymously with the meaning of the last parameter
-of end_that_last_request and complete_buffers (the "uptodate"
-parameter) and had gotten away with it for all this time because 
-nobody ever looked at rq->errors.  SCSI_IOCTL_SEND_COMMAND looks 
-at rq->errors, so now it matters that it be right.
 
-Please consider this for inclusion.
+Hello,
 
-Signed-off-by: Stephen M. Cameron <steve.cameron@hp.com>
-Signed-off-by: Mike Miller <mike.miller@hp.com>
+This change seems to be pretty logical. OTOH, it's just a micro-optimization.
+So there is no hurry and we may wait till Con is back (Andrew, if you think it'd be better).
+
+Logically-wise, this is similar to the changes I have sent earlier for the mainline.
+
+There is no need to change TASK_PREEMPTS_CURR() here. All the infrastructure is already in place
+(task_preempts_curr() already does the necessary checks). And nevertheless, set_user_nice() can be made
+nicer. So that's what this patch is about.
 
 ---
 
- linux-2.6.21-rc6/drivers/block/cciss.c |   43 ++++++++++++++++-----------------
- 1 files changed, 22 insertions(+), 21 deletions(-)
+Call for reschedule upon increasing a task's priority in set_user_nice() only
+if the task may preempt the current one.
 
-diff -puN linux-2.6.21-rc6/drivers/block/cciss.c~fix_cciss_rq_errors linux-2.6.21-rc6/drivers/block/cciss.c
---- cciss_sg_io/linux-2.6.21-rc6/drivers/block/cciss.c~fix_cciss_rq_errors	2007-04-10 14:32:28.000000000 -0500
-+++ cciss_sg_io-scameron/linux-2.6.21-rc6/drivers/block/cciss.c	2007-04-10 14:32:28.000000000 -0500
-@@ -1261,7 +1261,7 @@ static void cciss_softirq_done(struct re
- 		pci_unmap_page(h->pdev, temp64.val, cmd->SG[i].Len, ddir);
- 	}
- 
--	complete_buffers(rq->bio, rq->errors);
-+	complete_buffers(rq->bio, (rq->errors == 0));
- 
- 	if (blk_fs_request(rq)) {
- 		const int rw = rq_data_dir(rq);
-@@ -1275,7 +1275,7 @@ static void cciss_softirq_done(struct re
- 
- 	add_disk_randomness(rq->rq_disk);
- 	spin_lock_irqsave(&h->lock, flags);
--	end_that_request_last(rq, rq->errors);
-+	end_that_request_last(rq, (rq->errors == 0));
- 	cmd_free(h, cmd, 1);
- 	cciss_check_queues(h);
- 	spin_unlock_irqrestore(&h->lock, flags);
-@@ -2366,27 +2366,27 @@ static inline void resend_cciss_cmd(ctlr
- static inline int evaluate_target_status(CommandList_struct *cmd)
+
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+---
+
+--- linux-2.6.21-rc6-mm1/kernel/sched-orig.c	2007-04-09 10:10:52.000000000 +0200
++++ linux-2.6.21-rc6-mm1/kernel/sched.c	2007-04-09 17:07:12.000000000 +0200
+@@ -4022,14 +4022,14 @@ EXPORT_SYMBOL(sleep_on_timeout);
+ void rt_mutex_setprio(struct task_struct *p, int prio)
  {
- 	unsigned char sense_key;
--	int status = 0; /* 0 means bad, 1 means good. */
-+	int error_count = 1;
+ 	unsigned long flags;
+-	int queued, oldprio;
++	int queued, delta;
+ 	struct rq *rq;
  
- 	if (cmd->err_info->ScsiStatus != 0x02) { /* not check condition? */
- 		if (!blk_pc_request(cmd->rq))
- 			printk(KERN_WARNING "cciss: cmd %p "
- 			       "has SCSI Status 0x%x\n",
- 			       cmd, cmd->err_info->ScsiStatus);
--		return status;
-+		return error_count;
- 	}
+ 	BUG_ON(prio < 0 || prio > MAX_PRIO);
  
- 	/* check the sense key */
- 	sense_key = 0xf & cmd->err_info->SenseInfo[2];
- 	/* no status or recovered error */
- 	if ((sense_key == 0x0) || (sense_key == 0x1))
--		status = 1;
-+		error_count = 0;
+ 	rq = task_rq_lock(p, &flags);
  
- 	if (!blk_pc_request(cmd->rq)) { /* Not SG_IO or similar? */
--		if (status == 0)
-+		if (error_count != 0)
- 			printk(KERN_WARNING "cciss: cmd %p has CHECK CONDITION"
- 			       " sense key = 0x%x\n", cmd, sense_key);
--		return status;
-+		return error_count;
- 	}
+-	oldprio = p->prio;
++	delta = prio - p->prio;
+ 	queued = task_queued(p);
+ 	if (queued)
+ 		dequeue_task(p, rq);
+@@ -4043,7 +4043,7 @@ void rt_mutex_setprio(struct task_struct
+ 		 * this runqueue and our priority is higher than the current's
+ 		 */
+ 		if (task_running(rq, p)) {
+-			if (p->prio > oldprio)
++			if (delta > 0)
+ 				resched_task(rq->curr);
+ 		} else
+ 			try_preempt(p, rq);
+@@ -4055,7 +4055,7 @@ void rt_mutex_setprio(struct task_struct
  
- 	/* SG_IO or similar, copy sense data back */
-@@ -2398,7 +2398,7 @@ static inline int evaluate_target_status
- 	} else
- 		cmd->rq->sense_len = 0;
- 
--	return status;
-+	return error_count;
- }
- 
- /* checks the status of the job and calls complete buffers to mark all
-@@ -2408,18 +2408,20 @@ static inline int evaluate_target_status
- static inline void complete_command(ctlr_info_t *h, CommandList_struct *cmd,
- 				    int timeout)
+ void set_user_nice(struct task_struct *p, long nice)
  {
--	int status = 1;
- 	int retry_cmd = 0;
-+	struct request *rq = cmd->rq;
-+
-+	rq->errors = 0;
+-	int queued, old_prio,delta;
++	int queued, old_prio, delta;
+ 	unsigned long flags;
+ 	struct rq *rq;
  
- 	if (timeout)
--		status = 0;
-+		rq->errors = 1;
- 
- 	if (cmd->err_info->CommandStatus == 0)	/* no error has occurred */
- 		goto after_error_processing;
- 
- 	switch (cmd->err_info->CommandStatus) {
- 	case CMD_TARGET_STATUS:
--		status = evaluate_target_status(cmd);
-+		rq->errors = evaluate_target_status(cmd);
- 		break;
- 	case CMD_DATA_UNDERRUN:
- 		if (blk_fs_request(cmd->rq)) {
-@@ -2438,32 +2440,32 @@ static inline void complete_command(ctlr
- 	case CMD_INVALID:
- 		printk(KERN_WARNING "cciss: cmd %p is "
- 		       "reported invalid\n", cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	case CMD_PROTOCOL_ERR:
- 		printk(KERN_WARNING "cciss: cmd %p has "
- 		       "protocol error \n", cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	case CMD_HARDWARE_ERR:
- 		printk(KERN_WARNING "cciss: cmd %p had "
- 		       " hardware error\n", cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	case CMD_CONNECTION_LOST:
- 		printk(KERN_WARNING "cciss: cmd %p had "
- 		       "connection lost\n", cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	case CMD_ABORTED:
- 		printk(KERN_WARNING "cciss: cmd %p was "
- 		       "aborted\n", cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	case CMD_ABORT_FAILED:
- 		printk(KERN_WARNING "cciss: cmd %p reports "
- 		       "abort failed\n", cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	case CMD_UNSOLICITED_ABORT:
- 		printk(KERN_WARNING "cciss%d: unsolicited "
-@@ -2477,17 +2479,17 @@ static inline void complete_command(ctlr
- 			printk(KERN_WARNING
- 			       "cciss%d: %p retried too "
- 			       "many times\n", h->ctlr, cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	case CMD_TIMEOUT:
- 		printk(KERN_WARNING "cciss: cmd %p timedout\n", cmd);
--		status = 0;
-+		rq->errors = 1;
- 		break;
- 	default:
- 		printk(KERN_WARNING "cciss: cmd %p returned "
- 		       "unknown status %x\n", cmd,
- 		       cmd->err_info->CommandStatus);
--		status = 0;
-+		rq->errors = 1;
+@@ -4096,8 +4096,11 @@ void set_user_nice(struct task_struct *p
+ 		 * If the task increased its priority or is running and
+ 		 * lowered its priority, then reschedule its CPU:
+ 		 */
+-		if (delta < 0 || (delta > 0 && task_running(rq, p)))
+-			resched_task(rq->curr);
++		if (task_running(rq, p)) {
++			if (delta > 0)
++				resched_task(rq->curr);
++		} else
++			try_preempt(p, rq);
  	}
- 
- after_error_processing:
-@@ -2498,7 +2500,6 @@ after_error_processing:
- 		return;
- 	}
- 	cmd->rq->data_len = 0;
--	cmd->rq->errors = status;
- 	cmd->rq->completion_data = cmd;
- 	blk_add_trace_rq(cmd->rq->q, cmd->rq, BLK_TA_COMPLETE);
- 	blk_complete_request(cmd->rq);
-_
+ out_unlock:
+ 	task_rq_unlock(rq, &flags);
