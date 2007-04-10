@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030685AbXDJOgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030734AbXDJOh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030685AbXDJOgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030723AbXDJOgi
+	id S1030734AbXDJOh6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030746AbXDJOh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:36:38 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:35839 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030685AbXDJOgh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:36:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tAsXEC78XcinllcIkSecxPgoyZbC5SigN83gPsrEG8SWPptafx+5YxT5VZQbAMSIXh2ZFXhprlCmLUzBXl8dPH/hJGyGRlMDQLBon9WnLqi8OtKdpKcw1s7NJq6hS75TQwUgWz27eFC1VFNdExotRImIpI80wAbXGYjwrcetyng=
-Message-ID: <9a8748490704100736l49b0a7c6t49d21900f4f23e33@mail.gmail.com>
-Date: Tue, 10 Apr 2007 16:36:36 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Zachary Amsden" <zach@vmware.com>
-Subject: Re: [PATCH 3/10] I386 mcheck p4 grotesque and needless warning fix.patch
-Cc: "Andrew Morton" <akpm@osdl.org>, "Andi Kleen" <ak@muc.de>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Virtualization Mailing List" <virtualization@lists.osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200704100006.l3A068Xk020608@zach-dev.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 10 Apr 2007 10:37:58 -0400
+Received: from pat.uio.no ([129.240.10.15]:34835 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030734AbXDJOh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 10:37:57 -0400
+Subject: Re: If not readdir() then what?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Theodore Tso <tytso@mit.edu>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+In-Reply-To: <20070410135641.GG13650@thunk.org>
+References: <20070407233037.GA16508@infradead.org>
+	 <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org>
+	 <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com>
+	 <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org>
+	 <1176121897.6210.8.camel@heimdal.trondhjem.org>
+	 <20070409131918.GC18580@thunk.org>
+	 <1176127395.6210.34.camel@heimdal.trondhjem.org>
+	 <20070410135641.GG13650@thunk.org>
+Content-Type: text/plain
+Date: Tue, 10 Apr 2007 10:37:16 -0400
+Message-Id: <1176215836.14442.37.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200704100006.l3A068Xk020608@zach-dev.vmware.com>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.097)
+X-UiO-Scanned: B7B4BA71B3A254778804CC403AE87CEA23003A33
+X-UiO-Ratelimit-Test: Ratelimit
+X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1228 total 965384 max/h 7466 blacklist 0 greylist 0 ratelimit 1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/04/07, Zachary Amsden <zach@vmware.com> wrote:
-> No, just no.  You do not use goto to skip a code block.  You do not
-> return an obvious variable from a singly-inlined function and give
-> the function a return value.  You don't put unexplained comments
-> about kmalloc in code which doesn't do dynamic allocation.  And
-> you don't leave stray warnings around for no good reason.
->
-> Also, when possible, it is better to use block scoped variables
-> because gcc can sometime generate better code.
->
-> Signed-off-by: Zachary Amsden <zach@vmware.com>
->
-> diff -r ed741f57dae8 arch/i386/kernel/cpu/mcheck/p4.c
-> --- a/arch/i386/kernel/cpu/mcheck/p4.c  Fri Apr 06 14:29:52 2007 -0700
-> +++ b/arch/i386/kernel/cpu/mcheck/p4.c  Fri Apr 06 14:43:24 2007 -0700
-[...]
->  static fastcall void intel_machine_check(struct pt_regs * regs, long error_code)
-> @@ -155,7 +146,6 @@ static fastcall void intel_machine_check
->         u32 alow, ahigh, high, low;
->         u32 mcgstl, mcgsth;
->         int i;
-> -       struct intel_mce_extended_msrs dbg;
->
->         rdmsr (MSR_IA32_MCG_STATUS, mcgstl, mcgsth);
->         if (mcgstl & (1<<0))    /* Recoverable ? */
-> @@ -164,7 +154,9 @@ static fastcall void intel_machine_check
->         printk (KERN_EMERG "CPU %d: Machine Check Exception: %08x%08x\n",
->                 smp_processor_id(), mcgsth, mcgstl);
->
-> -       if (intel_get_extended_msrs(&dbg)) {
-> +       if (mce_num_extended_msrs > 0) {
-> +               struct intel_mce_extended_msrs dbg;
-
-shouldn't there be a blank line here?
-
-> +               intel_get_extended_msrs(&dbg);
->                 printk (KERN_DEBUG "CPU %d: EIP: %08x EFLAGS: %08x\n",
->                         smp_processor_id(), dbg.eip, dbg.eflags);
->                 printk (KERN_DEBUG "\teax: %08x ebx: %08x ecx: %08x edx: %08x\n",
+On Tue, 2007-04-10 at 09:56 -0400, Theodore Tso wrote:
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+> That might work.  But if in the long term we want to separate out what
+> we can send back via telldir/seekdir, and some future new Posix
+> interface, I wonder if we might be better off defining a formal
+> interface which can be used by NFSv2 and NFSv3/v4 that isn't
+> necessarily tied to f_pos.
+
+Note: POSIX does not mandate telldir/seekdir. The latter are only
+mandated by the XSI extensions (that are part of the Single Unix spec).
+
+Also note that SuSv3 states
+
+        One of the perceived problems of implementation is that
+        returning to a given point in a directory is quite difficult to
+        describe formally, in spite of its intuitive appeal, when
+        systems that use B-trees, hashing functions, or other similar
+        mechanisms to order their directories are considered. The
+        definition of seekdir() and telldir() does not specify whether,
+        when using these interfaces, a given directory entry will be
+        seen at all, or more than once.
+
+So whereas collisions are not supported, it does appear that the SuSv3
+does not mandate that you should be able to replay the exact same
+stream.
+
+NFS, OTOH, simply could not work without that requirement, since there
+exists no file pointer to tell you where you are in a stream beyond
+whatever the server manages to encode inside the opaque cookie+verifier.
+
+> But the fact of the matter is that if NFS protocols demands that a
+> per-directory entry cookie can be uniquely and permanently (including
+> across server reboots) identified with a small integer number, it's
+> dreaming.  Filesystem authors will cheat one way or another, because
+> there's nothing else for them to do.  
+
+Few people in the NFS community would disagree that the design of
+READDIR sucks (personally, I consider it to be one of the biggest
+scalability issues we have).
+The problem is that it is extremely hard to come up with an alternative
+that doesn't impose new conditions on what filesystems you can support.
+
+Cheers
+  Trond
+
