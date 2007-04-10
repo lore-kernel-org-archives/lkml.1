@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbXDJAJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbXDJALx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368AbXDJAJl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 20:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbXDJAJA
+	id S1753716AbXDJALx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 20:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbXDJALQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 20:09:00 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53787 "EHLO
+	Mon, 9 Apr 2007 20:11:16 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53694 "EHLO
 	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753699AbXDJAIy (ORCPT
+	by vger.kernel.org with ESMTP id S1753675AbXDJAIe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 20:08:54 -0400
-Date: Mon, 9 Apr 2007 17:06:21 -0700
-Message-Id: <200704100006.l3A06LPO020632@zach-dev.vmware.com>
-Subject: [PATCH 7/10] Resurrect the VMI lazy mode fixes.
+	Mon, 9 Apr 2007 20:08:34 -0400
+Date: Mon, 9 Apr 2007 17:06:08 -0700
+Message-Id: <200704100006.l3A068Xk020608@zach-dev.vmware.com>
+Subject: [PATCH 3/10] I386 mcheck p4 grotesque and needless warning fix.patch
 From: Zachary Amsden <zach@vmware.com>
 To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
@@ -21,64 +21,67 @@ To: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
        Virtualization Mailing List <virtualization@lists.osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Zachary Amsden <zach@vmware.com>
-Subject: Resurrect the VMI lazy mode fixes.
-X-OriginalArrivalTime: 10 Apr 2007 00:08:46.0809 (UTC) FILETIME=[6895EC90:01C77B04]
+X-OriginalArrivalTime: 10 Apr 2007 00:08:34.0298 (UTC) FILETIME=[6120E5A0:01C77B04]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Code changes and cleanup in the paravirt-ops queue caused the original
-fix for this in 2.6.21 to create conflicts.  The easiest thing to do was
-back it out before applying the queue.  In that case, this fix brings it
-back with the newly right properly tidied up paravirt-ops code.
+No, just no.  You do not use goto to skip a code block.  You do not
+return an obvious variable from a singly-inlined function and give
+the function a return value.  You don't put unexplained comments
+about kmalloc in code which doesn't do dynamic allocation.  And
+you don't leave stray warnings around for no good reason.
 
-Wheee!
+Also, when possible, it is better to use block scoped variables
+because gcc can sometime generate better code.
 
 Signed-off-by: Zachary Amsden <zach@vmware.com>
 
-diff -r ecb571084874 arch/i386/kernel/vmi.c
---- a/arch/i386/kernel/vmi.c	Fri Apr 06 12:31:06 2007 -0700
-+++ b/arch/i386/kernel/vmi.c	Fri Apr 06 14:25:03 2007 -0700
-@@ -69,6 +69,7 @@ static struct {
- 	void (*flush_tlb)(int);
- 	void (*set_initial_ap_state)(int, int);
- 	void (*halt)(void);
-+  	void (*set_lazy_mode)(int mode);
- } vmi_ops;
+diff -r ed741f57dae8 arch/i386/kernel/cpu/mcheck/p4.c
+--- a/arch/i386/kernel/cpu/mcheck/p4.c	Fri Apr 06 14:29:52 2007 -0700
++++ b/arch/i386/kernel/cpu/mcheck/p4.c	Fri Apr 06 14:43:24 2007 -0700
+@@ -124,12 +124,9 @@ static void intel_init_thermal(struct cp
  
- /*
-@@ -545,6 +546,26 @@ vmi_startup_ipi_hook(int phys_apicid, un
- }
- #endif
  
-+static void vmi_set_lazy_mode(enum paravirt_lazy_mode mode)
-+{
-+	static DEFINE_PER_CPU(int, lazy_mode);
-+
-+	if (!vmi_ops.set_lazy_mode)
-+		return;
-+
-+	/* Modes should never nest or overlap */
-+	BUG_ON(__get_cpu_var(lazy_mode) && !(mode == PARAVIRT_LAZY_NONE ||
-+					     mode == PARAVIRT_LAZY_FLUSH));
-+	
-+	if (mode == PARAVIRT_LAZY_FLUSH) {
-+		vmi_ops.set_lazy_mode(0);
-+		vmi_ops.set_lazy_mode(__get_cpu_var(lazy_mode));
-+	} else {
-+		vmi_ops.set_lazy_mode(mode);
-+		__get_cpu_var(lazy_mode) = mode;
-+	}
-+}
-+
- static inline int __init check_vmi_rom(struct vrom_header *rom)
+ /* P4/Xeon Extended MCE MSR retrieval, return 0 if unsupported */
+-static inline int intel_get_extended_msrs(struct intel_mce_extended_msrs *r)
++static inline void intel_get_extended_msrs(struct intel_mce_extended_msrs *r)
  {
- 	struct pci_header *pci;
-@@ -769,7 +790,7 @@ static inline int __init activate_vmi(vo
- 	para_wrap(load_esp0, vmi_load_esp0, set_kernel_stack, UpdateKernelStack);
- 	para_fill(set_iopl_mask, SetIOPLMask);
- 	para_fill(io_delay, IODelay);
--	para_fill(set_lazy_mode, SetLazyMode);
-+	para_wrap(set_lazy_mode, vmi_set_lazy_mode, set_lazy_mode, SetLazyMode);
+ 	u32 h;
+-
+-	if (mce_num_extended_msrs == 0)
+-		goto done;
  
- 	/* user and kernel flush are just handled with different flags to FlushTLB */
- 	para_wrap(flush_tlb_user, vmi_flush_tlb_user, flush_tlb, FlushTLB);
+ 	rdmsr (MSR_IA32_MCG_EAX, r->eax, h);
+ 	rdmsr (MSR_IA32_MCG_EBX, r->ebx, h);
+@@ -141,12 +138,6 @@ static inline int intel_get_extended_msr
+ 	rdmsr (MSR_IA32_MCG_ESP, r->esp, h);
+ 	rdmsr (MSR_IA32_MCG_EFLAGS, r->eflags, h);
+ 	rdmsr (MSR_IA32_MCG_EIP, r->eip, h);
+-
+-	/* can we rely on kmalloc to do a dynamic
+-	 * allocation for the reserved registers?
+-	 */
+-done:
+-	return mce_num_extended_msrs;
+ }
+ 
+ static fastcall void intel_machine_check(struct pt_regs * regs, long error_code)
+@@ -155,7 +146,6 @@ static fastcall void intel_machine_check
+ 	u32 alow, ahigh, high, low;
+ 	u32 mcgstl, mcgsth;
+ 	int i;
+-	struct intel_mce_extended_msrs dbg;
+ 
+ 	rdmsr (MSR_IA32_MCG_STATUS, mcgstl, mcgsth);
+ 	if (mcgstl & (1<<0))	/* Recoverable ? */
+@@ -164,7 +154,9 @@ static fastcall void intel_machine_check
+ 	printk (KERN_EMERG "CPU %d: Machine Check Exception: %08x%08x\n",
+ 		smp_processor_id(), mcgsth, mcgstl);
+ 
+-	if (intel_get_extended_msrs(&dbg)) {
++	if (mce_num_extended_msrs > 0) {
++		struct intel_mce_extended_msrs dbg;
++		intel_get_extended_msrs(&dbg);
+ 		printk (KERN_DEBUG "CPU %d: EIP: %08x EFLAGS: %08x\n",
+ 			smp_processor_id(), dbg.eip, dbg.eflags);
+ 		printk (KERN_DEBUG "\teax: %08x ebx: %08x ecx: %08x edx: %08x\n",
