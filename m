@@ -1,62 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031045AbXDJQ0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031052AbXDJQ12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031045AbXDJQ0N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031047AbXDJQ0N
+	id S1031052AbXDJQ12 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031051AbXDJQ11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:26:13 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:59149 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031045AbXDJQ0M (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:26:12 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Theodore Tso <tytso@mit.edu>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: If not readdir() then what?
-In-Reply-To: Your message of "Tue, 10 Apr 2007 17:54:54 +0200."
-             <Pine.LNX.4.61.0704101750420.21664@yvahk01.tjqt.qr>
-From: Valdis.Kletnieks@vt.edu
-References: <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com> <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org> <1176121897.6210.8.camel@heimdal.trondhjem.org> <20070409131918.GC18580@thunk.org> <1176127395.6210.34.camel@heimdal.trondhjem.org> <20070410135641.GG13650@thunk.org> <1176215836.14442.37.camel@heimdal.trondhjem.org>
-            <Pine.LNX.4.61.0704101750420.21664@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1176222345_4023P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 10 Apr 2007 12:25:45 -0400
-Message-ID: <9520.1176222345@turing-police.cc.vt.edu>
+	Tue, 10 Apr 2007 12:27:27 -0400
+Received: from mga02.intel.com ([134.134.136.20]:17251 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031049AbXDJQ10 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:27:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,390,1170662400"; 
+   d="scan'208"; a="224994772:sNHT31532018"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
+Date: Tue, 10 Apr 2007 09:27:17 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC329029E454C@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <461B5D79.9040307@trash.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
+Thread-Index: Acd7VYC/z90LYN8vT7KyhYqjyCpBjwANS+xQ
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Patrick McHardy" <kaber@trash.net>
+Cc: <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <jgarzik@pobox.com>,
+       "cramerj" <cramerj@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+X-OriginalArrivalTime: 10 Apr 2007 16:27:18.0425 (UTC) FILETIME=[1B6F9090:01C77B8D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1176222345_4023P
-Content-Type: text/plain; charset=us-ascii
+> Peter P Waskiewicz Jr wrote:
+> > +	/* To retrieve statistics per subqueue - FOR FUTURE USE */
+> > +	struct net_device_stats* (*get_subqueue_stats)(struct 
+> net_device *dev,
+> > +							int 
+> queue_index);
+> 
+> 
+> Please no future use stuff, just add it when you need it.
 
-On Tue, 10 Apr 2007 17:54:54 +0200, Jan Engelhardt said:
+Gotcha.  I'll remove this.
 
-> NFS server sends the whole directory contents on NFS client opendir,
-> so that the whole readdir/telldir/seekdir magic can happen on the
-> client only... which would perhaps also enable a cheap telldir/seekdir,
-> and would also give a 'fixed view' when adding/deleting files
-> during readdir.
+> 
+> > diff --git a/net/core/dev.c b/net/core/dev.c index 219a57f..c11c8fa 
+> > 100644
+> > --- a/net/core/dev.c
+> > +++ b/net/core/dev.c
+> > @@ -3326,12 +3328,23 @@ struct net_device *alloc_netdev(int 
+> sizeof_priv, const char *name,
+> >  	if (sizeof_priv)
+> >  		dev->priv = netdev_priv(dev);
+> >  
+> > + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
+> > + 
+> > + 	p = kzalloc(alloc_size, GFP_KERNEL);
+> > + 	if (!p) {
+> > + 		printk(KERN_ERR "alloc_netdev: Unable to 
+> allocate queues.\n");
+> > + 		return NULL;
+> 
+> 
+> This leaks the device. You treat every single-queue device as 
+> having a single subqueue. If it doesn't get too ugly it would 
+> be nice to avoid this and only allocate the subqueue states 
+> for real multiqueue devices.
 
-What should happen if the directory contents go stale?  If *two* systems
-cache the directory and then proceed to add/delete files, what happens?
+We went back and forth on this.  The reason we allocate a queue in every
+case, even on single-queue devices, was to make the stack not have
+branching for multiqueue and non-multiqueue devices.  If we don't have
+at least one queue on a device, then we can't have
+netif_subqueue_stopped() in the hotpath unless we check if a device is
+multiqueue before.  The original patches I released had this branching,
+and I was asked to not do that.  I'd also like to see all queue-related
+stuff be pulled from net_device and put into net_device_subqueue at some
+point, even for single-queue devices.  Thoughts?
 
---==_Exmh_1176222345_4023P
-Content-Type: application/pgp-signature
+> 
+> > --- a/net/sched/sch_generic.c
+> > +++ b/net/sched/sch_generic.c
+> > @@ -133,7 +133,8 @@ static inline int qdisc_restart(struct 
+> net_device *dev)
+> >  			/* And release queue */
+> >  			spin_unlock(&dev->queue_lock);
+> >  
+> > -			if (!netif_queue_stopped(dev)) {
+> > +			if (!netif_queue_stopped(dev) &&
+> > +			    !netif_subqueue_stopped(dev, 
+> skb->queue_mapping)) {
+> >  				int ret;
+> >  
+> >  				ret = dev_hard_start_xmit(skb, 
+> dev); @@ -149,7 +150,6 @@ static 
+> > inline int qdisc_restart(struct net_device *dev)
+> >  					goto collision;
+> >  				}
+> >  			}
+> > -
+> 
+> 
+> Unrelated whitespace change.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+I'll fix that.
 
-iD8DBQFGG7qJcC3lWbTT17ARAo9GAJ9IZoCvT3gY7gWvdHU32S9PJFWILACfQw5X
-2LQlNaoETol8yn8hke7Rh7Y=
-=8JQX
------END PGP SIGNATURE-----
+> 
+> >  			/* NETDEV_TX_BUSY - we need to requeue */
+> >  			/* Release the driver */
+> >  			if (!nolock) {
+> > diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c index 
+> > 5cfe60b..7365621 100644
+> > --- a/net/sched/sch_prio.c
+> > +++ b/net/sched/sch_prio.c
+> > @@ -43,6 +43,7 @@ struct prio_sched_data
+> >  	struct tcf_proto *filter_list;
+> >  	u8  prio2band[TC_PRIO_MAX+1];
+> >  	struct Qdisc *queues[TCQ_PRIO_BANDS];
+> > +	u16 band2queue[TC_PRIO_MAX + 1];
+> >  };
+> >  
+> >  
+> > @@ -63,20 +64,26 @@ prio_classify(struct sk_buff *skb, 
+> struct Qdisc *sch, int *qerr)
+> >  		case TC_ACT_SHOT:
+> >  			return NULL;
+> >  		};
+> > -
+> 
+> Same here
 
---==_Exmh_1176222345_4023P--
+I'll fix that too.
+
+> 
+> >  		if (!q->filter_list ) {
+> >  #else
+> >  		if (!q->filter_list || tc_classify(skb, 
+> q->filter_list, &res)) {  
+> > #endif
+> >  			if (TC_H_MAJ(band))
+> >  				band = 0;
+> > +			skb->queue_mapping =
+> > +				  
+> q->prio2band[q->band2queue[band&TC_PRIO_MAX]];
+> > +
+> 
+> 
+> Does this needs to be cleared at some point again? TC actions 
+> might redirect or mirror packets to other (multiqueue) devices.
+
+If an skb is redirected to another device, the skb should be filtered
+through that device's qdisc, yes?
+
+> 
+> > @@ -242,6 +259,30 @@ static int prio_tune(struct Qdisc 
+> *sch, struct rtattr *opt)
+> >  			}
+> >  		}
+> >  	}
+> > +	/* setup queue to band mapping */
+> > +	if (q->bands < sch->dev->egress_subqueue_count) {
+> > +		qmapoffset = 1;
+> > +		mod = 0;
+> > +	} else {
+> > +		mod = q->bands % sch->dev->egress_subqueue_count;
+> > +		qmapoffset = q->bands / 
+> sch->dev->egress_subqueue_count +
+> > +				((mod) ? 1 : 0);
+> > +	}
+> > +
+> > +	queue = 0;
+> > +	offset = 0;
+> > +	for (i = 0; i < q->bands; i++) {
+> > +		q->band2queue[i] = queue;
+> > +		if ( ((i + 1) - offset) == qmapoffset) {
+> > +			queue++;
+> > +			offset += qmapoffset;
+> > +			if (mod)
+> > +				mod--;
+> > +			qmapoffset = q->bands /
+> > +				sch->dev->egress_subqueue_count +
+> > +				((mod) ? 1 : 0);
+> > +		}
+> > +	}
+> 
+> 
+> Besides being quite ugly, I don't think this does what you want.
+> For bands < queues we get band2queue[0] = 0, all others map to 1.
+> 
+
+I see what's wrong with this.  If I removed "mod = 0;", the algorithm
+works as intended.  We also did go through a number of iterations of the
+best way to map queues to bands, using a simple hash, a complex
+assigment, etc., and this algorithm gives the best distribution given
+any combination of queues / bands (minus that small bug).  I'll fix this
+and resubmit.
+
+Thanks for the feedback,
+
+-PJ Waskiewicz
