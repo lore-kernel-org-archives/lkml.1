@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031180AbXDJRJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031183AbXDJRJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031180AbXDJRJN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 13:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031182AbXDJRJN
+	id S1031183AbXDJRJf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 13:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031182AbXDJRJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 13:09:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:55252 "EHLO mail.goop.org"
+	Tue, 10 Apr 2007 13:09:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:55259 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031180AbXDJRJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 13:09:11 -0400
-Message-ID: <461BC4B6.9060006@goop.org>
-Date: Tue, 10 Apr 2007 10:09:10 -0700
+	id S1031181AbXDJRJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 13:09:13 -0400
+Message-ID: <461BC4B8.40902@goop.org>
+Date: Tue, 10 Apr 2007 10:09:12 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
@@ -19,143 +19,324 @@ CC: Andi Kleen <ak@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH 1/2] Account for module percpu space separately from kernel
- percpu
+Subject: [PATCH 2/2] Allow percpu variables to be page-aligned
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than using a single constant PERCPU_ENOUGH_ROOM, compute it as
-the sum of kernel_percpu + PERCPU_MODULE_RESERVE.  This is now common
-to all architectures; if an architecture wants to set
-PERCPU_ENOUGH_ROOM to something special, then it may do so (ia64 is
-the only one which does).
+Let's allow page-alignment in general for per-cpu data (wanted by Xen, and
+Ingo suggested KVM as well).
 
+Because larger alignments can use more room, we increase the max per-cpu
+memory to 64k rather than 32k: it's getting a little tight.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 Cc: Andi Kleen <ak@suse.de>
-
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- include/asm-alpha/percpu.h   |   14 --------------
- include/asm-sparc64/percpu.h |   10 ----------
- include/asm-x86_64/percpu.h  |   10 ----------
- include/linux/percpu.h       |    9 ++++++++-
- init/main.c                  |    7 ++-----
- kernel/module.c              |    2 +-
- 6 files changed, 11 insertions(+), 41 deletions(-)
+ arch/alpha/kernel/vmlinux.lds.S   |    2 +-
+ arch/arm/kernel/vmlinux.lds.S     |    2 +-
+ arch/cris/arch-v32/vmlinux.lds.S  |    1 +
+ arch/frv/kernel/vmlinux.lds.S     |    1 +
+ arch/i386/kernel/vmlinux.lds.S    |    2 +-
+ arch/m32r/kernel/vmlinux.lds.S    |    2 +-
+ arch/mips/kernel/vmlinux.lds.S    |    2 +-
+ arch/parisc/kernel/vmlinux.lds.S  |    2 +-
+ arch/powerpc/kernel/setup_64.c    |    4 ++--
+ arch/powerpc/kernel/vmlinux.lds.S |    6 +-----
+ arch/ppc/kernel/vmlinux.lds.S     |    2 +-
+ arch/s390/kernel/vmlinux.lds.S    |    2 +-
+ arch/sh/kernel/vmlinux.lds.S      |    2 +-
+ arch/sh64/kernel/vmlinux.lds.S    |    2 +-
+ arch/sparc/kernel/vmlinux.lds.S   |    2 +-
+ arch/sparc64/kernel/smp.c         |    6 +++---
+ arch/x86_64/kernel/setup64.c      |    4 ++--
+ arch/x86_64/kernel/vmlinux.lds.S  |    2 +-
+ arch/xtensa/kernel/vmlinux.lds.S  |    2 +-
+ init/main.c                       |    4 ++--
+ kernel/module.c                   |    8 ++++----
+ 21 files changed, 29 insertions(+), 31 deletions(-)
 
 ===================================================================
---- a/include/asm-alpha/percpu.h
-+++ b/include/asm-alpha/percpu.h
-@@ -1,19 +1,5 @@
- #ifndef __ALPHA_PERCPU_H
- #define __ALPHA_PERCPU_H
--
--/*
-- * Increase the per cpu area for Alpha so that
-- * modules using percpu area can load.
-- */
--#ifdef CONFIG_MODULES
--# define PERCPU_MODULE_RESERVE 8192
--#else
--# define PERCPU_MODULE_RESERVE 0
--#endif
--
--#define PERCPU_ENOUGH_ROOM \
--	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
--	 PERCPU_MODULE_RESERVE)
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -69,7 +69,7 @@ SECTIONS
+   . = ALIGN(8);
+   SECURITY_INIT
  
- #include <asm-generic/percpu.h>
- 
+-  . = ALIGN(64);
++  . = ALIGN(8192);
+   __per_cpu_start = .;
+   .data.percpu : { *(.data.percpu) }
+   __per_cpu_end = .;
 ===================================================================
---- a/include/asm-sparc64/percpu.h
-+++ b/include/asm-sparc64/percpu.h
-@@ -4,16 +4,6 @@
- #include <linux/compiler.h>
- 
- #ifdef CONFIG_SMP
--
--#ifdef CONFIG_MODULES
--# define PERCPU_MODULE_RESERVE 8192
--#else
--# define PERCPU_MODULE_RESERVE 0
--#endif
--
--#define PERCPU_ENOUGH_ROOM \
--	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
--	 PERCPU_MODULE_RESERVE)
- 
- extern void setup_per_cpu_areas(void);
- 
-===================================================================
---- a/include/asm-x86_64/percpu.h
-+++ b/include/asm-x86_64/percpu.h
-@@ -10,16 +10,6 @@
- #ifdef CONFIG_SMP
- 
- #include <asm/pda.h>
--
--#ifdef CONFIG_MODULES
--# define PERCPU_MODULE_RESERVE 8192
--#else
--# define PERCPU_MODULE_RESERVE 0
--#endif
--
--#define PERCPU_ENOUGH_ROOM \
--	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
--	 PERCPU_MODULE_RESERVE)
- 
- #define __per_cpu_offset(cpu) (cpu_pda(cpu)->data_offset)
- #define __my_cpu_offset() read_pda(data_offset)
-===================================================================
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -11,8 +11,15 @@
- 
- /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
- #ifndef PERCPU_ENOUGH_ROOM
--#define PERCPU_ENOUGH_ROOM 32768
-+#ifdef CONFIG_MODULES
-+#define PERCPU_MODULE_RESERVE	8192
-+#else
-+#define PERCPU_MODULE_RESERVE	0
+--- a/arch/arm/kernel/vmlinux.lds.S
++++ b/arch/arm/kernel/vmlinux.lds.S
+@@ -59,7 +59,7 @@ SECTIONS
+ 			usr/built-in.o(.init.ramfs)
+ 		__initramfs_end = .;
  #endif
-+
-+#define PERCPU_ENOUGH_ROOM						\
-+	(__per_cpu_end - __per_cpu_start + PERCPU_MODULE_RESERVE)
-+#endif	/* PERCPU_ENOUGH_ROOM */
- 
- /*
-  * Must be an lvalue. Since @var must be a simple identifier,
+-		. = ALIGN(64);
++		. = ALIGN(4096);
+ 		__per_cpu_start = .;
+ 			*(.data.percpu)
+ 		__per_cpu_end = .;
 ===================================================================
---- a/init/main.c
-+++ b/init/main.c
-@@ -369,11 +369,8 @@ static void __init setup_per_cpu_areas(v
- 	unsigned long nr_possible_cpus = num_possible_cpus();
+--- a/arch/cris/arch-v32/vmlinux.lds.S
++++ b/arch/cris/arch-v32/vmlinux.lds.S
+@@ -91,6 +91,7 @@ SECTIONS
+ 	}
+ 	SECURITY_INIT
+ 
++	. =  ALIGN (8192);
+ 	__per_cpu_start = .;
+ 	.data.percpu  : { *(.data.percpu) }
+ 	__per_cpu_end = .;
+===================================================================
+--- a/arch/frv/kernel/vmlinux.lds.S
++++ b/arch/frv/kernel/vmlinux.lds.S
+@@ -57,6 +57,7 @@ SECTIONS
+   __alt_instructions_end = .;
+  .altinstr_replacement : { *(.altinstr_replacement) }
+ 
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -194,7 +194,7 @@ SECTIONS
+ 	__initramfs_end = .;
+   }
+ #endif
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(4096);
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+ 	__per_cpu_start = .;
+ 	*(.data.percpu)
+===================================================================
+--- a/arch/m32r/kernel/vmlinux.lds.S
++++ b/arch/m32r/kernel/vmlinux.lds.S
+@@ -110,7 +110,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/mips/kernel/vmlinux.lds.S
++++ b/arch/mips/kernel/vmlinux.lds.S
+@@ -119,7 +119,7 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(32);
++  . = ALIGN(_PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/parisc/kernel/vmlinux.lds.S
++++ b/arch/parisc/kernel/vmlinux.lds.S
+@@ -181,7 +181,7 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(32);
++  . = ALIGN(ASM_PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -583,14 +583,14 @@ void __init setup_per_cpu_areas(void)
+ 	char *ptr;
  
  	/* Copy section for each CPU (we discard the original) */
 -	size = ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES);
--#ifdef CONFIG_MODULES
--	if (size < PERCPU_ENOUGH_ROOM)
--		size = PERCPU_ENOUGH_ROOM;
--#endif
-+
-+	size = ALIGN(PERCPU_ENOUGH_ROOM, SMP_CACHE_BYTES);
- 	ptr = alloc_bootmem(size * nr_possible_cpus);
++	size = ALIGN(__per_cpu_end - __per_cpu_start, PAGE_SIZE);
+ #ifdef CONFIG_MODULES
+ 	if (size < PERCPU_ENOUGH_ROOM)
+ 		size = PERCPU_ENOUGH_ROOM;
+ #endif
  
  	for_each_possible_cpu(i) {
+-		ptr = alloc_bootmem_node(NODE_DATA(cpu_to_node(i)), size);
++		ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
+ 		if (!ptr)
+ 			panic("Cannot allocate cpu data for CPU %d\n", i);
+ 
+===================================================================
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -139,11 +139,7 @@ SECTIONS
+ 		__initramfs_end = .;
+ 	}
+ #endif
+-#ifdef CONFIG_PPC32
+-	. = ALIGN(32);
+-#else
+-	. = ALIGN(128);
+-#endif
++	. = ALIGN(PAGE_SIZE);
+ 	.data.percpu : {
+ 		__per_cpu_start = .;
+ 		*(.data.percpu)
+===================================================================
+--- a/arch/ppc/kernel/vmlinux.lds.S
++++ b/arch/ppc/kernel/vmlinux.lds.S
+@@ -130,7 +130,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/s390/kernel/vmlinux.lds.S
++++ b/arch/s390/kernel/vmlinux.lds.S
+@@ -99,7 +99,7 @@ SECTIONS
+   . = ALIGN(2);
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(256);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/sh/kernel/vmlinux.lds.S
++++ b/arch/sh/kernel/vmlinux.lds.S
+@@ -54,7 +54,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.page_aligned : { *(.data.page_aligned) }
+ 
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/sh64/kernel/vmlinux.lds.S
++++ b/arch/sh64/kernel/vmlinux.lds.S
+@@ -85,7 +85,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.page_aligned : C_PHYS(.data.page_aligned) { *(.data.page_aligned) }
+ 
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu : C_PHYS(.data.percpu) { *(.data.percpu) }
+   __per_cpu_end = . ;
+===================================================================
+--- a/arch/sparc/kernel/vmlinux.lds.S
++++ b/arch/sparc/kernel/vmlinux.lds.S
+@@ -65,7 +65,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/sparc64/kernel/smp.c
++++ b/arch/sparc64/kernel/smp.c
+@@ -1449,11 +1449,11 @@ void __init setup_per_cpu_areas(void)
+ 	/* Copy section for each CPU (we discard the original) */
+ 	goal = PERCPU_ENOUGH_ROOM;
+ 
+-	__per_cpu_shift = 0;
+-	for (size = 1UL; size < goal; size <<= 1UL)
++	__per_cpu_shift = PAGE_SHIFT;
++	for (size = PAGE_SIZE; size < goal; size <<= 1UL)
+ 		__per_cpu_shift++;
+ 
+-	ptr = alloc_bootmem(size * NR_CPUS);
++	ptr = alloc_bootmem_pages(size * NR_CPUS);
+ 
+ 	__per_cpu_base = ptr - __per_cpu_start;
+ 
+===================================================================
+--- a/arch/x86_64/kernel/setup64.c
++++ b/arch/x86_64/kernel/setup64.c
+@@ -103,9 +103,9 @@ void __init setup_per_cpu_areas(void)
+ 		if (!NODE_DATA(cpu_to_node(i))) {
+ 			printk("cpu with no node %d, num_online_nodes %d\n",
+ 			       i, num_online_nodes());
+-			ptr = alloc_bootmem(size);
++			ptr = alloc_bootmem_pages(size);
+ 		} else { 
+-			ptr = alloc_bootmem_node(NODE_DATA(cpu_to_node(i)), size);
++			ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
+ 		}
+ 		if (!ptr)
+ 			panic("Cannot allocate cpu data for CPU %d\n", i);
+===================================================================
+--- a/arch/x86_64/kernel/vmlinux.lds.S
++++ b/arch/x86_64/kernel/vmlinux.lds.S
+@@ -194,7 +194,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-    . = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -198,7 +198,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+===================================================================
+--- a/init/main.c
++++ b/init/main.c
+@@ -370,8 +370,8 @@ static void __init setup_per_cpu_areas(v
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+ 
+-	size = ALIGN(PERCPU_ENOUGH_ROOM, SMP_CACHE_BYTES);
+-	ptr = alloc_bootmem(size * nr_possible_cpus);
++	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
++	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
+ 
+ 	for_each_possible_cpu(i) {
+ 		__per_cpu_offset[i] = ptr - __per_cpu_start;
 ===================================================================
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -430,7 +430,7 @@ static int percpu_modinit(void)
- 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
- 			    GFP_KERNEL);
- 	/* Static in-kernel percpu data (used). */
--	pcpu_size[0] = -ALIGN(__per_cpu_end-__per_cpu_start, SMP_CACHE_BYTES);
-+	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
- 	/* Free room. */
- 	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
- 	if (pcpu_size[1] < 0) {
+@@ -346,10 +346,10 @@ static void *percpu_modalloc(unsigned lo
+ 	unsigned int i;
+ 	void *ptr;
+ 
+-	if (align > SMP_CACHE_BYTES) {
+-		printk(KERN_WARNING "%s: per-cpu alignment %li > %i\n",
+-		       name, align, SMP_CACHE_BYTES);
+-		align = SMP_CACHE_BYTES;
++	if (align > PAGE_SIZE) {
++		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
++		       name, align, PAGE_SIZE);
++		align = PAGE_SIZE;
+ 	}
+ 
+ 	ptr = __per_cpu_start;
 
