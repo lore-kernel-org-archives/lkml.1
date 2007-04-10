@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030986AbXDJQHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030997AbXDJQK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030986AbXDJQHm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030985AbXDJQHl
+	id S1030997AbXDJQK4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031003AbXDJQK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:07:41 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:48585 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030982AbXDJQHl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:07:41 -0400
-Date: Tue, 10 Apr 2007 18:08:17 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Dave Dillow <dave@thedillows.org>,
-       Dave Jones <davej@redhat.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: I give up
-Message-ID: <20070410160817.GA32747@aepfle.de>
-References: <200704091007.58535.gene.heskett@gmail.com> <1176169246.3193.2.camel@obelisk.thedillows.org> <20070410071217.GA28899@aepfle.de> <200704100351.33699.gene.heskett@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 10 Apr 2007 12:10:56 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:58166 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030997AbXDJQKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:10:54 -0400
+Date: Tue, 10 Apr 2007 19:54:54 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, cramerj <cramerj@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+Subject: Re: [PATCH 2/2] NET: Multiqueue network device support implementation.
+Message-ID: <20070410155454.GA1949@2ka.mipt.ru>
+References: <20070410082049.GC16621@2ka.mipt.ru> <D5C1322C3E673F459512FB59E0DDC329029E448D@orsmsx414.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <200704100351.33699.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329029E448D@orsmsx414.amr.corp.intel.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 10 Apr 2007 19:55:16 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, Gene Heskett wrote:
+On Tue, Apr 10, 2007 at 08:41:49AM -0700, Waskiewicz Jr, Peter P (peter.p.waskiewicz.jr@intel.com) wrote:
+> > On Mon, Apr 09, 2007 at 02:28:41PM -0700, Peter P Waskiewicz 
+> > Jr (peter.p.waskiewicz.jr@intel.com) wrote:
+> > > + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
+> > > + 
+> > > + 	p = kzalloc(alloc_size, GFP_KERNEL);
+> > > + 	if (!p) {
+> > > + 		printk(KERN_ERR "alloc_netdev: Unable to 
+> > allocate queues.\n");
+> > > + 		return NULL;
+> > 
+> > I think you either do not want to print it, or want 
+> > additional details about device...
+> 
+> Ok.  This is essentially the same output printed if the netdev itself
+> cannot be allocated.  Should I update both strings to have more
+> device-specific information?
 
-> On Tuesday 10 April 2007, Olaf Hering wrote:
-> >On Mon, Apr 09, Dave Dillow wrote:
-> >> It's not /dev he's backing up -- its /home, /usr, and others. GNU tar
-> >> saves the device and inode numbers from the {,l}stat() call on each
-> >> file and decides it is a new file if either number changes from run to
-> >> run.
-> >
-> >So fix tar to not do silly things.
-> >Kernel major:minor numbers are not stable.
+I wonder, if it is ever possible with gfp_kernel...
 
-I forgot to add: '.. not stable across reboots.'
+I think different patch would be ok.
 
-> YOU Tell that to the tar/star people, they are flabbergasted that its not 
-> stable.  It apparently is for every other OS tar can be run on.
-
-They probably have a point with the st_dev usage.
-You better find out why your major:minor pairs keep jumping around.
-Simply because the 'not stable across reboot' statement holds only for
-added/removed disks and maybe if the detection order changes.
-If your setup relies on a certain order, make sure the drivers get
-loaded in a fixed order. Its not clear from your other mails what
-exactly caused it. If its only due to a temporary change in
-testkernels, noone can do anything about it.
+-- 
+	Evgeniy Polyakov
