@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbXDJOHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbXDJOIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbXDJOHH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbXDJOHH
+	id S1753821AbXDJOIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbXDJOIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:07:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52503 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753807AbXDJOHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:07:05 -0400
-Message-ID: <461B99D1.2010109@redhat.com>
-Date: Tue, 10 Apr 2007 10:06:09 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 10 Apr 2007 10:08:50 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:40023 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753821AbXDJOIr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 10:08:47 -0400
+Date: Tue, 10 Apr 2007 10:07:19 -0400
+From: Kyle McMartin <kyle@canonical.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@osdl.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kyle@canonical.com
+Subject: Re: [PATCH] HPA support: Revised patch
+Message-ID: <20070410140719.GA18902@athena.road.mcmartin.ca>
+References: <20070405141352.12fddb6e@the-village.bc.nu> <20070406163707.GA25880@srcf.ucam.org> <20070409222241.6581ecc2@the-village.bc.nu> <20070410140617.GA5255@srcf.ucam.org>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/10] I386 mcheck p4 grotesque and needless warning fix.patch
-References: <200704100006.l3A068Xk020608@zach-dev.vmware.com>
-In-Reply-To: <200704100006.l3A068Xk020608@zach-dev.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070410140617.GA5255@srcf.ucam.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> No, just no.  You do not use goto to skip a code block.  You do not
-> return an obvious variable from a singly-inlined function and give
-> the function a return value.  You don't put unexplained comments
-> about kmalloc in code which doesn't do dynamic allocation.  And
-> you don't leave stray warnings around for no good reason.
+On Tue, Apr 10, 2007 at 03:06:18PM +0100, Matthew Garrett wrote:
+> On Mon, Apr 09, 2007 at 10:22:41PM +0100, Alan Cox wrote:
 > 
-> Also, when possible, it is better to use block scoped variables
-> because gcc can sometime generate better code.
-> 
-> Signed-off-by: Zachary Amsden <zach@vmware.com>
-> 
-> diff -r ed741f57dae8 arch/i386/kernel/cpu/mcheck/p4.c
-> --- a/arch/i386/kernel/cpu/mcheck/p4.c	Fri Apr 06 14:29:52 2007 -0700
-> +++ b/arch/i386/kernel/cpu/mcheck/p4.c	Fri Apr 06 14:43:24 2007 -0700
-> @@ -124,12 +124,9 @@ static void intel_init_thermal(struct cp
->  
->  
->  /* P4/Xeon Extended MCE MSR retrieval, return 0 if unsupported */
-> -static inline int intel_get_extended_msrs(struct intel_mce_extended_msrs *r)
-> +static inline void intel_get_extended_msrs(struct intel_mce_extended_msrs *r)
->  {
+> > Please apply Tejun's fix for LBA48 data and try again. Hopefully its just
+> > that which is causing the problem.
+> Yes, that works absolutely fine now.
 
-The comment needs fixing.
-
-
+Thanks Alan, Matthew!
