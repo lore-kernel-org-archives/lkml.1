@@ -1,95 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXDJWE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbXDJWIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbXDJWE1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbXDJWE0
+	id S1753961AbXDJWIJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbXDJWIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:04:26 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:15621 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753945AbXDJWEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:04:16 -0400
-Message-ID: <461C0A07.6080604@cfl.rr.com>
-Date: Tue, 10 Apr 2007 18:04:55 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 10 Apr 2007 18:08:09 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57973 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753961AbXDJWII (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:08:08 -0400
+Date: Tue, 10 Apr 2007 16:08:04 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Roland Dreier <rdreier@cisco.com>, kernelnewbies@nl.linux.org,
+       kernel-janitors@lists.osdl.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
+Subject: Re: [KJ] remove SPIN_LOCK_UNLOCKED
+Message-ID: <20070410220804.GI26692@parisc-linux.org>
+References: <20070410181654.GA10525@arun.site> <Pine.LNX.4.61.0704102249290.32056@yvahk01.tjqt.qr> <Pine.LNX.4.64.0704101722030.24526@CPE00045a9c397f-CM001225dbafb6> <Pine.LNX.4.61.0704102327460.32056@yvahk01.tjqt.qr> <ada7isjq52p.fsf@cisco.com> <Pine.LNX.4.64.0704101743520.24794@CPE00045a9c397f-CM001225dbafb6>
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: Samuel Thibault <samuel.thibault@ens-lyon.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, joern@lazybastard.org, tytso@mit.edu
-Subject: Re: Add a norecovery option to ext3/4?
-References: <20070409000556.GA13980@implementation> <461A5F13.7040705@cfl.rr.com> <461A760B.1040103@redhat.com> <461BDD48.2000904@cfl.rr.com> <461BE2FB.5090101@redhat.com>
-In-Reply-To: <461BE2FB.5090101@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Apr 2007 22:04:37.0986 (UTC) FILETIME=[3B277C20:01C77BBC]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15108.001
-X-TM-AS-Result: No--8.676800-5.000000-31
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704101743520.24794@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> except in the case of a journaling filesystem, where the journal in
-> theory obviates the need for a fsck.  (yes, I know... fsck still has a
-> place...)  But, fsck is largely meaningless until the journal has been
-> recovered anyway (fs can only be consistent if it includes uncommited
-> transactions in the journal), so isn't this new territory?
+On Tue, Apr 10, 2007 at 05:45:07PM -0400, Robert P. J. Day wrote:
+> that works fine if you're defining a single spinlock, but what do you
+> do in cases like this:
+> 
+> arch/sparc/lib/atomic32.c:      [0 ... (ATOMIC_HASH_SIZE-1)] = SPIN_LOCK_UNLOCKED
+> 
+> that is, when you're assigning an array of them?  you still need some
+> kind of generic, unnamed spinlock in those circumstances, no?
 
-In a way, yes, this is new territory, but not entirely.  It is merely an 
-extension of the existing system, and in the existing system the ro flag 
-clearly meant do not write to the disk.  You don't extend an existing 
-system by breaking old expectations.
-
-> I'm admittedly playing devil's advocate here :)  but what, in the
-> historical non-journalled filesystem case, would be writing to the
-> device anyway, if all IO from the vfs were stopped?  Without the
-> journal, isn't vfs-ro the same as bdev-ro, largely?
-
-Yes, they were the same, and that is my point: users got used to using 
-ro to indicate they did not want the block device written to, and were 
-doing this long before there was a read only flag on the block device 
-itself.  Excepting journal playback from this breaks user expectation 
-and leads to data loss.
-
-> As a counter example, if you had a filesystem which saves it's last
-> mount time in the superblock; should a ro mount not update that time?
-> (perhaps not, depending on how that timestamp was intended to be used.)
-
-This is another good example arguing against writing to the disk.  Ext2 
-would write to the super block to mark the volume as dirty and update 
-the mount count used to decide when it was time for a fsck.  It did not 
-do this if mounted read only because it understood that the meaning of 
-the ro flag was not to write to the disk.  Likewise, it did not update 
-file's atime.  If ro just meant "don't let me write to files" then the 
-atime would be updated even when mounted read only.
-
-> You might not damage the underlying filesystem, but you could sure go
-> off in the weeds trying to read it, if you stumbled upon some
-> half-updated metadata... so while it may be safe for the filesystem, I'm
-> not convinced that it's safe for the host reading the filesystem.
-
-And this is exactly what you get without journals.  You mount a damaged 
-filesystem read only, you take what you can get.  You might get bad 
-data, or fail to open or read certain files or parts of files, but you 
-knew for sure that you wouldn't cause any more damage to the data on 
-disk, and you could run a fsck or defrag or partimage or anything else 
-to read and/or modify the disk.
-
-> but it's already changed, and has been in linux since ext3 came on the
-> scene.  mount -o ro -does- replay the journal.  Surely readonly does not
-> imply that we want a corrupted filesystem if it was not cleanly shut
-> down.  I suppose there is a place for the argument that a readonly mount
-> of a journaled filesystem -should- present a recovered filesystem to the
-> user, without actually recovering the log to disk.  I guess to me, it
-> hardly seems worth the effort, as the precedent is long set for doing
-> recovery on a read-only mount.
-
-Just because a bug has been around for a long time does not mean it is 
-not a bug.  In the pre-journal world, if you mounted a dirty filesystem 
-read only you expected the possibility of errors reading it.  Why should 
-that expectation not hold true with journals?  It might be nice to do 
-the journal playback in ram or otherwise without writing to the disk, 
-but as far as the user setting the ro flag cares, they just want you not 
-to update the disk and if there are inconsistencies that cause errors, 
-then you need to fsck or mount rw.
-
+That's a special case for architecture-only code.  It's not to be used
+by drivers.
