@@ -1,90 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031164AbXDJRFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031163AbXDJRGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031164AbXDJRFi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 13:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031175AbXDJRFi
+	id S1031163AbXDJRGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 13:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031175AbXDJRGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 13:05:38 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37009 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031164AbXDJRFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 13:05:37 -0400
-Date: Tue, 10 Apr 2007 22:42:57 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: "Paul Jackson" <pj@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Balbir Singh" <balbir@in.ibm.com>
-Subject: [PATCH] Fix race between attach_task and cpuset_exit
-Message-ID: <20070410171257.GC3611@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070325164746.GI11794@in.ibm.com> <20070325125025.b6e8f0d4.pj@sgi.com> <20070326115506.GL11794@in.ibm.com> <6599ad830704042255t5c126a0cj86d644cb8174e177@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830704042255t5c126a0cj86d644cb8174e177@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Tue, 10 Apr 2007 13:06:19 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:46435 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031163AbXDJRGS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 13:06:18 -0400
+Message-ID: <461BC373.10306@vmware.com>
+Date: Tue, 10 Apr 2007 10:03:47 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dan Hecht <dhecht@vmware.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 9/10] Vmi timer update.patch
+References: <200704100006.l3A06RUR020644@zach-dev.vmware.com> <20070410023702.GJ10574@sequoia.sous-sol.org>
+In-Reply-To: <20070410023702.GJ10574@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 10:55:01PM -0700, Paul Menage wrote:
-> Shouldn't we just put a task_lock()/task_unlock() around these lines
-> and leave everything else as-is?
-> 
-> 	task_lock(tsk);
-> 	cs = tsk->cpuset;
-> 	tsk->cpuset = &top_cpuset;	/* the_top_cpuset_hack - see above */
-> 	task_unlock(tsk)
-
-Andrew,
-	Can you drop fix-race-between-attach_task-and-cpuset_exit.patch
-and take this fix instead, which addresses some points raised by Paul
-Menage?
+Chris Wright wrote:
 
 
+Thanks for the review!  Comments inline.
+
+>> +/* paravirt_ops.get_wallclock = vmi_get_wallclock */
+>>     
+>
+> Style nit, these pv_ops.foo = vmi_foo style comments aren't really useful.
+>
+>   
+
+Yeah, and easy to get out of sync.  I'll drop them.
+
+>> +	.rating         = 1000,
+>>     
+>
+> Heh, no messing around ;-)
+>   
+
+Yes, VMI has 1000 hps.
 
 
+>> +	printk(KERN_WARNING "vmi: registering clock event %s. mult=%lu shift=%u\n", 
+>> +	       evt->name, evt->mult, evt->shift);
+>>     
+>
+> Why is this a warning? ;-)
+>   
 
-Currently cpuset_exit() changes the exiting task's ->cpuset pointer w/o
-taking task_lock().  This can lead to ugly races between attach_task and
-cpuset_exit.  Details of the races are described at
-http://lkml.org/lkml/2007/3/24/132.
+Debug info, I can remove it.
 
-Patch below closes those races.  It is against 2.6.21-rc6-mm1 and has
-undergone a simple compile/boot test on a x86_64 box.
+>> +void __init vmi_time_init(void)
+>> +{
+>> +	/* Disable PIT: BIOSes start PIT CH0 with 18.2hz peridic. */
+>> +	outb_p(0x3a, PIT_MODE); /* binary, mode 5, LSB/MSB, ch 0 */
+>>     
+>
+> That shouldn't be necessary using clockevents.
+>   
 
-Signed-off-by : Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Actually, I'm not so sure.  If clockevents simply masks the PIT when 
+disabling it, we still have overhead of keeping the latch in sync, which 
+requires a timer at the PIT frequency.  I can instrument to see how 
+exactly the PIT gets disabled.
 
 
----
+>> +	vmi_time_init_clockevent();
+>> +	setup_irq(0, &vmi_clock_action);
+>> +}
+>> +
+>> +#ifdef CONFIG_X86_LOCAL_APIC
+>> +void __devinit vmi_time_bsp_init(void)
+>> +{
+>> +	/*
+>> +	 * On APIC systems, we want local timers to fire on each cpu.  We do
+>> +	 * this by programming LVTT to deliver timer events to the IRQ handler
+>> +	 * for IRQ-0, since we can't re-use the APIC local timer handler
+>> +	 * without interfering with that code.
+>> +	 */
+>> +	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
+>>     
+>
+> Why do you do this suspend...
+>   
 
+We need to cancel all pending PIT timer events and restart then local 
+timer, which requires atomically taking over IRQ-0.  We use the IDT gate 
+for IRQ-0 because it is already an exclusive interrupt, but we can't 
+re-use the LVTT IDT gate for local timer since that requires a custom 
+custom SMP interrupt in entry.S.  So we must be absolutely sure when we 
+get an interrupt on IRQ-0 that it came from the VMI local (rather than 
+PIT) delivery path.
 
-diff -puN kernel/cpuset.c~cpuset_race_fix kernel/cpuset.c
---- linux-2.6.21-rc6/kernel/cpuset.c~cpuset_race_fix	2007-04-10 20:53:57.000000000 +0530
-+++ linux-2.6.21-rc6-vatsa/kernel/cpuset.c	2007-04-10 22:08:46.000000000 +0530
-@@ -2119,10 +2119,6 @@ void cpuset_fork(struct task_struct *chi
-  * it is holding that mutex while calling check_for_release(),
-  * which calls kmalloc(), so can't be called holding callback_mutex().
-  *
-- * We don't need to task_lock() this reference to tsk->cpuset,
-- * because tsk is already marked PF_EXITING, so attach_task() won't
-- * mess with it, or task is a failed fork, never visible to attach_task.
-- *
-  * the_top_cpuset_hack:
-  *
-  *    Set the exiting tasks cpuset to the root cpuset (top_cpuset).
-@@ -2161,8 +2157,10 @@ void cpuset_exit(struct task_struct *tsk
- {
- 	struct cpuset *cs;
- 
-+	task_lock(current);
- 	cs = tsk->cpuset;
- 	tsk->cpuset = &top_cpuset;	/* the_top_cpuset_hack - see above */
-+	task_unlock(current);
- 
- 	if (notify_on_release(cs)) {
- 		char *pathbuf = NULL;
-_
+>   
+>> +	local_irq_disable();
+>> +#ifdef CONFIG_X86_SMP
+>> +	/*
+>> +	 * XXX handle_percpu_irq only defined for SMP; we need to switch over
+>> +	 * to using it, since this is a local interrupt, which each CPU must
+>> +	 * handle individually without locking out or dropping simultaneous
+>> +	 * local timers on other CPUs.  We also don't want to trigger the
+>> +	 * quirk workaround code for interrupts which gets invoked from
+>> +	 * handle_percpu_irq via eoi, so we use our own IRQ chip.
+>> +	 */
+>> +	set_irq_chip_and_handler_name(0, &vmi_chip, handle_percpu_irq, "lvtt");
+>> +#else
+>> +	set_irq_chip_and_handler_name(0, &vmi_chip, handle_edge_irq, "lvtt");
+>> +#endif
+>> +	vmi_wiring = VMI_ALARM_WIRED_LVTT;
+>> +	apic_write(APIC_LVTT, vmi_get_timer_vector());
+>>     
+>
+> isn't this just your ->startup?
+>   
 
--- 
-Regards,
-vatsa
+Which structure has a ->startup function we can use?  Sorry if this 
+seems ignorant, I'm not quite sure what you mean.
+
+>   
+>> +	local_irq_enable();
+>> +	clockevents_notify(CLOCK_EVT_NOTIFY_RESUME, NULL);
+>>     
+>
+> ...and resume?  Instead of letting clockevents core handle all of that,
+> and just registering right here?
+>   
+
+It wasn't clear that clockevents would issue a resume notify for us; if 
+so we could handle this setup in the callback, but it has to be done on 
+the correct CPU.  I can try it and see if that works.
+
+Thanks,
+
+Zach
