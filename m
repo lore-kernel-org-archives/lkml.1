@@ -1,39 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031323AbXDJRwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031324AbXDJSAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031323AbXDJRwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 13:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031324AbXDJRwT
+	id S1031324AbXDJSAF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 14:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031330AbXDJSAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 13:52:19 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:46675 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031323AbXDJRwS (ORCPT
+	Tue, 10 Apr 2007 14:00:05 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:44497 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1031324AbXDJSAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 13:52:18 -0400
-Message-ID: <461BCEC4.1040603@zytor.com>
-Date: Tue, 10 Apr 2007 10:52:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       John Stoffel <john@stoffel.org>
+	Tue, 10 Apr 2007 14:00:03 -0400
+Date: Tue, 10 Apr 2007 10:29:41 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Olaf Hering <olaf@aepfle.de>
+cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Dave Dillow <dave@thedillows.org>, Dave Jones <davej@redhat.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
 Subject: Re: I give up
-References: <200704091007.58535.gene.heskett@gmail.com> <200704091549.51805.gene.heskett@gmail.com> <461A9D42.9000008@garzik.org> <200704092334.44883.gene.heskett@gmail.com>
-In-Reply-To: <200704092334.44883.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070410160817.GA32747@aepfle.de>
+Message-ID: <Pine.LNX.4.63.0704101028480.27318@qynat.qvtvafvgr.pbz>
+References: <200704091007.58535.gene.heskett@gmail.com> 
+ <1176169246.3193.2.camel@obelisk.thedillows.org>  <20070410071217.GA28899@aepfle.de>
+  <200704100351.33699.gene.heskett@gmail.com> <20070410160817.GA32747@aepfle.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> I haven't seen any 200GB for $55 yet, more like $129 & maybe a rebate at 
-> Circuit City.  We don't have a Fry's around here.
+On Tue, 10 Apr 2007, Olaf Hering wrote:
 
-Fry's:
-http:/http://shop1.outpost.com/product/4697788?site=sr:SEARCH:MAIN_RSLT_PG
+> On Tue, Apr 10, Gene Heskett wrote:
+>
+>> On Tuesday 10 April 2007, Olaf Hering wrote:
+>>> On Mon, Apr 09, Dave Dillow wrote:
+>>>> It's not /dev he's backing up -- its /home, /usr, and others. GNU tar
+>>>> saves the device and inode numbers from the {,l}stat() call on each
+>>>> file and decides it is a new file if either number changes from run to
+>>>> run.
+>>>
+>>> So fix tar to not do silly things.
+>>> Kernel major:minor numbers are not stable.
+>
+> I forgot to add: '.. not stable across reboots.'
+>
+>> YOU Tell that to the tar/star people, they are flabbergasted that its not
+>> stable.  It apparently is for every other OS tar can be run on.
+>
+> They probably have a point with the st_dev usage.
+> You better find out why your major:minor pairs keep jumping around.
+> Simply because the 'not stable across reboot' statement holds only for
+> added/removed disks and maybe if the detection order changes.
+> If your setup relies on a certain order, make sure the drivers get
+> loaded in a fixed order. Its not clear from your other mails what
+> exactly caused it. If its only due to a temporary change in
+> testkernels, noone can do anything about it.
 
-500 GB SATA for $119.  Pricewatch shows several other vendors having the 
-same pricing.
+he's running into problems when he adds additional drivers to the kernel (I 
+don't remember which drivers, he's mentioned them earlier in this thread)
 
-	-hpa
+David Lang
