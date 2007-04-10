@@ -1,75 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXDJCaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964778AbXDJCbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbXDJCaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 22:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932759AbXDJCaA
+	id S964778AbXDJCbT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 22:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966056AbXDJCbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 22:30:00 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:15348 "EHLO
-	asav13.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932664AbXDJC37 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 22:29:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAAyTGkZKhRO4UGdsb2JhbACHNohDAQEq
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Helge Hafting <helgehaf@aitel.hist.no>
-Subject: Re: usb touchscreen breakage in 2.6.21-rc5-mm4 ?
-Date: Mon, 9 Apr 2007 22:30:03 -0400
-User-Agent: KMail/1.9.3
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-References: <20070407005458.GA18985@aitel.hist.no> <200704062237.13118.dtor@insightbb.com> <20070409223643.GB2198@aitel.hist.no>
-In-Reply-To: <20070409223643.GB2198@aitel.hist.no>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 9 Apr 2007 22:31:19 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:40651 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964778AbXDJCbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 22:31:18 -0400
+Date: Mon, 9 Apr 2007 19:30:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Robin Holt <holt@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: init's children list is long and slows reaping children.
+Message-Id: <20070409193056.6b52c354.akpm@linux-foundation.org>
+In-Reply-To: <20070410015912.GE1994@redhat.com>
+References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
+	<4616CBF0.7090606@garzik.org>
+	<20070409172339.48d661d6.akpm@linux-foundation.org>
+	<20070410015912.GE1994@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704092230.04144.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 April 2007 18:36, Helge Hafting wrote:
-> On Fri, Apr 06, 2007 at 10:37:12PM -0400, Dmitry Torokhov wrote:
-> > On Friday 06 April 2007 20:54, Helge Hafting wrote:
-> > > I have an usb  touchscreen (egalax variety) that works with
-> > > the 2.6.18 kernel supplied by debian.
-> > > 
-> > > It fails when I compile 2.6.21-rc5-mm4, tuned to the machine
-> > > in question.  Unlike the debian kernel, this kernel don't use
-> > > modules in order to save boot time.
-> > > 
-> > > The strange thing is, 2.6.21-rc5-mm4 recognizes the device.
-> > > dmesg says things like 
-> > > usb 3-2: Manufacturer: eGalac Inc.
-> > > usb 3-2: Product: USB TouchController
-> > > 
-> > > and a lot more. Unlike 2.6.18, it never gets around to say
-> > > "usbcore: registered new driver usbtouchscreen"
-> > > which seems to indicate a problem.
-> > > usbcore registers several other drivers, such as usbserial and pl2303
-> > > that makes the gps work. It also registers other drivers like
-> > > usb-storage,usbfs,hub,libusual,hiddev,usbhid.  But not usbtouchscreen.
-> > > I believe I have turned on every config option for usb touchscreen,
-> > > this should not be missing.
-> > > 
-> > > Is there something wrong, or could there be a seemingly unrelated option
-> > > that I need to turn on?
-> > 
-> > Please make sure that you have CONFIG_USB_TOUCHSCREEN turned on.
-> > 
-> Unfortunately, I have:
-> CONFIG_USB_TOUCHSCREEN=y
-> CONFIG_USB_TOUCHSCREEN_EGALAX=y
+On Mon, 9 Apr 2007 21:59:12 -0400 Dave Jones <davej@redhat.com> wrote:
+
+> On Mon, Apr 09, 2007 at 05:23:39PM -0700, Andrew Morton wrote:
 > 
-> Anything else I may have missed?
+>  > I suspect there are quite a few kernel threads which don't really need to
+>  > be threads at all: the code would quite happily work if it was changed to
+>  > use keventd, via schedule_work() and friends.  But kernel threads are
+>  > somewhat easier to code for.
+> 
+> Perhaps too easy.  We have a bunch of kthreads sitting around that afaict,
+> are there 'just in case', not because they're actually in use.
+
+This is fun.
+
+>    10 ?        S<     0:00 [khelper]
+
+That one's needed to parent the call_usermodehelper() apps.  I don't think
+it does anything else.  We used to use keventd for this but that had some
+problem whcih I forget.  (Who went and misnamed keventd to "events", too? 
+Nobody calls it "events", and with good reason)
+
+> Why doesn't this get spawned when it needs to?
+> 
+>   164 ?        S<     0:00 [cqueue/0]
+>   165 ?        S<     0:00 [cqueue/1]
+> 
+> I'm not even sure wth these are.
+
+Me either.
+
+> ...
 >
 
-Hmm, I am concerned because not only you don't have an input device created,
-you don't even see the driver being registered with usbcore. Could you please
-try booting with debug_initcall to see with what error code usbtouchscreen
-initialization fails?
+: root         3  0.0  0.0      0     0 ?        S    18:51   0:00 [watchdog/0]
 
+That's the softlockup detector.  Confusingly named to look like a, err,
+watchdog.  Could probably use keventd.
 
--- 
-Dmitry
+: root         5  0.0  0.0      0     0 ?        S    18:51   0:00 [khelper]
+
+That's there to parent the kthread_create()d threads.  Could presumably use
+khelper.
+
+: root       152  0.0  0.0      0     0 ?        S    18:51   0:00 [ata/0]
+
+Does it need to be per-cpu?
+
+: root       153  0.0  0.0      0     0 ?        S    18:51   0:00 [ata_aux]
+
+That's a single-threaded workqueue handler.  Perhaps could use keventd.
+
+: root       299  0.0  0.0      0     0 ?        S    18:51   0:00 [scsi_eh_0]
+: root       300  0.0  0.0      0     0 ?        S    18:51   0:00 [scsi_eh_1]
+: root       305  0.0  0.0      0     0 ?        S    18:51   0:00 [scsi_eh_2]
+: root       306  0.0  0.0      0     0 ?        S    18:51   0:00 [scsi_eh_3]
+
+This machine has one CPU, one sata disk and one DVD drive.  The above is
+hard to explain.
+
+: root       319  0.0  0.0      0     0 ?        S    18:51   0:00 [pccardd]
+
+hm.
+
+: root       331  0.0  0.0      0     0 ?        S    18:51   0:00 [kpsmoused]
+
+hm.
+
+: root       337  0.0  0.0      0     0 ?        S    18:51   0:00 [kedac]
+
+hm.  I didn't know that the Vaio had EDAC.
+
+: root      1173  0.0  0.0      0     0 ?        S    18:51   0:00 [khpsbpkt]
+
+I can't even pronounce that.
+
+: root      1354  0.0  0.0      0     0 ?        S    18:51   0:00 [knodemgrd_0]
+
+OK, I do have 1394 hardware, but it hasn't been used.
+
+: root      1636  0.0  0.0      0     0 ?        S    18:52   0:00 [kondemand/0]
+
+I blame davej.
+
+>  > otoh, a lot of these inefficeincies are probably down in scruffy drivers
+>  > rather than in core or top-level code.
+> 
+> You say scruffy, but most of the proliferation of kthreads comes
+> from code written in the last few years.  Compare the explosion of kthreads
+> we see coming from 2.4 to 2.6. It's disturbing, and I don't see it
+> slowing down at all.
+> 
+> On the 2-way box I grabbed the above ps output from, I end up with 69 kthreads.
+> It doesn't surprise me at all that bigger iron is starting to see issues.
+> 
+
+Sure.
+
+I don't think it's completely silly to object to all this.  Sure, a kernel
+thread is worth 4k in the best case, but I bet they have associated unused
+resources and as we've seen, they can cause overhead.
+
