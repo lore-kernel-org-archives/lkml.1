@@ -1,97 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXDJVaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030666AbXDJVbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbXDJVaw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbXDJVaw
+	id S1030666AbXDJVbi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbXDJVbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:30:52 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:43087 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753922AbXDJVau (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:30:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:mime-version:content-type:content-transfer-encoding;
-        b=CaLZkgIUXAL2LYLovRSuhUPi+9gLSP1CEtSE6FCoSmBmhpcVJY0LU5ORJhHplAanVJfN8MQ5fYHhjnE958UhELMFeq1QuWdeP/K1V3WF4U0X+Vt3972ZPIoy0X+gVHtaXDM9oGC6qXifKy8jicf8Dtw8Pl/JZG5X93Tn4DghV24=
-Date: Wed, 11 Apr 2007 00:30:58 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <774343545.20070411003058@gmail.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-CC: David Brownell <david-b@pacbell.net>
-Subject: [RFC, PATCH 1/3] gpiodev - API definitions
+	Tue, 10 Apr 2007 17:31:38 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:53430 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753918AbXDJVbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:31:36 -0400
+Date: Tue, 10 Apr 2007 23:31:20 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: netdev@vger.kernel.org
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 20/30] Use menuconfig objects - ARCNET
+In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704102329540.32056@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello linux-arm-kernel,
 
-GPIODEV API: Core API definitions. Provided are:
-1. struct gpiodev_ops which must be included into platform_data structure
-of a device which will provide GPIODEV API; driver for a device must
-initialize this structure.
-2. Structural definition of generalized GPIO identifier (struct gpio).
-2. Set of API calls for clients. This fully follow Generic GPIO API
-naming and semantics, except that they have "gpiodev" prefix and
-accept struct gpio instead of integer gpio identifiers.
+(Wow, not a single MODULE_AUTHOR line in drivers/net/arcnet/ ...)
 
+Use menuconfigs instead of menus, so the whole menu can be disabled at        
+once instead of going through all options.
 
-Index: include/linux/gpiodev.h
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+Index: linux-2.6.21-rc5/drivers/net/arcnet/Kconfig
 ===================================================================
-RCS file: include/linux/gpiodev.h
-diff -N include/linux/gpiodev.h
---- /dev/null   1 Jan 1970 00:00:00 -0000
-+++ include/linux/gpiodev.h     10 Apr 2007 19:17:12 -0000      1.5
-@@ -0,0 +1,43 @@
-+#ifndef __GPIODEV_H
-+#define __GPIODEV_H
+--- linux-2.6.21-rc5.orig/drivers/net/arcnet/Kconfig
++++ linux-2.6.21-rc5/drivers/net/arcnet/Kconfig
+@@ -2,10 +2,8 @@
+ # Arcnet configuration
+ #
+ 
+-menu "ARCnet devices"
++menuconfig ARCNET
+ 	depends on NETDEVICES && (ISA || PCI)
+-
+-config ARCNET
+ 	tristate "ARCnet support"
+ 	---help---
+ 	  If you have a network card of this type, say Y and check out the
+@@ -25,9 +23,10 @@ config ARCNET
+ 	  <file:Documentation/networking/net-modules.txt>.  The module will
+ 	  be called arcnet.
+ 
++if ARCNET
 +
-+#include <linux/device.h>
-+#include <linux/platform_device.h>
-+#include <asm/gpio.h>
-+
-+/* Interface */
-+
-+/* This structure must be first member of device platform_data structure 
-+   of a device which provides gpiodev interface */
-+struct gpiodev_ops {
-+        int (*get)(struct device *this, int gpio_no);
-+        void (*set)(struct device *this, int gpio_no, int val);
-+        int (*to_irq)(struct device *this, int gpio_no);
-+};
-+       
-+/* Generalized GPIO structure */
-+
-+struct gpio {
-+       struct platform_device *gpio_dev;
-+       int gpio_no;
-+};
-+
-+/* API functions */
-+
-+static inline int gpiodev_get_value(struct gpio *gpio)
-+{
-+       struct gpiodev_ops *ops = gpio->gpio_dev->dev.platform_data;
-+       return ops->get(&gpio->gpio_dev->dev, gpio->gpio_no);
-+}
-+static inline void gpiodev_set_value(struct gpio *gpio, int val)
-+{
-+       struct gpiodev_ops *ops = gpio->gpio_dev->dev.platform_data;
-+       ops->set(&gpio->gpio_dev->dev, gpio->gpio_no, val);
-+}
-+static inline int gpiodev_to_irq(struct gpio *gpio)
-+{
-+       struct gpiodev_ops *ops = gpio->gpio_dev->dev.platform_data;
-+       return ops->to_irq(&gpio->gpio_dev->dev, gpio->gpio_no);
-+}
-+
-+#endif /* __GPIODEV_H */
-
-
--- 
-Best regards,
- Paul                          mailto:pmiscml@gmail.com
-
+ config ARCNET_1201
+ 	tristate "Enable standard ARCNet packet format (RFC 1201)"
+-	depends on ARCNET
+ 	help
+ 	  This allows you to use RFC1201 with your ARCnet card via the virtual
+ 	  arc0 device.  You need to say Y here to communicate with
+@@ -38,7 +37,6 @@ config ARCNET_1201
+ 
+ config ARCNET_1051
+ 	tristate "Enable old ARCNet packet format (RFC 1051)"
+-	depends on ARCNET
+ 	---help---
+ 	  This allows you to use RFC1051 with your ARCnet card via the virtual
+ 	  arc0s device. You only need arc0s if you want to talk to ARCnet
+@@ -53,7 +51,6 @@ config ARCNET_1051
+ 
+ config ARCNET_RAW
+ 	tristate "Enable raw mode packet interface"
+-	depends on ARCNET
+ 	help
+ 	  ARCnet "raw mode" packet encapsulation, no soft headers.  Unlikely
+ 	  to work unless talking to a copy of the same Linux arcnet driver,
+@@ -61,7 +58,6 @@ config ARCNET_RAW
+ 
+ config ARCNET_CAP
+ 	tristate "Enable CAP mode packet interface"
+-	depends on ARCNET
+ 	help
+ 	  ARCnet "cap mode" packet encapsulation. Used to get the hardware
+           acknowledge back to userspace. After the initial protocol byte every
+@@ -80,7 +76,6 @@ config ARCNET_CAP
+ 
+ config ARCNET_COM90xx
+ 	tristate "ARCnet COM90xx (normal) chipset driver"
+-	depends on ARCNET
+ 	help
+ 	  This is the chipset driver for the standard COM90xx cards. If you
+ 	  have always used the old ARCnet driver without knowing what type of
+@@ -92,7 +87,6 @@ config ARCNET_COM90xx
+ 
+ config ARCNET_COM90xxIO
+ 	tristate "ARCnet COM90xx (IO mapped) chipset driver"
+-	depends on ARCNET
+ 	---help---
+ 	  This is the chipset driver for the COM90xx cards, using them in
+ 	  IO-mapped mode instead of memory-mapped mode. This is slower than
+@@ -105,7 +99,6 @@ config ARCNET_COM90xxIO
+ 
+ config ARCNET_RIM_I
+ 	tristate "ARCnet COM90xx (RIM I) chipset driver"
+-	depends on ARCNET
+ 	---help---
+ 	  This is yet another chipset driver for the COM90xx cards, but this
+ 	  time only using memory-mapped mode, and no IO ports at all. This
+@@ -118,7 +111,6 @@ config ARCNET_RIM_I
+ 
+ config ARCNET_COM20020
+ 	tristate "ARCnet COM20020 chipset driver"
+-	depends on ARCNET
+ 	help
+ 	  This is the driver for the new COM20020 chipset. It supports such
+ 	  things as promiscuous mode, so packet sniffing is possible, and
+@@ -136,5 +128,4 @@ config ARCNET_COM20020_PCI
+ 	tristate "Support for COM20020 on PCI"
+ 	depends on ARCNET_COM20020 && PCI
+ 
+-endmenu
+-
++endif # ARCNET
+#<EOF>
