@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030308AbXDJClz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030325AbXDJCmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030308AbXDJClz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 22:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030314AbXDJClz
+	id S1030325AbXDJCmQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 22:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030323AbXDJCmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 22:41:55 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:40868 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030308AbXDJCly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 22:41:54 -0400
-Date: Mon, 9 Apr 2007 19:41:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Jones <davej@redhat.com>
-Cc: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>,
-       Linux kernel <linux-kernel@vger.kernel.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: Preemption Broken:  centrino_target busted under SMP on
- 2.6.20.4
-Message-Id: <20070409194142.88f0a5e5.akpm@linux-foundation.org>
-In-Reply-To: <20070410023108.GA14081@redhat.com>
-References: <46155CFF.70701@wolfmountaingroup.com>
-	<20070405205034.GB3605@redhat.com>
-	<20070409172651.9bc619d6.akpm@linux-foundation.org>
-	<20070410023108.GA14081@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 9 Apr 2007 22:42:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56348 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030320AbXDJCmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 22:42:13 -0400
+Message-ID: <461AF881.6080301@torque.net>
+Date: Mon, 09 Apr 2007 22:37:53 -0400
+From: Douglas Gilbert <dougg@torque.net>
+Reply-To: dougg@torque.net
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: linux-scsi@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, tomfa@debian.org, kumba@gentoo.org
+Subject: [ANNOUNCE] sdparm 1.01
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Apr 2007 22:31:08 -0400 Dave Jones <davej@redhat.com> wrote:
+sdparm is a command line utility designed to get and set
+SCSI device parameters (cf hdparm for ATA disks). The
+parameters are held in mode pages. Apart from SCSI devices
+(e.g. disks, tapes and enclosures) sdparm can be used on
+any device that uses a SCSI command set. Virtually all CD/DVD
+drives use the SCSI MMC set irrespective of the transport.
+sdparm also can decode VPD pages including the device
+identification page. Commands to start and stop the media;
+load and unload removable media and some other housekeeping
+functions are supported. sdparm supports both the linux
+kernel 2.4 and 2.6 series with ports to FreeBSD and Windows.
 
-> On Mon, Apr 09, 2007 at 05:26:51PM -0700, Andrew Morton wrote:
->  > On Thu, 5 Apr 2007 16:50:34 -0400
->  > Dave Jones <davej@redhat.com> wrote:
->  > 
->  > > diff --git a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
->  > > index f43b987..824d0a2 100644
->  > > --- a/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
->  > > +++ b/arch/i386/kernel/cpu/cpufreq/speedstep-centrino.c
->  > > @@ -708,6 +708,7 @@ static int centrino_target (struct cpufreq_policy *policy,
->  > >  	saved_mask = current->cpus_allowed;
->  > >  	first_cpu = 1;
->  > >  	cpus_clear(covered_cpus);
->  > > +	preempt_disable();
->  > >  	for_each_cpu_mask(j, online_policy_cpus) {
->  > >  		/*
->  > >  		 * Support for SMP systems.
->  > > @@ -798,6 +799,7 @@ static int centrino_target (struct cpufreq_policy *policy,
->  > >  	}
->  > >  
->  > >  migrate_end:
->  > > +	preempt_enable();
->  > >  	set_cpus_allowed(current, saved_mask);
->  > >  	return 0;
->  > >  }
->  > 
->  > This means we'll call set_cpus_allowed() while in atomic state, but
->  > set_cpus_allowed() does sleepy stuff.
-> 
-> Puzzled. This diff shouldn't change anything about the context we're in
-> when we call set_cpus_allowed, and as we're not seeing warnings now,
-> I'm not sure what I'm missing?
+ChangeLog for sdparm-1.01 [20070405]
+  - add element address assignment mode page (smc)
+  - improve error handling in lk 2.4 series mapping to
+    sg devices
+  - add configure.ac rule for mingw (Windows)
+    - include <inttypes.h> to use PRIx64 instead of %llx
+  - add LUICLR bit to extended inquiry VPD page
+  - correct some headers for C++ inclusion
+    - fix some C code to compile under C++
+  - fix bug when unusual transport or vendor given
+  - add a Fujitsu vendor mode page
+  - add "initial priority" to control extension mpage
+  - add "disconnect-reconnect" mpage to generic list;
+    there are still transport specific versions
+  - extend block limits VPD page (sbc3r09)
+  - sync with sg3_utils-1.24 pass-through code
 
-set_cpus_allowed() will only sleep in special circumstances: when we're
-telling the target task that it is not allwed to run on a CPU upon which it
-is presently executing.  So it needs to be synchronously migrated off that
-CPU, which requires that the set_cpus_allowed() caller block.
+For more information and downloads see:
+http://www.torque.net/sg/sdparm.html
 
-You're probably just not hitting that case.
+A release announcement has been sent to freshmeat.net .
 
-Probably we should have a might_sleep() in set_cpus_allowed(), although
-there might be callers who are guaranteeed to never hit that case and who
-might legitimately want special treatment to avoid the warning.
-
-> [which may be 'the obvious', you wouldn't believe the evening I've had
->  involving gas leaks and noxious fumes. Wheee, floaty head.]
-
-Yeah, I get a lot of patches like that.
+Doug Gilbert
