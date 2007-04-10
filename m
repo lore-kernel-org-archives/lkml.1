@@ -1,149 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbXDJJtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbXDJJ4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbXDJJtP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 05:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXDJJtO
+	id S1753367AbXDJJ4o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 05:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbXDJJ4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 05:49:14 -0400
-Received: from stinky.trash.net ([213.144.137.162]:56104 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753314AbXDJJtN (ORCPT
+	Tue, 10 Apr 2007 05:56:44 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45016 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753349AbXDJJ4m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 05:49:13 -0400
-Message-ID: <461B5D79.9040307@trash.net>
-Date: Tue, 10 Apr 2007 11:48:41 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-CC: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, cramerj@intel.com, auke-jan.h.kok@intel.com,
-       christopher.leech@intel.com
-Subject: Re: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
-References: <20070410003243.32106.98266.stgit@gitlost.site>
-In-Reply-To: <20070410003243.32106.98266.stgit@gitlost.site>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Apr 2007 05:56:42 -0400
+Date: Tue, 10 Apr 2007 04:56:39 -0500
+From: Robin Holt <holt@sgi.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [RFC, PATCH 1/3] introduce SYS_CLONE_MASK
+Message-ID: <20070410095639.GB17269@lnx-holt.americas.sgi.com>
+References: <20070409020600.6338BD82F4@pipsqueak.sf.frob.com> <m11wit34fo.fsf@ebiederm.dsl.xmission.com> <20070409173053.GD22997@lnx-holt.americas.sgi.com> <m1r6qtyskk.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1r6qtyskk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter P Waskiewicz Jr wrote:
-> +	/* To retrieve statistics per subqueue - FOR FUTURE USE */
-> +	struct net_device_stats* (*get_subqueue_stats)(struct net_device *dev,
-> +							int queue_index);
+On Mon, Apr 09, 2007 at 06:35:39PM -0600, Eric W. Biederman wrote:
+> Robin Holt <holt@sgi.com> writes:
+> 
+> > OK.  I just got the OK from management.  The system we were booting was
+> > for research only.  We had NR_CPUS=num_online_cpus()=4096 which were
+> > non-hyperthreaded.  With no attached I/O and the tweak I originally
+> > posted plus one change Jack has already gotten accepted, the machine
+> > booted in approx 12 minutes.
+> 
+> How much of that time was between the time the kernel was loaded
+> and before user space was started?
+
+I am scrambling for my timed boot logs.  All I am finding right now
+are boots from 512p machines.  For that machine, it took 178 seconds
+to get to mounting the root filesystem and 75 seconds to get to the
+login prompt.  Of that 75 seconds, 24 was because an NFS server was
+down and 14 was due to PBS taking time to start.
 
 
-Please no future use stuff, just add it when you need it.
+68.994913| Memory: 2074872032k/2082172528k available (9785k code, 7319136k reserved, 5228k data, 672k init)
+36.566117| migration_cost=3869,61218,76048
+24.074113| mount: RPC: Remote system error - No route to host
+13.972892| PBS mom
 
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index 219a57f..c11c8fa 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -3326,12 +3328,23 @@ struct net_device *alloc_netdev(int sizeof_priv, const char *name,
->  	if (sizeof_priv)
->  		dev->priv = netdev_priv(dev);
->  
-> + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
-> + 
-> + 	p = kzalloc(alloc_size, GFP_KERNEL);
-> + 	if (!p) {
-> + 		printk(KERN_ERR "alloc_netdev: Unable to allocate queues.\n");
-> + 		return NULL;
+Those are the long standouts.  There are quite a few lines in the boot
+output which take 2 seconds or less, but none of those are too surprising.
+Plain and simply, booting that large of a machine has always taken
+considerable time.  The first time we booted a 512p, it took nearly an
+hour, now that is down to 8 or 9 minutes.
 
+>
+> Twelve minutes sounds like a long time for a boot, if you aren't fsck'ing
+> filesystems.
 
-This leaks the device. You treat every single-queue device as having
-a single subqueue. If it doesn't get too ugly it would be nice to avoid
-this and only allocate the subqueue states for real multiqueue devices.
+Not fsck'ing filesystems (xfs).  One of the NFS servers that was specified
+in /etc/fstab was missing, but that is unimportant.
 
-> --- a/net/sched/sch_generic.c
-> +++ b/net/sched/sch_generic.c
-> @@ -133,7 +133,8 @@ static inline int qdisc_restart(struct net_device *dev)
->  			/* And release queue */
->  			spin_unlock(&dev->queue_lock);
->  
-> -			if (!netif_queue_stopped(dev)) {
-> +			if (!netif_queue_stopped(dev) &&
-> +			    !netif_subqueue_stopped(dev, skb->queue_mapping)) {
->  				int ret;
->  
->  				ret = dev_hard_start_xmit(skb, dev);
-> @@ -149,7 +150,6 @@ static inline int qdisc_restart(struct net_device *dev)
->  					goto collision;
->  				}
->  			}
-> -
-
-
-Unrelated whitespace change.
-
->  			/* NETDEV_TX_BUSY - we need to requeue */
->  			/* Release the driver */
->  			if (!nolock) {
-> diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c
-> index 5cfe60b..7365621 100644
-> --- a/net/sched/sch_prio.c
-> +++ b/net/sched/sch_prio.c
-> @@ -43,6 +43,7 @@ struct prio_sched_data
->  	struct tcf_proto *filter_list;
->  	u8  prio2band[TC_PRIO_MAX+1];
->  	struct Qdisc *queues[TCQ_PRIO_BANDS];
-> +	u16 band2queue[TC_PRIO_MAX + 1];
->  };
->  
->  
-> @@ -63,20 +64,26 @@ prio_classify(struct sk_buff *skb, struct Qdisc *sch, int *qerr)
->  		case TC_ACT_SHOT:
->  			return NULL;
->  		};
-> -
-
-Same here
-
->  		if (!q->filter_list ) {
->  #else
->  		if (!q->filter_list || tc_classify(skb, q->filter_list, &res)) {
->  #endif
->  			if (TC_H_MAJ(band))
->  				band = 0;
-> +			skb->queue_mapping =
-> +				  q->prio2band[q->band2queue[band&TC_PRIO_MAX]];
-> +
-
-
-Does this needs to be cleared at some point again? TC actions might
-redirect or mirror packets to other (multiqueue) devices.
-
-> @@ -242,6 +259,30 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
->  			}
->  		}
->  	}
-> +	/* setup queue to band mapping */
-> +	if (q->bands < sch->dev->egress_subqueue_count) {
-> +		qmapoffset = 1;
-> +		mod = 0;
-> +	} else {
-> +		mod = q->bands % sch->dev->egress_subqueue_count;
-> +		qmapoffset = q->bands / sch->dev->egress_subqueue_count +
-> +				((mod) ? 1 : 0);
-> +	}
-> +
-> +	queue = 0;
-> +	offset = 0;
-> +	for (i = 0; i < q->bands; i++) {
-> +		q->band2queue[i] = queue;
-> +		if ( ((i + 1) - offset) == qmapoffset) {
-> +			queue++;
-> +			offset += qmapoffset;
-> +			if (mod)
-> +				mod--;
-> +			qmapoffset = q->bands /
-> +				sch->dev->egress_subqueue_count +
-> +				((mod) ? 1 : 0);
-> +		}
-> +	}
-
-
-Besides being quite ugly, I don't think this does what you want.
-For bands < queues we get band2queue[0] = 0, all others map to 1.
+Thanks,
+Robin
