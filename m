@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031019AbXDJQTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031016AbXDJQTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031019AbXDJQTJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031007AbXDJQTI
+	id S1031016AbXDJQTu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031021AbXDJQTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:19:08 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46851 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031019AbXDJQTH (ORCPT
+	Tue, 10 Apr 2007 12:19:50 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:48343 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031016AbXDJQTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:19:07 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-References: <m1hcru9rki.fsf@ebiederm.dsl.xmission.com>
-	<20070406104301.GB19755@lnx-holt.americas.sgi.com>
-	<m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
-	<20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu>
-	<m11wix73ut.fsf@ebiederm.dsl.xmission.com>
-	<20070410134814.GA28016@elte.hu>
-	<m17iskz3i8.fsf@ebiederm.dsl.xmission.com>
-	<20070410150650.GA9946@elte.hu>
-	<m1tzvoxniv.fsf@ebiederm.dsl.xmission.com>
-	<20070410155314.GA16267@elte.hu>
-Date: Tue, 10 Apr 2007 10:17:56 -0600
-In-Reply-To: <20070410155314.GA16267@elte.hu> (Ingo Molnar's message of "Tue,
-	10 Apr 2007 17:53:14 +0200")
-Message-ID: <m1mz1gxky3.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 10 Apr 2007 12:19:49 -0400
+Message-ID: <461BB8EC.4000900@zytor.com>
+Date: Tue, 10 Apr 2007 09:18:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Trond Myklebust <trond.myklebust@fys.uio.no>, Theodore Tso <tytso@mit.edu>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: If not readdir() then what?
+References: <20070407233037.GA16508@infradead.org>  <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org>  <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com>  <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org>  <1176121897.6210.8.camel@heimdal.trondhjem.org>  <20070409131918.GC18580@thunk.org>  <1176127395.6210.34.camel@heimdal.trondhjem.org>  <20070410135641.GG13650@thunk.org> <1176215836.14442.37.camel@heimdal.trondhjem.org> <Pine.LNX.4.61.0704101750420.21664@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704101750420.21664@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Jan Engelhardt wrote:
+> 
+> I had a thought, but I think it's not quite ripe..
+> 
+> NFS server sends the whole directory contents on NFS client opendir,
+> so that the whole readdir/telldir/seekdir magic can happen on the
+> client only... which would perhaps also enable a cheap telldir/seekdir,
+> and would also give a 'fixed view' when adding/deleting files
+> during readdir.
+> 
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> > so ... is anyone pursuing this? This would allow us to make 
->> > sys_wait4() faster and more scalable: no tasklist_lock bouncing for 
->> > example.
->> 
->> which part?
->
-> all of it :) Everything you mentioned makes sense quite a bit. The 
-> thread signal handling of do_wait was added in a pretty arbitrary 
-> fashion so i doubt there are strong requirements in that area. Apps 
-> might have grown to get used to it meanwhile though, so we've got to do 
-> it carefully.
+That doesn't sound right... what if there are two million files in the 
+directory?
 
-I'm looking at.  If only because there is a reasonable chance doing this
-will fix the races with a threaded init.
-
-However I just found something nasty.  The wait __WNOTHREAD flag.
-
-And my quick search seems to find at least one user space applications
-that uses it, and it is widely documented so I suspect there are
-others :(
-
-I played with moving the lists into signal_struct, and short of
-architecture specific users of task->children all I had to touch
-were:
-
- include/linux/init_task.h |    2 +-
- include/linux/sched.h     |    5 +-
- kernel/exit.c             |  159 +++++++++++++++++++++------------------------
- kernel/fork.c             |    2 +-
- mm/oom_kill.c             |    4 +-
-
-So it should be relatively easy to change this child lists around...
-
-Eric
+	-hpa
