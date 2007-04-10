@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030470AbXDJIVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966113AbXDJIWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030470AbXDJIVh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 04:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030474AbXDJIVh
+	id S966113AbXDJIWK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 04:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966110AbXDJIWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 04:21:37 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:58314 "EHLO 2ka.mipt.ru"
+	Tue, 10 Apr 2007 04:22:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33644 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030470AbXDJIVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 04:21:35 -0400
-Date: Tue, 10 Apr 2007 12:20:49 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, cramerj@intel.com, auke-jan.h.kok@intel.com,
-       christopher.leech@intel.com
-Subject: Re: [PATCH 2/2] NET: Multiqueue network device support implementation.
-Message-ID: <20070410082049.GC16621@2ka.mipt.ru>
-References: <20070409212723.31670.27976.stgit@gitlost.site> <20070409212841.31670.59366.stgit@gitlost.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070409212841.31670.59366.stgit@gitlost.site>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 10 Apr 2007 12:21:00 +0400 (MSD)
+	id S966113AbXDJIWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 04:22:06 -0400
+Message-ID: <461B4925.9080005@garzik.org>
+Date: Tue, 10 Apr 2007 04:21:57 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ashok Raj <ashok.raj@intel.com>
+CC: linux-kernel@vger.kernel.org, akpm@osdl.org, ak@suse.de, gregkh@suse.de,
+       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch 0/8] [Intel IOMMU] Support for Intel Virtualization Technology
+ for Directed I/O
+References: <20070409215552.221374000@intel.com>
+In-Reply-To: <20070409215552.221374000@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 09, 2007 at 02:28:41PM -0700, Peter P Waskiewicz Jr (peter.p.waskiewicz.jr@intel.com) wrote:
-> + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
-> + 
-> + 	p = kzalloc(alloc_size, GFP_KERNEL);
-> + 	if (!p) {
-> + 		printk(KERN_ERR "alloc_netdev: Unable to allocate queues.\n");
-> + 		return NULL;
+Ashok Raj wrote:
+> 1. Support for ACPI framework to parse and work with DMA Remapping Tables.
+> 2. Add support for PCI infrastructure to search parent relationships.
+> 3. Hardware support for providing DMA remapping support for Intel Chipsets.
+> 4. Supporting Zero Length Reads on DMAR's not able to support ZLR.
+> 5. Graphics driver workarounds to provide unity map since they dont use dma api.
+> 6. Updates to Documentation area for startup options and some basics.
+> 7. Workaround to provide unity map for ISA bridge device to enable floppy disk.
+> 8. Ability to preserve some mappings for devices not able to address entire 
+>    range.
 
-I think you either do not want to print it, or want additional details
-about device...
+I really think it would be best to avoid ACPI for something as critical 
+as DMA remapping!
 
-> + 	}
-> + 
-> + 	dev->egress_subqueue = p;
-> + 	dev->egress_subqueue_count = queue_count;
-> +
->  	dev->get_stats = maybe_internal_stats;
->  	setup(dev);
->  	strcpy(dev->name, name);
->  	return dev;
->  }
-> -EXPORT_SYMBOL(alloc_netdev);
-> +EXPORT_SYMBOL(alloc_netdev_mq);
->  
->  /**
->   *	free_netdev - free network device
-> @@ -3345,6 +3358,7 @@ void free_netdev(struct net_device *dev)
->  {
->  #ifdef CONFIG_SYSFS
->  	/*  Compatibility with error handling in drivers */
-> +	kfree((char *)dev->egress_subqueue);
->  	if (dev->reg_state == NETREG_UNINITIALIZED) {
->  		kfree((char *)dev - dev->padded);
->  		return;
-> @@ -3356,6 +3370,7 @@ void free_netdev(struct net_device *dev)
->  	/* will free via device release */
->  	put_device(&dev->dev);
->  #else
-> +	kfree((char *)dev->egress_subqueue);
-
-Still casting :)
+	Jeff
 
 
--- 
-	Evgeniy Polyakov
