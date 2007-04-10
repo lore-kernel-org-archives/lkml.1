@@ -1,165 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161048AbXDJXLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161089AbXDJXQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161048AbXDJXLa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 19:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161062AbXDJXLa
+	id S1161089AbXDJXQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 19:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161094AbXDJXQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 19:11:30 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:33022 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161053AbXDJXL2 (ORCPT
+	Tue, 10 Apr 2007 19:16:14 -0400
+Received: from smtp103.sbc.mail.re2.yahoo.com ([68.142.229.102]:36785 "HELO
+	smtp103.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161089AbXDJXQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 19:11:28 -0400
-Date: Tue, 10 Apr 2007 19:11:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] markers-generic-doc-section-fix-flags
-Message-ID: <20070410231126.GC7092@Krystal>
-Mime-Version: 1.0
+	Tue, 10 Apr 2007 19:16:13 -0400
+X-YMail-OSG: 8Gcpa2sVM1mfAdbEbJ.HlsqEsZwrQnxHGjczEYvGAiyS_uScXVG9R_NJPognsIhEfPPk.nGn.EEZ23fqqQDybzSFzeu2NP0KDzQy7Xp0BYcMpTkByc4-
+Date: Tue, 10 Apr 2007 18:16:04 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] make kernel threads invisible to /sbin/init
+Message-ID: <20070410231604.GA19852@vino.hallyn.com>
+References: <20070410185133.GA104@tv-sign.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 19:00:15 up 67 days, 13:07,  6 users,  load average: 2.02, 3.50, 2.65
+In-Reply-To: <20070410185133.GA104@tv-sign.ru>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documents the linux/marker.h header. Fix a bitwise flag manipulation mistake
-in the MARK_GENERIC macro.
+Quoting Oleg Nesterov (oleg@tv-sign.ru):
+> 1. rename reparent_to_init() to reparent_kthread() and export it
+> 
+> 2. use init_pid_ns.child_reaper instead of child_reaper(current)
 
-Use the __marker (ro), new __marker_strings (ro) and __marker_data (rw)
-sections. It depends on the linker modification which defines this last
-section.
+Each of these patches looks good to me, but this part in particular
+is a must-have bugfix.
 
-It allows the use of a probe "private" data : upon probe connexion, it
-can provide a pointer to its own data structure which will be available
-at the probe call site as the pdata field of the mdata structure.
+Just started some tests, if any failures come back I'll report them
+tonight.
 
-With the new __marker_data section, much less data has to be defined in
-the kernel .data segment : only the enable flag, in non-optimized
-markers, is left in .data because it is used very often.
+thanks Oleg,
+-serge
 
-The marker flags now only define MF_* which are bitmasks. There is no
-way to use the bitmask shift value, so it is less error prone.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
---- a/include/linux/marker.h
-+++ b/include/linux/marker.h
-@@ -16,48 +16,59 @@
- 
- #ifdef __KERNEL__
- 
--typedef void marker_probe_func(const char *fmt, ...);
-+struct __mark_marker_data;
- 
--struct __mark_marker_c {
-+typedef void marker_probe_func(const struct __mark_marker_data *mdata,
-+	const char *fmt, ...);
-+
-+struct __mark_marker_data {
- 	const char *name;
--	marker_probe_func **call;
- 	const char *format;
- 	int flags;
-+	marker_probe_func *call;
-+	void *pdata;
- } __attribute__((packed));
- 
- struct __mark_marker {
--	const struct __mark_marker_c *cmark;
-+	struct __mark_marker_data *mdata;
- 	void *enable;
- } __attribute__((packed));
- 
--/* Generic marker flavor always available */
- #ifdef CONFIG_MARKERS
- 
--#define MF_OPTIMIZED 1	/* Use optimized markers */
--#define MF_LOCKDEP 2	/* Can call lockdep */
--#define MF_PRINTK 3	/* vprintk can be called in the probe */
-+/* Marker flags : selects the mechanism used to connect the probes to the
-+ * markers and what can be executed within the probes. This is primarily
-+ * used at reentrancy-unfriendly sites. */
-+#define MF_OPTIMIZED	(1 << 0)	/* Use optimized markers */
-+#define MF_LOCKDEP	(1 << 1)	/* Can call lockdep */
-+#define MF_PRINTK	(1 << 2)	/* vprintk can be called in the probe */
-+#define _MF_NR		3		/* Number of marker flags */
- 
--#define _MF_OPTIMIZED (1 << MF_OPTIMIZED)
--#define _MF_LOCKDEP (1 << MF_LOCKDEP)
--#define _MF_PRINTK (1 << MF_PRINTK)
-+#define DECLARE_MARKER_DATA(flags, name, format) \
- 
-+/* Generic marker flavor always available */
- #define MARK_GENERIC(flags, name, format, args...) \
- 	do { \
--		static marker_probe_func *__mark_call_##name = \
--					__mark_empty_function; \
-+		static const char __mstrtab_name_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= #name; \
-+		static const char __mstrtab_format_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= format; \
-+		static struct __mark_marker_data __mark_data_##name \
-+		__attribute__((section("__markers_data"))) = \
-+		{ __mstrtab_name_##name,  __mstrtab_format_##name, \
-+		(flags) & ~MF_OPTIMIZED, __mark_empty_function, NULL }; \
- 		static char __marker_enable_##name = 0; \
--		static const struct __mark_marker_c __mark_c_##name \
--			__attribute__((section(".markers.c"))) = \
--			{ #name, &__mark_call_##name, format, \
--			(flags) | ~_MF_OPTIMIZED } ; \
- 		static const struct __mark_marker __mark_##name \
--			__attribute__((section(".markers"))) = \
--			{ &__mark_c_##name, &__marker_enable_##name } ; \
-+			__attribute__((section("__markers"))) = \
-+			{ &__mark_data_##name, &__marker_enable_##name } ; \
- 		asm volatile ( "" : : "i" (&__mark_##name)); \
- 		__mark_check_format(format, ## args); \
- 		if (unlikely(__marker_enable_##name)) { \
- 			preempt_disable(); \
--			(*__mark_call_##name)(format, ## args); \
-+			(*__mark_data_##name.call)(&__mark_data_##name, \
-+						format, ## args); \
- 			preempt_enable(); \
- 		} \
- 	} while (0)
-@@ -87,21 +98,23 @@ static inline int marker_generic_set_enable(void *address, char enable)
- #endif
- 
- #define MARK_MAX_FORMAT_LEN	1024
-+/* Pass this as a format string for a marker with no argument */
- #define MARK_NOARGS " "
- 
--static inline __attribute__ ((format (printf, 1, 2)))
-+/* To be used for string format validity checking with sparse */
-+static inline
- void __mark_check_format(const char *fmt, ...)
- { }
- 
- extern marker_probe_func __mark_empty_function;
- 
- extern int _marker_set_probe(int flags, const char *name, const char *format,
--				marker_probe_func *probe);
-+				marker_probe_func *probe, void *pdata);
- 
--#define marker_set_probe(name, format, probe) \
--	_marker_set_probe(_MF_DEFAULT, name, format, probe)
-+#define marker_set_probe(name, format, probe, pdata) \
-+	_marker_set_probe(MF_DEFAULT, name, format, probe, pdata)
- 
--extern int marker_remove_probe(marker_probe_func *probe);
-+extern int marker_remove_probe(const char *name);
- extern int marker_list_probe(marker_probe_func *probe);
- 
- #endif /* __KERNEL__ */
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 3. set ->exit_signal = -1, so init can't see us and we don't use
+>    it to reap the task.
+> 
+> 4. add reparent_kthread() to kthread() and stopmachine()
+> 
+> See also
+> 
+> 	http://marc.info/?t=117580282200003&r=1
+> 	http://marc.info/?t=95299284800003&r=1
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+>  include/linux/sched.h |    1 +
+>  kernel/exit.c         |   16 ++++++++--------
+>  kernel/kthread.c      |    1 +
+>  kernel/stop_machine.c |    1 +
+>  4 files changed, 11 insertions(+), 8 deletions(-)
+> 
+> --- 2.6.21-rc5/include/linux/sched.h~2_DETACH	2007-04-05 12:18:28.000000000 +0400
+> +++ 2.6.21-rc5/include/linux/sched.h	2007-04-10 21:52:27.000000000 +0400
+> @@ -1401,6 +1401,7 @@ extern void exit_itimers(struct signal_s
+>  
+>  extern NORET_TYPE void do_group_exit(int);
+>  
+> +extern void reparent_kthread(void);
+>  extern void daemonize(const char *, ...);
+>  extern int allow_signal(int);
+>  extern int disallow_signal(int);
+> --- 2.6.21-rc5/kernel/exit.c~2_DETACH	2007-04-10 21:32:44.000000000 +0400
+> +++ 2.6.21-rc5/kernel/exit.c	2007-04-10 21:59:41.000000000 +0400
+> @@ -255,7 +255,7 @@ static int has_stopped_jobs(struct pid *
+>  }
+>  
+>  /**
+> - * reparent_to_init - Reparent the calling kernel thread to the init task of the pid space that the thread belongs to.
+> + * reparent_kthread - Reparent the calling kernel thread to the init task of the pid space that the thread belongs to.
+>   *
+>   * If a kernel thread is launched as a result of a system call, or if
+>   * it ever exits, it should generally reparent itself to init so that
+> @@ -264,20 +264,20 @@ static int has_stopped_jobs(struct pid *
+>   * The various task state such as scheduling policy and priority may have
+>   * been inherited from a user process, so we reset them to sane values here.
+>   *
+> - * NOTE that reparent_to_init() gives the caller full capabilities.
+> + * NOTE that reparent_kthread() gives the caller full capabilities.
+>   */
+> -static void reparent_to_init(void)
+> +void reparent_kthread(void)
+>  {
+>  	write_lock_irq(&tasklist_lock);
+>  
+>  	ptrace_unlink(current);
+>  	remove_parent(current);
+> -	current->parent = child_reaper(current);
+> -	current->real_parent = child_reaper(current);
+> +	current->parent = init_pid_ns.child_reaper;
+> +	current->real_parent = current->parent;
+>  	add_parent(current);
+>  
+> -	/* Set the exit signal to SIGCHLD so we signal init on exit */
+> -	current->exit_signal = SIGCHLD;
+> +	/* make the task auto-reap */
+> +	current->exit_signal = -1;
+>  
+>  	security_task_reparent_to_init(current);
+>  	write_unlock_irq(&tasklist_lock);
+> @@ -391,7 +391,7 @@ void daemonize(const char *name, ...)
+>  	current->files = init_task.files;
+>  	atomic_inc(&current->files->count);
+>  
+> -	reparent_to_init();
+> +	reparent_kthread();
+>  
+>  	if (!has_rt_policy(current) && (task_nice(current) < 0))
+>  		set_user_nice(current, 0);
+> --- 2.6.21-rc5/kernel/kthread.c~2_DETACH	2007-04-05 12:18:28.000000000 +0400
+> +++ 2.6.21-rc5/kernel/kthread.c	2007-04-10 22:02:31.000000000 +0400
+> @@ -82,6 +82,7 @@ static int kthread(void *_create)
+>  	sigset_t blocked;
+>  	int ret = -EINTR;
+>  
+> +	reparent_kthread();
+>  	kthread_exit_files();
+>  
+>  	/* Copy data: it's on keventd's stack */
+> --- 2.6.21-rc5/kernel/stop_machine.c~2_DETACH	2006-10-22 18:24:03.000000000 +0400
+> +++ 2.6.21-rc5/kernel/stop_machine.c	2007-04-10 22:04:23.000000000 +0400
+> @@ -33,6 +33,7 @@ static int stopmachine(void *cpu)
+>  	int irqs_disabled = 0;
+>  	int prepared = 0;
+>  
+> +	reparent_kthread();
+>  	set_cpus_allowed(current, cpumask_of_cpu((int)(long)cpu));
+>  
+>  	/* Ack: we are alive */
