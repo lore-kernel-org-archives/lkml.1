@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbXDJVgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbXDJVhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbXDJVgs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 17:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXDJVgs
+	id S1753441AbXDJVhd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 17:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXDJVhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 17:36:48 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:45677 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbXDJVgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 17:36:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:mime-version:content-type:content-transfer-encoding;
-        b=SVlgvHOtg1KzAbuoeT5QKJSuBYBlKgPkAef05JqvO/QRWrQtrfQdykCjdN/P4ahM9+WjX445N9YvJ0QzIY8yWSzLKH0zoTJVojjKeOyq2iypEBjTyTwsx5CdIIB+PMSJqx0JZMnvlrX9fK5YtHAkWrzKdPnDsQtpB/FmyntnZOs=
-Date: Wed, 11 Apr 2007 00:36:55 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <869542577.20070411003655@gmail.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-CC: David Brownell <david-b@pacbell.net>
-Subject: [RFC, PATCH 2/3] gpiodev - ARM PXA implementation
+	Tue, 10 Apr 2007 17:37:33 -0400
+Received: from mail.suse.de ([195.135.220.2]:44735 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753441AbXDJVha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 17:37:30 -0400
+From: Neil Brown <neilb@suse.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Date: Wed, 11 Apr 2007 07:37:24 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17948.916.464492.881283@notabene.brown>
+Cc: Theodore Tso <tytso@mit.edu>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+In-Reply-To: message from Trond Myklebust on Tuesday April 10
+References: <20070407233037.GA16508@infradead.org>
+	<46193048.6000606@zytor.com>
+	<20070408184129.GA20871@lazybastard.org>
+	<20070408191955.GD29180@thunk.org>
+	<46194260.3050900@zytor.com>
+	<20070409014426.GA18580@thunk.org>
+	<20070409110927.GA23240@lazybastard.org>
+	<1176121897.6210.8.camel@heimdal.trondhjem.org>
+	<20070409131918.GC18580@thunk.org>
+	<1176127395.6210.34.camel@heimdal.trondhjem.org>
+	<20070410135641.GG13650@thunk.org>
+	<1176215836.14442.37.camel@heimdal.trondhjem.org>
+	<17947.64947.649081.411561@notabene.brown>
+	<1176239914.309.54.camel@heimdal.trondhjem.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello linux-arm-kernel,
+On Tuesday April 10, trond.myklebust@fys.uio.no wrote:
+> On Wed, 2007-04-11 at 07:12 +1000, Neil Brown wrote:
+> > 
+> > Is there something that makes that interface problematic?
+> 
+> File deletions...
 
-GPIODEV API: Support for ARM PXA2xx CPU. Implementation is based on
-Generic GPIO API. Generally, GPIODEV implementation should be provided
-by device driver. But CPU-builtin devices in the current code are
-treated is special manner ("arch devices"), so this approach is
-followed for GPIODEV too.
+How are they a problem ?
 
+There are only two ways to organise a directory.
+1/ Unsorted linear list of entries in which no repacking is ever done.
+2/ Some data structure using an ordered search key that is based on
+  the filename (e.g. a B-tree with a search key that is a hash of the
+  filename). 
 
-Signed-off-by: Paul Sokolovsky <pmiscml@gmail.com>
+In the first case, you just use a fixed opaque cookie for location in
+a directory.
+In the second you use the filename.  If the file has been deleted,
+that shouldn't stop you finding the place where it would have been in
+the overall sort order.
 
-
-Index: arch/arm/mach-pxa/generic.c
-===================================================================
-RCS file: /cvs/linux/kernel26/arch/arm/mach-pxa/generic.c,v
-retrieving revision 1.39
-retrieving revision 1.41
-diff -u -r1.39 -r1.41
---- arch/arm/mach-pxa/generic.c 24 Feb 2007 13:14:41 -0000      1.39
-+++ arch/arm/mach-pxa/generic.c 10 Apr 2007 15:35:33 -0000      1.41
-@@ -24,6 +24,7 @@
- #include <linux/ioport.h>
- #include <linux/pm.h>
- #include <linux/string.h>
-+#include <linux/gpiodev.h>
- 
- #include <linux/sched.h>
- #include <asm/cnt32_to_63.h>
-@@ -530,6 +531,41 @@
-        .id             = -1,
- };
- 
-+
-+static int pxa_gpiodev_get_value(struct device *dev, int gpio)
-+{
-+       return __gpio_get_value(gpio);
-+}
-+
-+static void pxa_gpiodev_set_value(struct device *dev, int gpio, int value)
-+{
-+       __gpio_set_value(gpio, value);
-+}
-+
-+static int pxa_gpiodev_to_irq(struct device *dev, int gpio)
-+{
-+       return IRQ_GPIO(gpio);
-+}
-+
-+
-+struct pxagpio_platform_data {
-+       struct gpiodev_ops gpiodev_ops;
-+} pxagpio_platform_data = {
-+       .gpiodev_ops = {
-+               .get = pxa_gpiodev_get_value,
-+               .set = pxa_gpiodev_set_value,
-+               .to_irq = pxa_gpiodev_to_irq,
-+       }
-+};
-+
-+struct platform_device pxagpio_device = {
-+       .name           = "pxa2xx-gpio",
-+       .id             = -1,
-+       .dev            = {
-+               .platform_data = &pxagpio_platform_data
-+       }
-+};
-+
- static struct platform_device *devices[] __initdata = {
-        &pxamci_device,
-        &udc_device,
-@@ -541,6 +580,7 @@
-        &i2c_device,
-        &i2s_device,
-        &pxartc_device,
-+       &pxagpio_device,
- };
- 
- static int __init pxa_init(void)
-  
-
--- 
-Best regards,
- Paul                          mailto:pmiscml@gmail.com
-
+NeilBrown
