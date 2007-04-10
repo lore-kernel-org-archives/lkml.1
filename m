@@ -1,119 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030370AbXDJGKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030369AbXDJGYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030370AbXDJGKl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 02:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030383AbXDJGKN
+	id S1030369AbXDJGYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 02:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030410AbXDJGYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 02:10:13 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:45493 "EHLO smtp.osdl.org"
+	Tue, 10 Apr 2007 02:24:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44294 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030369AbXDJGKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 02:10:10 -0400
-Date: Mon, 9 Apr 2007 23:10:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nate Diller <nate.diller@gmail.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/2] fs: use memclear_highpage_flush to zero page data
-Message-Id: <20070409231006.242a8304.akpm@linux-foundation.org>
-In-Reply-To: <20070410043137.19370.2295.patchbomb.py@localhost>
-References: <20070410043137.19370.2295.patchbomb.py@localhost>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	id S1030369AbXDJGYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 02:24:36 -0400
+Date: Tue, 10 Apr 2007 08:24:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] sched: align rq to cacheline boundary
+Message-ID: <20070410062421.GA23274@elte.hu>
+References: <20070409180853.GC3948@linux-os.sc.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070409180853.GC3948@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 09 Apr 2007 21:31:37 -0700 Nate Diller <nate.diller@gmail.com> wrote:
 
-> It's very common for file systems to need to zero part or all of a page, the
-> simplist way is just to use kmap_atomic() and memset().  There's actually a
-> library function in include/linux/highmem.h that does exactly that, but it's
-> confusingly named memclear_highpage_flush(), which is descriptive of *how*
-> it does the work rather than what the *purpose* is.  So this patch renames
-> the function to zero_page_data(), and calls it from the various places that
-> currently open code it.
-> 
-> Compile tested in x86_64.
-> 
-> signed-off-by: Nate Diller <nate.diller@gmail.com>
-> 
-> ---
-> 
->  drivers/block/loop.c                     |    6 ---
->  fs/affs/file.c                           |    6 ---
->  fs/buffer.c                              |   53 +++++--------------------------
->  fs/direct-io.c                           |    8 +---
->  fs/ecryptfs/mmap.c                       |   14 +-------
->  fs/ext3/inode.c                          |   12 +------
->  fs/ext4/inode.c                          |   12 +------
->  fs/ext4/writeback.c                      |   12 +------
->  fs/gfs2/bmap.c                           |    6 ---
->  fs/mpage.c                               |   11 +-----
->  fs/nfs/read.c                            |   10 ++---
->  fs/nfs/write.c                           |    2 -
->  fs/ntfs/aops.c                           |   32 +++---------------
->  fs/ntfs/file.c                           |   47 +++++----------------------
->  fs/ocfs2/aops.c                          |    5 --
->  fs/reiser4/plugin/file/cryptcompress.c   |   19 +----------
->  fs/reiser4/plugin/file/file.c            |    6 ---
->  fs/reiser4/plugin/item/ctail.c           |    6 ---
->  fs/reiser4/plugin/item/extent_file_ops.c |   19 +++--------
->  fs/reiser4/plugin/item/tail.c            |    8 +---
->  fs/reiserfs/file.c                       |   39 ++++++----------------
->  fs/reiserfs/inode.c                      |   13 +------
->  fs/xfs/linux-2.6/xfs_lrw.c               |    2 -
->  include/linux/highmem.h                  |    2 -
->  mm/filemap_xip.c                         |    7 ----
->  mm/truncate.c                            |    2 -
->  26 files changed, 78 insertions(+), 281 deletions(-)
-> 
+* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
 
-Not sure that I agree with the name zero_page_data().  People might use it
-to, err, zero a page's data.  Whereas it is really only for use against
-*user* pages.   zero_user_page(), perhaps.
+> Align the per cpu runqueue to the cacheline boundary. This will 
+> minimize the number of cachelines touched during remote wakeup.
 
-Plus..
+> -static DEFINE_PER_CPU(struct rq, runqueues);
+> +static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
 
-This patch as presented causes me surprising amounts of trouble.  I need to
-split it up into
+ouch!! Now how did _that_ slip through. The runqueues had been 
+cacheline-aligned for ages. Or at least, they were supposed to be.
 
-  - core plus filesystems which don't have maintainers (for me to merge)
+could you see any improvement in profiles or workloads with this patch 
+applied? (just curious - it's an obviously right fix)
 
-  - filesystems which do have maintainers (one patch per), for
-    maintainers to merge.
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-  - another patch for reiser4, to remain in -mm.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-And this is actually not possible to do, because my merge and the subsystem
-maintainers' merges will happen at different times.  In the intervening
-window, the kernel won't compile.
-
-So instead I need to
-
-  - split off the reiser4 bit
-
-  - get acks from fs maintainers on the rest
-
-  - merge the whole thing in one hit (minus reiser4)
-
-And I can do that, but it is the less preferable option.
-
-
-The better way to do this merge is:
-
-patch #1:
-
-static inline void memclear_highpage_flush(...) __deprecated
-{
-	zero_user_page(...);
-}
-
-patch #2..n:  convert filesystems.
-
-
-then, when all filesystems are converted, we're ready to remove
-memclear_highpage_flush().  But we do that six months later - let's not
-screw out-of-tree fs maintainers (and their users) unnecessarily.
-
+	Ingo
