@@ -1,70 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031457AbXDJSxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXDJTBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031457AbXDJSxv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 14:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031462AbXDJSxv
+	id S1751366AbXDJTBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 15:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbXDJTBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 14:53:51 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:11542 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031457AbXDJSxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 14:53:49 -0400
-Message-ID: <461BDD48.2000904@cfl.rr.com>
-Date: Tue, 10 Apr 2007 14:54:00 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
+	Tue, 10 Apr 2007 15:01:17 -0400
+Received: from igw2.watson.ibm.com ([129.34.20.6]:58797 "EHLO
+	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbXDJTBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 15:01:17 -0400
+Message-ID: <461BDED4.8060606@us.ibm.com>
+Date: Tue, 10 Apr 2007 15:00:36 -0400
+From: Reiner Sailer <sailer@us.ibm.com>
 User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: Samuel Thibault <samuel.thibault@ens-lyon.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, joern@lazybastard.org, tytso@mit.edu
-Subject: Re: Add a norecovery option to ext3/4?
-References: <20070409000556.GA13980@implementation> <461A5F13.7040705@cfl.rr.com> <461A760B.1040103@redhat.com>
-In-Reply-To: <461A760B.1040103@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Apr 2007 18:54:08.0401 (UTC) FILETIME=[9E973810:01C77BA1]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15108.000
-X-TM-AS-Result: No--9.307600-5.000000-2
+To: Joseph Fannin <jhf@columbus.rr.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       sailer@watson.ibm.com, serue@linux.vnet.ibm.com,
+       zohar@linux.vnet.ibm.com
+Subject: Re: 2.6.21-rc6-mm1 ima "BUG: held lock freed!"
+References: <461B8A0F.2060007@us.ibm.com>
+In-Reply-To: <461B8A0F.2060007@us.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------090000090807030105020500"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> It means the filesystem should not be writeable when it is mounted.
-> This is not the same as saying that the filesystem itself should do no
-> IO in the course of making that read-only mount available.
+This is a multi-part message in MIME format.
+--------------090000090807030105020500
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I disagree.
+Joseph,
 
-> I respectfully disagree, see above.
+we cannot reproduce the BUG you report. We have identified a potential 
+source (spinlock around mutex_init). I have attached a small patch that 
+removes this lock from the initialization of the hash table. I have 
+tested the patch but I cannot verify if this resolves the problem you 
+are seeing.
 
-Based on what?  I argue that historically the primary use of the read 
-only mount flag was to prevent the underlying filesystem from being 
-modified and possibly damaged further before it can be fsck'ed.  It 
-became common practice to mount the root filesystem read only and run a 
-fsck on it, then either reboot or remount read-write depending on if 
-fsck had to make changes.
+If you can reproduce the problem, would you mind to apply this patch and 
+let us know if this solves the problem?
 
-In this context, the meaning of the read only mount flag was clear: do 
-not write to the disk.  If you wish to redefine it as "do not allow me 
-write access to any files" then you fly in the face of convention, and 
-the onus is on you to provide a compelling argument to make such a change.
+Thanks
+Reiner
 
-> In that case you are mounting the same filesystem uner 2 different
-> operating systems simultaneously, which is, and always has been, a
-> recipe for disaster.  Flagging the fs as "mounted already" would
-> probably be a better solution, though it's harder than it sounds at
-> first glance.
+Reiner Sailer wrote:
+>
+> We are looking into this.
+> Thanks!
+> Reiner
+>
+> --forwarded by Reiner Sailer:
+> On Sun, Apr 08, 2007 at 02:35:59PM -0700, Andrew Morton wrote:
+> >
+> > 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/ 
+>
+> >
+>    I'm seeing this while booting:
+>
+> ima (ima_init): No TPM chip found(rc = -19), activating TPM-bypass!
+>
+> =========================
+> [ BUG: held lock freed! ]
+> -------------------------
+> swapper/1 is freeing memory c04c7660-c04c76a3, with a lock still held 
+> there!
+> (ima_queue_lock){--..}, at: [<c0202710>] ima_create_htable+0x10/0x90
+> 1 lock held by swapper/1:
+> #0:  (ima_queue_lock){--..}, at: [<c0202710>] ima_create_htable+0x10/0x90
+>
+> stack backtrace:
+> [<c0105959>] dump_trace+0x1d9/0x210
+> [<c01059aa>] show_trace_log_lvl+0x1a/0x30
+> [<c0106612>] show_trace+0x12/0x20
+> [<c01066d6>] dump_stack+0x16/0x20
+> [<c014fd3a>] debug_check_no_locks_freed+0x17a/0x180
+> [<c014cdbf>] debug_mutex_init+0x1f/0x50
+> [<c0145451>] __mutex_init+0x41/0x50
+> [<c020277d>] ima_create_htable+0x7d/0x90
+> [<c020286f>] ima_init+0x3f/0x270
+> [<c051b765>] init_evm+0x1f5/0x250
+> [<c05015d2>] kernel_init+0x132/0x320
+> [<c010532f>] kernel_thread_helper+0x7/0x18
+> =======================
+>
+>    I saw this in -rc5-mm4 also.
+>
+>    I couldn't find a contact address in MAINTAINERS, so I've CC'd the
+> two authors listed on top of ima_create_htable.c , as well as the
+> first submitter of the IMA stuff I found in my LKML archive.
+>
+>    As an aside, this computer does have (some sort of) TPM chip, but
+> the driver is built as a module, and not loaded at this point (not a
+> worry for me, I don't intend to use it).
+>
+> -- 
+> Joseph Fannin
+> jfannin@gmail.com || jhf@columbus.rr.com
+>
 
-No, it has not been.  Prior to poorly behaved journal playback, it was 
-perfectly safe to mount a filesystem read only even if it was mounted 
-read-write by another system ( possibly fsck or defrag ).  You might not 
-read the correct data from it, but you would not damage the underlying 
-data simply by mounting it read-only.
 
-> Under all conditions it should be safe to mount a read-only block
-> device, but that is not the same as mounting a filesystem read-only.
 
-Historically it was the same thing.  I see no reason to change that 
-behavior, do you?
+--------------090000090807030105020500
+Content-Type: text/plain;
+ name="ima-init-lock-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ima-init-lock-fix.patch"
 
+---
+ security/evm/ima/ima_queue.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+Index: linux-2.6.21-rc6/security/evm/ima/ima_queue.c
+===================================================================
+--- linux-2.6.21-rc6.orig/security/evm/ima/ima_queue.c
++++ linux-2.6.21-rc6/security/evm/ima/ima_queue.c
+@@ -38,7 +38,6 @@ void ima_create_htable(void)
+ {
+ 	int i;
+ 
+-	spin_lock(&ima_queue_lock);
+ 	INIT_LIST_HEAD(&ima_measurements);
+ 	atomic_set(&ima_htable.len, 0);
+ 	atomic_set(&ima_htable.violations, 0);
+@@ -50,7 +49,6 @@ void ima_create_htable(void)
+ 	}
+ 
+ 	mutex_init(&ima_extend_list_mutex);
+-	spin_unlock(&ima_queue_lock);
+ }
+ 
+ struct ima_queue_entry *ima_lookup_digest_entry(u8 * digest_value)
+
+--------------090000090807030105020500--
 
