@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbXDJWEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXDJWE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbXDJWEZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbXDJWEY
+	id S1753957AbXDJWE1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbXDJWE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:04:24 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58926 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753949AbXDJWEP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:04:15 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <461C09D6.40805@s5r6.in-berlin.de>
-Date: Wed, 11 Apr 2007 00:04:06 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Tue, 10 Apr 2007 18:04:26 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:15621 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753945AbXDJWEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:04:16 -0400
+Message-ID: <461C0A07.6080604@cfl.rr.com>
+Date: Tue, 10 Apr 2007 18:04:55 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/30] Use menuconfig objects
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Eric Sandeen <sandeen@redhat.com>
+CC: Samuel Thibault <samuel.thibault@ens-lyon.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, joern@lazybastard.org, tytso@mit.edu
+Subject: Re: Add a norecovery option to ext3/4?
+References: <20070409000556.GA13980@implementation> <461A5F13.7040705@cfl.rr.com> <461A760B.1040103@redhat.com> <461BDD48.2000904@cfl.rr.com> <461BE2FB.5090101@redhat.com>
+In-Reply-To: <461BE2FB.5090101@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Apr 2007 22:04:37.0986 (UTC) FILETIME=[3B277C20:01C77BBC]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15108.001
+X-TM-AS-Result: No--8.676800-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> the following patch series turns some menus into menuconfigs, so they 
-> can be disabled whilst "walking" thorugh the parent menu (check the 
-> videos [1], [2] to see what I mean), enabling for disabling lots of 
-> options _quickly_.
-> 
-> I'll send the patches (as a reply to this mail) piece by piece out
-> when I figure out the maintainers to Cc for each.
-> 
-> [1] 6.04 MB(1000s) 70 sec http://jengelh.hopto.org/mc/without.ogg
-> [2] 1.96 MB(1000s) 44 sec http://jengelh.hopto.org/mc/with.ogg
-> (Ogg container, Theora Video, no audio)
-> 
-> I have not poked on all subsystems (it is quite a lot), but I can 
-> already give a glimpse (`ls -1`) of who gets one and who does not.
-> And, I am not completely finished changing some subsystems - but
-> the patches are already big enough for a first wave. I want to get
-> some feedback first. Thanks!
+Eric Sandeen wrote:
+> except in the case of a journaling filesystem, where the journal in
+> theory obviates the need for a fsck.  (yes, I know... fsck still has a
+> place...)  But, fsck is largely meaningless until the journal has been
+> recovered anyway (fs can only be consistent if it includes uncommited
+> transactions in the journal), so isn't this new territory?
 
-I haven't watched your videos yet but I tried one of the patches
-  - with make xconfig: OK
-  - with make gconfig: OK
-  - with make menuconfig: less so, because:
-When one switches a menuconfig _on_, one might miss that there are
-subsequent options to configure.  (Although the availability of further
-options is indicated by the '--->' suffix to the menu title.)
--- 
-Stefan Richter
--=====-=-=== -=-- -=-=-
-http://arcgraph.de/sr/
+In a way, yes, this is new territory, but not entirely.  It is merely an 
+extension of the existing system, and in the existing system the ro flag 
+clearly meant do not write to the disk.  You don't extend an existing 
+system by breaking old expectations.
+
+> I'm admittedly playing devil's advocate here :)  but what, in the
+> historical non-journalled filesystem case, would be writing to the
+> device anyway, if all IO from the vfs were stopped?  Without the
+> journal, isn't vfs-ro the same as bdev-ro, largely?
+
+Yes, they were the same, and that is my point: users got used to using 
+ro to indicate they did not want the block device written to, and were 
+doing this long before there was a read only flag on the block device 
+itself.  Excepting journal playback from this breaks user expectation 
+and leads to data loss.
+
+> As a counter example, if you had a filesystem which saves it's last
+> mount time in the superblock; should a ro mount not update that time?
+> (perhaps not, depending on how that timestamp was intended to be used.)
+
+This is another good example arguing against writing to the disk.  Ext2 
+would write to the super block to mark the volume as dirty and update 
+the mount count used to decide when it was time for a fsck.  It did not 
+do this if mounted read only because it understood that the meaning of 
+the ro flag was not to write to the disk.  Likewise, it did not update 
+file's atime.  If ro just meant "don't let me write to files" then the 
+atime would be updated even when mounted read only.
+
+> You might not damage the underlying filesystem, but you could sure go
+> off in the weeds trying to read it, if you stumbled upon some
+> half-updated metadata... so while it may be safe for the filesystem, I'm
+> not convinced that it's safe for the host reading the filesystem.
+
+And this is exactly what you get without journals.  You mount a damaged 
+filesystem read only, you take what you can get.  You might get bad 
+data, or fail to open or read certain files or parts of files, but you 
+knew for sure that you wouldn't cause any more damage to the data on 
+disk, and you could run a fsck or defrag or partimage or anything else 
+to read and/or modify the disk.
+
+> but it's already changed, and has been in linux since ext3 came on the
+> scene.  mount -o ro -does- replay the journal.  Surely readonly does not
+> imply that we want a corrupted filesystem if it was not cleanly shut
+> down.  I suppose there is a place for the argument that a readonly mount
+> of a journaled filesystem -should- present a recovered filesystem to the
+> user, without actually recovering the log to disk.  I guess to me, it
+> hardly seems worth the effort, as the precedent is long set for doing
+> recovery on a read-only mount.
+
+Just because a bug has been around for a long time does not mean it is 
+not a bug.  In the pre-journal world, if you mounted a dirty filesystem 
+read only you expected the possibility of errors reading it.  Why should 
+that expectation not hold true with journals?  It might be nice to do 
+the journal playback in ram or otherwise without writing to the disk, 
+but as far as the user setting the ro flag cares, they just want you not 
+to update the disk and if there are inconsistencies that cause errors, 
+then you need to fsck or mount rw.
+
