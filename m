@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030900AbXDJPuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030906AbXDJPua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030900AbXDJPuN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 11:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030906AbXDJPuM
+	id S1030906AbXDJPua (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 11:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030914AbXDJPua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 11:50:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38488 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030900AbXDJPuK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 11:50:10 -0400
-Message-ID: <461BB1C1.5050709@zytor.com>
-Date: Tue, 10 Apr 2007 08:48:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 10 Apr 2007 11:50:30 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33118 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030906AbXDJPu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 11:50:29 -0400
+Date: Tue, 10 Apr 2007 08:35:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21-rc6
+In-Reply-To: <b6a2187b0704100735s733e2499k421e27cf650001f8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0704100833250.6730@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+ <b6a2187b0704100735s733e2499k421e27cf650001f8@mail.gmail.com>
 MIME-Version: 1.0
-To: Ulrich Drepper <drepper@gmail.com>
-CC: Theodore Tso <tytso@mit.edu>, Trond Myklebust <trond.myklebust@fys.uio.no>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: If not readdir() then what?
-References: <20070407233037.GA16508@infradead.org>	 <20070408184129.GA20871@lazybastard.org>	 <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com>	 <20070409014426.GA18580@thunk.org>	 <20070409110927.GA23240@lazybastard.org>	 <1176121897.6210.8.camel@heimdal.trondhjem.org>	 <20070409131918.GC18580@thunk.org>	 <1176127395.6210.34.camel@heimdal.trondhjem.org>	 <20070410135641.GG13650@thunk.org> <a36005b50704100710i28d5681fsdab6deb1d5161e28@mail.gmail.com>
-In-Reply-To: <a36005b50704100710i28d5681fsdab6deb1d5161e28@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> On 4/10/07, Theodore Tso <tytso@mit.edu> wrote:
->> That might work.  But if in the long term we want to separate out what
->> we can send back via telldir/seekdir, and some future new Posix
->> interface, [...]
+
+
+On Tue, 10 Apr 2007, Jeff Chua wrote:
+
+> On 4/6/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> With all these discussions about fixes for telldir, do we want to
-> persue an alternative interface where the user can explicitly specify
-> that no telldir/seekdir will ever be used?  From what I know so far it
-> would make technical sense since we could speed up/reduce the memory
-> footprint of readdir in 99% of most programs.  But is the benefit
-> large enough to warrant a second interface?
+> > We should be getting close to a 2.6.21 release, so please update any
+> > regression reports you've done,
+> 
+> I couldn't get suspend-to-disk to work with 2.6.21-rc6. I've tried
+> set/unset CONFIG_NO_HZ/CONFIG_HPET_TIMER, but nothing worked.
+> 
+> With rc5 and Maxim's patch, it worked with CONFIG_NO_HZ unset.
+> 
+> This is on ThinkPad X60s.
 
-The real problem sounds like NFS is, in effect, doing telldir/seekdir on 
-every directory reference.
+Do you think you could busect it? You'd have to apply maxim's patch by 
+hand at each bisection step (up until the point where it's already applied 
+in the git tree, of course), so it's not a totally mindless bisection, but 
+it should still be fairly painless, since there is only 277 commits 
+between -rc5 and -rc6 (so bisection should rather quickly narrow it down)
 
-It rather makes any user space accesses irrelevant.  The main question 
-seems to be if we can realistically increase the cookie size even to 64 
-bits.
-
-	-hpa
+		Linus
