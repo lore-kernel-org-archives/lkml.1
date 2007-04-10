@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXDJTXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbXDJTp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbXDJTXa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 15:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXDJTXa
+	id S1753820AbXDJTp6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 15:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbXDJTp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 15:23:30 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:49676 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753306AbXDJTX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 15:23:29 -0400
-Date: Tue, 10 Apr 2007 21:22:41 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Len Brown <len.brown@intel.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: [PATCH 01/30] Use menuconfig objects - ACPI
-In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704102119430.32056@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+	Tue, 10 Apr 2007 15:45:58 -0400
+Received: from inetc.connecttech.com ([64.7.140.42]:1700 "EHLO
+	inetc.connecttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753820AbXDJTp5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 15:45:57 -0400
+From: "Stuart MacDonald" <stuartm@connecttech.com>
+To: "'Paolo Ornati'" <ornati@fastwebnet.it>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: RE: Alternative to 'git bisect visualize'?
+Date: Tue, 10 Apr 2007 15:45:33 -0400
+Organization: Connect Tech Inc.
+Message-ID: <05ad01c77ba8$cd753040$294b82ce@stuartm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.6626
+In-Reply-To: <20070410100347.44657750@localhost>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Paolo Ornati [mailto:ornati@fastwebnet.it] 
+> I think this should work:
+> 
+> 1) look at "git-bisect log" and take the last good/bad pair
+> 
+> 2) "cat .git/refs/heads/bisect" to see where you are now
+> 
+> 3) git-log --pretty=oneline GOOD..BAD
+> 
+> 4) search for the current commit (found in #2) with "/CURRENT_COMMIT",
+> now move around and choose another commit to test
+> 
+> 5) git-reset --hard COMMIT_TO_TEST
 
-Use menuconfigs instead of menus, so the whole menu can be disabled at 
-once instead of going through all options.
+That is exactly what I needed, many many thanks. I have moved off the
+broken area of commits and am back into bisecting.
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+Where would be the appropriate place to submit this as a feature
+request, to complement "git bisect visualize"; git, LKML or somewhere
+else? I'm picturing an ncurses/menuconfig-style app.
 
-Index: linux-2.6.21-rc5/drivers/acpi/Kconfig
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/acpi/Kconfig
-+++ linux-2.6.21-rc5/drivers/acpi/Kconfig
-@@ -2,16 +2,12 @@
- # ACPI Configuration
- #
- 
--menu "ACPI (Advanced Configuration and Power Interface) Support"
-+menuconfig ACPI
-+	bool "ACPI Support (Advanced Configuration and Power Interface) Support"
- 	depends on !X86_NUMAQ
- 	depends on !X86_VISWS
- 	depends on !IA64_HP_SIM
- 	depends on IA64 || X86
--	depends on PM
--
--config ACPI
--	bool "ACPI Support"
--	depends on IA64 || X86
- 	depends on PCI
- 	depends on PM
- 	select PNP
-@@ -49,7 +45,6 @@ if ACPI
- config ACPI_SLEEP
- 	bool "Sleep States"
- 	depends on X86 && (!SMP || SUSPEND_SMP)
--	depends on PM
- 	default y
- 	---help---
- 	  This option adds support for ACPI suspend states. 
-@@ -82,7 +77,6 @@ config ACPI_SLEEP_PROC_SLEEP
- 
- config ACPI_PROCFS
- 	bool "Procfs interface (deprecated)"
--	depends on ACPI
- 	default y
- 	---help---
- 	  Procfs interface for ACPI is made optional for back-compatible.
-@@ -367,7 +361,6 @@ config ACPI_CONTAINER
- 
- config ACPI_HOTPLUG_MEMORY
- 	tristate "Memory Hotplug"
--	depends on ACPI
- 	depends on MEMORY_HOTPLUG
- 	default n
- 	help
-@@ -397,5 +390,3 @@ config ACPI_SBS
- 	  to today's ACPI "Control Method" battery.
- 
- endif	# ACPI
--
--endmenu
-#<EOF>
+..Stu
+
