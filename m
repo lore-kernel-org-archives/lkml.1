@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031071AbXDJQcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031067AbXDJQh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031071AbXDJQcz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031093AbXDJQcz
+	id S1031067AbXDJQh5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031092AbXDJQh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:32:55 -0400
-Received: from mga01.intel.com ([192.55.52.88]:6524 "EHLO mga01.intel.com"
+	Tue, 10 Apr 2007 12:37:57 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48744 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031071AbXDJQcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:32:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,390,1170662400"; 
-   d="scan'208"; a="227828550:sNHT17739141"
-Date: Tue, 10 Apr 2007 09:31:33 -0700
-From: Ashok Raj <ashok.raj@intel.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       shaohua.li@intel.com, keith.packard@intel.com
-Subject: Re: [patch 0/8] [Intel IOMMU] Support for Intel Virtualization Technology for Directed I/O
-Message-ID: <20070410163132.GC31505@linux-os.sc.intel.com>
-References: <20070409215552.221374000@intel.com> <200704100949.56130.ak@suse.de>
+	id S1031067AbXDJQh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:37:56 -0400
+Date: Tue, 10 Apr 2007 20:37:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>,
+       Roland McGrath <roland@redhat.com>, acahalan@gmail.com
+Subject: Re: [PATCH] Only send pdeath_signal when getppid changes.
+Message-ID: <20070410163714.GA104@tv-sign.ru>
+References: <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com> <20070410134814.GA28016@elte.hu> <20070410133808.GA163@tv-sign.ru> <m1y7l0xns0.fsf_-_@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704100949.56130.ak@suse.de>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <m1y7l0xns0.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 09:49:55AM +0200, Andi Kleen wrote:
-> On Monday 09 April 2007 23:55:52 Ashok Raj wrote:
+On 04/10, Eric W. Biederman wrote:
 > 
-> > Please help review and provide feedback.
-> 
-> High level question: how did you solve the "user X server needs IOMMU bypass"
-> problem?
+> So this patch fixes the pdeath_signal behaviour only sending a signal
+> when the results of getppid would change.
 
-There is no special consideration for user space. Since all useful memeory is 
-mapped 1-1, guess user space would work as is. Unless iam missing something 
-here.. so yes.. there is no protection with 1-1, but guess its like 
-compatibility mode until the code gets converted over.
+Don't get me wrong, I personally like this patch very much. However,
 
-Keith: cced says some of the user space side also is getting converted over with
-some driver support possibly. So this is an interim problem until X catches up
-with it.
-> 
-> -Andi
+A long ago, Albert Cahalan (cc-ed) wrote:
+>
+> I rely on thread-to-thread pdeath notification for my emulator.
+> I also need notification on loss of a thread-group or mm, so I do
+> my best to emulate those based on thread-to-thread notification.
+>
+> ...
+>
+> The way I use it pdeath_signal:
+>
+> The parent is one of many tasks within a task group.
+> The child is not within that thread group, but shares VM.
+> (the child is single threaded, existing only to get the signal)
+> For each task in the thread group, there is a child task
+> waiting for parent death notification. (there are two other
+> tasks sharing VM but not in the task group: one to do
+> async memory searching, and one to communicate with
+> a user interface for debugging -- like an interactive valgrind)
+
+Oleg.
+
