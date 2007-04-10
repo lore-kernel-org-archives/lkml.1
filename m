@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030524AbXDJORv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030532AbXDJOWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030524AbXDJORv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 10:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030583AbXDJORv
+	id S1030532AbXDJOWg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 10:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030576AbXDJOWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 10:17:51 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:39422 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030524AbXDJORt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 10:17:49 -0400
-Message-ID: <461B9CA6.8030707@free.fr>
-Date: Tue, 10 Apr 2007 16:18:14 +0200
-From: John <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Tue, 10 Apr 2007 10:22:36 -0400
+Received: from outmx001.isp.belgacom.be ([195.238.5.51]:38166 "EHLO
+	outmx001.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030532AbXDJOWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 10:22:34 -0400
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: "Mouawad, Tony" <Tony.Mouawad@christiedigital.com>
+Subject: Re: Help Understanding Linux memory management
+Date: Tue, 10 Apr 2007 16:22:26 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <AD98412A5373CC4AA643D9C021922A541C4DC4@cdskitexg01.cds.int>
+In-Reply-To: <AD98412A5373CC4AA643D9C021922A541C4DC4@cdskitexg01.cds.int>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, tglx@timesys.com,
-       John <linux.kernel@free.fr>
-Subject: Re: 2.6.20-rt8 patch tweaked for 2.6.20.5
-References: <461672D8.7090100@free.fr> <20070406173639.GA2929@elte.hu> <461B53CD.1030603@free.fr> <20070410131724.GA18553@elte.hu>
-In-Reply-To: <20070410131724.GA18553@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704101622.26285.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+Hi,
 
-> John wrote:
-> 
->> I'd be happy to generate a clean patch!
->> (Would you agree to host it in your directory?)
->> http://people.redhat.com/mingo/realtime-preempt/older/
-> 
-> sure, i can put it there.
+> I've been a MS Windows based programmer for a very long time and was
+> recently tossed in an environment where I am developing embedded apps on
+> the m68k / Linux platform.  That makes me a Linux newbie.  I started
+> asking a few questions on various IRC channels and was directed to this
+> group.  So, I will start asking:
+>
+> These are questions derived from observations on the MCF 5475 CPU
+> running Linux 2.6.10 built for the m68k platform.  Disk swapping is
+> disabled.
+>
+> 1) When physical memory runs low, the memory manager will try to use
+> memory currently allocated to the pagecache.  Is this true?
+>
+> 2) When vm.overcommit_memory = 2 (overcommit disabled), and memory runs
+> low, it appears that the memory manager does not try to use memory
+> currently allocated to pagecache.  Is this true?
+>
+> 3) Is it possible to disable the pagecache?
 
-Great! Can you tell me how you generate the original -rt patch, so I can 
-provide an updated version when a new 2.6.20 kernel is released?
+Have you read the "Understanding the Linux Virtual Memory Manager" book by Mel 
+Gorman ? It describes the virtual memory manager in details. I was impressed 
+by the amount of technical information Mel Gorman gathered and explained 
+clearly in a single book. Given the ever-changing nature of the Linux kernel, 
+such detailed documentation about core subsystem is often hard to find.
 
->> 3. linux/kernel/futex.c
->> [ I'm not sure I've made the appropriate changes here ]
->>
->> Basically, we want to replace
->>   spin_lock(&pi_state->pi_mutex.wait_lock);
->> with
->>   spin_lock_irqsave(&pi_state->pi_mutex.wait_lock, flags);
->>
->> and we want to replace
->>   spin_unlock(&pi_state->pi_mutex.wait_lock);
->> with
->>   spin_unlock_irqrestore(&pi_state->pi_mutex.wait_lock, flags);
->>
->> Is that correct?
-> 
-> yes.
+You can get the book at 
+http://www.phptr.com/bookstore/product.asp?isbn=0131453483&rl=1#
 
-OK.
-
->> 5. linux/net/xfrm/xfrm_user.c
->> [ I'm not sure I've made the appropriate changes here ]
->>
->> Remove a patch that was already applied to 2.6.20.2
->> cf. patch-2.6.20.2
->>
->> --- a/net/xfrm/xfrm_user.c
->> +++ b/net/xfrm/xfrm_user.c
->> @@ -1273,10 +1273,6 @@ static int xfrm_get_policy(struct sk_buff *skb, 
->> struct nlmsghdr *nlh,
->>  		xp = xfrm_policy_bysel_ctx(type, p->dir, &p->sel, 
->>  		tmp.security, delete);
->>  		security_xfrm_policy_free(&tmp);
->>  	}
->> -	if (delete)
->> -		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
->> -			       AUDIT_MAC_IPSEC_DELSPD, (xp) ? 1 : 0, xp, 
->> NULL);
->> -
->>  	if (xp == NULL)
->>  		return -ENOENT;
->>
->> @@ -1292,8 +1288,14 @@ static int xfrm_get_policy(struct sk_buff *skb, 
->> struct nlmsghdr *nlh,
->>  					      MSG_DONTWAIT);
->>  		}
->>  	} else {
->> -		if ((err = security_xfrm_policy_delete(xp)) != 0)
->> +		err = security_xfrm_policy_delete(xp);
->> +
->> +		xfrm_audit_log(NETLINK_CB(skb).loginuid, NETLINK_CB(skb).sid,
->> +			       AUDIT_MAC_IPSEC_DELSPD, err ? 0 : 1, xp, 
->> NULL);
->> +
->> +		if (err != 0)
->>  			goto out;
->> +
->>  		c.data.byid = p->index;
->>  		c.event = nlh->nlmsg_type;
->>  		c.seq = nlh->nlmsg_seq;
->>
->>
->> As a side note, I find the expression
->>   err ? 0 : 1
->> suspect. Why not write !err ?
-> 
-> it was in the original code and i didn't want to change that. I've 
-> attached the original patch below - the bug is probably fixed upstream 
-> meanwhile (in a different way) so no need to do any change there.
-
-If I understand correctly, removing that specific patch from 
-patch-2.6.20-rt8 is the appropriate course of action then?
-
-Regards.
+Laurent Pinchart
