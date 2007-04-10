@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031446AbXDJSvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031449AbXDJSwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031446AbXDJSvQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 14:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031443AbXDJSvQ
+	id S1031449AbXDJSwB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 14:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031443AbXDJSwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 14:51:16 -0400
-Received: from mail.screens.ru ([213.234.233.54]:46351 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031434AbXDJSvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 14:51:15 -0400
-Date: Tue, 10 Apr 2007 22:50:27 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] reduce reparent_to_init()
-Message-ID: <20070410185027.GA101@tv-sign.ru>
+	Tue, 10 Apr 2007 14:52:01 -0400
+Received: from ojjektum.uhulinux.hu ([62.112.194.64]:33781 "EHLO
+	ojjektum.uhulinux.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031449AbXDJSwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 14:52:00 -0400
+Date: Tue, 10 Apr 2007 20:51:58 +0200
+From: Egmont Koblinger <egmont@uhulinux.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] console UTF-8 fixes
+Message-ID: <20070410185158.GA32259@uhulinux.hu>
+References: <20070406191245.GA11974@uhulinux.hu> <4616A2C7.3030000@zytor.com> <20070407092451.GA8779@uhulinux.hu> <Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr> <20070407172603.GA25351@uhulinux.hu> <4617DBF7.5060009@zytor.com> <20070410094325.GB9143@uhulinux.hu> <461BB092.3070201@zytor.com> <20070410171924.GA18314@uhulinux.hu> <461BC99F.7020604@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <461BC99F.7020604@zytor.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move some random stuff which doesn't need tasklist_lock from reparent_to_init()
-to its caller, daemonize(). Strictly speaking, rlim is protected by task_lock()
-but we don't need it to copy init_task->rlim.
+On Tue, Apr 10, 2007 at 10:30:07AM -0700, H. Peter Anvin wrote:
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> Really?  Why is CJK so much more fundamental than, say, Arabic?
 
---- 2.6.21-rc5/kernel/exit.c~1_REDUCE	2007-04-05 12:18:28.000000000 +0400
-+++ 2.6.21-rc5/kernel/exit.c	2007-04-10 21:32:44.000000000 +0400
-@@ -271,7 +271,6 @@ static void reparent_to_init(void)
- 	write_lock_irq(&tasklist_lock);
- 
- 	ptrace_unlink(current);
--	/* Reparent to init */
- 	remove_parent(current);
- 	current->parent = child_reaper(current);
- 	current->real_parent = child_reaper(current);
-@@ -280,17 +279,8 @@ static void reparent_to_init(void)
- 	/* Set the exit signal to SIGCHLD so we signal init on exit */
- 	current->exit_signal = SIGCHLD;
- 
--	if (!has_rt_policy(current) && (task_nice(current) < 0))
--		set_user_nice(current, 0);
--	/* cpus_allowed? */
--	/* rt_priority? */
--	/* signals? */
- 	security_task_reparent_to_init(current);
--	memcpy(current->signal->rlim, init_task.signal->rlim,
--	       sizeof(current->signal->rlim));
--	atomic_inc(&(INIT_USER->__count));
- 	write_unlock_irq(&tasklist_lock);
--	switch_uid(INIT_USER);
- }
- 
- void __set_special_pids(pid_t session, pid_t pgrp)
-@@ -402,6 +392,17 @@ void daemonize(const char *name, ...)
- 	atomic_inc(&current->files->count);
- 
- 	reparent_to_init();
-+
-+	if (!has_rt_policy(current) && (task_nice(current) < 0))
-+		set_user_nice(current, 0);
-+	/* cpus_allowed? */
-+	/* rt_priority? */
-+	/* signals? */
-+	memcpy(current->signal->rlim, init_task.signal->rlim,
-+	       sizeof(current->signal->rlim));
-+
-+	atomic_inc(&(INIT_USER->__count));
-+	switch_uid(INIT_USER);
- }
- 
- EXPORT_SYMBOL(daemonize);
+Not more fundamental at all. It's just perhaps easier to "support" (I mean
+keep track of the cursor, not to really support them of course).
 
+I can't see any reason why these two scripts should be handled identically:
+either support both or none. If it's technically easier to support one and
+harder to support the other, why not implement the first now? Maybe someone
+will implement the other one later.
+
+Oh! Wait a moment! I haven't yet looked at bidi in Unicode, but taking the
+first glimpse it seems to me that U+200E and U+200F control the writing
+direction. Currently the kernel already skips 200E and 200F, doesn't print
+anything, not even a replacement character (see char/consolemap.c). This
+means that RTL is already "supported" at this level: eventually (when RTL
+mode is turned off) the cursor stands where it is expected to stand. In
+between, you either see the right number of replacement symbols, or (if your
+font supports Arabic) you may see the symbols in reverse order. So, after
+all, it's not worse at all than what I want to reach with CJK.
+
+
+
+-- 
+Egmont
