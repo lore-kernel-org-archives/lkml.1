@@ -1,57 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754AbXDJNsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbXDJN4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753754AbXDJNsm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 09:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbXDJNsl
+	id S1753756AbXDJN4g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 09:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbXDJN4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 09:48:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50284 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753750AbXDJNsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 09:48:40 -0400
-Date: Tue, 10 Apr 2007 15:48:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-Message-ID: <20070410134814.GA28016@elte.hu>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com> <Pine.LNX.4.64.0704051352370.6730@woody.linux-foundation.org> <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Apr 2007 09:56:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:28418 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756AbXDJN4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 09:56:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HfbBVLnKNXAJeN93TLzjVGcJe5LoWx2eTc4krxoIg5uMDQ74sQF8wlynEcwNv8YiUBfBONgsQqqmrNjNxGenkc2F5+L+kyL72BdVSLTQh+8e6HVL1mnwbSGCb6MNmRiKhQX0c/ohudxC8/4itjkD8VBt8EIkAEsPiCthWKAZGvQ=
+Message-ID: <4dfa50520704100656n2b8382c5md48f433e460bf582@mail.gmail.com>
+Date: Tue, 10 Apr 2007 07:56:28 -0600
+From: "David Hubbard" <david.c.hubbard@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [lm-sensors] Hardware monitoring subsystem maintainer position is open
+Cc: "LM Sensors" <lm-sensors@lm-sensors.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       "Hans de Goede" <j.w.r.degoede@hhs.nl>
+In-Reply-To: <20070410150227.1bac05b5@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m11wix73ut.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20070410150227.1bac05b5@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jean,
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+I for one will greatly miss your knowledge and helpful hints when I
+work on hardware monitoring drivers. I hope you find success in all
+the things you do!
 
-> Ingo Molnar <mingo@elte.hu> writes:
-> 
-> > no. Two _completely separate_ lists.
-> >
-> > i.e. a to-be-reaped task will still be on the main list _too_. The 
-> > main list is for all the PID semantics rules. The reap-list is just 
-> > for wait4() processing. The two would be completely separate.
-> 
-> And what pray tell except for heuristics is the list of children used 
-> for?
+I understand the difficult position you're in, and if there's any way
+I could convince you to stay, I would. Maybe you would be willing to
+answer a few low-bandwidth questions from time to time? Or jump on to
+#linux-sensors every once in a while?
 
-on a second thought: the p->children list is needed for the whole 
-child/parent task tree, which is needed for sys_getppid(). The question 
-is, does anything require us to reparent to within the same thread 
-group?
+Either way, thanks for everything!
 
-	Ingo
+Cheers,
+David
+
+On 4/10/07, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi all,
+>
+> I am resigning from my role as hardware monitoring subsystem
+> (drivers/hwmon) maintainer. This is too much work for me, I do not have
+> the necessary bandwidth to review all the incoming patches, in
+> particular new drivers, in a timely manner. Patch authors have been
+> complaining about this repeatedly. This is no fun for them, and even
+> less for me, so I'd rather let someone else with more spare time take
+> care of it. If there are volunteers, this is the right time to speak up.
+>
+> I will still be maintaining the individual hardware monitoring drivers
+> I am listed for in file MAINTAINERS (adm1025, f71805f, lm83 and lm90)
+> as well as the I2C subsystem. No change here.
+>
+> I will continue to feed -mm with pending hwmon patches until 2.6.21
+> final is released, then I'll send everything I have to Linus for
+> 2.6.22-rc1, the last of which will be:
+>
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> ---
+>  MAINTAINERS |    5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+>
+> --- linux-2.6.21-rc6.orig/MAINTAINERS   2007-04-10 13:49:09.000000000 +0200
+> +++ linux-2.6.21-rc6/MAINTAINERS        2007-04-10 14:28:31.000000000 +0200
+> @@ -1467,12 +1467,9 @@ W:       http://gigaset307x.sourceforge.net/
+>  S:     Maintained
+>
+>  HARDWARE MONITORING
+> -P:     Jean Delvare
+> -M:     khali@linux-fr.org
+>  L:     lm-sensors@lm-sensors.org
+>  W:     http://www.lm-sensors.org/
+> -T:     quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-hwmon/
+> -S:     Maintained
+> +S:     Orphan
+>
+>  HARDWARE RANDOM NUMBER GENERATOR CORE
+>  P:     Michael Buesch
+>
+> Then I'll probably keep an eye on hwmon in Linus' tree until 2.6.22
+> final is released, and after that I'm done with it.
+>
+> --
+> Jean Delvare
+>
+> _______________________________________________
+> lm-sensors mailing list
+> lm-sensors@lm-sensors.org
+> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+>
