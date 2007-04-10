@@ -1,71 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXDJBGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030278AbXDJBHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030196AbXDJBGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 21:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030197AbXDJBGx
+	id S1030278AbXDJBHU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 21:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030258AbXDJBHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 21:06:53 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39302 "EHLO smtp.osdl.org"
+	Mon, 9 Apr 2007 21:07:20 -0400
+Received: from holomorphy.com ([66.93.40.71]:46497 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030196AbXDJBGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 21:06:52 -0400
-Date: Mon, 9 Apr 2007 18:06:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Helge Hafting <helgehaf@aitel.hist.no>
-Cc: Dmitry Torokhov <dtor@insightbb.com>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: usb touchscreen breakage in 2.6.21-rc5-mm4 ?
-Message-Id: <20070409180642.c9847de2.akpm@linux-foundation.org>
-In-Reply-To: <20070409223643.GB2198@aitel.hist.no>
-References: <20070407005458.GA18985@aitel.hist.no>
-	<200704062237.13118.dtor@insightbb.com>
-	<20070409223643.GB2198@aitel.hist.no>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1030274AbXDJBHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 21:07:19 -0400
+Date: Mon, 9 Apr 2007 18:07:31 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nishanth Aravamudan <nacc@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, drfickle@us.ibm.com
+Subject: Re: 2.6.21-rc6-mm1
+Message-ID: <20070410010731.GB2986@holomorphy.com>
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070410005054.GA4027@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070410005054.GA4027@us.ibm.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Apr 2007 00:36:43 +0200
-Helge Hafting <helgehaf@aitel.hist.no> wrote:
+On Mon, Apr 09, 2007 at 05:50:54PM -0700, Nishanth Aravamudan wrote:
+>  static int hugetlbfs_set_page_dirty(struct page *page)
+>  {
+> -	struct page *head = (struct page *)page_private(page);
+> +	struct page *head = compound_head(page);
 
-> On Fri, Apr 06, 2007 at 10:37:12PM -0400, Dmitry Torokhov wrote:
-> > On Friday 06 April 2007 20:54, Helge Hafting wrote:
-> > > I have an usb  touchscreen (egalax variety) that works with
-> > > the 2.6.18 kernel supplied by debian.
-> > > 
-> > > It fails when I compile 2.6.21-rc5-mm4, tuned to the machine
-> > > in question.  Unlike the debian kernel, this kernel don't use
-> > > modules in order to save boot time.
-> > > 
-> > > The strange thing is, 2.6.21-rc5-mm4 recognizes the device.
-> > > dmesg says things like 
-> > > usb 3-2: Manufacturer: eGalac Inc.
-> > > usb 3-2: Product: USB TouchController
-> > > 
-> > > and a lot more. Unlike 2.6.18, it never gets around to say
-> > > "usbcore: registered new driver usbtouchscreen"
-> > > which seems to indicate a problem.
-> > > usbcore registers several other drivers, such as usbserial and pl2303
-> > > that makes the gps work. It also registers other drivers like
-> > > usb-storage,usbfs,hub,libusual,hiddev,usbhid.  But not usbtouchscreen.
-> > > I believe I have turned on every config option for usb touchscreen,
-> > > this should not be missing.
-> > > 
-> > > Is there something wrong, or could there be a seemingly unrelated option
-> > > that I need to turn on?
-> > 
-> > Please make sure that you have CONFIG_USB_TOUCHSCREEN turned on.
-> > 
-> Unfortunately, I have:
-> CONFIG_USB_TOUCHSCREEN=y
-> CONFIG_USB_TOUCHSCREEN_EGALAX=y
-> 
-> Anything else I may have missed?
-> 
+Thanks for cleaning this up.
 
-Is 2.6.21-rc6 OK?
 
-If so, please keep a close eye on 2.6.22-rcX, let us know if/when we've
-moved this breakage into mainline :(
+-- wli
