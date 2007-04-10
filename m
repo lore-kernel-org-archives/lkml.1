@@ -1,62 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030664AbXDJU5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030657AbXDJU6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030664AbXDJU5K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 16:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933145AbXDJU5J
+	id S1030657AbXDJU6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 16:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030667AbXDJU6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 16:57:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33433 "EHLO ogre.sisk.pl"
+	Tue, 10 Apr 2007 16:58:30 -0400
+Received: from palrel13.hp.com ([156.153.255.238]:39571 "EHLO palrel13.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932234AbXDJU5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 16:57:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] swsusp: Use rbtree for tracking allocated swap
-Date: Tue, 10 Apr 2007 23:00:28 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <ncunningham@linuxmail.org>
-References: <200704072320.40238.rjw@sisk.pl> <200704081902.35857.rjw@sisk.pl> <20070409123920.GA4251@ucw.cz>
-In-Reply-To: <20070409123920.GA4251@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1030657AbXDJU63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 16:58:29 -0400
+Date: Tue, 10 Apr 2007 15:58:27 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: akpm@linux-foundation.org, jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       steve.cameron@hp.com
+Subject: [PATCH 1/3] cciss: reformat error handling 
+Message-ID: <20070410205827.GA19579@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704102300.29411.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 9 April 2007 14:39, Pavel Machek wrote:
-> Hi!
-> 
-> > > > Some time ago we discussed the possibility of simplifying the swsusp's approach
-> > > > towards tracking the swap pages allocated by it for saving the image (so that
-> > > > they can be freed if there's an error).
-> > > > 
-> > > > I think we can get back to it now, as it is a nice optimization that should
-> > > > allow us to use less memory (almost always) and improve performance a bit.
-> > > > 
-> > > 
-> > > Well, I do not think you can measure the difference, but...
-> > 
-> > As far as the memory usage is concerned, I can. :-)  Usually, it takes 1 extent
-> > (40 B on x86_64) to register all of the allocated swap pages.  If bitmaps are
-> > used, we need as many bits as there are swap pages available (for 1 GB swap
-> > and 4 KB pages that would be ~250000 bits, which gives ~8 pages, and we can
-> > save more than 800 extents using that much memory).
-> 
-> Well... obviously it works for the best case. OTOH, for the worst, it
-> needs 40bytes for every 2 bits. That's 16000% worse. And for that
-> nightmare-fragmented 1GB swap, you'll need 5000000bytes... which is
-> pretty bad.
-> 
-> OTOH 5MB RAM per 1GB swap is not _too_ bad... so we can do it...
+PATCH 1/3
+This patch reformats some error handling code to reduce line lengths a bit. It
+accompanies the SG_IO patch which is 2/3 of this set.
 
-In real-life scenarios you always need to keep free swap space enough for
-suspending all the time, which IMO effectively prevents the "totally fragmented
-1 GB swap" situation from happening.
+Please consider this for inclusion.
 
-Greetings,
-Rafael
+Signed-off-by: Stephen M. Cameron <steve.cameron@hp.com>
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+
+---
+
+ linux-2.6.21-rc6/drivers/block/cciss.c |  176 ++++++++++++++++-----------------
+ 1 files changed, 90 insertions(+), 86 deletions(-)
+
+diff -puN linux-2.6.21-rc6/drivers/block/cciss.c~reformat_error_handling linux-2.6.21-rc6/drivers/block/cciss.c
+--- cciss_sg_io/linux-2.6.21-rc6/drivers/block/cciss.c~reformat_error_handling	2007-04-10 14:22:46.000000000 -0500
++++ cciss_sg_io-scameron/linux-2.6.21-rc6/drivers/block/cciss.c	2007-04-10 14:31:58.000000000 -0500
+@@ -2349,95 +2349,99 @@ static inline void complete_command(ctlr
+ 	if (timeout)
+ 		status = 0;
+ 
+-	if (cmd->err_info->CommandStatus != 0) {	/* an error has occurred */
+-		switch (cmd->err_info->CommandStatus) {
+-			unsigned char sense_key;
+-		case CMD_TARGET_STATUS:
+-			status = 0;
+-
+-			if (cmd->err_info->ScsiStatus == 0x02) {
+-				printk(KERN_WARNING "cciss: cmd %p "
+-				       "has CHECK CONDITION "
+-				       " byte 2 = 0x%x\n", cmd,
+-				       cmd->err_info->SenseInfo[2]
+-				    );
+-				/* check the sense key */
+-				sense_key = 0xf & cmd->err_info->SenseInfo[2];
+-				/* no status or recovered error */
+-				if ((sense_key == 0x0) || (sense_key == 0x1)) {
+-					status = 1;
+-				}
+-			} else {
+-				printk(KERN_WARNING "cciss: cmd %p "
+-				       "has SCSI Status 0x%x\n",
+-				       cmd, cmd->err_info->ScsiStatus);
++	if (cmd->err_info->CommandStatus == 0)	/* no error has occurred */
++		goto after_error_processing;
++
++	switch (cmd->err_info->CommandStatus) {
++		unsigned char sense_key;
++	case CMD_TARGET_STATUS:
++		status = 0;
++
++		if (cmd->err_info->ScsiStatus == 0x02) {
++			printk(KERN_WARNING "cciss: cmd %p "
++			       "has CHECK CONDITION "
++			       " byte 2 = 0x%x\n", cmd,
++			       cmd->err_info->SenseInfo[2]
++			    );
++			/* check the sense key */
++			sense_key = 0xf & cmd->err_info->SenseInfo[2];
++			/* no status or recovered error */
++			if ((sense_key == 0x0) || (sense_key == 0x1)) {
++				status = 1;
+ 			}
+-			break;
+-		case CMD_DATA_UNDERRUN:
+-			printk(KERN_WARNING "cciss: cmd %p has"
+-			       " completed with data underrun "
+-			       "reported\n", cmd);
+-			break;
+-		case CMD_DATA_OVERRUN:
+-			printk(KERN_WARNING "cciss: cmd %p has"
+-			       " completed with data overrun "
+-			       "reported\n", cmd);
+-			break;
+-		case CMD_INVALID:
+-			printk(KERN_WARNING "cciss: cmd %p is "
+-			       "reported invalid\n", cmd);
+-			status = 0;
+-			break;
+-		case CMD_PROTOCOL_ERR:
+-			printk(KERN_WARNING "cciss: cmd %p has "
+-			       "protocol error \n", cmd);
+-			status = 0;
+-			break;
+-		case CMD_HARDWARE_ERR:
+-			printk(KERN_WARNING "cciss: cmd %p had "
+-			       " hardware error\n", cmd);
+-			status = 0;
+-			break;
+-		case CMD_CONNECTION_LOST:
+-			printk(KERN_WARNING "cciss: cmd %p had "
+-			       "connection lost\n", cmd);
+-			status = 0;
+-			break;
+-		case CMD_ABORTED:
+-			printk(KERN_WARNING "cciss: cmd %p was "
+-			       "aborted\n", cmd);
+-			status = 0;
+-			break;
+-		case CMD_ABORT_FAILED:
+-			printk(KERN_WARNING "cciss: cmd %p reports "
+-			       "abort failed\n", cmd);
+-			status = 0;
+-			break;
+-		case CMD_UNSOLICITED_ABORT:
+-			printk(KERN_WARNING "cciss%d: unsolicited "
+-			       "abort %p\n", h->ctlr, cmd);
+-			if (cmd->retry_count < MAX_CMD_RETRIES) {
+-				retry_cmd = 1;
+-				printk(KERN_WARNING
+-				       "cciss%d: retrying %p\n", h->ctlr, cmd);
+-				cmd->retry_count++;
+-			} else
+-				printk(KERN_WARNING
+-				       "cciss%d: %p retried too "
+-				       "many times\n", h->ctlr, cmd);
+-			status = 0;
+-			break;
+-		case CMD_TIMEOUT:
+-			printk(KERN_WARNING "cciss: cmd %p timedout\n", cmd);
+-			status = 0;
+-			break;
+-		default:
+-			printk(KERN_WARNING "cciss: cmd %p returned "
+-			       "unknown status %x\n", cmd,
+-			       cmd->err_info->CommandStatus);
+-			status = 0;
++		} else {
++			printk(KERN_WARNING "cciss: cmd %p "
++			       "has SCSI Status 0x%x\n",
++			       cmd, cmd->err_info->ScsiStatus);
+ 		}
++		break;
++	case CMD_DATA_UNDERRUN:
++		printk(KERN_WARNING "cciss: cmd %p has"
++		       " completed with data underrun "
++		       "reported\n", cmd);
++		break;
++	case CMD_DATA_OVERRUN:
++		printk(KERN_WARNING "cciss: cmd %p has"
++		       " completed with data overrun "
++		       "reported\n", cmd);
++		break;
++	case CMD_INVALID:
++		printk(KERN_WARNING "cciss: cmd %p is "
++		       "reported invalid\n", cmd);
++		status = 0;
++		break;
++	case CMD_PROTOCOL_ERR:
++		printk(KERN_WARNING "cciss: cmd %p has "
++		       "protocol error \n", cmd);
++		status = 0;
++		break;
++	case CMD_HARDWARE_ERR:
++		printk(KERN_WARNING "cciss: cmd %p had "
++		       " hardware error\n", cmd);
++		status = 0;
++		break;
++	case CMD_CONNECTION_LOST:
++		printk(KERN_WARNING "cciss: cmd %p had "
++		       "connection lost\n", cmd);
++		status = 0;
++		break;
++	case CMD_ABORTED:
++		printk(KERN_WARNING "cciss: cmd %p was "
++		       "aborted\n", cmd);
++		status = 0;
++		break;
++	case CMD_ABORT_FAILED:
++		printk(KERN_WARNING "cciss: cmd %p reports "
++		       "abort failed\n", cmd);
++		status = 0;
++		break;
++	case CMD_UNSOLICITED_ABORT:
++		printk(KERN_WARNING "cciss%d: unsolicited "
++		       "abort %p\n", h->ctlr, cmd);
++		if (cmd->retry_count < MAX_CMD_RETRIES) {
++			retry_cmd = 1;
++			printk(KERN_WARNING
++			       "cciss%d: retrying %p\n", h->ctlr, cmd);
++			cmd->retry_count++;
++		} else
++			printk(KERN_WARNING
++			       "cciss%d: %p retried too "
++			       "many times\n", h->ctlr, cmd);
++		status = 0;
++		break;
++	case CMD_TIMEOUT:
++		printk(KERN_WARNING "cciss: cmd %p timedout\n", cmd);
++		status = 0;
++		break;
++	default:
++		printk(KERN_WARNING "cciss: cmd %p returned "
++		       "unknown status %x\n", cmd,
++		       cmd->err_info->CommandStatus);
++		status = 0;
+ 	}
++
++after_error_processing:
++
+ 	/* We need to return this command */
+ 	if (retry_cmd) {
+ 		resend_cciss_cmd(h, cmd);
+_
