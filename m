@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030314AbXDJCqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbXDJDFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030314AbXDJCqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 22:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030319AbXDJCqt
+	id S932456AbXDJDFK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 23:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbXDJDFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 22:46:49 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:41075 "EHLO smtp.osdl.org"
+	Mon, 9 Apr 2007 23:05:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47587 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030314AbXDJCqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 22:46:48 -0400
-Date: Mon, 9 Apr 2007 19:46:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	id S932456AbXDJDFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 23:05:08 -0400
+Date: Mon, 9 Apr 2007 23:05:00 -0400
+From: Dave Jones <davej@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Dave Jones <davej@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Robin Holt <holt@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-Subject: Re: init's children list is long and slows reaping children.
-In-Reply-To: <20070409193056.6b52c354.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704091944580.6730@woody.linux-foundation.org>
-References: <20070405195118.GH22762@lnx-holt.americas.sgi.com>
- <4616CBF0.7090606@garzik.org> <20070409172339.48d661d6.akpm@linux-foundation.org>
- <20070410015912.GE1994@redhat.com> <20070409193056.6b52c354.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: Preemption Broken:  centrino_target busted under SMP on 2.6.20.4
+Message-ID: <20070410030500.GA15509@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>,
+	Linux kernel <linux-kernel@vger.kernel.org>,
+	Venki Pallipadi <venkatesh.pallipadi@intel.com>
+References: <46155CFF.70701@wolfmountaingroup.com> <20070405205034.GB3605@redhat.com> <20070409172651.9bc619d6.akpm@linux-foundation.org> <20070410023108.GA14081@redhat.com> <20070409194142.88f0a5e5.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070409194142.88f0a5e5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 09, 2007 at 07:41:42PM -0700, Andrew Morton wrote:
 
+ > >  > This means we'll call set_cpus_allowed() while in atomic state, but
+ > >  > set_cpus_allowed() does sleepy stuff.
+ > > 
+ > > Puzzled. This diff shouldn't change anything about the context we're in
+ > > when we call set_cpus_allowed, and as we're not seeing warnings now,
+ > > I'm not sure what I'm missing?
+ > 
+ > set_cpus_allowed() will only sleep in special circumstances: when we're
+ > telling the target task that it is not allwed to run on a CPU upon which it
+ > is presently executing.  So it needs to be synchronously migrated off that
+ > CPU, which requires that the set_cpus_allowed() caller block.
+ > 
+ > You're probably just not hitting that case.
 
-On Mon, 9 Apr 2007, Andrew Morton wrote:
-> 
-> >    10 ?        S<     0:00 [khelper]
-> 
-> That one's needed to parent the call_usermodehelper() apps.  I don't think
-> it does anything else.  We used to use keventd for this but that had some
-> problem whcih I forget.
+Oh, now I see it. The set_cpus_allowed that was inside the preempt stuff
+I was adding. (that the diff elided).  Yeah, that's a problem. Bugger.
 
-I think it was one of a long series of deadlocks. 
+ > Probably we should have a might_sleep() in set_cpus_allowed(), although
+ > there might be callers who are guaranteeed to never hit that case and who
+ > might legitimately want special treatment to avoid the warning.
 
-Using a "keventd" for many different things sounds clever and nice, but 
-then sucks horribly when one event triggers another event, and they depend 
-on each other. Solution: use independent threads for the events.
+This whole file is going away in .22, and we have a viable alternative in
+.21 (acpi-cpufreq), so I'm not overly worried about fixing this up
+given it only shows up in debug kernels, especially at this stage in -rc.
 
-		Linus
+(Yeah, it's a cop-out, but unless someone with more interest in this problem
+ steps up, I've bigger fishes to fry).
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
