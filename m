@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031106AbXDJQpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031109AbXDJQqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031106AbXDJQpJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 12:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031107AbXDJQpJ
+	id S1031109AbXDJQqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 12:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031118AbXDJQqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 12:45:09 -0400
-Received: from mga02.intel.com ([134.134.136.20]:46134 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031106AbXDJQpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 12:45:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,390,1170662400"; 
-   d="scan'208"; a="225008976:sNHT6202631771"
-Date: Tue, 10 Apr 2007 09:43:26 -0700
-From: Ashok Raj <ashok.raj@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Shaohua Li <shaohua.li@intel.com>, Ashok Raj <ashok.raj@intel.com>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org, ak@suse.de, gregkh@suse.de,
-       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch 0/8] [Intel IOMMU] Support for Intel Virtualization	Technology for Directed I/O
-Message-ID: <20070410164325.GD31505@linux-os.sc.intel.com>
-References: <20070409215552.221374000@intel.com> <461B4925.9080005@garzik.org> <1176193673.6781.24.camel@sli10-conroe.sh.intel.com> <461B4C28.4010806@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <461B4C28.4010806@garzik.org>
-User-Agent: Mutt/1.4.1i
+	Tue, 10 Apr 2007 12:46:15 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:51102 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1031109AbXDJQqO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 12:46:14 -0400
+Date: Tue, 10 Apr 2007 12:46:11 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Neil Brown <neilb@suse.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>
+Subject: Re: [PATCH (revised)] device_schedule_callback needs a module
+ reference
+In-Reply-To: <20070410151337.03a6596a@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0704101141110.3614-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 04:34:48AM -0400, Jeff Garzik wrote:
-> Shaohua Li wrote:
-> >DMA remapping just uses ACPI table to tell which dma remapping engine a
-> >pci device is controlled by at boot time. At run time, DMA remapping
-> >hasn't any interactive with ACPI.
-> 
-> The Linux kernel _really_ wants a non-ACPI way to detect this.
-> 
-> Just use the hardware registers themselves, you don't need an ACPI table.
-> 
-> 	Jeff
+On Tue, 10 Apr 2007, Cornelia Huck wrote:
 
-ACPI is required just not for identifying the DMA remapping hardware in the
-system. We also need them to identify which engines control which pci devices.
+> Whoops:
+> 
+> In file included from include/linux/interrupt.h:15,
+>                  from include/asm/hardirq.h:18,
+>                  from include/linux/hardirq.h:7,
+>                  from include/asm-generic/local.h:5,
+>                  from include/asm/local.h:1,
+>                  from include/linux/module.h:19,
+>                  from arch/s390/kernel/time.c:16:
+> include/linux/device.h: In function 'device_schedule_callback':
+> include/linux/device.h:374: error: 'THIS_MODULE' undeclared (first use in this function)
+> include/linux/device.h:374: error: (Each undeclared identifier is reported only once
+> include/linux/device.h:374: error: for each function it appears in.)
+> 
+> Maybe better move the implementation of device_schedule_callback() to
+> drivers/base/core.c? (Though I'm not sure why
+> include/asm-s390/hardirq.h includes linux/interrupt.h, and e.g.
+> include/asm-i386/hardirq.h doesn't.)
 
-Also there are some reserved sections that BIOS uses for its purpose that it
-needs identity map.. say for legacy emulation via usb etc that needs
-to be passed to the OS. 
+I don't think moving device_schedule_callback() is the answer.  For one 
+thing, the implementation _has_ to be compiled in the calling module so 
+that THIS_MODULE will have the correct value.  If it were compiled in 
+drivers/base/core.c then it wouldn't refer to the caller's module.
 
-not sure we can get away from using ACPI that easily.. its just only for setup
-information, once the identification is complete we dont bother ACPI anymore.
+The real problem is bad nesting of #includes.  Maybe changing 
+include/asm-s390/hardirq.h not to include linux/interrupt.h will be 
+feasible.
+
+Or perhaps it would be better to move the definition of THIS_MODULE in
+linux/module.h up before all the #include lines, since it seems reasonable
+that a file indirectly included by module.h might need to use THIS_MODULE.
+
+Alan Stern
+
