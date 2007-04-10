@@ -1,49 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbXDJIAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbXDJIEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbXDJIAn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 04:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXDJIAn
+	id S1752225AbXDJIEm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 04:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbXDJIEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 04:00:43 -0400
-Received: from mga01.intel.com ([192.55.52.88]:48190 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753208AbXDJIAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 04:00:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,388,1170662400"; 
-   d="scan'208"; a="227562671:sNHT671757933"
-Subject: Re: [patch 0/8] [Intel IOMMU] Support for Intel Virtualization
-	Technology for Directed I/O
-From: Shaohua Li <shaohua.li@intel.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com
-In-Reply-To: <200704100949.56130.ak@suse.de>
-References: <20070409215552.221374000@intel.com>
-	 <200704100949.56130.ak@suse.de>
-Content-Type: text/plain
-Date: Tue, 10 Apr 2007 15:57:28 +0800
-Message-Id: <1176191848.6781.3.camel@sli10-conroe.sh.intel.com>
+	Tue, 10 Apr 2007 04:04:42 -0400
+Received: from aa014msr.fastwebnet.it ([85.18.95.74]:50934 "EHLO
+	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbXDJIEl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 04:04:41 -0400
+Date: Tue, 10 Apr 2007 10:03:47 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: "Stuart MacDonald" <stuartm@connecttech.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: Alternative to 'git bisect visualize'?
+Message-ID: <20070410100347.44657750@localhost>
+In-Reply-To: <04fe01c77aeb$7d3cd370$294b82ce@stuartm>
+References: <04fe01c77aeb$7d3cd370$294b82ce@stuartm>
+X-Mailer: Sylpheed-Claws 2.4.0 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-10 at 09:49 +0200, Andi Kleen wrote:
-> On Monday 09 April 2007 23:55:52 Ashok Raj wrote:
-> 
-> > Please help review and provide feedback.
-> 
-> High level question: how did you solve the "user X server needs IOMMU bypass"
-> problem?
-Please see patch 5. We have two workarounds for graphics. One is
-completely bypass dma remapping for gfx, this option only works for gfx
-card with dedicated dma remapping engine. The other is doing 1-1 mapping
-for whole physical memory address, then virtual dma address will equal
-to physical address, so gfx can ignore iommu in the case.
+On Mon, 9 Apr 2007 17:10:23 -0400
+"Stuart MacDonald" <stuartm@connecttech.com> wrote:
 
-Thanks,
-Shaohua
+> My problem is that I don't have wish/tk installed. Is there a
+> text-based alternative to visualize that I can use? Or is there a
+> different method to locate a nearby commit?
+> 
+> The answer may involve something as simple as looking at some git
+> state; I am a git newbie, and reading the docs hasn't helped any, so I
+> won't be surprised to find out I'm overlooking something really
+> obvious.
+
+I think this should work:
+
+1) look at "git-bisect log" and take the last good/bad pair
+
+2) "cat .git/refs/heads/bisect" to see where you are now
+
+3) git-log --pretty=oneline GOOD..BAD
+
+4) search for the current commit (found in #2) with "/CURRENT_COMMIT",
+now move around and choose another commit to test
+
+5) git-reset --hard COMMIT_TO_TEST
+
+
+Example:
+
+$ git-bisect start
+$ git-bisect good v2.6.17
+$ git-bisect bad v2.6.18
+Bisecting: 3400 revisions left to test after this
+[2a2ed2db353d949c06b6ef8b6913f65b39111eab] Merge git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild
+
+# 2a2ed2db353d949c06b6ef8b6913f65b39111eab doesn't compile/boot ?
+
+$ git-bisect log
+git-bisect start
+# good: [8ba130df4b67fa40878ccf80d54615132d24bc68] Linux v2.6.17
+git-bisect good 8ba130df4b67fa40878ccf80d54615132d24bc68
+# bad: [119248f4578ca60b09c20893724e10f19806e6f1] Linux v2.6.18. Arrr!
+
+$ git-log --pretty=oneline 8ba130df4b67fa40878ccf80d54615132d24bc68..119248f4578ca60b09c20893724e10f19806e6f1
+
+search for "2a2ed2db353d949c06b6ef8b6913f65b39111eab":
+
+aa4148cfc7b3b93eeaf755a7d14f10afaffe9a96 [PATCH] devfs: Remove devfs support from the serial subsystem
+bdaf8529385d5126ef791e8f1914afff8cd59bcf [PATCH] devfs: Remove devfs from the init code
+a29641883f57f36424e3219ae9ff48dd6cd34de0 [PATCH] devfs: Remove devfs from the partition code
+5c3927dc3468f47b803c9e1bb82cbed2bbd411ab [PATCH] devfs: Remove devfs documentation from the kernel tree
+d8deac5094988c7ad1127ee61f52c59a952fcabb [PATCH] devfs: Remove devfs from the kernel tree
+5fd571cbc13db113bda26c20673e1ec54bfd26b4 [PATCH] Array overrun in drivers/infiniband/core/cma.c
+09c0dc68625c06f5b1e786aad0d5369b592179e6 Revert "[PATCH] kthread: update loop.c to use kthread"
+6e58f5c9a841e59233c5997df082e93329ea61e0 [ARM] 3656/1: S3C2412: Add S3C2412 and S3C2413 documenation
+>>> 2a2ed2db353d949c06b6ef8b6913f65b39111eab Merge git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild
+972d19e837833b93466c6f6a8ef2a7d653000aa3 Merge master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6
+cdf4f383a4b0ffbf458f65380ecffbeee1f79841 Merge master.kernel.org:/pub/scm/linux/kernel/git/dtor/input
+954b36d48b495afed2880320750858a2eae312c9 [PATCH] m68knommu: use configurable RAM setup page_offset.h
+12ddae3348def8808fb755b23225b18fc4adfbe3 [PATCH] m68knommu: use configurable RAM setup in start up code
+73e2fba8dc1e0a686073a5183be1a99e9285d2ac [PATCH] m68knommu: use configurable RAM setup in linker script
+63e413d19db0018e443a43c6c7a482993edf79cf [PATCH] m68knommu: create configurable RAM setup
+d2f386d7c182c1420f797093d67bb09a7251f113 [PATCH] m68knommu: remove unused vars from generic 68328 start code
+2ae9cb6bd4c23616b229b135ea57a93a6a24e13a [PATCH] m68knommu: remove __ramvec from 68328/pilot start code
+
+# pick another one...
+
+$ git-reset --hard aa4148cfc7b3b93eeaf755a7d14f10afaffe9a96
+
+-- 
+	Paolo Ornati
+	Linux 2.6.21-rc6-gc2481cc4 on x86_64
