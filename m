@@ -1,89 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030584AbXDJUhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbXDJUjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030584AbXDJUhA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 16:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030588AbXDJUg7
+	id S1753509AbXDJUjq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 16:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbXDJUjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 16:36:59 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:64554 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030584AbXDJUg6 (ORCPT
+	Tue, 10 Apr 2007 16:39:46 -0400
+Received: from mabruk.micah.cowan.name ([66.150.225.51]:57704 "EHLO
+	mabruk.micah.cowan.name" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753509AbXDJUjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 16:36:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=jVq/qByQuHfpuW8sTsS4LUTPKmgZgF8urVJfDUHjuFvAOYvTGTFd+aYyBsdwQCBm4wNN20uqwfP29rmCVs5ydwDBAT8+F7V/Hs5OLyGZ9QOegNzXzmKNR+CIk9P66aysJ8sGdWqL+diqHjY2p5SF9m6n8LsyrmdldN3EjlXwJdQ=
-Date: Wed, 11 Apr 2007 00:37:44 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add spaces on either side of case "..." operator.
-Message-ID: <20070410203744.GA5840@martell.zuzino.mipt.ru>
-References: <Pine.LNX.4.64.0704100721050.13729@CPE00045a9c397f-CM001225dbafb6> <20070410090555.d847d466.akpm@linux-foundation.org>
+	Tue, 10 Apr 2007 16:39:45 -0400
+X-Greylist: delayed 1158 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Apr 2007 16:39:45 EDT
+Message-ID: <461BF183.10007@cowan.name>
+Date: Tue, 10 Apr 2007 13:20:19 -0700
+From: Micah Cowan <micah@cowan.name>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070410090555.d847d466.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: Use of SIGXFSZ outside of soft limits
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 09:05:55AM -0700, Andrew Morton wrote:
-> On Tue, 10 Apr 2007 07:23:35 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
-> > Following the programming advice laid down in the gcc manual, make
-> > sure the case "..." operator has spaces on either side.
+Hello,
 
-> > http://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Case-Ranges.html#Case-Ranges:
-> >
-> >   "Be careful: Write spaces around the ..., for otherwise it may be
-> > parsed wrong when you use it with integer values."
+I would like to object to a non-standard and, IMHO, ill-advised 
+application of SIGXFSZ to non-rlimit-related filesize limits, and 
+request that its use be minimized as much as possible. SUSv3 does not 
+sanction its use in any situation other than that of exceeding the "soft 
+file size limit for the process". While, of course, we are free to do as 
+we like, and ignore the standards when it is advisable to do so, in this 
+case, it seems fairly clear that sending an unexpected signal whose 
+default action is to dump core, instead of the standard-approved 
+behavior of returning an error signal and setting errno to EFBIG, is a 
+move in the wrong direction. I'd say it's the wrong thing to do for 
+resource-limited file sizes as well, but that at least is 
+standard-mandated, and I guess we're pretty much stuck with it.
 
-> > --- a/kernel/audit.c
-> > +++ b/kernel/audit.c
-> > @@ -515,8 +515,8 @@ static int audit_netlink_ok(struct sk_buff *skb, u16 msg_type)
-> >  			err = -EPERM;
-> >  		break;
-> >  	case AUDIT_USER:
-> > -	case AUDIT_FIRST_USER_MSG...AUDIT_LAST_USER_MSG:
-> > -	case AUDIT_FIRST_USER_MSG2...AUDIT_LAST_USER_MSG2:
-> > +	case AUDIT_FIRST_USER_MSG ... AUDIT_LAST_USER_MSG:
-> > +	case AUDIT_FIRST_USER_MSG2 ... AUDIT_LAST_USER_MSG2:
->
-> hm... We have:
->
-> #define AUDIT_FIRST_USER_MSG    1100    /* Userspace messages mostly uninteresting to kernel */
-> #define AUDIT_USER_AVC          1107    /* We filter this differently */
-> #define AUDIT_LAST_USER_MSG     1199
->
-> and CPP turns that into
->
->  case 1100 ...1199:
->  case 2100 ...2999:
->
-> and it does the same when the comments are stripped from the #defines.
->
-> So we were saved by the trailing space which cpp added to the expanded
-> macro.  I wonder why cpp did that, and to what extent one can rely cpp
-> doing that.
+The problem, currently, is that users are encountering issues when they 
+use cp or mv, etc, to transfer large files from one filesystem to 
+another (for example, from ext3 to vfat). If the file size is greater 
+than 4g, cp will abort with SIGXFSZ. This is annoying to users, 
+particularly if there was more than one source file for the command (a 
+hierarchical copy, for instance). In such a case, they would normally 
+expect failure for the one problem source file, followed by continued 
+processing of the remaining source files.
 
-The only reason I can come up with is temporary files with preprocessing
-output. Imagine the code:
+Now, of course, the coreutils guys could block or handle SIGXFSZ, which 
+is exactly what I proposed when I was under my initial impression that 
+the OS had license to send SIGXFSZ under these circumstances. Also, 
+users could wrap the binaries with their own program that first blocks 
+the signal, allowing it to get an EFBIG error instead.
 
-	#define FOO 1
-	FOO.
+The problem is, that in order to avoid abnormal termination, every 
+program that ever uses write() would need to trap SIGXFSZ: "fixing" cp, 
+mv, dd and install would only help alleviate the problem for the most 
+"likely" programs to encounter the issue.
 
-Here we have
-a) replacement list of token FOO consists of one token -- 1,
-b) pp-token list after preprocessing consists of 4 pp-tokens: newline, 1, .,
-   newline
+Furthermore, in addition to being (IMO) the wrong thing to do from a 
+practical usability standpoint, it is also the wrong thing to do from a 
+standards-conformance standpoint. If one looks at what SUSv3 has to say 
+about it at 
+http://www.opengroup.org/onlinepubs/000095399/functions/write.html :
 
-BUT, write it to temporary file:
+<<<
+If a write() requests that more bytes be written than there is room for 
+(for example, [XSI] [Option Start]  the process' file size limit or 
+[Option End] the physical end of a medium), only as many bytes as there 
+is room for shall be written. For example, suppose there is space for 20 
+bytes more in a file before reaching a limit. A write of 512 bytes will 
+return 20. The next write of a non-zero number of bytes would give a 
+failure return (except as noted below).
+ >>>
 
-	
-	1.
+Among the exceptions "noted below" is:
 
-Whoops, there are 3 or 4 pp-tokens? If you don't know history, there are
-3, if you do, there are 4.
+<<<
+[XSI] [Option Start] If the request would cause the file size to exceed 
+the soft file size limit for the process and there is no room for any 
+bytes to be written, the request shall fail and the implementation shall 
+generate the SIGXFSZ signal for the thread. [Option End]
+ >>>
+
+but no exception is made for file size limits other than "soft... 
+process" limits; thus the requirement that the "next write of a non-zero 
+number of bytes would give a failure return" still stands.
+
+I would therefore propose that we eliminate the signalling of SIGXFSZ in 
+all cases other than the case of the requested write causing a file's 
+size to exceed limits set by setrlimit(RLIMIT_FSIZE, ...). I'd be happy 
+to submit a patch to this effect if there is agreement that this is the 
+right thing to do.
+
+( Brief discussion with coreutils folks: 
+http://lists.gnu.org/archive/html/bug-coreutils/2007-04/msg00070.html )
+
+-- 
+Micah J. Cowan
+Programmer, musician, typesetting enthusiast, gamer...
+http://micah.cowan.name/
 
