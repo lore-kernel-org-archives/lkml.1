@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXDJBTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbXDJB2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932386AbXDJBTF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Apr 2007 21:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXDJBTF
+	id S932396AbXDJB2K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Apr 2007 21:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXDJB2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Apr 2007 21:19:05 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39486 "EHLO smtp.osdl.org"
+	Mon, 9 Apr 2007 21:28:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58334 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932386AbXDJBTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Apr 2007 21:19:02 -0400
-Date: Mon, 9 Apr 2007 18:18:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
-Subject: Re: per-thread rusage
-Message-Id: <20070409181833.53eb2be9.akpm@linux-foundation.org>
-In-Reply-To: <20070410011257.GC2986@holomorphy.com>
-References: <20070404172931.GM2986@holomorphy.com>
-	<20070404194829.1a93d8fd.dada1@cosmosbay.com>
-	<20070404181050.GN2986@holomorphy.com>
-	<20070409165315.4704021f.akpm@linux-foundation.org>
-	<20070410004201.GA2986@holomorphy.com>
-	<20070409175352.0474a3c9.akpm@linux-foundation.org>
-	<20070410011257.GC2986@holomorphy.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	id S932396AbXDJB2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Apr 2007 21:28:09 -0400
+Date: Mon, 9 Apr 2007 21:27:54 -0400
+From: Dave Jones <davej@redhat.com>
+To: Dave Dillow <dave@thedillows.org>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: I give up
+Message-ID: <20070410012754.GD1994@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Dave Dillow <dave@thedillows.org>,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
+References: <200704091007.58535.gene.heskett@gmail.com> <Pine.LNX.4.61.0704091848150.21426@yvahk01.tjqt.qr> <461A71FA.40900@zytor.com> <200704091538.44253.gene.heskett@gmail.com> <Pine.LNX.4.61.0704092334410.22295@yvahk01.tjqt.qr> <1176157330.4767.12.camel@dillow.idleaire.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1176157330.4767.12.camel@dillow.idleaire.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Apr 2007 18:12:57 -0700
-William Lee Irwin III <wli@holomorphy.com> wrote:
+On Mon, Apr 09, 2007 at 06:22:10PM -0400, Dave Dillow wrote:
+ > On Mon, 2007-04-09 at 23:35 +0200, Jan Engelhardt wrote:
+ > > On Apr 9 2007 15:38, Gene Heskett wrote:
+ > > >On Monday 09 April 2007, H. Peter Anvin wrote:
+ > > >>Jan Engelhardt wrote:
+ > > >>> dm is on 254 for me.. in opensuse with a 2.6.20 that is. I wonder why
+ > > >>> it even moves around. However, even then, those who use udev and
+ > > >>> device names rather than (major,minor) tuples should not have any
+ > > >>> problem.
+ > > >>
+ > > >>It moves around because someone at some point thought it was a great
+ > > >>idea to assign dynamic majors to core functionality.
+ > > >>
+ > > >What were they smoking, I want some of that!
+ > > 
+ > > Do you actually use udev?
+ > 
+ > udev doesn't help the problem he is having (and he is using it, since he
+ > is using Fedora).
 
-> On Mon, 9 Apr 2007 17:42:01 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
-> >>  My use for it is report generation in VM (and possibly other)
-> >> testcases.
-> 
-> On Mon, Apr 09, 2007 at 05:53:52PM -0700, Andrew Morton wrote:
-> > OK.  The cool kids are using taskstats for this sort of thing now, but I
-> > note that taskstats is inexplicably missing the context-switch accounting,
-> > and perhaps other things?
-> 
-> Sounds interesting. I'll poke around there for testcase affairs if I
-> get moving on them first. I've no sentimental attachment to the rusage
-> patch, so if taskstats do happen to displace this, I'm not concerned.
-> (That said, it may still make sense to do this for the purposes of API
-> compatibility. I'll keep it moving along until it's all decided.)
-> 
+However, it also doesn't explain what the point is of backing up /dev
+when it's dynamically created.
 
-rusage() is a bit easier to use, as it delivers synchronously at task exit.
- taskstats delivers over netlink into a separate process (and can be polled
-at any time during task execution) but does require new skills, more
-(Linux-specific) code and perhaps more complex synchronisation.
+	Dave
 
+-- 
+http://www.codemonkey.org.uk
