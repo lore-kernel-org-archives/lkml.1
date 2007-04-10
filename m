@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965570AbXDJWQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965584AbXDJWRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965570AbXDJWQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 18:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXDJWQ3
+	id S965584AbXDJWRl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 18:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXDJWRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 18:16:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:45943 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965570AbXDJWQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 18:16:28 -0400
-Message-ID: <461C0CB4.9000407@goop.org>
-Date: Tue, 10 Apr 2007 15:16:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Chris Wright <chrisw@sous-sol.org>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <ak@muc.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
+	Tue, 10 Apr 2007 18:17:41 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37953 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965584AbXDJWRk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 18:17:40 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dan Hecht <dhecht@vmware.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 9/10] Vmi timer update.patch
-References: <200704100006.l3A06RUR020644@zach-dev.vmware.com> <20070410023702.GJ10574@sequoia.sous-sol.org> <461BC373.10306@vmware.com> <20070410172429.GN10574@sequoia.sous-sol.org> <461C084C.9020009@vmware.com>
-In-Reply-To: <461C084C.9020009@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/2] Account for module percpu space separately from kernel percpu
+References: <461BC4B6.9060006@goop.org>
+Date: Tue, 10 Apr 2007 16:16:43 -0600
+In-Reply-To: <461BC4B6.9060006@goop.org> (Jeremy Fitzhardinge's message of
+	"Tue, 10 Apr 2007 10:09:10 -0700")
+Message-ID: <m1abxfyiwk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
->        /*
->         * Avoid unnecessary state transitions, as it confuses
->         * Geode / Cyrix based boxen.
->         */
->        case CLOCK_EVT_MODE_SHUTDOWN:
->                if (evt->mode == CLOCK_EVT_MODE_UNUSED)
->                        break;
->        case CLOCK_EVT_MODE_UNUSED:
->                if (evt->mode == CLOCK_EVT_MODE_SHUTDOWN)
->                        break;
->        case CLOCK_EVT_MODE_ONESHOT:
->                /* One shot setup */
->                outb_p(0x38, PIT_MODE);
->
-> So switching from PIT to VMI does not disable PIT timer interrupts. 
-> Thus I have to keep this part of the patch.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Why not submit a patch to do what you need here?  (The Geode comment is
-a bit worrying though.)
+> Rather than using a single constant PERCPU_ENOUGH_ROOM, compute it as
+> the sum of kernel_percpu + PERCPU_MODULE_RESERVE.  This is now common
+> to all architectures; if an architecture wants to set
+> PERCPU_ENOUGH_ROOM to something special, then it may do so (ia64 is
+> the only one which does).
 
-    J
+I think I have already done this but in case I haven't.
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+
+I see any problems there.
