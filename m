@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030468AbXDKWXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030319AbXDKW2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030468AbXDKWXr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161286AbXDKWXr
+	id S1030319AbXDKW2P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030470AbXDKW2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:23:47 -0400
-Received: from mx.pathscale.com ([198.186.3.68]:52178 "EHLO mx.pathscale.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030468AbXDKWXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:23:46 -0400
-Message-ID: <461D600E.4070709@pathscale.com>
-Date: Wed, 11 Apr 2007 15:24:14 -0700
-From: Robert Walsh <rjwalsh@pathscale.com>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+	Wed, 11 Apr 2007 18:28:15 -0400
+Received: from server2.meudns3.com ([74.52.31.50]:55270 "EHLO
+	server2.meudns3.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030319AbXDKW2O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 18:28:14 -0400
+From: Pedro <linux_user@izecksohn.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: tmpfs and the OOM killer
+Date: Wed, 11 Apr 2007 19:27:00 -0300
+User-Agent: KMail/1.9.5
+References: <200704110223.31291.linux_user@izecksohn.com> <20070411194820.GI943@1wt.eu>
+In-Reply-To: <20070411194820.GI943@1wt.eu>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Bryan O'Sullivan" <bos@pathscale.com>, openib-general@openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ofa-general] Re: [PATCH 00 of 33] Set of ipath patches for 2.6.22
-References: <patchbomb.1173995084@iqa-25.internal.keyresearch.com> <aday7kzooa7.fsf@cisco.com>
-In-Reply-To: <aday7kzooa7.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704111927.00609.linux_user@izecksohn.com>
+X-PopBeforeSMTPSenders: linux_user@izecksohn.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server2.meudns3.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - izecksohn.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> I just queued all of this for 2.6.22.
-> 
-> Is there any chance of getting a fix for the use-after-free that can
-> be caused by allocating something from userspace, failing to mmap the
-> buffer and then exiting?  To see what happens, look at how
-> ipath_create_cq sticks a struct ipath_mmap_info into the pending mmap
-> "list" (and yes it would be much cleaner to just use struct list_head
-> here rather than reimplementing a linked list yourself), and then look
-> at how ipath_destroy_cq() frees the same structure without checking if
-> it has been removed from the pending mmap list.
+On Wednesday 11 April 2007 16:48, Willy Tarreau wrote:
+> On Wed, Apr 11, 2007 at 02:23:31AM -0300, Pedro wrote:
+> >   After suffering some days from a not|mis configured tmpfs,
+> >
+> >   As the OOM killer is not Posix,
+> >
+> >   Better than to kill processes would be to resize tmpfs, to use tmpfs
+> > empty space.
+>
+> Will not work, because tmpfs does not use any memory for unused space. If
+> you don't believe me, simply create a large file on your tmpfs, then check
+> free memory, then remove the file and check free memory again.
+>
+> So your problem is not caused by the empty space on tmpfs, but either by
+> too much space used on tmpfs or by your application using too much memory.
+>
+...
+>
+> If you cannot control your application's memory usage, you'll have to
+> finely tune the overcommit_ratio.
+>
+> Regards,
+> Willy
 
-BTW: any idea how this ever got triggered?  The only way I can see is if 
-you're either not using libipathverbs and libibverbs and you just create 
-the CQ some other way, which seems unlikely.  Do you know how Jason 
-triggered this bug?
+  You are right.
 
-I'm also going to fix a problem where hitting the maximum number of CQs 
-causes an error return, but doesn't clean up the pending list and thus 
-leaks memory.
+  But now I have two questions:
 
-Regards,
-  Robert.
+  1) Why is tmpfs total space fixed if at the check moment does not exist 
+sufficient memory?
+
+  2) How should an application be written to not be killed by OOM?
