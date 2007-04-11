@@ -1,81 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030517AbXDKWas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161305AbXDKWck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030517AbXDKWas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161301AbXDKWas
+	id S1161305AbXDKWck (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161301AbXDKWck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:30:48 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:34868 "EHLO smtp.osdl.org"
+	Wed, 11 Apr 2007 18:32:40 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53042 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161291AbXDKWaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:30:46 -0400
-Date: Wed, 11 Apr 2007 15:30:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Zhao Forrest" <forrest.zhao@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
-Message-Id: <20070411153040.a7e6c3b8.akpm@linux-foundation.org>
-In-Reply-To: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
-References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1161305AbXDKWcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 18:32:39 -0400
+From: Neil Brown <neilb@suse.de>
+To: Theodore Tso <tytso@mit.edu>
+Date: Thu, 12 Apr 2007 08:32:05 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17949.25061.739035.688232@notabene.brown>
+Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+In-Reply-To: message from Theodore Tso on Wednesday April 11
+References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com>
+	<20070407203633.GA21555@thunk.org>
+	<20070407233037.GA16508@infradead.org>
+	<46193048.6000606@zytor.com>
+	<20070408184129.GA20871@lazybastard.org>
+	<17947.65165.569482.976343@notabene.brown>
+	<20070411144252.GB17778@thunk.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 14:17:04 +0800
-"Zhao Forrest" <forrest.zhao@gmail.com> wrote:
-
-> We're using RHEL5 with kernel version 2.6.18-8.el5.
-> When doing a stress test on raw device for about 3-4 hours, we found
-> the soft lockup message in dmesg.
-> I know we're not reporting the bug on the latest kernel, but does any
-> expert know if this is the known issue in old kernel? Or why
-> kmem_cache_free occupy CPU for more than 10 seconds?
+On Wednesday April 11, tytso@mit.edu wrote:
+> On Wed, Apr 11, 2007 at 07:15:57AM +1000, Neil Brown wrote:
+> > > Neil, is this correct?
+> > 
+> > It's just NFS.  nfsd does open/getdents/close on every readdir
+> > request.
 > 
-> Please let me know if you need any information.
+> That's... unfortunate.
+
+I like to think of it as "challenging" :-)
+
 > 
-> Thanks,
-> Forrest
-> --------------------------------------------------------------
-> BUG: soft lockup detected on CPU#1!
 > 
-> Call Trace:
->  <IRQ>  [<ffffffff800b2c93>] softlockup_tick+0xdb/0xed
->  [<ffffffff800933df>] update_process_times+0x42/0x68
->  [<ffffffff80073d97>] smp_local_timer_interrupt+0x23/0x47
->  [<ffffffff80074459>] smp_apic_timer_interrupt+0x41/0x47
->  [<ffffffff8005bcc2>] apic_timer_interrupt+0x66/0x6c
->  <EOI>  [<ffffffff80007660>] kmem_cache_free+0x1c0/0x1cb
->  [<ffffffff800262ee>] free_buffer_head+0x2a/0x43
->  [<ffffffff80027110>] try_to_free_buffers+0x89/0x9d
->  [<ffffffff80043041>] invalidate_mapping_pages+0x90/0x15f
->  [<ffffffff800d4a77>] kill_bdev+0xe/0x21
->  [<ffffffff800d4f9d>] __blkdev_put+0x4f/0x169
->  [<ffffffff80012281>] __fput+0xae/0x198
->  [<ffffffff80023647>] filp_close+0x5c/0x64
->  [<ffffffff800384f9>] put_files_struct+0x6c/0xc3
->  [<ffffffff80014f01>] do_exit+0x2d2/0x8b1
->  [<ffffffff80046eb6>] cpuset_exit+0x0/0x6c
->  [<ffffffff8002abd7>] get_signal_to_deliver+0x427/0x456
->  [<ffffffff80059122>] do_notify_resume+0x9c/0x7a9
->  [<ffffffff80086c6d>] default_wake_function+0x0/0xe
->  [<ffffffff800b1fd8>] audit_syscall_exit+0x2cd/0x2ec
->  [<ffffffff8005b362>] int_signal+0x12/0x17
+> So the problem with nfsd doing an open/getdents/close on every readdir
+> request is two-fold.  First of all, it means that you are incurring
+> extra overhead by forcing ext3 to allocate, create, and free the
+> red-black tree on every single NFS readdir request.  Secondly, it
+> increases the chances of problems with the hash collision logic.
 
-I think there's nothing unusual happening here - you closed the device and
-the kernel has to remove a tremendous number of pagecache pages, and that
-simply takes a long time.
+I guess we need a two-fold solution then  :-)
 
-How much memory does the machine have?
+For the first:
+  You are storing an internal tree representation of part of the
+  directory attached to the 'struct file'.
+  Would it be possible to store this attached to the page via the
+  ->private pointer?  What would avoid the allocate/create/free
+  overhead on every request.
 
-There used to be a cond_resched() in invalidate_mapping_pages() which would
-have prevented this, but I rudely removed it to support
-/proc/sys/vm/drop_caches (which needs to call invalidate_inode_pages()
-under spinlock).
+  You suggest caching the open files in nfsd.  While that is probably
+  possible (I've thought of it a number of times) is would also be
+  quite complex, e.g. requiring some sort of call-back to close all
+  those files when the filesystem is unexported.  And it is very easy
+  to get caching heuristics wrong.  Leveraging the page-cache which is
+  a very mature cache seems to make a lot of sense.
 
-We could resurrect that cond_resched() by passing in some flag, I guess. 
-Or change the code to poke the softlockup detector.  The former would be
-better.
+  The cursor would still be in the 'struct file', but if the second
+  second fold works, that should be much less critical.
 
+For the second.
+  You say that you " would need at least 96 bits in order to make that
+  guarantee; 64 bits of hash, plus a 32-bit count value in the hash
+  collision chain".  I think 96 is a bit greedy.  Surely 48 bits of 
+  hash and 16 bits of collision-chain-position would plenty.  You would
+  need 65537 entries before a collision was even possible, and
+  billions before it was at all likely. (How big does a set of 48bit
+  numbers have to get before the probability that "No subset of 65536
+  numbers are all the same" drops below 0.95?)
+
+  This would really require that the collision-chain-index was stable
+  across create/delete.  Doing that while you have the tree in the
+  page cache is probably easy enough.  Doing it across reboots is
+  probably not possible without on-disk changes.
+
+So while my two-fold solution is not perfect(*), I think it is
+substantially better than what we have now, and is extremely unlike to
+ever show an observable problem.
+(*)And perfection can only be achieved we two independent indexes.
+
+
+This requires 64bit cookies which NFSv2 cannot handle.  I think it is
+OK to say "tough".  We should probably make sure that READDIRv2 *always*
+fails on a directory which is indexed, and possibly on a filesystem
+which allows index directories.  People can always disable indexing if
+they want a v2 export.
+
+NeilBrown
