@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965052AbXDKTMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965051AbXDKTNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965052AbXDKTMY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965034AbXDKTMU
+	id S965051AbXDKTNJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXDKTKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:12:20 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:57147 "EHLO smtp.osdl.org"
+	Wed, 11 Apr 2007 15:10:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53540 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965025AbXDKTMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:12:09 -0400
-Date: Wed, 11 Apr 2007 12:11:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Ken Chen <kenchen@google.com>, linux-aio@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] convert aio event reap to use atomic-op instead of
- spin_lock
-Message-Id: <20070411121146.47ca5b4d.akpm@linux-foundation.org>
-In-Reply-To: <20070411180038.GN28322@mami.zabbo.net>
-References: <20070410235353.325A7346F64@localhost>
-	<20070411180038.GN28322@mami.zabbo.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753666AbXDKTKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:10:34 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 4/8] AFS: Correctly alter relocation state after update and
+	show state in /proc
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 11 Apr 2007 20:10:17 +0100
+Message-ID: <20070411191017.15499.61585.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <20070411190956.15499.55352.stgit@warthog.cambridge.redhat.com>
+References: <20070411190956.15499.55352.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 11:00:38 -0700
-Zach Brown <zach.brown@oracle.com> wrote:
+Correctly alter the relocation state after update is complete by switching it
+from "Updating" to "Valid".
 
-> > -	/* Compensate for the ring buffer's head/tail overlap entry */
-> > -	nr_events += 2;	/* 1 is required, 2 for good luck */
-> > +	/* round nr_event to next power of 2 */
-> > +	nr_events = roundup_pow_of_two(nr_events);
-> 
-> Is that buggy?  How will the code tell if head == tail means a full ring
-> or an empty ring?  The old code added that extra event to let it tell
-> the ring was full before head == tail and it would think it's empty
-> again, I think.  I'm guessing roundup(nr_events + 1) is needed.
+Also display the record state in the vlocation database proc file.
 
-Ken uses the other (superior!) way of implementing ringbuffers: the head
-and tail pointers (the naming of which AIO appears to have reversed) are
-not constrained to the ringsize - they are simply allowed to wrap through
-0xfffffff.  Consequently:
+Signed-Off-By: David Howells <dhowells@redhat.com>
+---
 
-ring full:		(head-tail == size)
-ring empty:		head==tail
-numer-of-items-in-ring:	head-tail
-add to ring:		ring[head++]=item
-remove from ring: 	item=ring[tail++]
+ fs/afs/proc.c      |   15 +++++++++++++--
+ fs/afs/vlocation.c |    4 +++-
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
-(adjust the above for AIO naming assbackwardness)
-(requires that size be a power of 2)
-
-Many net drivers do it this way for their DMA rings.
+diff --git a/fs/afs/proc.c b/fs/afs/proc.c
+index 9e6af40..d5601f6 100644
+--- a/fs/afs/proc.c
++++ b/fs/afs/proc.c
+@@ -553,6 +553,16 @@ static void afs_proc_cell_volumes_stop(struct seq_file *p, void *v)
+ 	up_read(&cell->vl_sem);
+ }
+ 
++const char afs_vlocation_states[][4] = {
++	[AFS_VL_NEW]			= "New",
++	[AFS_VL_CREATING]		= "Crt",
++	[AFS_VL_VALID]			= "Val",
++	[AFS_VL_NO_VOLUME]		= "NoV",
++	[AFS_VL_UPDATING]		= "Upd",
++	[AFS_VL_VOLUME_DELETED]		= "Del",
++	[AFS_VL_UNCERTAIN]		= "Unc",
++};
++
+ /*
+  * display a header line followed by a load of volume lines
+  */
+@@ -563,13 +573,14 @@ static int afs_proc_cell_volumes_show(struct seq_file *m, void *v)
+ 
+ 	/* display header on line 1 */
+ 	if (v == (void *) 1) {
+-		seq_puts(m, "USE VLID[0]  VLID[1]  VLID[2]  NAME\n");
++		seq_puts(m, "USE STT VLID[0]  VLID[1]  VLID[2]  NAME\n");
+ 		return 0;
+ 	}
+ 
+ 	/* display one cell per line on subsequent lines */
+-	seq_printf(m, "%3d %08x %08x %08x %s\n",
++	seq_printf(m, "%3d %s %08x %08x %08x %s\n",
+ 		   atomic_read(&vlocation->usage),
++		   afs_vlocation_states[vlocation->state],
+ 		   vlocation->vldb.vid[0],
+ 		   vlocation->vldb.vid[1],
+ 		   vlocation->vldb.vid[2],
+diff --git a/fs/afs/vlocation.c b/fs/afs/vlocation.c
+index f0f4419..9af1fe8 100644
+--- a/fs/afs/vlocation.c
++++ b/fs/afs/vlocation.c
+@@ -657,7 +657,7 @@ static void afs_vlocation_updater(struct work_struct *work)
+ 	switch (ret) {
+ 	case 0:
+ 		afs_vlocation_apply_update(vl, &vldb);
+-		vl->state = AFS_VL_UPDATING;
++		vl->state = AFS_VL_VALID;
+ 		break;
+ 	case -ENOMEDIUM:
+ 		vl->state = AFS_VL_VOLUME_DELETED;
+@@ -691,6 +691,8 @@ static void afs_vlocation_updater(struct work_struct *work)
+ 		timeout = afs_vlocation_update_timeout;
+ 	}
+ 
++	ASSERT(list_empty(&vl->update));
++
+ 	list_add_tail(&vl->update, &afs_vlocation_updates);
+ 
+ 	_debug("timeout %ld", timeout);
 
