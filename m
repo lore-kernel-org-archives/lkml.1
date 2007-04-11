@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbXDKRDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbXDKRGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbXDKRDj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 13:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbXDKRDj
+	id S1753403AbXDKRGd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 13:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXDKRGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 13:03:39 -0400
-Received: from stinky.trash.net ([213.144.137.162]:57287 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbXDKRDi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 13:03:38 -0400
-Message-ID: <461D14E1.6020100@trash.net>
-Date: Wed, 11 Apr 2007 19:03:29 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
+	Wed, 11 Apr 2007 13:06:33 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:58387 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753403AbXDKRGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 13:06:32 -0400
+Date: Wed, 11 Apr 2007 19:05:38 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/30] Use menuconfig objects
+In-Reply-To: <461D1291.2060703@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.61.0704111903300.20436@yvahk01.tjqt.qr>
+References: <200704110112.39425.a1426z@gawab.com>
+ <Pine.LNX.4.61.0704110026250.32056@yvahk01.tjqt.qr> <200704110742.38727.a1426z@gawab.com>
+ <Pine.LNX.4.61.0704110937060.32056@yvahk01.tjqt.qr> <461D1291.2060703@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-CC: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, cramerj <cramerj@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-Subject: Re: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
-References: <D5C1322C3E673F459512FB59E0DDC32902A1A535@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <D5C1322C3E673F459512FB59E0DDC32902A1A535@orsmsx414.amr.corp.intel.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Waskiewicz Jr, Peter P wrote:
->>Packets will only be dequeued from a band if the associated 
->>subqueue is active, which moves the decision from prio to the 
->>driver, no?
->>What policy does e1000 use for scheduling its internal queues?
->>
-> 
-> 
-> E1000 is handed the skb's from PRIO to whichever queue the PRIO flows
-> dictate (based on band2queue mapping, tc filters, or TOS to
-> skb->priority filtering).  Once the skb hits the e1000, the internal
-> policy is round-robin on the hardware queues to dequeue and transmit on
-> the wire.  I agree the NIC does influence the decision of which band an
-> skb will be dequeued from based on available descriptors, etc., but
-> that's one of the goals of multiqueue: don't allow another traffic flow
-> in one queue stop or impact another separate flow.
 
+On Apr 11 2007 18:53, Stefan Richter wrote:
+>Jan Engelhardt wrote:
+>> On Apr 11 2007 07:42, Al Boldi wrote:
+>>>Also, I don't think it's necessary to touch any of the "depends on"; keep 
+>>>them as is, as they don't hurt staying that way, and may actually be 
+>>>necessary under certain circumstances.  (see EMBEDDED)
+>> 
+>> Simplifying the depends lines is a good thing IMO.
+>
+>If explicit dependency statements are replaced by if--endif blocks, does
+>this count as simplification?
 
-Yes, I'm not saying its wrong, but it will surprise users that put a
-prio qdisc on a multiqueue device without knowing anything about the
-multiqueue capabilities and suddenly don't have strict priority
-anymore. If it changes the behaviour, it should be explicitly enabled
-by the user in the prio qdisc configuration. This would also allow
-to move the band2queue mapping policy to userspace.
+According to Documentation/kbuild/, if FOO .. endif is interpreted as if
+each option inside the if block had 'depends on FOO'.
 
-> Once NICs start using hardware-based priority scheduling (wireless?), we
-> can use a round-robin type qdisc in the kernel to dequeue, and let the
-> hardware directly decide how important one flow is over another.
+If _every_ option under a menu (and that's another reason why I did not
+modify _all_ Kconfig menus) has a 'depends on this or that', it can
+be substituted by an if block, and yes, I take that as a simplification
+since the whole LoC count goes down. What would perhaps be cool is
+some indent in Kconfig to see what an if-endif block spans, but currently
+this is not much needed, since two nested ifs are quite the max.
 
-
-You bring up a good point, it would be good to hear the opinion from
-one of the wireless people on this since they have their own multiqueue
-scheduler in the wireless-dev tree.
-
+Jan
+-- 
