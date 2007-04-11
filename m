@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751691AbXDKJbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751722AbXDKJbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751691AbXDKJbN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 05:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbXDKJbN
+	id S1751722AbXDKJbz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 05:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXDKJbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 05:31:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:59839 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbXDKJbM (ORCPT
+	Wed, 11 Apr 2007 05:31:55 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38077 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbXDKJby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 05:31:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m0JSSaHULR1zPewdEbY2NZ3ff2GYg6FoCOMryaVrk+xLRJSj3kNXwP87iNas3bKM1oULY/Dlgvcm/D+/byhGZrrpZEhBGopVmdjOsfaBt6R08C0pa0+Yi+qCDodaKNUs4Xv+L26qB2u56xVlK8sCtJgWu3QC9Q38aV5P7Dn63Jg=
-Message-ID: <21d7e9970704110231x6d434152n6091f9acf477ffc7@mail.gmail.com>
-Date: Wed, 11 Apr 2007 19:31:10 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH 3/7] DRM: correct PCI domain setting for ALPHA
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Richard Henderson" <rth@twiddle.net>,
-       "Jay Estabrook" <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070411122911.D17547@jurassic.park.msu.ru>
+	Wed, 11 Apr 2007 05:31:54 -0400
+Message-ID: <461CAAA9.2090309@bull.net>
+Date: Wed, 11 Apr 2007 11:30:17 +0200
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, Ulrich Drepper <drepper@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       pravin b shelar <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
+References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<461764A6.3080703@yahoo.com.au>	<20070407120051.9ed0e69a.dada1@cosmosbay.com>	<461C8CD1.3080707@yahoo.com.au> <20070411101458.114125ee.dada1@cosmosbay.com> <461CA90E.3080306@yahoo.com.au>
+In-Reply-To: <461CA90E.3080306@yahoo.com.au>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/04/2007 11:34:19,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/04/2007 11:34:21,
+	Serialize complete at 11/04/2007 11:34:21
+Content-Transfer-Encoding: 8bit
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070411122911.D17547@jurassic.park.msu.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NAK
+Nick Piggin a écrit :
+> 
+> But... that isn't there in mainline. Why is it in -mm?
 
-I already have this queued in the DRM git tree.. Ivan, Jay can you
-check an -mm kernel contains it? it'll go in the next merge window..
+This was introduced by lguest code....
+I did not follow exaclty why.
 
-Dave.
+Pierre
 
-On 4/11/07, Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
-> Files:
->
-> drivers/char/drm/drmP.h
->
->         The PCI domain is the hose's index, not the hose's root bus number.
->         Note that this code only applies to ALPHA.
->
->
-> Signed-off-by: Jay Estabrook <jay.estabrook@hp.com>
-> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
->
-> ---
->
-> diff -Naurp a/drivers/char/drm/drmP.h b/drivers/char/drm/drmP.h
-> --- a/drivers/char/drm/drmP.h   2007-04-02 13:03:24.000000000 -0400
-> +++ b/drivers/char/drm/drmP.h   2007-04-02 13:49:38.000000000 -0400
-> @@ -764,7 +764,7 @@ static __inline__ int drm_core_check_fea
->  }
->
->  #ifdef __alpha__
-> -#define drm_get_pci_domain(dev) dev->hose->bus->number
-> +#define drm_get_pci_domain(dev) dev->hose->index
->  #else
->  #define drm_get_pci_domain(dev) 0
->  #endif
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> At any rate, that 
+> makes
+> it a no brainer to change.
+> 
+>>
+>> As this external thing certainly is not doing the check itself, to be 
+>> on the safe side we should enforce it in get_futex_key(). I agree with 
+>> you : If we want to maximize performance, we could say : The check 
+>> *must* be done by the caller.
+> 
+> Well we _control_ the API, so let's make it as clean and performant as 
+> possible
+> from the start.
+> 
+
+-- 
+Pierre Peiffer
