@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbXDKS3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbXDKSaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562AbXDKS3y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXDKS3x
+	id S1753559AbXDKSaL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXDKSaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:29:53 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:27507 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573AbXDKS3w (ORCPT
+	Wed, 11 Apr 2007 14:30:11 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47083 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbXDKSaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:29:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=fCAuBAaNf5jnHeI0n6Kajp0PAz1VLhCYjLUfQjcyeFUBMNLc+S7syV1dh7g/OaDM/
-	hwQytuKpBBG7jhZx5IFVQ==
-Message-ID: <b040c32a0704111129p5c81b6e8v815e63e550a56f1b@mail.gmail.com>
-Date: Wed, 11 Apr 2007 11:29:45 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Zach Brown" <zach.brown@oracle.com>
-Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-aio@kvack.org,
+	Wed, 11 Apr 2007 14:30:07 -0400
+Subject: Re: [patch 0/8] unprivileged mount syscall
+From: Ram Pai <linuxram@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20070411181514.GO28322@mami.zabbo.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu>
+References: <20070404183012.429274832@szeredi.hu>
+	 <20070406160238.f3178189.akpm@linux-foundation.org>
+	 <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu>
+	 <20070409143802.GB4891@sergelap.austin.ibm.com>
+	 <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu>
+	 <20070409170743.GF24415@sergelap.austin.ibm.com>
+	 <E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu>
+	 <1176194285.2903.67.camel@ram.us.ibm.com>
+	 <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Wed, 11 Apr 2007 11:28:36 -0700
+Message-Id: <1176316116.2811.39.camel@ram.us.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070410235353.325A7346F64@localhost>
-	 <20070410221849.dcec1ce3.akpm@linux-foundation.org>
-	 <b040c32a0704110954q64694780v1d57937cfcc3466d@mail.gmail.com>
-	 <20070411181514.GO28322@mami.zabbo.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/11/07, Zach Brown <zach.brown@oracle.com> wrote:
-> > Sorry I wasn't thorough enough.  And partially because I was worried
-> > about changing structure type for user space facing struct aio_ring.
-> > Now that I looked through all arches, it looks safe as all arch's
-> > atomic_t has the same size as int.
->
-> > Here is the updated patch.
->
-> > @@ -144,7 +144,7 @@ struct kiocb {
-> >  struct aio_ring {
-> >       unsigned        id;     /* kernel internal index number */
-> >       unsigned        nr;     /* number of io_events */
-> > -     unsigned        head;
-> > +     atomic_t        head;
-> >       unsigned        tail;
->
-> Embedding an atomic_t in an ABI struct?  That makes everyone else
-> nervous too, right?
+On Wed, 2007-04-11 at 12:44 +0200, Miklos Szeredi wrote:
+> > 1. clone the master namespace.
+> > 
+> > 2. in the new namespace
+> > 
+> > 	move the tree under /share/$me to /
+> >         for each ($user, $what, $how) {
+> >             move /share/$user/$what to /$what
+> > 	    if ($how == slave) {
+> >                  make the mount tree under /$what as slave
+> >             }
+> >         }
+> >         
+> > 3. in the new namespace make the tree under 
+> >        /share as private and unmount /share
+> 
+> Thanks.  I get the basic idea now: the namespace itself need not be
+> shared between the sessions, it is enough if "share" propagation is
+> set up between the different namespaces of a user.
+> 
+> I don't yet see either in your or Viro's description how the trees
+> under /share/$USER are initialized.  I guess they are recursively
+> bound from /, and are made slaves.
 
-sure, make me nervous at least.
+yes. I suppose, when a userid is created one of the steps would be
+
+mount --rbind / /share/$USER
+mount --make-rslave /share/$USER
+mount --make-rshared /share/$USER
+
+RP
 
 
-> It may look safe on i386/x86-64 today, but this doesn't seem like wise
-> practice.  Is there any reason to believe that atomic_t will never
-> change size?  Does anything else do this already?
->
-> If nothing else, the "unsigned" (should be __u32, sigh) could be cast to
-> an atomic_t.
 
-The atomic_t cast is equally iffy.  I don't know what would be a best solution.
+
+
+
+
+> Miklos
+
