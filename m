@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030754AbXDKCPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXDKC1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030754AbXDKCPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 22:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030756AbXDKCPm
+	id S1161140AbXDKC1g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 22:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161142AbXDKC1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 22:15:42 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:57719 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030754AbXDKCPl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 22:15:41 -0400
-Subject: Re: Build error : 2.6.21-rc6-mm1 on sparc64
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-In-Reply-To: <20070410181854.7d532c59.akpm@linux-foundation.org>
-References: <20070411004838.GD15262@Krystal>
-	 <20070410181854.7d532c59.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Wed, 11 Apr 2007 11:15:39 +0900
-Message-Id: <1176257739.19452.13.camel@sebastian.intellilink.co.jp>
+	Tue, 10 Apr 2007 22:27:36 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56284 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161140AbXDKC1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 22:27:35 -0400
+Date: Tue, 10 Apr 2007 19:27:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: Re: [PATCH] Improve heuristic detecting sequential reads
+Message-Id: <20070410192722.9e6efc8b.akpm@linux-foundation.org>
+In-Reply-To: <20070410155411.GF13445@duck.suse.cz>
+References: <20070410155411.GF13445@duck.suse.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-10 at 18:18 -0700, Andrew Morton wrote:
-> On Tue, 10 Apr 2007 20:48:38 -0400
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > I get the following build error when building 2.6.21-rc6-mm1 for
-> > sparc64:
-> > 
-> >   /opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/bin/sparc64-unknown-linux-gnu-gcc -Wp,-MD,arch/sparc64/kernel/.traps.o.d  -nostdinc -isystem /opt/crosstool/gcc-3.4.5-glibc-2.3.6/sparc64-unknown-linux-gnu/lib/gcc/sparc64-unknown-linux-gnu/3.4.5/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h -I/home/compudj/git/linux-2.6-lttng/arch/sparc64/kernel -Iarch/sparc64/kernel -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -m64 -pipe -mno-fpu -mcpu=ultrasparc -mcmodel=medlow -ffixed-g4 -ffixed-g5 -fcall-used-g7 -Wno-sign-compare -Wa,--undeclared-regs -fomit-frame-pointer -Wdeclaration-after-statement -Werror  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(traps)"  -D"KBUILD_MODNAME=KBUILD_STR(traps)" -c -o arch/sparc64/kernel/traps.o /home/compudj/git/linux-2.6-lttng/arch/sparc64/kernel/traps.c
-> > /home/compudj/git/linux-2.6-lttng/arch/sparc64/kernel/traps.c: In function `init_cur_cpu_trap':
-> > /home/compudj/git/linux-2.6-lttng/arch/sparc64/kernel/traps.c:2497: warning: implicit declaration of function `hard_smp_processor_id'
-> > make[2]: *** [arch/sparc64/kernel/traps.o] Error 1
-> > make[1]: *** [arch/sparc64/kernel] Error 2
-> > make: *** [_all] Error 2
-> 
-> Not sure what the approved fix is here.  Fernando, please take a look, and
-> review all other architectures?
-The problem is that to use hard_smp_processor_id in UP kernels just
-including linux/smp.h does not suffice anymore. Now
-hard_smp_processor_id is architecture specific code and consequently
-asm/smp.h should be included explicitly.
+On Tue, 10 Apr 2007 17:54:11 +0200 Jan Kara <jack@suse.cz> wrote:
 
-Mathieu, does the (untested) patch below fix this issue?
+> Introduce ra.offset and store in it an offset where the previous read ended. This way
+> we can detect whether reads are really sequential (and thus we should not mark the page
+> as accessed repeatedly) or whether they are random and just happen to be in the same page
+> (and the page should really be marked accessed again).
 
-[PATCH] Remove hardcoding of hard_smp_processor_id on UP systems -
-sparc64 fix
+(less columns, please)
 
-To use hard_smp_processor_id in UP kernels just including linux/smp.h
-does not suffice anymore. Now hard_smp_processor_id is architecture
-specific code and consequently asm/smp.h should be included explicitly.
+OK.  So prev_page and prev_offset are now a complexified representation of a
+loff_t, no?  
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+So why don't we just use a loff_t for this?
 
-diff -urNp linux-2.6.21-rc6-mm1-orig/arch/sparc64/kernel/traps.c linux-2.6.21-rc6-mm1/arch/sparc64/kernel/traps.c
---- linux-2.6.21-rc6-mm1-orig/arch/sparc64/kernel/traps.c	2007-04-11 10:48:09.000000000 +0900
-+++ linux-2.6.21-rc6-mm1/arch/sparc64/kernel/traps.c	2007-04-11 10:57:06.000000000 +0900
-@@ -19,6 +19,7 @@
- #include <linux/init.h>
- #include <linux/kdebug.h>
+Anyway, the asymmetry in our handling of prev_index (sometimes called
+prev_page!) and prev_offset is unpleasing.  This:
+
+--- a/mm/filemap.c~readahead-improve-heuristic-detecting-sequential-reads-tidy
++++ a/mm/filemap.c
+@@ -933,6 +933,7 @@ page_ok:
+ 		if (prev_index != index || offset != prev_offset)
+ 			mark_page_accessed(page);
+ 		prev_index = index;
++		prev_offset = ra.offset = offset;
  
-+#include <asm/smp.h>
- #include <asm/delay.h>
- #include <asm/system.h>
- #include <asm/ptrace.h>
+ 		/*
+ 		 * Ok, we have the page, and it's up-to-date, so
+@@ -948,7 +949,6 @@ page_ok:
+ 		offset += ret;
+ 		index += offset >> PAGE_CACHE_SHIFT;
+ 		offset &= ~PAGE_CACHE_MASK;
+-		prev_offset = ra.offset = offset;
+ 
+ 		page_cache_release(page);
+ 		if (ret == nr && desc->count)
 
+improves things somewhat.  But I think it would be nicer if their handling
+was unified, or at least consistent.  We update ra.offset here, and we
+update ra.prev_page over there.
 
+And shouldn't offset be called prev_offset?  Or should prev_page be called
+page?  Or index?  Or prev_index?  Or Marmaduke?  The naming is all a mess.
+
+Wanna take a look at all of this, please?
