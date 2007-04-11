@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030779AbXDKD6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030770AbXDKEA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030779AbXDKD6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 23:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030795AbXDKD6b
+	id S1030770AbXDKEA2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030778AbXDKEA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 23:58:31 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:56823 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1030779AbXDKD63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 23:58:29 -0400
-Message-ID: <376263890.06140@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Wed, 11 Apr 2007 11:54:48 +0800
-From: WU Fengguang <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [PATCH] Improve heuristic detecting sequential reads
-Message-ID: <20070411035448.GA4724@mail.ustc.edu.cn>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Andi Kleen <andi@firstfloor.org>, Jan Kara <jack@suse.cz>,
-	linux-kernel@vger.kernel.org, npiggin@suse.de
-References: <20070410155411.GF13445@duck.suse.cz> <p73y7kzj0ss.fsf@bingen.suse.de> <20070410164540.6d10ddd7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070410164540.6d10ddd7.akpm@linux-foundation.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 11 Apr 2007 00:00:27 -0400
+Received: from ozlabs.org ([203.10.76.45]:34397 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030770AbXDKEA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 00:00:26 -0400
+Subject: Re: PATCH 7/8] lguest: the block driver
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Andi Kleen <ak@muc.de>, jens.axboe@oracle.com
+In-Reply-To: <84144f020704100436y3405f104x8345c72556d961e9@mail.gmail.com>
+References: <1176203068.26372.21.camel@localhost.localdomain>
+	 <1176203130.26372.23.camel@localhost.localdomain>
+	 <1176203176.26372.25.camel@localhost.localdomain>
+	 <1176203231.26372.27.camel@localhost.localdomain>
+	 <1176203285.26372.29.camel@localhost.localdomain>
+	 <1176203333.26372.31.camel@localhost.localdomain>
+	 <1176203475.26372.37.camel@localhost.localdomain>
+	 <1176203528.26372.40.camel@localhost.localdomain>
+	 <84144f020704100428r6e35e34cued8758c94728a6a0@mail.gmail.com>
+	 <84144f020704100436y3405f104x8345c72556d961e9@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 11 Apr 2007 14:00:24 +1000
+Message-Id: <1176264024.26372.93.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 04:45:40PM -0700, Andrew Morton wrote:
-> On 11 Apr 2007 00:56:51 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
+On Tue, 2007-04-10 at 14:36 +0300, Pekka Enberg wrote:
+> On 4/10/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > +/* Jens gave me this nice helper to end all chunks of a request. */
+> > > +static void end_entire_request(struct request *req, int uptodate)
+> > > +{
+> > > +       if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
+> > > +               BUG();
+> > > +       add_disk_randomness(req->rq_disk);
+> > > +       blkdev_dequeue_request(req);
+> > > +       end_that_request_last(req, uptodate);
+> > > +}
 > 
-> > There's a much more complete patchkit for this that gets reposted
-> > regularly on l-k. Perhaps it would make sense to test that first?
-> 
-> adaptive readahead?  Has been in -mm for a year.  Problem is, it is
-> _so_ complete that I just don't know how to merge it.  It's huge, and
-> only Wu understands it. So it's really rather stuck.
+> On 4/10/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > Perhaps we should move this to generic code (i.e. block/ll_rw_blk.c)?
 
-Yeah, it is.
+Yeah, Jens said to put it in here and he'd hoist it later.
 
-I'll come up with a minimal patch to first simplify the current
-readahead algorithm. The code is ready, if ignoring the document ;-)
+> Uhm, I am bit confused now. Why don't you just use end_request() here?
 
-Wu
+What a question!  end_request() doesn't end a request!  What a crazy
+idea!
+
+As far as I can tell, every name in the block layer is actually some
+variant of "fuck off, this is too complicated for you to understand".
+
+Hope that clarifies!
+Rusty.
+
