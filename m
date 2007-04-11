@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbXDKXiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXDKXqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753702AbXDKXiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 19:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbXDKXiW
+	id S932173AbXDKXqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 19:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbXDKXqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 19:38:22 -0400
-Received: from lazybastard.de ([212.112.238.170]:48973 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbXDKXiW (ORCPT
+	Wed, 11 Apr 2007 19:46:47 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:63809 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932173AbXDKXqq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 19:38:22 -0400
-Date: Thu, 12 Apr 2007 01:33:26 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: David Lang <david.lang@digitalinsight.com>, Neil Brown <neilb@suse.de>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-Message-ID: <20070411233326.GD4893@lazybastard.org>
-References: <17949.25061.739035.688232@notabene.brown> <Pine.LNX.4.63.0704111506040.28394@qynat.qvtvafvgr.pbz> <461D6DE9.9070601@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 11 Apr 2007 19:46:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=MiIQuZVhMmLZudXbcdIBO0+gEj7Z3Ab/gKuJRvtWYvfE7BA3I3aUW8PmshsuEwOGlPQeMozPEk9yuW2g6PelF0rmLbhuDERcXV+TT6o5lAd+XTy0YuozFWbF+3GxUktwwSRmu9XuhzF2uzWtHwwlsED+LN3VO4aFnGwklZWNids=
+Message-ID: <653402b90704111646o6173ba60wbe7b884bf2f9e544@mail.gmail.com>
+Date: Thu, 12 Apr 2007 01:46:45 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: akpm@osdl.org
+Subject: [PATCH] [Trivial] [Doc] Add webpages' URL and summarize 3 lines.
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <461D6DE9.9070601@zytor.com>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 April 2007 16:23:21 -0700, H. Peter Anvin wrote:
-> David Lang wrote:
-> >On Thu, 12 Apr 2007, Neil Brown wrote:
-> >
-> >>For the second.
-> >> You say that you " would need at least 96 bits in order to make that
-> >> guarantee; 64 bits of hash, plus a 32-bit count value in the hash
-> >> collision chain".  I think 96 is a bit greedy.  Surely 48 bits of
-> >> hash and 16 bits of collision-chain-position would plenty.  You would
-> >> need 65537 entries before a collision was even possible, and
-> >> billions before it was at all likely. (How big does a set of 48bit
-> >> numbers have to get before the probability that "No subset of 65536
-> >> numbers are all the same" drops below 0.95?)
-> >
-> >  you can get a hash collision with two entries.
-> 
-> Yes, but the probability is 2^-n for an n-bit hash, assuming it's 
-> uniformly distributed.
-> 
-> The probability approaches 1/2 as the number of entries hashes 
-> approaches 2^(n/2) (birthday number.)
+Trivial patch, against -rc6. Please apply, thanks.
+---
 
-I believe you are both barking up the wrong tree.  Neil proposed a 16bit
-collision chain.  With that, it takes 65537 entries before a collision
-chain overflow is possible.
+CREDITS:
+ - Summarize 3 lines into one.
+ - Add webpage.
 
-Calling a collision chain overflow "collision" is inviting confusion, of
-course. :)
+MAINTAINERS:
+ - Add auxdisplay drivers/tree webpages.
 
-Jörn
+ CREDITS     |    7 +++----
+ MAINTAINERS |    4 ++++
+ 2 files changed, 7 insertions(+), 4 deletions(-)
+
+Signed-off-by: Miguel Ojeda Sandonis <maxextreme@gmail.com>
+---
+diff --git a/CREDITS b/CREDITS
+index 6bd8ab8..f990730 100644
+--- a/CREDITS
++++ b/CREDITS
+@@ -2573,10 +2573,9 @@ S: Australia
+
+ N: Miguel Ojeda Sandonis
+ E: maxextreme@gmail.com
+-D: Author: Auxiliary LCD Controller driver (ks0108)
+-D: Author: Auxiliary LCD driver (cfag12864b)
+-D: Author: Auxiliary LCD framebuffer driver (cfag12864bfb)
+-D: Maintainer: Auxiliary display drivers tree (drivers/auxdisplay/*)
++W: http://maxextreme.googlepages.com/
++D: Author of the ks0108, cfag12864b and cfag12864bfb auxiliary display drivers.
++D: Maintainer of the auxiliary display drivers tree (drivers/auxdisplay/*)
+ S: C/ Mieses 20, 9-B
+ S: Valladolid 47009
+ S: Spain
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 829407f..2a658ef 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -672,6 +672,7 @@ AUXILIARY DISPLAY DRIVERS
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
++W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
+
+ AVR32 ARCHITECTURE
+@@ -884,12 +885,14 @@ CFAG12864B LCD DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
++W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
+
+ CFAG12864BFB LCD FRAMEBUFFER DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
++W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
+
+ COMMON INTERNET FILE SYSTEM (CIFS)
+@@ -2020,6 +2023,7 @@ KS0108 LCD CONTROLLER DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	maxextreme@gmail.com
+ L:	linux-kernel@vger.kernel.org
++W:	http://auxdisplay.googlepages.com/
+ S:	Maintained
+
+ LAPB module
 
 -- 
-The competent programmer is fully aware of the strictly limited size of
-his own skull; therefore he approaches the programming task in full
-humility, and among other things he avoids clever tricks like the plague.
--- Edsger W. Dijkstra
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
