@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161172AbXDKEj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161173AbXDKEj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161172AbXDKEj1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 00:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161179AbXDKEj1
+	id S1161173AbXDKEj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161186AbXDKEj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 00:39:27 -0400
-Received: from [212.12.190.198] ([212.12.190.198]:36022 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161172AbXDKEj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 00:39:26 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Subject: Re: [PATCH 0/30] Use menuconfig objects
-Date: Wed, 11 Apr 2007 07:42:38 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200704110112.39425.a1426z@gawab.com> <Pine.LNX.4.61.0704110026250.32056@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0704110026250.32056@yvahk01.tjqt.qr>
-MIME-Version: 1.0
+	Wed, 11 Apr 2007 00:39:58 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:42662 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161173AbXDKEj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 00:39:57 -0400
+Date: Wed, 11 Apr 2007 10:17:17 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: menage@google.com
+Cc: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
+       devel@openvz.org
+Subject: Re: [PATCH 3/7] Containers (V8): Add generic multi-subsystem API to containers
+Message-ID: <20070411044717.GA15786@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070406233221.989528000@menage.corp.google.com> <20070407001324.271959000@menage.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704110742.38727.a1426z@gawab.com>
+In-Reply-To: <20070407001324.271959000@menage.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Apr 11 2007 01:12, Al Boldi wrote:
-> >Jan Engelhardt wrote:
-> >> the following patch series turns some menus into menuconfigs, so they
-> >> can be disabled whilst "walking" thorugh the parent menu
-> >
-> >Great, but instead of making it a simple on/off, make it tri-state that
-> > would default select all child-options appropriately.  (see HW_RANDOM)
->
-> I do not remember having touched the Random Number Generators or Character
-> Devices anywhere in this series.
->
-> Don't worry, I have paid attention (or at least I hope so ;-) to
-> 'm'-able options, for example the SCSI, IEEE1394, or I2C stacks.
->
-> But, for example you will see
->  [*] Old CD-ROM drivers (not SCSI, not IDE)
->
-> which is because this entry in itself does not generate any object file.
->
-> Generally, I just made the 'menuconfig' entry have the same state
-> (bool/tristate) as the original entry. If I have overseen that
-> somewhere, please let me know!
+On Fri, Apr 06, 2007 at 04:32:24PM -0700, menage@google.com wrote:
+> -int cpuset_create(struct container *cont)
+> +int cpuset_create(struct container_subsys *ss, struct container *cont)
 
-Correct, no oversight here; but it may be more meaningful, if you could 
-default select child-options based on the parent-state, like HW_RANDOM.
+Minor nit: The static declaration for cpuset_create (and friends) can be
+re-introduced, since they won't be accessed directly from other files?
 
-Also, I don't think it's necessary to touch any of the "depends on"; keep 
-them as is, as they don't hurt staying that way, and may actually be 
-necessary under certain circumstances.  (see EMBEDDED)
-
-
-Thanks!
-
---
-Al
-
+-- 
+Regards,
+vatsa
