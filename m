@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030319AbXDKW2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030517AbXDKWas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030319AbXDKW2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030470AbXDKW2P
+	id S1030517AbXDKWas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161301AbXDKWas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:28:15 -0400
-Received: from server2.meudns3.com ([74.52.31.50]:55270 "EHLO
-	server2.meudns3.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030319AbXDKW2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:28:14 -0400
-From: Pedro <linux_user@izecksohn.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: tmpfs and the OOM killer
-Date: Wed, 11 Apr 2007 19:27:00 -0300
-User-Agent: KMail/1.9.5
-References: <200704110223.31291.linux_user@izecksohn.com> <20070411194820.GI943@1wt.eu>
-In-Reply-To: <20070411194820.GI943@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 11 Apr 2007 18:30:48 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:34868 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161291AbXDKWaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 18:30:46 -0400
+Date: Wed, 11 Apr 2007 15:30:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Zhao Forrest" <forrest.zhao@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
+Message-Id: <20070411153040.a7e6c3b8.akpm@linux-foundation.org>
+In-Reply-To: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
+References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704111927.00609.linux_user@izecksohn.com>
-X-PopBeforeSMTPSenders: linux_user@izecksohn.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server2.meudns3.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - izecksohn.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 April 2007 16:48, Willy Tarreau wrote:
-> On Wed, Apr 11, 2007 at 02:23:31AM -0300, Pedro wrote:
-> >   After suffering some days from a not|mis configured tmpfs,
-> >
-> >   As the OOM killer is not Posix,
-> >
-> >   Better than to kill processes would be to resize tmpfs, to use tmpfs
-> > empty space.
->
-> Will not work, because tmpfs does not use any memory for unused space. If
-> you don't believe me, simply create a large file on your tmpfs, then check
-> free memory, then remove the file and check free memory again.
->
-> So your problem is not caused by the empty space on tmpfs, but either by
-> too much space used on tmpfs or by your application using too much memory.
->
-...
->
-> If you cannot control your application's memory usage, you'll have to
-> finely tune the overcommit_ratio.
->
-> Regards,
-> Willy
+On Wed, 11 Apr 2007 14:17:04 +0800
+"Zhao Forrest" <forrest.zhao@gmail.com> wrote:
 
-  You are right.
+> We're using RHEL5 with kernel version 2.6.18-8.el5.
+> When doing a stress test on raw device for about 3-4 hours, we found
+> the soft lockup message in dmesg.
+> I know we're not reporting the bug on the latest kernel, but does any
+> expert know if this is the known issue in old kernel? Or why
+> kmem_cache_free occupy CPU for more than 10 seconds?
+> 
+> Please let me know if you need any information.
+> 
+> Thanks,
+> Forrest
+> --------------------------------------------------------------
+> BUG: soft lockup detected on CPU#1!
+> 
+> Call Trace:
+>  <IRQ>  [<ffffffff800b2c93>] softlockup_tick+0xdb/0xed
+>  [<ffffffff800933df>] update_process_times+0x42/0x68
+>  [<ffffffff80073d97>] smp_local_timer_interrupt+0x23/0x47
+>  [<ffffffff80074459>] smp_apic_timer_interrupt+0x41/0x47
+>  [<ffffffff8005bcc2>] apic_timer_interrupt+0x66/0x6c
+>  <EOI>  [<ffffffff80007660>] kmem_cache_free+0x1c0/0x1cb
+>  [<ffffffff800262ee>] free_buffer_head+0x2a/0x43
+>  [<ffffffff80027110>] try_to_free_buffers+0x89/0x9d
+>  [<ffffffff80043041>] invalidate_mapping_pages+0x90/0x15f
+>  [<ffffffff800d4a77>] kill_bdev+0xe/0x21
+>  [<ffffffff800d4f9d>] __blkdev_put+0x4f/0x169
+>  [<ffffffff80012281>] __fput+0xae/0x198
+>  [<ffffffff80023647>] filp_close+0x5c/0x64
+>  [<ffffffff800384f9>] put_files_struct+0x6c/0xc3
+>  [<ffffffff80014f01>] do_exit+0x2d2/0x8b1
+>  [<ffffffff80046eb6>] cpuset_exit+0x0/0x6c
+>  [<ffffffff8002abd7>] get_signal_to_deliver+0x427/0x456
+>  [<ffffffff80059122>] do_notify_resume+0x9c/0x7a9
+>  [<ffffffff80086c6d>] default_wake_function+0x0/0xe
+>  [<ffffffff800b1fd8>] audit_syscall_exit+0x2cd/0x2ec
+>  [<ffffffff8005b362>] int_signal+0x12/0x17
 
-  But now I have two questions:
+I think there's nothing unusual happening here - you closed the device and
+the kernel has to remove a tremendous number of pagecache pages, and that
+simply takes a long time.
 
-  1) Why is tmpfs total space fixed if at the check moment does not exist 
-sufficient memory?
+How much memory does the machine have?
 
-  2) How should an application be written to not be killed by OOM?
+There used to be a cond_resched() in invalidate_mapping_pages() which would
+have prevented this, but I rudely removed it to support
+/proc/sys/vm/drop_caches (which needs to call invalidate_inode_pages()
+under spinlock).
+
+We could resurrect that cond_resched() by passing in some flag, I guess. 
+Or change the code to poke the softlockup detector.  The former would be
+better.
+
