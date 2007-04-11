@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751789AbXDKJiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751701AbXDKJjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751789AbXDKJiN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 05:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbXDKJiN
+	id S1751701AbXDKJjM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 05:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbXDKJjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 05:38:13 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:38335 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbXDKJiA (ORCPT
+	Wed, 11 Apr 2007 05:39:12 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:41993 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751701AbXDKJjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 05:38:00 -0400
-X-IronPort-AV: i="4.14,393,1170651600"; 
-   d="scan'208"; a="26949350:sNHT29391971"
-Subject: [PATCH 5/5] nommu: fix bug ip_conntrack does not work on nommu
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Wed, 11 Apr 2007 17:40:15 +0800
-Message-Id: <1176284415.29581.30.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 11 Apr 2007 05:39:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=It8rlkBf1lnc568tO7b0se8KBbAZqfuFcYU9IlzlnFUIoMJasIZjUBDMlxPxjIblKNC4dmS3mR+E1fTrcZr6tMOn9oUgZ1Cd5mWWTjlAt/GOxcPXYUdav0dK0OqjAdw70jbn9z9M6dx0kCnC1T2oH34TrWP1IcztxFMYbJ0I9aA=  ;
+X-YMail-OSG: a8.1lngVM1lSTkq2MF97x4LlVLxgxBYpSkbJZHTjqV21283flYejcFfFIIp6mVRxi2TkgtA9RQ--
+Message-ID: <461CACB6.8080307@yahoo.com.au>
+Date: Wed, 11 Apr 2007 19:39:02 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Pierre Peiffer <pierre.peiffer@bull.net>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, Ulrich Drepper <drepper@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       pravin b shelar <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
+References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<461764A6.3080703@yahoo.com.au>	<20070407120051.9ed0e69a.dada1@cosmosbay.com>	<461C8CD1.3080707@yahoo.com.au> <20070411101458.114125ee.dada1@cosmosbay.com> <461CA90E.3080306@yahoo.com.au> <461CAAA9.2090309@bull.net>
+In-Reply-To: <461CAAA9.2090309@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pierre Peiffer wrote:
+> Nick Piggin a écrit :
+> 
+>>
+>> But... that isn't there in mainline. Why is it in -mm?
+> 
+> 
+> This was introduced by lguest code....
+> I did not follow exaclty why.
 
-num_physpages is not exported out in mm/nommu.c, so the ip_conntrack
-module link will fail.
+OK, that's no problem, then it can remain exported but we just
+have to document and audit that callers must pass in an aligned
+address. We can also BUG_ON(address & ~PAGE_MASK); to handle
+the security aspect.
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- mm/nommu.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 0016557..db0452e 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -45,6 +45,7 @@ int heap_stack_gap = 0;
- 
- EXPORT_SYMBOL(mem_map);
- EXPORT_SYMBOL(__vm_enough_memory);
-+EXPORT_SYMBOL(num_physpages);
- 
- /* list of shareable VMAs */
- struct rb_root nommu_vma_tree = RB_ROOT;
 -- 
-1.5.0.5
-
+SUSE Labs, Novell Inc.
