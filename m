@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161392AbXDKXDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161362AbXDKXEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161392AbXDKXDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 19:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161368AbXDKXDG
+	id S1161362AbXDKXEb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 19:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161368AbXDKXDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 19:03:06 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55638 "EHLO
+	Wed, 11 Apr 2007 19:03:51 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55588 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161365AbXDKWym (ORCPT
+	with ESMTP id S1161344AbXDKWye (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:54:42 -0400
-Date: Wed, 11 Apr 2007 15:52:03 -0700
+	Wed, 11 Apr 2007 18:54:34 -0400
+Date: Wed, 11 Apr 2007 15:51:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Patrick McHardy <kaber@trash.net>, Jamal Hadi Salim <hadi@cyberus.ca>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 14/31] Fix IFB net driver input device crashes
-Message-ID: <20070411225203.GO24814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Francois Romieu <romieu@fr.zoreil.com>,
+       Ben Greear <greearb@candelatech.com>
+Subject: [patch 12/31] 8139too: RTNL and flush_scheduled_work deadlock
+Message-ID: <20070411225156.GM24814@kroah.com>
 References: <20070411224329.866978349@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-ifb-net-driver-input-device-crashes.patch"
+Content-Disposition: inline; filename="8139too-rtnl-and-flush_scheduled_work-deadlock.patch"
 In-Reply-To: <20070411225100.GA24814@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,174 +37,108 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Patrick McHardy <kaber@trash.net>
+From: Francois Romieu <romieu@fr.zoreil.com>
 
-[IFB]: Fix crash on input device removal
+Your usual dont-flush_scheduled_work-with-RTNL-held stuff.
 
-The input_device pointer is not refcounted, which means the device may
-disappear while packets are queued, causing a crash when ifb passes packets
-with a stale skb->dev pointer to netif_rx().
+It is a bit different here since the thread runs permanently
+or is only occasionally kicked for recovery depending on the
+hardware revision.
 
-Fix by storing the interface index instead and do a lookup where neccessary.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Acked-by: Jamal Hadi Salim <hadi@cyberus.ca>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Ben Greear <greearb@candelatech.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/ifb.c      |   35 +++++++++++++----------------------
- include/linux/skbuff.h |    5 +++--
- include/net/pkt_cls.h  |    7 +++++--
- net/core/dev.c         |    8 ++++----
- net/core/skbuff.c      |    2 +-
- net/sched/act_mirred.c |    2 +-
- 6 files changed, 27 insertions(+), 32 deletions(-)
+ drivers/net/8139too.c |   40 +++++++++++++++++-----------------------
+ 1 file changed, 17 insertions(+), 23 deletions(-)
 
---- a/drivers/net/ifb.c
-+++ b/drivers/net/ifb.c
-@@ -96,17 +96,24 @@ static void ri_tasklet(unsigned long dev
- 		skb->tc_verd = SET_TC_NCLS(skb->tc_verd);
- 		stats->tx_packets++;
- 		stats->tx_bytes +=skb->len;
-+
-+		skb->dev = __dev_get_by_index(skb->iif);
-+		if (!skb->dev) {
-+			dev_kfree_skb(skb);
-+			stats->tx_dropped++;
-+			break;
-+		}
-+		skb->iif = _dev->ifindex;
-+
- 		if (from & AT_EGRESS) {
- 			dp->st_rx_frm_egr++;
- 			dev_queue_xmit(skb);
- 		} else if (from & AT_INGRESS) {
--
- 			dp->st_rx_frm_ing++;
-+			skb_pull(skb, skb->dev->hard_header_len);
- 			netif_rx(skb);
--		} else {
--			dev_kfree_skb(skb);
--			stats->tx_dropped++;
--		}
-+		} else
-+			BUG();
- 	}
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -1109,6 +1109,8 @@ static void __devexit rtl8139_remove_one
  
- 	if (netif_tx_trylock(_dev)) {
-@@ -157,26 +164,10 @@ static int ifb_xmit(struct sk_buff *skb,
- 	stats->rx_packets++;
- 	stats->rx_bytes+=skb->len;
+ 	assert (dev != NULL);
  
--	if (!from || !skb->input_dev) {
--dropped:
-+	if (!(from & (AT_INGRESS|AT_EGRESS)) || !skb->iif) {
- 		dev_kfree_skb(skb);
- 		stats->rx_dropped++;
- 		return ret;
++	flush_scheduled_work();
++
+ 	unregister_netdev (dev);
+ 
+ 	__rtl8139_cleanup_dev (dev);
+@@ -1603,18 +1605,21 @@ static void rtl8139_thread (struct work_
+ 	struct net_device *dev = tp->mii.dev;
+ 	unsigned long thr_delay = next_tick;
+ 
++	rtnl_lock();
++
++	if (!netif_running(dev))
++		goto out_unlock;
++
+ 	if (tp->watchdog_fired) {
+ 		tp->watchdog_fired = 0;
+ 		rtl8139_tx_timeout_task(work);
+-	} else if (rtnl_trylock()) {
+-		rtl8139_thread_iter (dev, tp, tp->mmio_addr);
+-		rtnl_unlock ();
 -	} else {
--		/*
--		 * note we could be going
--		 * ingress -> egress or
--		 * egress -> ingress
--		*/
--		skb->dev = skb->input_dev;
--		skb->input_dev = dev;
--		if (from & AT_INGRESS) {
--			skb_pull(skb, skb->dev->hard_header_len);
--		} else {
--			if (!(from & AT_EGRESS)) {
--				goto dropped;
--			}
--		}
- 	}
+-		/* unlikely race.  mitigate with fast poll. */
+-		thr_delay = HZ / 2;
+-	}
++	} else
++		rtl8139_thread_iter(dev, tp, tp->mmio_addr);
  
- 	if (skb_queue_len(&dp->rq) >= dev->tx_queue_len) {
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -188,7 +188,7 @@ enum {
-  *	@sk: Socket we are owned by
-  *	@tstamp: Time we arrived
-  *	@dev: Device we arrived on/are leaving by
-- *	@input_dev: Device we arrived on
-+ *	@iif: ifindex of device we arrived on
-  *	@h: Transport layer header
-  *	@nh: Network layer header
-  *	@mac: Link layer header
-@@ -235,7 +235,8 @@ struct sk_buff {
- 	struct sock		*sk;
- 	struct skb_timeval	tstamp;
- 	struct net_device	*dev;
--	struct net_device	*input_dev;
-+	int			iif;
-+	/* 4 byte hole on 64 bit*/
+-	schedule_delayed_work(&tp->thread, thr_delay);
++	if (tp->have_thread)
++		schedule_delayed_work(&tp->thread, thr_delay);
++out_unlock:
++	rtnl_unlock ();
+ }
  
- 	union {
- 		struct tcphdr	*th;
---- a/include/net/pkt_cls.h
-+++ b/include/net/pkt_cls.h
-@@ -352,10 +352,13 @@ tcf_change_indev(struct tcf_proto *tp, c
- static inline int
- tcf_match_indev(struct sk_buff *skb, char *indev)
+ static void rtl8139_start_thread(struct rtl8139_private *tp)
+@@ -1626,19 +1631,11 @@ static void rtl8139_start_thread(struct 
+ 		return;
+ 
+ 	tp->have_thread = 1;
++	tp->watchdog_fired = 0;
+ 
+ 	schedule_delayed_work(&tp->thread, next_tick);
+ }
+ 
+-static void rtl8139_stop_thread(struct rtl8139_private *tp)
+-{
+-	if (tp->have_thread) {
+-		cancel_rearming_delayed_work(&tp->thread);
+-		tp->have_thread = 0;
+-	} else
+-		flush_scheduled_work();
+-}
+-
+ static inline void rtl8139_tx_clear (struct rtl8139_private *tp)
  {
-+	struct net_device *dev;
-+
- 	if (indev[0]) {
--		if  (!skb->input_dev)
-+		if  (!skb->iif)
- 			return 0;
--		if (strcmp(indev, skb->input_dev->name))
-+		dev = __dev_get_by_index(skb->iif);
-+		if (!dev || strcmp(indev, dev->name))
- 			return 0;
- 	}
+ 	tp->cur_tx = 0;
+@@ -1696,12 +1693,11 @@ static void rtl8139_tx_timeout (struct n
+ {
+ 	struct rtl8139_private *tp = netdev_priv(dev);
  
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1741,8 +1741,8 @@ static int ing_filter(struct sk_buff *sk
- 	if (dev->qdisc_ingress) {
- 		__u32 ttl = (__u32) G_TC_RTTL(skb->tc_verd);
- 		if (MAX_RED_LOOP < ttl++) {
--			printk(KERN_WARNING "Redir loop detected Dropping packet (%s->%s)\n",
--				skb->input_dev->name, skb->dev->name);
-+			printk(KERN_WARNING "Redir loop detected Dropping packet (%d->%d)\n",
-+				skb->iif, skb->dev->ifindex);
- 			return TC_ACT_SHOT;
- 		}
++	tp->watchdog_fired = 1;
+ 	if (!tp->have_thread) {
+-		INIT_DELAYED_WORK(&tp->thread, rtl8139_tx_timeout_task);
++		INIT_DELAYED_WORK(&tp->thread, rtl8139_thread);
+ 		schedule_delayed_work(&tp->thread, next_tick);
+-	} else
+-		tp->watchdog_fired = 1;
+-
++	}
+ }
  
-@@ -1775,8 +1775,8 @@ int netif_receive_skb(struct sk_buff *sk
- 	if (!skb->tstamp.off_sec)
- 		net_timestamp(skb);
+ static int rtl8139_start_xmit (struct sk_buff *skb, struct net_device *dev)
+@@ -2233,8 +2229,6 @@ static int rtl8139_close (struct net_dev
  
--	if (!skb->input_dev)
--		skb->input_dev = skb->dev;
-+	if (!skb->iif)
-+		skb->iif = skb->dev->ifindex;
+ 	netif_stop_queue (dev);
  
- 	orig_dev = skb_bond(skb);
- 
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -497,7 +497,7 @@ struct sk_buff *skb_clone(struct sk_buff
- 	n->tc_verd = SET_TC_VERD(skb->tc_verd,0);
- 	n->tc_verd = CLR_TC_OK2MUNGE(n->tc_verd);
- 	n->tc_verd = CLR_TC_MUNGED(n->tc_verd);
--	C(input_dev);
-+	C(iif);
- #endif
- 	skb_copy_secmark(n, skb);
- #endif
---- a/net/sched/act_mirred.c
-+++ b/net/sched/act_mirred.c
-@@ -199,7 +199,7 @@ bad_mirred:
- 		skb2->tc_verd = SET_TC_FROM(skb2->tc_verd, at);
- 
- 	skb2->dev = dev;
--	skb2->input_dev = skb->dev;
-+	skb2->iif = skb->dev->ifindex;
- 	dev_queue_xmit(skb2);
- 	spin_unlock(&m->tcf_lock);
- 	return m->tcf_action;
+-	rtl8139_stop_thread(tp);
+-
+ 	if (netif_msg_ifdown(tp))
+ 		printk(KERN_DEBUG "%s: Shutting down ethercard, status was 0x%4.4x.\n",
+ 			dev->name, RTL_R16 (IntrStatus));
 
 -- 
