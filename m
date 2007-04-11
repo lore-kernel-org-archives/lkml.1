@@ -1,84 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbXDKSeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXDKSgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753616AbXDKSeH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXDKSeH
+	id S1753634AbXDKSgv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbXDKSgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:34:07 -0400
-Received: from mail.suse.de ([195.135.220.2]:36134 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753616AbXDKSeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:34:04 -0400
-Date: Wed, 11 Apr 2007 20:33:38 +0200
-From: Olaf Dabrunz <od@suse.de>
-To: John Stoffel <john@stoffel.org>
-Cc: Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Andi Kleen <ak@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
-Message-ID: <20070411183338.GB29059@suse.de>
-Mail-Followup-To: John Stoffel <john@stoffel.org>,
-	Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mundt <lethal@linux-sh.org>, Ralf Baechle <ralf@linux-mips.org>,
-	Andi Kleen <ak@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Richard Henderson <rth@twiddle.net>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>
-References: <20070315154638.944768000@suse.de> <17913.45970.178029.519745@smtp.charter.net> <20070329163714.GA29059@suse.de> <17938.30190.281832.393043@smtp.charter.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <17938.30190.281832.393043@smtp.charter.net>
-User-Agent: Mutt/1.5.9i
+	Wed, 11 Apr 2007 14:36:51 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45193 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932065AbXDKSgu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 14:36:50 -0400
+Message-ID: <461D2AB8.5080902@zytor.com>
+Date: Wed, 11 Apr 2007 11:36:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Egmont Koblinger <egmont@uhulinux.hu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] console UTF-8 fixes
+References: <20070406191245.GA11974@uhulinux.hu> <4616A2C7.3030000@zytor.com> <20070407092451.GA8779@uhulinux.hu> <Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr> <20070407172603.GA25351@uhulinux.hu> <4617DBF7.5060009@zytor.com> <20070410094325.GB9143@uhulinux.hu> <461BB092.3070201@zytor.com> <20070410171924.GA18314@uhulinux.hu> <20070410183659.7341eeec@the-village.bc.nu> <20070411182801.GC26382@uhulinux.hu>
+In-Reply-To: <20070411182801.GC26382@uhulinux.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03-Apr-07, John Stoffel wrote:
-> 
-> Sorry, I've been away for the past 10+ days and not reading email at
-> all.  
+Egmont Koblinger wrote:
+> +static int is_zero_width(long ucs)
+> +{
+> +  static const struct interval zero_width[] = {
+/* lots */
+> +  };
 
-NP. Happens to me too (as you can see).
+I'm still unhappy about these large search tables in the kernel, not 
+because they take a huge amount of space (it's not that much), but 
+because they're invariably going to be stale, as they're Unicode-version 
+dependent.
 
-> Olaf> Try changing the order of the console= parameters:
-> 
-> Olaf>     kernel ... console=ttyS1,96008N1 console=tty0
-> 
-> This isn't good for me, since it then drops some output I want to save
-> via the serial console to the regular console.  It would be nice if
-> all output went to BOTH consoles, though input should only be accepted
-> on the first console listed.  
+At least please put them in a separate .c file and include a script to 
+generate them clean from UnicodeData.txt.
 
-That is actually the underlying problem: the Linux kernel does not
-provide the means to duplicate data streams in the kernel to several
-devices. This has to be done in user-space. The main reason for this is
-that error handling, locking and such things would need to be different
-if streams had a fan-in or a fan-out. It tends to make things more
-complicated.
+Besides, would it not make more sense to have a single table with the 
+width information, if you insist on having one, instead of multiple ones?
 
-But probably it is an interesting project to explore and define the
-sematics of devices with fan-in and fan-out.
-
-I can image that user-space programs would be able to add fan-in or
-fan-out file-descriptors to an opened file-descriptor by using an
-ioctl(), but then they would need to be prepared to deal with different
-error handling and behaviour of such a "file".
-
-Some devices (as the console device) could then have a pre-defined
-fan-in or fan-out set by default, if opened with a special flag. A
-program using this flag would then say: I am prepared to deal with
-fan-in / fan-out semantics.
-
--- 
-Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
-
+	-hpa
