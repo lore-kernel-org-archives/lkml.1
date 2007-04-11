@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXDKTwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030310AbXDKTxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030297AbXDKTwt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030302AbXDKTwt
+	id S1030310AbXDKTxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030314AbXDKTxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:52:49 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:58250 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030297AbXDKTws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:52:48 -0400
-Date: Wed, 11 Apr 2007 12:52:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joseph Fannin <jhf@columbus.rr.com>
-Cc: Reiner Sailer <sailer@us.ibm.com>, linux-kernel@vger.kernel.org,
-       sailer@watson.ibm.com, serue@linux.vnet.ibm.com,
-       zohar@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.21-rc6-mm1 ima "BUG: held lock freed!"
-Message-Id: <20070411125217.17734a5b.akpm@linux-foundation.org>
-In-Reply-To: <1176299718.14723.3.camel@localhost.localdomain>
-References: <461B8A0F.2060007@us.ibm.com>
-	<461BDED4.8060606@us.ibm.com>
-	<1176299718.14723.3.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 11 Apr 2007 15:53:19 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:59085 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030310AbXDKTxS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:53:18 -0400
+Date: Wed, 11 Apr 2007 12:52:56 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: Benjamin LaHaise <bcrl@kvack.org>
+Cc: Ken Chen <kenchen@google.com>, akpm@linux-foundation.org,
+       linux-aio@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
+Message-ID: <20070411195256.GD9602@mami.zabbo.net>
+References: <20070410235353.325A7346F64@localhost> <20070411180038.GN28322@mami.zabbo.net> <b040c32a0704111228t5065253en9249ff88db5b1384@mail.gmail.com> <20070411194504.GM13621@kvack.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070411194504.GM13621@kvack.org>
+User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 09:55:18 -0400
-Joseph Fannin <jhf@columbus.rr.com> wrote:
-
-> On Tue, 2007-04-10 at 15:00 -0400, Reiner Sailer wrote:
-> > Joseph,
-> > 
-> > we cannot reproduce the BUG you report. We have identified a potential 
-> > source (spinlock around mutex_init). I have attached a small patch that 
-> > removes this lock from the initialization of the hash table. I have 
-> > tested the patch but I cannot verify if this resolves the problem you 
-> > are seeing.
-> > 
-> > If you can reproduce the problem, would you mind to apply this patch and 
-> > let us know if this solves the problem?
+> > I kept on getting requests from application developers who want that
+> > feature.  My initial patch was dated back May 2004.
 > 
-> The BUG message no longer appears with this patch applied.  It was 100%
-> reproducible before, so I think this fixed it.
+> The right way to do it involves synchronization between the kernel side 
+> io_getevents() and the userspace code pulling events out of the ring.  
+> Alan Cox suggested embedding a futex in the shared memory region, but I 
+> don't think anyone ever implemented that.
 
-ok, the spinlock in there was unneeded anwyay.
+Yeah, I like the idea of futexes.
 
-But I think this is a lockdep shortcoming - there's nothing wrong with
-doing mutex_init() inside spin_lock().
+I'm worried that virtual aliasing spells doom for the current
+home-brewed serialization that fs/aio.c is doing with the shared ring
+head/tail accesses.  Am I worrying about nothing here?
 
-debug_mutex_init() is trying to work out whether we're initialising
-an already held mutex.  This has nothing to do with the spinlock
-which we're holding.  Perhaps debug_check_no_locks_freed() simply
-went wrong.
+> > I will look into this aside from this patch.
+> 
+> That's probably the case.  Also, any changes in this area *must* correctly 
+> update the compat/incompat feature flags in the ring buffer header.  That 
+> has been missed in the past...
 
-For Ingo - this:
+Do you know of anyone using the current ring info ABI?
 
-=========================
-[ BUG: held lock freed! ]
--------------------------
-swapper/1 is freeing memory c04c7660-c04c76a3, with a lock still held there!
- (ima_queue_lock){--..}, at: [<c0202710>] ima_create_htable+0x10/0x90
-1 lock held by swapper/1:
- #0:  (ima_queue_lock){--..}, at: [<c0202710>] ima_create_htable+0x10/0x90
+The *only* user I know of is the check of ctx->magic in libaio.
 
-stack backtrace:
- [<c0105959>] dump_trace+0x1d9/0x210
- [<c01059aa>] show_trace_log_lvl+0x1a/0x30
- [<c0106612>] show_trace+0x12/0x20
- [<c01066d6>] dump_stack+0x16/0x20
- [<c014fd3a>] debug_check_no_locks_freed+0x17a/0x180
- [<c014cdbf>] debug_mutex_init+0x1f/0x50
- [<c0145451>] __mutex_init+0x41/0x50
- [<c020277d>] ima_create_htable+0x7d/0x90
- [<c020286f>] ima_init+0x3f/0x270
- [<c051b765>] init_evm+0x1f5/0x250
- [<c05015d2>] kernel_init+0x132/0x320
- [<c010532f>] kernel_thread_helper+0x7/0x18
- =======================
-
-is coming out of -mm's security/evm/ima/ima_queue.c:ima_create_htable().
+- z
