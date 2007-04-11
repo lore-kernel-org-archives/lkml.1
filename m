@@ -1,76 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbXDKQwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXDKQyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbXDKQwy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 12:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXDKQwy
+	id S1753376AbXDKQyH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 12:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbXDKQyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 12:52:54 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11177 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753368AbXDKQwx convert rfc822-to-8bit (ORCPT
+	Wed, 11 Apr 2007 12:54:07 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:43886 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753376AbXDKQyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 12:52:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,395,1170662400"; 
-   d="scan'208"; a="72026337:sNHT19490499"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 11 Apr 2007 12:54:06 -0400
+Message-ID: <461D1291.2060703@s5r6.in-berlin.de>
+Date: Wed, 11 Apr 2007 18:53:37 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
-Date: Wed, 11 Apr 2007 09:52:50 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC32902A1A535@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <461B5339.50700@trash.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
-Thread-Index: Acd7T2flcAdEEwVGQsmd5w4ZcEf/MABCXuHA
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Patrick McHardy" <kaber@trash.net>
-Cc: <davem@davemloft.net>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <jgarzik@pobox.com>,
-       "cramerj" <cramerj@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-X-OriginalArrivalTime: 11 Apr 2007 16:52:51.0481 (UTC) FILETIME=[D79F1890:01C77C59]
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/30] Use menuconfig objects
+References: <200704110112.39425.a1426z@gawab.com> <Pine.LNX.4.61.0704110026250.32056@yvahk01.tjqt.qr> <200704110742.38727.a1426z@gawab.com> <Pine.LNX.4.61.0704110937060.32056@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704110937060.32056@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thanks.
+Jan Engelhardt wrote:
+> On Apr 11 2007 07:42, Al Boldi wrote:
+>>Also, I don't think it's necessary to touch any of the "depends on"; keep 
+>>them as is, as they don't hurt staying that way, and may actually be 
+>>necessary under certain circumstances.  (see EMBEDDED)
 > 
-> > However, the PRIO qdisc still uses the priority in the bands for 
-> > dequeueing priority, and will feed the queues on the NIC.
-> > The e1000, and any other multiqueue NIC, will schedule Tx 
-> based on how 
-> > the PRIO qdisc feeds the queues.  So the only priority here is the 
-> > dequeuing priority from the kernel.  The e1000 will use the new API 
-> > for starting/stopping the individual queues based on the 
-> descriptors 
-> > available, much like it does today for the global queue.
-> 
-> 
-> Packets will only be dequeued from a band if the associated 
-> subqueue is active, which moves the decision from prio to the 
-> driver, no?
-> What policy does e1000 use for scheduling its internal queues?
-> 
+> Simplifying the depends lines is a good thing IMO.
 
-E1000 is handed the skb's from PRIO to whichever queue the PRIO flows
-dictate (based on band2queue mapping, tc filters, or TOS to
-skb->priority filtering).  Once the skb hits the e1000, the internal
-policy is round-robin on the hardware queues to dequeue and transmit on
-the wire.  I agree the NIC does influence the decision of which band an
-skb will be dequeued from based on available descriptors, etc., but
-that's one of the goals of multiqueue: don't allow another traffic flow
-in one queue stop or impact another separate flow.
-
-Once NICs start using hardware-based priority scheduling (wireless?), we
-can use a round-robin type qdisc in the kernel to dequeue, and let the
-hardware directly decide how important one flow is over another.
-
-Hope this answers your question.
-
-Cheers,
--PJ Waskiewicz
+If explicit dependency statements are replaced by if--endif blocks, does
+this count as simplification?
+-- 
+Stefan Richter
+-=====-=-=== -=-- -=-==
+http://arcgraph.de/sr/
