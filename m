@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbXDKAnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030300AbXDKAqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932411AbXDKAnq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 20:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933145AbXDKAnq
+	id S1030300AbXDKAqv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 20:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933152AbXDKAqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 20:43:46 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:43101 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932411AbXDKAnp convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 20:43:45 -0400
-Date: Tue, 10 Apr 2007 20:43:41 -0400
+	Tue, 10 Apr 2007 20:46:51 -0400
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:60826 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933145AbXDKAqt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 20:46:49 -0400
+Date: Tue, 10 Apr 2007 20:46:46 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc6-mm1 build error with mips
-Message-ID: <20070411004341.GB15262@Krystal>
-MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Build error : 2.6.21-rc6-mm1 on sparc
+Message-ID: <20070411004646.GC15262@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 20:41:14 up 67 days, 14:48,  3 users,  load average: 1.65, 1.53, 1.33
+X-Uptime: 20:43:42 up 67 days, 14:51,  3 users,  load average: 1.35, 1.39, 1.30
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Andrew,
 
-I get the following error when compiling 2.6.21-rc6-mm1 for MIPS :
+I get the following build error on sparc :
+
+  /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/bin/sparc-unknown-linux-gnu-gcc -Wp,-MD,arch/sparc/kernel/.irq.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.1.1-glibc-2.3.6/sparc-unknown-linux-gnu/lib/gcc/sparc-unknown-linux-gnu/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h -I/home/compudj/git/linux-2.6-lttng/arch/sparc/kernel -Iarch/sparc/kernel -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -m32 -pipe -mno-fpu -fcall-used-g5 -fcall-used-g7 -fomit-frame-pointer -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(irq)"  -D"KBUILD_MODNAME=KBUILD_STR(irq)" -c -o arch/sparc/kernel/.tmp_irq.o /home/compudj/git/linux-2.6-lttng/arch/sparc/kernel/irq.c
+In file included from /home/compudj/git/linux-2.6-lttng/arch/sparc/kernel/irq.c:16:
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:64:27: error: asm/tracehook.h: No such file or directory
+In file included from /home/compudj/git/linux-2.6-lttng/arch/sparc/kernel/irq.c:16:
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h: In function 'ptrace_whole_regset':
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:115: warning: implicit declaration of function 'utrace_native_view'
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:116: warning: passing argument 3 of 'ptrace_regset_access' makes pointer from integer without a cast
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h: In function 'ptrace_peekusr':
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:166: warning: passing argument 3 of 'ptrace_layout_access' makes pointer from integer without a cast
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h: In function 'ptrace_pokeusr':
+/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:177: warning: passing argument 3 of 'ptrace_layout_access' makes pointer from integer without a cast
+make[2]: *** [arch/sparc/kernel/irq.o] Error 1
+make[1]: *** [arch/sparc/kernel] Error 2
+make: *** [_all] Error 2
 
 
-  /opt/crosstool/gcc-3.4.5-glibc-2.3.6/mips-unknown-linux-gnu/bin/mips-unknown-linux-gnu-gcc -Wp,-MD,arch/mips/sgi-ip22/.ip22-time.o.d  -nostdinc -isystem /opt/crosstool/gcc-3.4.5-glibc-2.3.6/mips-unknown-linux-gnu/lib/gcc/mips-unknown-linux-gnu/3.4.5/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h -I/home/compudj/git/linux-2.6-lttng/arch/mips/sgi-ip22 -Iarch/mips/sgi-ip22 -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -mabi=32 -G 0 -mno-abicalls -fno-pic -pipe -msoft-float -ffreestanding -march=r5000 -Wa,--trap -I/home/compudj/git/linux-2.6-lttng/include/asm-mips/mach-ip22 -Iinclude/asm-mips/mach-ip22 -I/home/compudj/git/linux-2.6-lttng/include/asm-mips/mach-generic -Iinclude/asm-mips/mach-generic -fomit-frame-pointer -Wdeclaration-after-statement  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(ip22_time)"  -D"KBUILD_MODNAME=KBUILD_STR(ip22_time)" -c -o arch/mips/sgi-ip22/ip22-time.o /home/compudj/git/linux-2.6-lttng/arch/mips/sgi-ip22/ip22-time.c
-In file included from include2/asm/time.h:21,
-                 from /home/compudj/git/linux-2.6-lttng/arch/mips/sgi-ip22/ip22-time.c:25:
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:64:27: asm/tracehook.h: No such file or directory
-In file included from include2/asm/time.h:21,
-                 from /home/compudj/git/linux-2.6-lttng/arch/mips/sgi-ip22/ip22-time.c:25:
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h: In function `ptrace_whole_regset':
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:115: warning: implicit declaration of function `utrace_native_view'
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:116: warning: passing arg 3 of `ptrace_regset_access' makes pointer from integer without a cast
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h: In function `ptrace_peekusr':
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:166: warning: passing arg 3 of `ptrace_layout_access' makes pointer from integer without a cast
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h: In function `ptrace_pokeusr':
-/home/compudj/git/linux-2.6-lttng/include/linux/ptrace.h:177: warning: passing arg 3 of `ptrace_layout_access' makes pointer from integer without a cast
-/home/compudj/git/linux-2.6-lttng/arch/mips/sgi-ip22/ip22-time.c: In function `dosample':
-/home/compudj/git/linux-2.6-lttng/arch/mips/sgi-ip22/ip22-time.c:118: warning: passing arg 2 of `writeb' makes pointer from integer without a cast
-
-
-My .config :
+my .config :
 
 
 #
@@ -58,167 +56,10 @@ My .config :
 # Linux kernel version: 2.6.21-rc6-mm1
 # Tue Apr 10 16:33:18 2007
 #
-CONFIG_MIPS=y
-
-#
-# Machine selection
-#
+CONFIG_MMU=y
+CONFIG_HIGHMEM=y
 CONFIG_ZONE_DMA=y
-# CONFIG_MIPS_MTX1 is not set
-# CONFIG_MIPS_BOSPORUS is not set
-# CONFIG_MIPS_PB1000 is not set
-# CONFIG_MIPS_PB1100 is not set
-# CONFIG_MIPS_PB1500 is not set
-# CONFIG_MIPS_PB1550 is not set
-# CONFIG_MIPS_PB1200 is not set
-# CONFIG_MIPS_DB1000 is not set
-# CONFIG_MIPS_DB1100 is not set
-# CONFIG_MIPS_DB1500 is not set
-# CONFIG_MIPS_DB1550 is not set
-# CONFIG_MIPS_DB1200 is not set
-# CONFIG_MIPS_MIRAGE is not set
-# CONFIG_BASLER_EXCITE is not set
-# CONFIG_MIPS_COBALT is not set
-# CONFIG_MACH_DECSTATION is not set
-# CONFIG_MIPS_EV64120 is not set
-# CONFIG_MACH_JAZZ is not set
-# CONFIG_LASAT is not set
-# CONFIG_MIPS_ATLAS is not set
-# CONFIG_MIPS_MALTA is not set
-# CONFIG_MIPS_SEAD is not set
-# CONFIG_WR_PPMC is not set
-# CONFIG_MIPS_SIM is not set
-# CONFIG_MOMENCO_JAGUAR_ATX is not set
-# CONFIG_MOMENCO_OCELOT is not set
-# CONFIG_MOMENCO_OCELOT_3 is not set
-# CONFIG_MOMENCO_OCELOT_C is not set
-# CONFIG_MOMENCO_OCELOT_G is not set
-# CONFIG_MIPS_XXS1500 is not set
-# CONFIG_PNX8550_JBS is not set
-# CONFIG_PNX8550_STB810 is not set
-# CONFIG_DDB5477 is not set
-# CONFIG_MACH_VR41XX is not set
-# CONFIG_PMC_YOSEMITE is not set
-# CONFIG_QEMU is not set
-# CONFIG_MARKEINS is not set
-CONFIG_SGI_IP22=y
-# CONFIG_SGI_IP27 is not set
-# CONFIG_SGI_IP32 is not set
-# CONFIG_SIBYTE_BIGSUR is not set
-# CONFIG_SIBYTE_SWARM is not set
-# CONFIG_SIBYTE_SENTOSA is not set
-# CONFIG_SIBYTE_RHONE is not set
-# CONFIG_SIBYTE_CARMEL is not set
-# CONFIG_SIBYTE_PTSWARM is not set
-# CONFIG_SIBYTE_LITTLESUR is not set
-# CONFIG_SIBYTE_CRHINE is not set
-# CONFIG_SIBYTE_CRHONE is not set
-# CONFIG_SNI_RM is not set
-# CONFIG_TOSHIBA_JMR3927 is not set
-# CONFIG_TOSHIBA_RBTX4927 is not set
-# CONFIG_TOSHIBA_RBTX4938 is not set
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-CONFIG_GENERIC_FIND_NEXT_BIT=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_TIME=y
-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-# CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ is not set
-CONFIG_ARC=y
-CONFIG_DMA_NONCOHERENT=y
-CONFIG_DMA_NEED_PCI_MAP_STATE=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_SYS_HAS_EARLY_PRINTK=y
-CONFIG_GENERIC_ISA_DMA_SUPPORT_BROKEN=y
-CONFIG_CPU_BIG_ENDIAN=y
-# CONFIG_CPU_LITTLE_ENDIAN is not set
-CONFIG_SYS_SUPPORTS_BIG_ENDIAN=y
-CONFIG_IRQ_CPU=y
-CONFIG_SWAP_IO_SPACE=y
-CONFIG_ARC32=y
-CONFIG_BOOT_ELF32=y
-CONFIG_MIPS_L1_CACHE_SHIFT=5
-# CONFIG_ARC_CONSOLE is not set
-CONFIG_ARC_PROMLIB=y
-
-#
-# CPU selection
-#
-# CONFIG_CPU_MIPS32_R1 is not set
-# CONFIG_CPU_MIPS32_R2 is not set
-# CONFIG_CPU_MIPS64_R1 is not set
-# CONFIG_CPU_MIPS64_R2 is not set
-# CONFIG_CPU_R3000 is not set
-# CONFIG_CPU_TX39XX is not set
-# CONFIG_CPU_VR41XX is not set
-# CONFIG_CPU_R4300 is not set
-# CONFIG_CPU_R4X00 is not set
-# CONFIG_CPU_TX49XX is not set
-CONFIG_CPU_R5000=y
-# CONFIG_CPU_R5432 is not set
-# CONFIG_CPU_R6000 is not set
-# CONFIG_CPU_NEVADA is not set
-# CONFIG_CPU_R8000 is not set
-# CONFIG_CPU_R10000 is not set
-# CONFIG_CPU_RM7000 is not set
-# CONFIG_CPU_RM9000 is not set
-# CONFIG_CPU_SB1 is not set
-CONFIG_SYS_HAS_CPU_R4X00=y
-CONFIG_SYS_HAS_CPU_R5000=y
-CONFIG_SYS_SUPPORTS_32BIT_KERNEL=y
-CONFIG_SYS_SUPPORTS_64BIT_KERNEL=y
-CONFIG_CPU_SUPPORTS_32BIT_KERNEL=y
-CONFIG_CPU_SUPPORTS_64BIT_KERNEL=y
-
-#
-# Kernel type
-#
-CONFIG_32BIT=y
-# CONFIG_64BIT is not set
-CONFIG_PAGE_SIZE_4KB=y
-# CONFIG_PAGE_SIZE_8KB is not set
-# CONFIG_PAGE_SIZE_16KB is not set
-# CONFIG_PAGE_SIZE_64KB is not set
-CONFIG_BOARD_SCACHE=y
-CONFIG_IP22_CPU_SCACHE=y
-CONFIG_MIPS_MT_DISABLED=y
-# CONFIG_MIPS_MT_SMP is not set
-# CONFIG_MIPS_MT_SMTC is not set
-# CONFIG_MIPS_VPE_LOADER is not set
-# CONFIG_64BIT_PHYS_ADDR is not set
-CONFIG_CPU_HAS_LLSC=y
-CONFIG_CPU_HAS_SYNC=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-# CONFIG_SPARSEMEM_STATIC is not set
-CONFIG_SPLIT_PTLOCK_CPUS=4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_ADAPTIVE_READAHEAD=y
-# CONFIG_HZ_48 is not set
-# CONFIG_HZ_100 is not set
-# CONFIG_HZ_128 is not set
-CONFIG_HZ_250=y
-# CONFIG_HZ_256 is not set
-# CONFIG_HZ_1000 is not set
-# CONFIG_HZ_1024 is not set
-CONFIG_SYS_SUPPORTS_ARBIT_HZ=y
-CONFIG_HZ=250
-CONFIG_PREEMPT_NONE=y
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT is not set
-# CONFIG_KEXEC is not set
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_GENERIC_ISA_DMA=y
 CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 
 #
@@ -246,14 +87,16 @@ CONFIG_SYSVIPC_SYSCTL=y
 # CONFIG_IKCONFIG is not set
 CONFIG_SYSFS_DEPRECATED=y
 # CONFIG_RELAY is not set
-# CONFIG_BLK_DEV_INITRD is not set
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
 CONFIG_CC_OPTIMIZE_FOR_SIZE=y
 CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=y
 CONFIG_SYSCTL_SYSCALL=y
 CONFIG_KALLSYMS=y
 # CONFIG_KALLSYMS_EXTRA_PASS is not set
-# CONFIG_HOTPLUG is not set
+CONFIG_HOTPLUG=y
 CONFIG_PRINTK=y
 CONFIG_BUG=y
 CONFIG_ELF_CORE=y
@@ -283,7 +126,7 @@ CONFIG_PAGE_GROUP_BY_MOBILITY=y
 #
 CONFIG_MODULES=y
 # CONFIG_MODULE_UNLOAD is not set
-# CONFIG_MODVERSIONS is not set
+CONFIG_MODVERSIONS=y
 # CONFIG_MODULE_SRCVERSION_ALL is not set
 CONFIG_KMOD=y
 
@@ -315,27 +158,43 @@ CONFIG_DEFAULT_CFQ=y
 CONFIG_DEFAULT_IOSCHED="cfq"
 
 #
-# Bus options (PCI, PCMCIA, EISA, ISA, TC)
+# General machine setup
 #
-CONFIG_HW_HAS_EISA=y
-# CONFIG_EISA is not set
-CONFIG_MMU=y
-
-#
-# PCCARD (PCMCIA/CardBus) support
-#
-
-#
-# PCI Hotplug Support
-#
-
-#
-# Executable file formats
-#
+# CONFIG_SMP is not set
+CONFIG_SPARC=y
+CONFIG_SPARC32=y
+CONFIG_SBUS=y
+CONFIG_SBUSCHAR=y
+CONFIG_SERIAL_CONSOLE=y
+CONFIG_SUN_AUXIO=y
+CONFIG_SUN_IO=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_SUN_PM=y
+# CONFIG_SUN4 is not set
+# CONFIG_PCI is not set
+CONFIG_SUN_OPENPROMFS=m
+# CONFIG_SPARC_LED is not set
 CONFIG_BINFMT_ELF=y
-# CONFIG_BINFMT_MISC is not set
-CONFIG_TRAD_SIGNALS=y
-# CONFIG_PM is not set
+CONFIG_BINFMT_AOUT=y
+CONFIG_BINFMT_MISC=m
+CONFIG_SUNOS_EMUL=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+# CONFIG_SPARSEMEM_STATIC is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_RESOURCES_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_ADAPTIVE_READAHEAD=y
 
 #
 # Networking
@@ -346,7 +205,7 @@ CONFIG_NET=y
 # Networking options
 #
 CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
+# CONFIG_PACKET_MMAP is not set
 CONFIG_UNIX=y
 CONFIG_XFRM=y
 # CONFIG_XFRM_USER is not set
@@ -354,23 +213,19 @@ CONFIG_XFRM=y
 # CONFIG_XFRM_MIGRATE is not set
 # CONFIG_NET_KEY is not set
 CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
+# CONFIG_IP_MULTICAST is not set
 # CONFIG_IP_ADVANCED_ROUTER is not set
 CONFIG_IP_FIB_HASH=y
-CONFIG_IP_PNP=y
-# CONFIG_IP_PNP_DHCP is not set
-CONFIG_IP_PNP_BOOTP=y
-# CONFIG_IP_PNP_RARP is not set
+# CONFIG_IP_PNP is not set
 # CONFIG_NET_IPIP is not set
 # CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
 # CONFIG_ARPD is not set
 # CONFIG_SYN_COOKIES is not set
 # CONFIG_INET_AH is not set
 # CONFIG_INET_ESP is not set
 # CONFIG_INET_IPCOMP is not set
 # CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
+CONFIG_INET_TUNNEL=m
 CONFIG_INET_XFRM_MODE_TRANSPORT=y
 CONFIG_INET_XFRM_MODE_TUNNEL=y
 CONFIG_INET_XFRM_MODE_BEET=y
@@ -380,9 +235,23 @@ CONFIG_INET_TCP_DIAG=y
 CONFIG_TCP_CONG_CUBIC=y
 CONFIG_DEFAULT_TCP_CONG="cubic"
 # CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
+CONFIG_IPV6=m
+# CONFIG_IPV6_PRIVACY is not set
+# CONFIG_IPV6_ROUTER_PREF is not set
+# CONFIG_IPV6_OPTIMISTIC_DAD is not set
+# CONFIG_INET6_AH is not set
+# CONFIG_INET6_ESP is not set
+# CONFIG_INET6_IPCOMP is not set
+# CONFIG_IPV6_MIP6 is not set
 # CONFIG_INET6_XFRM_TUNNEL is not set
 # CONFIG_INET6_TUNNEL is not set
+CONFIG_INET6_XFRM_MODE_TRANSPORT=m
+CONFIG_INET6_XFRM_MODE_TUNNEL=m
+CONFIG_INET6_XFRM_MODE_BEET=m
+# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
+CONFIG_IPV6_SIT=m
+# CONFIG_IPV6_TUNNEL is not set
+# CONFIG_IPV6_MULTIPLE_TABLES is not set
 # CONFIG_NETWORK_SECMARK is not set
 # CONFIG_NETFILTER is not set
 
@@ -403,10 +272,14 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
 # CONFIG_ATM is not set
 # CONFIG_BRIDGE is not set
 # CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
+CONFIG_DECNET=m
+# CONFIG_DECNET_ROUTER is not set
+CONFIG_LLC=m
 # CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
+CONFIG_IPX=m
+# CONFIG_IPX_INTERN is not set
+CONFIG_ATALK=m
+# CONFIG_DEV_APPLETALK is not set
 # CONFIG_X25 is not set
 # CONFIG_LAPB is not set
 # CONFIG_ECONET is not set
@@ -420,7 +293,7 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
 #
 # Network testing
 #
-# CONFIG_NET_PKTGEN is not set
+CONFIG_NET_PKTGEN=m
 # CONFIG_HAMRADIO is not set
 # CONFIG_IRDA is not set
 # CONFIG_BT is not set
@@ -442,6 +315,7 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
 #
 CONFIG_STANDALONE=y
 CONFIG_PREVENT_FIRMWARE_BUILD=y
+# CONFIG_FW_LOADER is not set
 # CONFIG_SYS_HYPERVISOR is not set
 
 #
@@ -467,10 +341,15 @@ CONFIG_PREVENT_FIRMWARE_BUILD=y
 #
 # Block devices
 #
+CONFIG_BLK_DEV_FD=y
 # CONFIG_BLK_DEV_COW_COMMON is not set
-# CONFIG_BLK_DEV_LOOP is not set
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_RAM is not set
+CONFIG_BLK_DEV_LOOP=m
+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+CONFIG_BLK_DEV_NBD=m
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
 # CONFIG_CDROM_PKTCDVD is not set
 # CONFIG_ATA_OVER_ETH is not set
 
@@ -499,14 +378,14 @@ CONFIG_BLK_DEV_SD=y
 CONFIG_CHR_DEV_ST=y
 # CONFIG_CHR_DEV_OSST is not set
 CONFIG_BLK_DEV_SR=y
-# CONFIG_BLK_DEV_SR_VENDOR is not set
-# CONFIG_CHR_DEV_SG is not set
+CONFIG_BLK_DEV_SR_VENDOR=y
+CONFIG_CHR_DEV_SG=m
 # CONFIG_CHR_DEV_SCH is not set
 
 #
 # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
 #
-# CONFIG_SCSI_MULTI_LUN is not set
+CONFIG_SCSI_MULTI_LUN=y
 CONFIG_SCSI_CONSTANTS=y
 # CONFIG_SCSI_LOGGING is not set
 # CONFIG_SCSI_SCAN_ASYNC is not set
@@ -525,8 +404,9 @@ CONFIG_SCSI_WAIT_SCAN=m
 # SCSI low-level drivers
 #
 # CONFIG_ISCSI_TCP is not set
-CONFIG_SGIWD93_SCSI=y
+CONFIG_SCSI_QLOGICPTI=m
 # CONFIG_SCSI_DEBUG is not set
+CONFIG_SCSI_SUNESP=y
 
 #
 # Serial ATA (prod) and Parallel ATA (experimental) drivers
@@ -556,28 +436,25 @@ CONFIG_SGIWD93_SCSI=y
 # Network device support
 #
 CONFIG_NETDEVICES=y
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
+CONFIG_DUMMY=m
+CONFIG_BONDING=m
 # CONFIG_EQUALIZER is not set
 # CONFIG_TUN is not set
 
 #
 # PHY device support
 #
-# CONFIG_PHYLIB is not set
 
 #
 # Ethernet (10 or 100Mbit)
 #
-CONFIG_NET_ETHERNET=y
-# CONFIG_MII is not set
-# CONFIG_DM9000 is not set
+# CONFIG_NET_ETHERNET is not set
 # CONFIG_B44 is not set
-CONFIG_SGISEEQ=y
 
 #
 # Ethernet (1000 Mbit)
 #
+CONFIG_MYRI_SBUS=m
 
 #
 # Ethernet (10000 Mbit)
@@ -598,8 +475,20 @@ CONFIG_SGISEEQ=y
 # Wan interfaces
 #
 # CONFIG_WAN is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
+CONFIG_PPP=m
+# CONFIG_PPP_MULTILINK is not set
+# CONFIG_PPP_FILTER is not set
+CONFIG_PPP_ASYNC=m
+CONFIG_PPP_SYNC_TTY=m
+CONFIG_PPP_DEFLATE=m
+CONFIG_PPP_BSDCOMP=m
+# CONFIG_PPP_MPPE is not set
+CONFIG_PPPOE=m
+CONFIG_SLIP=m
+CONFIG_SLIP_COMPRESSED=y
+CONFIG_SLHC=m
+CONFIG_SLIP_SMART=y
+# CONFIG_SLIP_MODE_SLIP6 is not set
 # CONFIG_SHAPER is not set
 # CONFIG_NETCONSOLE is not set
 # CONFIG_NETPOLL is not set
@@ -624,7 +513,10 @@ CONFIG_INPUT=y
 #
 # Userland interfaces
 #
-# CONFIG_INPUT_MOUSEDEV is not set
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
 # CONFIG_INPUT_JOYDEV is not set
 # CONFIG_INPUT_TSDEV is not set
 # CONFIG_INPUT_EVDEV is not set
@@ -676,12 +568,14 @@ CONFIG_HW_CONSOLE=y
 #
 # Serial drivers
 #
-# CONFIG_SERIAL_8250 is not set
 
 #
 # Non-8250 serial port support
 #
-# CONFIG_SERIAL_IP22_ZILOG is not set
+CONFIG_SERIAL_SUNCORE=y
+# CONFIG_SERIAL_SUNZILOG is not set
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
 CONFIG_UNIX98_PTYS=y
 CONFIG_LEGACY_PTYS=y
 CONFIG_LEGACY_PTY_COUNT=256
@@ -694,18 +588,8 @@ CONFIG_LEGACY_PTY_COUNT=256
 #
 # Watchdog Cards
 #
-CONFIG_WATCHDOG=y
-# CONFIG_WATCHDOG_NOWAYOUT is not set
-
-#
-# Watchdog Device Drivers
-#
-# CONFIG_SOFT_WATCHDOG is not set
-CONFIG_INDYDOG=y
+# CONFIG_WATCHDOG is not set
 CONFIG_HW_RANDOM=m
-# CONFIG_RTC is not set
-CONFIG_SGI_DS1286=y
-# CONFIG_GEN_RTC is not set
 # CONFIG_DTLK is not set
 # CONFIG_R3964 is not set
 # CONFIG_RAW_DRIVER is not set
@@ -773,15 +657,39 @@ CONFIG_HWMON=y
 # Display device support
 #
 # CONFIG_DISPLAY_SUPPORT is not set
-# CONFIG_FB is not set
+CONFIG_FB=y
+CONFIG_FIRMWARE_EDID=y
+# CONFIG_FB_DDC is not set
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+CONFIG_FB_DEFERRED_IO=y
+# CONFIG_FB_SVGALIB is not set
+# CONFIG_FB_MACMODES is not set
+# CONFIG_FB_BACKLIGHT is not set
+# CONFIG_FB_MODE_HELPERS is not set
+# CONFIG_FB_TILEBLITTING is not set
+
+#
+# Frambuffer hardware drivers
+#
+CONFIG_FB_SBUS=y
+# CONFIG_FB_BW2 is not set
+# CONFIG_FB_CG3 is not set
+# CONFIG_FB_CG6 is not set
+# CONFIG_FB_S1D13XXX is not set
+CONFIG_FB_TCX=y
+# CONFIG_FB_CG14 is not set
+# CONFIG_FB_P9100 is not set
+CONFIG_FB_LEO=y
+# CONFIG_FB_VIRTUAL is not set
 
 #
 # Console display driver support
 #
-# CONFIG_VGA_CONSOLE is not set
-CONFIG_SGI_NEWPORT_CONSOLE=y
+CONFIG_PROM_CONSOLE=y
 CONFIG_DUMMY_CONSOLE=y
-CONFIG_FONT_8x16=y
+# CONFIG_FRAMEBUFFER_CONSOLE is not set
 
 #
 # Logo configuration
@@ -875,13 +783,34 @@ CONFIG_HID=y
 # CONFIG_UIO is not set
 
 #
+# Misc Linux/SPARC drivers
+#
+CONFIG_SUN_OPENPROMIO=m
+CONFIG_SUN_MOSTEK_RTC=y
+# CONFIG_SUN_BPP is not set
+# CONFIG_SUN_VIDEOPIX is not set
+# CONFIG_TADPOLE_TS102_UCTRL is not set
+# CONFIG_SUN_JSFLASH is not set
+
+#
+# Unix98 PTY support
+#
+CONFIG_UNIX98_PTY_COUNT=256
+
+#
 # File systems
 #
 CONFIG_EXT2_FS=y
 # CONFIG_EXT2_FS_XATTR is not set
 # CONFIG_EXT2_FS_XIP is not set
-# CONFIG_EXT3_FS is not set
+CONFIG_EXT3_FS=m
+CONFIG_EXT3_FS_XATTR=y
+# CONFIG_EXT3_FS_POSIX_ACL is not set
+# CONFIG_EXT3_FS_SECURITY is not set
 # CONFIG_EXT4DEV_FS is not set
+CONFIG_JBD=m
+# CONFIG_JBD_DEBUG is not set
+CONFIG_FS_MBCACHE=y
 # CONFIG_REISER4_FS is not set
 # CONFIG_REISERFS_FS is not set
 # CONFIG_JFS_FS is not set
@@ -889,20 +818,21 @@ CONFIG_EXT2_FS=y
 # CONFIG_XFS_FS is not set
 # CONFIG_GFS2_FS is not set
 # CONFIG_OCFS2_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_ROMFS_FS is not set
+CONFIG_MINIX_FS=m
+CONFIG_ROMFS_FS=m
+CONFIG_ROMFS_ON_BLOCK=y
 CONFIG_INOTIFY=y
 CONFIG_INOTIFY_USER=y
 # CONFIG_QUOTA is not set
 CONFIG_DNOTIFY=y
-CONFIG_AUTOFS_FS=y
-CONFIG_AUTOFS4_FS=y
+CONFIG_AUTOFS_FS=m
+CONFIG_AUTOFS4_FS=m
 # CONFIG_FUSE_FS is not set
 
 #
 # CD-ROM/DVD Filesystems
 #
-CONFIG_ISO9660_FS=y
+CONFIG_ISO9660_FS=m
 # CONFIG_JOLIET is not set
 # CONFIG_ZISOFS is not set
 # CONFIG_UDF_FS is not set
@@ -910,8 +840,11 @@ CONFIG_ISO9660_FS=y
 #
 # DOS/FAT/NT Filesystems
 #
-# CONFIG_MSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
+CONFIG_FAT_FS=m
+CONFIG_MSDOS_FS=m
+CONFIG_VFAT_FS=m
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
 # CONFIG_NTFS_FS is not set
 
 #
@@ -935,18 +868,20 @@ CONFIG_RAMFS=y
 # Miscellaneous filesystems
 #
 # CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
+CONFIG_AFFS_FS=m
 # CONFIG_HFS_FS is not set
 # CONFIG_HFSPLUS_FS is not set
 # CONFIG_BEFS_FS is not set
 # CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
+CONFIG_EFS_FS=m
 # CONFIG_CRAMFS is not set
 # CONFIG_VXFS_FS is not set
-# CONFIG_HPFS_FS is not set
+CONFIG_HPFS_FS=m
 # CONFIG_QNX4FS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
+CONFIG_SYSV_FS=m
+CONFIG_UFS_FS=m
+# CONFIG_UFS_FS_WRITE is not set
+# CONFIG_UFS_DEBUG is not set
 
 #
 # Network File Systems
@@ -955,48 +890,74 @@ CONFIG_NFS_FS=y
 # CONFIG_NFS_V3 is not set
 # CONFIG_NFS_V4 is not set
 # CONFIG_NFS_DIRECTIO is not set
-CONFIG_NFSD=y
+CONFIG_NFSD=m
 # CONFIG_NFSD_V3 is not set
 CONFIG_NFSD_TCP=y
-CONFIG_ROOT_NFS=y
 CONFIG_LOCKD=y
-CONFIG_EXPORTFS=y
+CONFIG_EXPORTFS=m
 CONFIG_NFS_COMMON=y
 CONFIG_SUNRPC=y
 # CONFIG_RPCSEC_GSS_KRB5 is not set
 # CONFIG_RPCSEC_GSS_SPKM3 is not set
-# CONFIG_SMB_FS is not set
+CONFIG_SMB_FS=m
+# CONFIG_SMB_NLS_DEFAULT is not set
 # CONFIG_CIFS is not set
 # CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
+CONFIG_CODA_FS=m
+# CONFIG_CODA_FS_OLD_API is not set
 # CONFIG_AFS_FS is not set
 # CONFIG_9P_FS is not set
 
 #
 # Partition Types
 #
-CONFIG_PARTITION_ADVANCED=y
-# CONFIG_ACORN_PARTITION is not set
-# CONFIG_OSF_PARTITION is not set
-# CONFIG_AMIGA_PARTITION is not set
-# CONFIG_ATARI_PARTITION is not set
-# CONFIG_MAC_PARTITION is not set
+# CONFIG_PARTITION_ADVANCED is not set
 CONFIG_MSDOS_PARTITION=y
-# CONFIG_BSD_DISKLABEL is not set
-# CONFIG_MINIX_SUBPARTITION is not set
-# CONFIG_SOLARIS_X86_PARTITION is not set
-# CONFIG_UNIXWARE_DISKLABEL is not set
-# CONFIG_LDM_PARTITION is not set
-CONFIG_SGI_PARTITION=y
-# CONFIG_ULTRIX_PARTITION is not set
-# CONFIG_SUN_PARTITION is not set
-# CONFIG_KARMA_PARTITION is not set
-# CONFIG_EFI_PARTITION is not set
+CONFIG_SUN_PARTITION=y
 
 #
 # Native Language Support
 #
-# CONFIG_NLS is not set
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+# CONFIG_NLS_CODEPAGE_437 is not set
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+# CONFIG_NLS_CODEPAGE_850 is not set
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+# CONFIG_NLS_CODEPAGE_936 is not set
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+# CONFIG_NLS_ASCII is not set
+# CONFIG_NLS_ISO8859_1 is not set
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+# CONFIG_NLS_ISO8859_15 is not set
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+# CONFIG_NLS_UTF8 is not set
 
 #
 # Distributed Lock Manager
@@ -1004,22 +965,16 @@ CONFIG_SGI_PARTITION=y
 # CONFIG_DLM is not set
 
 #
-# Profiling support
-#
-# CONFIG_PROFILING is not set
-
-#
 # Instrumentation Support
 #
+# CONFIG_PROFILING is not set
 CONFIG_MARKERS=y
-# CONFIG_MARKERS_DISABLE_OPTIMIZATION is not set
 CONFIG_MARKERS_ENABLE_OPTIMIZATION=y
 # CONFIG_LTT is not set
 
 #
 # Kernel hacking
 #
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
 # CONFIG_PRINTK_TIME is not set
 CONFIG_ENABLE_MUST_CHECK=y
 # CONFIG_MAGIC_SYSRQ is not set
@@ -1028,9 +983,9 @@ CONFIG_ENABLE_MUST_CHECK=y
 # CONFIG_HEADERS_CHECK is not set
 # CONFIG_DEBUG_KERNEL is not set
 CONFIG_LOG_BUF_SHIFT=14
+CONFIG_DEBUG_BUGVERBOSE=y
+# CONFIG_UNWIND_INFO is not set
 # CONFIG_PROFILE_LIKELY is not set
-CONFIG_CROSSCOMPILE=y
-CONFIG_CMDLINE=""
 
 #
 # Security options
@@ -1049,16 +1004,19 @@ CONFIG_CMDLINE=""
 # Library routines
 #
 CONFIG_BITREVERSE=y
-# CONFIG_CRC_CCITT is not set
+CONFIG_CRC_CCITT=m
 # CONFIG_CRC16 is not set
 CONFIG_CRC32=y
 # CONFIG_CRC_ITU_T is not set
 # CONFIG_LIBCRC32C is not set
 # CONFIG_EEPROM_93CX6 is not set
+CONFIG_ZLIB_INFLATE=m
+CONFIG_ZLIB_DEFLATE=m
 CONFIG_PLIST=y
 CONFIG_HAS_IOMEM=y
 CONFIG_HAS_IOPORT=y
 CONFIG_HAS_DMA=y
+
 
 -- 
 Mathieu Desnoyers
