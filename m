@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbXDKMT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752365AbXDKMYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752361AbXDKMT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 08:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXDKMT3
+	id S1752365AbXDKMYH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 08:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXDKMYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 08:19:29 -0400
-Received: from mailgw1.uni-kl.de ([131.246.120.220]:48355 "EHLO
-	mailgw1.uni-kl.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbXDKMT3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 08:19:29 -0400
-Date: Wed, 11 Apr 2007 14:19:03 +0200
-From: Eduard Bloch <edi@gmx.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, debburn-devel@lists.alioth.debian.org
-Subject: Re: broken device locking, sg vs. sg_io on block devices
-Message-ID: <20070411121903.GA15624@rotes76.wohnheim.uni-kl.de>
-References: <200703261811.21448.gerald@itzgrund.net> <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de> <20070330134327.GA24030@infradead.org> <20070330142114.GA31685@rotes76.wohnheim.uni-kl.de> <20070330191038.067c346b@the-village.bc.nu> <20070331170703.GA8179@rotes76.wohnheim.uni-kl.de> <20070331232002.7b478f37@the-village.bc.nu> <20070407112131.GA10487@rotes76.wohnheim.uni-kl.de> <20070411101245.GA32592@rotes76.wohnheim.uni-kl.de> <20070411123102.7dc238d7@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070411123102.7dc238d7@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 11 Apr 2007 08:24:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:58738 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752365AbXDKMYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 08:24:04 -0400
+Subject: Re: [PATCH, take5] FUTEX : new PRIVATE futexes
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       pravin b shelar <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070411111913.6115dac8.dada1@cosmosbay.com>
+References: <20060808070708.GA3931@localhost.localdomain>
+	 <200608090826.28249.dada1@cosmosbay.com>
+	 <200608090843.52893.dada1@cosmosbay.com>
+	 <200703152010.35614.dada1@cosmosbay.com>
+	 <a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>
+	 <20070405194942.1414c030.dada1@cosmosbay.com>
+	 <20070407104339.6674336b.dada1@cosmosbay.com>
+	 <20070411111913.6115dac8.dada1@cosmosbay.com>
+Content-Type: text/plain
+Date: Wed, 11 Apr 2007 22:23:38 +1000
+Message-Id: <1176294219.14322.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-#include <hallo.h>
-* Alan Cox [Wed, Apr 11 2007, 12:31:02PM]:
-> > > Can we do following without having side effects:
-> > > 
-> > > open("/dev/sr0",O_EXCL|O_RDWR); /* no matter what it returns */
-> > > fcntl(..., F_SETLK); /* no matter what it returns */
-> > > ioctl(f, SCSI_IOCTL_GET_IDLUN, &x);
-> > > ioctl(f, SCSI_IOCTL_GET_BUS_NUMBER, &jo);
-> > > 
-> > > Can you guarantee us that bit? 
+On Wed, 2007-04-11 at 11:19 +0200, Eric Dumazet wrote:
+> Hi Andrew
 > 
-> open() has side effects. The CD layer allows you to open with O_NDELAY if
-> you want to avoid them.
-
-Okay, thanks.
-
-> > [1] and when we get real critical questions then everything we get is
-> > radio silence? Very kindly. NOT.
+> Update on this take5 :
 > 
-> Given the attitude that was shown before be glad I'm even bothering to
-> reply to this.
+> - Rebased on linux-2.6.21-rc6-mm1 + get_futex_key() must check proper alignement for 64bit futexes
+> - compile test on x86_64 (one minor typo)
 
-My attitude? I hope you realize that our hands are tied if we get that
-great kind of support here (like SEP roundtrips, not applicable
-exemplary solutions and explanations without relevant details like the
-one above) while the problem exists. Meaning sure death to real CDR/DVDR
-disks every day.
+> - Added Rusty in CC since he may have to change drivers/lguest/io.c
+> again, since get_futex_key() have yet another parameter (fshared). (I
+> couldnt find this file in 2.6.21-rc6-mm1 tree)
 
-You don't do the end user support, we do.
+That's fine.  I just use the futex key lookup code to get a unique key
+for shared memory between lguests (this is how lg.ko decides if they can
+send DMA & interrupts to each other).
 
-Eduard.
--- 
-<Salz> jjFux: Ted hieß ja früher auch Walther
-<Salz> winkiller: hm... es sind 8... die 7 kandidaten und NOTA
-<Madkiss> Ist der jetzt eigentlich eine gespaltene Persönlichkeit, bei der aber
-  beide Teile bekloppt sind?
+Looks like Andrew has already patched the lguest callers (I resubmitted
+the moved lguest code just today).
+
+Thanks!
+Rusty.
+PS.  As original futex author, I could have been cc'd on these patches
+anyway.  But since the futex code has become unforgivably ugly (but, oh
+so fast for pthreads), it's probably better not to see them 8)
+
+
