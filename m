@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXDKXZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbXDKX1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030477AbXDKXZJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 19:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030528AbXDKXZJ
+	id S1753678AbXDKX1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 19:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbXDKX1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 19:25:09 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:36005 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030477AbXDKXZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 19:25:07 -0400
-Date: Wed, 11 Apr 2007 16:25:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Helge Hafting <helgehaf@aitel.hist.no>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
-Message-Id: <20070411162501.97635f35.akpm@linux-foundation.org>
-In-Reply-To: <20070411230700.GA4023@aitel.hist.no>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
-	<20070411194227.GA31286@aitel.hist.no>
-	<20070411134346.d10765da.akpm@linux-foundation.org>
-	<20070411230700.GA4023@aitel.hist.no>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Apr 2007 19:27:46 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:59937 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753493AbXDKX1p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 19:27:45 -0400
+Message-ID: <461D6DE9.9070601@zytor.com>
+Date: Wed, 11 Apr 2007 16:23:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: David Lang <david.lang@digitalinsight.com>
+CC: Neil Brown <neilb@suse.de>, Theodore Tso <tytso@mit.edu>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com><200 70407203633.GA21555@thunk.org><20070407233037.GA16508@infradead.org><461930 48.6000606@zytor.com><20070408184129.GA20871@lazybastard.org><17947.65165.5 69482.976343@notabene.brown><20070411144252.GB17778@thunk.org> <17949.25061.739035.688232@notabene.brown> <Pine.LNX.4.63.0704111506040.28394@qynat.qvtvafvgr.pbz>
+In-Reply-To: <Pine.LNX.4.63.0704111506040.28394@qynat.qvtvafvgr.pbz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Apr 2007 01:07:00 +0200
-Helge Hafting <helgehaf@aitel.hist.no> wrote:
+David Lang wrote:
+> On Thu, 12 Apr 2007, Neil Brown wrote:
+> 
+>> For the second.
+>>  You say that you " would need at least 96 bits in order to make that
+>>  guarantee; 64 bits of hash, plus a 32-bit count value in the hash
+>>  collision chain".  I think 96 is a bit greedy.  Surely 48 bits of
+>>  hash and 16 bits of collision-chain-position would plenty.  You would
+>>  need 65537 entries before a collision was even possible, and
+>>  billions before it was at all likely. (How big does a set of 48bit
+>>  numbers have to get before the probability that "No subset of 65536
+>>  numbers are all the same" drops below 0.95?)
+> 
+> Neil,
+>   you can get a hash collision with two entries.
+> 
 
-> On Wed, Apr 11, 2007 at 01:43:46PM -0700, Andrew Morton wrote:
-> > 
-> > OK.  If you add initcall_debug to the kernel boot command line, what's the
-> > last thing we call?
-> 
-> The last messages (handwritten, somewhat shortened)
-> calling hid_init+0x0/0x10()
-> returned 0
-> ran for 0 msec
-> calling hid_init+0x0/0x50()
-> usbcore registered new interface driver hiddev
-> 
-> and then it hangs completely.
-> 
+Yes, but the probability is 2^-n for an n-bit hash, assuming it's 
+uniformly distributed.
 
-OK, thanks.  If it happens to be, I'll bisect it down.  Chances are it
-won't, and it gets merged, and we get to futz around with it for a week or
-two while holding up 2.6.22.  I can only think we must enjoy doing it this way.
+The probability approaches 1/2 as the number of entries hashes 
+approaches 2^(n/2) (birthday number.)
+
+	-hpa
