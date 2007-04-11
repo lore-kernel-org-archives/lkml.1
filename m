@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbXDKPDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752979AbXDKPFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbXDKPDe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 11:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbXDKPDe
+	id S1752979AbXDKPFk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 11:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbXDKPFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 11:03:34 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:51386 "EHLO minas.ics.muni.cz"
+	Wed, 11 Apr 2007 11:05:40 -0400
+Received: from ns.suse.de ([195.135.220.2]:51398 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbXDKPDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 11:03:33 -0400
-Message-ID: <461CF87C.4060801@gmail.com>
-Date: Wed, 11 Apr 2007 17:02:20 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1752979AbXDKPFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 11:05:40 -0400
+Message-ID: <461CF939.9030104@suse.com>
+Date: Wed, 11 Apr 2007 11:05:29 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-References: <460B6E4B.3060004@gmail.com> <200704111155.52455.rjw@sisk.pl> <461CBC3A.5090607@gmail.com> <200704111640.47171.rjw@sisk.pl>
-In-Reply-To: <200704111640.47171.rjw@sisk.pl>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
+To: Ian Kent <raven@themaw.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] autofs4: fix race in unhashed dentry code
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 11 Apr 2007 17:03:19 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
->> Rafael J. Wysocki napsal(a):
->>> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
->>>> Rafael J. Wysocki napsal(a):
->>>>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
->>>>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
->>>>>> in -rc6 too.
->>>>> I guess you mean you're still seeing the 'not enough memory to suspend'
->>>>> problem?
->>>> Yes:
->>>> Disabling non-boot CPUs ...
->>>> kvm: disabling virtualization on CPU1
->>>> Breaking affinity for irq 9
->>>> CPU 1 is now offline
->>>> SMP alternatives: switching to UP code
->>>> CPU1 is down
->>>> swsusp: critical section:
->>>> swsusp: Need to copy 158309 pages
->>>> swsusp: Not enough free memory
->>>> Error -12 suspending
->>>> Enabling non-boot CPUs ...
->>>> SMP alternatives: switching to SMP code
->>>> Booting processor 1/2 APIC 0x1
->>>> Initializing CPU#1
->>> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
->> My tip is one of three cases: after some work on fresh boot -- some
->> consumers such as thunderbird, firefox, 10 or so terminals with
->> gnome-session. Single xterm + gnome-session semms not to be a problem.
-> 
-> Does the workaround with setting the image size below 1/2 of RAM work for you?
+ Commit f50b6f8691cae2e0064c499dd3ef3f31142987f0 introduced a
+ race in autofs4 between autofs_lookup_unhashed() and
+ autofs_dentry_release().
 
-Yes. Yesterday I must set the value to 350M -- 400M was not enough.
+ autofs_dentry_release() ends up clearing the ->dentry and ->inode
+ members of autofs_info before removing it from the rehash list. The
+ list is protected by the rehash lock in both functions, but
+ since autofs_dentry_release() starts tearing the autofs_info struct
+ down before removing it from the list, autofs_lookup_unhashed() can
+ get a autofs_info with a NULL dentry.
 
-regards,
+ This patch moves the clearing of ->dentry and ->inode after the removal
+ from the rehash list.
+
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+
+---
+
+ fs/autofs4/root.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/fs/autofs4/root.c	2007-04-11 09:41:44.000000000 -0400
++++ b/fs/autofs4/root.c	2007-04-11 10:54:37.000000000 -0400
+@@ -470,9 +470,6 @@ void autofs4_dentry_release(struct dentr
+ 	if (inf) {
+ 		struct autofs_sb_info *sbi = autofs4_sbi(de->d_sb);
+ 
+-		inf->dentry = NULL;
+-		inf->inode = NULL;
+-
+ 		if (sbi) {
+ 			spin_lock(&sbi->rehash_lock);
+ 			if (!list_empty(&inf->rehash))
+@@ -480,6 +477,9 @@ void autofs4_dentry_release(struct dentr
+ 			spin_unlock(&sbi->rehash_lock);
+ 		}
+ 
++		inf->dentry = NULL;
++		inf->inode = NULL;
++
+ 		autofs4_free_ino(inf);
+ 	}
+ }
+
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Jeff Mahoney
+SUSE Labs
