@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXDKICS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750978AbXDKIM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750719AbXDKICS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 04:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbXDKICS
+	id S1750978AbXDKIM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 04:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXDKIM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 04:02:18 -0400
-Received: from smtp112.plus.mail.re2.yahoo.com ([206.190.53.37]:42651 "HELO
-	smtp112.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750719AbXDKICR (ORCPT
+	Wed, 11 Apr 2007 04:12:57 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37083 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750978AbXDKIM4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 04:02:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=kdbheiE1jveabI9iUYhzT+FCfDCDUVv7vdz4eVaVY2Qp52yZ005IV1+xvFh1E8T9rFkOUDKF8pqM6Ioi2RkuuJ7hWQ9BdbvD8R38/nLVppvnCQqqYIWIjfMBok3ilEckoH1WArrJxd9SoeKwoa3hbzNTcSd8kNSbCZAasujIATY=  ;
-X-YMail-OSG: oAVXgcwVM1lyLAe2.zLLHiXfsbWGnohFo.cBT9ltMA1xI0Fu3pAnRkIg9qM12w0dDW0.DwyYkPF.J_mY.oMCBDCchhyP4z8jmhoj8XpX2ad54iHIfEj1ZvjY.Zyk.8N70qrgtHnIzKhNuGc-
-Date: Wed, 11 Apr 2007 10:02:12 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [KERNEL-DOC] alphabetically-sorted entries in index.html of 'htmldocs'
-Message-ID: <20070411080211.GB3982@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070410234422.GA30554@zmei.tnic> <20070410212143.3a5d786d.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070410212143.3a5d786d.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 11 Apr 2007 04:12:56 -0400
+Date: Wed, 11 Apr 2007 01:12:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eberhard =?ISO-8859-1?B?TfZua2ViZXJn?= <emoenke@gwdg.de>
+Subject: Re: [PATCH 24/30] Use menuconfig objects - oldcd
+Message-Id: <20070411011244.35b8e5a5.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.61.0704110952390.32056@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+	<Pine.LNX.4.61.0704102336550.32056@yvahk01.tjqt.qr>
+	<Pine.LNX.4.61.0704110952390.32056@yvahk01.tjqt.qr>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch sorts the DOCBOOKS entries in Documentation/DocBook/Makefile
-alphabetically.
+On Wed, 11 Apr 2007 09:55:49 +0200 (MEST) Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> Hi Andrew,
+> 
+> 
+> On Apr 10 2007 23:37, Jan Engelhardt wrote:
+> >Date: Tue, 10 Apr 2007 23:37:42 +0200 (MEST)
+> >From: Jan Engelhardt <jengelh@.>
+> >To: Eberhard Mönkeberg <emoenke@.>
+> >Cc: Linux Kernel Mailing List <linux-kernel@.>,
+> >    Andrew Morton <akpm@.>
+> >Subject: [PATCH 24/30] Use menuconfig objects - oldcd
+> 
+> There seems to be no maintainer for the oldcd 
+> subsystem (specifically drivers/cdrom/Kconfig).
 
+Nominally axboe.
 
-Index: 21-rc6/Documentation/DocBook/Makefile
-===================================================================
---- 21-rc6.orig/Documentation/DocBook/Makefile
-+++ 21-rc6/Documentation/DocBook/Makefile
-@@ -4,14 +4,13 @@
- # See Documentation/kernel-doc-nano-HOWTO.txt for instruction in how
- # to document the SRC - and how to read it.
- # To add a new book the only step required is to add the book to the
--# list of DOCBOOKS.
-+# alphabetically-sorted (^^hint) list of DOCBOOKS
- 
--DOCBOOKS := wanbook.xml z8530book.xml mcabook.xml videobook.xml \
--	    kernel-hacking.xml kernel-locking.xml deviceiobook.xml \
--	    procfs-guide.xml writing_usb_driver.xml \
--	    kernel-api.xml filesystems.xml lsm.xml usb.xml \
--	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
--	    genericirq.xml
-+DOCBOOKS := deviceiobook.xml filesystems.xml gadget.xml genericirq.xml \
-+	    kernel-api.xml kernel-hacking.xml kernel-locking.xml libata.xml \
-+	    librs.xml lsm.xml mcabook.xml mtdnand.xml procfs-guide.xml \
-+	    rapidio.xml usb.xml videobook.xml wanbook.xml \
-+	    writing_usb_driver.xml z8530book.xml
- 
- ###
- # The build process is as follows (targets):
+> Any hints who should get it, or would you take care of it?
 
--- 
-Regards/Gruß,
-    Boris.
+Send it to me.  Send everything to me, if you actually want it applied :(
+
+I'll get this stuff off lkml, when I get that far.
