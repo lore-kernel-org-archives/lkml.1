@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161359AbXDKWzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161406AbXDKXBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161359AbXDKWzG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161362AbXDKWyn
+	id S1161406AbXDKXBj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 19:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161372AbXDKXA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:54:43 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55513 "EHLO
+	Wed, 11 Apr 2007 19:00:58 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55714 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161337AbXDKWyC (ORCPT
+	with ESMTP id S1161371AbXDKWzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:54:02 -0400
-Date: Wed, 11 Apr 2007 15:51:21 -0700
+	Wed, 11 Apr 2007 18:55:11 -0400
+Date: Wed, 11 Apr 2007 15:52:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, davef1624@aol.com,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [patch 03/31] sky2: reliable recovery
-Message-ID: <20070411225121.GD24814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Neil Brown <neilb@suse.de>
+Subject: [patch 22/31] knfsd: allow nfsd READDIR to return 64bit cookies
+Message-ID: <20070411225233.GW24814@kroah.com>
 References: <20070411224329.866978349@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sky2-reliable-recovery.patch"
+Content-Disposition: inline; filename="knfsd-allow-nfsd-readdir-to-return-64bit-cookies.patch"
 In-Reply-To: <20070411225100.GA24814@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,140 +36,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: Neil Brown <neilb@suse.de>
 
-This adds working recovery from transmit timeouts.  Previous code
-didn't do enough to truly reset chip.
+[PATCH] knfsd: allow nfsd READDIR to return 64bit cookies
 
-It is a backport of the 2.6.21 code.
+->readdir passes lofft_t offsets (used as nfs cookies) to
+nfs3svc_encode_entry{,_plus}, but when they pass it on to encode_entry it
+becomes an 'off_t', which isn't good.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+So filesystems that returned 64bit offsets would lose.
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- drivers/net/sky2.c |   81 +++++++++++++++++++++++++++++++++++------------------
- drivers/net/sky2.h |    1 
- 2 files changed, 56 insertions(+), 26 deletions(-)
+ fs/nfsd/nfs3xdr.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -1802,38 +1802,22 @@ static void sky2_tx_timeout(struct net_d
+--- a/fs/nfsd/nfs3xdr.c
++++ b/fs/nfsd/nfs3xdr.c
+@@ -844,8 +844,8 @@ compose_entry_fh(struct nfsd3_readdirres
+ #define NFS3_ENTRY_BAGGAGE	(2 + 1 + 2 + 1)
+ #define NFS3_ENTRYPLUS_BAGGAGE	(1 + 21 + 1 + (NFS3_FHSIZE >> 2))
+ static int
+-encode_entry(struct readdir_cd *ccd, const char *name,
+-	     int namlen, off_t offset, ino_t ino, unsigned int d_type, int plus)
++encode_entry(struct readdir_cd *ccd, const char *name, int namlen,
++	     loff_t offset, ino_t ino, unsigned int d_type, int plus)
  {
- 	struct sky2_port *sky2 = netdev_priv(dev);
- 	struct sky2_hw *hw = sky2->hw;
--	unsigned txq = txqaddr[sky2->port];
--	u16 report, done;
-+	unsigned port = sky2->port;
- 
- 	if (netif_msg_timer(sky2))
- 		printk(KERN_ERR PFX "%s: tx timeout\n", dev->name);
- 
--	report = sky2_read16(hw, sky2->port == 0 ? STAT_TXA1_RIDX : STAT_TXA2_RIDX);
--	done = sky2_read16(hw, Q_ADDR(txq, Q_DONE));
--
--	printk(KERN_DEBUG PFX "%s: transmit ring %u .. %u report=%u done=%u\n",
--	       dev->name,
--	       sky2->tx_cons, sky2->tx_prod, report, done);
--
--	if (report != done) {
--		printk(KERN_INFO PFX "status burst pending (irq moderation?)\n");
-+	/* Get information for bug report :-) */
-+	printk(KERN_INFO PFX "%s: transmit ring %u .. %u report=%u done=%u\n",
-+	       dev->name, sky2->tx_cons, sky2->tx_prod,
-+	       sky2_read16(hw, port == 0 ? STAT_TXA1_RIDX : STAT_TXA2_RIDX),
-+	       sky2_read16(hw, Q_ADDR(txqaddr[sky2->port], Q_DONE)));
- 
--		sky2_write8(hw, STAT_TX_TIMER_CTRL, TIM_STOP);
--		sky2_write8(hw, STAT_TX_TIMER_CTRL, TIM_START);
--	} else if (report != sky2->tx_cons) {
--		printk(KERN_INFO PFX "status report lost?\n");
--		sky2_tx_complete(sky2, report);
--	} else {
--		printk(KERN_INFO PFX "hardware hung? flushing\n");
-+	printk(KERN_INFO PFX "gmac control %#x status %#x\n",
-+	       gma_read16(hw, port, GM_GP_CTRL), gma_read16(hw, port, GM_GP_STAT));
- 
--		sky2_write32(hw, Q_ADDR(txq, Q_CSR), BMU_STOP);
--		sky2_write32(hw, Y2_QADDR(txq, PREF_UNIT_CTRL), PREF_UNIT_RST_SET);
--
--		sky2_tx_complete(sky2, sky2->tx_prod);
--
--		sky2_qset(hw, txq);
--		sky2_prefetch_init(hw, txq, sky2->tx_le_map, TX_RING_SIZE - 1);
--	}
-+	/* can't restart safely under softirq */
-+	schedule_work(&hw->restart_work);
- }
- 
- static int sky2_change_mtu(struct net_device *dev, int new_mtu)
-@@ -2565,6 +2549,49 @@ static int sky2_reset(struct sky2_hw *hw
- 	return 0;
- }
- 
-+static void sky2_restart(struct work_struct *work)
-+{
-+	struct sky2_hw *hw = container_of(work, struct sky2_hw, restart_work);
-+	struct net_device *dev;
-+	int i, err;
-+
-+	dev_dbg(&hw->pdev->dev, "restarting\n");
-+
-+	del_timer_sync(&hw->idle_timer);
-+
-+	rtnl_lock();
-+	sky2_write32(hw, B0_IMSK, 0);
-+	sky2_read32(hw, B0_IMSK);
-+
-+	netif_poll_disable(hw->dev[0]);
-+
-+	for (i = 0; i < hw->ports; i++) {
-+		dev = hw->dev[i];
-+		if (netif_running(dev))
-+			sky2_down(dev);
-+	}
-+
-+	sky2_reset(hw);
-+	sky2_write32(hw, B0_IMSK, Y2_IS_BASE);
-+	netif_poll_enable(hw->dev[0]);
-+
-+	for (i = 0; i < hw->ports; i++) {
-+		dev = hw->dev[i];
-+		if (netif_running(dev)) {
-+			err = sky2_up(dev);
-+			if (err) {
-+				printk(KERN_INFO PFX "%s: could not restart %d\n",
-+				       dev->name, err);
-+				dev_close(dev);
-+			}
-+		}
-+	}
-+
-+	sky2_idle_start(hw);
-+
-+	rtnl_unlock();
-+}
-+
- static u32 sky2_supported_modes(const struct sky2_hw *hw)
- {
- 	if (sky2_is_copper(hw)) {
-@@ -3508,6 +3535,8 @@ static int __devinit sky2_probe(struct p
+ 	struct nfsd3_readdirres *cd = container_of(ccd, struct nfsd3_readdirres,
+ 		       					common);
+@@ -865,7 +865,7 @@ encode_entry(struct readdir_cd *ccd, con
+ 			*cd->offset1 = htonl(offset64 & 0xffffffff);
+ 			cd->offset1 = NULL;
+ 		} else {
+-			xdr_encode_hyper(cd->offset, (u64) offset);
++			xdr_encode_hyper(cd->offset, offset64);
+ 		}
  	}
  
- 	setup_timer(&hw->idle_timer, sky2_idle, (unsigned long) hw);
-+	INIT_WORK(&hw->restart_work, sky2_restart);
-+
- 	sky2_idle_start(hw);
- 
- 	pci_set_drvdata(pdev, hw);
---- a/drivers/net/sky2.h
-+++ b/drivers/net/sky2.h
-@@ -1898,6 +1898,7 @@ struct sky2_hw {
- 	dma_addr_t   	     st_dma;
- 
- 	struct timer_list    idle_timer;
-+	struct work_struct   restart_work;
- 	int		     msi;
- 	wait_queue_head_t    msi_wait;
- };
 
 -- 
