@@ -1,88 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161326AbXDKWpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXDKWrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161326AbXDKWpJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161323AbXDKWpJ
+	id S1161323AbXDKWrT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161333AbXDKWrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:45:09 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51180 "EHLO e4.ny.us.ibm.com"
+	Wed, 11 Apr 2007 18:47:19 -0400
+Received: from mx.pathscale.com ([198.186.3.68]:52412 "EHLO mx.pathscale.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161326AbXDKWpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:45:07 -0400
-Subject: Re: [PATCH] markers-linker-generic
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>,
-       "Frank Ch. Eigler" <fche@redhat.com>, systemtap@sources.redhat.com
-In-Reply-To: <20070411192122.GA4668@Krystal>
-References: <20070410223658.GC7092@Krystal>
-	 <20070411074414.GC3752@flint.arm.linux.org.uk>
-	 <20070411175110.GA30879@Krystal>
-	 <20070411110240.537ee25d.akpm@linux-foundation.org>
-	 <20070411192122.GA4668@Krystal>
-Content-Type: text/plain
-Date: Wed, 11 Apr 2007 14:45:00 -0700
-Message-Id: <1176327900.3542.22.camel@ibm-ni9dztukfq8.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	id S1161323AbXDKWrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 18:47:19 -0400
+Message-ID: <461D6593.1050009@pathscale.com>
+Date: Wed, 11 Apr 2007 15:47:47 -0700
+From: Robert Walsh <rjwalsh@pathscale.com>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+Cc: "Bryan O'Sullivan" <bos@pathscale.com>, openib-general@openfabrics.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Re: [PATCH 00 of 33] Set of ipath patches for 2.6.22
+References: <patchbomb.1173995084@iqa-25.internal.keyresearch.com>	<aday7kzooa7.fsf@cisco.com> <461D600E.4070709@pathscale.com> <ada3b36lex1.fsf@cisco.com>
+In-Reply-To: <ada3b36lex1.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-11 at 15:21 -0400, Mathieu Desnoyers wrote:
-> * Andrew Morton (akpm@linux-foundation.org) wrote:
-> > On Wed, 11 Apr 2007 13:51:11 -0400
-> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > > What's this marker stuff about?
-> > > > 
-> > > 
-> > > Hi Russel,
-> > > 
-> > > Here is an overview :
-> > 
-> > I am told that the systemtap developers plan to (or are) using this
-> > infrastructure.
-> > 
+Roland Dreier wrote:
+>  > BTW: any idea how this ever got triggered?  The only way I can see is
+>  > if you're either not using libipathverbs and libibverbs and you just
+>  > create the CQ some other way, which seems unlikely.  Do you know how
+>  > Jason triggered this bug?
 > 
-> Quoting Frank Ch. Eigler, from the SystemTAP team :
-> 
-> "The LTTng user-space programs use it today.  Systemtap used to support
-> the earlier marker prototype and will be rapidly ported over to this
-> new API upon acceptance."
-> 
-> 
-> > If correct: what is their reason for preferring it over kprobes?
-> > 
-> 
-> I will let them answer on this one..
-> 
+> Yes, it was because he was using 32-bit userspace and so it was
+> impossible to libipathverbs to mmap the address the kernel driver was
+> looking for.  So the mmap failed and the pending mmap never got taken
+> off the list.
 
-I'll take a shot at this one.
-
-First of all, kprobes remains a vital foundation for SystemTap.  But
-markers are attactive as an alternate source of trace/debug info.
-Here's why:
-
-1. Markers will live in the kernel and presumably be kept up to date by
-the maintainers of the enclosing code.  We have a growing set of tapsets
-(probe libraries), each of which "knows" the source code for a certain
-area of the kernel.  Whenever the underlying kernel code changes (e.g.,
-a function or one of its args disappears or is renamed), there's a
-chance that the tapset will become invalid until we bring it back in
-sync with the kernel.  As you can imagine, maintaining tapsets separate
-from the kernel source is a maintenance headache.  Markers could
-mitigate this.
-
-2. Because the kernel code is highly optimized, the kernel's dwarf info
-doesn't always accurately reflect which variables have which values on
-which lines (sometimes even upon entry to a function).  A marker is a
-way to ensure that values of interest are available to SystemTap at
-marked points.
-
-3. Sometimes the overhead of a kprobe probepoint is too much (either in
-terms of time or locking) for the particular hotspot we want to probe.
-
-Jim
-
+Oh, OK.  Got it.  That problem is on my list, too, along with the other 
+pending_mmap-related cleanups you suggested.  Hopefully I'll have a 
+patch finished tonight.
