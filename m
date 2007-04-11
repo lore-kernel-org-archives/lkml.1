@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965365AbXDKUbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXDKUcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965365AbXDKUbh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 16:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965379AbXDKUbh
+	id S965379AbXDKUcR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 16:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965388AbXDKUcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 16:31:37 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:59553 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965365AbXDKUbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 16:31:36 -0400
-Date: Wed, 11 Apr 2007 13:31:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, tglx@linutronix.de,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
-Message-Id: <20070411133122.badf1c4f.akpm@linux-foundation.org>
-In-Reply-To: <20070411162904.232696302@mvista.com>
-References: <20070411162904.232696302@mvista.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Apr 2007 16:32:17 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:27197 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965379AbXDKUcP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 16:32:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=bRP+1vTDtXPigHN/8RKF7yKtD8CR4NwF8CEpgXt/Pj/pSKNsbVkHBw3GbUpA/e/ng5s0s3CBLaAKMmyqOoXldKZnfsvv7g1BeJ6NWYnl+KMpp1AlP8fQDPfsZNq1TE67/aLuXTmaRm1ODeuvrytk/Lz7C0b8tZcqNkwtPo67cOM=
+Message-ID: <461D45CE.3030309@gmail.com>
+Date: Wed, 11 Apr 2007 22:32:14 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, corentincj@iksaif.net,
+       sziwan@users.sourceforge.net, acpi4asus-user@lists.sourceforge.net,
+       len.brown@intel.com, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
+References: <2189310342910921713@karneval.cz> <20070411132053.899462b4.akpm@linux-foundation.org>
+In-Reply-To: <20070411132053.899462b4.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 09:29:04 -0700
-Daniel Walker <dwalker@mvista.com> wrote:
-
-> The locking of the xtime_lock around the cpu notifier is unessesary now. At one
-> time the tsc was used after a frequency change for timekeeping, but the re-write
-> of timekeeping no longer uses the TSC unless the frequency is constant. 
+Andrew Morton napsal(a):
+> On Wed, 11 Apr 2007 15:04:35 +0200 (CEST)
+> Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> The variables that are changed in this section of code had also once been used
-> for timekeeping, but not any longer ..
+>> @@ -706,6 +718,8 @@ static int get_lcd_state(void)
+>>  {
+>>  	int lcd = 0;
+>>  
+>> +	BUG_ON(!hotk->methods->lcd_status);
 > 
-> Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+> mutter.  We could just warn-and-bale here.
 > 
-> ---
->  arch/i386/kernel/tsc.c |    8 +-------
->  1 file changed, 1 insertion(+), 7 deletions(-)
-> 
-> Index: linux-2.6.20/arch/i386/kernel/tsc.c
-> ===================================================================
-> --- linux-2.6.20.orig/arch/i386/kernel/tsc.c
-> +++ linux-2.6.20/arch/i386/kernel/tsc.c
-> @@ -200,13 +200,10 @@ time_cpufreq_notifier(struct notifier_bl
->  {
->  	struct cpufreq_freqs *freq = data;
->  
-> -	if (val != CPUFREQ_RESUMECHANGE && val != CPUFREQ_SUSPENDCHANGE)
-> -		write_seqlock_irq(&xtime_lock);
-> -
->  	if (!ref_freq) {
->  		if (!freq->old){
->  			ref_freq = freq->new;
-> -			goto end;
-> +			return 0;
->  		}
->  		ref_freq = freq->old;
->  		loops_per_jiffy_ref = cpu_data[freq->cpu].loops_per_jiffy;
-> @@ -237,9 +234,6 @@ time_cpufreq_notifier(struct notifier_bl
->  			}
->  		}
->  	}
-> -end:
-> -	if (val != CPUFREQ_RESUMECHANGE && val != CPUFREQ_SUSPENDCHANGE)
-> -		write_sequnlock_irq(&xtime_lock);
->  
->  	return 0;
->  }
+> Hopefully this is just an is-jiri-sane assertion and it should never happen,
+> no matter how busted the BIOS tables are?
 
-hm.
+Exactly :). Only if somebody changes the code around, so that it is called
+with the method unset, it triggers and in that case it's definitely a bug.
 
-I've been permadropping Andi's
-ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt-current/patches/sched-clock-share
-because it causes a lockup when initscripts start ondemand on my
-single-CPU, CONFIG_SMP=n Vaio.
+Side note, as Danny wrote, there is an asus-laptop driver sitting in -mm,
+which supersedes this one -- if you plan to push it upstream in the near
+future, don't bother with this patch.
 
-I don't know _why_ it locks up - I traced it down to the
-write_seqlock_irq() which you have just removed.  But write_seqlock()
-doesn't loop with CONFIG_SMP=n builds, so a hang there is quite mysterious.
-
-Anyway, your patch might make that hang go away.  We'll see.
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
