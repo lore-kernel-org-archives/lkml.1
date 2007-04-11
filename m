@@ -1,77 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030224AbXDKTmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030263AbXDKTog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030224AbXDKTmx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXDKTmx
+	id S1030263AbXDKTog (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030259AbXDKTog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:42:53 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:32945 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030224AbXDKTmw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:42:52 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH] kthread: Don't depend on work queues (take 2)
-References: <20070410185133.GA104@tv-sign.ru>
-	<m13b37v517.fsf@ebiederm.dsl.xmission.com>
-	<20070411000316.52f2551e.akpm@linux-foundation.org>
-	<m1hcrmsr4g.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070411192809.GA106@tv-sign.ru>
-Date: Wed, 11 Apr 2007 13:40:23 -0600
-In-Reply-To: <20070411192809.GA106@tv-sign.ru> (Oleg Nesterov's message of
-	"Wed, 11 Apr 2007 23:28:09 +0400")
-Message-ID: <m14pnmsnrs.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 11 Apr 2007 15:44:36 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44460 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030263AbXDKTof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:44:35 -0400
+From: Danny Kukawka <dkukawka@suse.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
+Date: Wed, 11 Apr 2007 21:43:07 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       acpi4asus-user@lists.sourceforge.net, corentincj@iksaif.net,
+       sziwan@users.sourceforge.net
+References: <22473653910004885@karneval.cz> <200704112032.11772.dkukawka@suse.de> <461D35A5.3010005@gmail.com>
+In-Reply-To: <461D35A5.3010005@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704112143.08093.dkukawka@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Mittwoch, 11. April 2007, Jiri Slaby wrote:
+> Danny Kukawka napsal(a):
+> > Btw. looks as if a new version of the driver (v0.41) is already in the mm-tree.
+> 
+> Good to hear, I've got a look only to .21-rc6-mm1, where are no changes like
+> this (there is 0.30).
 
-> On 04/11, Eric W. Biederman wrote:
->> 
->> @@ -435,8 +436,12 @@ static void __init setup_command_line(char *command_line)
->>  static void noinline rest_init(void)
->>  	__releases(kernel_lock)
->>  {
->> +	int pid;
->>  	kernel_thread(init, NULL, CLONE_FS | CLONE_SIGHAND);
->>  	numa_default_policy();
->> +
->> +	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
->> +	kthreadd_task = find_task_by_pid(pid);
->>  	unlock_kernel();
->
-> Just curious. What if kernel/kthread.c declares
->
-> 	static struct task_struct *kthreadd_task = &init_task;
->
-> an then kthreadd_setup() does kthreadd_task = current. I assume it is always
-> safe to try_to_wake_up(idle_thread), because it always TASK_RUNNING. This
-> way we don't need to export kthreadd_task.
+found in the latest mm snapshot under drivers/misc/
 
-I did it this way largely so I could use the export in reparent_to_XXX in
-daemonize.  This way I don't have races in finding kthreadd.  Plus
-I didn't think of the trick of using the idle_thread...
-
->> +	spin_lock(&kthread_create_lock);
->> +	list_add_tail(&create.list, &kthread_create_list);
->> +	wake_up_process(kthreadd_task);
->> +	spin_unlock(&kthread_create_lock);
->
-> Very minor nit, but we don't need to do wake_up under spin_unlock().
-
-I guess that is true.  However it doesn't hurt either.  I guess
-I was keeping the form that I used with wait queues where it may
-have mattered.  Either that or I just copied a bad example.
-
-Eric
+Danny
