@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXDKOEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbXDKOOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbXDKOEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 10:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXDKOEb
+	id S1752800AbXDKOOE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 10:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXDKOOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 10:04:31 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:33522 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbXDKOEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 10:04:30 -0400
-Date: Wed, 11 Apr 2007 15:57:54 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Neil Brown <neilb@suse.de>
-cc: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Theodore Tso <tytso@mit.edu>, Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-In-Reply-To: <17947.65165.569482.976343@notabene.brown>
-Message-ID: <Pine.LNX.4.61.0704111557330.32056@yvahk01.tjqt.qr>
-References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com>
- <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org>
- <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org>
- <17947.65165.569482.976343@notabene.brown>
+	Wed, 11 Apr 2007 10:14:04 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47593 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752800AbXDKOOB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 10:14:01 -0400
+Date: Wed, 11 Apr 2007 16:14:08 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.47-rc1
+Message-ID: <20070411141408.GC10141@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Apr 11 2007 07:15, Neil Brown wrote:
->On Sunday April 8, joern@lazybastard.org wrote:
->> On Sun, 8 April 2007 11:11:20 -0700, H. Peter Anvin wrote:
->> > 
->> > Well, the question is if you can keep the seekdir/telldir cookie around 
->> > as a pointer -- preferrably in userspace, of course.  You would 
->> > presumably garbage-collect them on closedir() -- there is no other point 
->> > at which you could.
->> 
->> Garbage-collecting them on closedir() does not work.  It surprised me as
->> well, but there seem to be applications that keep the telldir() cookie
->> around after closedir().  Iirc, "rm -r" was one of them.
->> 
->> Neil, is this correct?
->
->It's just NFS.  nfsd does open/getdents/close on every readdir
->request.
-
-Uhoh, that sounds even more expensive than doing one getdent during opendir.
+Security fixes since 2.6.16.46:
+- CVE-2007-1357: APPLETALK: Fix a remotely triggerable crash
 
 
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
-Jan
--- 
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+
+
+Changes since 2.6.16.46:
+
+Adrian Bunk (1):
+      Linux 2.6.16.47-rc1
+
+Al Viro (1):
+      b44: src_desc->addr is little-endian
+
+Alan Cox (1):
+      ide-floppy: Fix unformatted media crash
+
+David Moore (1):
+      ieee1394: video1394: DMA fix
+
+David S. Miller (1):
+      [VIDEO] ffb: Fix two DAC handling bugs.
+
+Eric W. Biederman (1):
+      Fix reparenting to the same thread group. (take 2)
+
+Jean Delvare (1):
+      APPLETALK: Fix a remotely triggerable crash (CVE-2007-1357)
+
+Jeff Garzik (1):
+      [netdrvr] tulip, de2104x: fix typo: s/__sparc_/__sparc__/
+
+Patrick McHardy (1):
+      [IFB]: Fix crash on input device removal
+
+Sergei Shtylyov (1):
+      siimage: PIO1/2 taskfile transfer overclocking fix
+
+Stephen Hemminger (1):
+      tcp: fix cubic scaling error
+
+Thomas Gleixner (3):
+      prevent timespec/timeval to ktime_t overflow
+      fix MTIME_SEC_MAX on 32-bit
+      hrtimer: prevent overrun DoS in hrtimer_forward()
+
+
+ Makefile                       |    2 
+ drivers/ide/ide-floppy.c       |    3 -
+ drivers/ide/pci/siimage.c      |   59 +++++++++++------------
+ drivers/ieee1394/video1394.c   |    8 +++
+ drivers/net/b44.c              |    2 
+ drivers/net/ifb.c              |   35 +++++--------
+ drivers/net/tulip/de2104x.c    |    2 
+ drivers/net/tulip/tulip_core.c |    2 
+ drivers/video/ffb.c            |   84 +++++++++++++++++++++++----------
+ include/linux/ktime.h          |   11 +++-
+ include/linux/skbuff.h         |    5 +
+ include/net/pkt_cls.h          |    7 +-
+ kernel/exit.c                  |   29 +++++++----
+ kernel/hrtimer.c               |    6 ++
+ net/appletalk/ddp.c            |    7 +-
+ net/core/dev.c                 |    8 +--
+ net/core/skbuff.c              |    2 
+ net/ipv4/tcp_cubic.c           |    6 +-
+ net/sched/act_mirred.c         |    2 
+ 19 files changed, 172 insertions(+), 108 deletions(-)
+
