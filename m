@@ -1,130 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbXDKOnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbXDKOpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbXDKOnv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 10:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXDKOnv
+	id S1752904AbXDKOpP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 10:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXDKOpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 10:43:51 -0400
-Received: from THUNK.ORG ([69.25.196.29]:41543 "EHLO thunker.thunk.org"
+	Wed, 11 Apr 2007 10:45:15 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:44676 "EHLO atlrel9.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752844AbXDKOnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 10:43:50 -0400
-Date: Wed, 11 Apr 2007 10:42:52 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Neil Brown <neilb@suse.de>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-Message-ID: <20070411144252.GB17778@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Neil Brown <neilb@suse.de>,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Ulrich Drepper <drepper@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com> <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <17947.65165.569482.976343@notabene.brown>
+	id S1752879AbXDKOpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 10:45:12 -0400
+Message-ID: <461CF473.7010307@hp.com>
+Date: Wed, 11 Apr 2007 10:45:07 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17947.65165.569482.976343@notabene.brown>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Isaula Oscar-QOI000 <Oscar.Isaula@motorola.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [SCTP] Initialization collision problem
+References: <5F14EEE91CB6694A86535A0A028D9C5501555FEF@tx14exm60.ds.mot.com>
+In-Reply-To: <5F14EEE91CB6694A86535A0A028D9C5501555FEF@tx14exm60.ds.mot.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------090703030501060409060605"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 11, 2007 at 07:15:57AM +1000, Neil Brown wrote:
-> > Neil, is this correct?
+This is a multi-part message in MIME format.
+--------------090703030501060409060605
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hi Oscar
+
+Isaula Oscar-QOI000 wrote:
+> I ran into a problem where LKSCTP is reporting a SCTM_COMM_UP indication
+> to the User application but is giving back a value of zero for the
+> assoc_id.
 > 
-> It's just NFS.  nfsd does open/getdents/close on every readdir
-> request.
+> Attached are the SCTP debugs for the period in question.
+> 
+> A couple of things that I would like to note about my setup. One is that
+> I'm running Kernel version 2.6.10 (I know is old but I can't move to a
+> newer version due to custom drivers). The second thing is that the link
+> between the two SCTP node is a very noisy and some messages are getting
+> lost (i.e. the INIT_ACK from the peer in this particular case).
+> 
 
-That's... unfortunate.
+Can you give this patch a try and let me know if this fixes your issue?
 
-Ext3 w/htree enable creates an in-memory red-black tree of a portion
-of the directory; this is typically one filesystem block worth of
-entries, but if there is a hash collision which spells across a
-directory block, we will fill the red-block tree until we have read in
-all of the directory entries that collide on a particular hash value
-into the red-black tree.
+Thanks
+-vlad
 
-We then maintain an internal pointer which provides us with exactly
-which directory entries we have and haven't returned via
-getdents/readdir via a pointer referenced off the file pointer.  So
-long as the user never changes filp->f_pos, we can meet the POSIX
-guarantees about returning each file (that hasn't been deleted or
-added since the last opendir or rewinddir) once and exactly once.  If
-the user calls telldir/seekdir, we can no longer make this guarantee
-since the telldir cookie can't encapsulate the location inside our AVL
-tree.  (We would need at least 96 bits in order to make that
-guarantee; 64 bits of hash, plus a 32-bit count value in the hash
-collision chain.)  The relevant code which does this is in
-ext3_dx_readdir:
+--------------090703030501060409060605
+Content-Type: text/plain;
+ name="oscar_patch.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="oscar_patch.txt"
 
-#define hash2pos(major, minor)	(major >> 1)
-#define pos2maj_hash(pos)	((pos << 1) & 0xffffffff)
-#define pos2min_hash(pos)	(0)
+diff --git a/include/net/sctp/command.h b/include/net/sctp/command.h
+index 4e0e224..7a426d3 100644
+--- a/include/net/sctp/command.h
++++ b/include/net/sctp/command.h
+@@ -97,6 +97,8 @@ typedef enum {
+ 	SCTP_CMD_DEL_NON_PRIMARY, /* Removes non-primary peer transports. */
+ 	SCTP_CMD_T3_RTX_TIMERS_STOP, /* Stops T3-rtx pending timers */
+ 	SCTP_CMD_FORCE_PRIM_RETRAN,  /* Forces retrans. over primary path. */
++	SCTP_CMD_ASSOC_CHANGE,	 /* generate and send assoc_change event */
++	SCTP_CMD_ADAPTATION_IND, /* generate and send adaptation event */
+ 	SCTP_CMD_LAST
+ } sctp_verb_t;
+ 
+diff --git a/include/net/sctp/structs.h b/include/net/sctp/structs.h
+index 3bd04bc..4742fdd 100644
+--- a/include/net/sctp/structs.h
++++ b/include/net/sctp/structs.h
+@@ -1732,6 +1732,7 @@ void sctp_assoc_set_primary(struct sctp_association *,
+ int sctp_assoc_set_bind_addr_from_ep(struct sctp_association *, int);
+ int sctp_assoc_set_bind_addr_from_cookie(struct sctp_association *,
+ 					 struct sctp_cookie*, int gfp);
++int sctp_assoc_set_id(struct sctp_association *, int);
+ 
+ int sctp_cmp_addr_exact(const union sctp_addr *ss1,
+ 			const union sctp_addr *ss2);
+diff --git a/net/sctp/associola.c b/net/sctp/associola.c
+index 498a713..09fd31e 100644
+--- a/net/sctp/associola.c
++++ b/net/sctp/associola.c
+@@ -987,6 +987,13 @@ void sctp_assoc_update(struct sctp_association *asoc,
+ 			asoc->ssnmap = new->ssnmap;
+ 			new->ssnmap = NULL;
+ 		}
++
++		if (!asoc->assoc_id) {
++			/* get a new association id since we don't have one
++			 * yet.
++			 */
++			sctp_assoc_set_id(asoc, GFP_ATOMIC);
++		}
+ 	}
+ }
+ 
+@@ -1222,3 +1229,25 @@ out:
+ 	sctp_read_unlock(&asoc->base.addr_lock);
+ 	return found;
+ }
++
++/* Set an association id for a given association */
++int sctp_assoc_set_id(struct sctp_association *asoc, int gfp)
++{
++	int assoc_id;
++	int error = 0;
++retry:
++	if (unlikely(!idr_pre_get(&sctp_assocs_id, gfp)))
++		return -ENOMEM;
++
++	spin_lock_bh(&sctp_assocs_id_lock);
++	error = idr_get_new_above(&sctp_assocs_id, (void *)asoc,
++				    1, &assoc_id);
++	spin_unlock_bh(&sctp_assocs_id_lock);
++	if (error == -EAGAIN)
++		goto retry;
++	else if (error)
++		return error;
++
++	asoc->assoc_id = (sctp_assoc_t) assoc_id;
++	return error;
++}
+diff --git a/net/sctp/sm_make_chunk.c b/net/sctp/sm_make_chunk.c
+index 1f0676d..98cfbbd 100644
+--- a/net/sctp/sm_make_chunk.c
++++ b/net/sctp/sm_make_chunk.c
+@@ -1853,7 +1853,6 @@ int sctp_process_init(struct sctp_association *asoc, sctp_cid_t cid,
+ 	/* Allocate storage for the negotiated streams if it is not a temporary 	 * association.
+ 	 */
+ 	if (!asoc->temp) {
+-		int assoc_id;
+ 		int error;
+ 
+ 		asoc->ssnmap = sctp_ssnmap_new(asoc->c.sinit_max_instreams,
+@@ -1861,19 +1860,9 @@ int sctp_process_init(struct sctp_association *asoc, sctp_cid_t cid,
+ 		if (!asoc->ssnmap)
+ 			goto clean_up;
+ 
+-	retry:
+-		if (unlikely(!idr_pre_get(&sctp_assocs_id, gfp)))
++		error = sctp_assoc_set_id(asoc, gfp);
++		if (error)
+ 			goto clean_up;
+-		spin_lock_bh(&sctp_assocs_id_lock);
+-		error = idr_get_new_above(&sctp_assocs_id, (void *)asoc, 1,
+-					  &assoc_id);
+-		spin_unlock_bh(&sctp_assocs_id_lock);
+-		if (error == -EAGAIN)
+-			goto retry;
+-		else if (error)
+-			goto clean_up;
+-
+-		asoc->assoc_id = (sctp_assoc_t) assoc_id;
+ 	}
+ 
+ 	/* ADDIP Section 4.1 ASCONF Chunk Procedures
+diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
+index c9705de..43155c8 100644
+--- a/net/sctp/sm_sideeffect.c
++++ b/net/sctp/sm_sideeffect.c
+@@ -786,6 +786,33 @@ static void sctp_cmd_del_non_primary(struct sctp_association *asoc)
+ 	return;
+ }
+ 
++/* Helper function to generate an association change event */
++static void sctp_cmd_assoc_change(sctp_cmd_seq_t *commands,
++				 struct sctp_association *asoc,
++				 u8 state)
++{
++	struct sctp_ulpevent *ev;
++
++	ev = sctp_ulpevent_make_assoc_change(asoc, 0, state, 0,
++					    asoc->c.sinit_num_ostreams,
++					    asoc->c.sinit_max_instreams,
++					    GFP_ATOMIC);
++	if (ev)
++		sctp_ulpq_tail_event(&asoc->ulpq, ev);
++}
++
++/* Helper function to generate an adaptation indication event */
++static void sctp_cmd_adaptation_ind(sctp_cmd_seq_t *commands,
++				    struct sctp_association *asoc)
++{
++	struct sctp_ulpevent *ev;
++
++	ev = sctp_ulpevent_make_adaptation_indication(asoc, GFP_ATOMIC);
++
++	if (ev)
++		sctp_ulpq_tail_event(&asoc->ulpq, ev);
++}
++
+ /* These three macros allow us to pull the debugging code out of the
+  * main flow of sctp_do_sm() to keep attention focused on the real
+  * functionality there.
+@@ -1353,6 +1380,14 @@ int sctp_cmd_interpreter(sctp_event_t event_type, sctp_subtype_t subtype,
+ 			local_cork = 0;
+ 			asoc->peer.retran_path = t;
+ 			break;
++		case SCTP_CMD_ASSOC_CHANGE:
++			sctp_cmd_assoc_change(commands, asoc,
++					      cmd->obj.u8);
++			break;
++		case SCTP_CMD_ADAPTATION_IND:
++			sctp_cmd_adaptation_ind(commands, asoc);
++			break;
++
+ 		default:
+ 			printk(KERN_WARNING "Impossible command: %u, %p\n",
+ 			       cmd->verb, cmd->obj.ptr);
+diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
+index 7871faa..99cb9a7 100644
+--- a/net/sctp/sm_statefuns.c
++++ b/net/sctp/sm_statefuns.c
+@@ -1521,7 +1521,6 @@ static sctp_disposition_t sctp_sf_do_dupcook_b(const struct sctp_endpoint *ep,
+ 					struct sctp_association *new_asoc)
+ {
+ 	sctp_init_chunk_t *peer_init;
+-	struct sctp_ulpevent *ev;
+ 	struct sctp_chunk *repl;
+ 
+ 	/* new_asoc is a brand-new association, so these are not yet
+@@ -1552,34 +1551,28 @@ static sctp_disposition_t sctp_sf_do_dupcook_b(const struct sctp_endpoint *ep,
+ 	 * D) IMPLEMENTATION NOTE: An implementation may choose to
+ 	 * send the Communication Up notification to the SCTP user
+ 	 * upon reception of a valid COOKIE ECHO chunk.
+-	 */
+-	ev = sctp_ulpevent_make_assoc_change(asoc, 0, SCTP_COMM_UP, 0,
+-					     new_asoc->c.sinit_num_ostreams,
+-					     new_asoc->c.sinit_max_instreams,
+-					     GFP_ATOMIC);
+-	if (!ev)
+-		goto nomem_ev;
+-
+-	sctp_add_cmd_sf(commands, SCTP_CMD_EVENT_ULP, SCTP_ULPEVENT(ev));
++	 *
++	 * Sadly, this needs to be implemented as a side-effect, because
++	 * we are not guaranteed to have set the association id of the real
++	 * association and so these notifications need to be delayed until
++	 * the association id is allocated.
++  	 */
++  
++	sctp_add_cmd_sf(commands, SCTP_CMD_ASSOC_CHANGE, SCTP_U8(SCTP_COMM_UP));
+ 
+ 	/* Sockets API Draft Section 5.3.1.6
+ 	 * When a peer sends a Adaption Layer Indication parameter , SCTP
+ 	 * delivers this notification to inform the application that of the
+ 	 * peers requested adaption layer.
+-	 */
+-	if (asoc->peer.adaption_ind) {
+-		ev = sctp_ulpevent_make_adaption_indication(asoc, GFP_ATOMIC);
+-		if (!ev)
+-			goto nomem_ev;
+-
+-		sctp_add_cmd_sf(commands, SCTP_CMD_EVENT_ULP,
+-				SCTP_ULPEVENT(ev));
+-	}
++	 *
++	 * This also needs to be done as a side effect for the same reason as
++	 * above.
++  	 */
++	if (asoc->peer.adaptation_ind)
++		sctp_add_cmd_sf(commands, SCTP_CMD_ADAPTATION_IND, SCTP_NULL());
+ 
+ 	return SCTP_DISPOSITION_CONSUME;
+ 
+-nomem_ev:
+-	sctp_chunk_free(repl);
+ nomem:
+ 	return SCTP_DISPOSITION_NOMEM;
+ }
 
-	/* Some one has messed with f_pos; reset the world */
-	if (info->last_pos != filp->f_pos) {
-		free_rb_tree_fname(&info->root);
-		info->curr_node = NULL;
-		info->extra_fname = NULL;
-		info->curr_hash = pos2maj_hash(filp->f_pos);
-		info->curr_minor_hash = pos2min_hash(filp->f_pos);
-	}
-
-(Note, we're only using a 31-bit telldir cookie because of NFSv2
-compatibility.  If we could know we're using NFSv3/v4, by via checking
-O_LARGEFILE, we could easily supply a 63-bit telldir cookie.  As I
-recall there were some signed/unsigned issues which is why we had to
-limit ourselves to a 31-bit/63-bit value).
-
-
-So the problem with nfsd doing an open/getdents/close on every readdir
-request is two-fold.  First of all, it means that you are incurring
-extra overhead by forcing ext3 to allocate, create, and free the
-red-black tree on every single NFS readdir request.  Secondly, it
-increases the chances of problems with the hash collision logic.
-
-Yes, right now we're probably courting danger if we try to operate on
-a directory with hash collisions because it means that multiple
-dirents returned by the NFS server to the NFS client will have the
-same NFS readdir cookie (currently supplied by filp->f_pos/llseek).
-But if most NFS clients typically use the cookie associated with the
-last dirent returned by the readdir RPC, we might be getting away with
-potential hash collisions --- and if nfsd were to cache open directory
-fd's for some short period of time, we might get away with it even
-more, since if the NFS client does a linear readthrough of the
-dirents, we might end up winning even though the results might be a
-little cheasy.  
-
-It is true that if the NFS client tries to use a telldir cookie
-associated with some directory entry not at the end of the returned
-block of dirents, and the directory entry is part of a set of
-filenames that result in a hash collision, we could end up losing.
-But I'm guessing this happens very rarely in practice.
-
-One of the things I did when I was debugging this code way back when
-was that I had a debugging hash type which always returned the value
-42.  This allowed me to be sure that all of the edge conditions
-involving hash collisions could be well tested, and modulo
-telldir/seekdir simply not working, I was able to verify that the
-filesystem worked correctly, albeit not very efficiently.  I didn't
-test to see what would happen with exporting such a filesystem via
-NFS.  It might be interesting to try that and then see how many NFS
-clients were able to deal with such a filesystem export.  
-
-Given that we haven't gotten any complaints of clients stuck in an
-infinite readdir loop, I have to conclude that either NFS clients are
-a lot more robust/predictable than we are giving them credit for, or
-people aren't exporting via NFS directories big enough that hash
-collisions given a 31-bit cookie value haven't happened yet, which
-seems to be rather unbelievable.
-
-Regards,
-
-						- Ted
+--------------090703030501060409060605--
