@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbXDKSnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXDKSuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753627AbXDKSnk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbXDKSnj
+	id S932078AbXDKSuW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932096AbXDKSuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:43:39 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:63408 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753627AbXDKSnj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:43:39 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:
-	x-accept-language:mime-version:to:cc:subject:references:in-reply-to:
-	content-type:content-transfer-encoding;
-	b=lCicJ8NblbYJEqEZxJC9tyYec1IJidlFc7EABhwHXyEIOJeXQbdx7Dg2lb6uADYyb
-	m58KiB/8NK3TfkKoFXm9g==
-Message-ID: <461D2C46.5040603@google.com>
-Date: Wed, 11 Apr 2007 11:43:18 -0700
-From: Edward Falk <efalk@google.com>
-User-Agent: Mozilla Thunderbird 1.0 (X11/20050207)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: "Uytterhoeven, Geert" <Geert.Uytterhoeven@eu.sony.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: HDIO_* ioctls
-References: <CA6404BA52C51146981195CF9A147C1C01A99FC6@GBISE0BASMSX01.eu.sony.com>
-In-Reply-To: <CA6404BA52C51146981195CF9A147C1C01A99FC6@GBISE0BASMSX01.eu.sony.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 11 Apr 2007 14:50:22 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56427 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932078AbXDKSuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 14:50:20 -0400
+Date: Wed, 11 Apr 2007 11:49:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@sw.ru>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: [PATCH] Cpu statistics accounting based on Paul Menage patches
+Message-Id: <20070411114927.1277d7c9.akpm@linux-foundation.org>
+In-Reply-To: <461CF883.2030308@sw.ru>
+References: <461CF883.2030308@sw.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uytterhoeven, Geert wrote:
-> 	Hi,
-> 
-> Documentation/ioctl/hdio.txt says:
-> | This document attempts to describe the ioctl(2) calls supported by
-> | the HD/IDE layer.  These are by-and-large implemented (as of Linux 2.6)
-> | in drivers/ide/ide.c and drivers/block/scsi_ioctl.c
-> 
-> However, drivers/block/scsi_ioctl.c does not exist.
+On Wed, 11 Apr 2007 19:02:27 +0400
+Pavel Emelianov <xemul@sw.ru> wrote:
 
-It's likely that files have been moved and/or renamed since I wrote that 
-document.
+> Provides a per-container statistics concerning the numbers of tasks
+> in various states, system and user times, etc. Patch is inspired
+> by Paul's example of the used CPU time accounting. Although this
+> patch is independent from Paul's example to make it possible playing
+> with them separately.
 
-> drivers/scsi/scsi_ioctl.c and block/scsi_ioctl.c do exist, but they don't seem to cover any of the
-> HDIO_* ioctls.
-> 
-> Does SCSI cover any of these ioctls at all?
+Why is this actually needed?  If userspace has a list of the tasks which
+are in a particular container, it can run around and add up the stats for
+those tasks without kernel changes?
 
-Look in the libata layer.  I know that some of the ioctls are not 
-implemented yet, or are incomplete.
+It's a bit irksome that we have so much accounting of this form in core
+kernel, yet we have to go and add a completely new implementation to create
+something which is similar to what we already have.  But I don't
+immediately see a fix for that.  Apart from paragraph #1 ;)
 
-	-ed falk
+Should there be linkage between per-container stats and
+delivery-via-taskstats?  I can't think of one, really.
+
+You have cpu stats.  Later, presumably, we'll need IO stats, MM stats,
+context-switch stats, number-of-syscall stats, etc, etc.  Are we going to
+reimplement all of those things as well?  See paragraph #1!
+
+Bottom line: I think we seriously need to find some way of consolidating
+per-container stats with our present per-task stats.  Perhaps we should
+instead be looking at ways in which we can speed up paragraph #1.
