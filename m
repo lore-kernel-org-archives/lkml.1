@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751998AbXDKKMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXDKKNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998AbXDKKMu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 06:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXDKKMu
+	id S1752004AbXDKKNo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 06:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXDKKNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 06:12:50 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:22202 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbXDKKMt (ORCPT
+	Wed, 11 Apr 2007 06:13:44 -0400
+Received: from mailgw1.uni-kl.de ([131.246.120.220]:41458 "EHLO
+	mailgw1.uni-kl.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbXDKKNn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 06:12:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ddMVvJ0L6CV1M6p/lDHU+fvsS8jir9LbTIiWY+dMSTbzbgRN3h7lMalwwyI9RWwuVvR5/Y1hw1qdzce8OiPHgL6MEm0bq6r8GMejw77+Ra2/eVJnVuFDR+qV0yPkUH1FsY60lVSawZt4cDPQfvoYQ8tOhs2BXc2MH3xdCYUyRT4=
-Message-ID: <5767b9100704110312t3ce53bd6u1dbb50c79eeb8d7@mail.gmail.com>
-Date: Wed, 11 Apr 2007 18:12:48 +0800
-From: "Conke Hu" <conke.hu@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] ahci.c: remove non-existing SB600 raid id
-Cc: "Jeff Garzik" <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-In-Reply-To: <461CB1B1.9030207@gmail.com>
+	Wed, 11 Apr 2007 06:13:43 -0400
+Date: Wed, 11 Apr 2007 12:12:45 +0200
+From: Eduard Bloch <edi@gmx.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, debburn-devel@lists.alioth.debian.org,
+       Jens Axboe <axboe@suse.de>
+Subject: Re: broken device locking, sg vs. sg_io on block devices
+Message-ID: <20070411101245.GA32592@rotes76.wohnheim.uni-kl.de>
+References: <200703261811.21448.gerald@itzgrund.net> <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de> <20070330134327.GA24030@infradead.org> <20070330142114.GA31685@rotes76.wohnheim.uni-kl.de> <20070330191038.067c346b@the-village.bc.nu> <20070331170703.GA8179@rotes76.wohnheim.uni-kl.de> <20070331232002.7b478f37@the-village.bc.nu> <20070407112131.GA10487@rotes76.wohnheim.uni-kl.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <5767b9100704110254s16566ce7n147aa578181d84e6@mail.gmail.com>
-	 <461CB1B1.9030207@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070407112131.GA10487@rotes76.wohnheim.uni-kl.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/11/07, Tejun Heo <htejun@gmail.com> wrote:
-> Conke Hu wrote:
-> >    SB600 RAID and SB600 SATA is the same controller and share the
-> > same PCI ID 0x4380. There is such PCI ID 0x4381.
->
-> I assume 'no' is missing in the last sentence.  :-)
->
-> --
-> tejun
->
+#include <hallo.h>
+* Eduard Bloch [Sat, Apr 07 2007, 01:21:31PM]:
 
-Oh, sorry :(
-so, should I re-send the mail?
+> Can we do following without having side effects:
+> 
+> open("/dev/sr0",O_EXCL|O_RDWR); /* no matter what it returns */
+> fcntl(..., F_SETLK); /* no matter what it returns */
+> ioctl(f, SCSI_IOCTL_GET_IDLUN, &x);
+> ioctl(f, SCSI_IOCTL_GET_BUS_NUMBER, &jo);
+> 
+> Can you guarantee us that bit? 
+> 
+> Or shall we really implement ugly workarounds to avoid every open call?
+> Note that "just do like UUCP guys" is not as easy or reliable as people
+> may pretend.
 
-conke
+Excuse me, but is there ANYBODY willing to give a binding statement on
+that? First you tell "us CD writing guys" to manage that in user space
+[1] and when we get real critical questions then everything we get is
+radio silence? Very kindly. NOT.
+
+Background: there are two good ways we can go:
+
+a) carefully collecting device properties, mapping and opening
+   additional devices
+b) additional lockfiles delegating the locking operations
+
+Unfortunately b leads to major problems in practice, while a looks
+more promising but need a guarantee that it will be kept be working and
+harmless in the future kernel releases. We need to know that before
+moving on to missionary work.
+
+Regards,
+Eduard.
+
+[1] which IMO still sucks because it's allowed to have device driver
+access from any file, thus dealing locking problems at file level is
+like fighting a hydra. And with multiple semi-autonomous drivers for the
+same hardware even the previous silver bullet (O_EXCL) does not help.
+
+-- 
+Ich bin bereit überall hinzugehen, wenn es nur vorwärts ist.
+		-- David Livingstone
