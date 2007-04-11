@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750948AbXDKHdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750964AbXDKHg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750948AbXDKHdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 03:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbXDKHdW
+	id S1750964AbXDKHg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 03:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXDKHg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 03:33:22 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:31899 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750948AbXDKHdW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 03:33:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=oPfzQs6UpBKrvkfwnDBYkGvNiJ/Vh26RmnFDBEsqXt0Pgz4KjvR7HvCN5GuzBougVtR9jYVpEmxBRVZQCac12n0+N4vJgeOcgc7W88fm0UA7rAVrQ7xMHuIQf/yhmJFiYSIUBdPlDalK14CrVwnFqXxMVYJ8+bhWkMBNkZPyArc=  ;
-X-YMail-OSG: XDFisu0VM1lmBMA5bDBtuDnhXRhaC.p46P2vyf.qHbRKWjvEbqYAkkFe8F82BvXNm8Y.86NGhg--
-Message-ID: <461C8F3B.1010502@yahoo.com.au>
-Date: Wed, 11 Apr 2007 17:33:15 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 11 Apr 2007 03:36:57 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:60736 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbXDKHg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 03:36:56 -0400
+Message-ID: <461C8FF4.80202@gmail.com>
+Date: Wed, 11 Apr 2007 09:36:20 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/13] maps#2: Move the page walker code to lib/
-References: <7.469046093@selenic.com>	<461C81C0.9040003@yahoo.com.au> <20070411001717.02ae5640.akpm@linux-foundation.org>
-In-Reply-To: <20070411001717.02ae5640.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+References: <460B6E4B.3060004@gmail.com> <200704031250.07307.rjw@sisk.pl> <461A9D12.1060106@gmail.com> <200704092220.10039.rjw@sisk.pl>
+In-Reply-To: <200704092220.10039.rjw@sisk.pl>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 11 Apr 2007 09:36:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 11 Apr 2007 16:35:44 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+Rafael J. Wysocki napsal(a):
+> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
+>> Rafael J. Wysocki napsal(a):
+>>> Thanks for testing.
+>> [...]
+>>> --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
+>>> +++ linux-2.6.21-rc5/kernel/power/swsusp.c
+>>> @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
+>>>  		size += highmem_size;
+>>>  		for_each_zone (zone)
+>>>  			if (populated_zone(zone)) {
+>>> +				tmp += snapshot_additional_pages(zone);
+>>>  				if (is_highmem(zone)) {
+>>>  					highmem_size -=
+>>>  					zone_page_state(zone, NR_FREE_PAGES);
+>>>  				} else {
+>>>  					tmp -= zone_page_state(zone, NR_FREE_PAGES);
+>>>  					tmp += zone->lowmem_reserve[ZONE_NORMAL];
+>>> -					tmp += snapshot_additional_pages(zone);
+>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
+>> in -rc6 too.
 > 
-> 
->>Matt Mackall wrote:
->>
->>>Move the page walker code to lib/
->>>
->>>This lets it get shared outside of proc/ and linked in only when
->>>needed.
->>
->>Still should go into mm/
-> 
-> 
-> spose so.
-> 
-> 
->>If it had, you might have also noticed your pagetable walking code
->>is completely different from how everyone else does it, and fixed
->>that too.
-> 
-> 
-> Different in what way?
+> I guess you mean you're still seeing the 'not enough memory to suspend'
+> problem?
 
+Yes:
+Disabling non-boot CPUs ...
+kvm: disabling virtualization on CPU1
+Breaking affinity for irq 9
+CPU 1 is now offline
+SMP alternatives: switching to UP code
+CPU1 is down
+swsusp: critical section:
+swsusp: Need to copy 158309 pages
+swsusp: Not enough free memory
+Error -12 suspending
+Enabling non-boot CPUs ...
+SMP alternatives: switching to SMP code
+Booting processor 1/2 APIC 0x1
+Initializing CPU#1
 
-The form of the loops. It may not seem like a big deal, but before
-Hugh did a big cleanup to make them all the same, we had about a
-dozen versions which were all very slightly different ;) It was
-painful.
-
->>BTW. Is it the case that unused and unexported symbols don't get
->>pruned by the linker except inside lib/?
+>> Next, when this occurs, kernel CPU1 is not brought up and next suspend hangs
+>> on "Suspending consoles".
 > 
-> 
-> If they're static and unreferenced then the linker will remove them.  Of
-> course, usually humans remove these because they generate warnings, unless
-> special-things happen.  We deliberately do special-things with
-> register_cpu_notifier() so the notifier-block and the handler go away if
-> !CONFIG_HOTPLUG_CPU.
-> 
-> If the functions are non-static then yes, I expect we end up with them in
-> vmlinux.  There are tricks we can play with -ffunction-sections to fix
-> that, but we don't.  
+> Hm, there probably is a bug in an error path.  Do you use the built in swsusp
+> or s2disk?
 
-They aren't static. But anyway, AFAIKS, all the CONFIG_ stuff is
-there anyway, so we can not only avoid the linking but also the
-compiling by using them.
+built-in. It happens only sometimes, here, as you can see, CPU1 was
+successfully brought up.
 
+regards,
 -- 
-SUSE Labs, Novell Inc.
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
+Hnus <hnus@fi.muni.cz> is an alias for /dev/null
+
