@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbXDKQo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbXDKQwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298AbXDKQo2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 12:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbXDKQo2
+	id S1753371AbXDKQwy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 12:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXDKQwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 12:44:28 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:35426 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbXDKQo1 (ORCPT
+	Wed, 11 Apr 2007 12:52:54 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11177 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753368AbXDKQwx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 12:44:27 -0400
-Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Zhao Forrest <forrest.zhao@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Jackson <pj@sgi.com>,
-       penberg@cs.helsinki.fi, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <ac8af0be0704110310n1f237e2el6f34365c4aaa5969@mail.gmail.com>
-References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
-	 <84144f020704102353r7dcc3538u2e34237d3496630e@mail.gmail.com>
-	 <ac8af0be0704110214qdca2ee9t3b44a17341e53730@mail.gmail.com>
-	 <20070411025305.b9131062.pj@sgi.com> <1176285976.6893.27.camel@twins>
-	 <ac8af0be0704110310n1f237e2el6f34365c4aaa5969@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 11 Apr 2007 09:44:34 -0700
-Message-Id: <1176309874.24509.52.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Apr 2007 12:52:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,395,1170662400"; 
+   d="scan'208"; a="72026337:sNHT19490499"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
+Date: Wed, 11 Apr 2007 09:52:50 -0700
+Message-ID: <D5C1322C3E673F459512FB59E0DDC32902A1A535@orsmsx414.amr.corp.intel.com>
+In-Reply-To: <461B5339.50700@trash.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
+Thread-Index: Acd7T2flcAdEEwVGQsmd5w4ZcEf/MABCXuHA
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+To: "Patrick McHardy" <kaber@trash.net>
+Cc: <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <jgarzik@pobox.com>,
+       "cramerj" <cramerj@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+X-OriginalArrivalTime: 11 Apr 2007 16:52:51.0481 (UTC) FILETIME=[D79F1890:01C77C59]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-11 at 18:10 +0800, Zhao Forrest wrote:
-> On 4/11/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Wed, 2007-04-11 at 02:53 -0700, Paul Jackson wrote:
-> > > I'm confused - which end of ths stack is up?
-> > >
-> > > cpuset_exit doesn't call do_exit, rather it's the other
-> > > way around.  But put_files_struct doesn't call do_exit,
-> > > rather do_exit calls __exit_files calls put_files_struct.
-> >
-> > I'm guessing its x86_64 which generates crap traces.
-> >
-> Yes, it's x86_64. Is there a reliable way to generate stack traces under x86_64?
-> Can enabling "[ ] Compile the kernel with frame pointers" help?
+> Thanks.
+> 
+> > However, the PRIO qdisc still uses the priority in the bands for 
+> > dequeueing priority, and will feed the queues on the NIC.
+> > The e1000, and any other multiqueue NIC, will schedule Tx 
+> based on how 
+> > the PRIO qdisc feeds the queues.  So the only priority here is the 
+> > dequeuing priority from the kernel.  The e1000 will use the new API 
+> > for starting/stopping the individual queues based on the 
+> descriptors 
+> > available, much like it does today for the global queue.
+> 
+> 
+> Packets will only be dequeued from a band if the associated 
+> subqueue is active, which moves the decision from prio to the 
+> driver, no?
+> What policy does e1000 use for scheduling its internal queues?
+> 
 
-CONFIG_UNWIND_INFO=y
-CONFIG_STACK_UNWIND=y
+E1000 is handed the skb's from PRIO to whichever queue the PRIO flows
+dictate (based on band2queue mapping, tc filters, or TOS to
+skb->priority filtering).  Once the skb hits the e1000, the internal
+policy is round-robin on the hardware queues to dequeue and transmit on
+the wire.  I agree the NIC does influence the decision of which band an
+skb will be dequeued from based on available descriptors, etc., but
+that's one of the goals of multiqueue: don't allow another traffic flow
+in one queue stop or impact another separate flow.
 
-should help.
+Once NICs start using hardware-based priority scheduling (wireless?), we
+can use a round-robin type qdisc in the kernel to dequeue, and let the
+hardware directly decide how important one flow is over another.
 
-Thanks,
-Badari
+Hope this answers your question.
 
-
-
+Cheers,
+-PJ Waskiewicz
