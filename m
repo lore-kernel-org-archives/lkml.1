@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbXDKQGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbXDKQGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbXDKQGX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 12:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXDKQGX
+	id S1753208AbXDKQGj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 12:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXDKQGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 12:06:23 -0400
-Received: from are.twiddle.net ([64.81.246.98]:58105 "EHLO are.twiddle.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753094AbXDKQGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 12:06:22 -0400
-X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Apr 2007 12:06:22 EDT
-Date: Wed, 11 Apr 2007 09:05:20 -0700
-From: Richard Henderson <rth@twiddle.net>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] ALPHA: support graphics on non-zero PCI domains
-Message-ID: <20070411160520.GB12573@twiddle.net>
-Mail-Followup-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
-References: <20070411123048.H17547@jurassic.park.msu.ru>
+	Wed, 11 Apr 2007 12:06:39 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:46126 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753208AbXDKQGh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 12:06:37 -0400
+Date: Wed, 11 Apr 2007 12:01:26 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 3/4] UML - Dump core on panic
+Message-ID: <20070411160126.GA6329@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070411123048.H17547@jurassic.park.msu.ru>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 11, 2007 at 12:30:48PM +0400, Ivan Kokshaysky wrote:
-> +VGA_MAP_MEM(unsigned long xaddr, unsigned int size)
-> +{
-> +	/* Create a new VGA ioport resource WRT the hose it is on. */
-> +	if (pci_vga_hose && pci_vga_hose->index) {
-> +		static struct resource alpha_vga =
-> +		  { .name = "alpha-vga+", .start = 0x3C0, .end = 0x3DF };
-> +		struct resource new_vga = alpha_vga;
-> +
-> +		new_vga.start += pci_vga_hose->io_space->start;
-> +		new_vga.end   += pci_vga_hose->io_space->start;
-> +		request_resource(&ioport_resource, &new_vga);
+Dump core after a panic.  This will provide better debugging
+information than is currently available.
 
-This leaks the local stack frame variable new_vga into the
-resource tree, does it not?  Shouldn't you be kmallocing this?
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ arch/um/include/os.h     |    1 +
+ arch/um/kernel/um_arch.c |    2 +-
+ arch/um/os-Linux/util.c  |    6 ++++++
+ 3 files changed, 8 insertions(+), 1 deletion(-)
 
-
-r~
+Index: linux-2.6.21-mm/arch/um/include/os.h
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/include/os.h	2007-04-06 10:36:33.000000000 -0400
++++ linux-2.6.21-mm/arch/um/include/os.h	2007-04-06 10:38:54.000000000 -0400
+@@ -281,6 +281,7 @@ extern void setup_machinename(char *mach
+ extern void setup_hostinfo(char *buf, int len);
+ extern int setjmp_wrapper(void (*proc)(void *, void *), ...);
+ extern void os_log_info(char *fmt, va_list ap);
++extern void os_dump_core(void);
+ 
+ /* time.c */
+ #define BILLION (1000 * 1000 * 1000)
+Index: linux-2.6.21-mm/arch/um/kernel/um_arch.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/kernel/um_arch.c	2007-04-06 10:37:48.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/um_arch.c	2007-04-06 10:38:05.000000000 -0400
+@@ -474,7 +474,7 @@ static int panic_exit(struct notifier_bl
+ 	show_regs(&(current->thread.regs));
+ 	bust_spinlocks(0);
+ 	uml_exitcode = 1;
+-	machine_halt();
++	os_dump_core();
+ 	return 0;
+ }
+ 
+Index: linux-2.6.21-mm/arch/um/os-Linux/util.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/os-Linux/util.c	2007-04-05 13:25:28.000000000 -0400
++++ linux-2.6.21-mm/arch/um/os-Linux/util.c	2007-04-06 10:57:55.000000000 -0400
+@@ -148,3 +148,9 @@ void os_log_info(char *fmt, va_list ap)
+ 	vsnprintf(&logging_buf[len], sizeof(logging_buf) - len, fmt, ap);
+ 	write(logging_fd, logging_buf, strlen(logging_buf));
+ }
++
++void os_dump_core(void)
++{
++	signal(SIGSEGV, SIG_DFL);
++	abort();
++}
