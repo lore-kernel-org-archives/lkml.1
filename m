@@ -1,53 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161186AbXDKFJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161204AbXDKFLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161186AbXDKFJU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 01:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161194AbXDKFJU
+	id S1161204AbXDKFLD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 01:11:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161198AbXDKFLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 01:09:20 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:59337 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161186AbXDKFJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 01:09:19 -0400
-Date: Tue, 10 Apr 2007 22:08:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] h8300 trivial conversion to GENERIC_TIME
-Message-Id: <20070410220855.84fbcf78.akpm@linux-foundation.org>
-In-Reply-To: <m2d52binwa.wl%ysato@users.sourceforge.jp>
-References: <1176247500.15198.72.camel@localhost>
-	<m2d52binwa.wl%ysato@users.sourceforge.jp>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 11 Apr 2007 01:11:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44900
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1161195AbXDKFLA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 01:11:00 -0400
+Date: Tue, 10 Apr 2007 22:11:01 -0700 (PDT)
+Message-Id: <20070410.221101.110908614.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: mathieu.desnoyers@polymtl.ca, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
+       heiko.carstens@de.ibm.com
+Subject: Re: link error : 2.6.21-rc6-mm1 for s390
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070410184738.dc1c5943.akpm@linux-foundation.org>
+References: <20070410182937.8169c672.akpm@linux-foundation.org>
+	<20070410.183629.57444787.davem@davemloft.net>
+	<20070410184738.dc1c5943.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 12:35:33 +0900 Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 10 Apr 2007 18:47:38 -0700
 
-> At Tue, 10 Apr 2007 16:25:00 -0700,
-> john stultz wrote:
-> > 
-> > Here is a trivial conversion of the h8300 arch to the GENERIC_TIME
-> > infrastructure (h8300 does not have better then jiffies resolution, so
-> > there are no clocksources to add). I have not tested this at all, but it
-> > seems pretty straight forward
-> > 
-> > I'd appreciate any comments or feedback!
-> > 
-> > thanks
-> > -john
-> >
+> attribute(weak) would give a nicer result?
 > 
-> There will not be a problem.
-> Because it is a place working now, I correct it if there 
-> was a problem. 
-> 
-> > 
-> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+> We'd also need to remove s390's EXPORT_SYMBOL(__div64_32), so s390 ends up
+> using lib/div64.c's EXPORT_SYMBOL().
 
-This patch has actually been in -mm since Feb 27.  I'll merge it into
-2.6.22-rc1, thanks.
+Ok, here is the version of the fix I'll use for now:
+
+commit c3abb3b8d41814ce4691cc4cc3998b0f5242c8d0
+Author: David S. Miller <davem@sunset.davemloft.net>
+Date:   Tue Apr 10 22:10:39 2007 -0700
+
+    [S390]: Fix build on 31-bit.
+    
+    Allow s390 to properly override the generic
+    __div64_32() implementation by:
+    
+    1) Using obj-y for div64.o in s390's makefile instead
+       of lib-y
+    
+    2) Adding the weak attribute to the generic implementation.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/s390/lib/Makefile b/arch/s390/lib/Makefile
+index 7a44fed..59aea65 100644
+--- a/arch/s390/lib/Makefile
++++ b/arch/s390/lib/Makefile
+@@ -5,6 +5,6 @@
+ EXTRA_AFLAGS := -traditional
+ 
+ lib-y += delay.o string.o uaccess_std.o uaccess_pt.o qrnnd.o
+-lib-$(CONFIG_32BIT) += div64.o
++obj-$(CONFIG_32BIT) += div64.o
+ lib-$(CONFIG_64BIT) += uaccess_mvcos.o
+ lib-$(CONFIG_SMP) += spinlock.o
+diff --git a/arch/s390/lib/div64.c b/arch/s390/lib/div64.c
+index 0481f34..a5f8300 100644
+--- a/arch/s390/lib/div64.c
++++ b/arch/s390/lib/div64.c
+@@ -147,5 +147,3 @@ uint32_t __div64_32(uint64_t *n, uint32_t base)
+ }
+ 
+ #endif /* MARCH_G5 */
+-
+-EXPORT_SYMBOL(__div64_32);
+diff --git a/lib/div64.c b/lib/div64.c
+index 74f0c8c..b71cf93 100644
+--- a/lib/div64.c
++++ b/lib/div64.c
+@@ -23,7 +23,7 @@
+ /* Not needed on 64bit architectures */
+ #if BITS_PER_LONG == 32
+ 
+-uint32_t __div64_32(uint64_t *n, uint32_t base)
++uint32_t __attribute__((weak)) __div64_32(uint64_t *n, uint32_t base)
+ {
+ 	uint64_t rem = *n;
+ 	uint64_t b = base;
