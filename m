@@ -1,41 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXDKTtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030295AbXDKTt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030301AbXDKTtO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXDKTtO
+	id S1030295AbXDKTt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXDKTt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:49:14 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:51158 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030298AbXDKTtM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:49:12 -0400
-Date: Wed, 11 Apr 2007 21:42:27 +0200
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
-Message-ID: <20070411194227.GA31286@aitel.hist.no>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 11 Apr 2007 15:49:57 -0400
+Received: from mail.screens.ru ([213.234.233.54]:43934 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030295AbXDKTt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:49:56 -0400
+Date: Wed, 11 Apr 2007 23:49:21 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH] kthread: Don't depend on work queues (take 2)
+Message-ID: <20070411194921.GA171@tv-sign.ru>
+References: <20070410185133.GA104@tv-sign.ru> <m13b37v517.fsf@ebiederm.dsl.xmission.com> <20070411000316.52f2551e.akpm@linux-foundation.org> <m1hcrmsr4g.fsf_-_@ebiederm.dsl.xmission.com> <20070411192809.GA106@tv-sign.ru> <m14pnmsnrs.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070408143559.f5014629.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Helge Hafting <helgehaf@aitel.hist.no>
+In-Reply-To: <m14pnmsnrs.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.21-rc6-mm1 locks up during boot.
-The last message is:
-usbcore: registered new interface driver hiddev
+On 04/11, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+> > On 04/11, Eric W. Biederman wrote:
+> >> 
+> >> @@ -435,8 +436,12 @@ static void __init setup_command_line(char *command_line)
+> >>  static void noinline rest_init(void)
+> >>  	__releases(kernel_lock)
+> >>  {
+> >> +	int pid;
+> >>  	kernel_thread(init, NULL, CLONE_FS | CLONE_SIGHAND);
+> >>  	numa_default_policy();
+> >> +
+> >> +	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+> >> +	kthreadd_task = find_task_by_pid(pid);
+> >>  	unlock_kernel();
+> >
+> > Just curious. What if kernel/kthread.c declares
+> >
+> > 	static struct task_struct *kthreadd_task = &init_task;
+> >
+> > an then kthreadd_setup() does kthreadd_task = current. I assume it is always
+> > safe to try_to_wake_up(idle_thread), because it always TASK_RUNNING. This
+> > way we don't need to export kthreadd_task.
+> 
+> I did it this way largely so I could use the export in reparent_to_XXX in
+> daemonize.  This way I don't have races in finding kthreadd.  Plus
+> I didn't think of the trick of using the idle_thread...
 
-Then it hangs so hard that not even sysrq+B have any effect.
+Ah yes, we still need to export kthreadd_task... I just worried about subtle
+dependency this patch adds... This "kthreadd_task = find_task_by_pid" assumes
+that init/main.c:init() takes lock_kernel() before the first kthread_create().
 
-With 2.6.18-rc5-mm1, the next messages I normally get are:
-usbcore: registered new interface driver usbhid
-drivers/usb/input/hid-core.c: v2.6:USB HID core driver
-usbcore: registered new interface driver usbserial
+Oleg.
 
-This is a x86-64 single processor
-
-Helge Hafting
