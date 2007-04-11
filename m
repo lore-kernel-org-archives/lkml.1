@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbXDKNTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbXDKN0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbXDKNTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 09:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXDKNTt
+	id S1752670AbXDKN0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 09:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXDKN0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 09:19:49 -0400
-Received: from mail.suse.de ([195.135.220.2]:43068 "EHLO mx1.suse.de"
+	Wed, 11 Apr 2007 09:26:45 -0400
+Received: from iksaif.dns26.com ([84.246.226.15]:51959 "EHLO iksaif.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbXDKNTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 09:19:49 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: eranian@hpl.hp.com
-Subject: Re: 2.6.21-rc6-mm1
-Date: Wed, 11 Apr 2007 15:19:43 +0200
+	id S1752670AbXDKN0p convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 09:26:45 -0400
+X-Greylist: delayed 1298 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Apr 2007 09:26:45 EDT
+From: Corentin CHARY <corentincj@iksaif.net>
+Reply-To: corentincj@iksaif.net
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
+Date: Wed, 11 Apr 2007 15:05:02 +0200
 User-Agent: KMail/1.9.6
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Adam Belay <abelay@novell.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, lenb@kernel.org
-References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com> <200704111239.06259.ak@suse.de> <20070411130939.GA24875@frankl.hpl.hp.com>
-In-Reply-To: <20070411130939.GA24875@frankl.hpl.hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       sziwan@users.sourceforge.net, acpi4asus-user@lists.sourceforge.net,
+       len.brown@intel.com, linux-acpi@vger.kernel.org
+References: <22473653910004885@karneval.cz>
+In-Reply-To: <22473653910004885@karneval.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200704111519.43738.ak@suse.de>
+Message-Id: <200704111505.03625.corentincj@iksaif.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le Wednesday 11 April 2007 11:33:48 Jiri Slaby, vous avez écrit :
+> asus_acpi, support F2JE model
+Just use the new asus-laptop driver =)
+(see acpi4asus-0.40)
 
-> 
-> So my point is that you cannot use the PMU to account for wall-clock time when you
-> go in halted state. Yet, you could use the idle notifier to compensate for it by
-> recording let's say TSC prior to entry and computing delta on exit. But then I am
-> not sure what you would do with it given that other events may or may not have
-> counted during that time, making scaling harder to do.
-
-I think correcting it with the TSC is fine. It might not be perfect, but it's
-good enough for most uses. Certainly much better than idle=poll
-
-> Once solution, implemented by Itanium Montecito processor, is to have a PMU event
-> that counts cycles spent in halted state. 
-
-This solution is incompatible with aggressive power management.
-
--Andi
+-- 
+CHARY 'Iksaif' Corentin
+http://xf.iksaif.net
