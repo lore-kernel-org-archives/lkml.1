@@ -1,138 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbXDKS3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbXDKS3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbXDKS3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXDKS3I
+	id S1753562AbXDKS3y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXDKS3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:29:08 -0400
-Received: from [212.12.190.25] ([212.12.190.25]:36115 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753554AbXDKS3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:29:06 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Subject: Re: [PATCH 0/30] Use menuconfig objects
-Date: Wed, 11 Apr 2007 21:32:36 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200704110112.39425.a1426z@gawab.com> <200704110742.38727.a1426z@gawab.com> <Pine.LNX.4.61.0704110937060.32056@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0704110937060.32056@yvahk01.tjqt.qr>
+	Wed, 11 Apr 2007 14:29:53 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:27507 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753573AbXDKS3w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 14:29:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=fCAuBAaNf5jnHeI0n6Kajp0PAz1VLhCYjLUfQjcyeFUBMNLc+S7syV1dh7g/OaDM/
+	hwQytuKpBBG7jhZx5IFVQ==
+Message-ID: <b040c32a0704111129p5c81b6e8v815e63e550a56f1b@mail.gmail.com>
+Date: Wed, 11 Apr 2007 11:29:45 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Zach Brown" <zach.brown@oracle.com>
+Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070411181514.GO28322@mami.zabbo.net>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704112132.36542.a1426z@gawab.com>
+Content-Disposition: inline
+References: <20070410235353.325A7346F64@localhost>
+	 <20070410221849.dcec1ce3.akpm@linux-foundation.org>
+	 <b040c32a0704110954q64694780v1d57937cfcc3466d@mail.gmail.com>
+	 <20070411181514.GO28322@mami.zabbo.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Apr 11 2007 07:42, Al Boldi wrote:
-> >Jan Engelhardt wrote:
-> >
-> >Correct, no oversight here; but it may be more meaningful, if you could
-> >default select child-options based on the parent-state, like HW_RANDOM.
+On 4/11/07, Zach Brown <zach.brown@oracle.com> wrote:
+> > Sorry I wasn't thorough enough.  And partially because I was worried
+> > about changing structure type for user space facing struct aio_ring.
+> > Now that I looked through all arches, it looks safe as all arch's
+> > atomic_t has the same size as int.
 >
-> A symbol will already have the 'magic' you describe if its creator wrote
-> it that way. Changing to 'menuconfig' tokens does not change that I
-> think. Consider:
+> > Here is the updated patch.
 >
-> menu "foobar"
-> config FOOBAR
->   bool "foobar"
->   default y
+> > @@ -144,7 +144,7 @@ struct kiocb {
+> >  struct aio_ring {
+> >       unsigned        id;     /* kernel internal index number */
+> >       unsigned        nr;     /* number of io_events */
+> > -     unsigned        head;
+> > +     atomic_t        head;
+> >       unsigned        tail;
 >
-> config HW_RANDOM
->   depends on FOOBAR
->   default y
+> Embedding an atomic_t in an ABI struct?  That makes everyone else
+> nervous too, right?
+
+sure, make me nervous at least.
+
+
+> It may look safe on i386/x86-64 today, but this doesn't seem like wise
+> practice.  Is there any reason to believe that atomic_t will never
+> change size?  Does anything else do this already?
 >
-> endmenu
->
-> This example should do things as you describe -- if FOOBAR is changed
-> from n to y, HW_RANDOM should automatically do the same since it is a
-> new option then.
+> If nothing else, the "unsigned" (should be __u32, sigh) could be cast to
+> an atomic_t.
 
-I don't think so. But this might:
-
-menu "foobar"
- config FOOBAR
-   bool "foobar"
-   default y
-
- config HW_RANDOM
-   depends on FOOBAR
-   default FOOBAR
-
-endmenu
-
->
-> menuconfig FOOBAR
->   bool "foobar"
->   default y
->
-> if FOOBAR
->
-> config HW_RANDOM
->   default y
->
-> endif
->
-> inhibits the same behavior AFAICS.
-
-I think you mean "exhibits"?
-
->
-> >Also, I don't think it's necessary to touch any of the "depends on"; keep
-> >them as is, as they don't hurt staying that way, and may actually be
-> >necessary under certain circumstances.  (see EMBEDDED)
->
-> Simplifying the depends lines is a good thing IMO.
-
-You are replacing the depends with an if block, which seems to add 
-complexity, as we now have two constructs, if and depends.
-
-IMHO, leave the depends as is, for simplicity and correctness and 
-maintainability.
-
-So if we have something like this:
-
-menu "foobar"
- config FOOBAR
-   bool "foobar"
-   default y
-
- config FOOBAR_SUB1
-   tristate "FOOBAR SUB1"
-   depends on FOOBAR
-   default m
-
- config FOOBAR_SUB2
-   bool "FOOBAR SUB2"
-   depends on FOOBAR
-   default y
-
-endmenu
-
-Change it to something like this:
-
-menuconfig FOOBAR
-   tristate "foobar"
-   default y
-
- config FOOBAR_SUB1
-   tristate "FOOBAR SUB1"
-   depends on FOOBAR
-   default FOOBAR
-
- config FOOBAR_SUB2
-   bool "FOOBAR SUB2"
-   depends on FOOBAR
-   default FOOBAR
-
-without any if blocks, and maybe even in its own Kconfig.
-
-
-Thanks!
-
---
-Al
+The atomic_t cast is equally iffy.  I don't know what would be a best solution.
