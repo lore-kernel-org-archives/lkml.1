@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXDKO3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXDKOhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752826AbXDKO3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 10:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbXDKO3S
+	id S1752868AbXDKOhQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 10:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXDKOhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 10:29:18 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:36951 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752826AbXDKO3Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 10:29:16 -0400
-X-Sasl-enc: 5IAL9cHSknjo+q2cEzARxnl63wHSPo/SHuQP4vCMRr/I 1176301755
-Subject: Re: [patch 0/8] unprivileged mount syscall
-From: Ian Kent <raven@themaw.net>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, hpa@zytor.com,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070411142608.GC30460@sergelap.austin.ibm.com>
-References: <20070404183012.429274832@szeredi.hu>
-	 <20070406160238.f3178189.akpm@linux-foundation.org>
-	 <4616D4D4.6020405@zytor.com> <1176195125.3476.47.camel@raven.themaw.net>
-	 <E1HbaNO-0005AV-00@dorka.pomaz.szeredi.hu>
-	 <1176299311.3377.6.camel@raven.themaw.net>
-	 <20070411142608.GC30460@sergelap.austin.ibm.com>
-Content-Type: text/plain
-Date: Wed, 11 Apr 2007 22:27:12 +0800
-Message-Id: <1176301632.3377.9.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+	Wed, 11 Apr 2007 10:37:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37419 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752868AbXDKOhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 10:37:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Wed, 11 Apr 2007 16:40:46 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+References: <460B6E4B.3060004@gmail.com> <200704111155.52455.rjw@sisk.pl> <461CBC3A.5090607@gmail.com>
+In-Reply-To: <461CBC3A.5090607@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704111640.47171.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-11 at 09:26 -0500, Serge E. Hallyn wrote:
-> Quoting Ian Kent (raven@themaw.net):
-> > On Wed, 2007-04-11 at 12:48 +0200, Miklos Szeredi wrote:
-> > > > > >>
-> > > > > >> - users can use bind mounts without having to pre-configure them in
-> > > > > >>   /etc/fstab
-> > > > > >>
-> > > > > 
-> > > > > This is by far the biggest concern I see.  I think the security 
-> > > > > implication of allowing anyone to do bind mounts are poorly understood.
-> > > > 
-> > > > And especially so since there is no way for a filesystem module to veto
-> > > > such requests.
-> > > 
-> > > The filesystem can't veto initial mounts based on destination either.
-> > > I don't think it's up to the filesystem to police bind/move mounts in
-> > > any way.
+On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
+> Rafael J. Wysocki napsal(a):
+> > On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
+> >> Rafael J. Wysocki napsal(a):
+> >>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
+> >>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
+> >>>> in -rc6 too.
+> >>> I guess you mean you're still seeing the 'not enough memory to suspend'
+> >>> problem?
+> >> Yes:
+> >> Disabling non-boot CPUs ...
+> >> kvm: disabling virtualization on CPU1
+> >> Breaking affinity for irq 9
+> >> CPU 1 is now offline
+> >> SMP alternatives: switching to UP code
+> >> CPU1 is down
+> >> swsusp: critical section:
+> >> swsusp: Need to copy 158309 pages
+> >> swsusp: Not enough free memory
+> >> Error -12 suspending
+> >> Enabling non-boot CPUs ...
+> >> SMP alternatives: switching to SMP code
+> >> Booting processor 1/2 APIC 0x1
+> >> Initializing CPU#1
 > > 
-> > But if a filesystem can't or the developer thinks that it shouldn't for
-> > some reason, support bind/move mounts then there should be a way for the
+> > How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
 > 
-> Can you list some valid reasons why an fs could care where it is
-> mounted?  The only thing I could think of is a stackable fs, but it
-> shouldn't care whether it is overlay-mounted or not.
+> My tip is one of three cases: after some work on fresh boot -- some
+> consumers such as thunderbird, firefox, 10 or so terminals with
+> gnome-session. Single xterm + gnome-session semms not to be a problem.
 
-For my part, autofs and autofs4.
-Moving or binding isn't valid.
-I tried to design that limitation out version 5 but wasn't able to.
-In time I probably can but couldn't continue to support older versions.
+Does the workaround with setting the image size below 1/2 of RAM work for you?
 
-> 
-> thanks,
-> -serge
-> 
-> > filesystem to tell the kernel that.
-> > 
-> > Surely a filesystem is in a good position to be able to decide if a
-> > mount request "for it" should be allowed to continue based on it's "own
-> > situation and capabilities".
-> > 
-> > Ian
-> > 
-> > 
-> > 
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Rafael
