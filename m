@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXDKFuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030484AbXDKFzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbXDKFuB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 01:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030484AbXDKFuB
+	id S1030484AbXDKFzM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 01:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030816AbXDKFzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 01:50:01 -0400
-Received: from ozlabs.org ([203.10.76.45]:36576 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932478AbXDKFuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 01:50:00 -0400
+	Wed, 11 Apr 2007 01:55:11 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:55905 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030484AbXDKFzK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 01:55:10 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Wed, 11 Apr 2007 01:52:39 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Adrian Bunk <bunk@stusta.de>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/30] Use menuconfig objects
+In-Reply-To: <20070410231934.GA10141@stusta.de>
+Message-ID: <Pine.LNX.4.64.0704110151040.7851@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
+ <461C09D6.40805@s5r6.in-berlin.de> <Pine.LNX.4.61.0704110006320.32056@yvahk01.tjqt.qr>
+ <20070410231934.GA10141@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17948.29982.857777.776522@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Apr 2007 15:41:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, ak@suse.de
-Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
-In-Reply-To: <1176265121.8061.66.camel@localhost.localdomain>
-References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
-	<1176180337.8061.21.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0704102058420.18321@schroedinger.engr.sgi.com>
-	<1176265121.8061.66.camel@localhost.localdomain>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt writes:
+On Wed, 11 Apr 2007, Adrian Bunk wrote:
 
-> > > For a 64K page size kernel, we have 3 level page tables and we use 3
-> > > caches: a PGD pages are 128 bytes (yeah, not big heh...), our pmd
-> > > pages are 32K (half a page) and PTE pages are PAGE_SIZE (64K).
-> > 
-> > Ok so use quicklists for the PTEs and slab for the rest? A PGD of only 128 
-> > bytes? Stuff one at the end of the mm_struct or the task struct? That way 
-> > you can avoid allocation overhead.
-> 
-> Yeah, maybe... I need to think about it a bit more. I might be able to
-> make the PMD a full page too.
+> On Wed, Apr 11, 2007 at 12:09:01AM +0200, Jan Engelhardt wrote:
+> >
+> > On Apr 11 2007 00:04, Stefan Richter wrote:
+> > >
+> > >[...] I tried one of the patches
+> > >  - with make xconfig: OK
+> > >  - with make gconfig: OK
+> > >  - with make menuconfig: less so, because:
+> > >When one switches a menuconfig _on_, one might miss that there are
+> > >subsequent options to configure.  (Although the availability of further
+> > >options is indicated by the '--->' suffix to the menu title.)
+> >
+> > The kconfig files had some menuconfigs for some time
+> > (CONFIG_EMBEDDED to be one). I do not think these menu entry types
+> > are unknown.
+>
+> And the EMBEDDED menu has the interesting property that it's not
+> empty with CONFIG_EMBEDDED=n .
 
-There was a reason for making the PMD level map 256MB.  I'd have to
-remember what that was and make sure it didn't apply any more first...
+that entire "Embedded" submenu is a hideous mis-design, as selecting
+it simply presents you with options you can now "*de-select*.  that is
+*anything* but intuitive.
 
-Paul.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
