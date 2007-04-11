@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXDKKNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXDKKOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004AbXDKKNo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 06:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXDKKNo
+	id S1752016AbXDKKOK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 06:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXDKKOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 06:13:44 -0400
-Received: from mailgw1.uni-kl.de ([131.246.120.220]:41458 "EHLO
-	mailgw1.uni-kl.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbXDKKNn (ORCPT
+	Wed, 11 Apr 2007 06:14:10 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:22888 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbXDKKOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 06:13:43 -0400
-Date: Wed, 11 Apr 2007 12:12:45 +0200
-From: Eduard Bloch <edi@gmx.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, debburn-devel@lists.alioth.debian.org,
-       Jens Axboe <axboe@suse.de>
-Subject: Re: broken device locking, sg vs. sg_io on block devices
-Message-ID: <20070411101245.GA32592@rotes76.wohnheim.uni-kl.de>
-References: <200703261811.21448.gerald@itzgrund.net> <20070330111744.GA8889@rotes76.wohnheim.uni-kl.de> <20070330134327.GA24030@infradead.org> <20070330142114.GA31685@rotes76.wohnheim.uni-kl.de> <20070330191038.067c346b@the-village.bc.nu> <20070331170703.GA8179@rotes76.wohnheim.uni-kl.de> <20070331232002.7b478f37@the-village.bc.nu> <20070407112131.GA10487@rotes76.wohnheim.uni-kl.de>
+	Wed, 11 Apr 2007 06:14:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=a9tHFGOFjgOH9FtjBw+Wj5RLpj3/Tv0y0mQ2AcmJRnCWSiKemZ+bPpZEjIFDVDsd52PFjHajHdjlD5wa4Sojfxrs2EuYai5PDIa0F9b3b/M+/mQCX4GtxQrRT7pT8eQUWMvcaZ9vJr8kWxRtJVZEzWm2Avic/HUfaLepkEtgJp4=
+Date: Wed, 11 Apr 2007 19:13:59 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: gregkh@suse.de, maneesh@in.ibm.com, dmitry.torokhov@gmail.com,
+       oneukum@suse.de, rpurdie@rpsys.net, James.Bottomley@SteelEye.com,
+       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 12/14 UPDATED] sysfs: implement sysfs_dirent active reference and immediate disconnect
+Message-ID: <20070411101359.GF10619@htj.dyndns.org>
+References: <11760923261269-git-send-email-htejun@gmail.com> <11760923292724-git-send-email-htejun@gmail.com> <20070411041515.GA10619@htj.dyndns.org> <20070411110006.1007b209@gondolin.boeblingen.de.ibm.com> <461CA9D2.7020501@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070407112131.GA10487@rotes76.wohnheim.uni-kl.de>
+In-Reply-To: <461CA9D2.7020501@gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-#include <hallo.h>
-* Eduard Bloch [Sat, Apr 07 2007, 01:21:31PM]:
-
-> Can we do following without having side effects:
+On Wed, Apr 11, 2007 at 06:26:42PM +0900, Tejun Heo wrote:
+> Hello,
 > 
-> open("/dev/sr0",O_EXCL|O_RDWR); /* no matter what it returns */
-> fcntl(..., F_SETLK); /* no matter what it returns */
-> ioctl(f, SCSI_IOCTL_GET_IDLUN, &x);
-> ioctl(f, SCSI_IOCTL_GET_BUS_NUMBER, &jo);
+> Cornelia Huck wrote:
+> > =======================================================
+> > [ INFO: possible circular locking dependency detected ]
+> > 2.6.21-rc6-ge666c753-dirty #54
+> > -------------------------------------------------------
+> > kslowcrw/64 is trying to acquire lock:
+> >  (&sch->reg_mutex){--..}, at: [<00000000004233b2>] mutex_lock+0x3e/0x4c
+> > 
+> > but task is already holding lock:
+> >  (&sd->s_active){----}, at: [<0000000000209578>] remove_dir+0xec/0x144
+> > 
+> > which lock already depends on the new lock.
 > 
-> Can you guarantee us that bit? 
-> 
-> Or shall we really implement ugly workarounds to avoid every open call?
-> Note that "just do like UUCP guys" is not as easy or reliable as people
-> may pretend.
+> This is probably because s_active has different write locked and
+> unlocked by different threads but it doesn't tell lockdep about it.
+> I'll read lockdep docs and update it.
 
-Excuse me, but is there ANYBODY willing to give a binding statement on
-that? First you tell "us CD writing guys" to manage that in user space
-[1] and when we get real critical questions then everything we get is
-radio silence? Very kindly. NOT.
+Does this patch fix the problem?
 
-Background: there are two good ways we can go:
-
-a) carefully collecting device properties, mapping and opening
-   additional devices
-b) additional lockfiles delegating the locking operations
-
-Unfortunately b leads to major problems in practice, while a looks
-more promising but need a guarantee that it will be kept be working and
-harmless in the future kernel releases. We need to know that before
-moving on to missionary work.
-
-Regards,
-Eduard.
-
-[1] which IMO still sucks because it's allowed to have device driver
-access from any file, thus dealing locking problems at file level is
-like fighting a hydra. And with multiple semi-autonomous drivers for the
-same hardware even the previous silver bullet (O_EXCL) does not help.
-
--- 
-Ich bin bereit überall hinzugehen, wenn es nur vorwärts ist.
-		-- David Livingstone
+Index: work/fs/sysfs/dir.c
+===================================================================
+--- work.orig/fs/sysfs/dir.c	2007-04-11 19:12:02.000000000 +0900
++++ work/fs/sysfs/dir.c	2007-04-11 19:12:12.000000000 +0900
+@@ -26,7 +26,8 @@ void release_sysfs_dirent(struct sysfs_d
+ 	 * locked.  If @sd is cursor for directory walk or being
+ 	 * released prematurely, s_active has no reader or writer.
+ 	 */
+-	down_write_trylock(&sd->s_active);
++	if (!down_write_trylock(&sd->s_active))
++		rwsem_acquire(&sd->s_active.dep_map, 0, 0, _RET_IP_);
+ 	up_write(&sd->s_active);
+ 
+ 	if (sd->s_type & SYSFS_KOBJ_LINK)
+Index: work/fs/sysfs/sysfs.h
+===================================================================
+--- work.orig/fs/sysfs/sysfs.h	2007-04-11 19:12:02.000000000 +0900
++++ work/fs/sysfs/sysfs.h	2007-04-11 19:12:03.000000000 +0900
+@@ -171,6 +171,7 @@ static inline void sysfs_put_active_two(
+ static inline void sysfs_deactivate(struct sysfs_dirent *sd)
+ {
+ 	down_write(&sd->s_active);
++	rwsem_release(&sd->s_active.dep_map, 1, _RET_IP_);
+ }
+ 
+ static inline int sysfs_is_shadowed_inode(struct inode *inode)
