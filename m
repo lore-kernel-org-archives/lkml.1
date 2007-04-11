@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161202AbXDKFXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161206AbXDKF3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161202AbXDKFXv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 01:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161209AbXDKFXv
+	id S1161206AbXDKF3L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 01:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161209AbXDKF3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 01:23:51 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:55451 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161202AbXDKFXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 01:23:50 -0400
-Date: Tue, 10 Apr 2007 22:20:07 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Adam Belay <abelay@novell.com>, Andi Kleen <ak@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, lenb@kernel.org
-Subject: Re: 2.6.21-rc6-mm1
-Message-ID: <20070411052007.GA24056@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com> <200704091940.53439.rjw@sisk.pl> <1176249569.32554.229.camel@localhost.localdomain> <20070411001513.GA2975@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 11 Apr 2007 01:29:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:35478 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161206AbXDKF3K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 01:29:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Qj42oduZ7P/I4ZXcFlaX47NkcD7WL44EelksTxkMI45JsrnC0qqK1GEJaIxU7AWfNnNUHDIrm20EYqG/pMyXp7kVrmVxeDuQCbCOL/CRs4QWDgUrJjl89TDlhDdIu+auIO6Utf8MYSOciOx2ouxdbW6eAqijCA3HItQ4mfsdr1g=
+Message-ID: <84144f020704102229i648bcd39xd579fa63a6e1c62f@mail.gmail.com>
+Date: Wed, 11 Apr 2007 08:29:08 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: PATCH 7/8] lguest: the block driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Andi Kleen" <ak@muc.de>, jens.axboe@oracle.com
+In-Reply-To: <1176264024.26372.93.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070411001513.GA2975@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+References: <1176203068.26372.21.camel@localhost.localdomain>
+	 <1176203176.26372.25.camel@localhost.localdomain>
+	 <1176203231.26372.27.camel@localhost.localdomain>
+	 <1176203285.26372.29.camel@localhost.localdomain>
+	 <1176203333.26372.31.camel@localhost.localdomain>
+	 <1176203475.26372.37.camel@localhost.localdomain>
+	 <1176203528.26372.40.camel@localhost.localdomain>
+	 <84144f020704100428r6e35e34cued8758c94728a6a0@mail.gmail.com>
+	 <84144f020704100436y3405f104x8345c72556d961e9@mail.gmail.com>
+	 <1176264024.26372.93.camel@localhost.localdomain>
+X-Google-Sender-Auth: e5c13b9f8988043d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venki,
+On 4/11/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> What a question!  end_request() doesn't end a request!  What a crazy
+> idea!
 
-On Tue, Apr 10, 2007 at 05:15:14PM -0700, Venki Pallipadi wrote:
-> > > x86-64 expects all idle handlers to enable interrupts before returning from
-> > > idle handler. This is due to enter_idle(), exit_idle() races. Make
-> > > cpuidle_idle_call() confirm to this when there is no pm_idle_old.
-> > > 
-> > > Also, cpuidle look at the return values of attch_driver() and set
-> > > current_driver to NULL if attach fails on all CPUs.
-> > 
-> > My vote would be to instead remove enter_idle() and exit_idle() from
-> > x86-64, just as was done with i386.  Performance monitoring
-> > infrastructure shouldn't be interfering with the idle interrupt
-> > delivery, as that could only hurt performance...  Besides, there's
-> > probably a better way of doing this than an idle notifier anyway.
-> > 
-> 
-> Agreed. I did not like local_irq_enable() in cpuidle either, but added it
-> anyway as it was a corner case when cpuidle is active and no driver is
-> active and not a common case. I thought we will have it as a bandaid solution
-> until enter_idle, exit_idle is around.
-> 
-> Andi/Stephane: What are the plans around enter_idle exit_idle in x86-64.
-> Is it still being used by perfmon for x86-64 arch?
-> 
-The next kernel patch for Perfmon will not make use of the idle notification
-anymore on any platform.
+Aah, indeed, end_request() uses req->hard_cur_sectors while
+end_entire_request() uses req->hard_nr_sectors which I missed.
 
--- 
--Stephane
+On 4/11/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> Hope that clarifies!
+
+It does. Thanks Rusty :)
+
+                                  Pekka
