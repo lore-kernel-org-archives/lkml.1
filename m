@@ -1,76 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030778AbXDKEF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030384AbXDKEJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030778AbXDKEF2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 00:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030790AbXDKEF2
+	id S1030384AbXDKEJT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030790AbXDKEJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 00:05:28 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35117 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030778AbXDKEF0 (ORCPT
+	Wed, 11 Apr 2007 00:09:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:32947 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030384AbXDKEJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 00:05:26 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] reparent kernel threads to swapper
-References: <20070410185222.GA107@tv-sign.ru>
-Date: Tue, 10 Apr 2007 22:04:19 -0600
-In-Reply-To: <20070410185222.GA107@tv-sign.ru> (Oleg Nesterov's message of
-	"Tue, 10 Apr 2007 22:52:22 +0400")
-Message-ID: <m1slb7v9oc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 11 Apr 2007 00:09:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rabQhb85o9f71kmB3Q2GSFgRIWoV3BcmcH4YLjRm+w3UKkH8R/EJTyA1VflN4KSmq/tGNZce0/p78HhHA5bJPP4fvHutHfsHLE5qQKkQlbGca5XTjCUqQGXf9iVch7deWXQubiyM0XKFvDBnvBD4Jxrr5Qrics7ZkjugQVQMmnM=
+Message-ID: <3b44d3fb0704102109g380bbb04v3579a94e1b6dabe1@mail.gmail.com>
+Date: Wed, 11 Apr 2007 09:39:16 +0530
+From: "Milind Arun Choudhary" <milindchoudhary@gmail.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: [KJ] remove SPIN_LOCK_UNLOCKED
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>, kernelnewbies@nl.linux.org,
+       kernel-janitors@lists.osdl.org, "Roland Dreier" <rdreier@cisco.com>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070410220804.GI26692@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070410181654.GA10525@arun.site>
+	 <Pine.LNX.4.61.0704102249290.32056@yvahk01.tjqt.qr>
+	 <Pine.LNX.4.64.0704101722030.24526@CPE00045a9c397f-CM001225dbafb6>
+	 <Pine.LNX.4.61.0704102327460.32056@yvahk01.tjqt.qr>
+	 <ada7isjq52p.fsf@cisco.com>
+	 <Pine.LNX.4.64.0704101743520.24794@CPE00045a9c397f-CM001225dbafb6>
+	 <20070410220804.GI26692@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
-
-> A lot of kernel threads parented to /sbin/init slow down do_wait() when
-> a non-detached (user-space) process exits. Change reparent_kthread() to
-> use init_task as a parent. Since init_task can't go away, we don't need
-> to put the caller on init_task.children list.
-
-Is there any downside of putting tasks on init_task.children?
-
-If not it is probably a good idea to put processes there just for good measure.
-
-> NOTE: pstree doesn't show kernel threads with this patch.
+On 4/11/07, Matthew Wilcox <matthew@wil.cx> wrote:
+> On Tue, Apr 10, 2007 at 05:45:07PM -0400, Robert P. J. Day wrote:
+> > that works fine if you're defining a single spinlock, but what do you
+> > do in cases like this:
+> >
+> > arch/sparc/lib/atomic32.c:      [0 ... (ATOMIC_HASH_SIZE-1)] = SPIN_LOCK_UNLOCKED
+> >
+> > that is, when you're assigning an array of them?  you still need some
+> > kind of generic, unnamed spinlock in those circumstances, no?
 >
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
->
-> --- 2.6.21-rc5/kernel/exit.c~3_SWAPPER	2007-04-10 21:59:41.000000000 +0400
-> +++ 2.6.21-rc5/kernel/exit.c	2007-04-10 22:25:25.000000000 +0400
-> @@ -255,11 +255,11 @@ static int has_stopped_jobs(struct pid *
->  }
->  
->  /**
-> - * reparent_kthread - Reparent the calling kernel thread to the init task of
-> the pid space that the thread belongs to.
-> + * reparent_kthread - Reparent the calling kernel thread to swapper.
->   *
->   * If a kernel thread is launched as a result of a system call, or if
-> - * it ever exits, it should generally reparent itself to init so that
-> - * it is correctly cleaned up on exit.
-> + * it ever exits, it should generally reparent itself so that it is
-> + * correctly cleaned up on exit.
->   *
->   * The various task state such as scheduling policy and priority may have
->   * been inherited from a user process, so we reset them to sane values here.
-> @@ -272,9 +272,8 @@ void reparent_kthread(void)
->  
->  	ptrace_unlink(current);
->  	remove_parent(current);
-> -	current->parent = init_pid_ns.child_reaper;
-> +	current->parent = &init_task;
->  	current->real_parent = current->parent;
-> -	add_parent(current);
->  
->  	/* make the task auto-reap */
->  	current->exit_signal = -1;
+> That's a special case for architecture-only code.  It's not to be used
+> by drivers.
+as per my understanding, [which i should have keyed in earlier]
+different places where SPIN_LOCK_UNLOCKED currently appears are
+
+1. static spinlock_t foobar = SPIN_LOCK_UNLOCKED;
+needs to be replaced bye DEFINE_SPINLOCK
+
+e.g  linux-core/drm_memory_debug.h
+-static spinlock_t drm_mem_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(drm_mem_lock);
+
+there are very few occurrences left in the tree i see
+
+2. allocating a data structure dynamically
+& initializing the spinlock embedded within
+
+use spin_lock_init()
+e.g   linux-core/via_dmablit.c
+
+-               blitq->blit_lock = SPIN_LOCK_UNLOCKED;
++               spin_lock_init(&blitq->blit_lock);
+
+3. static initialization of structure members
+struct foo bar ={
+.
+.
+.
+.lock = SPIN_LOCK_UNLOCKED,
+.
+}
+use
+struct foo bar ={
+.
+.
+.
+.lock = __SPIN_LOCK_UNLOCKED(bar.lock),
+.
+}
+
+e.g arch/i386/kernel/traps.c
+-		.lock =			SPIN_LOCK_UNLOCKED,
++		.lock =			__SPIN_LOCK_UNLOCKED(die.lock),
+
+plenty of these are still there
+may be some patches queued
+
+
+4. arrays of spinlocks
+e.g arch/cris/arch-v32/kernel/smp.c
+
+-spinlock_t cris_atomic_locks[] = { [0 ... LOCK_COUNT - 1] =
+SPIN_LOCK_UNLOCKED};
++raw_spinlock_t cris_atomic_locks[] = { [0 ... LOCK_COUNT - 1] =
+__RAW_SPIN_LOCK_UNLOCKED};
+
+
+my question is still there in the original post
+about spin_lock_init()
+
+CMIIW
+Refer:
+http://lkml.org/lkml/2005/6/20/47
+http://lkml.org/lkml/2007/1/16/90
+http://lists.openwall.net/linux-kernel/2007/02/01/258
+-- 
+Milind Arun Choudhary
