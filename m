@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1749667AbXDKGx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750700AbXDKHBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1749667AbXDKGx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 02:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXDKGxz
+	id S1750700AbXDKHBp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 03:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbXDKHBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 02:53:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:43287 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbXDKGxy (ORCPT
+	Wed, 11 Apr 2007 03:01:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38668 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750700AbXDKHBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 02:53:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=eyCMIQ2kb64WU2ApnSSA3XX7zhsvvupwNhZmGJwXkInYMQy2SjjCV7dFqZDmz2z1wKOHjZ/hTCHUwPwrGy/gKau4CZ+/zN4V4EkWnQ8bAJH1lVCU2NDEr0Cm2/FSTP5KjPXhlg4XwnUd6bErcNnQ/mtsCREIfWi0VmtbXZR49x8=
-Message-ID: <84144f020704102353r7dcc3538u2e34237d3496630e@mail.gmail.com>
-Date: Wed, 11 Apr 2007 09:53:53 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Zhao Forrest" <forrest.zhao@gmail.com>
-Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
+	Wed, 11 Apr 2007 03:01:43 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>
+Subject: Re: [patch] uninline remove/add_parent() APIs
+References: <20070406104301.GB19755@lnx-holt.americas.sgi.com>
+	<m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>
+	<20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu>
+	<m11wix73ut.fsf@ebiederm.dsl.xmission.com>
+	<20070410134814.GA28016@elte.hu>
+	<m17iskz3i8.fsf@ebiederm.dsl.xmission.com>
+	<20070410150650.GA9946@elte.hu>
+	<m1tzvoxniv.fsf@ebiederm.dsl.xmission.com>
+	<20070410155314.GA16267@elte.hu> <20070411062041.GA8017@elte.hu>
+Date: Wed, 11 Apr 2007 01:00:17 -0600
+In-Reply-To: <20070411062041.GA8017@elte.hu> (Ingo Molnar's message of "Wed,
+	11 Apr 2007 08:20:41 +0200")
+Message-ID: <m1ps6btmym.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
-X-Google-Sender-Auth: 068de678d70b6fea
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/11/07, Zhao Forrest <forrest.zhao@gmail.com> wrote:
-> We're using RHEL5 with kernel version 2.6.18-8.el5.
-> When doing a stress test on raw device for about 3-4 hours, we found
-> the soft lockup message in dmesg.
-> I know we're not reporting the bug on the latest kernel, but does any
-> expert know if this is the known issue in old kernel? Or why
-> kmem_cache_free occupy CPU for more than 10 seconds?
+Ingo Molnar <mingo@elte.hu> writes:
 
-Sounds like slab corruption. CONFIG_DEBUG_SLAB should tell you more.
+> here's a (tested) patch i did that should simplify changes done to 
+> p->children and p->sibling handling.
+
+Looks reasonable.
+
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+
+Should we copy Andrew or is someone else going to collect up all of these patches?
+
+Eric
