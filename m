@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750898AbXDKHUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbXDKHXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750898AbXDKHUM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 03:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXDKHUL
+	id S1750894AbXDKHXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 03:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbXDKHXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 03:20:11 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:53196 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbXDKHUJ (ORCPT
+	Wed, 11 Apr 2007 03:23:19 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:22251 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750893AbXDKHXS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 03:20:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H64Q/BRxlD6Uk7q99xHMxyyYGYla13tdbtZTpNR/zkIF4Vy+SK0GDOM+wybT+5BxFRk/zR4KymQGnxaVtiMTQBFbSKDdMB0C2aD5uwJLaZ5SOCGJDkFdJPUgJyw0EApKoWv2yCIdk763v5qKbl03QIOcaAQnChgQv1B1FdpqXYg=
-Message-ID: <d9def9db0704110020r5bf529e3q52bed9e2f0db394a@mail.gmail.com>
-Date: Wed, 11 Apr 2007 09:20:08 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "code GG" <codegg@gmail.com>
-Subject: Re: Does V4L driver support audio capture?
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <3f94553e0704100631k622774ds1a60178abc491fab@mail.gmail.com>
+	Wed, 11 Apr 2007 03:23:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=LgkM8l5z/syRMkWI5qKJzBbQsnKvscIROre47DR7WUtN9RP+tVehstDqWMNihkFZ96wGgK26npVpUKQOBiQ1hWdFmlxLhHA1+Awqp0Ek2qrkPq33fB8wrHgkhJSIvJx84xux15rp8qTW75Iv6OBIVtI7HmOWoyFIrHJlLzg7swc=  ;
+X-YMail-OSG: A.9aQKwVM1kty2f0VS.17JA.LSyMHuyZGsk8BzKNXtA8Z8kS3ERR26tSTk7Nm_TYMLJ6nGJzgA--
+Message-ID: <461C8CD1.3080707@yahoo.com.au>
+Date: Wed, 11 Apr 2007 17:22:57 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
+       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       pravin b shelar <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
+References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<461764A6.3080703@yahoo.com.au> <20070407120051.9ed0e69a.dada1@cosmosbay.com>
+In-Reply-To: <20070407120051.9ed0e69a.dada1@cosmosbay.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3f94553e0704100631k622774ds1a60178abc491fab@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/10/07, code GG <codegg@gmail.com> wrote:
-> Hi all,
->     Are there any V4L API supporting audio capture (supposing the TV
-> card hardware has such ability), just like the APIs and structures for
-> video capture?
->
+Eric Dumazet wrote:
+> On Sat, 07 Apr 2007 19:30:14 +1000
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+> 
+>>Eric Dumazet wrote:
+> 
+>  
+> 
+>>>- Current mm code have a problem with 64bit futexes, as spoted by Nick :
+>>>
+>>>get_futex_key() does a check against sizeof(u32) regardless of futex being 64bits or not.
+>>>So it is possible a 64bit futex spans two pages of memory...
+>>>I had to change get_futex_key() prototype to be able to do a correct test.
+>>
+>>I wonder if it should be encfocing alignment to keep in on 1 page?
+> 
+> 
+> I believe I just did that :)
 
-for capturing usually OSS or alsa is used, you might have a look at
-the em28xx code and search for audio (VIDIOC_G_AUDIO, VIDIOC_S_AUDIO)
+Yes :P What I was trying to say before jumping on a plane is that
+sys_futex/sys_futex64 calls should each check their own address alignment, so
+the deeper parts of the call stack always know alignment is correct.
 
-there are drawbacks at the moment that you usually don't know what
-audio device belongs to your TV card if you want to capture audio
-digitally without looking at your dmesg or reading the individual
-description of the created audio device (userspace applications
-usually don't know about that and you have to set up the soundcard -
-tvtuner bridge manually)
+This will remove all the fsize you pass around, and also sanitise the userspace
+argument much higher in the call stack, which is very preferable and more
+conventional.
 
-Markus
+Maybe this isn't possible (it's very obvious, so there may be a good reason it
+hasn't been done).
+
+-- 
+SUSE Labs, Novell Inc.
