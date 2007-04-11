@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbXDKNdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbXDKNsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbXDKNdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 09:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbXDKNdM
+	id S1752702AbXDKNsI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 09:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXDKNsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 09:33:12 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:55608 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655AbXDKNdL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 09:33:11 -0400
-Date: Wed, 11 Apr 2007 19:01:39 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com
-Subject: Re: [PATCH] kthread: Don't depend on work queues
-Message-ID: <20070411133139.GB10623@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070410185133.GA104@tv-sign.ru> <m13b37v517.fsf@ebiederm.dsl.xmission.com> <20070411000316.52f2551e.akpm@linux-foundation.org> <200704111213.35523.rjw@sisk.pl> <20070411112105.GA24813@in.ibm.com> <20070411114805.GA165@tv-sign.ru>
+	Wed, 11 Apr 2007 09:48:08 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:35756 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752694AbXDKNsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 09:48:07 -0400
+Message-ID: <461CE6AA.6050806@gmail.com>
+Date: Wed, 11 Apr 2007 15:46:18 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070411114805.GA165@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: corentincj@iksaif.net
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       sziwan@users.sourceforge.net, acpi4asus-user@lists.sourceforge.net,
+       len.brown@intel.com, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
+References: <22473653910004885@karneval.cz> <200704111505.03625.corentincj@iksaif.net>
+In-Reply-To: <200704111505.03625.corentincj@iksaif.net>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 11 Apr 2007 15:47:18 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 11, 2007 at 03:48:05PM +0400, Oleg Nesterov wrote:
-> On 04/11, Gautham R Shenoy wrote:
-> >
-> > On Wed, Apr 11, 2007 at 12:13:34PM +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > It should be calling try_to_freeze() somewhere anyway.  We may need to freeze
-> > > all tasks in some cases.
-> > 
-> > How about
-> > for (;;) {
-> > 	try_to_freeze();
-> > 
-> > ?
-> 
-> Why?
+Corentin CHARY napsal(a):
+> Le Wednesday 11 April 2007 11:33:48 Jiri Slaby, vous avez écrit :
+>> asus_acpi, support F2JE model
+> Just use the new asus-laptop driver =)
+> (see acpi4asus-0.40)
 
-If some event (defintely NOT cpu hotplug) needs this thread frozen.
+code seems good, but this is not so good:
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
+#warning "This module does not support 2.6.20 yet, wait for a new release =)"
+#endif
 
-> 
-> > This change allows us to make all the worker threads freezeable by default.
-> > >From cpu-hotplug perspective, helper_wq was the only singlethreaded
-> > non-freezeable workqueue.
-> 
-> I think Eric's patch is what you need. We should _not_ freeze kthreadd(), we
-> need kthread_create() after freezing. Now it doesn't depend on workqueues, we
-> can freeze them all, single-thread or not.
-> 
+When do you plan to support latest kernels and merge it to mainline?
 
-These were my exact thoughts. 
-
-> I like this patch.
-
-Same here. 
-
-> 
-> Oleg.
-> 
-
-Thanks and Regards
-gautham.
-
+thanks,
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
