@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964852AbXDKTKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964821AbXDKTLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964852AbXDKTKw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXDKTK2
+	id S964821AbXDKTLM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbXDKTK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:10:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53480 "EHLO mx1.redhat.com"
+	Wed, 11 Apr 2007 15:10:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53592 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753632AbXDKTKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:10:25 -0400
+	id S964844AbXDKTKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:10:40 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
@@ -16,12 +16,12 @@ Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
 	David Owens (Ireland)
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/8] AFS: Fix callback aggregator work item deadlock
+Subject: [PATCH 6/8] AFS: AF_RXRPC key changes
 To: torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        netdev@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 11 Apr 2007 20:10:12 +0100
-Message-ID: <20070411191012.15499.94466.stgit@warthog.cambridge.redhat.com>
+Date: Wed, 11 Apr 2007 20:10:27 +0100
+Message-ID: <20070411191027.15499.8147.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070411190956.15499.55352.stgit@warthog.cambridge.redhat.com>
 References: <20070411190956.15499.55352.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.12.1
@@ -31,89 +31,135 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a deadlock in the give-up-callback aggregator dispatcher work item whereby
-the aggregator runs on keventd as does timed autounmount, thus leading to the
-unmount blocking keventd whilst waiting for keventd to run the aggregator when
-the give-up-callback buffer is full.
+Make two changes to the AF_RXRPC key handling to make it easier for AFS to
+use:
+
+ (1) Export key_type_rxrpc so that AFS can request keys of this type.
+
+ (2) Make it possible to have keys that represent "no security".  These are
+     created by instantiating the keys with no data.
 
 Signed-Off-By: David Howells <dhowells@redhat.com>
 ---
 
- fs/afs/callback.c |   14 +++++++++-----
- fs/afs/fsclient.c |    6 ++++--
- 2 files changed, 13 insertions(+), 7 deletions(-)
+ include/keys/rxrpc-type.h |   22 ++++++++++++++++++++++
+ net/rxrpc/af_rxrpc.c      |    2 ++
+ net/rxrpc/ar-key.c        |   10 +++++++++-
+ net/rxrpc/ar-output.c     |    6 +++++-
+ 4 files changed, 38 insertions(+), 2 deletions(-)
 
-diff --git a/fs/afs/callback.c b/fs/afs/callback.c
-index fdad11c..1533b49 100644
---- a/fs/afs/callback.c
-+++ b/fs/afs/callback.c
-@@ -232,7 +232,8 @@ static void afs_do_give_up_callback(struct afs_server *server,
- 	 * possible to ship in one operation */
- 	switch (atomic_inc_return(&server->cb_break_n)) {
- 	case 1 ... AFSCBMAX - 1:
--		schedule_delayed_work(&server->cb_break_work, HZ * 2);
-+		queue_delayed_work(afs_callback_update_worker,
-+				   &server->cb_break_work, HZ * 2);
- 		break;
- 	case AFSCBMAX:
- 		afs_flush_callback_breaks(server);
-@@ -271,9 +272,11 @@ void afs_give_up_callback(struct afs_vnode *vnode)
- 	spin_lock(&server->cb_lock);
- 	if (vnode->cb_promised && afs_breakring_space(server) == 0) {
- 		add_wait_queue(&server->cb_break_waitq, &myself);
--		while (vnode->cb_promised &&
--		       afs_breakring_space(server) == 0) {
-+		for (;;) {
- 			set_current_state(TASK_UNINTERRUPTIBLE);
-+			if (!vnode->cb_promised ||
-+			    afs_breakring_space(server) != 0)
-+				break;
- 			spin_unlock(&server->cb_lock);
- 			schedule();
- 			spin_lock(&server->cb_lock);
-@@ -315,7 +318,8 @@ void afs_dispatch_give_up_callbacks(struct work_struct *work)
- void afs_flush_callback_breaks(struct afs_server *server)
+diff --git a/include/keys/rxrpc-type.h b/include/keys/rxrpc-type.h
+new file mode 100644
+index 0000000..e2ee73a
+--- /dev/null
++++ b/include/keys/rxrpc-type.h
+@@ -0,0 +1,22 @@
++/* RxRPC key type
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _KEYS_RXRPC_TYPE_H
++#define _KEYS_RXRPC_TYPE_H
++
++#include <linux/key.h>
++
++/*
++ * key type for AF_RXRPC keys
++ */
++extern struct key_type key_type_rxrpc;
++
++#endif /* _KEYS_USER_TYPE_H */
+diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
+index 115ad19..9e37e4f 100644
+--- a/net/rxrpc/af_rxrpc.c
++++ b/net/rxrpc/af_rxrpc.c
+@@ -299,6 +299,8 @@ struct rxrpc_call *rxrpc_kernel_begin_call(struct socket *sock,
+ 
+ 	if (!key)
+ 		key = rx->key;
++	if (key && !key->payload.data)
++		key = NULL; /* a no-security key */
+ 
+ 	bundle = rxrpc_get_bundle(rx, trans, key, service_id, gfp);
+ 	if (IS_ERR(bundle)) {
+diff --git a/net/rxrpc/ar-key.c b/net/rxrpc/ar-key.c
+index 869a96c..7e049ff 100644
+--- a/net/rxrpc/ar-key.c
++++ b/net/rxrpc/ar-key.c
+@@ -19,6 +19,7 @@
+ #include <linux/crypto.h>
+ #include <net/sock.h>
+ #include <net/af_rxrpc.h>
++#include <keys/rxrpc-type.h>
+ #include <keys/user-type.h>
+ #include "ar-internal.h"
+ 
+@@ -40,6 +41,8 @@ struct key_type key_type_rxrpc = {
+ 	.describe	= rxrpc_describe,
+ };
+ 
++EXPORT_SYMBOL(key_type_rxrpc);
++
+ /*
+  * rxrpc server defined keys take "<serviceId>:<securityIndex>" as the
+  * description and an 8-byte decryption key as the payload
+@@ -63,6 +66,8 @@ struct key_type key_type_rxrpc_s = {
+  *	12	4	kvno
+  *	16	8	session key
+  *	24	[len]	ticket
++ *
++ * if no data is provided, then a no-security key is made
+  */
+ static int rxrpc_instantiate(struct key *key, const void *data, size_t datalen)
  {
- 	if (try_to_cancel_delayed_work(&server->cb_break_work) >= 0)
--		schedule_delayed_work(&server->cb_break_work, 0);
-+		queue_delayed_work(afs_callback_update_worker,
-+				   &server->cb_break_work, 0);
- }
+@@ -74,6 +79,10 @@ static int rxrpc_instantiate(struct key *key, const void *data, size_t datalen)
  
- #if 0
-@@ -426,7 +430,7 @@ static void afs_callback_updater(struct work_struct *work)
- int __init afs_callback_update_init(void)
- {
- 	afs_callback_update_worker =
--		create_singlethread_workqueue("kafs_cbupdated");
-+		create_singlethread_workqueue("kafs_callbackd");
- 	return afs_callback_update_worker ? 0 : -ENOMEM;
- }
+ 	_enter("{%x},,%zu", key_serial(key), datalen);
  
-diff --git a/fs/afs/fsclient.c b/fs/afs/fsclient.c
-index d955178..e2a36f8 100644
---- a/fs/afs/fsclient.c
-+++ b/fs/afs/fsclient.c
-@@ -355,10 +355,11 @@ int afs_fs_give_up_callbacks(struct afs_server *server,
- 	__be32 *bp, *tp;
- 	int loop;
++	/* handle a no-security key */
++	if (!data && datalen == 0)
++		return 0;
++
+ 	/* get the key interface version number */
+ 	ret = -EINVAL;
+ 	if (datalen <= 4 || !data)
+@@ -287,7 +296,6 @@ int rxrpc_get_server_data_key(struct rxrpc_connection *conn,
+ 		struct rxkad_key tsec;
+ 	} data;
  
--	_enter("");
 -
- 	ncallbacks = CIRC_CNT(server->cb_break_head, server->cb_break_tail,
- 			      ARRAY_SIZE(server->cb_break));
-+
-+	_enter("{%zu},", ncallbacks);
-+
- 	if (ncallbacks == 0)
- 		return 0;
- 	if (ncallbacks > AFSCBMAX)
-@@ -398,6 +399,7 @@ int afs_fs_give_up_callbacks(struct afs_server *server,
- 			(ARRAY_SIZE(server->cb_break) - 1);
- 	}
+ 	_enter("");
  
-+	ASSERT(ncallbacks > 0);
- 	wake_up_nr(&server->cb_break_waitq, ncallbacks);
- 
- 	return afs_make_call(&server->addr, call, GFP_NOFS, wait_mode);
+ 	key = key_alloc(&key_type_rxrpc, "x", 0, 0, current, 0,
+diff --git a/net/rxrpc/ar-output.c b/net/rxrpc/ar-output.c
+index ed7f3f4..d2d0baa 100644
+--- a/net/rxrpc/ar-output.c
++++ b/net/rxrpc/ar-output.c
+@@ -132,6 +132,7 @@ int rxrpc_client_sendmsg(struct kiocb *iocb, struct rxrpc_sock *rx,
+ 	enum rxrpc_command cmd;
+ 	struct rxrpc_call *call;
+ 	unsigned long user_call_ID = 0;
++	struct key *key;
+ 	__be16 service_id;
+ 	u32 abort_code = 0;
+ 	int ret;
+@@ -153,7 +154,10 @@ int rxrpc_client_sendmsg(struct kiocb *iocb, struct rxrpc_sock *rx,
+ 				(struct sockaddr_rxrpc *) msg->msg_name;
+ 			service_id = htons(srx->srx_service);
+ 		}
+-		bundle = rxrpc_get_bundle(rx, trans, rx->key, service_id,
++		key = rx->key;
++		if (key && !rx->key->payload.data)
++			key = NULL;
++		bundle = rxrpc_get_bundle(rx, trans, key, service_id,
+ 					  GFP_KERNEL);
+ 		if (IS_ERR(bundle))
+ 			return PTR_ERR(bundle);
 
