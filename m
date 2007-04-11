@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbXDKQB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbXDKQGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbXDKQB5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 12:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXDKQB5
+	id S1753094AbXDKQGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 12:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXDKQGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 12:01:57 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:41470 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753182AbXDKQB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 12:01:56 -0400
-X-Originating-Ip: 74.109.98.130
-Date: Wed, 11 Apr 2007 12:00:38 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "menu" versus "menuconfig" -- they're *both* a bad idea
-In-Reply-To: <Pine.LNX.4.61.0704111742340.32056@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.64.0704111200330.14427@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0704110357200.9384@CPE00045a9c397f-CM001225dbafb6>
- <Pine.LNX.4.61.0704111059190.32056@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6>
- <Pine.LNX.4.61.0704111134300.32056@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0704110546220.11664@CPE00045a9c397f-CM001225dbafb6>
- <Pine.LNX.4.61.0704111742340.32056@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 11 Apr 2007 12:06:23 -0400
+Received: from are.twiddle.net ([64.81.246.98]:58105 "EHLO are.twiddle.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753094AbXDKQGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 12:06:22 -0400
+X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Apr 2007 12:06:22 EDT
+Date: Wed, 11 Apr 2007 09:05:20 -0700
+From: Richard Henderson <rth@twiddle.net>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] ALPHA: support graphics on non-zero PCI domains
+Message-ID: <20070411160520.GB12573@twiddle.net>
+Mail-Followup-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
+References: <20070411123048.H17547@jurassic.park.msu.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070411123048.H17547@jurassic.park.msu.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007, Jan Engelhardt wrote:
+On Wed, Apr 11, 2007 at 12:30:48PM +0400, Ivan Kokshaysky wrote:
+> +VGA_MAP_MEM(unsigned long xaddr, unsigned int size)
+> +{
+> +	/* Create a new VGA ioport resource WRT the hose it is on. */
+> +	if (pci_vga_hose && pci_vga_hose->index) {
+> +		static struct resource alpha_vga =
+> +		  { .name = "alpha-vga+", .start = 0x3C0, .end = 0x3DF };
+> +		struct resource new_vga = alpha_vga;
+> +
+> +		new_vga.start += pci_vga_hose->io_space->start;
+> +		new_vga.end   += pci_vga_hose->io_space->start;
+> +		request_resource(&ioport_resource, &new_vga);
 
->
-> On Apr 11 2007 05:47, Robert P. J. Day wrote:
-> >> On Apr 11 2007 05:25, Robert P. J. Day wrote:
-> >> >On Wed, 11 Apr 2007, Jan Engelhardt wrote:
-> >> >> On Apr 11 2007 03:58, Robert P. J. Day wrote:
-> >> >>
-> >> >> A CONFIG_EMBEDDED bug. This should perhaps be changed.
-> >> >> Or at best, deactivate the ---> part when it's N.
-> >> >
-> >> >  i'm not sure what you mean by "bug".  if what you mean is that it's
-> >> >a bad choice of menu layout, i agree.  but what's happening there
-> >> >is not technically "wrong" or "buggy" in the sense that it's
-> >> >perfectly legal based on the current design of "menuconfig".
-> >>
-> >> Of course.
-> >
-> >ok, just checking that we were actually agreeing with one another.
-> >:-)
->
-> Wait, I forgot something:
->
-> Of course, patches are welcome. :-P
+This leaks the local stack frame variable new_vga into the
+resource tree, does it not?  Shouldn't you be kmallocing this?
 
-i'd be happy to, but the only patch i'd be thinking of would be to
-introduce that "dropdownmenuconfig" construct i mentioned, and i'm
-sort of busy packing for california so it won't happen today. :-P
 
-rday
-
-p.s.  if anyone here is going to CELF 2007, i may run into you.  maybe
-i'll wear something outrageously canadian to stand out in a crowd. :-)
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+r~
