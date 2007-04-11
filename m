@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbXDKP5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbXDKQB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169AbXDKP5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 11:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXDKP5b
+	id S1753182AbXDKQB5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 12:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXDKQB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 11:57:31 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:9664 "EHLO
-	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753169AbXDKP5a convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 11:57:30 -0400
-X-BigFish: VP
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 11 Apr 2007 12:01:57 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:41470 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbXDKQB4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 12:01:56 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Wed, 11 Apr 2007 12:00:38 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "menu" versus "menuconfig" -- they're *both* a bad idea
+In-Reply-To: <Pine.LNX.4.61.0704111742340.32056@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.64.0704111200330.14427@CPE00045a9c397f-CM001225dbafb6>
+References: <Pine.LNX.4.64.0704110357200.9384@CPE00045a9c397f-CM001225dbafb6>
+ <Pine.LNX.4.61.0704111059190.32056@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6>
+ <Pine.LNX.4.61.0704111134300.32056@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0704110546220.11664@CPE00045a9c397f-CM001225dbafb6>
+ <Pine.LNX.4.61.0704111742340.32056@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: kernel space to user space /bin/sh startup
-Date: Wed, 11 Apr 2007 08:57:27 -0700
-In-Reply-To: <Pine.LNX.4.61.0704111747140.32056@yvahk01.tjqt.qr>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: kernel space to user space /bin/sh startup
-Thread-Index: Acd8UM40aAySG9zBQiGgQYInpTn22QAANq+w
-References: <20070410182240.3AFAF590046@mail41-cpk.bigfish.com> <Pine.LNX.4.61.0704111747140.32056@yvahk01.tjqt.qr>
-From: "Tom Strader" <tom.strader@xilinx.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 Apr 2007 15:57:28.0175 (UTC) FILETIME=[1AC6D7F0:01C77C52]
-Message-Id: <20070411155728.E46EAE8054@mail197-blu.bigfish.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nope.  Terminal is set correctly, the kernel is outputting messages, the
-command line arguments sent to the kernel have 115200 set.  What would
-happen if the getty was not started correctly?  Would the echoes in rcS
-still appear?  I feel like it may be related to the getty and userspace
-prints due to the fact the kernel is still printing and responding to
-commands.
-Tom
+On Wed, 11 Apr 2007, Jan Engelhardt wrote:
 
------Original Message-----
-From: Jan Engelhardt [mailto:jengelh@linux01.gwdg.de] 
-Sent: Wednesday, April 11, 2007 8:48 AM
-To: Tom Strader
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel space to user space /bin/sh startup
+>
+> On Apr 11 2007 05:47, Robert P. J. Day wrote:
+> >> On Apr 11 2007 05:25, Robert P. J. Day wrote:
+> >> >On Wed, 11 Apr 2007, Jan Engelhardt wrote:
+> >> >> On Apr 11 2007 03:58, Robert P. J. Day wrote:
+> >> >>
+> >> >> A CONFIG_EMBEDDED bug. This should perhaps be changed.
+> >> >> Or at best, deactivate the ---> part when it's N.
+> >> >
+> >> >  i'm not sure what you mean by "bug".  if what you mean is that it's
+> >> >a bad choice of menu layout, i agree.  but what's happening there
+> >> >is not technically "wrong" or "buggy" in the sense that it's
+> >> >perfectly legal based on the current design of "menuconfig".
+> >>
+> >> Of course.
+> >
+> >ok, just checking that we were actually agreeing with one another.
+> >:-)
+>
+> Wait, I forgot something:
+>
+> Of course, patches are welcome. :-P
 
+i'd be happy to, but the only patch i'd be thinking of would be to
+introduce that "dropdownmenuconfig" construct i mentioned, and i'm
+sort of busy packing for california so it won't happen today. :-P
 
-On Apr 10 2007 11:22, Tom Strader wrote:
+rday
 
->console::sysinit:/etc/init.d/rcS
->console::respawn:/sbin/getty -L 115200 /dev/ttyS0 vt100
+p.s.  if anyone here is going to CELF 2007, i may run into you.  maybe
+i'll wear something outrageously canadian to stand out in a crowd. :-)
 
->Now I can type on the console and characters are echoed back, pressing
->ctrl-c echoes: "uart_flush_buffer(0) called" so the code is still
->running, but I am not sure where I am or why I see no login prompt or
->shell command line.
->I never see the "mounting filesystems..." echoed to the screen, but the
->code does not stall and no errors are reported by the kernel.  Any help
->during the transition from init/main.c in kernel space to user space
->would be appreciated, so I could debug this further.
->I have looked around and have not seen a solution for my problem, most
->likely due to the fact that I am not entirely sure what the problem is.
-
-Perhaps your terminal program is set to 9600 bps?
-
-
-
-Jan
 -- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
