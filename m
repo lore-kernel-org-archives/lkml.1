@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030787AbXDKECN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030792AbXDKEEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030787AbXDKECN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 00:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030790AbXDKECN
+	id S1030792AbXDKEEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030795AbXDKEEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 00:02:13 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:55674 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030787AbXDKECM (ORCPT
+	Wed, 11 Apr 2007 00:04:50 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55415 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030792AbXDKEEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 00:02:12 -0400
-Date: Wed, 11 Apr 2007 00:01:38 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: I give up
-In-reply-to: <461BDFEA.8040602@cfl.rr.com>
-To: linux-kernel@vger.kernel.org
-Cc: Phillip Susi <psusi@cfl.rr.com>, Olaf Hering <olaf@aepfle.de>,
-       Dave Dillow <dave@thedillows.org>, Dave Jones <davej@redhat.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
-Message-id: <200704110001.40573.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200704091007.58535.gene.heskett@gmail.com>
- <200704100353.14208.gene.heskett@gmail.com> <461BDFEA.8040602@cfl.rr.com>
-User-Agent: KMail/1.9.6
+	Wed, 11 Apr 2007 00:04:49 -0400
+Date: Tue, 10 Apr 2007 21:04:47 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, ak@suse.de,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
+In-Reply-To: <1176180337.8061.21.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0704102058420.18321@schroedinger.engr.sgi.com>
+References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
+ <1176180337.8061.21.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 April 2007, Phillip Susi wrote:
->Gene Heskett wrote:
->> YOU Tell the tar people, they are flabbergasted that linux is
->> apparently the only unstable OS that tar can be run on.
->
->How about cygwin/windows?  It has no concept of static device numbers.
->And what about external usb disks on any other unix os?  Surely they
->don't have static minor device numbers in the face of hot plugging?
->
->The bug is in tar and that is what needs fixed.  It should not attach
->any meaning to the device number, but rather should assume that the
->admin knows what he is doing when he said to backup a given path using a
->given incremental backup log, and that he isn't yanking tar's chain and
->pointing it to a different path between incremental backups.
+On Tue, 10 Apr 2007, Benjamin Herrenschmidt wrote:
 
-I violently agree on that point, but the limited conversations I've had 
-with the tar maintainer so far indicates that AFAHIC, its linux that's 
-broken.  A new device number is a new disk and must be treated as such.
+> On Mon, 2007-04-09 at 11:25 -0700, Christoph Lameter wrote:
+> 
+> > Quicklists for page table pages V5
+> 
+> Looks interesting, but unfortunately not very useful at this point for
+> powerpc unless you remove the assumption that quicklists contain
+> pages...
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-QOTD:
-	"I'll listen to reason when it comes out on CD."
+Then quicklists wont be as simple anymore.
+
+> On powerpc, we currently use kmem cache slabs (though that isn't
+> terribly node friendly) whose sizes depend on the page size.
+> 
+> For a 4K page size kernel, we have 4 level page tables and use 2 caches,
+> PTE and PGD pages are 4K (thus are PAGE_SIZE'd), and PMD & PUD are 1K.
+
+PTE and PGD could be run via quicklists? With PTEs you cover the most 
+common case. Quicklists using PGDs will allow to optimize using 
+preconstructed pages.
+
+Its probably best to keep the slabs for the 1K pages.
+ 
+> For a 64K page size kernel, we have 3 level page tables and we use 3
+> caches: a PGD pages are 128 bytes (yeah, not big heh...), our pmd
+> pages are 32K (half a page) and PTE pages are PAGE_SIZE (64K).
+
+Ok so use quicklists for the PTEs and slab for the rest? A PGD of only 128 
+bytes? Stuff one at the end of the mm_struct or the task struct? That way 
+you can avoid allocation overhead.
