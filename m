@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbXDKOR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbXDKO0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbXDKOR6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 10:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXDKOR6
+	id S1752848AbXDKO0N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 10:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbXDKO0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 10:17:58 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:41031 "EHLO pfx2.jmh.fr"
+	Wed, 11 Apr 2007 10:26:13 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:36911 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752824AbXDKOR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 10:17:58 -0400
-Date: Wed, 11 Apr 2007 16:15:36 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Maxim Uvarov <muvarov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org, davidsen@tmr.com, randy.dunlap@oracle.com,
-       Valdis.Kletnieks@vt.edu, jesper.juhl@gmail.com
-Subject: Re: Performance Stats: Kernel patch
-Message-Id: <20070411161536.926d79e1.dada1@cosmosbay.com>
-In-Reply-To: <461CCD94.6010507@ru.mvista.com>
-References: <461A4C1E.3070309@ru.mvista.com>
-	<20070410102111.923b92a9.dada1@cosmosbay.com>
-	<461CCD94.6010507@ru.mvista.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752808AbXDKO0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 10:26:11 -0400
+Date: Wed, 11 Apr 2007 09:26:08 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, hpa@zytor.com,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/8] unprivileged mount syscall
+Message-ID: <20070411142608.GC30460@sergelap.austin.ibm.com>
+References: <20070404183012.429274832@szeredi.hu> <20070406160238.f3178189.akpm@linux-foundation.org> <4616D4D4.6020405@zytor.com> <1176195125.3476.47.camel@raven.themaw.net> <E1HbaNO-0005AV-00@dorka.pomaz.szeredi.hu> <1176299311.3377.6.camel@raven.themaw.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1176299311.3377.6.camel@raven.themaw.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 15:59:16 +0400
-Maxim Uvarov <muvarov@ru.mvista.com> wrote:
+Quoting Ian Kent (raven@themaw.net):
+> On Wed, 2007-04-11 at 12:48 +0200, Miklos Szeredi wrote:
+> > > > >>
+> > > > >> - users can use bind mounts without having to pre-configure them in
+> > > > >>   /etc/fstab
+> > > > >>
+> > > > 
+> > > > This is by far the biggest concern I see.  I think the security 
+> > > > implication of allowing anyone to do bind mounts are poorly understood.
+> > > 
+> > > And especially so since there is no way for a filesystem module to veto
+> > > such requests.
+> > 
+> > The filesystem can't veto initial mounts based on destination either.
+> > I don't think it's up to the filesystem to police bind/move mounts in
+> > any way.
+> 
+> But if a filesystem can't or the developer thinks that it shouldn't for
+> some reason, support bind/move mounts then there should be a way for the
 
-> Patch adds Process Performance Statistics.
-> It make available to the user the following 
-> new per-process (thread) performance statistics:
->    * Involuntary Context Switches
->    * Voluntary Context Switches
->    * Number of system calls
->    
-> This data is useful for detecting hyperactivity 
-> patterns between processes.
+Can you list some valid reasons why an fs could care where it is
+mounted?  The only thing I could think of is a stackable fs, but it
+shouldn't care whether it is overlay-mounted or not.
 
-Your description is not very clear about the semantic of your stats.
+thanks,
+-serge
 
-You currently returns stats only for thread(s) (not process as you claimed)
-
-Please check kernel/sys.c:k_getrusage() to see how getrusage() has to sum *lot* of individual fields to get precise process numbers (even counting stats for dead threads)
-
+> filesystem to tell the kernel that.
+> 
+> Surely a filesystem is in a good position to be able to decide if a
+> mount request "for it" should be allowed to continue based on it's "own
+> situation and capabilities".
+> 
+> Ian
+> 
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
