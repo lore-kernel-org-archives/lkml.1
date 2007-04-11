@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751286AbXDKIcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbXDKIj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751286AbXDKIcu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 04:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbXDKIcu
+	id S1751131AbXDKIj2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 04:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbXDKIj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 04:32:50 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:59467 "EHLO tmailer.gwdg.de"
+	Wed, 11 Apr 2007 04:39:28 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:36312 "EHLO tmailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbXDKIct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 04:32:49 -0400
-Date: Wed, 11 Apr 2007 10:32:01 +0200 (MEST)
+	id S1751131AbXDKIj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 04:39:27 -0400
+Date: Wed, 11 Apr 2007 10:38:38 +0200 (MEST)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org
-Subject: Re: [PATCH 10/30] Use menuconfig objects - I2C
-In-Reply-To: <20070411101412.6c5512e7@hyperion.delvare>
-Message-ID: <Pine.LNX.4.61.0704111024090.32056@yvahk01.tjqt.qr>
+To: Esben Nielsen <nielsen.esben@googlemail.com>
+cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 20/30] Use menuconfig objects - ARCNET
+In-Reply-To: <Pine.LNX.4.64.0704111014330.13800@frodo.shire>
+Message-ID: <Pine.LNX.4.61.0704111034170.32056@yvahk01.tjqt.qr>
 References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0704102310310.32056@yvahk01.tjqt.qr> <20070411101412.6c5512e7@hyperion.delvare>
+ <Pine.LNX.4.61.0704102329540.32056@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0704111014330.13800@frodo.shire>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Spam-Report: Content analysis: 0.0 points, 6.0 required
@@ -26,35 +27,36 @@ X-Spam-Report: Content analysis: 0.0 points, 6.0 required
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
 
-
-On Apr 11 2007 10:14, Jean Delvare wrote:
->On Tue, 10 Apr 2007 23:11:41 +0200 (MEST), Jan Engelhardt wrote:
+On Apr 11 2007 10:30, Esben Nielsen wrote:
+> On Tue, 10 Apr 2007, Jan Engelhardt wrote:
 >> 
->> Use menuconfigs instead of menus, so the whole menu can be disabled at        
->> once instead of going through all options.
+>> (Wow, not a single MODULE_AUTHOR line in drivers/net/arcnet/ ...)
+>
+> ArcNet is old. Almost nobody is using it anymore. I used it at my
+> former job, since we used it as control network. A lot of companies
+> still does quitely, but not in combination with Linux.
+
+So send some removal patches :)
+
 >> 
->> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+>> -menu "ARCnet devices"
+>> +menuconfig ARCNET
+>> depends on NETDEVICES && (ISA || PCI)
 >
->The patch looks OK to me, except that it needs to be adjusted for the
->current state of the i2c subsystem. This kind of patch should be built
->on top on Andrew Morton's latest tree, not Linus Torvalds'.
->
->What is the merge plan?
+> Why does it depend on ISA || PCI ?
 
-If it applies with not too many rejects, take it and fixup
-potentially new config options.
-Else
-  If Andrew's latest is a tarball or some sort of file (it is),
-  I can redo it (with a big grumpy face ;-)
-  Else
-    You have to do it.
+No idea. I just left it as is.
 
-I think that's the typical way of doing things.
-Documentation/SubmittingPatches only mandates latest kernel version 
-(which most likely means Linus's tree), I could rebase.
+> People tend to forget the PCMCIA driver.
 
-Thanks,
+Somewhat somewhat. 32-bit PCMCIA (CONFIG_CARDBUS) depends on PCI,
+so with (ISA || PCI) you have probably everything minus
+{sbus, mca, 16 bit pcmcia, other exotic parts}.
+
+> And in principle you could enable the ArcNet framework
+> without using any of the drivers in the kernel tree.
+
+
 Jan
 -- 
