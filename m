@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751722AbXDKJbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXDKJdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751722AbXDKJbz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 05:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXDKJbz
+	id S1751672AbXDKJdG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 05:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbXDKJdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 05:31:55 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38077 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbXDKJby (ORCPT
+	Wed, 11 Apr 2007 05:33:06 -0400
+Received: from wr-out-0506.google.com ([64.233.184.236]:8193 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXDKJdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 05:31:54 -0400
-Message-ID: <461CAAA9.2090309@bull.net>
-Date: Wed, 11 Apr 2007 11:30:17 +0200
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 11 Apr 2007 05:33:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=GK2oHWPvveF61N99Fre8g/0RKoF0xnpQrmlv5egQEQbRM8TDoPB9ClKyUPDpYmprQDiY64ZOEKehcHUNXEDRa6UK9nJxLwRz++gwEf5hen2QsiCAbgx8nZfQhYdonnSmZOYLTx85d6mP9wrk3WmoFrYN5Z9l+g1sqKsrR+jIN7E=
+Message-ID: <461CAB48.8010801@gmail.com>
+Date: Wed, 11 Apr 2007 18:32:56 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Ulrich Drepper <drepper@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       pravin b shelar <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
-References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<461764A6.3080703@yahoo.com.au>	<20070407120051.9ed0e69a.dada1@cosmosbay.com>	<461C8CD1.3080707@yahoo.com.au> <20070411101458.114125ee.dada1@cosmosbay.com> <461CA90E.3080306@yahoo.com.au>
-In-Reply-To: <461CA90E.3080306@yahoo.com.au>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 11/04/2007 11:34:19,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 11/04/2007 11:34:21,
-	Serialize complete at 11/04/2007 11:34:21
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: gregkh@suse.de, maneesh@in.ibm.com, dmitry.torokhov@gmail.com,
+       oneukum@suse.de, rpurdie@rpsys.net, James.Bottomley@SteelEye.com,
+       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 12/14 UPDATED] sysfs: implement sysfs_dirent active reference
+ and immediate disconnect
+References: <11760923261269-git-send-email-htejun@gmail.com>	<11760923292724-git-send-email-htejun@gmail.com>	<20070411041515.GA10619@htj.dyndns.org> <20070411110006.1007b209@gondolin.boeblingen.de.ibm.com> <461CA9D2.7020501@gmail.com>
+In-Reply-To: <461CA9D2.7020501@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin a écrit :
+Tejun Heo wrote:
+> Hello,
 > 
-> But... that isn't there in mainline. Why is it in -mm?
-
-This was introduced by lguest code....
-I did not follow exaclty why.
-
-Pierre
-
-> At any rate, that 
-> makes
-> it a no brainer to change.
-> 
+> Cornelia Huck wrote:
+>> =======================================================
+>> [ INFO: possible circular locking dependency detected ]
+>> 2.6.21-rc6-ge666c753-dirty #54
+>> -------------------------------------------------------
+>> kslowcrw/64 is trying to acquire lock:
+>>  (&sch->reg_mutex){--..}, at: [<00000000004233b2>] mutex_lock+0x3e/0x4c
 >>
->> As this external thing certainly is not doing the check itself, to be 
->> on the safe side we should enforce it in get_futex_key(). I agree with 
->> you : If we want to maximize performance, we could say : The check 
->> *must* be done by the caller.
+>> but task is already holding lock:
+>>  (&sd->s_active){----}, at: [<0000000000209578>] remove_dir+0xec/0x144
+>>
+>> which lock already depends on the new lock.
 > 
-> Well we _control_ the API, so let's make it as clean and performant as 
-> possible
-> from the start.
-> 
+> This is probably because s_active has different write locked and
+> unlocked by different threads but it doesn't tell lockdep about it.
+
+s/has different/is/
+
+Sorry.
 
 -- 
-Pierre Peiffer
+tejun
