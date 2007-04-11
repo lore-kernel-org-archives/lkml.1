@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161276AbXDKWgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161309AbXDKWjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161276AbXDKWgL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161306AbXDKWgL
+	id S1161309AbXDKWjK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161310AbXDKWjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:36:11 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57776 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161276AbXDKWgJ (ORCPT
+	Wed, 11 Apr 2007 18:39:10 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:63687 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1161309AbXDKWjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:36:09 -0400
-Date: Wed, 11 Apr 2007 23:39:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pedro <linux_user@izecksohn.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: tmpfs and the OOM killer
-Message-ID: <20070411233921.7a5c3cff@the-village.bc.nu>
-In-Reply-To: <200704111927.00609.linux_user@izecksohn.com>
-References: <200704110223.31291.linux_user@izecksohn.com>
-	<20070411194820.GI943@1wt.eu>
-	<200704111927.00609.linux_user@izecksohn.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Apr 2007 18:39:09 -0400
+Date: Wed, 11 Apr 2007 15:06:44 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Neil Brown <neilb@suse.de>
+cc: Theodore Tso <tytso@mit.edu>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+In-Reply-To: <17949.25061.739035.688232@notabene.brown>
+Message-ID: <Pine.LNX.4.63.0704111506040.28394@qynat.qvtvafvgr.pbz>
+References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com><200
+ 70407203633.GA21555@thunk.org><20070407233037.GA16508@infradead.org><461930
+ 48.6000606@zytor.com><20070408184129.GA20871@lazybastard.org><17947.65165.5
+ 69482.976343@notabene.brown><20070411144252.GB17778@thunk.org>
+ <17949.25061.739035.688232@notabene.brown>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   2) How should an application be written to not be killed by OOM?
+On Thu, 12 Apr 2007, Neil Brown wrote:
 
-OOM isn't an application matter. The kernel has to choose between
-allowing overcommit on the basis it might run out of memory and have to
-kill stuff, or that it won't in which case an applicatio which correctly
-handles malloc() and similar failures will not be killed (unless it is
-out of space on a stack grow which is a C language flaw as you can't
-catch that event in C)
+> For the second.
+>  You say that you " would need at least 96 bits in order to make that
+>  guarantee; 64 bits of hash, plus a 32-bit count value in the hash
+>  collision chain".  I think 96 is a bit greedy.  Surely 48 bits of
+>  hash and 16 bits of collision-chain-position would plenty.  You would
+>  need 65537 entries before a collision was even possible, and
+>  billions before it was at all likely. (How big does a set of 48bit
+>  numbers have to get before the probability that "No subset of 65536
+>  numbers are all the same" drops below 0.95?)
 
-It's configured by /proc/sys/vm/overcommit_memory
+Neil,
+   you can get a hash collision with two entries.
 
-0 - try and spot obviously dumb allocations
-1 - anything goes
-2 - strictly control resource commit
+David Lang
