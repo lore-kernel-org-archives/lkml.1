@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbXDKJxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbXDKJyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbXDKJxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 05:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbXDKJxv
+	id S1751892AbXDKJyx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 05:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXDKJyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 05:53:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:15644 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbXDKJxu (ORCPT
+	Wed, 11 Apr 2007 05:54:53 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:15946 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751908AbXDKJyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 05:53:50 -0400
+	Wed, 11 Apr 2007 05:54:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Yxfzhz3PejhqdLjMkGb8cQy90Ed/vx5bPaQj/qKhrO7CxlcBJMdxMEfLuHFMy/wr/dr1SeSjoNp9dbPRwBQypAG9v7MpL5B98ANrMa4HOVf7flWVaReX2dxNXzi7HLLclM1eynWH5UMIDgMwGWhyBfOlydoKqQJkmg08hDJOYUk=
-Message-ID: <ac8af0be0704110253p74de6197p1df6a5b99585709c@mail.gmail.com>
-Date: Wed, 11 Apr 2007 17:53:49 +0800
-From: "Zhao Forrest" <forrest.zhao@gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <84144f020704102353r7dcc3538u2e34237d3496630e@mail.gmail.com>
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=UNSzmErqJ72sjl1lD3ozXXp3UAFslLiM8+RVk4hFioIwxGadT1JHEkdyBMoxaqfqZydJt+lBmK2mFgRFh6W8UWOV8aXNEhkhoY4Gl8ToH0sbMQjISwCuN0UXaMirEXcYfVrJmwUTiKUk9o0+rHkLNKikODVz2quUD1/Veuz53iA=
+Message-ID: <5767b9100704110254s16566ce7n147aa578181d84e6@mail.gmail.com>
+Date: Wed, 11 Apr 2007 17:54:50 +0800
+From: "Conke Hu" <conke.hu@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>, Alan <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] ahci.c: remove non-existing SB600 raid id
+Cc: "Tejun Heo" <htejun@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
-	 <84144f020704102353r7dcc3538u2e34237d3496630e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got some new information:
-Before soft lockup message is out, we have:
-[root@nsgsh-dhcp-149 home]# cat /proc/slabinfo |grep buffer_head
-buffer_head       10927942 10942560    120   32    1 : tunables   32
-16    8 : slabdata 341955 341955      6 : globalstat 37602996 11589379
-1174373    6                              0    1 6918 12166031 1013708
-: cpustat 35254590 2350698 13610965 907286
+    SB600 RAID and SB600 SATA is the same controller and share the
+same PCI ID 0x4380. There is such PCI ID 0x4381.
 
-Then after buffer_head is freed, we have:
-[root@nsgsh-dhcp-149 home]# cat /proc/slabinfo |grep buffer_head
-buffer_head         9542  36384    120   32    1 : tunables   32   16
-  8 : slabdata   1137   1137    245 : globalstat 37602996 11589379
-1174373    6                                  0    1 6983 20507478
-1708818 : cpustat 35254625 2350704 16027174 1068367
+    Signed-off-by: Conke Hu <conke.hu@gmail.com>
+---------
+diff -Nur linux-2.6.21-rc6-git3.orig/drivers/ata/ahci.c
+linux-2.6.21-rc6-git3/drivers/ata/ahci.c
+--- linux-2.6.21-rc6-git3.orig/drivers/ata/ahci.c	2007-04-22
+18:38:39.000000000 +0800
++++ linux-2.6.21-rc6-git3/drivers/ata/ahci.c	2007-04-22 18:39:12.000000000 +0800
+@@ -413,8 +413,7 @@
+ 	  PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci_ign_iferr },
 
-Does this huge number of buffer_head cause the soft lockup?
+ 	/* ATI */
+-	{ PCI_VDEVICE(ATI, 0x4380), board_ahci_sb600 }, /* ATI SB600 non-raid */
+-	{ PCI_VDEVICE(ATI, 0x4381), board_ahci }, /* ATI SB600 raid */
++	{ PCI_VDEVICE(ATI, 0x4380), board_ahci_sb600 }, /* ATI SB600 */
 
-Thanks,
-Forrest
-
-On 4/11/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On 4/11/07, Zhao Forrest <forrest.zhao@gmail.com> wrote:
-> > We're using RHEL5 with kernel version 2.6.18-8.el5.
-> > When doing a stress test on raw device for about 3-4 hours, we found
-> > the soft lockup message in dmesg.
-> > I know we're not reporting the bug on the latest kernel, but does any
-> > expert know if this is the known issue in old kernel? Or why
-> > kmem_cache_free occupy CPU for more than 10 seconds?
->
-> Sounds like slab corruption. CONFIG_DEBUG_SLAB should tell you more.
->
+ 	/* VIA */
+ 	{ PCI_VDEVICE(VIA, 0x3349), board_ahci_vt8251 }, /* VIA VT8251 */
+diff -Nur linux-2.6.21-rc6-git3.orig/include/linux/pci_ids.h
+linux-2.6.21-rc6-git3/include/linux/pci_ids.h
+--- linux-2.6.21-rc6-git3.orig/include/linux/pci_ids.h	2007-04-22
+18:38:39.000000000 +0800
++++ linux-2.6.21-rc6-git3/include/linux/pci_ids.h	2007-04-22
+18:39:35.000000000 +0800
+@@ -368,7 +368,6 @@
+ #define PCI_DEVICE_ID_ATI_IXP400_SATA   0x4379
+ #define PCI_DEVICE_ID_ATI_IXP400_SATA2	0x437a
+ #define PCI_DEVICE_ID_ATI_IXP600_SATA	0x4380
+-#define PCI_DEVICE_ID_ATI_IXP600_SRAID	0x4381
+ #define PCI_DEVICE_ID_ATI_IXP600_SMBUS	0x4385
+ #define PCI_DEVICE_ID_ATI_IXP600_IDE	0x438
