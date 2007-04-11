@@ -1,89 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbXDKSPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbXDKSP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbXDKSPN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXDKSPN
+	id S1753519AbXDKSP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbXDKSP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:15:13 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38445 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753500AbXDKSPL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:15:11 -0400
-X-Sasl-enc: J/Ykyb4FgA5ldXUSX+agc62MD+X+hiMWjMv5rjV3/VaW 1176315310
-Subject: Re: [PATCH] autofs4: fix race in unhashed dentry code
-From: Ian Kent <raven@themaw.net>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <461D254C.9020607@suse.com>
-References: <461CF939.9030104@suse.com>
-	 <1176313777.3377.21.camel@raven.themaw.net>
-	 <1176314412.3377.29.camel@raven.themaw.net>
-	 <1176314894.3377.34.camel@raven.themaw.net>  <461D254C.9020607@suse.com>
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 02:13:09 +0800
-Message-Id: <1176315189.3377.35.camel@raven.themaw.net>
+	Wed, 11 Apr 2007 14:15:27 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55093 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753519AbXDKSP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 14:15:26 -0400
+Date: Wed, 11 Apr 2007 11:06:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: eranian@hpl.hp.com, Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Adam Belay <abelay@novell.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, lenb@kernel.org
+Subject: Re: 2.6.21-rc6-mm1
+Message-Id: <20070411110659.d6ab6b39.akpm@linux-foundation.org>
+In-Reply-To: <200704111239.06259.ak@suse.de>
+References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com>
+	<20070411001513.GA2975@linux-os.sc.intel.com>
+	<20070411052007.GA24056@frankl.hpl.hp.com>
+	<200704111239.06259.ak@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-11 at 14:13 -0400, Jeff Mahoney wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Ian Kent wrote:
-> > On Thu, 2007-04-12 at 02:00 +0800, Ian Kent wrote:
-> >> On Thu, 2007-04-12 at 01:49 +0800, Ian Kent wrote:
-> >>> On Wed, 2007-04-11 at 11:05 -0400, Jeff Mahoney wrote:
-> >>>>  Commit f50b6f8691cae2e0064c499dd3ef3f31142987f0 introduced a
-> >>>>  race in autofs4 between autofs_lookup_unhashed() and
-> >>>>  autofs_dentry_release().
-> >>>>
-> >>>>  autofs_dentry_release() ends up clearing the ->dentry and ->inode
-> >>>>  members of autofs_info before removing it from the rehash list. The
-> >>>>  list is protected by the rehash lock in both functions, but
-> >>>>  since autofs_dentry_release() starts tearing the autofs_info struct
-> >>>>  down before removing it from the list, autofs_lookup_unhashed() can
-> >>>>  get a autofs_info with a NULL dentry.
-> >>>>
-> >>>>  This patch moves the clearing of ->dentry and ->inode after the removal
-> >>>>  from the rehash list.
-> >>> Oh .. excellent, I had a bug report but I just couldn't see it for
-> >>> looking.
-> >> Maybe I've been a bit hasty with the celebration.
-> >> It looks like I've got a bigger locking problem here.
-> >> If autofs4_dentry_release waits on the rehash lock and
-> >> autofs4_lookup_unhashed reclaims it then the info struct and the dentry
-> >> go away unconditionally as the release is called just prior to freeing
-> >> the dentry memory, right?.
-> > 
-> > No I'm wrong, dentry_iput holds the dcache locks till it sets d_inode to
-> > NULL, the point of the d_inode check in autofs4_lookup_unhashed.
-> > 
-> > My day is still made.
-> > 
-> 
-> Ok, that was quick. I thought it was ok, but was about to dig back in to
-> make sure. :)
+On Wed, 11 Apr 2007 12:39:05 +0200
+Andi Kleen <ak@suse.de> wrote:
 
-Ya .. I'll think about it some more but it looks good.
-Thanks again.
+> > The next kernel patch for Perfmon will not make use of the idle notification
+> > anymore on any platform.
+> 
+> What do you use instead? 
+> 
+> I've been actually thinking to add idle notifier support to oprofile to correct
+> for the "perfctr doesn't tick in idle" issue which makes numbers not add up to 100%. 
+> A lot of people are currently running idle=poll to work around this and that is very
+> wasteful.
 
-> 
-> - -Jeff
-> 
-> - --
-> Jeff Mahoney
-> SUSE Labs
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.5 (GNU/Linux)
-> Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-> 
-> iD8DBQFGHSVMLPWxlyuTD7IRArOcAKCGwXJaqObc3ee3W810zv5CU2h/MgCfbLUd
-> 4dR++d9OFimkdWGYcmJvWlE=
-> =+Tlm
-> -----END PGP SIGNATURE-----
-
+There was some plan to be able to switch idle handlers at runtime, so one can select
+idle=poll just during oprofile operation.  I'm not sure what happened to that idea.
