@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750917AbXDKHju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750992AbXDKHmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750917AbXDKHju (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 03:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXDKHjt
+	id S1750992AbXDKHmZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 03:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXDKHmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 03:39:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46109 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbXDKHjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 03:39:49 -0400
-Date: Wed, 11 Apr 2007 09:38:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Greg KH <greg@kroah.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       "David S. Miller" <davem@davemloft.net>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: Linux 2.6.21-rc6
-Message-ID: <20070411073855.GA24943@elte.hu>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070408160954.edd248d1.akpm@linux-foundation.org> <46198FD7.5000900@garzik.org> <20070410075733.GA30886@tuatara.stupidest.org>
+	Wed, 11 Apr 2007 03:42:25 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3765 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbXDKHmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 03:42:24 -0400
+Date: Wed, 11 Apr 2007 08:42:14 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Juergen Schindele <schindele@nentec.de>
+Cc: Paul Sokolovsky <pmiscml@gmail.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [RFC, PATCH 1/3] gpiodev - API definitions
+Message-ID: <20070411074214.GB3752@flint.arm.linux.org.uk>
+Mail-Followup-To: Juergen Schindele <schindele@nentec.de>,
+	Paul Sokolovsky <pmiscml@gmail.com>,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	linux-kernel@vger.kernel.org
+References: <774343545.20070411003058@gmail.com> <200704110847.01107.schindele@nentec.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070410075733.GA30886@tuatara.stupidest.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200704110847.01107.schindele@nentec.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Chris Wedgwood <cw@f00f.org> wrote:
-
-> > >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/broken-out/forcedeth-work-around-null-skb-dereference-crash.patch
-> >
-> > It sounded this was specific to Ingo.
+On Wed, Apr 11, 2007 at 08:47:01AM +0200, Juergen Schindele wrote:
+> Am Dienstag, 10. April 2007 23:30 schrieb Paul Sokolovsky:
+> > +static inline int gpiodev_get_value(struct gpio *gpio)
+> > +{
+> > +       struct gpiodev_ops *ops = gpio->gpio_dev->dev.platform_data;
 > 
-> I'm not sure, it sounds a bit like something I saw a while ago.  I 
-> would have to check for sure, I made a quick debugging patch (sent to 
-> netdev) and it went away so I think my last though was a 
-> miscompilation.
+> wouldn't it be more sure to verify if xxx function is NOT null
+> before using it ?? Perhaps something like that
+> 	     BUG_ON(!ops->get);
+> 
+> > +       return ops->get(&gpio->gpio_dev->dev, gpio->gpio_no);
 
-the bug has turned into an 'interface hang under high load' (i.e. the 
-hack patch above is not necessary, but the problem is still there). It 
-still affects the latest forcedeth.c in -rc6. I.e. it's still an 
-unresolved regression. The last state i'm aware of is that I have sent 
-Ayaz ethtool output as well of the hang, as requested.
+What does the BUG_ON buy us that oopsing due to a NULL pointer deref
+doesn't?  Both cases you end up with a register dump and backtrace.
+In fact, on ARM the NULL pointer deref provides a more accurate
+register dump and backtrace than BUG_ON() can ever do.
 
-	Ingo
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
