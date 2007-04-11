@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXDKUEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030367AbXDKUEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030419AbXDKUEE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 16:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030420AbXDKUED
+	id S1030367AbXDKUEF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 16:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030342AbXDKUEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 16:04:03 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59897 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030342AbXDKUEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 16:04:00 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH] kthread: Don't depend on work queues (take 2)
-References: <20070410185133.GA104@tv-sign.ru>
-	<m13b37v517.fsf@ebiederm.dsl.xmission.com>
-	<20070411000316.52f2551e.akpm@linux-foundation.org>
-	<m1hcrmsr4g.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070411192809.GA106@tv-sign.ru>
-	<m14pnmsnrs.fsf@ebiederm.dsl.xmission.com>
-	<20070411194921.GA171@tv-sign.ru>
-Date: Wed, 11 Apr 2007 14:02:24 -0600
-In-Reply-To: <20070411194921.GA171@tv-sign.ru> (Oleg Nesterov's message of
-	"Wed, 11 Apr 2007 23:49:21 +0400")
-Message-ID: <m1zm5er86n.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Wed, 11 Apr 2007 16:04:05 -0400
+Received: from kanga.kvack.org ([66.96.29.28]:46340 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030367AbXDKUEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 16:04:01 -0400
+Date: Wed, 11 Apr 2007 16:03:48 -0400
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: Ken Chen <kenchen@google.com>, akpm@linux-foundation.org,
+       linux-aio@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
+Message-ID: <20070411200348.GN13621@kvack.org>
+References: <20070410235353.325A7346F64@localhost> <20070411180038.GN28322@mami.zabbo.net> <b040c32a0704111228t5065253en9249ff88db5b1384@mail.gmail.com> <20070411194504.GM13621@kvack.org> <20070411195256.GD9602@mami.zabbo.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070411195256.GD9602@mami.zabbo.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Wed, Apr 11, 2007 at 12:52:56PM -0700, Zach Brown wrote:
+> I'm worried that virtual aliasing spells doom for the current
+> home-brewed serialization that fs/aio.c is doing with the shared ring
+> head/tail accesses.  Am I worrying about nothing here?
 
-> Ah yes, we still need to export kthreadd_task... I just worried about subtle
-> dependency this patch adds... This "kthreadd_task = find_task_by_pid" assumes
-> that init/main.c:init() takes lock_kernel() before the first kthread_create().
+Adding a flush_dcache_page() should fix that, but it might also need a 
+change in the layout of the ring buffer header to get things completely 
+correct.  What I'm thinking of is that the head and tail bits might need 
+to be on different cachelines to ensure any aliasing that does occur will 
+not result in updates colliding.  I'm not that much of an expert on virtually 
+aliased caches, though.
 
-There is a small element of that.  Mostly it assumes we are running in the idle
-thread until we call schedule.  Anyway the assumption and the code is out
-there in the open in the main code path so it is easy to find, and the code works
-today.
+> > > I will look into this aside from this patch.
+> > 
+> > That's probably the case.  Also, any changes in this area *must* correctly 
+> > update the compat/incompat feature flags in the ring buffer header.  That 
+> > has been missed in the past...
+> 
+> Do you know of anyone using the current ring info ABI?
+> 
+> The *only* user I know of is the check of ctx->magic in libaio.
 
-At this point I am queuing up patches that kill daemonize.  I will be
-happy to revisit this part once daemonize is gone and the only interesting
-file is kthread.c
+But... any libaio implementing the new sematics must be able to run on old 
+kernels by falling back to the syscall when it notices that required bits 
+aren't set in the header.  It's easy enough to implement the checks, they 
+just need to be carefully checked before being shipped.
 
-Eric
+		-ben
+-- 
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
