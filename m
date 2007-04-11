@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXDKNPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbXDKNTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbXDKNPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 09:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbXDKNPj
+	id S1752596AbXDKNTt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 09:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXDKNTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 09:15:39 -0400
-Received: from mail.screens.ru ([213.234.233.54]:44656 "EHLO mail.screens.ru"
+	Wed, 11 Apr 2007 09:19:49 -0400
+Received: from mail.suse.de ([195.135.220.2]:43068 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645AbXDKNPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 09:15:38 -0400
-Date: Wed, 11 Apr 2007 17:15:24 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kthread: Don't depend on work queues
-Message-ID: <20070411131524.GA284@tv-sign.ru>
-References: <20070410185133.GA104@tv-sign.ru> <m13b37v517.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752596AbXDKNTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 09:19:49 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: eranian@hpl.hp.com
+Subject: Re: 2.6.21-rc6-mm1
+Date: Wed, 11 Apr 2007 15:19:43 +0200
+User-Agent: KMail/1.9.6
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Adam Belay <abelay@novell.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, lenb@kernel.org
+References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com> <200704111239.06259.ak@suse.de> <20070411130939.GA24875@frankl.hpl.hp.com>
+In-Reply-To: <20070411130939.GA24875@frankl.hpl.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m13b37v517.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200704111519.43738.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/10, Eric W. Biederman wrote:
+
 > 
->  static int kthread(void *_create)
->  {
->  	struct kthread_create_info *create = _create;
->  	int (*threadfn)(void *data);
->  	void *data;
-> -	sigset_t blocked;
->  	int ret = -EINTR;
->  
-> -	kthread_exit_files();
-> -
-> -	/* Copy data: it's on keventd's stack */
-> +	/* Copy data: it's on kthread's stack */
->  	threadfn = create->threadfn;
->  	data = create->data;
->  
-> -	/* Block and flush all signals (in case we're not from keventd). */
-> -	sigfillset(&blocked);
-> -	sigprocmask(SIG_BLOCK, &blocked, NULL);
-> -	flush_signals(current);
-> -
-> -	/* By default we can run anywhere, unlike keventd. */
-> -	set_cpus_allowed(current, CPU_MASK_ALL);
+> So my point is that you cannot use the PMU to account for wall-clock time when you
+> go in halted state. Yet, you could use the idle notifier to compensate for it by
+> recording let's say TSC prior to entry and computing delta on exit. But then I am
+> not sure what you would do with it given that other events may or may not have
+> counted during that time, making scaling harder to do.
 
-The above is OK, but I believe you should add set_cpus_allowed() to
-kthreadd_setup(). Note that kthreadd() is forked after init_idle().
+I think correcting it with the TSC is fine. It might not be perfect, but it's
+good enough for most uses. Certainly much better than idle=poll
 
-Oleg.
+> Once solution, implemented by Itanium Montecito processor, is to have a PMU event
+> that counts cycles spent in halted state. 
 
+This solution is incompatible with aggressive power management.
+
+-Andi
