@@ -1,47 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbXDKCen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXDKCgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933040AbXDKCen (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 22:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXDKCen
+	id S933012AbXDKCgM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 22:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933030AbXDKCgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 22:34:43 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:56365 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932985AbXDKCem convert rfc822-to-8bit (ORCPT
+	Tue, 10 Apr 2007 22:36:12 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23109 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933012AbXDKCgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 22:34:42 -0400
-Date: Tue, 10 Apr 2007 19:34:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fernando Luis =?ISO-8859-1?B?VuF6cXVleg==?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: Build error : 2.6.21-rc6-mm1 on sparc64
-Message-Id: <20070410193429.ffbfa33c.akpm@linux-foundation.org>
-In-Reply-To: <1176257739.19452.13.camel@sebastian.intellilink.co.jp>
-References: <20070411004838.GD15262@Krystal>
-	<20070410181854.7d532c59.akpm@linux-foundation.org>
-	<1176257739.19452.13.camel@sebastian.intellilink.co.jp>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 10 Apr 2007 22:36:11 -0400
+Date: Tue, 10 Apr 2007 19:37:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] markers-doc-update-flags-example
+Message-Id: <20070410193757.650f84cc.randy.dunlap@oracle.com>
+In-Reply-To: <20070410232620.GG7092@Krystal>
+References: <20070410231126.GC7092@Krystal>
+	<20070410232620.GG7092@Krystal>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 11:15:39 +0900 Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp> wrote:
+On Tue, 10 Apr 2007 19:26:20 -0400 Mathieu Desnoyers wrote:
 
-> The problem is that to use hard_smp_processor_id in UP kernels just
-> including linux/smp.h does not suffice anymore. Now
-> hard_smp_processor_id is architecture specific code and consequently
-> asm/smp.h should be included explicitly.
 
-yeah.  The fact that linux/smp.h only exposes asm/smp.h if CONFIG_SMP hits
-us again and again and again.  It would be good to fix that up, I guess by
-including asm/smp.h unconditionally from within linux/smp.h.
+>  ------------------------------ CUT -------------------------------------
+>  /* probe-example.c
+>   *
+> - * Loads a function at a marker call site.
+> + * Connects a two functions to marker call sites.
 
-But that's a separate little project.
+s/a //
 
-> Mathieu, does the (untested) patch below fix this issue?
+>   *
+>   * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>   *
+> @@ -109,67 +113,83 @@ Flag compatibility is checked before connecting the probe to the marker.
+>  
+>  #include <linux/sched.h>
+>  #include <linux/kernel.h>
+> +#include <linux/module.h>
+>  #include <linux/marker.h>
+> +#include <asm/atomic.h>
+> +
+> +#define NUM_PROBES (sizeof(probe_array) / sizeof(struct probe_data))
 
-I'll test it.
+#define NUM_PROBES	ARRAY_SIZE(probe_array)
+
+
+> -#define SUBSYSTEM_EVENT_FORMAT "%d %s %p[struct task_struct]"
+> -void probe_subsystem_event(const char *format, ...)
+> +struct probe_data {
+> +	const char *name;
+> +	const char *format;
+> +	marker_probe_func *probe_func;
+> +};
+> +
+>  
+> +static struct probe_data probe_array[] =
+> +{
+> +	{	.name = "subsystem_event",
+> +		.format = "%d %s",
+> +		.probe_func = probe_subsystem_event },
+> +	{	.name = "subsystem_eventb",
+> +		.format = MARK_NOARGS,
+> +		.probe_func = probe_subsystem_eventb },
+> +};
+> +
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
