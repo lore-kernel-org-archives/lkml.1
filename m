@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXDKBZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965908AbXDKBaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964784AbXDKBZP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 21:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964792AbXDKBZP
+	id S965908AbXDKBaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 21:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965865AbXDKBaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 21:25:15 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55040 "EHLO smtp.osdl.org"
+	Tue, 10 Apr 2007 21:30:17 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55121 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964784AbXDKBZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 21:25:13 -0400
-Date: Tue, 10 Apr 2007 18:25:02 -0700
+	id S965860AbXDKBaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 21:30:15 -0400
+Date: Tue, 10 Apr 2007 18:29:37 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>
-Subject: Re: Build error : 2.6.21-rc6-mm1 for arm
-Message-Id: <20070410182502.a09632b2.akpm@linux-foundation.org>
-In-Reply-To: <20070411005420.GF15262@Krystal>
-References: <20070411005420.GF15262@Krystal>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: link error : 2.6.21-rc6-mm1 for s390
+Message-Id: <20070410182937.8169c672.akpm@linux-foundation.org>
+In-Reply-To: <20070411005616.GG15262@Krystal>
+References: <20070411005616.GG15262@Krystal>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -24,40 +26,19 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Apr 2007 20:54:20 -0400
+On Tue, 10 Apr 2007 20:56:16 -0400
 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> I get the following build error when compiling 2.6.21-rc6-mm1 for arm
-> "footbridge" :
+> The last for today : link error of 2.6.21-rc6-mm1 for s390 :
 > 
-> ...
->
-> make -f /home/compudj/git/linux-2.6-lttng/scripts/Makefile.build obj=init
->   /opt/crosstool/gcc-4.0.2-glibc-2.3.6/arm-unknown-linux-gnu/bin/arm-unknown-linux-gnu-gcc -Wp,-MD,init/.main.o.d  -nostdinc -isystem /opt/crosstool/gcc-4.0.2-glibc-2.3.6/arm-unknown-linux-gnu/lib/gcc/arm-unknown-linux-gnu/4.0.2/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h -mlittle-endian -I/home/compudj/git/linux-2.6-lttng/init -Iinit -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -marm -fno-omit-frame-pointer -mapcs -mno-sched-prolog -mabi=apcs-gnu -mno-thumb-interwork -D__LINUX_ARM_ARCH__=4 -march=armv4 -mtune=strongarm110 -msoft-float -Uarm -fno-omit-frame-pointer -fno-optimize-sibling-calls -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(main)"  -D"KBUILD_MODNAME=KBUILD_STR(main)" -c -o init/main.o /home/compudj/git/linux-2.6-lttng/init/main.c
-> In file included from /home/compudj/git/linux-2.6-lttng/include/linux/dma-mapping.h:34,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/dmaengine.h:29,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/skbuff.h:30,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/netlink.h:140,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/genetlink.h:4,
->                  from /home/compudj/git/linux-2.6-lttng/include/net/genetlink.h:4,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/taskstats_kern.h:12,
->                  from /home/compudj/git/linux-2.6-lttng/init/main.c:45:
-> include2/asm/dma-mapping.h: In function 'dma_sync_single_range_for_cpu':
-> include2/asm/dma-mapping.h:320: warning: implicit declaration of function 'dma_sync_single_for_cpu'
-> include2/asm/dma-mapping.h: In function 'dma_sync_single_range_for_device':
-> include2/asm/dma-mapping.h:329: warning: implicit declaration of function 'dma_sync_single_for_device'
-> include2/asm/dma-mapping.h: At top level:
-> include2/asm/dma-mapping.h:352: warning: conflicting types for 'dma_sync_single_for_cpu'
-> include2/asm/dma-mapping.h:352: error: static declaration of 'dma_sync_single_for_cpu' follows non-static declaration
-> include2/asm/dma-mapping.h:320: error: previous implicit declaration of 'dma_sync_single_for_cpu' was here
-> include2/asm/dma-mapping.h:360: warning: conflicting types for 'dma_sync_single_for_device'
-> include2/asm/dma-mapping.h:360: error: static declaration of 'dma_sync_single_for_device' follows non-static declaration
-> include2/asm/dma-mapping.h:329: error: previous implicit declaration of 'dma_sync_single_for_device' was here
-> make[2]: *** [init/main.o] Error 1
-> make[1]: *** [init] Error 2
-> make: *** [_all] Error 2
+> 
+>   /opt/crosstool/gcc-4.1.1-glibc-2.3.6/s390-unknown-linux-gnu/bin/s390-unknown-linux-gnu-ld -m elf_s390 -e start -o .tmp_vmlinux1 -T arch/s390/kernel/vmlinux.lds arch/s390/kernel/head.o arch/s390/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o  arch/s390/mm/built-in.o  arch/s390/kernel/built-in.o  arch/s390/crypto/built-in.o  arch/s390/appldata/built-in.o  arch/s390/hypfs/built-in.o  kernel/built-in.o  mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o  block/built-in.o  ltt/built-in.o  lib/lib.a  arch/s390/lib/lib.a  lib/built-in.o  arch/s390/lib/built-in.o  drivers/built-in.o  sound/built-in.o  drivers/s390/built-in.o  arch/s390/math-emu/built-in.o  net/built-in.o --end-group
+> lib/built-in.o: In function `__div64_32':
+> : multiple definition of `__div64_32'
+> arch/s390/lib/lib.a(div64.o):div64.c:(.text+0x0): first defined here
+> /opt/crosstool/gcc-4.1.1-glibc-2.3.6/s390-unknown-linux-gnu/bin/s390-unknown-linux-gnu-ld: Warning: size of symbol `__div64_32' changed from 218 in arch/s390/lib/lib.a(div64.o) to 260 in lib/built-in.o
 
-Dan, this is caused by git-md-accel.patch
- 
-> 
-> my .config :
+git-net.patch implements generic lib/div64.c, but s390 also has a private one.
+
+Presumably the appropriate fix is to remove s390's private implementation within
+davem's tree.
