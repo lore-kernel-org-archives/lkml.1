@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750894AbXDKHXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750907AbXDKHYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750894AbXDKHXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 03:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbXDKHXT
+	id S1750907AbXDKHYd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 03:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXDKHYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 03:23:19 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:22251 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750893AbXDKHXS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 03:23:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=LgkM8l5z/syRMkWI5qKJzBbQsnKvscIROre47DR7WUtN9RP+tVehstDqWMNihkFZ96wGgK26npVpUKQOBiQ1hWdFmlxLhHA1+Awqp0Ek2qrkPq33fB8wrHgkhJSIvJx84xux15rp8qTW75Iv6OBIVtI7HmOWoyFIrHJlLzg7swc=  ;
-X-YMail-OSG: A.9aQKwVM1kty2f0VS.17JA.LSyMHuyZGsk8BzKNXtA8Z8kS3ERR26tSTk7Nm_TYMLJ6nGJzgA--
-Message-ID: <461C8CD1.3080707@yahoo.com.au>
-Date: Wed, 11 Apr 2007 17:22:57 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       pravin b shelar <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
-References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<461764A6.3080703@yahoo.com.au> <20070407120051.9ed0e69a.dada1@cosmosbay.com>
-In-Reply-To: <20070407120051.9ed0e69a.dada1@cosmosbay.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Apr 2007 03:24:33 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:56529 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750893AbXDKHYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 03:24:33 -0400
+Date: Wed, 11 Apr 2007 11:24:24 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 05/30] Use menuconfig objects - connector
+Message-ID: <20070411072423.GA28888@2ka.mipt.ru>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704102152550.32056@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0704102152550.32056@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 11 Apr 2007 11:24:27 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> On Sat, 07 Apr 2007 19:30:14 +1000
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Tue, Apr 10, 2007 at 09:53:29PM +0200, Jan Engelhardt (jengelh@linux01.gwdg.de) wrote:
 > 
+> Use menuconfigs instead of menus, so the whole menu can be disabled at        
+> once instead of going through all options.
 > 
->>Eric Dumazet wrote:
-> 
->  
-> 
->>>- Current mm code have a problem with 64bit futexes, as spoted by Nick :
->>>
->>>get_futex_key() does a check against sizeof(u32) regardless of futex being 64bits or not.
->>>So it is possible a 64bit futex spans two pages of memory...
->>>I had to change get_futex_key() prototype to be able to do a correct test.
->>
->>I wonder if it should be encfocing alignment to keep in on 1 page?
-> 
-> 
-> I believe I just did that :)
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-Yes :P What I was trying to say before jumping on a plane is that
-sys_futex/sys_futex64 calls should each check their own address alignment, so
-the deeper parts of the call stack always know alignment is correct.
+I have no objections against both connector and w1 changes, feel free to
+add my acked-by.
+I can push that changes upstream if they will not be picked up as a one
+set.
 
-This will remove all the fsize you pass around, and also sanitise the userspace
-argument much higher in the call stack, which is very preferable and more
-conventional.
-
-Maybe this isn't possible (it's very obvious, so there may be a good reason it
-hasn't been done).
+Thanks, Jan.
 
 -- 
-SUSE Labs, Novell Inc.
+	Evgeniy Polyakov
