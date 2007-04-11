@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbXDKInJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751243AbXDKIxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751326AbXDKInJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 04:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXDKInJ
+	id S1751243AbXDKIxW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 04:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXDKIxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 04:43:09 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:43742 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbXDKInI (ORCPT
+	Wed, 11 Apr 2007 04:53:22 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:1557 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbXDKIxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 04:43:08 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=fCFu+lw7beAa4k5eb3HjMa22kKcKy/WSehPq6jIh8Ud4o/4edCdrVk7fJc2hFJn1f
-	6y7Xxz45Ue022LtRDi6uQ==
-Message-ID: <6599ad830704110142yf00e878n97b4162ebbeee5d@mail.gmail.com>
-Date: Wed, 11 Apr 2007 01:42:54 -0700
-From: "Paul Menage" <menage@google.com>
-To: vatsa@in.ibm.com
-Subject: Re: [PATCH 3/7] Containers (V8): Add generic multi-subsystem API to containers
-Cc: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-In-Reply-To: <20070411050121.GB15786@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Apr 2007 04:53:21 -0400
+X-Greylist: delayed 1540 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Apr 2007 04:53:20 EDT
+Date: Wed, 11 Apr 2007 12:28:08 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Richard Henderson <rth@twiddle.net>, Jay Estabrook <jay.estabrook@hp.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/7] ALPHA: fix BOOTP image creation
+Message-ID: <20070411122808.B17547@jurassic.park.msu.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070406233221.989528000@menage.corp.google.com>
-	 <20070407001324.271959000@menage.corp.google.com>
-	 <20070411050121.GB15786@in.ibm.com>
+User-Agent: Mutt/1.2.5i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/10/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
-> [ Sorry abt piece meal reviews, I am sending comments as and when I spot
-> something ]
+Files:
 
-That's no problem.
+arch/alpha/boot/bootpz.c
 
->
-> On Fri, Apr 06, 2007 at 04:32:24PM -0700, menage@google.com wrote:
-> > -void container_exit(struct task_struct *tsk)
-> > +void container_exit(struct task_struct *tsk, int run_callbacks)
-> >  {
->
-> [snip]
->
-> > +     /* Reassign the task to the init_container_group. */
-> >       task_lock(tsk);
->
-> [snip]
->
-> > +     if (tsk->containers != &init_container_group) {
->
-> Is this check needed? If we have the check, then:
->
-> > +     task_unlock(tsk);
-> > +     if (cg)
-> > +             put_container_group(cg);
->
-> init_container_group refcount is leaky (fork increments it, but exit
-> doesnt). Not a big prob perhaps, but ..would be nice to avoid?
->
+	Create a dummy "__kmalloc()" to satisfy the loader; never called.
 
-Yes, I think you're right - over a long uptime that would just cause
-problems ...
+arch/alpha/boot/tools/objstrip.c
 
-Paul
+	Remove an include that is now (2.6.x) unnecessary.
+
+
+
+Signed-off-by: Jay Estabrook <jay.estabrook@hp.com>
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+
+---
+
+diff -Naurp a/arch/alpha/boot/bootpz.c b/arch/alpha/boot/bootpz.c
+--- a/arch/alpha/boot/bootpz.c	2007-02-04 13:44:54.000000000 -0500
++++ b/arch/alpha/boot/bootpz.c	2007-03-16 11:07:33.000000000 -0400
+@@ -467,3 +467,9 @@ start_kernel(void)
+ #endif
+ 	runkernel();
+ }
++
++ /* dummy function, should never be called. */
++void *__kmalloc(size_t size, gfp_t flags)
++{
++	return (void *)NULL;
++}
+diff -Naurp a/arch/alpha/boot/tools/objstrip.c b/arch/alpha/boot/tools/objstrip.c
+--- a/arch/alpha/boot/tools/objstrip.c	2007-02-04 13:44:54.000000000 -0500
++++ b/arch/alpha/boot/tools/objstrip.c	2007-02-14 14:40:02.000000000 -0500
+@@ -25,7 +25,6 @@
+ #include <linux/a.out.h>
+ #include <linux/coff.h>
+ #include <linux/param.h>
+-#include <linux/string.h>
+ #ifdef __ELF__
+ # include <linux/elf.h>
+ #endif
