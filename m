@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161151AbXDKBFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030715AbXDKBMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161151AbXDKBFs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 21:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161152AbXDKBFs
+	id S1030715AbXDKBMH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 21:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030317AbXDKBMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 21:05:48 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:54596 "EHLO smtp.osdl.org"
+	Tue, 10 Apr 2007 21:12:07 -0400
+Received: from mx.pathscale.com ([198.186.3.68]:40467 "EHLO mx.pathscale.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161151AbXDKBFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 21:05:47 -0400
-Date: Tue, 10 Apr 2007 18:05:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: 2.6.21-rc6-mm1 build fails for m68k
-Message-Id: <20070410180539.16f3090b.akpm@linux-foundation.org>
-In-Reply-To: <20070411004112.GA15262@Krystal>
-References: <20070411004112.GA15262@Krystal>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1030715AbXDKBMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 21:12:06 -0400
+X-Greylist: delayed 1436 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Apr 2007 21:12:06 EDT
+Message-ID: <461C3063.9010603@pathscale.com>
+Date: Tue, 10 Apr 2007 17:48:35 -0700
+From: Robert Walsh <rjwalsh@pathscale.com>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+Cc: "Bryan O'Sullivan" <bos@pathscale.com>, openib-general@openfabrics.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] Re: [PATCH 00 of 33] Set of ipath patches for 2.6.22
+References: <patchbomb.1173995084@iqa-25.internal.keyresearch.com>	<aday7kzooa7.fsf@cisco.com> <adahcrnoiie.fsf@cisco.com>
+In-Reply-To: <adahcrnoiie.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Apr 2007 20:41:12 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> I get the following compiler error when building 2.6.21-rc6-mm1 for
-> m68k:
+Roland Dreier wrote:
+>  > Is there any chance of getting a fix for the use-after-free that can
+>  > be caused by allocating something from userspace, failing to mmap the
+>  > buffer and then exiting?  To see what happens, look at how
+>  > ipath_create_cq sticks a struct ipath_mmap_info into the pending mmap
+>  > "list" (and yes it would be much cleaner to just use struct list_head
+>  > here rather than reimplementing a linked list yourself), and then look
+>  > at how ipath_destroy_cq() frees the same structure without checking if
+>  > it has been removed from the pending mmap list.
 > 
-> 
->   /opt/crosstool/gcc-4.1.1-glibc-2.3.6/m68k-unknown-linux-gnu/bin/m68k-unknown-linux-gnu-gcc -Wp,-MD,arch/m68k/kernel/.asm-offsets.s.d  -nostdinc -isystem /opt/crosstool/gcc-4.1.1-glibc-2.3.6/m68k-unknown-linux-gnu/lib/gcc/m68k-unknown-linux-gnu/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h -I/home/compudj/git/linux-2.6-lttng/. -I. -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -O2 -pipe -fno-strength-reduce -ffixed-a2 -m68040 -fomit-frame-pointer -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(asm_offsets)"  -D"KBUILD_MODNAME=KBUILD_STR(asm_offsets)" -fverbose-asm -S -o arch/m68k/kernel/asm-offsets.s /home/compudj/git/linux-2.6-lttng/arch/m68k/kernel/asm-offsets.c
-> /home/compudj/git/linux-2.6-lttng/arch/m68k/kernel/asm-offsets.c: In function 'main':
-> /home/compudj/git/linux-2.6-lttng/arch/m68k/kernel/asm-offsets.c:27: error: 'struct task_struct' has no member named 'ptrace'
+> By the way, would it help get this fixed if I opened a bug on openfabrics.org?
+> Or is that a waste of time?
 
-That's because m68k is missing utrace support.  Quite a lot of
-architectures are in that state.
+We're tracking it here (bug 12010 on our internal bugzilla), and it's on 
+my list to get done "soon".  I'm currently in the middle of some other 
+bug fixes, but when I get to a good stopping point, I'll get this fixed. 
+  Shouldn't be too difficult.
 
-If you're using quilt (you should be) you can
+If you'd like to track it yourself, feel free to open an OpenFabrics 
+bug.  I'll update the bug when I get a patch done.
 
-- remove utrace patches from the series file
-- quilt push linux-kernel-markers-documentation.patch
-- do work
-
-I'll reorder the -mm series file so that utrace comes much later, which
-will simplify this.
-
+Regards,
+  Robert.
