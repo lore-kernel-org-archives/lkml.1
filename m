@@ -1,1150 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161182AbXDKEZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161178AbXDKEaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161182AbXDKEZz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 00:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161184AbXDKEZz
+	id S1161178AbXDKEaW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161186AbXDKEaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 00:25:55 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:2733 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161182AbXDKEZx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 00:25:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=sRKXdge+bdSZtRPRTx1ypl3sVgLHmPYOdJ3kUKqBzyCFaXrG0TCfvtIE+8ewH10f4QO1zh29mX+BzUUfsTK5OS8cdtGRY7kEsktS775Y03K+k3CYOod/xPga7GXLTvCvRQ5QywdtK7ajbcQFDDlDHNTr6l58EIxxFBfJ00U0+eA=
-Date: Wed, 11 Apr 2007 13:25:44 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: gregkh@suse.de, maneesh@in.ibm.com, dmitry.torokhov@gmail.com,
-       cornelia.huck@de.ibm.com, oneukum@suse.de, rpurdie@rpsys.net,
-       James.Bottomley@SteelEye.com, stern@rowland.harvard.edu,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 14/14 UPDATED] sysfs: kill unnecessary attribute->owner
-Message-ID: <20070411042544.GB10619@htj.dyndns.org>
-References: <11760923261269-git-send-email-htejun@gmail.com> <11760923293601-git-send-email-htejun@gmail.com>
+	Wed, 11 Apr 2007 00:30:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51895 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161178AbXDKEaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 00:30:21 -0400
+Message-ID: <461C6452.1000706@redhat.com>
+Date: Wed, 11 Apr 2007 00:30:10 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11760923293601-git-send-email-htejun@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: linux-mm <linux-mm@kvack.org>, Ulrich Drepper <drepper@redhat.com>
+Subject: [PATCH] make MADV_FREE lazily free memory
+Content-Type: multipart/mixed;
+ boundary="------------020708080407080005000506"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs is now completely out of driver/module lifetime game.  After
-deletion, a sysfs node doesn't access anything outside sysfs proper,
-so there's no reason to hold onto the attribute owners.  Note that
-often the wrong modules were accounted for as owners leading to
-accessing removed modules.
+This is a multi-part message in MIME format.
+--------------020708080407080005000506
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This patch kills now unnecessary attribute->owner.  Note that with
-this change, userland holding a sysfs node does not prevent the
-backing module from being unloaded.
+Make it possible for applications to have the kernel free memory
+lazily.  This reduces a repeated free/malloc cycle from freeing
+pages and allocating them, to just marking them freeable.  If the
+application wants to reuse them before the kernel needs the memory,
+not even a page fault will happen.
 
-For more info regarding lifetime rule cleanup, please read the
-following message.
+This version has one bugfix over the last one: if a PG_lazyfree
+page was found dirty at fork time, we clear the flag in
+copy_one_pte().
 
-  http://article.gmane.org/gmane.linux.kernel/510293
+Ulrich Drepper has test glibc RPMS for this functionality at:
 
-s390 attributes changes are from Cornelia Huck.
+	http://people.redhat.com/drepper/rpms
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
----
+Because MADV_FREE has not been defined as a fixed number yet,
+for the moment MADV_DONTNEED is defined to have the same
+functionality.
 
-Andrew, please use this patch instead of the original one.
+Any test results of this patch in combination with Ulrich's
+test glibc are welcome.
 
-Thanks.
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
 
- arch/s390/kernel/ipl.c                      |    2 --
- drivers/base/class.c                        |    2 --
- drivers/base/core.c                         |    4 ----
- drivers/base/firmware_class.c               |    2 +-
- drivers/block/pktcdvd.c                     |    3 +--
- drivers/char/ipmi/ipmi_msghandler.c         |   10 ----------
- drivers/cpufreq/cpufreq_stats.c             |    3 +--
- drivers/cpufreq/cpufreq_userspace.c         |    2 +-
- drivers/cpufreq/freq_table.c                |    1 -
- drivers/firmware/dcdbas.h                   |    3 +--
- drivers/firmware/dell_rbu.c                 |    6 +++---
- drivers/firmware/edd.c                      |    2 +-
- drivers/firmware/efivars.c                  |    6 +++---
- drivers/i2c/chips/eeprom.c                  |    1 -
- drivers/i2c/chips/max6875.c                 |    1 -
- drivers/infiniband/core/sysfs.c             |    1 -
- drivers/input/mouse/psmouse.h               |    1 -
- drivers/media/video/pvrusb2/pvrusb2-sysfs.c |   13 -------------
- drivers/misc/asus-laptop.c                  |    3 +--
- drivers/pci/hotplug/acpiphp_ibm.c           |    1 -
- drivers/pci/pci-sysfs.c                     |    4 ----
- drivers/pcmcia/socket_sysfs.c               |    2 +-
- drivers/rtc/rtc-ds1553.c                    |    1 -
- drivers/rtc/rtc-ds1742.c                    |    1 -
- drivers/s390/cio/chsc.c                     |    2 --
- drivers/s390/net/qeth_sys.c                 |    2 +-
- drivers/scsi/arcmsr/arcmsr_attr.c           |    3 ---
- drivers/scsi/lpfc/lpfc_attr.c               |    2 --
- drivers/scsi/qla2xxx/qla_attr.c             |    6 ------
- drivers/spi/at25.c                          |    1 -
- drivers/video/aty/radeon_base.c             |    2 --
- drivers/video/backlight/backlight.c         |    2 +-
- drivers/video/backlight/lcd.c               |    2 +-
- drivers/w1/slaves/w1_ds2433.c               |    1 -
- drivers/w1/slaves/w1_therm.c                |    1 -
- drivers/w1/w1.c                             |    2 --
- fs/ecryptfs/main.c                          |    2 --
- fs/ocfs2/cluster/masklog.c                  |    1 -
- fs/partitions/check.c                       |    1 -
- fs/sysfs/bin.c                              |   19 +++++--------------
- fs/sysfs/file.c                             |   21 +++++----------------
- include/linux/sysdev.h                      |    3 +--
- include/linux/sysfs.h                       |    7 +++----
- kernel/module.c                             |    9 +++------
- kernel/params.c                             |    1 -
- net/bridge/br_sysfs_br.c                    |    3 +--
- net/bridge/br_sysfs_if.c                    |    3 +--
- 47 files changed, 36 insertions(+), 135 deletions(-)
+--------------020708080407080005000506
+Content-Type: text/x-patch;
+ name="linux-2.6-madv_free.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6-madv_free.patch"
 
-Index: work/fs/sysfs/bin.c
-===================================================================
---- work.orig/fs/sysfs/bin.c
-+++ work/fs/sysfs/bin.c
-@@ -175,25 +175,20 @@ static int open(struct inode * inode, st
- 	if (!sysfs_get_active(attr_sd))
- 		return -ENODEV;
+--- linux-2.6.20.noarch/include/asm-alpha/mman.h.madvise	2007-04-04 16:44:50.000000000 -0400
++++ linux-2.6.20.noarch/include/asm-alpha/mman.h	2007-04-04 16:56:24.000000000 -0400
+@@ -42,6 +42,7 @@
+ #define MADV_WILLNEED	3		/* will need these pages */
+ #define	MADV_SPACEAVAIL	5		/* ensure resources are available */
+ #define MADV_DONTNEED	6		/* don't need these pages */
++#define MADV_FREE	7		/* don't need the pages or the data */
  
--	/* Grab the module reference for this attribute */
--	error = -ENODEV;
--	if (!try_module_get(attr->attr.owner))
--		goto err_sput;
--
- 	error = -EACCES;
- 	if ((file->f_mode & FMODE_WRITE) && !(attr->write || attr->mmap))
--		goto err_mput;
-+		goto err_out;
- 	if ((file->f_mode & FMODE_READ) && !(attr->read || attr->mmap))
--		goto err_mput;
-+		goto err_out;
+ /* common/generic parameters */
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+--- linux-2.6.20.noarch/include/asm-generic/mman.h.madvise	2007-04-04 16:44:50.000000000 -0400
++++ linux-2.6.20.noarch/include/asm-generic/mman.h	2007-04-04 16:56:53.000000000 -0400
+@@ -29,6 +29,7 @@
+ #define MADV_SEQUENTIAL	2		/* expect sequential page references */
+ #define MADV_WILLNEED	3		/* will need these pages */
+ #define MADV_DONTNEED	4		/* don't need these pages */
++#define MADV_FREE	5		/* don't need the pages or the data */
  
- 	error = -ENOMEM;
- 	bb = kzalloc(sizeof(*bb), GFP_KERNEL);
- 	if (!bb)
--		goto err_mput;
-+		goto err_out;
+ /* common parameters: try to keep these consistent across architectures */
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+--- linux-2.6.20.noarch/include/asm-mips/mman.h.madvise	2007-04-04 16:44:50.000000000 -0400
++++ linux-2.6.20.noarch/include/asm-mips/mman.h	2007-04-04 16:58:02.000000000 -0400
+@@ -65,6 +65,7 @@
+ #define MADV_SEQUENTIAL	2		/* expect sequential page references */
+ #define MADV_WILLNEED	3		/* will need these pages */
+ #define MADV_DONTNEED	4		/* don't need these pages */
++#define MADV_FREE	5		/* don't need the pages or the data */
  
- 	bb->buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!bb->buffer)
--		goto err_mput;
-+		goto err_out;
+ /* common parameters: try to keep these consistent across architectures */
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+--- linux-2.6.20.noarch/include/asm-parisc/mman.h.madvise	2007-04-04 16:44:50.000000000 -0400
++++ linux-2.6.20.noarch/include/asm-parisc/mman.h	2007-04-04 16:58:40.000000000 -0400
+@@ -38,6 +38,7 @@
+ #define MADV_SPACEAVAIL 5               /* insure that resources are reserved */
+ #define MADV_VPS_PURGE  6               /* Purge pages from VM page cache */
+ #define MADV_VPS_INHERIT 7              /* Inherit parents page size */
++#define MADV_FREE	8		/* don't need the pages or the data */
  
- 	mutex_init(&bb->mutex);
- 	file->private_data = bb;
-@@ -203,9 +198,7 @@ static int open(struct inode * inode, st
- 	sysfs_get(attr_sd);
- 	return 0;
+ /* common/generic parameters */
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+--- linux-2.6.20.noarch/include/asm-xtensa/mman.h.madvise	2007-04-04 16:44:51.000000000 -0400
++++ linux-2.6.20.noarch/include/asm-xtensa/mman.h	2007-04-04 16:59:14.000000000 -0400
+@@ -72,6 +72,7 @@
+ #define MADV_SEQUENTIAL	2		/* expect sequential page references */
+ #define MADV_WILLNEED	3		/* will need these pages */
+ #define MADV_DONTNEED	4		/* don't need these pages */
++#define MADV_FREE	5		/* don't need the pages or the data */
  
-- err_mput:
--	module_put(attr->attr.owner);
-- err_sput:
-+ err_out:
- 	sysfs_put_active(attr_sd);
- 	kfree(bb);
- 	return error;
-@@ -214,13 +207,11 @@ static int open(struct inode * inode, st
- static int release(struct inode * inode, struct file * file)
+ /* common parameters: try to keep these consistent across architectures */
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+--- linux-2.6.20.noarch/include/linux/mm_inline.h.madvise	2007-04-03 22:53:25.000000000 -0400
++++ linux-2.6.20.noarch/include/linux/mm_inline.h	2007-04-04 22:19:24.000000000 -0400
+@@ -13,6 +13,13 @@ add_page_to_inactive_list(struct zone *z
+ }
+ 
+ static inline void
++add_page_to_inactive_list_tail(struct zone *zone, struct page *page)
++{
++	list_add_tail(&page->lru, &zone->inactive_list);
++	__inc_zone_state(zone, NR_INACTIVE);
++}
++
++static inline void
+ del_page_from_active_list(struct zone *zone, struct page *page)
  {
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
--	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
- 	struct bin_buffer *bb = file->private_data;
- 
- 	if (bb->mmapped)
- 		sysfs_put_active_two(attr_sd);
- 	sysfs_put(attr_sd);
--	module_put(attr->attr.owner);
- 	kfree(bb->buffer);
- 	kfree(bb);
- 	return 0;
-Index: work/fs/sysfs/file.c
-===================================================================
---- work.orig/fs/sysfs/file.c
-+++ work/fs/sysfs/file.c
-@@ -271,7 +271,6 @@ sysfs_write_file(struct file *file, cons
- static int sysfs_open_file(struct inode *inode, struct file *file)
- {
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
--	struct attribute *attr = attr_sd->s_elem.attr.attr;
- 	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
- 	struct sysfs_buffer * buffer;
- 	struct sysfs_ops * ops = NULL;
-@@ -281,11 +280,6 @@ static int sysfs_open_file(struct inode 
- 	if (!sysfs_get_active_two(attr_sd))
- 		return -ENODEV;
- 
--	/* Grab the module reference for this attribute */
--	error = -ENODEV;
--	if (!try_module_get(attr->owner))
--		goto err_sput;
--
- 	/* if the kobject has no ktype, then we assume that it is a subsystem
- 	 * itself, and use ops for it.
- 	 */
-@@ -302,7 +296,7 @@ static int sysfs_open_file(struct inode 
- 	 * or the subsystem have no operations.
- 	 */
- 	if (!ops)
--		goto err_mput;
-+		goto err_out;
- 
- 	/* File needs write support.
- 	 * The inode's perms must say it's ok, 
-@@ -310,7 +304,7 @@ static int sysfs_open_file(struct inode 
- 	 */
- 	if (file->f_mode & FMODE_WRITE) {
- 		if (!(inode->i_mode & S_IWUGO) || !ops->store)
--			goto err_mput;
-+			goto err_out;
- 	}
- 
- 	/* File needs read support.
-@@ -319,7 +313,7 @@ static int sysfs_open_file(struct inode 
- 	 */
- 	if (file->f_mode & FMODE_READ) {
- 		if (!(inode->i_mode & S_IRUGO) || !ops->show)
--			goto err_mput;
-+			goto err_out;
- 	}
- 
- 	/* No error? Great, allocate a buffer for the file, and store it
-@@ -328,7 +322,7 @@ static int sysfs_open_file(struct inode 
- 	error = -ENOMEM;
- 	buffer = kzalloc(sizeof(struct sysfs_buffer), GFP_KERNEL);
- 	if (!buffer)
--		goto err_mput;
-+		goto err_out;
- 
- 	init_MUTEX(&buffer->sem);
- 	buffer->needs_read_fill = 1;
-@@ -340,9 +334,7 @@ static int sysfs_open_file(struct inode 
- 	sysfs_get(attr_sd);
- 	return 0;
- 
-- err_mput:
--	module_put(attr->owner);
-- err_sput:
-+ err_out:
- 	sysfs_put_active_two(attr_sd);
- 	return error;
- }
-@@ -350,12 +342,9 @@ static int sysfs_open_file(struct inode 
- static int sysfs_release(struct inode * inode, struct file * filp)
- {
- 	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
--	struct attribute *attr = attr_sd->s_elem.attr.attr;
- 	struct sysfs_buffer *buffer = filp->private_data;
- 
- 	sysfs_put(attr_sd);
--	/* After this point, attr should not be accessed. */
--	module_put(attr->owner);
- 
- 	if (buffer) {
- 		if (buffer->page)
-Index: work/include/linux/sysfs.h
-===================================================================
---- work.orig/include/linux/sysfs.h
-+++ work/include/linux/sysfs.h
-@@ -22,7 +22,6 @@ struct dentry;
- 
- struct attribute {
- 	const char		* name;
--	struct module 		* owner;
- 	mode_t			mode;
+ 	list_del(&page->lru);
+--- linux-2.6.20.noarch/include/linux/mm.h.madvise	2007-04-03 22:53:25.000000000 -0400
++++ linux-2.6.20.noarch/include/linux/mm.h	2007-04-04 22:06:45.000000000 -0400
+@@ -716,6 +716,7 @@ struct zap_details {
+ 	pgoff_t last_index;			/* Highest page->index to unmap */
+ 	spinlock_t *i_mmap_lock;		/* For unmap_mapping_range: */
+ 	unsigned long truncate_count;		/* Compare vm_truncate_count */
++	short madv_free;			/* MADV_FREE anonymous memory */
  };
  
-@@ -39,14 +38,14 @@ struct attribute_group {
-  */
+ struct page *vm_normal_page(struct vm_area_struct *, unsigned long, pte_t);
+--- linux-2.6.20.noarch/include/linux/page-flags.h.madvise	2007-04-03 22:54:58.000000000 -0400
++++ linux-2.6.20.noarch/include/linux/page-flags.h	2007-04-05 01:27:38.000000000 -0400
+@@ -91,6 +91,8 @@
+ #define PG_nosave_free		18	/* Used for system suspend/resume */
+ #define PG_buddy		19	/* Page is free, on buddy lists */
  
- #define __ATTR(_name,_mode,_show,_store) { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
- 	.show	= _show,					\
- 	.store	= _store,					\
- }
++#define PG_lazyfree		20	/* MADV_FREE potential throwaway */
++
+ /* PG_owner_priv_1 users should have descriptive aliases */
+ #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
  
- #define __ATTR_RO(_name) { \
--	.attr	= { .name = __stringify(_name), .mode = 0444, .owner = THIS_MODULE },	\
--	.show	= _name##_show,	\
-+	.attr	= { .name = __stringify(_name), .mode = 0444 },	\
-+	.show	= _name##_show,					\
- }
+@@ -237,6 +239,11 @@ static inline void SetPageUptodate(struc
+ #define ClearPageReclaim(page)	clear_bit(PG_reclaim, &(page)->flags)
+ #define TestClearPageReclaim(page) test_and_clear_bit(PG_reclaim, &(page)->flags)
  
- #define __ATTR_NULL { .attr = { .name = NULL } }
-Index: work/include/linux/sysdev.h
-===================================================================
---- work.orig/include/linux/sysdev.h
-+++ work/include/linux/sysdev.h
-@@ -100,8 +100,7 @@ struct sysdev_attribute { 
- 
- #define _SYSDEV_ATTR(_name,_mode,_show,_store)			\
- {								\
--	.attr = { .name = __stringify(_name), .mode = _mode,	\
--		 .owner = THIS_MODULE },			\
-+	.attr = { .name = __stringify(_name), .mode = _mode },	\
- 	.show	= _show,					\
- 	.store	= _store,					\
- }
-Index: work/drivers/base/class.c
-===================================================================
---- work.orig/drivers/base/class.c
-+++ work/drivers/base/class.c
-@@ -624,7 +624,6 @@ int class_device_add(struct class_device
- 		goto out3;
- 	class_dev->uevent_attr.attr.name = "uevent";
- 	class_dev->uevent_attr.attr.mode = S_IWUSR;
--	class_dev->uevent_attr.attr.owner = parent_class->owner;
- 	class_dev->uevent_attr.store = store_uevent;
- 	error = class_device_create_file(class_dev, &class_dev->uevent_attr);
- 	if (error)
-@@ -639,7 +638,6 @@ int class_device_add(struct class_device
- 		}
- 		attr->attr.name = "dev";
- 		attr->attr.mode = S_IRUGO;
--		attr->attr.owner = parent_class->owner;
- 		attr->show = show_dev;
- 		error = class_device_create_file(class_dev, attr);
- 		if (error) {
-Index: work/drivers/base/core.c
-===================================================================
---- work.orig/drivers/base/core.c
-+++ work/drivers/base/core.c
-@@ -563,8 +563,6 @@ int device_add(struct device *dev)
- 
- 	dev->uevent_attr.attr.name = "uevent";
- 	dev->uevent_attr.attr.mode = S_IWUSR;
--	if (dev->driver)
--		dev->uevent_attr.attr.owner = dev->driver->owner;
- 	dev->uevent_attr.store = store_uevent;
- 	error = device_create_file(dev, &dev->uevent_attr);
- 	if (error)
-@@ -579,8 +577,6 @@ int device_add(struct device *dev)
- 		}
- 		attr->attr.name = "dev";
- 		attr->attr.mode = S_IRUGO;
--		if (dev->driver)
--			attr->attr.owner = dev->driver->owner;
- 		attr->show = show_dev;
- 		error = device_create_file(dev, attr);
- 		if (error) {
-Index: work/drivers/base/firmware_class.c
-===================================================================
---- work.orig/drivers/base/firmware_class.c
-+++ work/drivers/base/firmware_class.c
-@@ -276,7 +276,7 @@ out:
- }
- 
- static struct bin_attribute firmware_attr_data_tmpl = {
--	.attr = {.name = "data", .mode = 0644, .owner = THIS_MODULE},
-+	.attr = {.name = "data", .mode = 0644},
- 	.size = 0,
- 	.read = firmware_data_read,
- 	.write = firmware_data_write,
-Index: work/drivers/block/pktcdvd.c
-===================================================================
---- work.orig/drivers/block/pktcdvd.c
-+++ work/drivers/block/pktcdvd.c
-@@ -146,8 +146,7 @@ static void pkt_kobj_release(struct kobj
-  **********************************************************/
- 
- #define DEF_ATTR(_obj,_name,_mode) \
--	static struct attribute _obj = { \
--		.name = _name, .owner = THIS_MODULE, .mode = _mode }
-+	static struct attribute _obj = { .name = _name, .mode = _mode }
- 
- /**********************************************************
-   /sys/class/pktcdvd/pktcdvd[0-7]/
-Index: work/drivers/char/ipmi/ipmi_msghandler.c
-===================================================================
---- work.orig/drivers/char/ipmi/ipmi_msghandler.c
-+++ work/drivers/char/ipmi/ipmi_msghandler.c
-@@ -2171,52 +2171,42 @@ static int create_files(struct bmc_devic
- 	int err;
- 
- 	bmc->device_id_attr.attr.name = "device_id";
--	bmc->device_id_attr.attr.owner = THIS_MODULE;
- 	bmc->device_id_attr.attr.mode = S_IRUGO;
- 	bmc->device_id_attr.show = device_id_show;
- 
- 	bmc->provides_dev_sdrs_attr.attr.name = "provides_device_sdrs";
--	bmc->provides_dev_sdrs_attr.attr.owner = THIS_MODULE;
- 	bmc->provides_dev_sdrs_attr.attr.mode = S_IRUGO;
- 	bmc->provides_dev_sdrs_attr.show = provides_dev_sdrs_show;
- 
- 	bmc->revision_attr.attr.name = "revision";
--	bmc->revision_attr.attr.owner = THIS_MODULE;
- 	bmc->revision_attr.attr.mode = S_IRUGO;
- 	bmc->revision_attr.show = revision_show;
- 
- 	bmc->firmware_rev_attr.attr.name = "firmware_revision";
--	bmc->firmware_rev_attr.attr.owner = THIS_MODULE;
- 	bmc->firmware_rev_attr.attr.mode = S_IRUGO;
- 	bmc->firmware_rev_attr.show = firmware_rev_show;
- 
- 	bmc->version_attr.attr.name = "ipmi_version";
--	bmc->version_attr.attr.owner = THIS_MODULE;
- 	bmc->version_attr.attr.mode = S_IRUGO;
- 	bmc->version_attr.show = ipmi_version_show;
- 
- 	bmc->add_dev_support_attr.attr.name = "additional_device_support";
--	bmc->add_dev_support_attr.attr.owner = THIS_MODULE;
- 	bmc->add_dev_support_attr.attr.mode = S_IRUGO;
- 	bmc->add_dev_support_attr.show = add_dev_support_show;
- 
- 	bmc->manufacturer_id_attr.attr.name = "manufacturer_id";
--	bmc->manufacturer_id_attr.attr.owner = THIS_MODULE;
- 	bmc->manufacturer_id_attr.attr.mode = S_IRUGO;
- 	bmc->manufacturer_id_attr.show = manufacturer_id_show;
- 
- 	bmc->product_id_attr.attr.name = "product_id";
--	bmc->product_id_attr.attr.owner = THIS_MODULE;
- 	bmc->product_id_attr.attr.mode = S_IRUGO;
- 	bmc->product_id_attr.show = product_id_show;
- 
- 	bmc->guid_attr.attr.name = "guid";
--	bmc->guid_attr.attr.owner = THIS_MODULE;
- 	bmc->guid_attr.attr.mode = S_IRUGO;
- 	bmc->guid_attr.show = guid_show;
- 
- 	bmc->aux_firmware_rev_attr.attr.name = "aux_firmware_revision";
--	bmc->aux_firmware_rev_attr.attr.owner = THIS_MODULE;
- 	bmc->aux_firmware_rev_attr.attr.mode = S_IRUGO;
- 	bmc->aux_firmware_rev_attr.show = aux_firmware_rev_show;
- 
-Index: work/drivers/cpufreq/cpufreq_stats.c
-===================================================================
---- work.orig/drivers/cpufreq/cpufreq_stats.c
-+++ work/drivers/cpufreq/cpufreq_stats.c
-@@ -25,8 +25,7 @@ static spinlock_t cpufreq_stats_lock;
- 
- #define CPUFREQ_STATDEVICE_ATTR(_name,_mode,_show) \
- static struct freq_attr _attr_##_name = {\
--	.attr = {.name = __stringify(_name), .owner = THIS_MODULE, \
--		.mode = _mode, }, \
-+	.attr = {.name = __stringify(_name), .mode = _mode, }, \
- 	.show = _show,\
- };
- 
-Index: work/drivers/cpufreq/cpufreq_userspace.c
-===================================================================
---- work.orig/drivers/cpufreq/cpufreq_userspace.c
-+++ work/drivers/cpufreq/cpufreq_userspace.c
-@@ -120,7 +120,7 @@ store_speed (struct cpufreq_policy *poli
- 
- static struct freq_attr freq_attr_scaling_setspeed =
- {
--	.attr = { .name = "scaling_setspeed", .mode = 0644, .owner = THIS_MODULE },
-+	.attr = { .name = "scaling_setspeed", .mode = 0644 },
- 	.show = show_speed,
- 	.store = store_speed,
- };
-Index: work/drivers/cpufreq/freq_table.c
-===================================================================
---- work.orig/drivers/cpufreq/freq_table.c
-+++ work/drivers/cpufreq/freq_table.c
-@@ -199,7 +199,6 @@ static ssize_t show_available_freqs (str
- struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
- 	.attr = { .name = "scaling_available_frequencies",
- 		  .mode = 0444,
--		  .owner=THIS_MODULE
- 		},
- 	.show = show_available_freqs,
- };
-Index: work/drivers/firmware/edd.c
-===================================================================
---- work.orig/drivers/firmware/edd.c
-+++ work/drivers/firmware/edd.c
-@@ -74,7 +74,7 @@ static struct edd_device *edd_devices[ED
- 
- #define EDD_DEVICE_ATTR(_name,_mode,_show,_test) \
- struct edd_attribute edd_attr_##_name = { 	\
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr = {.name = __stringify(_name), .mode = _mode },	\
- 	.show	= _show,				\
- 	.test	= _test,				\
- };
-Index: work/fs/ecryptfs/main.c
-===================================================================
---- work.orig/fs/ecryptfs/main.c
-+++ work/fs/ecryptfs/main.c
-@@ -842,8 +842,6 @@ static int __init ecryptfs_init(void)
- 		goto out;
- 	}
- 	kset_set_kset_s(&ecryptfs_subsys, fs_subsys);
--	sysfs_attr_version.attr.owner = THIS_MODULE;
--	sysfs_attr_version_str.attr.owner = THIS_MODULE;
- 	rc = do_sysfs_registration();
- 	if (rc) {
- 		printk(KERN_ERR "sysfs registration failed\n");
-Index: work/fs/ocfs2/cluster/masklog.c
-===================================================================
---- work.orig/fs/ocfs2/cluster/masklog.c
-+++ work/fs/ocfs2/cluster/masklog.c
-@@ -74,7 +74,6 @@ struct mlog_attribute {
- #define define_mask(_name) {			\
- 	.attr = {				\
- 		.name = #_name,			\
--		.owner = THIS_MODULE,		\
- 		.mode = S_IRUGO | S_IWUSR,	\
- 	},					\
- 	.mask = ML_##_name,			\
-Index: work/fs/partitions/check.c
-===================================================================
---- work.orig/fs/partitions/check.c
-+++ work/fs/partitions/check.c
-@@ -393,7 +393,6 @@ void add_partition(struct gendisk *disk,
- 		static struct attribute addpartattr = {
- 			.name = "whole_disk",
- 			.mode = S_IRUSR | S_IRGRP | S_IROTH,
--			.owner = THIS_MODULE,
++#define PageLazyFree(page)	test_bit(PG_lazyfree, &(page)->flags)
++#define SetPageLazyFree(page)	set_bit(PG_lazyfree, &(page)->flags)
++#define ClearPageLazyFree(page)	clear_bit(PG_lazyfree, &(page)->flags)
++#define __ClearPageLazyFree(page) __clear_bit(PG_lazyfree, &(page)->flags)
++
+ #define PageCompound(page)	test_bit(PG_compound, &(page)->flags)
+ #define __SetPageCompound(page)	__set_bit(PG_compound, &(page)->flags)
+ #define __ClearPageCompound(page) __clear_bit(PG_compound, &(page)->flags)
+--- linux-2.6.20.noarch/include/linux/swap.h.madvise	2007-04-05 00:29:40.000000000 -0400
++++ linux-2.6.20.noarch/include/linux/swap.h	2007-04-06 17:19:20.000000000 -0400
+@@ -181,6 +181,7 @@ extern unsigned int nr_free_pagecache_pa
+ extern void FASTCALL(lru_cache_add(struct page *));
+ extern void FASTCALL(lru_cache_add_active(struct page *));
+ extern void FASTCALL(activate_page(struct page *));
++extern void FASTCALL(deactivate_tail_page(struct page *));
+ extern void FASTCALL(mark_page_accessed(struct page *));
+ extern void lru_add_drain(void);
+ extern int lru_add_drain_all(void);
+@@ -232,7 +233,6 @@ extern void delete_from_swap_cache(struc
+ extern int move_to_swap_cache(struct page *, swp_entry_t);
+ extern int move_from_swap_cache(struct page *, unsigned long,
+ 		struct address_space *);
+-extern void free_swap_cache(struct page *page);
+ extern void free_page_and_swap_cache(struct page *);
+ extern void free_pages_and_swap_cache(struct page **, int);
+ extern struct page * lookup_swap_cache(swp_entry_t);
+--- linux-2.6.20.noarch/mm/madvise.c.madvise	2007-04-03 21:53:47.000000000 -0400
++++ linux-2.6.20.noarch/mm/madvise.c	2007-04-04 23:48:34.000000000 -0400
+@@ -142,8 +142,12 @@ static long madvise_dontneed(struct vm_a
+ 			.last_index = ULONG_MAX,
  		};
- 
- 		sysfs_create_file(&p->kobj, &addpartattr);
-Index: work/kernel/module.c
-===================================================================
---- work.orig/kernel/module.c
-+++ work/kernel/module.c
-@@ -485,8 +485,7 @@ static void free_modinfo_##field(struct 
-         mod->field = NULL;                                            \
- }                                                                     \
- static struct module_attribute modinfo_##field = {                    \
--	.attr = { .name = __stringify(field), .mode = 0444,           \
--		  .owner = THIS_MODULE },                             \
-+	.attr = { .name = __stringify(field), .mode = 0444 },         \
- 	.show = show_modinfo_##field,                                 \
- 	.setup = setup_modinfo_##field,                               \
- 	.test = modinfo_##field##_exists,                             \
-@@ -790,7 +789,7 @@ static ssize_t show_refcnt(struct module
+ 		zap_page_range(vma, start, end - start, &details);
+-	} else
+-		zap_page_range(vma, start, end - start, NULL);
++	} else {
++		struct zap_details details = {
++			.madv_free = 1,
++		};
++		zap_page_range(vma, start, end - start, &details);
++	}
+ 	return 0;
  }
  
- static struct module_attribute refcnt = {
--	.attr = { .name = "refcnt", .mode = 0444, .owner = THIS_MODULE },
-+	.attr = { .name = "refcnt", .mode = 0444 },
- 	.show = show_refcnt,
- };
+@@ -209,7 +213,9 @@ madvise_vma(struct vm_area_struct *vma, 
+ 		error = madvise_willneed(vma, prev, start, end);
+ 		break;
  
-@@ -848,7 +847,7 @@ static ssize_t show_initstate(struct mod
- }
++	/* FIXME: POSIX says that MADV_DONTNEED cannot throw away data. */
+ 	case MADV_DONTNEED:
++	case MADV_FREE:
+ 		error = madvise_dontneed(vma, prev, start, end);
+ 		break;
  
- static struct module_attribute initstate = {
--	.attr = { .name = "initstate", .mode = 0444, .owner = THIS_MODULE },
-+	.attr = { .name = "initstate", .mode = 0444 },
- 	.show = show_initstate,
- };
+--- linux-2.6.20.noarch/mm/memory.c.madvise	2007-04-03 21:53:47.000000000 -0400
++++ linux-2.6.20.noarch/mm/memory.c	2007-04-06 17:18:23.000000000 -0400
+@@ -432,6 +432,7 @@ copy_one_pte(struct mm_struct *dst_mm, s
+ 	unsigned long vm_flags = vma->vm_flags;
+ 	pte_t pte = *src_pte;
+ 	struct page *page;
++	int dirty = 0;
  
-@@ -1029,7 +1028,6 @@ static void add_sect_attrs(struct module
- 		sattr->mattr.show = module_sect_show;
- 		sattr->mattr.store = NULL;
- 		sattr->mattr.attr.name = sattr->name;
--		sattr->mattr.attr.owner = mod;
- 		sattr->mattr.attr.mode = S_IRUGO;
- 		*(gattr++) = &(sattr++)->mattr.attr;
- 	}
-@@ -1087,7 +1085,6 @@ int module_add_modinfo_attrs(struct modu
- 		if (!attr->test ||
- 		    (attr->test && attr->test(mod))) {
- 			memcpy(temp_attr, attr, sizeof(*temp_attr));
--			temp_attr->attr.owner = mod;
- 			error = sysfs_create_file(&mod->mkobj.kobj,&temp_attr->attr);
- 			++temp_attr;
- 		}
-Index: work/kernel/params.c
-===================================================================
---- work.orig/kernel/params.c
-+++ work/kernel/params.c
-@@ -487,7 +487,6 @@ param_sysfs_setup(struct module_kobject 
- 			pattr->mattr.show = param_attr_show;
- 			pattr->mattr.store = param_attr_store;
- 			pattr->mattr.attr.name = (char *)&kp->name[name_skip];
--			pattr->mattr.attr.owner = mk->mod;
- 			pattr->mattr.attr.mode = kp->perm;
- 			*(gattr++) = &(pattr++)->mattr.attr;
- 		}
-Index: work/net/bridge/br_sysfs_br.c
-===================================================================
---- work.orig/net/bridge/br_sysfs_br.c
-+++ work/net/bridge/br_sysfs_br.c
-@@ -365,8 +365,7 @@ static ssize_t brforward_read(struct kob
- 
- static struct bin_attribute bridge_forward = {
- 	.attr = { .name = SYSFS_BRIDGE_FDB,
--		  .mode = S_IRUGO,
--		  .owner = THIS_MODULE, },
-+		  .mode = S_IRUGO, },
- 	.read = brforward_read,
- };
- 
-Index: work/net/bridge/br_sysfs_if.c
-===================================================================
---- work.orig/net/bridge/br_sysfs_if.c
-+++ work/net/bridge/br_sysfs_if.c
-@@ -29,8 +29,7 @@ struct brport_attribute {
- #define BRPORT_ATTR(_name,_mode,_show,_store)		        \
- struct brport_attribute brport_attr_##_name = { 	        \
- 	.attr = {.name = __stringify(_name), 			\
--		 .mode = _mode, 				\
--		 .owner = THIS_MODULE, },			\
-+		 .mode = _mode },				\
- 	.show	= _show,					\
- 	.store	= _store,					\
- };
-Index: work/drivers/firmware/dcdbas.h
-===================================================================
---- work.orig/drivers/firmware/dcdbas.h
-+++ work/drivers/firmware/dcdbas.h
-@@ -67,8 +67,7 @@
- #define DCDBAS_BIN_ATTR_RW(_name) \
- struct bin_attribute bin_attr_##_name = { \
- 	.attr =  { .name = __stringify(_name), \
--		   .mode = 0600, \
--		   .owner = THIS_MODULE }, \
-+		   .mode = 0600 }, \
- 	.read =  _name##_read, \
- 	.write = _name##_write, \
- }
-Index: work/drivers/firmware/dell_rbu.c
-===================================================================
---- work.orig/drivers/firmware/dell_rbu.c
-+++ work/drivers/firmware/dell_rbu.c
-@@ -687,18 +687,18 @@ static ssize_t write_rbu_packet_size(str
- }
- 
- static struct bin_attribute rbu_data_attr = {
--	.attr = {.name = "data",.owner = THIS_MODULE,.mode = 0444},
-+	.attr = {.name = "data", .mode = 0444},
- 	.read = read_rbu_data,
- };
- 
- static struct bin_attribute rbu_image_type_attr = {
--	.attr = {.name = "image_type",.owner = THIS_MODULE,.mode = 0644},
-+	.attr = {.name = "image_type", .mode = 0644},
- 	.read = read_rbu_image_type,
- 	.write = write_rbu_image_type,
- };
- 
- static struct bin_attribute rbu_packet_size_attr = {
--	.attr = {.name = "packet_size",.owner = THIS_MODULE,.mode = 0644},
-+	.attr = {.name = "packet_size", .mode = 0644},
- 	.read = read_rbu_packet_size,
- 	.write = write_rbu_packet_size,
- };
-Index: work/drivers/firmware/efivars.c
-===================================================================
---- work.orig/drivers/firmware/efivars.c
-+++ work/drivers/firmware/efivars.c
-@@ -131,21 +131,21 @@ struct efivar_attribute {
- 
- #define EFI_ATTR(_name, _mode, _show, _store) \
- struct subsys_attribute efi_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
- 
- #define EFIVAR_ATTR(_name, _mode, _show, _store) \
- struct efivar_attribute efivar_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
- 
- #define VAR_SUBSYS_ATTR(_name, _mode, _show, _store) \
- struct subsys_attribute var_subsys_attr_##_name = { \
--	.attr = {.name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE}, \
-+	.attr = {.name = __stringify(_name), .mode = _mode}, \
- 	.show = _show, \
- 	.store = _store, \
- };
-Index: work/drivers/i2c/chips/eeprom.c
-===================================================================
---- work.orig/drivers/i2c/chips/eeprom.c
-+++ work/drivers/i2c/chips/eeprom.c
-@@ -143,7 +143,6 @@ static struct bin_attribute eeprom_attr 
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = EEPROM_SIZE,
- 	.read = eeprom_read,
-Index: work/drivers/i2c/chips/max6875.c
-===================================================================
---- work.orig/drivers/i2c/chips/max6875.c
-+++ work/drivers/i2c/chips/max6875.c
-@@ -152,7 +152,6 @@ static struct bin_attribute user_eeprom_
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = USER_EEPROM_SIZE,
- 	.read = max6875_read,
-Index: work/drivers/infiniband/core/sysfs.c
-===================================================================
---- work.orig/drivers/infiniband/core/sysfs.c
-+++ work/drivers/infiniband/core/sysfs.c
-@@ -479,7 +479,6 @@ alloc_group_attrs(ssize_t (*show)(struct
- 
- 		element->attr.attr.name  = element->name;
- 		element->attr.attr.mode  = S_IRUGO;
--		element->attr.attr.owner = THIS_MODULE;
- 		element->attr.show       = show;
- 		element->index		 = i;
- 
-Index: work/drivers/input/mouse/psmouse.h
-===================================================================
---- work.orig/drivers/input/mouse/psmouse.h
-+++ work/drivers/input/mouse/psmouse.h
-@@ -117,7 +117,6 @@ static struct psmouse_attribute psmouse_
- 		.attr	= {							\
- 			.name	= __stringify(_name),				\
- 			.mode	= _mode,					\
--			.owner	= THIS_MODULE,					\
- 		},								\
- 		.show	= psmouse_attr_show_helper,				\
- 		.store	= psmouse_attr_set_helper,				\
-Index: work/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-===================================================================
---- work.orig/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-+++ work/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-@@ -516,40 +516,32 @@ static void pvr2_sysfs_add_control(struc
- 	}
- 	sfp->item_last = cip;
- 
--	cip->attr_name.attr.owner = THIS_MODULE;
- 	cip->attr_name.attr.name = "name";
- 	cip->attr_name.attr.mode = S_IRUGO;
- 	cip->attr_name.show = fp->show_name;
- 
--	cip->attr_type.attr.owner = THIS_MODULE;
- 	cip->attr_type.attr.name = "type";
- 	cip->attr_type.attr.mode = S_IRUGO;
- 	cip->attr_type.show = fp->show_type;
- 
--	cip->attr_min.attr.owner = THIS_MODULE;
- 	cip->attr_min.attr.name = "min_val";
- 	cip->attr_min.attr.mode = S_IRUGO;
- 	cip->attr_min.show = fp->show_min;
- 
--	cip->attr_max.attr.owner = THIS_MODULE;
- 	cip->attr_max.attr.name = "max_val";
- 	cip->attr_max.attr.mode = S_IRUGO;
- 	cip->attr_max.show = fp->show_max;
- 
--	cip->attr_val.attr.owner = THIS_MODULE;
- 	cip->attr_val.attr.name = "cur_val";
- 	cip->attr_val.attr.mode = S_IRUGO;
- 
--	cip->attr_custom.attr.owner = THIS_MODULE;
- 	cip->attr_custom.attr.name = "custom_val";
- 	cip->attr_custom.attr.mode = S_IRUGO;
- 
--	cip->attr_enum.attr.owner = THIS_MODULE;
- 	cip->attr_enum.attr.name = "enum_val";
- 	cip->attr_enum.attr.mode = S_IRUGO;
- 	cip->attr_enum.show = fp->show_enum;
- 
--	cip->attr_bits.attr.owner = THIS_MODULE;
- 	cip->attr_bits.attr.name = "bit_val";
- 	cip->attr_bits.attr.mode = S_IRUGO;
- 	cip->attr_bits.show = fp->show_bits;
-@@ -614,12 +606,10 @@ static void pvr2_sysfs_add_debugifc(stru
- 
- 	dip = kzalloc(sizeof(*dip),GFP_KERNEL);
- 	if (!dip) return;
--	dip->attr_debugcmd.attr.owner = THIS_MODULE;
- 	dip->attr_debugcmd.attr.name = "debugcmd";
- 	dip->attr_debugcmd.attr.mode = S_IRUGO|S_IWUSR|S_IWGRP;
- 	dip->attr_debugcmd.show = debugcmd_show;
- 	dip->attr_debugcmd.store = debugcmd_store;
--	dip->attr_debuginfo.attr.owner = THIS_MODULE;
- 	dip->attr_debuginfo.attr.name = "debuginfo";
- 	dip->attr_debuginfo.attr.mode = S_IRUGO;
- 	dip->attr_debuginfo.show = debuginfo_show;
-@@ -795,7 +785,6 @@ static void class_dev_create(struct pvr2
- 		return;
- 	}
- 
--	sfp->attr_v4l_minor_number.attr.owner = THIS_MODULE;
- 	sfp->attr_v4l_minor_number.attr.name = "v4l_minor_number";
- 	sfp->attr_v4l_minor_number.attr.mode = S_IRUGO;
- 	sfp->attr_v4l_minor_number.show = v4l_minor_number_show;
-@@ -809,7 +798,6 @@ static void class_dev_create(struct pvr2
- 		sfp->v4l_minor_number_created_ok = !0;
- 	}
- 
--	sfp->attr_v4l_radio_minor_number.attr.owner = THIS_MODULE;
- 	sfp->attr_v4l_radio_minor_number.attr.name = "v4l_radio_minor_number";
- 	sfp->attr_v4l_radio_minor_number.attr.mode = S_IRUGO;
- 	sfp->attr_v4l_radio_minor_number.show = v4l_radio_minor_number_show;
-@@ -823,7 +811,6 @@ static void class_dev_create(struct pvr2
- 		sfp->v4l_radio_minor_number_created_ok = !0;
- 	}
- 
--	sfp->attr_unit_number.attr.owner = THIS_MODULE;
- 	sfp->attr_unit_number.attr.name = "unit_number";
- 	sfp->attr_unit_number.attr.mode = S_IRUGO;
- 	sfp->attr_unit_number.show = unit_number_show;
-Index: work/drivers/misc/asus-laptop.c
-===================================================================
---- work.orig/drivers/misc/asus-laptop.c
-+++ work/drivers/misc/asus-laptop.c
-@@ -673,8 +673,7 @@ static void asus_hotk_notify(acpi_handle
- 	struct device_attribute dev_attr_##_name = {			\
- 		.attr = {						\
- 			.name = __stringify(_name),			\
--			.mode = 0,					\
--			.owner = THIS_MODULE },				\
-+			.mode = 0 },					\
- 		.show   = NULL,						\
- 		.store  = NULL,						\
- 	}
-Index: work/drivers/pci/hotplug/acpiphp_ibm.c
-===================================================================
---- work.orig/drivers/pci/hotplug/acpiphp_ibm.c
-+++ work/drivers/pci/hotplug/acpiphp_ibm.c
-@@ -117,7 +117,6 @@ static struct notification ibm_note;
- static struct bin_attribute ibm_apci_table_attr = {
- 	    .attr = {
- 		    .name = "apci_table",
--		    .owner = THIS_MODULE,
- 		    .mode = S_IRUGO,
- 	    },
- 	    .read = ibm_read_apci_table,
-Index: work/drivers/pci/pci-sysfs.c
-===================================================================
---- work.orig/drivers/pci/pci-sysfs.c
-+++ work/drivers/pci/pci-sysfs.c
-@@ -499,7 +499,6 @@ static int pci_create_resource_files(str
- 			sprintf(res_attr_name, "resource%d", i);
- 			res_attr->attr.name = res_attr_name;
- 			res_attr->attr.mode = S_IRUSR | S_IWUSR;
--			res_attr->attr.owner = THIS_MODULE;
- 			res_attr->size = pci_resource_len(pdev, i);
- 			res_attr->mmap = pci_mmap_resource;
- 			res_attr->private = &pdev->resource[i];
-@@ -582,7 +581,6 @@ static struct bin_attribute pci_config_a
- 	.attr =	{
- 		.name = "config",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 256,
- 	.read = pci_read_config,
-@@ -593,7 +591,6 @@ static struct bin_attribute pcie_config_
- 	.attr =	{
- 		.name = "config",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 4096,
- 	.read = pci_read_config,
-@@ -627,7 +624,6 @@ int __must_check pci_create_sysfs_dev_fi
- 			rom_attr->size = pci_resource_len(pdev, PCI_ROM_RESOURCE);
- 			rom_attr->attr.name = "rom";
- 			rom_attr->attr.mode = S_IRUSR;
--			rom_attr->attr.owner = THIS_MODULE;
- 			rom_attr->read = pci_read_rom;
- 			rom_attr->write = pci_write_rom;
- 			retval = sysfs_create_bin_file(&pdev->dev.kobj, rom_attr);
-Index: work/drivers/pcmcia/socket_sysfs.c
-===================================================================
---- work.orig/drivers/pcmcia/socket_sysfs.c
-+++ work/drivers/pcmcia/socket_sysfs.c
-@@ -367,7 +367,7 @@ static struct device_attribute *pccard_s
- };
- 
- static struct bin_attribute pccard_cis_attr = {
--	.attr = { .name = "cis", .mode = S_IRUGO | S_IWUSR, .owner = THIS_MODULE},
-+	.attr = { .name = "cis", .mode = S_IRUGO | S_IWUSR },
- 	.size = 0x200,
- 	.read = pccard_show_cis,
- 	.write = pccard_store_cis,
-Index: work/drivers/rtc/rtc-ds1553.c
-===================================================================
---- work.orig/drivers/rtc/rtc-ds1553.c
-+++ work/drivers/rtc/rtc-ds1553.c
-@@ -290,7 +290,6 @@ static struct bin_attribute ds1553_nvram
- 	.attr = {
- 		.name = "nvram",
- 		.mode = S_IRUGO | S_IWUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = RTC_OFFSET,
- 	.read = ds1553_nvram_read,
-Index: work/drivers/rtc/rtc-ds1742.c
-===================================================================
---- work.orig/drivers/rtc/rtc-ds1742.c
-+++ work/drivers/rtc/rtc-ds1742.c
-@@ -159,7 +159,6 @@ static struct bin_attribute ds1742_nvram
- 	.attr = {
- 		.name = "nvram",
- 		.mode = S_IRUGO | S_IWUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.read = ds1742_nvram_read,
- 	.write = ds1742_nvram_write,
-Index: work/drivers/scsi/arcmsr/arcmsr_attr.c
-===================================================================
---- work.orig/drivers/scsi/arcmsr/arcmsr_attr.c
-+++ work/drivers/scsi/arcmsr/arcmsr_attr.c
-@@ -189,7 +189,6 @@ static struct bin_attribute arcmsr_sysfs
- 	.attr = {
- 		.name = "mu_read",
- 		.mode = S_IRUSR ,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1032,
- 	.read = arcmsr_sysfs_iop_message_read,
-@@ -199,7 +198,6 @@ static struct bin_attribute arcmsr_sysfs
- 	.attr = {
- 		.name = "mu_write",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1032,
- 	.write = arcmsr_sysfs_iop_message_write,
-@@ -209,7 +207,6 @@ static struct bin_attribute arcmsr_sysfs
- 	.attr = {
- 		.name = "mu_clear",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 1,
- 	.write = arcmsr_sysfs_iop_message_clear,
-Index: work/drivers/scsi/lpfc/lpfc_attr.c
-===================================================================
---- work.orig/drivers/scsi/lpfc/lpfc_attr.c
-+++ work/drivers/scsi/lpfc/lpfc_attr.c
-@@ -1145,7 +1145,6 @@ static struct bin_attribute sysfs_ctlreg
- 	.attr = {
- 		.name = "ctlreg",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 256,
- 	.read = sysfs_ctlreg_read,
-@@ -1356,7 +1355,6 @@ static struct bin_attribute sysfs_mbox_a
- 	.attr = {
- 		.name = "mbox",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = sizeof(MAILBOX_t),
- 	.read = sysfs_mbox_read,
-Index: work/drivers/scsi/qla2xxx/qla_attr.c
-===================================================================
---- work.orig/drivers/scsi/qla2xxx/qla_attr.c
-+++ work/drivers/scsi/qla2xxx/qla_attr.c
-@@ -73,7 +73,6 @@ static struct bin_attribute sysfs_fw_dum
- 	.attr = {
- 		.name = "fw_dump",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 0,
- 	.read = qla2x00_sysfs_read_fw_dump,
-@@ -149,7 +148,6 @@ static struct bin_attribute sysfs_nvram_
- 	.attr = {
- 		.name = "nvram",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 512,
- 	.read = qla2x00_sysfs_read_nvram,
-@@ -198,7 +196,6 @@ static struct bin_attribute sysfs_optrom
- 	.attr = {
- 		.name = "optrom",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = OPTROM_SIZE_24XX,
- 	.read = qla2x00_sysfs_read_optrom,
-@@ -279,7 +276,6 @@ static struct bin_attribute sysfs_optrom
- 	.attr = {
- 		.name = "optrom_ctl",
- 		.mode = S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 0,
- 	.write = qla2x00_sysfs_write_optrom_ctl,
-@@ -327,7 +323,6 @@ static struct bin_attribute sysfs_vpd_at
- 	.attr = {
- 		.name = "vpd",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = 0,
- 	.read = qla2x00_sysfs_read_vpd,
-@@ -375,7 +370,6 @@ static struct bin_attribute sysfs_sfp_at
- 	.attr = {
- 		.name = "sfp",
- 		.mode = S_IRUSR | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = SFP_DEV_SIZE * 2,
- 	.read = qla2x00_sysfs_read_sfp,
-Index: work/drivers/spi/at25.c
-===================================================================
---- work.orig/drivers/spi/at25.c
-+++ work/drivers/spi/at25.c
-@@ -314,7 +314,6 @@ static int at25_probe(struct spi_device 
+ 	/* pte contains position in swap or file, so copy. */
+ 	if (unlikely(!pte_present(pte))) {
+@@ -466,6 +467,7 @@ copy_one_pte(struct mm_struct *dst_mm, s
+ 	 * in the parent and the child
  	 */
- 	at25->bin.attr.name = "eeprom";
- 	at25->bin.attr.mode = S_IRUSR;
--	at25->bin.attr.owner = THIS_MODULE;
- 	at25->bin.read = at25_bin_read;
+ 	if (is_cow_mapping(vm_flags)) {
++		dirty = pte_dirty(pte);
+ 		ptep_set_wrprotect(src_mm, addr, src_pte);
+ 		pte = pte_wrprotect(pte);
+ 	}
+@@ -483,6 +485,8 @@ copy_one_pte(struct mm_struct *dst_mm, s
+ 		get_page(page);
+ 		page_dup_rmap(page);
+ 		rss[!!PageAnon(page)]++;
++		if (dirty && PageLazyFree(page))
++			ClearPageLazyFree(page);
+ 	}
  
- 	at25->bin.size = at25->chip.byte_len;
-Index: work/drivers/video/aty/radeon_base.c
-===================================================================
---- work.orig/drivers/video/aty/radeon_base.c
-+++ work/drivers/video/aty/radeon_base.c
-@@ -2123,7 +2123,6 @@ static ssize_t radeon_show_edid2(struct 
- static struct bin_attribute edid1_attr = {
- 	.attr   = {
- 		.name	= "edid1",
--		.owner	= THIS_MODULE,
- 		.mode	= 0444,
- 	},
- 	.size	= EDID_LENGTH,
-@@ -2133,7 +2132,6 @@ static struct bin_attribute edid1_attr =
- static struct bin_attribute edid2_attr = {
- 	.attr   = {
- 		.name	= "edid2",
--		.owner	= THIS_MODULE,
- 		.mode	= 0444,
- 	},
- 	.size	= EDID_LENGTH,
-Index: work/drivers/video/backlight/backlight.c
-===================================================================
---- work.orig/drivers/video/backlight/backlight.c
-+++ work/drivers/video/backlight/backlight.c
-@@ -172,7 +172,7 @@ static struct class backlight_class = {
+ out_set_pte:
+@@ -661,6 +665,26 @@ static unsigned long zap_pte_range(struc
+ 				    (page->index < details->first_index ||
+ 				     page->index > details->last_index))
+ 					continue;
++
++				/*
++				 * MADV_FREE is used to lazily recycle
++				 * anon memory.  The process no longer
++				 * needs the data and wants to avoid IO.
++				 */
++				if (details->madv_free && PageAnon(page)) {
++					if (unlikely(PageSwapCache(page)) &&
++					    !TestSetPageLocked(page)) {
++						remove_exclusive_swap_page(page);
++						unlock_page(page);
++					}
++					/* Optimize this... */
++					ptep_clear_flush_dirty(vma, addr, pte);
++					ptep_clear_flush_young(vma, addr, pte);
++					SetPageLazyFree(page);
++					if (PageActive(page))
++						deactivate_tail_page(page);
++					continue;
++				}
+ 			}
+ 			ptent = ptep_get_and_clear_full(mm, addr, pte,
+ 							tlb->fullmm);
+@@ -689,7 +713,8 @@ static unsigned long zap_pte_range(struc
+ 		 * If details->check_mapping, we leave swap entries;
+ 		 * if details->nonlinear_vma, we leave file entries.
+ 		 */
+-		if (unlikely(details))
++		if (unlikely(!details->check_mapping &&
++				!details->nonlinear_vma))
+ 			continue;
+ 		if (!pte_file(ptent))
+ 			free_swap_and_cache(pte_to_swp_entry(ptent));
+@@ -755,7 +780,8 @@ static unsigned long unmap_page_range(st
+ 	pgd_t *pgd;
+ 	unsigned long next;
  
- #define DECLARE_ATTR(_name,_mode,_show,_store)			\
- {							 	\
--	.attr	= { .name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr	= { .name = __stringify(_name), .mode = _mode }, \
- 	.show	= _show,					\
- 	.store	= _store,					\
+-	if (details && !details->check_mapping && !details->nonlinear_vma)
++	if (details && !details->check_mapping && !details->nonlinear_vma
++			&& !details->madv_free)
+ 		details = NULL;
+ 
+ 	BUG_ON(addr >= end);
+--- linux-2.6.20.noarch/mm/page_alloc.c.madvise	2007-04-03 21:53:47.000000000 -0400
++++ linux-2.6.20.noarch/mm/page_alloc.c	2007-04-05 01:27:55.000000000 -0400
+@@ -203,6 +203,7 @@ static void bad_page(struct page *page)
+ 			1 << PG_slab    |
+ 			1 << PG_swapcache |
+ 			1 << PG_writeback |
++			1 << PG_lazyfree |
+ 			1 << PG_buddy );
+ 	set_page_count(page, 0);
+ 	reset_page_mapcount(page);
+@@ -442,6 +443,8 @@ static inline int free_pages_check(struc
+ 		bad_page(page);
+ 	if (PageDirty(page))
+ 		__ClearPageDirty(page);
++	if (PageLazyFree(page))
++		__ClearPageLazyFree(page);
+ 	/*
+ 	 * For now, we report if PG_reserved was found set, but do not
+ 	 * clear it, and do not free the page.  But we shall soon need
+@@ -588,6 +591,7 @@ static int prep_new_page(struct page *pa
+ 			1 << PG_swapcache |
+ 			1 << PG_writeback |
+ 			1 << PG_reserved |
++			1 << PG_lazyfree |
+ 			1 << PG_buddy ))))
+ 		bad_page(page);
+ 
+--- linux-2.6.20.noarch/mm/rmap.c.madvise	2007-04-03 21:53:47.000000000 -0400
++++ linux-2.6.20.noarch/mm/rmap.c	2007-04-04 23:53:29.000000000 -0400
+@@ -656,7 +656,17 @@ static int try_to_unmap_one(struct page 
+ 	/* Update high watermark before we lower rss */
+ 	update_hiwater_rss(mm);
+ 
+-	if (PageAnon(page)) {
++	/* MADV_FREE is used to lazily free memory from userspace. */
++	if (PageLazyFree(page) && !migration) {
++		/* There is new data in the page.  Reinstate it. */
++		if (unlikely(pte_dirty(pteval))) {
++			set_pte_at(mm, address, pte, pteval);
++			ret = SWAP_FAIL;
++			goto out_unmap;
++		}
++		/* Throw the page away. */
++		dec_mm_counter(mm, anon_rss);
++	} else if (PageAnon(page)) {
+ 		swp_entry_t entry = { .val = page_private(page) };
+ 
+ 		if (PageSwapCache(page)) {
+--- linux-2.6.20.noarch/mm/swap.c.madvise	2007-04-03 21:53:47.000000000 -0400
++++ linux-2.6.20.noarch/mm/swap.c	2007-04-04 23:33:27.000000000 -0400
+@@ -151,6 +151,20 @@ void fastcall activate_page(struct page 
+ 	spin_unlock_irq(&zone->lru_lock);
  }
-Index: work/drivers/video/backlight/lcd.c
-===================================================================
---- work.orig/drivers/video/backlight/lcd.c
-+++ work/drivers/video/backlight/lcd.c
-@@ -157,7 +157,7 @@ static struct class lcd_class = {
  
- #define DECLARE_ATTR(_name,_mode,_show,_store)			\
- {							 	\
--	.attr	= { .name = __stringify(_name), .mode = _mode, .owner = THIS_MODULE },	\
-+	.attr	= { .name = __stringify(_name), .mode = _mode }, \
- 	.show	= _show,					\
- 	.store	= _store,					\
- }
-Index: work/drivers/w1/slaves/w1_ds2433.c
-===================================================================
---- work.orig/drivers/w1/slaves/w1_ds2433.c
-+++ work/drivers/w1/slaves/w1_ds2433.c
-@@ -252,7 +252,6 @@ static struct bin_attribute w1_f23_bin_a
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = W1_EEPROM_SIZE,
- 	.read = w1_f23_read_bin,
-Index: work/drivers/w1/slaves/w1_therm.c
-===================================================================
---- work.orig/drivers/w1/slaves/w1_therm.c
-+++ work/drivers/w1/slaves/w1_therm.c
-@@ -48,7 +48,6 @@ static struct bin_attribute w1_therm_bin
- 	.attr = {
- 		.name = "w1_slave",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = W1_SLAVE_DATA_SIZE,
- 	.read = w1_therm_read_bin,
-Index: work/drivers/w1/w1.c
-===================================================================
---- work.orig/drivers/w1/w1.c
-+++ work/drivers/w1/w1.c
-@@ -128,7 +128,6 @@ static struct bin_attribute w1_slave_att
-       .attr = {
-               .name = "id",
-               .mode = S_IRUGO,
--              .owner = THIS_MODULE,
-       },
-       .size = 8,
-       .read = w1_slave_read_id,
-@@ -167,7 +166,6 @@ static struct bin_attribute w1_default_a
-       .attr = {
-               .name = "rw",
-               .mode = S_IRUGO | S_IWUSR,
--              .owner = THIS_MODULE,
-       },
-       .size = PAGE_SIZE,
-       .read = w1_default_read,
-Index: work/arch/s390/kernel/ipl.c
-===================================================================
---- work.orig/arch/s390/kernel/ipl.c
-+++ work/arch/s390/kernel/ipl.c
-@@ -255,7 +255,6 @@ static struct bin_attribute ipl_paramete
- 	.attr = {
- 		.name = "binary_parameter",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = PAGE_SIZE,
- 	.read = &ipl_parameter_read,
-@@ -279,7 +278,6 @@ static struct bin_attribute ipl_scp_data
- 	.attr = {
- 		.name = "scp_data",
- 		.mode = S_IRUGO,
--		.owner = THIS_MODULE,
- 	},
- 	.size = PAGE_SIZE,
- 	.read = &ipl_scp_data_read,
-Index: work/drivers/s390/cio/chsc.c
-===================================================================
---- work.orig/drivers/s390/cio/chsc.c
-+++ work/drivers/s390/cio/chsc.c
-@@ -898,7 +898,6 @@ static struct bin_attribute chp_measurem
- 	.attr = {
- 		.name = "measurement_chars",
- 		.mode = S_IRUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = sizeof(struct cmg_chars),
- 	.read = chp_measurement_chars_read,
-@@ -950,7 +949,6 @@ static struct bin_attribute chp_measurem
- 	.attr = {
- 		.name = "measurement",
- 		.mode = S_IRUSR,
--		.owner = THIS_MODULE,
- 	},
- 	.size = sizeof(struct cmg_entry),
- 	.read = chp_measurement_read,
-Index: work/drivers/s390/net/qeth_sys.c
-===================================================================
---- work.orig/drivers/s390/net/qeth_sys.c
-+++ work/drivers/s390/net/qeth_sys.c
-@@ -993,7 +993,7 @@ static struct attribute_group qeth_osn_d
++void fastcall deactivate_tail_page(struct page *page)
++{
++	struct zone *zone = page_zone(page);
++
++	spin_lock_irq(&zone->lru_lock);
++	if (PageLRU(page) && PageActive(page)) {
++		del_page_from_active_list(zone, page);
++		ClearPageActive(page);
++		add_page_to_inactive_list_tail(zone, page);
++		__count_vm_event(PGDEACTIVATE);
++	}
++	spin_unlock_irq(&zone->lru_lock);
++}
++
+ /*
+  * Mark a page as having seen activity.
+  *
+--- linux-2.6.20.noarch/mm/vmscan.c.madvise	2007-04-03 21:53:47.000000000 -0400
++++ linux-2.6.20.noarch/mm/vmscan.c	2007-04-04 03:34:56.000000000 -0400
+@@ -473,6 +473,24 @@ static unsigned long shrink_page_list(st
  
- #define QETH_DEVICE_ATTR(_id,_name,_mode,_show,_store)			     \
- struct device_attribute dev_attr_##_id = {				     \
--	.attr = {.name=__stringify(_name), .mode=_mode, .owner=THIS_MODULE },\
-+	.attr = {.name=__stringify(_name), .mode=_mode, },\
- 	.show	= _show,						     \
- 	.store	= _store,						     \
- };
+ 		sc->nr_scanned++;
+ 
++		/* 
++		 * MADV_DONTNEED pages get reclaimed lazily, unless the
++		 * process reuses it before we get to it.
++		 */
++		if (PageLazyFree(page)) {
++			switch (try_to_unmap(page, 0)) {
++			case SWAP_FAIL:
++				ClearPageLazyFree(page);
++				goto activate_locked;
++			case SWAP_AGAIN:
++				ClearPageLazyFree(page);
++				goto keep_locked;
++			case SWAP_SUCCESS:
++				ClearPageLazyFree(page);
++				goto free_it;
++			}
++		}
++
+ 		if (!sc->may_swap && page_mapped(page))
+ 			goto keep_locked;
+ 
+
+--------------020708080407080005000506--
