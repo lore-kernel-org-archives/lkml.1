@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751559AbXDKJKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751573AbXDKJOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751559AbXDKJKg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 05:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXDKJKg
+	id S1751573AbXDKJOt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 05:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXDKJOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 05:10:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:40521 "EHLO
+	Wed, 11 Apr 2007 05:14:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:44065 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbXDKJKe (ORCPT
+	with ESMTP id S1751611AbXDKJOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 05:10:34 -0400
+	Wed, 11 Apr 2007 05:14:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
-        b=qjsEnOenFiV9DICeQjOu1tVxMmyeeW2gWHUlxxbcoFTYJTc9tTCivGLy6nXwplwABWWnybbTfBQza381hzsmhAmHheV/hFY3wshY80V2/llATZhIVQ44qItIAWNgpki1uMN+l3eokNKmO0ugQSBm+rIoMndYSF5Y0CTHFGXE54c=
-Date: Wed, 11 Apr 2007 11:10:27 +0200 (CEST)
-From: Esben Nielsen <nielsen.esben@googlemail.com>
-X-X-Sender: simlo@frodo.shire
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 20/30] Use menuconfig objects - ARCNET
-In-Reply-To: <Pine.LNX.4.61.0704111034170.32056@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.64.0704111040000.13800@frodo.shire>
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0704102329540.32056@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0704111014330.13800@frodo.shire> <Pine.LNX.4.61.0704111034170.32056@yvahk01.tjqt.qr>
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FaZV9xFjdCeY2Xh3cdDK9iSMNbBi1E9MqkwNQVdNUkLvK4BOXynLpOAOCKV2cZG580qHN6m9p1O2f6i4ZqZgkoHawm2exjBPkDI6yEKcsMSp7GXlz+yTRTb2TJjo10vku2Idj1XHtSAgv0Az8d51kW1cDvStxVAoAMhtoUejSF8=
+Message-ID: <ac8af0be0704110214qdca2ee9t3b44a17341e53730@mail.gmail.com>
+Date: Wed, 11 Apr 2007 17:14:46 +0800
+From: "Zhao Forrest" <forrest.zhao@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <84144f020704102353r7dcc3538u2e34237d3496630e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
+	 <84144f020704102353r7dcc3538u2e34237d3496630e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I enable CONFIG_DEBUG_SLAB, but don't get any extra debug messages
+related to slab.
+Is there other switch that I need to turn on?
+
+Thanks,
+Forrest
+
+BUG: soft lockup detected on CPU#6!
+
+Call Trace:
+ <IRQ>  [<ffffffff800b3834>] softlockup_tick+0xdb/0xed
+ [<ffffffff80093edf>] update_process_times+0x42/0x68
+ [<ffffffff80074897>] smp_local_timer_interrupt+0x23/0x47
+ [<ffffffff80074f59>] smp_apic_timer_interrupt+0x41/0x47
+ [<ffffffff8005c7c2>] apic_timer_interrupt+0x66/0x6c
+ <EOI>  [<ffffffff80043b09>] invalidate_mapping_pages+0xe1/0x15f
+ [<ffffffff80043afa>] invalidate_mapping_pages+0xd2/0x15f
+ [<ffffffff800d5bea>] kill_bdev+0xe/0x21
+ [<ffffffff800d6110>] __blkdev_put+0x4f/0x169
+ [<ffffffff80012785>] __fput+0xae/0x198
+ [<ffffffff80023ca6>] filp_close+0x5c/0x64
+ [<ffffffff80038e33>] put_files_struct+0x6c/0xc3
+ [<ffffffff8001543d>] do_exit+0x2d2/0x8b1
+ [<ffffffff80047932>] cpuset_exit+0x0/0x6c
+ [<ffffffff8002b30f>] get_signal_to_deliver+0x427/0x456
+ [<ffffffff80059b9e>] do_notify_resume+0x9c/0x7a9
+ [<ffffffff8008776d>] default_wake_function+0x0/0xe
+ [<ffffffff800b2b79>] audit_syscall_exit+0x2cd/0x2ec
+ [<ffffffff8005be62>] int_signal+0x12/0x17
 
 
-On Wed, 11 Apr 2007, Jan Engelhardt wrote:
-
+On 4/11/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> On 4/11/07, Zhao Forrest <forrest.zhao@gmail.com> wrote:
+> > We're using RHEL5 with kernel version 2.6.18-8.el5.
+> > When doing a stress test on raw device for about 3-4 hours, we found
+> > the soft lockup message in dmesg.
+> > I know we're not reporting the bug on the latest kernel, but does any
+> > expert know if this is the known issue in old kernel? Or why
+> > kmem_cache_free occupy CPU for more than 10 seconds?
 >
-> On Apr 11 2007 10:30, Esben Nielsen wrote:
->> On Tue, 10 Apr 2007, Jan Engelhardt wrote:
->>>
->>> (Wow, not a single MODULE_AUTHOR line in drivers/net/arcnet/ ...)
->>
->> ArcNet is old. Almost nobody is using it anymore. I used it at my
->> former job, since we used it as control network. A lot of companies
->> still does quitely, but not in combination with Linux.
-
-Let me correct myself: I have only know of one company using the Linux 
-ArcNet combination in production. But there must be other companies using 
-ArcNet playing with Linux in R&D.
-
+> Sounds like slab corruption. CONFIG_DEBUG_SLAB should tell you more.
 >
-> So send some removal patches :)
-
-No. Somebody (like me) in those companise use them sporadically for their 
-PCI/PCMCIA cards. The vendor have some basic Windoze drives. Missing Linux 
-drivers should not be yet another obstacle for using Linux.
-
-They might also one day want to run Linux on their embedded platform - 
-especially with preempt-realtime. When I at my former job got Linux to boot
-at our embedded platform their I could almost immediately use the onboard
-ArcNet controller. For the propriatary OS otherwise used on those platforms it
-took many man weeks to write a driver.
-
-Keeping support for old devices in the kernel tree is a good for Linux. It 
-should take too long updating it for API changes and although they might 
-not work, but if the occational user is capable enough, he can soon fix 
-them. If they are are removed the occational user will choose another OS.
-
-Esben
