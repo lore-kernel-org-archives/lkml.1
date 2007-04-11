@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbXDKFsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030803AbXDKFsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbXDKFsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 01:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXDKFsT
+	id S1030803AbXDKFsj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 01:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030784AbXDKFsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 01:48:19 -0400
-Received: from stinky.trash.net ([213.144.137.162]:44157 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbXDKFsS (ORCPT
+	Wed, 11 Apr 2007 01:48:38 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:55719 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030803AbXDKFsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 01:48:18 -0400
-Message-ID: <461C766E.5030107@trash.net>
-Date: Wed, 11 Apr 2007 07:47:26 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Wed, 11 Apr 2007 01:48:37 -0400
+X-Originating-Ip: 74.109.98.130
+Date: Wed, 11 Apr 2007 01:47:09 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@CPE00045a9c397f-CM001225dbafb6
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Roland Dreier <rdreier@cisco.com>, kernelnewbies@nl.linux.org,
+       kernel-janitors@lists.osdl.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
+Subject: Re: [KJ] remove SPIN_LOCK_UNLOCKED
+In-Reply-To: <20070410220804.GI26692@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0704110140480.7851@CPE00045a9c397f-CM001225dbafb6>
+References: <20070410181654.GA10525@arun.site> <Pine.LNX.4.61.0704102249290.32056@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0704101722030.24526@CPE00045a9c397f-CM001225dbafb6>
+ <Pine.LNX.4.61.0704102327460.32056@yvahk01.tjqt.qr> <ada7isjq52p.fsf@cisco.com>
+ <Pine.LNX.4.64.0704101743520.24794@CPE00045a9c397f-CM001225dbafb6>
+ <20070410220804.GI26692@parisc-linux.org>
 MIME-Version: 1.0
-To: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-CC: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, cramerj <cramerj@intel.com>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Leech, Christopher" <christopher.leech@intel.com>
-Subject: Re: [PATCH] NET: [UPDATED] Multiqueue network device support implementation.
-References: <D5C1322C3E673F459512FB59E0DDC329029E454C@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329029E454C@orsmsx414.amr.corp.intel.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Waskiewicz Jr, Peter P wrote:
->>This leaks the device. You treat every single-queue device as 
->>having a single subqueue. If it doesn't get too ugly it would 
->>be nice to avoid this and only allocate the subqueue states 
->>for real multiqueue devices.
-> 
-> 
-> We went back and forth on this.  The reason we allocate a queue in every
-> case, even on single-queue devices, was to make the stack not have
-> branching for multiqueue and non-multiqueue devices.  If we don't have
-> at least one queue on a device, then we can't have
-> netif_subqueue_stopped() in the hotpath unless we check if a device is
-> multiqueue before.  The original patches I released had this branching,
-> and I was asked to not do that.
+On Tue, 10 Apr 2007, Matthew Wilcox wrote:
 
+> On Tue, Apr 10, 2007 at 05:45:07PM -0400, Robert P. J. Day wrote:
+> > that works fine if you're defining a single spinlock, but what do you
+> > do in cases like this:
+> >
+> > arch/sparc/lib/atomic32.c:      [0 ... (ATOMIC_HASH_SIZE-1)] = SPIN_LOCK_UNLOCKED
+> >
+> > that is, when you're assigning an array of them?  you still need
+> > some kind of generic, unnamed spinlock in those circumstances, no?
+>
+> That's a special case for architecture-only code.  It's not to be
+> used by drivers.
 
-OK, thanks for the explanation.
+be that as it may, it still means you need to take it into account
+whenever someone says they want to entirely remove the
+SPIN_LOCK_UNLOCKED macro from the source tree, as suggested in
+Documentation/spinlocks.txt.
 
->>>+			skb->queue_mapping =
->>>+				 q->prio2band[q->band2queue[band&TC_PRIO_MAX]];
->>
->>
->>Does this needs to be cleared at some point again? TC actions 
->>might redirect or mirror packets to other (multiqueue) devices.
-> 
-> 
-> If an skb is redirected to another device, the skb should be filtered
-> through that device's qdisc, yes?
+if you do that removal, you can always replace SPIN_LOCK_UNLOCKED with
+its current definition of __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+or what have you.  but you would obviously have to replace it with
+*something* that represents an unnamed spinlock if SPIN_LOCK_UNLOCKED
+goes away.
 
+rday
 
-Yes, but the device might not have a queue or use something different
-than prio, so the value would stay the same. I think you need to clear
-it before enqueueing a packet or alternatively when redirecting in the
-mirred action.
+p.s.  just FYI:
 
+$ grep -r "\.\.\..*SPIN_LOCK_UNLOCKED" *
+arch/sparc/lib/atomic32.c:      [0 ... (ATOMIC_HASH_SIZE-1)] = SPIN_LOCK_UNLOCKED
+arch/cris/arch-v32/kernel/smp.c:spinlock_t cris_atomic_locks[] = { [0 ... LOCK_COUNT - 1] = SPIN_LOCK_UNLOCKED};
+arch/parisc/lib/bitops.c:       [0 ... (ATOMIC_HASH_SIZE-1)]  = __RAW_SPIN_LOCK_UNLOCKED
+arch/mips/kernel/gdb-stub.c:    [0 ... NR_CPUS-1] = __RAW_SPIN_LOCK_UNLOCKED,
+arch/powerpc/platforms/iseries/htab.c:  { [0 ... 63] = SPIN_LOCK_UNLOCKED};
+
+so, as matthew says, it's clearly not for drivers.
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
