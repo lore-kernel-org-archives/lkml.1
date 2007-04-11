@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030342AbXDKXcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbXDKXiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030342AbXDKXcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 19:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbXDKXcJ
+	id S1753702AbXDKXiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 19:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbXDKXiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 19:32:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:48657 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbXDKXcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 19:32:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,396,1170662400"; 
-   d="scan'208"; a="72221824:sNHT36408483"
-Date: Wed, 11 Apr 2007 16:30:45 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: akpm@linux-foundation.org
-Cc: rientjes@google.com, andi@firstfloor.org, clameter@engr.sgi.com,
-       dada1@cosmosbay.com, linux-kernel@vger.kernel.org
-Subject: [patch] x86_64: more fixes to node_possible_map runtime setup
-Message-ID: <20070411233045.GG585@linux-os.sc.intel.com>
-References: <200704092205.l39M57AA024903@shell0.pdx.osdl.net> <20070409231328.GE3948@linux-os.sc.intel.com>
+	Wed, 11 Apr 2007 19:38:22 -0400
+Received: from lazybastard.de ([212.112.238.170]:48973 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753701AbXDKXiW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 19:38:22 -0400
+Date: Thu, 12 Apr 2007 01:33:26 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: David Lang <david.lang@digitalinsight.com>, Neil Brown <neilb@suse.de>,
+       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+Message-ID: <20070411233326.GD4893@lazybastard.org>
+References: <17949.25061.739035.688232@notabene.brown> <Pine.LNX.4.63.0704111506040.28394@qynat.qvtvafvgr.pbz> <461D6DE9.9070601@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070409231328.GE3948@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <461D6DE9.9070601@zytor.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 09, 2007 at 04:13:28PM -0700, Siddha, Suresh B wrote:
-> On Mon, Apr 09, 2007 at 03:05:01PM -0700, akpm@linux-foundation.org wrote:
-> > Subject: x86_64-set-node_possible_map-at-runtime fix
-> > From: David Rientjes <rientjes@google.com>
-> > 
-> > Clear node_possible_map if numa_emulation() fails for some reason, such as
-> > a failed hash shift, but setup_node_range() has already set some fake nodes
-> > as online.
+On Wed, 11 April 2007 16:23:21 -0700, H. Peter Anvin wrote:
+> David Lang wrote:
+> >On Thu, 12 Apr 2007, Neil Brown wrote:
+> >
+> >>For the second.
+> >> You say that you " would need at least 96 bits in order to make that
+> >> guarantee; 64 bits of hash, plus a 32-bit count value in the hash
+> >> collision chain".  I think 96 is a bit greedy.  Surely 48 bits of
+> >> hash and 16 bits of collision-chain-position would plenty.  You would
+> >> need 65537 entries before a collision was even possible, and
+> >> billions before it was at all likely. (How big does a set of 48bit
+> >> numbers have to get before the probability that "No subset of 65536
+> >> numbers are all the same" drops below 0.95?)
+> >
+> >  you can get a hash collision with two entries.
 > 
-> David, Looking at your fix, I think we require more fixes in this area.
-> Please review the appended patch. Thanks.
+> Yes, but the probability is 2^-n for an n-bit hash, assuming it's 
+> uniformly distributed.
+> 
+> The probability approaches 1/2 as the number of entries hashes 
+> approaches 2^(n/2) (birthday number.)
 
-Andrew, Please apply the appended patch. Goes on top of the
-x86_64-set-node_possible_map-at-runtime-fix.patch
+I believe you are both barking up the wrong tree.  Neil proposed a 16bit
+collision chain.  With that, it takes 65537 entries before a collision
+chain overflow is possible.
 
-thanks, suresh
----
+Calling a collision chain overflow "collision" is inviting confusion, of
+course. :)
 
-Subject: [patch] x86_64: more fixes to node_possible_map runtime setup
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+Jörn
 
-More fixes in the failure cases and a small cleanup in numa emulation case.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Acked-by: David Rientjes <rientjes@google.com>
----
-
---- linux-2.6.21-rc6/arch/x86_64/mm/numa.c~	2007-04-09 15:59:03.000000000 -0700
-+++ linux-2.6.21-rc6/arch/x86_64/mm/numa.c	2007-04-09 17:44:38.000000000 -0700
-@@ -298,7 +298,6 @@ static int __init setup_node_range(int n
- 		ret = -1;
- 	}
- 	nodes[nid].end = *addr;
--	node_set_online(nid);
- 	node_set(nid, node_possible_map);
- 	printk(KERN_INFO "Faking node %d at %016Lx-%016Lx (%LuMB)\n", nid,
- 	       nodes[nid].start, nodes[nid].end,
-@@ -483,7 +482,7 @@ out:
- 	 * SRAT.
- 	 */
- 	remove_all_active_ranges();
--	for_each_online_node(i) {
-+	for_each_node_mask(i, node_possible_map) {
- 		e820_register_active_regions(i, nodes[i].start >> PAGE_SHIFT,
- 						nodes[i].end >> PAGE_SHIFT);
-  		setup_node_bootmem(i, nodes[i].start, nodes[i].end);
-@@ -510,11 +509,13 @@ void __init numa_initmem_init(unsigned l
- 	if (!numa_off && !acpi_scan_nodes(start_pfn << PAGE_SHIFT,
- 					  end_pfn << PAGE_SHIFT))
-  		return;
-+	nodes_clear(node_possible_map);
- #endif
- 
- #ifdef CONFIG_K8_NUMA
- 	if (!numa_off && !k8_scan_nodes(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT))
- 		return;
-+	nodes_clear(node_possible_map);
- #endif
- 	printk(KERN_INFO "%s\n",
- 	       numa_off ? "NUMA turned off" : "No NUMA configuration found");
+-- 
+The competent programmer is fully aware of the strictly limited size of
+his own skull; therefore he approaches the programming task in full
+humility, and among other things he avoids clever tricks like the plague.
+-- Edsger W. Dijkstra
