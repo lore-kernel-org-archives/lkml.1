@@ -1,66 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXDKVbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161002AbXDKVed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbXDKVbI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 17:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030185AbXDKVbI
+	id S1161002AbXDKVed (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 17:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXDKVed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 17:31:08 -0400
-Received: from main.gmane.org ([80.91.229.2]:53062 "EHLO ciao.gmane.org"
+	Wed, 11 Apr 2007 17:34:33 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33432 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932185AbXDKVbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 17:31:06 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: init's children list is long and slows reaping children.
-Date: Wed, 11 Apr 2007 17:24:13 -0400
-Message-ID: <461D51FD.5010506@tmr.com>
-References: <46159987.6090006@redhat.com>	<Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org>	<m1hcru9rki.fsf@ebiederm.dsl.xmission.com>	<20070406104301.GB19755@lnx-holt.americas.sgi.com>	<m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com>	<20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu>	<m11wix73ut.fsf@ebiederm.dsl.xmission.com>	<20070410134814.GA28016@elte.hu>	<m17iskz3i8.fsf@ebiederm.dsl.xmission.com>	<20070410164441.GB104@tv-sign.ru> <461D3D3E.2060709@tmr.com> <m1veg2r7hy.fsf@ebiederm.dsl.xmission.com>
+	id S965320AbXDKVeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 17:34:31 -0400
+Date: Wed, 11 Apr 2007 14:33:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, tglx@linutronix.de,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
+Message-Id: <20070411143357.e866b366.akpm@linux-foundation.org>
+In-Reply-To: <1176324881.20237.39.camel@imap.mvista.com>
+References: <20070411162904.232696302@mvista.com>
+	<20070411133122.badf1c4f.akpm@linux-foundation.org>
+	<1176324881.20237.39.camel@imap.mvista.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Robin Holt <holt@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <m1veg2r7hy.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Bill Davidsen <davidsen@tmr.com> writes:
+On Wed, 11 Apr 2007 13:54:41 -0700
+Daniel Walker <dwalker@mvista.com> wrote:
+
+> On Wed, 2007-04-11 at 13:31 -0700, Andrew Morton wrote:
+> > On Wed, 11 Apr 2007 09:29:04 -0700
+> > Daniel Walker <dwalker@mvista.com> wrote:
+> > 
+> > > The locking of the xtime_lock around the cpu notifier is unessesary now. At one
+> > > time the tsc was used after a frequency change for timekeeping, but the re-write
+> > > of timekeeping no longer uses the TSC unless the frequency is constant. 
+> > > 
+> > > The variables that are changed in this section of code had also once been used
+> > > for timekeeping, but not any longer ..
+> > > 
+> > > Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+> > > 
+> > > ---
+> > >  arch/i386/kernel/tsc.c |    8 +-------
+> > >  1 file changed, 1 insertion(+), 7 deletions(-)
+> > > 
+> > > Index: linux-2.6.20/arch/i386/kernel/tsc.c
+> > > ===================================================================
+> > > --- linux-2.6.20.orig/arch/i386/kernel/tsc.c
+> > > +++ linux-2.6.20/arch/i386/kernel/tsc.c
+> > > @@ -200,13 +200,10 @@ time_cpufreq_notifier(struct notifier_bl
+> > >  {
+> > >  	struct cpufreq_freqs *freq = data;
+> > >  
+> > > -	if (val != CPUFREQ_RESUMECHANGE && val != CPUFREQ_SUSPENDCHANGE)
+> > > -		write_seqlock_irq(&xtime_lock);
+> > > -
+> > >  	if (!ref_freq) {
+> > >  		if (!freq->old){
+> > >  			ref_freq = freq->new;
+> > > -			goto end;
+> > > +			return 0;
+> > >  		}
+> > >  		ref_freq = freq->old;
+> > >  		loops_per_jiffy_ref = cpu_data[freq->cpu].loops_per_jiffy;
+> > > @@ -237,9 +234,6 @@ time_cpufreq_notifier(struct notifier_bl
+> > >  			}
+> > >  		}
+> > >  	}
+> > > -end:
+> > > -	if (val != CPUFREQ_RESUMECHANGE && val != CPUFREQ_SUSPENDCHANGE)
+> > > -		write_sequnlock_irq(&xtime_lock);
+> > >  
+> > >  	return 0;
+> > >  }
+> > 
+> > hm.
+> > 
+> > I've been permadropping Andi's
+> > ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt-current/patches/sched-clock-share
+> > because it causes a lockup when initscripts start ondemand on my
+> > single-CPU, CONFIG_SMP=n Vaio.
+> > 
+> > I don't know _why_ it locks up - I traced it down to the
+> > write_seqlock_irq() which you have just removed.  But write_seqlock()
+> > doesn't loop with CONFIG_SMP=n builds, so a hang there is quite mysterious.
+> > 
+> > Anyway, your patch might make that hang go away.  We'll see.
 > 
->> As long as the original parent is preserved for getppid(). There are programs
->> out there which communicate between the parent and child with signals, and if
->> the original parent dies, it undesirable to have the child getppid() and start
->> sending signals to a program not expecting them. Invites undefined behavior.
 > 
-> Then the programs are broken.  getppid is defined to change if the process
-> is reparented to init.
+> I don't know to what extent this is relevant, but it's something I've
+> noticed ..
 > 
-The short answer is that kthreads don't do this so it doesn't matter.
+> >From the patch above ,
+> 
+> + */
+> +unsigned long long sched_clock(void)
+> +{
+> +	int cpu = get_cpu();
+> +	struct sc_data *sc = &per_cpu(sc_data, cpu);
+> +	unsigned long long r;
+> +
+> +	if (sc->instable) {
+> +		/* TBD find a cheaper fallback timer than this */
+> +		r = ktime_to_ns(ktime_get());
+> +	} else {
+> +		get_scheduled_cycles(r);
+> +		r = ((u64)sc->ns_base) + cycles_2_ns(cpu, r - sc->last_tsc);
+> +	}
+> +	put_cpu();
+> +	return r;
+> +}
+> 
+> Your VAIO is the "instable" case above I think .. So your using a case
+> that needs to be implemented still , I guess .. ktime_get() has a
+> peculiarity of recursively looping on the read seqlock on xtime_lock ..
+> 
+> Here is the call ordering ,
+> 
+> ktime_get()
+>  ktime_get_ts() -> read_seqretry(&xtime_lock, seq)
+>   getnstimeofday()
+>    __get_realtime_clock_ts() -> read_seqretry(&xtime_lock, seq)
+> 
+> 
+> I wonder if there is a weird case which case this to loop forever .. But
+> as said , it's just something I noticed so I don't know if it's
+> related .
+> 
 
-But user programs are NOT broken, currently getppid returns either the 
-original parent or init, and a program can identify init. Reparenting to 
-another pid would not be easily noted, and as SUS notes, no values are 
-reserved to error. So there's no way to check, and no neeed for 
-kthreads, I was prematurely paranoid.
+hm.
 
-Presumably user processes will still be reparented to init so that's not 
-an issue. Since there's no atomic signal_parent() the ppid could change 
-between getppid() and signal(), but that's never actually been a problem 
-AFAIK.
+Bear in mind that printk calls sched_clock() for each line of output. 
+(with the "time" kernel boot parameter).
 
-Related: Is there a benefit from having separate queues for original 
-children of init and reparented (to init) tasks? Even in a server would 
-there be enough to save anything?
+If we're doing a read_seqretry() in sched_clock() then bascially any printk
+inside the write_seqlock() will cause a lockup.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+So in fact, this explains my hang: I was debugging it with printk and I
+noticed that the printk before the write_seqlock() came out and the one
+after it did not.  Presumably if I wasn't using "time", that hang wouldn't
+have happened.
+
+Which means that I still don't have a clue why Andi's patch is locking up
+the Vaio.
+
+It's a bad idea to make sched_clock() this complex - we've gone and
+degraded kernel debuggability somewhat.
+
+We have provision for fixing this: the architecture can provide its own
+printk_clock().  We should do something quick-n-dirty in printk_clock()
+which doesn't require any locks.
 
