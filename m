@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161366AbXDKWze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161384AbXDKW62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161366AbXDKWze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161380AbXDKWzd
+	id S1161384AbXDKW62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161369AbXDKW56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:55:33 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55745 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161342AbXDKWz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:55:28 -0400
-Date: Wed, 11 Apr 2007 15:52:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mark Lord <mlord@pobox.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: [patch 24/31] libata bugfix: preserve LBA bit for HDIO_DRIVE_TASK
-Message-ID: <20070411225239.GY24814@kroah.com>
-References: <20070411224329.866978349@mini.kroah.org>
+	Wed, 11 Apr 2007 18:57:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46441 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161363AbXDKW5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 18:57:51 -0400
+Message-ID: <461D67A9.5020509@redhat.com>
+Date: Wed, 11 Apr 2007 18:56:41 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-bugfix-preserve-lba-bit-for-hdio_drive_task.patch"
-In-Reply-To: <20070411225100.GA24814@kroah.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH] make MADV_FREE lazily free memory
+References: <461C6452.1000706@redhat.com> <461D6413.6050605@cosmosbay.com>
+In-Reply-To: <461D6413.6050605@cosmosbay.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+Eric Dumazet wrote:
+> Rik van Riel a écrit :
+>> Make it possible for applications to have the kernel free memory
+>> lazily.  This reduces a repeated free/malloc cycle from freeing
+>> pages and allocating them, to just marking them freeable.  If the
+>> application wants to reuse them before the kernel needs the memory,
+>> not even a page fault will happen.
 
-------------------
-From: Mark Lord <mlord@pobox.com>
+> I dont understand this last sentence. If not even a page fault happens, 
+> how the kernel knows that the page was eventually reused by the 
+> application, and should not be freed in case of memory pressure ?
 
-libata bugfix: preserve LBA bit for HDIO_DRIVE_TASK
+Before maybe freeing the page, the kernel checks the referenced
+and dirty bits of the page table entries mapping that page.
 
-Preserve the LBA bit in the DevSel/Head register for HDIO_DRIVE_TASK.
+> ptr = mmap(some space);
+> madvise(ptr, length, MADV_FREE);
+> /* kernel may free the pages */
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+All this call does is:
+- clear the accessed and dirty bits
+- move the page to the far end of the inactive list,
+   where it will be the first to be reclaimed
 
----
- drivers/ata/libata-scsi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> sleep(10);
+> 
+> /* what the application must do know before reusing space ? */
+> memset(ptr, data, 10000);
+> /* kernel should not free ptr[0..10000] now */
 
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -295,7 +295,7 @@ int ata_task_ioctl(struct scsi_device *s
- 	scsi_cmd[8]  = args[3];
- 	scsi_cmd[10] = args[4];
- 	scsi_cmd[12] = args[5];
--	scsi_cmd[13] = args[6] & 0x0f;
-+	scsi_cmd[13] = args[6] & 0x4f;
- 	scsi_cmd[14] = args[0];
- 
- 	/* Good values for timeout and retries?  Values below
+Two things can happen here.
+
+If this program used the pages before the kernel needed
+them, the program will be reusing its old pages.
+
+If the kernel got there first, you will get page faults
+and the kernel will fill in the memory with new pages.
+
+Both of these alternatives are transparent to userspace.
 
 -- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
