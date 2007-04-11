@@ -1,324 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbXDKPwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbXDKPzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753098AbXDKPwz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 11:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbXDKPwz
+	id S1753152AbXDKPzL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 11:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXDKPzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 11:52:55 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:21039 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753141AbXDKPwy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 11:52:54 -0400
-Message-ID: <461D047B.90800@ru.mvista.com>
-Date: Wed, 11 Apr 2007 19:53:31 +0400
-From: Maxim Uvarov <muvarov@ru.mvista.com>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
+	Wed, 11 Apr 2007 11:55:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46890 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753152AbXDKPzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 11:55:09 -0400
+Message-ID: <461D04DB.80001@garzik.org>
+Date: Wed, 11 Apr 2007 11:55:07 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux-kernel@vger.kernel.org, davidsen@tmr.com, randy.dunlap@oracle.com,
-       Valdis.Kletnieks@vt.edu, jesper.juhl@gmail.com
-Subject: Re: Performance Stats: Kernel patch
-References: <461A4C1E.3070309@ru.mvista.com>	<20070410102111.923b92a9.dada1@cosmosbay.com>	<461CCD94.6010507@ru.mvista.com> <20070411161536.926d79e1.dada1@cosmosbay.com>
-In-Reply-To: <20070411161536.926d79e1.dada1@cosmosbay.com>
-Content-Type: multipart/mixed;
- boundary="------------050500070202040904000602"
+To: divy@chelsio.com
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2.6.21 1/3] cxgb3 - avoid deadlock with mac watchdog
+References: <20070410031022.12878.81342.stgit@localhost.localdomain>
+In-Reply-To: <20070410031022.12878.81342.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050500070202040904000602
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+divy@chelsio.com wrote:
+> From: Divy Le Ray <divy@chelsio.com>
+> 
+> Fix a deadlock when the interface s configured down and 
+> the watchdog tack is sleeping on rtnl_lock.
+> 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+> ---
+> 
+>  drivers/net/cxgb3/cxgb3_main.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+> index 26240fd..c6ebe25 100644
+> --- a/drivers/net/cxgb3/cxgb3_main.c
+> +++ b/drivers/net/cxgb3/cxgb3_main.c
+> @@ -2119,7 +2119,9 @@ static void check_t3b2_mac(struct adapte
+>  {
+>  	int i;
+>  
+> -	rtnl_lock();                      /* synchronize with ifdown */
+> +	if (!rtnl_trylock())	/* synchronize with ifdown */
+> +		return;
+> +
+>  	for_each_port(adapter, i) {
+>  		struct net_device *dev = adapter->port[i];
+>  		struct port_info *p = netdev_priv(dev);
 
-Eric Dumazet wrote:
 
- >Please check kernel/sys.c:k_getrusage() to see how getrusage() has to 
-sum *lot* of individual fields to get precise process numbers (even 
-counting stats for dead threads)
+applied 1-3
 
 
-
-Thanks for helping me and for this link. But it is not enough clear for 
-me what do you mean at this time.  Inside of patch I am using 2 default 
-counters
-task_struct->nivcsw and task_struct->nvcsw. And also one new syscall 
-counter. And there is only one way to increment this counter, it is from 
-entry.S.
-
-If you are speaking about locks,  in my point of view, they are not 
-needed in this code. Because increment syscall counter is atomic for X86 
-(just one assembly instruction) and in case with PPC (3 instructions) 
-there 1) nothing wrong will not happen in any case 2) only own thread 
-can increase it's syscall counter. So here should be not any race 
-conditions.
-
-I've tested this patch on x86,x86_64,and ppc_32. And I should work now 
-with ppc_64 (I didn't check).
-And  also updated description.
-
-Best regards,
-Maxim Uvarov.
-
---------------050500070202040904000602
-Content-Type: text/plain;
- name="perf_stat.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="perf_stat.patch"
-
-Patch adds Process Performance Statistics.
-It make available to the user the following 
-thread performance statistics:
-   * Involuntary Context Switches (task_struct->nivcsw)
-   * Voluntary Context Switches (task_struct->nvcsw)
-   * Number of system calls (added new counter 
-     thread_info->sysc_cnt)
-
-Statistics information is available from
-/proc/PID/status
-   
-This data is useful for detecting hyperactivity 
-patterns between processes.
-
-Signed-off-by: Maxim Uvarov muvarov@ru.mvista.com
-
- arch/i386/kernel/asm-offsets.c    |    3 +++
- arch/i386/kernel/entry.S          |    3 +++
- arch/powerpc/kernel/asm-offsets.c |    4 ++++
- arch/powerpc/kernel/entry_32.S    |    5 +++++
- arch/powerpc/kernel/entry_64.S    |    5 +++++
- arch/x86_64/kernel/asm-offsets.c  |    3 +++
- arch/x86_64/kernel/entry.S        |    3 +++
- fs/proc/array.c                   |   17 +++++++++++++++++
- include/asm-i386/thread_info.h    |    5 +++--
- include/asm-powerpc/thread_info.h |    3 +++
- include/asm-x86_64/thread_info.h  |    4 +++-
- kernel/fork.c                     |    4 ++++
- lib/Kconfig.debug                 |   15 +++++++++++++++
- 13 files changed, 71 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.21-rc5/fs/proc/array.c
-===================================================================
---- linux-2.6.21-rc5.orig/fs/proc/array.c
-+++ linux-2.6.21-rc5/fs/proc/array.c
-@@ -291,6 +291,20 @@ static inline char *task_cap(struct task
- 			    cap_t(p->cap_effective));
- }
- 
-+#ifdef CONFIG_THREAD_PERF_STAT
-+static inline char *task_perf(struct task_struct *p, char *buffer)
-+{
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+       buffer += sprintf(buffer, "Syscalls:\t%lu\n", p->thread_info->sysc_cnt);
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
-+
-+       return buffer + sprintf(buffer, "Nvcsw:\t%lu\n"
-+                           "Nivcsw:\t%lu\n",
-+                           p->nvcsw,
-+                           p->nivcsw);
-+}
-+#endif /* CONFIG_THREAD_PERF_STAT */
-+
- int proc_pid_status(struct task_struct *task, char * buffer)
- {
- 	char * orig = buffer;
-@@ -309,6 +323,9 @@ int proc_pid_status(struct task_struct *
- #if defined(CONFIG_S390)
- 	buffer = task_show_regs(task, buffer);
- #endif
-+#ifdef CONFIG_THREAD_PERF_STAT
-+	buffer = task_perf(task, buffer);
-+#endif /* CONFIG_THREAD_PERF_STAT */
- 	return buffer - orig;
- }
- 
-Index: linux-2.6.21-rc5/kernel/fork.c
-===================================================================
---- linux-2.6.21-rc5.orig/kernel/fork.c
-+++ linux-2.6.21-rc5/kernel/fork.c
-@@ -1044,6 +1044,10 @@ static struct task_struct *copy_process(
- 	p->syscr = 0;		/* I/O counter: read syscalls */
- 	p->syscw = 0;		/* I/O counter: write syscalls */
- #endif
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+        p->thread_info->sysc_cnt = 0;   /* Syscall counter: total numbers of syscalls */
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
-+
- 	task_io_accounting_init(p);
- 	acct_clear_integrals(p);
- 
-Index: linux-2.6.21-rc5/lib/Kconfig.debug
-===================================================================
---- linux-2.6.21-rc5.orig/lib/Kconfig.debug
-+++ linux-2.6.21-rc5/lib/Kconfig.debug
-@@ -446,3 +446,18 @@ config FAULT_INJECTION_STACKTRACE_FILTER
- 	select FRAME_POINTER
- 	help
- 	  Provide stacktrace filter for fault-injection capabilities
-+
-+config THREAD_PERF_STAT
-+       bool "Per-process (thread) performance statistics"
-+       help
-+         Make available to the user the following per-process (thread) performance statistics:
-+            * Number of involuntary context switches
-+            * Number of voluntary context switches
-+            * Number of system calls (optional)
-+         This information is available via /proc/PID/status.
-+
-+config THREAD_PERF_STAT_SYSC
-+       bool "Enable syscall counter"
-+       depends on THREAD_PERF_STAT && (X86 || PPC)
-+       help
-+         This option adds a syscall counter to /proc/PID/status.
-Index: linux-2.6.21-rc5/arch/i386/kernel/entry.S
-===================================================================
---- linux-2.6.21-rc5.orig/arch/i386/kernel/entry.S
-+++ linux-2.6.21-rc5/arch/i386/kernel/entry.S
-@@ -334,6 +334,9 @@ sysenter_past_esp:
- 	CFI_ADJUST_CFA_OFFSET 4
- 	SAVE_ALL
- 	GET_THREAD_INFO(%ebp)
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+        incl    TI_sysc_cnt(%ebp)       # Increment syscalls counter
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 
- 	/* Note, _TIF_SECCOMP is bit number 8, and so it needs testw and not testb */
- 	testw $(_TIF_SYSCALL_EMU|_TIF_SYSCALL_TRACE|_TIF_SECCOMP|_TIF_SYSCALL_AUDIT),TI_flags(%ebp)
-Index: linux-2.6.21-rc5/arch/i386/kernel/asm-offsets.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/i386/kernel/asm-offsets.c
-+++ linux-2.6.21-rc5/arch/i386/kernel/asm-offsets.c
-@@ -56,6 +56,9 @@ void foo(void)
- 	OFFSET(TI_addr_limit, thread_info, addr_limit);
- 	OFFSET(TI_restart_block, thread_info, restart_block);
- 	OFFSET(TI_sysenter_return, thread_info, sysenter_return);
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+        OFFSET(TI_sysc_cnt, thread_info, sysc_cnt);
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	BLANK();
- 
- 	OFFSET(GDS_size, Xgt_desc_struct, size);
-Index: linux-2.6.21-rc5/include/asm-i386/thread_info.h
-===================================================================
---- linux-2.6.21-rc5.orig/include/asm-i386/thread_info.h
-+++ linux-2.6.21-rc5/include/asm-i386/thread_info.h
-@@ -31,8 +31,9 @@ struct thread_info {
- 	unsigned long		status;		/* thread-synchronous flags */
- 	__u32			cpu;		/* current CPU */
- 	int			preempt_count;	/* 0 => preemptable, <0 => BUG */
--
--
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+	unsigned long		sysc_cnt;	/* Syscall counter */
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	mm_segment_t		addr_limit;	/* thread address space:
- 					 	   0-0xBFFFFFFF for user-thead
- 						   0-0xFFFFFFFF for kernel-thread
-Index: linux-2.6.21-rc5/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/powerpc/kernel/asm-offsets.c
-+++ linux-2.6.21-rc5/arch/powerpc/kernel/asm-offsets.c
-@@ -94,6 +94,10 @@ int main(void)
- 	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, local_flags));
- 	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
- 	DEFINE(TI_TASK, offsetof(struct thread_info, task));
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+        DEFINE(TI_SYSC_CNT, offsetof(struct thread_info, sysc_cnt));
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
-+
- #ifdef CONFIG_PPC32
- 	DEFINE(TI_EXECDOMAIN, offsetof(struct thread_info, exec_domain));
- 	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
-Index: linux-2.6.21-rc5/arch/powerpc/kernel/entry_32.S
-===================================================================
---- linux-2.6.21-rc5.orig/arch/powerpc/kernel/entry_32.S
-+++ linux-2.6.21-rc5/arch/powerpc/kernel/entry_32.S
-@@ -202,6 +202,11 @@ _GLOBAL(DoSyscall)
- 	bl	do_show_syscall
- #endif /* SHOW_SYSCALLS */
- 	rlwinm	r10,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+	lwz r11,TI_SYSC_CNT(r10)
-+	addi r11,r11,1
-+	stw r11,TI_SYSC_CNT(r10)
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	lwz	r11,TI_FLAGS(r10)
- 	andi.	r11,r11,_TIF_SYSCALL_T_OR_A
- 	bne-	syscall_dotrace
-Index: linux-2.6.21-rc5/arch/powerpc/kernel/entry_64.S
-===================================================================
---- linux-2.6.21-rc5.orig/arch/powerpc/kernel/entry_64.S
-+++ linux-2.6.21-rc5/arch/powerpc/kernel/entry_64.S
-@@ -115,6 +115,11 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISER
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
- #endif
- 	clrrdi	r11,r1,THREAD_SHIFT
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+	ld r10,TI_SYSC_CNT(r11)
-+	addi r10,r10,1
-+	std r10,TI_SYSC_CNT(r11)
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_T_OR_A
- 	bne-	syscall_dotrace
-Index: linux-2.6.21-rc5/arch/x86_64/kernel/asm-offsets.c
-===================================================================
---- linux-2.6.21-rc5.orig/arch/x86_64/kernel/asm-offsets.c
-+++ linux-2.6.21-rc5/arch/x86_64/kernel/asm-offsets.c
-@@ -35,6 +35,9 @@ int main(void)
- 	ENTRY(addr_limit);
- 	ENTRY(preempt_count);
- 	ENTRY(status);
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+	ENTRY(sysc_cnt);
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	BLANK();
- #undef ENTRY
- #define ENTRY(entry) DEFINE(pda_ ## entry, offsetof(struct x8664_pda, entry))
-Index: linux-2.6.21-rc5/arch/x86_64/kernel/entry.S
-===================================================================
---- linux-2.6.21-rc5.orig/arch/x86_64/kernel/entry.S
-+++ linux-2.6.21-rc5/arch/x86_64/kernel/entry.S
-@@ -229,6 +229,9 @@ ENTRY(system_call)
- 	movq  %rcx,RIP-ARGOFFSET(%rsp)
- 	CFI_REL_OFFSET rip,RIP-ARGOFFSET
- 	GET_THREAD_INFO(%rcx)
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+	addq $1, threadinfo_sysc_cnt(%rcx)   # Increment syscalls counter
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%rcx)
- 	jnz tracesys
- 	cmpq $__NR_syscall_max,%rax
-Index: linux-2.6.21-rc5/include/asm-powerpc/thread_info.h
-===================================================================
---- linux-2.6.21-rc5.orig/include/asm-powerpc/thread_info.h
-+++ linux-2.6.21-rc5/include/asm-powerpc/thread_info.h
-@@ -35,6 +35,9 @@ struct thread_info {
- 	int		cpu;			/* cpu we're on */
- 	int		preempt_count;		/* 0 => preemptable,
- 						   <0 => BUG */
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+	unsigned long	sysc_cnt;		/* Syscall counter */
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	struct restart_block restart_block;
- 	unsigned long	local_flags;		/* private flags for thread */
- 
-Index: linux-2.6.21-rc5/include/asm-x86_64/thread_info.h
-===================================================================
---- linux-2.6.21-rc5.orig/include/asm-x86_64/thread_info.h
-+++ linux-2.6.21-rc5/include/asm-x86_64/thread_info.h
-@@ -30,7 +30,9 @@ struct thread_info {
- 	__u32			status;		/* thread synchronous flags */
- 	__u32			cpu;		/* current CPU */
- 	int 			preempt_count;	/* 0 => preemptable, <0 => BUG */
--
-+#ifdef CONFIG_THREAD_PERF_STAT_SYSC
-+	unsigned long		sysc_cnt;	/* Syscall counter */
-+#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
- 	mm_segment_t		addr_limit;	
- 	struct restart_block    restart_block;
- };
-
---------------050500070202040904000602--
