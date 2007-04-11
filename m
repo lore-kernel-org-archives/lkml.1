@@ -1,96 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbXDKSUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbXDKSWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbXDKSUA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbXDKSUA
+	id S1753537AbXDKSWN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXDKSWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:20:00 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38581 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753525AbXDKST7 convert rfc822-to-8bit (ORCPT
+	Wed, 11 Apr 2007 14:22:13 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:27955 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbXDKSWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:19:59 -0400
-From: Danny Kukawka <dkukawka@suse.de>
-Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
-To: Jiri Slaby <jirislaby@gmail.com>
-Date: Wed, 11 Apr 2007 20:18:30 +0200
-References: <22473653910004885@karneval.cz> <200704111505.03625.corentincj@iksaif.net> <461CE6AA.6050806@gmail.com>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       acpi4asus-user@lists.sourceforge.net, corentincj@iksaif.net,
-       sziwan@users.sourceforge.net
+	Wed, 11 Apr 2007 14:22:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=pUyyzu4cNXRoGgI7lMkPe2P6lyTlPtMUzkD5HXzxrEw0/BdOMa3jrtqQnFa7YAFG2BHW97Zqm981TSUV9+5WWWpjZznyfImRn2lyf46vewtLVuLqizdybPtY7pmPDGilZLexBKS9376qg6JO+IBWKIhj3RjTSlHiNhz3POy3KLY=
+Date: Wed, 11 Apr 2007 23:54:03 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org, linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, paulus@samba.org
+Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in arch/powerpc
+Message-ID: <20070411182403.GA10121@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200704112018.31026.dkukawka@suse.de>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Corentin CHARY napsal(a):
->> Le Wednesday 11 April 2007 11:33:48 Jiri Slaby, vous avez écrit :
->>> asus_acpi, support F2JE model
->> Just use the new asus-laptop driver =)
->> (see acpi4asus-0.40)
-> 
-> code seems good, but this is not so good:
-> #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
-> #warning "This module does not support 2.6.20 yet, wait for a new release
-> #=)" endif
->
-> When do you plan to support latest kernels and merge it to mainline?
+SPIN_LOCK_UNLOCKED cleanup,use DEFINE_SPINLOCK or 
+__SPIN_LOCK_UNLOCKED where ever appropriate. 
 
-This patch fixes acpi4asus-0.40 for me at least with 2.6.20 on a ASUS R1F.
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-Danny
+--
 
-Signed-off-by: Danny Kukawka <dkukawka@suse.de>
----
- asus-laptop.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ kernel/irq.c              |    2 +-
+ kernel/rtas.c             |    2 +-
+ oprofile/op_model_cell.c  |    2 +-
+ platforms/cell/spu_base.c |    2 +-
+ platforms/ps3/htab.c      |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
---- acpi4asus-0.40/driver/asus-laptop.c	2007-02-13 17:42:51.000000000 +0100
-+++ acpi4asus-0.40/driver/asus-laptop.c	2007-04-11 20:12:49.000000000 +0200
-@@ -41,8 +41,8 @@
- # include <linux/autoconf.h>
- #endif
+
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 1009308..6c83fe2 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -394,7 +394,7 @@ EXPORT_SYMBOL(do_softirq);
+ #ifdef CONFIG_PPC_MERGE
  
--#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
--#warning "This module does not support 2.6.20 yet, wait for a new release =)"
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
-+#warning "This module does not support 2.6.21 yet, wait for a new release =)"
- #endif
+ static LIST_HEAD(irq_hosts);
+-static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(irq_big_lock);
+ static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+ static unsigned int irq_radix_writer;
+ struct irq_map_entry irq_map[NR_IRQS];
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 9d0735a..8746cb3 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -36,7 +36,7 @@
+ #include <asm/syscalls.h>
  
- #include <linux/kernel.h>
-@@ -226,8 +226,8 @@
- 	static void object##_led_set(struct led_classdev *led_cdev,	\
- 				     enum led_brightness value);	\
- 	static int object##_led_wk;					\
--	static void object##_led_update(void *data);			\
--        DECLARE_WORK(object##_led_work, object##_led_update, NULL);	\
-+	static void object##_led_update(struct work_struct *dummy);	\
-+        DECLARE_WORK(object##_led_work, object##_led_update);		\
- 	static struct led_classdev object##_led = {			\
- 		.name           = "asus:" ledname,			\
- 		.brightness_set = object##_led_set,			\
-@@ -329,7 +329,7 @@
- 		object##_led_wk = value;				\
- 		queue_work(led_workqueue, &object##_led_work);		\
- 	}								\
--	static void object##_led_update(void * data)			\
-+	static void object##_led_update(struct work_struct *dummy)	\
- 	{								\
- 		int value = object##_led_wk;				\
- 		write_status(object##_set_handle, value, (mask));	\
-@@ -1053,8 +1053,7 @@
- 	struct backlight_device *bd;
+ struct rtas_t rtas = {
+-	.lock = SPIN_LOCK_UNLOCKED
++	.lock = __SPIN_LOCK_UNLOCKED(rtas.lock)
+ };
+ EXPORT_SYMBOL(rtas);
  
- 	if(brightness_set_handle && lcd_switch_handle) {
--		bd = backlight_device_register (ASUS_HOTK_FILE, NULL,
--						&asusbl_data);
-+		bd = backlight_device_register (ASUS_HOTK_FILE, NULL, NULL, &asusbl_data);
+diff --git a/arch/powerpc/oprofile/op_model_cell.c b/arch/powerpc/oprofile/op_model_cell.c
+index e08e1d7..c9d734b 100644
+--- a/arch/powerpc/oprofile/op_model_cell.c
++++ b/arch/powerpc/oprofile/op_model_cell.c
+@@ -130,7 +130,7 @@ static int pm_rtas_token;
+ static u32 reset_value[NR_PHYS_CTRS];
+ static int num_counters;
+ static int oprofile_running;
+-static spinlock_t virt_cntr_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(virt_cntr_lock);
  
- 		if (IS_ERR (bd)) {
- 			printk(ASUS_ERR
+ static u32 ctr_enabled;
+ 
+diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+index eba7a26..dc433f0 100644
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -41,7 +41,7 @@ const struct spu_priv1_ops *spu_priv1_ops;
+ static struct list_head spu_list[MAX_NUMNODES];
+ static LIST_HEAD(spu_full_list);
+ static DEFINE_MUTEX(spu_mutex);
+-static spinlock_t spu_list_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(spu_list_lock);
+ 
+ EXPORT_SYMBOL_GPL(spu_priv1_ops);
+ 
+diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
+index e12e59f..ea60c45 100644
+--- a/arch/powerpc/platforms/ps3/htab.c
++++ b/arch/powerpc/platforms/ps3/htab.c
+@@ -39,7 +39,7 @@ static unsigned long htab_addr;
+ static unsigned char *bolttab;
+ static unsigned char *inusetab;
+ 
+-static spinlock_t ps3_bolttab_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(ps3_bolttab_lock);
+ 
+ #define debug_dump_hpte(_a, _b, _c, _d, _e, _f, _g) \
+ 	_debug_dump_hpte(_a, _b, _c, _d, _e, _f, _g, __func__, __LINE__)
+
+
+-- 
+Milind Arun Choudhary
