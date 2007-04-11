@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbXDKOws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbXDKO6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752945AbXDKOws (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 10:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXDKOwr
+	id S1752966AbXDKO6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 10:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbXDKO6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 10:52:47 -0400
-Received: from waste.org ([66.93.16.53]:36030 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945AbXDKOwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 10:52:47 -0400
-Date: Wed, 11 Apr 2007 09:40:09 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/13] maps#2: Move the page walker code to lib/
-Message-ID: <20070411144009.GD11115@waste.org>
-References: <7.469046093@selenic.com> <461C81C0.9040003@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 11 Apr 2007 10:58:21 -0400
+Received: from lazybastard.de ([212.112.238.170]:54455 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbXDKO6U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 10:58:20 -0400
+Date: Wed, 11 Apr 2007 16:54:22 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nate Diller <nate.diller@gmail.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 1/13] fs: convert core functions to zero_user_page
+Message-ID: <20070411145420.GB3531@lazybastard.org>
+References: <20070411033600.11000.38285.patchbomb.py@localhost> <20070410225638.476cf89b.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <461C81C0.9040003@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070410225638.476cf89b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 11, 2007 at 04:35:44PM +1000, Nick Piggin wrote:
-> Matt Mackall wrote:
-> >Move the page walker code to lib/
-> >
-> >This lets it get shared outside of proc/ and linked in only when
-> >needed.
+On Tue, 10 April 2007 22:56:38 -0700, Andrew Morton wrote:
 > 
-> Still should go into mm/
+> And I'm surprised that this:
 > 
-> If it had, you might have also noticed your pagetable walking code
-> is completely different from how everyone else does it, and fixed
-> that too.
+> +static inline void memclear_highpage_flush(struct page *page, unsigned int offset, unsigned int size)
+> +{
+> +	return zero_user_page(page, offset, size);
+> +}
+> 
+> compiled.  zero_user_page() returns void...
 
-I actually did notice that, when I compared it to jsgf's page walking
-code for Xen.
- 
-> BTW. Is it the case that unused and unexported symbols don't get
-> pruned by the linker except inside lib/?
+As does memclear_highpage_flush().  Some of my code looks like:
+void some_func(...)
+{
+	if (foo)
+		return do_foo(...);
+	if (bar)
+		return do_bar(...);
+	...
+}
 
-Yes, that's been my point all along. It also currently only happens at
-the granularity of an object file, not a symbol, FYI.
+do_foo() and do_bar() also return void.  Saves an extra line for the
+return statment and the brackets.
+
+Doesn't help in the code you quoted, of course.
+
+Jörn
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Measure. Don't tune for speed until you've measured, and even then
+don't unless one part of the code overwhelms the rest.
+-- Rob Pike
