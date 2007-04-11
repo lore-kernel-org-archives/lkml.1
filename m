@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965197AbXDKTZC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXDKT0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965197AbXDKTZC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:25:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965211AbXDKTZB
+	id S932097AbXDKT0f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXDKT0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:25:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38421 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965197AbXDKTZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:25:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.21-rc6-mm1
-Date: Wed, 11 Apr 2007 21:28:26 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, lenb@kernel.org,
-       Adam Belay <abelay@novell.com>
-References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com> <200704091940.53439.rjw@sisk.pl> <20070410222009.GA26607@linux-os.sc.intel.com>
-In-Reply-To: <20070410222009.GA26607@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 11 Apr 2007 15:26:35 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:54136 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932097AbXDKT0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:26:34 -0400
+Date: Wed, 11 Apr 2007 15:21:22 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
+       "Frank Ch. Eigler" <fche@redhat.com>, systemtap@sources.redhat.com
+Subject: Re: [PATCH] markers-linker-generic
+Message-ID: <20070411192122.GA4668@Krystal>
+References: <20070410223658.GC7092@Krystal> <20070411074414.GC3752@flint.arm.linux.org.uk> <20070411175110.GA30879@Krystal> <20070411110240.537ee25d.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704112128.27176.rjw@sisk.pl>
+In-Reply-To: <20070411110240.537ee25d.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 15:07:40 up 68 days,  9:15,  5 users,  load average: 1.59, 1.62, 1.72
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 11 April 2007 00:20, Venki Pallipadi wrote:
-> On Mon, Apr 09, 2007 at 07:40:52PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, 9 April 2007 18:14, Pallipadi, Venkatesh wrote:
-> > > 
-> > > >-----Original Message-----
-> > > >From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-> > > >Sent: Monday, April 09, 2007 9:08 AM
-> > > >To: Andrew Morton
-> > > >Cc: linux-kernel@vger.kernel.org; randy.dunlap@oracle.com; 
-> > > >lenb@kernel.org; Pallipadi, Venkatesh
-> > > >Subject: Re: 2.6.21-rc6-mm1
-> > > >
-> > > >On Sunday, 8 April 2007 23:35, Andrew Morton wrote:
-> > > >> 
-> > > >> 
-> > > >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2
-> > > >.6.21-rc6/2.6.21-rc6-mm1/
-> > > >> 
-> > > >> 
-> > > >> - Lots of x86 updates
-> > > >> 
-> > > >> - This is a 25MB diff against mainline, which is rather large.
-> > > >
-> > > >The cpuidle thing tends to hang my x86-64 machines on boot.
-> > > >
-> > > 
-> > > Hi Rafael,
-> > > 
-> > > At what point during boot does it hang?
-> > 
-> > When mounting the root filesystem.  It hangs completely, even the magic SysRq
-> > doesn't work
-> > 
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Wed, 11 Apr 2007 13:51:11 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> Rafael: Below patch should fix the hang.
+> > > What's this marker stuff about?
+> > > 
+> > 
+> > Hi Russel,
+> > 
+> > Here is an overview :
+> 
+> I am told that the systemtap developers plan to (or are) using this
+> infrastructure.
+> 
 
-Yes, the box boots now, thanks.
+Quoting Frank Ch. Eigler, from the SystemTAP team :
 
-Greetings,
-Rafael
+"The LTTng user-space programs use it today.  Systemtap used to support
+the earlier marker prototype and will be rapidly ported over to this
+new API upon acceptance."
+
+
+> If correct: what is their reason for preferring it over kprobes?
+> 
+
+I will let them answer on this one..
+
+> 
+> Secondly, the code in -mm has no actual backend for delivering anything to
+> userspace or to anywhere else.  Why is this?
+
+I wanted the community to come to an agreement regarding the
+instrumentation mechanism before submitting a data transport backend.
+
+> Which backends currently
+> exist, and which ones are envisaged?  Is there a plan to merge any backend
+> into the mainline kernel?
+> 
+
+Yes. The one I envisage to mainline is LTTng, available there :
+http://ltt.polymtl.ca. It aims at providing the lowest system
+disturbance and best performances possible, with reentrancy from almost
+any kernel call site while keeping the task of adding new
+instrumentation as easy as possible for the programmer. The current
+patches are against 2.6.21-rc6-mm1. Is comes in small modules easy to
+merge incrementally, which should make the whole process easier.
+
+LKET, another tracer built on top of SystemTAP, can also be used to
+extract the data to user space.
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
