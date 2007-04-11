@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030310AbXDKTxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXDKUCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030310AbXDKTxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030314AbXDKTxT
+	id S1030323AbXDKUCk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 16:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030339AbXDKUCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:53:19 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:59085 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030310AbXDKTxS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:53:18 -0400
-Date: Wed, 11 Apr 2007 12:52:56 -0700
-From: Zach Brown <zach.brown@oracle.com>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: Ken Chen <kenchen@google.com>, akpm@linux-foundation.org,
-       linux-aio@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
-Message-ID: <20070411195256.GD9602@mami.zabbo.net>
-References: <20070410235353.325A7346F64@localhost> <20070411180038.GN28322@mami.zabbo.net> <b040c32a0704111228t5065253en9249ff88db5b1384@mail.gmail.com> <20070411194504.GM13621@kvack.org>
+	Wed, 11 Apr 2007 16:02:40 -0400
+Received: from main.gmane.org ([80.91.229.2]:43764 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030323AbXDKUCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 16:02:39 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: init's children list is long and slows reaping children.
+Date: Wed, 11 Apr 2007 15:55:42 -0400
+Message-ID: <461D3D3E.2060709@tmr.com>
+References: <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com> <20070410134814.GA28016@elte.hu> <m17iskz3i8.fsf@ebiederm.dsl.xmission.com> <20070410164441.GB104@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070411194504.GM13621@kvack.org>
-User-Agent: Mutt/1.4.2.1i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Robin Holt <holt@sgi.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       Jack Steiner <steiner@americas.sgi.com>
+X-Gmane-NNTP-Posting-Host: mail.tmr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <20070410164441.GB104@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I kept on getting requests from application developers who want that
-> > feature.  My initial patch was dated back May 2004.
+Oleg Nesterov wrote:
+> On 04/10, Eric W. Biederman wrote:
 > 
-> The right way to do it involves synchronization between the kernel side 
-> io_getevents() and the userspace code pulling events out of the ring.  
-> Alan Cox suggested embedding a futex in the shared memory region, but I 
-> don't think anyone ever implemented that.
-
-Yeah, I like the idea of futexes.
-
-I'm worried that virtual aliasing spells doom for the current
-home-brewed serialization that fs/aio.c is doing with the shared ring
-head/tail accesses.  Am I worrying about nothing here?
-
-> > I will look into this aside from this patch.
+>> I'm trying to remember what the story is now.  There is a nasty
+>> race somewhere with reparenting, a threaded parent setting SIGCHLD to
+>> SIGIGN, and non-default signals that results in an zombie that no one
+>> can wait for and reap.  It requires being reparented twice to trigger.
 > 
-> That's probably the case.  Also, any changes in this area *must* correctly 
-> update the compat/incompat feature flags in the ring buffer header.  That 
-> has been missed in the past...
+> reparent_thread:
+> 
+> 	...
+> 
+>         /* If we'd notified the old parent about this child's death,
+>          * also notify the new parent.
+>          */
+>         if (!traced && p->exit_state == EXIT_ZOMBIE &&
+>             p->exit_signal != -1 && thread_group_empty(p))
+>                 do_notify_parent(p, p->exit_signal);
+> 
+> We notified /sbin/init. If it ignores SIGCHLD, we should release the task.
+> We don't do this.
+> 
+> The best fix I believe is to cleanup the forget_original_parent/reparent_thread
+> interaction and factor out this "exit_state == EXIT_ZOMBIE && exit_signal == -1"
+> checks.
+> 
+As long as the original parent is preserved for getppid(). There are 
+programs out there which communicate between the parent and child with 
+signals, and if the original parent dies, it undesirable to have the 
+child getppid() and start sending signals to a program not expecting 
+them. Invites undefined behavior.
 
-Do you know of anyone using the current ring info ABI?
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-The *only* user I know of is the check of ctx->magic in libaio.
-
-- z
