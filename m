@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbXDKNsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXDKNug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752702AbXDKNsI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 09:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXDKNsI
+	id S1751571AbXDKNug (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 09:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbXDKNuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 09:48:08 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:35756 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694AbXDKNsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 09:48:07 -0400
-Message-ID: <461CE6AA.6050806@gmail.com>
-Date: Wed, 11 Apr 2007 15:46:18 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: corentincj@iksaif.net
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       sziwan@users.sourceforge.net, acpi4asus-user@lists.sourceforge.net,
-       len.brown@intel.com, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
-References: <22473653910004885@karneval.cz> <200704111505.03625.corentincj@iksaif.net>
-In-Reply-To: <200704111505.03625.corentincj@iksaif.net>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 11 Apr 2007 15:47:18 +0200 (CEST)
+	Wed, 11 Apr 2007 09:50:35 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54634 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751571AbXDKNue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 09:50:34 -0400
+X-Sasl-enc: XZSGDUu5jTbtJi1+06js/QkDWAP3r3v4/7nm9Bf/NeJy 1176299433
+Subject: Re: [patch 0/8] unprivileged mount syscall
+From: Ian Kent <raven@themaw.net>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hpa@zytor.com, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1HbaNO-0005AV-00@dorka.pomaz.szeredi.hu>
+References: <20070404183012.429274832@szeredi.hu>
+	 <20070406160238.f3178189.akpm@linux-foundation.org>
+	 <4616D4D4.6020405@zytor.com> <1176195125.3476.47.camel@raven.themaw.net>
+	 <E1HbaNO-0005AV-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Wed, 11 Apr 2007 21:48:30 +0800
+Message-Id: <1176299311.3377.6.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corentin CHARY napsal(a):
-> Le Wednesday 11 April 2007 11:33:48 Jiri Slaby, vous avez écrit :
->> asus_acpi, support F2JE model
-> Just use the new asus-laptop driver =)
-> (see acpi4asus-0.40)
+On Wed, 2007-04-11 at 12:48 +0200, Miklos Szeredi wrote:
+> > > >>
+> > > >> - users can use bind mounts without having to pre-configure them in
+> > > >>   /etc/fstab
+> > > >>
+> > > 
+> > > This is by far the biggest concern I see.  I think the security 
+> > > implication of allowing anyone to do bind mounts are poorly understood.
+> > 
+> > And especially so since there is no way for a filesystem module to veto
+> > such requests.
+> 
+> The filesystem can't veto initial mounts based on destination either.
+> I don't think it's up to the filesystem to police bind/move mounts in
+> any way.
 
-code seems good, but this is not so good:
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
-#warning "This module does not support 2.6.20 yet, wait for a new release =)"
-#endif
+But if a filesystem can't or the developer thinks that it shouldn't for
+some reason, support bind/move mounts then there should be a way for the
+filesystem to tell the kernel that.
 
-When do you plan to support latest kernels and merge it to mainline?
+Surely a filesystem is in a good position to be able to decide if a
+mount request "for it" should be allowed to continue based on it's "own
+situation and capabilities".
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Ian
+
+
+
