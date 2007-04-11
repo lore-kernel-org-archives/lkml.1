@@ -1,81 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751857AbXDKJuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbXDKJwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751857AbXDKJuP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 05:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbXDKJuP
+	id S1751877AbXDKJwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 05:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXDKJwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 05:50:15 -0400
-Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:3834 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751857AbXDKJuO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 05:50:14 -0400
-Date: Wed, 11 Apr 2007 11:49:05 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Hans de Goede <j.w.r.degoede@hhs.nl>
-Cc: LM Sensors <lm-sensors@lm-sensors.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Rudolf Marek <r.marek@assembler.cz>
-Subject: Re: Hardware monitoring subsystem maintainer position is open
-Message-ID: <20070411114905.3f114375@hyperion.delvare>
-In-Reply-To: <461BB006.9020308@hhs.nl>
-References: <20070410150227.1bac05b5@hyperion.delvare>
-	<461BB006.9020308@hhs.nl>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Apr 2007 05:52:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36207 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751877AbXDKJwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 05:52:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Wed, 11 Apr 2007 11:55:51 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+References: <460B6E4B.3060004@gmail.com> <200704092220.10039.rjw@sisk.pl> <461C8FF4.80202@gmail.com>
+In-Reply-To: <461C8FF4.80202@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704111155.52455.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
-
-On Tue, 10 Apr 2007 17:40:54 +0200, Hans de Goede wrote:
-> Jean Delvare wrote:
-> > I am resigning from my role as hardware monitoring subsystem
-> > (drivers/hwmon) maintainer. This is too much work for me, I do not have
-> > the necessary bandwidth to review all the incoming patches, in
-> > particular new drivers, in a timely manner. Patch authors have been
-> > complaining about this repeatedly. This is no fun for them, and even
-> > less for me, so I'd rather let someone else with more spare time take
-> > care of it. If there are volunteers, this is the right time to speak up.
+On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
+> Rafael J. Wysocki napsal(a):
+> > On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
+> >> Rafael J. Wysocki napsal(a):
+> >>> Thanks for testing.
+> >> [...]
+> >>> --- linux-2.6.21-rc5.orig/kernel/power/swsusp.c
+> >>> +++ linux-2.6.21-rc5/kernel/power/swsusp.c
+> >>> @@ -229,13 +229,13 @@ int swsusp_shrink_memory(void)
+> >>>  		size += highmem_size;
+> >>>  		for_each_zone (zone)
+> >>>  			if (populated_zone(zone)) {
+> >>> +				tmp += snapshot_additional_pages(zone);
+> >>>  				if (is_highmem(zone)) {
+> >>>  					highmem_size -=
+> >>>  					zone_page_state(zone, NR_FREE_PAGES);
+> >>>  				} else {
+> >>>  					tmp -= zone_page_state(zone, NR_FREE_PAGES);
+> >>>  					tmp += zone->lowmem_reserve[ZONE_NORMAL];
+> >>> -					tmp += snapshot_additional_pages(zone);
+> >> I have bad news for you :(. I thought I had unpatched kernel, but it happens
+> >> in -rc6 too.
+> > 
+> > I guess you mean you're still seeing the 'not enough memory to suspend'
+> > problem?
 > 
-> I'm sorry to hear this and I can't help but think that my, erm, rant* yesterday 
-> is somehow involved in you making this decision.
+> Yes:
+> Disabling non-boot CPUs ...
+> kvm: disabling virtualization on CPU1
+> Breaking affinity for irq 9
+> CPU 1 is now offline
+> SMP alternatives: switching to UP code
+> CPU1 is down
+> swsusp: critical section:
+> swsusp: Need to copy 158309 pages
+> swsusp: Not enough free memory
+> Error -12 suspending
+> Enabling non-boot CPUs ...
+> SMP alternatives: switching to SMP code
+> Booting processor 1/2 APIC 0x1
+> Initializing CPU#1
 
-Obviously, it is. But please don't feel responsible for it. This just
-happened to be the trigger, but that would have happened anyway.
+How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
 
-> This was in no way my intention.
+> >> Next, when this occurs, kernel CPU1 is not brought up and next suspend hangs
+> >> on "Suspending consoles".
+> > 
+> > Hm, there probably is a bug in an error path.  Do you use the built in swsusp
+> > or s2disk?
+> 
+> built-in. It happens only sometimes, here, as you can see, CPU1 was
+> successfully brought up.
 
-I know.
+Sigh.  Then probably there's a problem with the CPU hotplugging and it'll be
+hard to find, I'm afraid.
 
-> My intention was to try and make you change how you handle these things,
-
-Except that this isn't how open-source development works. You're not my
-boss, you don't get to tell me how I should work. I work the way I
-like, and if it doesn't fit with the rest of the community, I better
-move on.
-
-> my intention was to make you less of a perfectionist and to distribute 
-> the work more, you cannot do everything yourself. I think that if you could 
-> change that you would be able to cope with the load better.
-
-Perfectionist - you said it. This is what I am, and this is unlikely to
-change in a near future (if ever). But being a subsystem maintainer
-requires that you trust contributors to some degree, and you just can't
-trust contributors when you're a perfectionist. This means that the
-maintainer should be less of a perfectionist than the contributors,
-otherwise he/she ends up doing everything by him/herself.
-
-> I think you're experience / knowledge when it comes to hwmon stuff is very 
-> valuable and if you leave / quit doing hwmon stuff this would be a big loose.
-
-I didn't say I would leave entirely. I plan to stay around and keep
-helping with the lm-sensors project and hwmon drivers. I just don't
-want to be the hwmon subsystem maintainer anymore, as I don't fit in
-the role and this makes me (and others) unhappy.
-
--- 
-Jean Delvare
+Greetings,
+Rafael
