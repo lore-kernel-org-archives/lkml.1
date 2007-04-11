@@ -1,153 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbXDKTLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965052AbXDKTMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbXDKTLj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964844AbXDKTLM
+	id S965052AbXDKTMY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965034AbXDKTMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:11:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53778 "EHLO mx1.redhat.com"
+	Wed, 11 Apr 2007 15:12:20 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:57147 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753666AbXDKTLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:11:05 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 7/8] AFS: Permit key to be cached in nameidata
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 11 Apr 2007 20:10:32 +0100
-Message-ID: <20070411191032.15499.78083.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070411190956.15499.55352.stgit@warthog.cambridge.redhat.com>
-References: <20070411190956.15499.55352.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S965025AbXDKTMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:12:09 -0400
+Date: Wed, 11 Apr 2007 12:11:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: Ken Chen <kenchen@google.com>, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] convert aio event reap to use atomic-op instead of
+ spin_lock
+Message-Id: <20070411121146.47ca5b4d.akpm@linux-foundation.org>
+In-Reply-To: <20070411180038.GN28322@mami.zabbo.net>
+References: <20070410235353.325A7346F64@localhost>
+	<20070411180038.GN28322@mami.zabbo.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Permit a key to be cached in the nameidata struct so that it only needs to be
-looked up once when doing the sequence of d_revalidate(), permission(),
-follow_link() and lookup() calls involved in a pathwalk.
+On Wed, 11 Apr 2007 11:00:38 -0700
+Zach Brown <zach.brown@oracle.com> wrote:
 
-This is used by the AFS filesystem to avoid repeatedly having to call
-request_key().  Once looked up, the key is then available as the kernel walks
-to the tree until such a time as the kernel crosses to a non-AFS mountpoint or
-an AFS mountpoint in a different cell.
+> > -	/* Compensate for the ring buffer's head/tail overlap entry */
+> > -	nr_events += 2;	/* 1 is required, 2 for good luck */
+> > +	/* round nr_event to next power of 2 */
+> > +	nr_events = roundup_pow_of_two(nr_events);
+> 
+> Is that buggy?  How will the code tell if head == tail means a full ring
+> or an empty ring?  The old code added that extra event to let it tell
+> the ring was full before head == tail and it would think it's empty
+> again, I think.  I'm guessing roundup(nr_events + 1) is needed.
 
-The cache works like this:
+Ken uses the other (superior!) way of implementing ringbuffers: the head
+and tail pointers (the naming of which AIO appears to have reversed) are
+not constrained to the ringsize - they are simply allowed to wrap through
+0xfffffff.  Consequently:
 
- (1) The nameidata::key pointer is initialised to NULL at the start of the
-     pathwalk (do_path_lookup()).  path_release() and co. release the key it
-     points to.
+ring full:		(head-tail == size)
+ring empty:		head==tail
+numer-of-items-in-ring:	head-tail
+add to ring:		ring[head++]=item
+remove from ring: 	item=ring[tail++]
 
- (2) Any filesystem operation performed during the pathwalk that has access to
-     the nameidata (lookup, permission, follow_link, d_revalidate) can look at
-     the key - if non-NULL - and if it's what they're looking for they can use
-     it.
+(adjust the above for AIO naming assbackwardness)
+(requires that size be a power of 2)
 
-     If there's a key there of potential interest, the key's type and
-     description should be checked to make sure the key is permissible.
-
-     If of interest, key_validate() should be called to make sure the key is
-     still usable.  If it isn't, the error should be passed back rather than
-     the key lookup being redone on the basis that some earlier step is now no
-     longer valid.
-
- (3) Any operation that is not interested in the key can either ignore it or
-     release it and clear the pointer.
-
- (4) If an operation wants to put its own key there, it should release the old
-     key and set the pointer to point to its own key with the key's usage count
-     incremented.  This could be encapsulated in a function something like
-     this:
-
-	void set_nd_key(struct nameidata *nd, struct key *key)
-	{
-		key_put(nd->key);
-		nd->key = key_get(key);
-	}
-
-Unfortunately there isn't currently a way to pass the key onto the inode
-operations for create(), link(), unlink(), and suchlike, nor is there a way to
-pass it to the open() file op without adding a struct key pointer argument to
-each of these.
-
-This might also be useful for NFS and CIFS.
-
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
-
- fs/namei.c            |    5 +++++
- fs/open.c             |    7 +++++--
- include/linux/namei.h |    1 +
- 3 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/fs/namei.c b/fs/namei.c
-index ee60cc4..7a59d12 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -350,6 +350,8 @@ void path_release(struct nameidata *nd)
- {
- 	dput(nd->dentry);
- 	mntput(nd->mnt);
-+	key_put(nd->key);
-+	nd->key = NULL;
- }
- 
- /*
-@@ -360,6 +362,8 @@ void path_release_on_umount(struct nameidata *nd)
- {
- 	dput(nd->dentry);
- 	mntput_no_expire(nd->mnt);
-+	key_put(nd->key);
-+	nd->key = NULL;
- }
- 
- /**
-@@ -1108,6 +1112,7 @@ static int fastcall do_path_lookup(int dfd, const char *name,
- 	struct file *file;
- 	struct fs_struct *fs = current->fs;
- 
-+	nd->key = NULL;
- 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
- 	nd->flags = flags;
- 	nd->depth = 0;
-diff --git a/fs/open.c b/fs/open.c
-index c989fb4..77bd2a5 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -822,10 +822,13 @@ struct file *nameidata_to_filp(struct nameidata *nd, int flags)
- 	/* Pick up the filp from the open intent */
- 	filp = nd->intent.open.file;
- 	/* Has the filesystem initialised the file for us? */
--	if (filp->f_path.dentry == NULL)
-+	if (filp->f_path.dentry == NULL) {
- 		filp = __dentry_open(nd->dentry, nd->mnt, flags, filp, NULL);
--	else
-+		key_put(nd->key);
-+		nd->key = NULL;
-+	} else {
- 		path_release(nd);
-+	}
- 	return filp;
- }
- 
-diff --git a/include/linux/namei.h b/include/linux/namei.h
-index d39a5a6..d677408 100644
---- a/include/linux/namei.h
-+++ b/include/linux/namei.h
-@@ -17,6 +17,7 @@ enum { MAX_NESTED_LINKS = 8 };
- struct nameidata {
- 	struct dentry	*dentry;
- 	struct vfsmount *mnt;
-+	struct key	*key;
- 	struct qstr	last;
- 	unsigned int	flags;
- 	int		last_type;
+Many net drivers do it this way for their DMA rings.
 
