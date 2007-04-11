@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbXDKJfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751750AbXDKJhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751762AbXDKJfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 05:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXDKJfk
+	id S1751750AbXDKJhZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 05:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXDKJhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 05:35:40 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:52193 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751762AbXDKJfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 05:35:37 -0400
-Date: Wed, 11 Apr 2007 11:35:17 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "menu" versus "menuconfig" -- they're *both* a bad idea
-In-Reply-To: <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6>
-Message-ID: <Pine.LNX.4.61.0704111134300.32056@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.64.0704110357200.9384@CPE00045a9c397f-CM001225dbafb6>
- <Pine.LNX.4.61.0704111059190.32056@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Wed, 11 Apr 2007 05:37:25 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:26823 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751750AbXDKJhY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 05:37:24 -0400
+X-IronPort-AV: i="4.14,393,1170651600"; 
+   d="scan'208"; a="34580463:sNHT21383292"
+Subject: [PATCH 1/5] blackfin arch: add missing Blackfin support in lib
+	Kconfig debug CONFIG_FRAME_POINTER
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 11 Apr 2007 17:39:51 +0800
+Message-Id: <1176284391.29581.26.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Apr 11 2007 05:25, Robert P. J. Day wrote:
->On Wed, 11 Apr 2007, Jan Engelhardt wrote:
->> On Apr 11 2007 03:58, Robert P. J. Day wrote:
->>
->> A CONFIG_EMBEDDED bug. This should perhaps be changed.
->> Or at best, deactivate the ---> part when it's N.
->
->  i'm not sure what you mean by "bug".  if what you mean is that it's
->a bad choice of menu layout, i agree.  but what's happening there is
->not technically "wrong" or "buggy" in the sense that it's perfectly
->legal based on the current design of "menuconfig".
+Signed-off-by: Aubrey Li <aubrey.li@analog.com>
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+---
+ lib/Kconfig.debug |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Of course.
-
-
-Jan
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 558a22e..87afd62 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -385,7 +385,7 @@ config DEBUG_LIST
+ 
+ config FRAME_POINTER
+ 	bool "Compile the kernel with frame pointers"
+-	depends on DEBUG_KERNEL && (X86 || CRIS || M68K || M68KNOMMU || FRV || UML || S390 || AVR32 || SUPERH)
++	depends on DEBUG_KERNEL && (X86 || CRIS || M68K || M68KNOMMU || FRV || UML || S390 || AVR32 || SUPERH || BFIN)
+ 	default y
+ 	help
+ 	  If you say Y here the resulting kernel image will be slightly larger
 -- 
+1.5.0.5
+
