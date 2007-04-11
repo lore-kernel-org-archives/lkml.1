@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbXDKTW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965158AbXDKTXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606AbXDKTW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 15:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXDKTW0
+	id S965158AbXDKTXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 15:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964976AbXDKTXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 15:22:26 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:57517 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752997AbXDKTWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 15:22:24 -0400
-Date: Wed, 11 Apr 2007 12:21:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH] kthread: Don't depend on work queues (take 2)
-Message-Id: <20070411122124.a7ce6705.akpm@linux-foundation.org>
-In-Reply-To: <m1hcrmsr4g.fsf_-_@ebiederm.dsl.xmission.com>
-References: <20070410185133.GA104@tv-sign.ru>
-	<m13b37v517.fsf@ebiederm.dsl.xmission.com>
-	<20070411000316.52f2551e.akpm@linux-foundation.org>
-	<m1hcrmsr4g.fsf_-_@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Apr 2007 15:23:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:32967 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965158AbXDKTXS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 15:23:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=aO9KYTXVxPLbA3yDS/6DdiT9hOhmvwTyOJleqE0YR2WHQfMJ+k8da0am5or1g50CC9vxvdHXd5u3LZ4L238ASfouqzd1K0D9uxBB5wFuGX7JXlGqptz/xSSLzyTLyo4xjCZesedqEcvMED8YVprMvADQfjgicCC0GbJtgkprU1c=
+Message-ID: <461D35A5.3010005@gmail.com>
+Date: Wed, 11 Apr 2007 21:23:17 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Danny Kukawka <dkukawka@suse.de>
+CC: Jiri Slaby <jirislaby@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
+       corentincj@iksaif.net, sziwan@users.sourceforge.net
+Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
+References: <22473653910004885@karneval.cz> <461CE6AA.6050806@gmail.com> <200704112018.31026.dkukawka@suse.de> <200704112032.11772.dkukawka@suse.de>
+In-Reply-To: <200704112032.11772.dkukawka@suse.de>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 12:27:59 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+Danny Kukawka napsal(a):
+> On Mittwoch, 11. April 2007, Danny Kukawka wrote:
+>> Jiri Slaby wrote:
+>>> Corentin CHARY napsal(a):
+>>>> Le Wednesday 11 April 2007 11:33:48 Jiri Slaby, vous avez écrit :
+>>>>> asus_acpi, support F2JE model
+>>>> Just use the new asus-laptop driver =)
+>>>> (see acpi4asus-0.40)
+>>> code seems good, but this is not so good:
+>>> #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
+>>> #warning "This module does not support 2.6.20 yet, wait for a new release
+>>> #=)" endif
+>>>
+>>> When do you plan to support latest kernels and merge it to mainline?
+>> This patch fixes acpi4asus-0.40 for me at least with 2.6.20 on a ASUS R1F.
+> 
+> Btw. looks as if a new version of the driver (v0.41) is already in the mm-tree.
 
-> +	strcpy(tsk->comm, "kthreadd");
+Good to hear, I've got a look only to .21-rc6-mm1, where are no changes like
+this (there is 0.30).
 
-We have this dopey set_task_comm() thing which is there to avoid
-races when userspace is looking at this task's name via /proc.
-
-It obviously doesn't matter in this case, but I suppose one should
-set a good example.  I'll make that change.
+I'm satisfied, thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
