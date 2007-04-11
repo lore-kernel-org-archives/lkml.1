@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030780AbXDKESq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030814AbXDKETI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030780AbXDKESq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 00:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030799AbXDKESq
+	id S1030814AbXDKETI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030805AbXDKETI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 00:18:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:65164 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030780AbXDKESp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 00:18:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=LNE2B8erzKdHTyboTD5eUXsEuFi8CUqGQpT7Aiih4X5BmNwNl2ARg4AcnYcrqigYwAIs6CONugn3qlO6rLmsEFNhDdbCCk0/zSD+IlwCqn8QPNBHbyeu1x7o4mp8bOXk92a3jXiQ3olKnoSkvgQIruTnPrJ0gVXafMjwH9Hb9Vo=
-Message-ID: <461C619E.5040705@gmail.com>
-Date: Wed, 11 Apr 2007 13:18:38 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: gregkh@suse.de, maneesh@in.ibm.com, dmitry.torokhov@gmail.com,
-       oneukum@suse.de, rpurdie@rpsys.net, James.Bottomley@SteelEye.com,
-       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET #master] sysfs: make sysfs disconnect immediately on
- deletion, take 2
-References: <11760923261269-git-send-email-htejun@gmail.com> <20070410164416.63469474@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070410164416.63469474@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 11 Apr 2007 00:19:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:41974 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030814AbXDKETG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 00:19:06 -0400
+Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, ak@suse.de,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <Pine.LNX.4.64.0704102058420.18321@schroedinger.engr.sgi.com>
+References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
+	 <1176180337.8061.21.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0704102058420.18321@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Wed, 11 Apr 2007 14:18:41 +1000
+Message-Id: <1176265121.8061.66.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Mon, 9 Apr 2007 13:18:46 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
+On Tue, 2007-04-10 at 21:04 -0700, Christoph Lameter wrote:
+> On Tue, 10 Apr 2007, Benjamin Herrenschmidt wrote:
 > 
->> With all the patches applied, the same test used in the last take ran
->> 9+hrs without any problem.
+> > On Mon, 2007-04-09 at 11:25 -0700, Christoph Lameter wrote:
+> > 
+> > > Quicklists for page table pages V5
+> > 
+> > Looks interesting, but unfortunately not very useful at this point for
+> > powerpc unless you remove the assumption that quicklists contain
+> > pages...
 > 
-> I get the following on startup:
+> Then quicklists wont be as simple anymore.
 > 
-> =====================================
-> [ BUG: bad unlock balance detected! ]
-> -------------------------------------
-> start_udev/197 is trying to release lock (&sd->s_active) at:
-> [<0000000000209024>] release_sysfs_dirent+0x8c/0x118
-> but there are no more locks to release!
+> > On powerpc, we currently use kmem cache slabs (though that isn't
+> > terribly node friendly) whose sizes depend on the page size.
+> > 
+> > For a 4K page size kernel, we have 4 level page tables and use 2 caches,
+> > PTE and PGD pages are 4K (thus are PAGE_SIZE'd), and PMD & PUD are 1K.
+> 
+> PTE and PGD could be run via quicklists? With PTEs you cover the most 
+> common case. Quicklists using PGDs will allow to optimize using 
+> preconstructed pages.
+> 
+> Its probably best to keep the slabs for the 1K pages.
+>  
+> > For a 64K page size kernel, we have 3 level page tables and we use 3
+> > caches: a PGD pages are 128 bytes (yeah, not big heh...), our pmd
+> > pages are 32K (half a page) and PTE pages are PAGE_SIZE (64K).
+> 
+> Ok so use quicklists for the PTEs and slab for the rest? A PGD of only 128 
+> bytes? Stuff one at the end of the mm_struct or the task struct? That way 
+> you can avoid allocation overhead.
 
-Thanks a lot for spotting this.  I thought I enabled lock debugging but
-apparently, didn't.  Anyways, the bug doesn't affect actual behavior.
-It's just doing up_write() on an unlocked rwsem which is about to be
-freed.  I've just posted the updated version of patch 12 to fix this.
+Yeah, maybe... I need to think about it a bit more. I might be able to
+make the PMD a full page too.
 
--- 
-tejun
+Ben.
+
