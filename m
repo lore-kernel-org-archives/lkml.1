@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030781AbXDKExv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030811AbXDKEzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030781AbXDKExv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 00:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030803AbXDKExv
+	id S1030811AbXDKEzM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030816AbXDKEzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 00:53:51 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:58765 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030781AbXDKExu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 00:53:50 -0400
-Date: Wed, 11 Apr 2007 10:31:21 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: menage@google.com
-Cc: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
-       serue@us.ibm.com, ebiederm@xmission.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-Subject: Re: [PATCH 3/7] Containers (V8): Add generic multi-subsystem API to containers
-Message-ID: <20070411050121.GB15786@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070406233221.989528000@menage.corp.google.com> <20070407001324.271959000@menage.corp.google.com>
-Mime-Version: 1.0
+	Wed, 11 Apr 2007 00:55:12 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:33236 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030811AbXDKEzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 00:55:10 -0400
+Date: Wed, 11 Apr 2007 13:55:03 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Wensong Zhang <wensong@linux-vs.org>, Julian Anastasov <ja@ssi.bg>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Neil Horman <nhorman@redhat.com>
+Subject: Re: [PATCH 17/30] Use menuconfig objects - IPVS
+Message-ID: <20070411045501.GD15641@verge.net.au>
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704102323370.32056@yvahk01.tjqt.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070407001324.271959000@menage.corp.google.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.61.0704102323370.32056@yvahk01.tjqt.qr>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Sorry abt piece meal reviews, I am sending comments as and when I spot
-something ]
+On Tue, Apr 10, 2007 at 11:25:59PM +0200, Jan Engelhardt wrote:
+> 
+> Use menuconfigs instead of menus, so the whole menu can be disabled at        
+> once instead of going through all options.
+> 
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-On Fri, Apr 06, 2007 at 04:32:24PM -0700, menage@google.com wrote:
-> -void container_exit(struct task_struct *tsk)
-> +void container_exit(struct task_struct *tsk, int run_callbacks)
->  {
+This seems to work fine to me.
 
-[snip]
-
-> +	/* Reassign the task to the init_container_group. */
->  	task_lock(tsk);
-
-[snip]
-
-> +	if (tsk->containers != &init_container_group) {
-
-Is this check needed? If we have the check, then:
-
-> +	task_unlock(tsk);
-> +	if (cg)
-> +		put_container_group(cg);
-
-init_container_group refcount is leaky (fork increments it, but exit
-doesnt). Not a big prob perhaps, but ..would be nice to avoid?
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
 -- 
-Regards,
-vatsa
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
+
