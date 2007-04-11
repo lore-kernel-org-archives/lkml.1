@@ -1,69 +1,339 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161222AbXDKGfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161232AbXDKGgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161222AbXDKGfJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 02:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161223AbXDKGfJ
+	id S1161232AbXDKGgF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 02:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161227AbXDKGgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 02:35:09 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:33495 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161222AbXDKGfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 02:35:07 -0400
-Date: Wed, 11 Apr 2007 15:33:51 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       benh@kernel.crashing.org, davem@davemloft.net, ebiederm@xmission.com,
-       heiko.carstens@de.ibm.com, ink@jurassic.park.msu.ru, jdike@addtoit.com,
-       paulus@samba.org, rth@twiddle.net, schwidefsky@de.ibm.com,
-       takata@linux-m32r.org, tony.luck@intel.com, vgoyal@in.ibm.com
-Subject: Re: [PATCH 0/4] hard_smp_processor_id overhaul (v.2)
-Message-ID: <20070411063349.GA8401@verge.net.au>
-References: <1175676667.26920.128.camel@sebastian.intellilink.co.jp>
+	Wed, 11 Apr 2007 02:36:04 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:29065 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161224AbXDKGgA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 02:36:00 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=qml3sOryLytSxXlqFD07Ej7RY7WIrNBZv/ndmEsuKfdEcR1DrVuyZVze3Pl/lZGt+SEpgzXupXKroYzokc28lXZ+2Vt6OkBanScgqoIKCU/EMBY31uZC77MDLcaW+ekY9AgT4MX+L6iOcxB7mZ0amG0eHUFzy9UCw+U9avTT7vg=  ;
+X-YMail-OSG: 6YZkleoVM1mkDOBmKf59lmpB0Ic6ioaOOjl.uAt4wESTtQ.pTZqTDzNzKuK83ahWNGbqi5XOpHUCTWUSCMcxGazLwvnGmRQMRoRID_rFcZfGUrgz_Ig-
+Message-ID: <461C81C0.9040003@yahoo.com.au>
+Date: Wed, 11 Apr 2007 16:35:44 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1175676667.26920.128.camel@sebastian.intellilink.co.jp>
-User-Agent: mutt-ng/devel-r804 (Debian)
+To: Matt Mackall <mpm@selenic.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/13] maps#2: Move the page walker code to lib/
+References: <7.469046093@selenic.com>
+In-Reply-To: <7.469046093@selenic.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 04, 2007 at 05:51:07PM +0900, Fernando Luis Vázquez Cao wrote:
-> This new version (v.2) fixes generic arch i386 up build, has (hopefully)
-> clearer explanations, and does not break git bisect searches.
-> ---
-> With the advent of kdump, the assumption that the boot CPU when running
-> an UP kernel is always the CPU with a particular hardware ID (often 0)
-> (usually referred to as BSP on some architectures) is not valid anymore.
-> The reason being that the dump capture kernel boots on the crashed CPU
-> (the CPU that invoked crash_kexec), which may be or may not be that
-> particular CPU.
+Matt Mackall wrote:
+> Move the page walker code to lib/
 > 
-> As a consequence, the hardcoding of hard_smp_processor_id() to 0 on UP
-> systems (see "linux/smp.h") is not correct.
-> 
-> This patch-set does the following:
-> 
-> 1- Remove hardcoding of hard_smp_processor_id on UP systems (patch 1).
-> 
-> 2- Move definition of hard_smp_processor_id for the UP case to
-> architecture specific code ("asm/smp.h") where it belongs, so that each
-> architecture can provide its own implementation (patch 1).
-> 
-> 3- Ask the hardware when possible to obtain the hardware processor id on
-> i386 (patch 2), x86_64 (patch 3), and ia64 (patch 4), independently of
-> whether CONFIG_SMP is set or not.
-> 
-> I guess that something similar could be done for the rest of the
-> architectures, but since I am not an expert in all of them I am just
-> moving the definition of hard_smp_processor_id to "asm/smp.h" for those.
-> Of course, help from the respective maintainers to fill this gap would
-> be greatly appreciated.
-> 
-> The patches have been tested on i386, x86_64, and ia64.
+> This lets it get shared outside of proc/ and linked in only when
+> needed.
 
-Sorry for the delay in getting back to you, I've been on the road.
+Still should go into mm/
 
-All these patches seem fine to me.
+If it had, you might have also noticed your pagetable walking code
+is completely different from how everyone else does it, and fixed
+that too.
+
+BTW. Is it the case that unused and unexported symbols don't get
+pruned by the linker except inside lib/?
+
+> 
+> Signed-off-by: Matt Mackall <mpm@selenic.com>
+> 
+> Index: mm/fs/proc/task_mmu.c
+> ===================================================================
+> --- mm.orig/fs/proc/task_mmu.c	2007-03-27 22:13:43.000000000 -0500
+> +++ mm/fs/proc/task_mmu.c	2007-03-27 22:13:51.000000000 -0500
+> @@ -280,123 +280,6 @@ static int clear_refs_pte_range(pmd_t *p
+>  	return 0;
+>  }
+>  
+> -struct mm_walk {
+> -	int (*pgd_entry)(pgd_t *, unsigned long, unsigned long, void *);
+> -	int (*pud_entry)(pud_t *, unsigned long, unsigned long, void *);
+> -	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, void *);
+> -	int (*pte_entry)(pte_t *, unsigned long, unsigned long, void *);
+> -};
+> -
+> -static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+> -			  struct mm_walk *walk, void *private)
+> -{
+> -	pte_t *pte;
+> -	int err;
+> -
+> -	for (pte = pte_offset_map(pmd, addr); addr != end;
+> -	     addr += PAGE_SIZE, pte++) {
+> -		if (pte_none(*pte))
+> -			continue;
+> -		err = walk->pte_entry(pte, addr, addr, private);
+> -		if (err) {
+> -			pte_unmap(pte);
+> -			return err;
+> -		}
+> -	}
+> -	pte_unmap(pte);
+> -	return 0;
+> -}
+> -
+> -static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+> -			  struct mm_walk *walk, void *private)
+> -{
+> -	pmd_t *pmd;
+> -	unsigned long next;
+> -	int err;
+> -
+> -	for (pmd = pmd_offset(pud, addr); addr != end;
+> -	     pmd++, addr = next) {
+> -		next = pmd_addr_end(addr, end);
+> -		if (pmd_none_or_clear_bad(pmd))
+> -			continue;
+> -		if (walk->pmd_entry) {
+> -			err = walk->pmd_entry(pmd, addr, next, private);
+> -			if (err)
+> -				return err;
+> -		}
+> -		if (walk->pte_entry) {
+> -			err = walk_pte_range(pmd, addr, next, walk, private);
+> -			if (err)
+> -				return err;
+> -		}
+> -	}
+> -	return 0;
+> -}
+> -
+> -static int walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+> -			  struct mm_walk *walk, void *private)
+> -{
+> -	pud_t *pud;
+> -	unsigned long next;
+> -	int err;
+> -
+> -	for (pud = pud_offset(pgd, addr); addr != end;
+> -	     pud++, addr = next) {
+> -		next = pud_addr_end(addr, end);
+> -		if (pud_none_or_clear_bad(pud))
+> -			continue;
+> -		if (walk->pud_entry) {
+> -			err = walk->pud_entry(pud, addr, next, private);
+> -			if (err)
+> -				return err;
+> -		}
+> -		if (walk->pmd_entry || walk->pte_entry) {
+> -			err = walk_pmd_range(pud, addr, next, walk, private);
+> -			if (err)
+> -				return err;
+> -		}
+> -	}
+> -	return 0;
+> -}
+> -
+> -/*
+> - * walk_page_range - walk a memory map's page tables with a callback
+> - * @mm - memory map to walk
+> - * @addr - starting address
+> - * @end - ending address
+> - * @action - callback invoked for every bottom-level (PTE) page table
+> - * @private - private data passed to the callback function
+> - *
+> - * Recursively walk the page table for the memory area in a VMA, calling
+> - * a callback for every bottom-level (PTE) page table.
+> - */
+> -static int walk_page_range(struct mm_struct *mm,
+> -			   unsigned long addr, unsigned long end,
+> -			   struct mm_walk *walk, void *private)
+> -{
+> -	pgd_t *pgd;
+> -	unsigned long next;
+> -	int err;
+> -
+> -	for (pgd = pgd_offset(mm, addr); addr != end;
+> -	     pgd++, addr = next) {
+> -		next = pgd_addr_end(addr, end);
+> -		if (pgd_none_or_clear_bad(pgd))
+> -			continue;
+> -		if (walk->pgd_entry) {
+> -			err = walk->pgd_entry(pgd, addr, next, private);
+> -			if (err)
+> -				return err;
+> -		}
+> -		if (walk->pud_entry || walk->pmd_entry || walk->pte_entry) {
+> -			err = walk_pud_range(pgd, addr, next, walk, private);
+> -			if (err)
+> -				return err;
+> -		}
+> -	}
+> -	return 0;
+> -}
+> -
+>  static struct mm_walk smaps_walk = { .pmd_entry = smaps_pte_range };
+>  
+>  static int show_smap(struct seq_file *m, void *v)
+> Index: mm/include/linux/mm.h
+> ===================================================================
+> --- mm.orig/include/linux/mm.h	2007-03-27 22:13:42.000000000 -0500
+> +++ mm/include/linux/mm.h	2007-03-27 22:13:51.000000000 -0500
+> @@ -747,6 +747,16 @@ unsigned long unmap_vmas(struct mmu_gath
+>  		struct vm_area_struct *start_vma, unsigned long start_addr,
+>  		unsigned long end_addr, unsigned long *nr_accounted,
+>  		struct zap_details *);
+> +
+> +struct mm_walk {
+> +	int (*pgd_entry)(pgd_t *, unsigned long, unsigned long, void *);
+> +	int (*pud_entry)(pud_t *, unsigned long, unsigned long, void *);
+> +	int (*pmd_entry)(pmd_t *, unsigned long, unsigned long, void *);
+> +	int (*pte_entry)(pte_t *, unsigned long, unsigned long, void *);
+> +};
+> +
+> +int walk_page_range(struct mm_struct *, unsigned long addr, unsigned long end,
+> +		    struct mm_walk *walk, void *private);
+>  void free_pgd_range(struct mmu_gather **tlb, unsigned long addr,
+>  		unsigned long end, unsigned long floor, unsigned long ceiling);
+>  void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *start_vma,
+> Index: mm/lib/Makefile
+> ===================================================================
+> --- mm.orig/lib/Makefile	2007-03-27 22:14:09.000000000 -0500
+> +++ mm/lib/Makefile	2007-03-27 22:16:49.000000000 -0500
+> @@ -7,7 +7,7 @@ lib-y := ctype.o string.o vsprintf.o cmd
+>  	 idr.o div64.o int_sqrt.o bitmap.o extable.o prio_tree.o \
+>  	 sha1.o irq_regs.o reciprocal_div.o
+>  
+> -lib-$(CONFIG_MMU) += ioremap.o
+> +lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
+>  lib-$(CONFIG_SMP) += cpumask.o
+>  
+>  lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
+> Index: mm/lib/pagewalk.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ mm/lib/pagewalk.c	2007-03-27 22:18:37.000000000 -0500
+> @@ -0,0 +1,111 @@
+> +#include <linux/mm.h>
+> +
+> +static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+> +			  struct mm_walk *walk, void *private)
+> +{
+> +	pte_t *pte;
+> +	int err;
+> +
+> +	for (pte = pte_offset_map(pmd, addr); addr != end;
+> +	     addr += PAGE_SIZE, pte++) {
+> +		if (pte_none(*pte))
+> +			continue;
+> +		err = walk->pte_entry(pte, addr, addr, private);
+> +		if (err) {
+> +			pte_unmap(pte);
+> +			return err;
+> +		}
+> +	}
+> +	pte_unmap(pte);
+> +	return 0;
+> +}
+> +
+> +static int walk_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+> +			  struct mm_walk *walk, void *private)
+> +{
+> +	pmd_t *pmd;
+> +	unsigned long next;
+> +	int err;
+> +
+> +	for (pmd = pmd_offset(pud, addr); addr != end;
+> +	     pmd++, addr = next) {
+> +		next = pmd_addr_end(addr, end);
+> +		if (pmd_none_or_clear_bad(pmd))
+> +			continue;
+> +		if (walk->pmd_entry) {
+> +			err = walk->pmd_entry(pmd, addr, next, private);
+> +			if (err)
+> +				return err;
+> +		}
+> +		if (walk->pte_entry) {
+> +			err = walk_pte_range(pmd, addr, next, walk, private);
+> +			if (err)
+> +				return err;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int walk_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+> +			  struct mm_walk *walk, void *private)
+> +{
+> +	pud_t *pud;
+> +	unsigned long next;
+> +	int err;
+> +
+> +	for (pud = pud_offset(pgd, addr); addr != end;
+> +	     pud++, addr = next) {
+> +		next = pud_addr_end(addr, end);
+> +		if (pud_none_or_clear_bad(pud))
+> +			continue;
+> +		if (walk->pud_entry) {
+> +			err = walk->pud_entry(pud, addr, next, private);
+> +			if (err)
+> +				return err;
+> +		}
+> +		if (walk->pmd_entry || walk->pte_entry) {
+> +			err = walk_pmd_range(pud, addr, next, walk, private);
+> +			if (err)
+> +				return err;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +/*
+> + * walk_page_range - walk a memory map's page tables with a callback
+> + * @mm - memory map to walk
+> + * @addr - starting address
+> + * @end - ending address
+> + * @walk - set of callbacks to invoke for each level of the tree
+> + * @private - private data passed to the callback function
+> + *
+> + * Recursively walk the page table for the memory area in a VMA, calling
+> + * a callback for every bottom-level (PTE) page table.
+> + */
+> +int walk_page_range(struct mm_struct *mm,
+> +		    unsigned long addr, unsigned long end,
+> +		    struct mm_walk *walk, void *private)
+> +{
+> +	pgd_t *pgd;
+> +	unsigned long next;
+> +	int err;
+> +
+> +	for (pgd = pgd_offset(mm, addr); addr != end;
+> +	     pgd++, addr = next) {
+> +		next = pgd_addr_end(addr, end);
+> +		if (pgd_none_or_clear_bad(pgd))
+> +			continue;
+> +		if (walk->pgd_entry) {
+> +			err = walk->pgd_entry(pgd, addr, next, private);
+> +			if (err)
+> +				return err;
+> +		}
+> +		if (walk->pud_entry || walk->pmd_entry || walk->pte_entry) {
+> +			err = walk_pud_range(pgd, addr, next, walk, private);
+> +			if (err)
+> +				return err;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+
+-- 
+SUSE Labs, Novell Inc.
