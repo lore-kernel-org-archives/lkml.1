@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161384AbXDKW62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161340AbXDKWze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161384AbXDKW62 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161369AbXDKW56
+	id S1161340AbXDKWze (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161366AbXDKWzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:57:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46441 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161363AbXDKW5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 18:57:51 -0400
-Message-ID: <461D67A9.5020509@redhat.com>
-Date: Wed, 11 Apr 2007 18:56:41 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Wed, 11 Apr 2007 18:55:20 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55667 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161363AbXDKWyw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 18:54:52 -0400
+Date: Wed, 11 Apr 2007 15:52:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       "David S. Miller" <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>
+Subject: [patch 16/31] Fix scsi sense handling
+Message-ID: <20070411225211.GQ24814@kroah.com>
+References: <20070411224329.866978349@mini.kroah.org>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH] make MADV_FREE lazily free memory
-References: <461C6452.1000706@redhat.com> <461D6413.6050605@cosmosbay.com>
-In-Reply-To: <461D6413.6050605@cosmosbay.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="fix-scsi-sense-handling.patch"
+In-Reply-To: <20070411225100.GA24814@kroah.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Rik van Riel a écrit :
->> Make it possible for applications to have the kernel free memory
->> lazily.  This reduces a repeated free/malloc cycle from freeing
->> pages and allocating them, to just marking them freeable.  If the
->> application wants to reuse them before the kernel needs the memory,
->> not even a page fault will happen.
+-stable review patch.  If anyone has any objections, please let us know.
 
-> I dont understand this last sentence. If not even a page fault happens, 
-> how the kernel knows that the page was eventually reused by the 
-> application, and should not be freed in case of memory pressure ?
+------------------
+From: David Miller <davem@davemloft.net>
 
-Before maybe freeing the page, the kernel checks the referenced
-and dirty bits of the page table entries mapping that page.
+[SCSI]: Fix scsi_send_eh_cmnd scatterlist handling
 
-> ptr = mmap(some space);
-> madvise(ptr, length, MADV_FREE);
-> /* kernel may free the pages */
+This fixes a regression caused by commit:
 
-All this call does is:
-- clear the accessed and dirty bits
-- move the page to the far end of the inactive list,
-   where it will be the first to be reclaimed
+2dc611de5a3fd955cd0298c50691d4c05046db97
 
-> sleep(10);
-> 
-> /* what the application must do know before reusing space ? */
-> memset(ptr, data, 10000);
-> /* kernel should not free ptr[0..10000] now */
+The sense buffer code in scsi_send_eh_cmnd was changed to use
+alloc_page() and a scatter list, but the sense data copy was not
+updated to match so what we actually get in the sense buffer is total
+grabage starting with the kernel address of the struct page we got.
+Basically the stack frame of scsi_send_eh_cmd() is what ends up
+in the sense buffer.
 
-Two things can happen here.
+Depending upon how pointers look on a given platform, you can
+end up getting sr_ioctl.c errors when you mount a cdrom.  If
+the CDROM gives a check condition for GPCMD_GET_CONFIGURATION issued
+by drivers/cdrom/cdrom.c:cdrom_mmc_profile(), sr_ioctl will
+spit out this error message in sr_do_ioctl() with the way pointers
+are on sparc64:
 
-If this program used the pages before the kernel needed
-them, the program will be reusing its old pages.
+		default:
+			printk(KERN_ERR "%s: CDROM (ioctl) error, command: ", cd->cdi.name);
+			__scsi_print_command(cgc->cmd);
+			scsi_print_sense_hdr("sr", &sshdr);
+			err = -EIO;
 
-If the kernel got there first, you will get page faults
-and the kernel will fill in the memory with new pages.
+This is the error Tom Callaway reported in:
 
-Both of these alternatives are transparent to userspace.
+http://marc.info/?l=linux-sparc&m=117407453208101&w=2
+
+Anyways, fix this by using page_address(sgl.page) which is OK
+because we know this is low-mem due to GFP_ATOMIC.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Acked-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/scsi/scsi_error.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -595,7 +595,7 @@ static int scsi_send_eh_cmnd(struct scsi
+ 	 */
+ 	if (copy_sense) {
+ 		if (!SCSI_SENSE_VALID(scmd)) {
+-			memcpy(scmd->sense_buffer, scmd->request_buffer,
++			memcpy(scmd->sense_buffer, page_address(sgl.page),
+ 			       sizeof(scmd->sense_buffer));
+ 		}
+ 		__free_page(sgl.page);
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
