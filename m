@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbXDKPNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbXDKP04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753000AbXDKPNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 11:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXDKPNW
+	id S1753026AbXDKP04 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 11:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbXDKP04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 11:13:22 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:48667 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbXDKPNV (ORCPT
+	Wed, 11 Apr 2007 11:26:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:6186 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbXDKP0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 11:13:21 -0400
-Date: Wed, 11 Apr 2007 11:12:19 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Phillip Susi <psusi@cfl.rr.com>
-cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Olaf Hering <olaf@aepfle.de>, Dave Dillow <dave@thedillows.org>,
-       Dave Jones <davej@redhat.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: I give up
-In-Reply-To: <461CF4D9.2000302@cfl.rr.com>
-Message-ID: <alpine.DEB.0.83.0704111109390.13251@sigma.j-a-k-j.com>
-References: <200704091007.58535.gene.heskett@gmail.com>
- <200704100353.14208.gene.heskett@gmail.com> <461BDFEA.8040602@cfl.rr.com>
- <200704110001.40573.gene.heskett@gmail.com> <461CF4D9.2000302@cfl.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 11 Apr 2007 11:26:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=l2t6JcLy77Ou+jkDr+EpNA6LoyKg3X4uGgaSug7lZFcnBCxqP1VUx2buTqyodNpUpaR05T+rbmAL9s5cqFphAblBz/1l+CliqwJpQ3QHLATLXn6Ivx90PLUEk6nrfZcXASO3alPXPbeWd2ytowS4l8a9rtWZt1J2dT5MKYt8uRA=
+Date: Wed, 11 Apr 2007 20:58:46 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, alan@redhat.com
+Subject: [KJ][PATCH] SPIN_LOCK_UNLOCKED cleanup in drivers/ata/pata_winbond.c
+Message-ID: <20070411152846.GA11449@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I violently agree on that point, but the limited conversations I've had with
-> > the tar maintainer so far indicates that AFAHIC, its linux that's broken.  A
-> > new device number is a new disk and must be treated as such.
-> 
-> Sumbit a patch adding an option to ignore the device number, and slap him
-> around a bit with a large trout ;)
+remove SPIN_LOCK_UNLOCKED, use DEFINE_SPINLOCK instead
 
-I think that's especially true. If a user begins with a single full disk 
-for their entire filesystem, uses tar to backup, and then later adds a 
-second disk, copies everything from /usr and /home onto partitions there 
-(making sure to preserve all interesting bits like ctime/mtime), and 
-mounts them over the original directories, tar should not decide that 
-every file in /usr and /home was deleted and recreated.
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+
+---
+ pata_winbond.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+
+diff --git a/drivers/ata/pata_winbond.c b/drivers/ata/pata_winbond.c
+index 6c11103..cfcd2a5 100644
+--- a/drivers/ata/pata_winbond.c
++++ b/drivers/ata/pata_winbond.c
+@@ -36,7 +36,7 @@ static int probe_winbond = 1;
+ static int probe_winbond;
+ #endif
+ 
+-static spinlock_t winbond_lock = SPIN_LOCK_UNLOCKED;
++static DEFINE_SPINLOCK(winbond_lock);
+ 
+ static void winbond_writecfg(unsigned long port, u8 reg, u8 val)
+ {
+
+-- 
+Milind Arun Choudhary
