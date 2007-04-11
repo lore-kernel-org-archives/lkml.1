@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbXDKSdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbXDKSeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbXDKSdj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbXDKSdj
+	id S1753616AbXDKSeH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXDKSeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:33:39 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36100 "EHLO mx1.suse.de"
+	Wed, 11 Apr 2007 14:34:07 -0400
+Received: from mail.suse.de ([195.135.220.2]:36134 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753594AbXDKSdi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:33:38 -0400
-From: Danny Kukawka <dkukawka@suse.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] ACPI: asus_acpi, support F2JE model
-Date: Wed, 11 Apr 2007 20:32:11 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       acpi4asus-user@lists.sourceforge.net, corentincj@iksaif.net,
-       sziwan@users.sourceforge.net
-References: <22473653910004885@karneval.cz> <461CE6AA.6050806@gmail.com> <200704112018.31026.dkukawka@suse.de>
-In-Reply-To: <200704112018.31026.dkukawka@suse.de>
-MIME-Version: 1.0
+	id S1753616AbXDKSeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 14:34:04 -0400
+Date: Wed, 11 Apr 2007 20:33:38 +0200
+From: Olaf Dabrunz <od@suse.de>
+To: John Stoffel <john@stoffel.org>
+Cc: Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Andi Kleen <ak@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
+Message-ID: <20070411183338.GB29059@suse.de>
+Mail-Followup-To: John Stoffel <john@stoffel.org>,
+	Gerd Hoffmann <kraxel@suse.de>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mundt <lethal@linux-sh.org>, Ralf Baechle <ralf@linux-mips.org>,
+	Andi Kleen <ak@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Richard Henderson <rth@twiddle.net>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>
+References: <20070315154638.944768000@suse.de> <17913.45970.178029.519745@smtp.charter.net> <20070329163714.GA29059@suse.de> <17938.30190.281832.393043@smtp.charter.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200704112032.11772.dkukawka@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <17938.30190.281832.393043@smtp.charter.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mittwoch, 11. April 2007, Danny Kukawka wrote:
-> Jiri Slaby wrote:
-> > Corentin CHARY napsal(a):
-> >> Le Wednesday 11 April 2007 11:33:48 Jiri Slaby, vous avez écrit :
-> >>> asus_acpi, support F2JE model
-> >> Just use the new asus-laptop driver =)
-> >> (see acpi4asus-0.40)
-> > 
-> > code seems good, but this is not so good:
-> > #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,20)
-> > #warning "This module does not support 2.6.20 yet, wait for a new release
-> > #=)" endif
-> >
-> > When do you plan to support latest kernels and merge it to mainline?
+On 03-Apr-07, John Stoffel wrote:
 > 
-> This patch fixes acpi4asus-0.40 for me at least with 2.6.20 on a ASUS R1F.
+> Sorry, I've been away for the past 10+ days and not reading email at
+> all.  
 
-Btw. looks as if a new version of the driver (v0.41) is already in the mm-tree.
+NP. Happens to me too (as you can see).
 
-Danny
+> Olaf> Try changing the order of the console= parameters:
+> 
+> Olaf>     kernel ... console=ttyS1,96008N1 console=tty0
+> 
+> This isn't good for me, since it then drops some output I want to save
+> via the serial console to the regular console.  It would be nice if
+> all output went to BOTH consoles, though input should only be accepted
+> on the first console listed.  
+
+That is actually the underlying problem: the Linux kernel does not
+provide the means to duplicate data streams in the kernel to several
+devices. This has to be done in user-space. The main reason for this is
+that error handling, locking and such things would need to be different
+if streams had a fan-in or a fan-out. It tends to make things more
+complicated.
+
+But probably it is an interesting project to explore and define the
+sematics of devices with fan-in and fan-out.
+
+I can image that user-space programs would be able to add fan-in or
+fan-out file-descriptors to an opened file-descriptor by using an
+ioctl(), but then they would need to be prepared to deal with different
+error handling and behaviour of such a "file".
+
+Some devices (as the console device) could then have a pre-defined
+fan-in or fan-out set by default, if opened with a special flag. A
+program using this flag would then say: I am prepared to deal with
+fan-in / fan-out semantics.
+
+-- 
+Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
+
