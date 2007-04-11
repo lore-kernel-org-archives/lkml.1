@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030395AbXDKDkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030352AbXDKDiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030395AbXDKDkO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 23:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030384AbXDKDj5
+	id S1030352AbXDKDiu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 23:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbXDKDik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 23:39:57 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:15870 "EHLO
+	Tue, 10 Apr 2007 23:38:40 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:15843 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030772AbXDKDj1 (ORCPT
+	with ESMTP id S1753941AbXDKDif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 23:39:27 -0400
+	Tue, 10 Apr 2007 23:38:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:cc:date:message-id:in-reply-to:subject;
-        b=ApkvMjc/sQvmKAfv1XVw3v3e0XrQaGC9O/WGHrieVToITa2YAwOHJEY+MHROJ2PJ7VksQroYCcBJ9m7hQNizx7V5gVBqtPS4IDQt8PxqHJpHfiAkcp2GcS7ReYgfw+nKHwpCAQSEA2V2xFAF8AnUzhId4ZvCFwjYGUTlqWhUVfY=
+        b=aGZ+6HJW3WnZJwl7CC5q64geeFPw891YhX/LDpSr2hp12IC4P4i4Uypwql5fnFQZ/VAt6I9as0zlvwe6tfBu0W7R6qs7OxTN1B/sePgMCru0qKWWzWYsnHAxll46LXAciU2ctJHXCv1OAHAymYRv1bedTzuqDCB6T53rmIlHMJc=
 From: Nate Diller <nate.diller@gmail.com>
 To: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Date: Tue, 10 Apr 2007 20:36:00 -0700
-Message-Id: <20070411033600.11000.89714.patchbomb.py@localhost>
+Message-Id: <20070411033600.11000.71629.patchbomb.py@localhost>
 In-Reply-To: <20070411033600.11000.38285.patchbomb.py@localhost>
-Subject: [PATCH 13/13] fs: deprecate memclear_highpage_flush
+Subject: [PATCH 6/13] gfs2: use zero_user_page
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that all the in-tree users are converted over to zero_user_page(),
-deprecate the old memclear_highpage_flush() call.
+Use zero_user_page() instead of open-coding it. 
 
 Signed-off-by: Nate Diller <nate.diller@gmail.com>
 
----
+--- 
 
-diff -urpN -X dontdiff linux-2.6.21-rc6-mm1/include/linux/highmem.h linux-2.6.21-rc6-mm1-test/include/linux/highmem.h
---- linux-2.6.21-rc6-mm1/include/linux/highmem.h	2007-04-10 18:32:41.000000000 -0700
-+++ linux-2.6.21-rc6-mm1-test/include/linux/highmem.h	2007-04-10 19:40:14.000000000 -0700
-@@ -149,6 +149,8 @@ static inline void zero_user_page(struct
- 	kunmap_atomic(kaddr, KM_USER0);
- }
+diff -urpN -X dontdiff linux-2.6.21-rc6-mm1/fs/gfs2/bmap.c linux-2.6.21-rc6-mm1-test/fs/gfs2/bmap.c
+--- linux-2.6.21-rc6-mm1/fs/gfs2/bmap.c	2007-04-09 17:23:48.000000000 -0700
++++ linux-2.6.21-rc6-mm1-test/fs/gfs2/bmap.c	2007-04-09 18:18:23.000000000 -0700
+@@ -885,7 +885,6 @@ static int gfs2_block_truncate_page(stru
+ 	unsigned blocksize, iblock, length, pos;
+ 	struct buffer_head *bh;
+ 	struct page *page;
+-	void *kaddr;
+ 	int err;
  
-+static void memclear_highpage_flush(struct page *page, unsigned int offset,
-+					unsigned int size) __deprecated;
- static inline void memclear_highpage_flush(struct page *page, unsigned int offset, unsigned int size)
- {
- 	return zero_user_page(page, offset, size);
+ 	page = grab_cache_page(mapping, index);
+@@ -933,10 +932,7 @@ static int gfs2_block_truncate_page(stru
+ 	if (sdp->sd_args.ar_data == GFS2_DATA_ORDERED || gfs2_is_jdata(ip))
+ 		gfs2_trans_add_bh(ip->i_gl, bh, 0);
+ 
+-	kaddr = kmap_atomic(page, KM_USER0);
+-	memset(kaddr + offset, 0, length);
+-	flush_dcache_page(page);
+-	kunmap_atomic(kaddr, KM_USER0);
++	zero_user_page(page, offset, length);
+ 
+ unlock:
+ 	unlock_page(page);
