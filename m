@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXDKNug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXDKNzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbXDKNug (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 09:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbXDKNuf
+	id S1752403AbXDKNzy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 09:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXDKNzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 09:50:35 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54634 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751571AbXDKNue (ORCPT
+	Wed, 11 Apr 2007 09:55:54 -0400
+Received: from ms-smtp-02.ohiordc.rr.com ([65.24.5.136]:50783 "EHLO
+	ms-smtp-02.ohiordc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbXDKNzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 09:50:34 -0400
-X-Sasl-enc: XZSGDUu5jTbtJi1+06js/QkDWAP3r3v4/7nm9Bf/NeJy 1176299433
-Subject: Re: [patch 0/8] unprivileged mount syscall
-From: Ian Kent <raven@themaw.net>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hpa@zytor.com, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <E1HbaNO-0005AV-00@dorka.pomaz.szeredi.hu>
-References: <20070404183012.429274832@szeredi.hu>
-	 <20070406160238.f3178189.akpm@linux-foundation.org>
-	 <4616D4D4.6020405@zytor.com> <1176195125.3476.47.camel@raven.themaw.net>
-	 <E1HbaNO-0005AV-00@dorka.pomaz.szeredi.hu>
+	Wed, 11 Apr 2007 09:55:53 -0400
+Subject: Re: 2.6.21-rc6-mm1 ima "BUG: held lock freed!"
+From: Joseph Fannin <jhf@columbus.rr.com>
+To: Reiner Sailer <sailer@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       sailer@watson.ibm.com, serue@linux.vnet.ibm.com,
+       zohar@linux.vnet.ibm.com
+In-Reply-To: <461BDED4.8060606@us.ibm.com>
+References: <461B8A0F.2060007@us.ibm.com>  <461BDED4.8060606@us.ibm.com>
 Content-Type: text/plain
-Date: Wed, 11 Apr 2007 21:48:30 +0800
-Message-Id: <1176299311.3377.6.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
 Content-Transfer-Encoding: 7bit
+Date: Wed, 11 Apr 2007 09:55:18 -0400
+Message-Id: <1176299718.14723.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-11 at 12:48 +0200, Miklos Szeredi wrote:
-> > > >>
-> > > >> - users can use bind mounts without having to pre-configure them in
-> > > >>   /etc/fstab
-> > > >>
-> > > 
-> > > This is by far the biggest concern I see.  I think the security 
-> > > implication of allowing anyone to do bind mounts are poorly understood.
-> > 
-> > And especially so since there is no way for a filesystem module to veto
-> > such requests.
+On Tue, 2007-04-10 at 15:00 -0400, Reiner Sailer wrote:
+> Joseph,
 > 
-> The filesystem can't veto initial mounts based on destination either.
-> I don't think it's up to the filesystem to police bind/move mounts in
-> any way.
+> we cannot reproduce the BUG you report. We have identified a potential 
+> source (spinlock around mutex_init). I have attached a small patch that 
+> removes this lock from the initialization of the hash table. I have 
+> tested the patch but I cannot verify if this resolves the problem you 
+> are seeing.
+> 
+> If you can reproduce the problem, would you mind to apply this patch and 
+> let us know if this solves the problem?
 
-But if a filesystem can't or the developer thinks that it shouldn't for
-some reason, support bind/move mounts then there should be a way for the
-filesystem to tell the kernel that.
+The BUG message no longer appears with this patch applied.  It was 100%
+reproducible before, so I think this fixed it.
 
-Surely a filesystem is in a good position to be able to decide if a
-mount request "for it" should be allowed to continue based on it's "own
-situation and capabilities".
+Thanks!
 
-Ian
+--
+Joseph Fannin
+jfannin@gmail.com || jhf@columbus.rr.com
 
-
-
+> >    I'm seeing this while booting:
+> >
+> > ima (ima_init): No TPM chip found(rc = -19), activating TPM-bypass!
+> >
+> > =========================
+> > [ BUG: held lock freed! ]
+> > -------------------------
+> > swapper/1 is freeing memory c04c7660-c04c76a3, with a lock still held 
+> > there!
+> > (ima_queue_lock){--..}, at: [<c0202710>] ima_create_htable+0x10/0x90
+> > 1 lock held by swapper/1:
+> > #0:  (ima_queue_lock){--..}, at: [<c0202710>] ima_create_htable+0x10/0x90
+> >
+> > stack backtrace:
+> > [<c0105959>] dump_trace+0x1d9/0x210
+> > [<c01059aa>] show_trace_log_lvl+0x1a/0x30
+> > [<c0106612>] show_trace+0x12/0x20
+> > [<c01066d6>] dump_stack+0x16/0x20
+> > [<c014fd3a>] debug_check_no_locks_freed+0x17a/0x180
+> > [<c014cdbf>] debug_mutex_init+0x1f/0x50
+> > [<c0145451>] __mutex_init+0x41/0x50
+> > [<c020277d>] ima_create_htable+0x7d/0x90
+> > [<c020286f>] ima_init+0x3f/0x270
+> > [<c051b765>] init_evm+0x1f5/0x250
+> > [<c05015d2>] kernel_init+0x132/0x320
+> > [<c010532f>] kernel_thread_helper+0x7/0x18
+> > =======================
+> >
+> >    I saw this in -rc5-mm4 also.
+> >
+> >    I couldn't find a contact address in MAINTAINERS, so I've CC'd the
+> > two authors listed on top of ima_create_htable.c , as well as the
+> > first submitter of the IMA stuff I found in my LKML archive.
+> >
+> >    As an aside, this computer does have (some sort of) TPM chip, but
+> > the driver is built as a module, and not loaded at this point (not a
+> > worry for me, I don't intend to use it).
+> >
