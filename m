@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030814AbXDKETI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161162AbXDKETX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030814AbXDKETI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 00:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030805AbXDKETI
+	id S1161162AbXDKETX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 00:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161172AbXDKETX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 00:19:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41974 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030814AbXDKETG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 00:19:06 -0400
-Subject: Re: [QUICKLIST 1/4] Quicklists for page table pages V5
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, ak@suse.de,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <Pine.LNX.4.64.0704102058420.18321@schroedinger.engr.sgi.com>
-References: <20070409182509.8559.33823.sendpatchset@schroedinger.engr.sgi.com>
-	 <1176180337.8061.21.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0704102058420.18321@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 11 Apr 2007 14:18:41 +1000
-Message-Id: <1176265121.8061.66.camel@localhost.localdomain>
+	Wed, 11 Apr 2007 00:19:23 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:49075 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161162AbXDKETU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 00:19:20 -0400
+Date: Tue, 10 Apr 2007 21:21:43 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Borislav Petkov <bbpetkov@yahoo.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [KERNEL-DOC] generate main index page when building
+ 'htmldocs'
+Message-Id: <20070410212143.3a5d786d.randy.dunlap@oracle.com>
+In-Reply-To: <20070410234422.GA30554@zmei.tnic>
+References: <20070410234422.GA30554@zmei.tnic>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-10 at 21:04 -0700, Christoph Lameter wrote:
-> On Tue, 10 Apr 2007, Benjamin Herrenschmidt wrote:
+On Wed, 11 Apr 2007 01:44:22 +0200 Borislav Petkov wrote:
+
+> Here's a patch for kernel-doc that enables the generation of a global, TOC-like index.html 
+> page after building 'htmldocs'
 > 
-> > On Mon, 2007-04-09 at 11:25 -0700, Christoph Lameter wrote:
-> > 
-> > > Quicklists for page table pages V5
-> > 
-> > Looks interesting, but unfortunately not very useful at this point for
-> > powerpc unless you remove the assumption that quicklists contain
-> > pages...
-> 
-> Then quicklists wont be as simple anymore.
-> 
-> > On powerpc, we currently use kmem cache slabs (though that isn't
-> > terribly node friendly) whose sizes depend on the page size.
-> > 
-> > For a 4K page size kernel, we have 4 level page tables and use 2 caches,
-> > PTE and PGD pages are 4K (thus are PAGE_SIZE'd), and PMD & PUD are 1K.
-> 
-> PTE and PGD could be run via quicklists? With PTEs you cover the most 
-> common case. Quicklists using PGDs will allow to optimize using 
-> preconstructed pages.
-> 
-> Its probably best to keep the slabs for the 1K pages.
+> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+Nice idea.  However, the order of entries in index.html is suboptimal,
+due to the order of DOCBOOKS in the Makefile.  You could submit a patch
+for that, or I'll change it.
+
+Thanks.
+
+
+> Index: 21-rc6/Documentation/DocBook/Makefile
+> ===================================================================
+> --- 21-rc6.orig/Documentation/DocBook/Makefile	2007-04-11 00:02:02.000000000 +0200
+> +++ 21-rc6/Documentation/DocBook/Makefile	2007-04-11 01:00:21.000000000 +0200
+> @@ -44,6 +44,7 @@
 >  
-> > For a 64K page size kernel, we have 3 level page tables and we use 3
-> > caches: a PGD pages are 128 bytes (yeah, not big heh...), our pmd
-> > pages are 32K (half a page) and PTE pages are PAGE_SIZE (64K).
-> 
-> Ok so use quicklists for the PTEs and slab for the rest? A PGD of only 128 
-> bytes? Stuff one at the end of the mm_struct or the task struct? That way 
-> you can avoid allocation overhead.
+>  HTML := $(patsubst %.xml, %.html, $(BOOKS))
+>  htmldocs: $(HTML)
+> +	$(call build_main_index)
+>  
+>  MAN := $(patsubst %.xml, %.9, $(BOOKS))
+>  mandocs: $(MAN)
+> @@ -133,10 +134,17 @@
+>  %.pdf : %.xml
+>  	$(call cmd,db2pdf)
+>  
+> +
+> +main_idx = Documentation/DocBook/index.html
+> +build_main_index = rm -rf $(main_idx) && \
+> +		   echo '<h1>Linux Kernel HTML Documentation</h1>' >> $(main_idx) && \
+> +		   echo '<h2>Kernel Version: $(KERNELVERSION)</h2>' >> $(main_idx) && \
+> +		   cat $(HTML) >> $(main_idx)
+> +
+>  quiet_cmd_db2html = HTML   $@
+>        cmd_db2html = xmlto xhtml $(XMLTOFLAGS) -o $(patsubst %.html,%,$@) $< && \
+>  		echo '<a HREF="$(patsubst %.html,%,$(notdir $@))/index.html"> \
+> -         Goto $(patsubst %.html,%,$(notdir $@))</a><p>' > $@
+> +        $(patsubst %.html,%,$(notdir $@))</a><p>' > $@
+>  
+>  %.html:	%.xml
+>  	@(which xmlto > /dev/null 2>&1) || \
+> -
 
-Yeah, maybe... I need to think about it a bit more. I might be able to
-make the PMD a full page too.
-
-Ben.
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
