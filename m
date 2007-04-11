@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXDKSgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXDKSk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753634AbXDKSgv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 14:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbXDKSgv
+	id S1752449AbXDKSk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 14:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbXDKSk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 14:36:51 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:45193 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932065AbXDKSgu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 14:36:50 -0400
-Message-ID: <461D2AB8.5080902@zytor.com>
-Date: Wed, 11 Apr 2007 11:36:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 11 Apr 2007 14:40:27 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42493 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752352AbXDKSk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 14:40:26 -0400
+X-Authenticated: #36390367
+X-Provags-ID: V01U2FsdGVkX1/f8kBUV5rf7iIdB4kSKAzgIm4G6L+ZWe9NNE5qYl
+	KYtBz6KXP9sh7I
+From: Markus =?iso-8859-15?q?Ko=DFmann?= <mkossmann_ml1@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: parallel port problems with 2.6.21_rc5 and 2.6.21_rc6_git3-20070410174235
+Date: Wed, 11 Apr 2007 20:40:23 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-To: Egmont Koblinger <egmont@uhulinux.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-References: <20070406191245.GA11974@uhulinux.hu> <4616A2C7.3030000@zytor.com> <20070407092451.GA8779@uhulinux.hu> <Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr> <20070407172603.GA25351@uhulinux.hu> <4617DBF7.5060009@zytor.com> <20070410094325.GB9143@uhulinux.hu> <461BB092.3070201@zytor.com> <20070410171924.GA18314@uhulinux.hu> <20070410183659.7341eeec@the-village.bc.nu> <20070411182801.GC26382@uhulinux.hu>
-In-Reply-To: <20070411182801.GC26382@uhulinux.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704112040.23505.mkossmann_ml1@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Egmont Koblinger wrote:
-> +static int is_zero_width(long ucs)
-> +{
-> +  static const struct interval zero_width[] = {
-/* lots */
-> +  };
-
-I'm still unhappy about these large search tables in the kernel, not 
-because they take a huge amount of space (it's not that much), but 
-because they're invariably going to be stale, as they're Unicode-version 
-dependent.
-
-At least please put them in a separate .c file and include a script to 
-generate them clean from UnicodeData.txt.
-
-Besides, would it not make more sense to have a single table with the 
-width information, if you insist on having one, instead of multiple ones?
-
-	-hpa
+When using either the unpatched  2.6.21_rc5   or SUSEs patched 
+2.6.21_rc6_git3-20070410174235 on a SUSE-10.2 x86_64 system the parallel port 
+doesn't work right. If I "cat some_asciifile >/dev/lp0"  the output on my 
+Epson Stylus Color 880 is unreadable.  "cat /dev/zero >/dev/lp0"  creates 
+random characters on the paper. Printing using cups also doesn't work any 
+more. 
+Switching back to SUSEs  2.6.18.8-0.1 kernel fixes the problem.
+Any Ideas, what might be broken here ? 
