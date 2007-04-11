@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbXDKRvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbXDKRwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbXDKRvk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 13:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXDKRvk
+	id S1753460AbXDKRwo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 13:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXDKRwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 13:51:40 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:58732 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753411AbXDKRvj (ORCPT
+	Wed, 11 Apr 2007 13:52:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:57461 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753433AbXDKRwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 13:51:39 -0400
-X-Sasl-enc: kw3Jeur8rBz2rP66fpzz8Sqp5adYOB+jsqKIyLEpFkRW 1176313898
-Subject: Re: [PATCH] autofs4: fix race in unhashed dentry code
-From: Ian Kent <raven@themaw.net>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <461CF939.9030104@suse.com>
-References: <461CF939.9030104@suse.com>
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 01:49:37 +0800
-Message-Id: <1176313777.3377.21.camel@raven.themaw.net>
+	Wed, 11 Apr 2007 13:52:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=SfMi6fO0TO7mF3/k+kfdhJ7W4gVBLX2VMdbhnjZrHB2q7t1z7chf1FAwt0vL60asN7Zh3cpOzofAtjmxqjffBnVFvlueEVOHQMUEVyMzP5sdwal6pATtNjBo60pq8APovFMKXJzNGO/CUjmvvgEcfz4KAhoMWOY88SlUECcrQGE=
+Date: Wed, 11 Apr 2007 23:24:34 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org
+Cc: linux1394-devel@lists.sourceforge.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, bcollins@debian.org,
+       stefanr@s5r6.in-berlin.de
+Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in
+Message-ID: <20070411175434.GA9110@arun.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-32.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-11 at 11:05 -0400, Jeff Mahoney wrote:
->  Commit f50b6f8691cae2e0064c499dd3ef3f31142987f0 introduced a
->  race in autofs4 between autofs_lookup_unhashed() and
->  autofs_dentry_release().
-> 
->  autofs_dentry_release() ends up clearing the ->dentry and ->inode
->  members of autofs_info before removing it from the rehash list. The
->  list is protected by the rehash lock in both functions, but
->  since autofs_dentry_release() starts tearing the autofs_info struct
->  down before removing it from the list, autofs_lookup_unhashed() can
->  get a autofs_info with a NULL dentry.
-> 
->  This patch moves the clearing of ->dentry and ->inode after the removal
->  from the rehash list.
+SPIN_LOCK_UNLOCKED cleanup,use DEFINE_SPINLOCK instead 
 
-Oh .. excellent, I had a bug report but I just couldn't see it for
-looking.
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+---
 
-You've made my day.
-Thanks heaps
-Ian
+ ieee1394_transactions.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-> 
-> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-Acked-by: Ian Kent <raven@themaw.net>
-
-> 
-> ---
-> 
->  fs/autofs4/root.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> --- a/fs/autofs4/root.c	2007-04-11 09:41:44.000000000 -0400
-> +++ b/fs/autofs4/root.c	2007-04-11 10:54:37.000000000 -0400
-> @@ -470,9 +470,6 @@ void autofs4_dentry_release(struct dentr
->  	if (inf) {
->  		struct autofs_sb_info *sbi = autofs4_sbi(de->d_sb);
->  
-> -		inf->dentry = NULL;
-> -		inf->inode = NULL;
-> -
->  		if (sbi) {
->  			spin_lock(&sbi->rehash_lock);
->  			if (!list_empty(&inf->rehash))
-> @@ -480,6 +477,9 @@ void autofs4_dentry_release(struct dentr
->  			spin_unlock(&sbi->rehash_lock);
->  		}
->  
-> +		inf->dentry = NULL;
-> +		inf->inode = NULL;
-> +
->  		autofs4_free_ino(inf);
->  	}
->  }
-> 
-
+diff --git a/drivers/ieee1394/ieee1394_transactions.c b/drivers/ieee1394/ieee1394_transactions.c
+index 0833fc9..8563077 100644
+--- a/drivers/ieee1394/ieee1394_transactions.c
++++ b/drivers/ieee1394/ieee1394_transactions.c
+@@ -32,7 +32,7 @@
+ #ifndef HPSB_DEBUG_TLABELS
+ static
+ #endif
+-spinlock_t hpsb_tlabel_lock = SPIN_LOCK_UNLOCKED;
++DEFINE_SPINLOCK(hpsb_tlabel_lock);
+ 
+ static DECLARE_WAIT_QUEUE_HEAD(tlabel_wq);
+ 
+-- 
+Milind Arun Choudhary
