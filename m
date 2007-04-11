@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161121AbXDKAQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbXDKAWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161121AbXDKAQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Apr 2007 20:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161133AbXDKAQe
+	id S932424AbXDKAWx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Apr 2007 20:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932411AbXDKAWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Apr 2007 20:16:34 -0400
-Received: from mga09.intel.com ([134.134.136.24]:13239 "EHLO mga09.intel.com"
+	Tue, 10 Apr 2007 20:22:53 -0400
+Received: from pat.uio.no ([129.240.10.15]:33855 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161121AbXDKAQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Apr 2007 20:16:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,392,1170662400"; 
-   d="scan'208"; a="71637792:sNHT19297683"
-Date: Tue, 10 Apr 2007 17:15:14 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Adam Belay <abelay@novell.com>, Andi Kleen <ak@suse.de>,
-       eranian@hpl.hp.com
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, lenb@kernel.org
-Subject: Re: 2.6.21-rc6-mm1
-Message-ID: <20070411001513.GA2975@linux-os.sc.intel.com>
-References: <653FFBB4508B9042B5D43DC9E18836F539ADFB@scsmsx415.amr.corp.intel.com> <200704091940.53439.rjw@sisk.pl> <1176249569.32554.229.camel@localhost.localdomain>
+	id S932424AbXDKAWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Apr 2007 20:22:52 -0400
+Subject: Re: If not readdir() then what?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Neil Brown <neilb@suse.de>
+Cc: Bob Copeland <me@bobcopeland.com>, Theodore Tso <tytso@mit.edu>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <17948.4289.176612.555587@notabene.brown>
+References: <20070407233037.GA16508@infradead.org>
+	 <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org>
+	 <20070408191955.GD29180@thunk.org> <46194260.3050900@zytor.com>
+	 <20070409014426.GA18580@thunk.org> <20070409110927.GA23240@lazybastard.org>
+	 <1176121897.6210.8.camel@heimdal.trondhjem.org>
+	 <20070409131918.GC18580@thunk.org>
+	 <1176127395.6210.34.camel@heimdal.trondhjem.org>
+	 <20070410135641.GG13650@thunk.org>
+	 <1176215836.14442.37.camel@heimdal.trondhjem.org>
+	 <17947.64947.649081.411561@notabene.brown>
+	 <1176239914.309.54.camel@heimdal.trondhjem.org>
+	 <17948.916.464492.881283@notabene.brown>
+	 <1176242364.309.69.camel@heimdal.trondhjem.org>
+	 <17948.4289.176612.555587@notabene.brown>
+Content-Type: text/plain
+Date: Tue, 10 Apr 2007 20:22:01 -0400
+Message-Id: <1176250921.309.94.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1176249569.32554.229.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.085)
+X-UiO-Scanned: 1C02690D863DB85694731035C6D26EB3C4B55EC2
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 44 total 973706 max/h 7466 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 10, 2007 at 07:59:29PM -0400, Adam Belay wrote:
-> On Tue, 2007-04-10 at 15:20 -0700, Venki Pallipadi wrote:
-> > On Mon, Apr 09, 2007 at 07:40:52PM +0200, Rafael J. Wysocki wrote:
-> > > On Monday, 9 April 2007 18:14, Pallipadi, Venkatesh wrote:
-> > > > 
-> > > > >-----Original Message-----
-> > > > >From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-> > > > >Sent: Monday, April 09, 2007 9:08 AM
-> > > > >To: Andrew Morton
-> > > > >Cc: linux-kernel@vger.kernel.org; randy.dunlap@oracle.com; 
-> > > > >lenb@kernel.org; Pallipadi, Venkatesh
-> > > > >Subject: Re: 2.6.21-rc6-mm1
-> > > > >
-> > > > >On Sunday, 8 April 2007 23:35, Andrew Morton wrote:
-> > > > >> 
-> > > > >> 
-> > > > >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2
-> > > > >.6.21-rc6/2.6.21-rc6-mm1/
-> > > > >> 
-> > > > >> 
-> > > > >> - Lots of x86 updates
-> > > > >> 
-> > > > >> - This is a 25MB diff against mainline, which is rather large.
-> > > > >
-> > > > >The cpuidle thing tends to hang my x86-64 machines on boot.
-> > > > >
-> > > > 
-> > > > Hi Rafael,
-> > > > 
-> > > > At what point during boot does it hang?
-> > > 
-> > > When mounting the root filesystem.  It hangs completely, even the magic SysRq
-> > > doesn't work
-> > > 
-> > 
-> > Rafael: Below patch should fix the hang.
-> > Len: Please include this patch in acpi-test.
-> > 
-> > Thanks,
-> > Venki
-> > 
-> > Prevent hang on x86-64, when ACPI processor driver is added as a module on
-> > a system that does not support C-states.
-> > 
-> > x86-64 expects all idle handlers to enable interrupts before returning from
-> > idle handler. This is due to enter_idle(), exit_idle() races. Make
-> > cpuidle_idle_call() confirm to this when there is no pm_idle_old.
-> > 
-> > Also, cpuidle look at the return values of attch_driver() and set
-> > current_driver to NULL if attach fails on all CPUs.
+On Wed, 2007-04-11 at 08:33 +1000, Neil Brown wrote:
+
+>   A READDIR (aka getdents2) should take a directory handle, a cookie,
+>   and a filename, and should return filenames and cookies.  The
+>   cookies may all be identical or may not.  The filename might be used
+>   by the filesystem, or it might not.
 > 
-> My vote would be to instead remove enter_idle() and exit_idle() from
-> x86-64, just as was done with i386.  Performance monitoring
-> infrastructure shouldn't be interfering with the idle interrupt
-> delivery, as that could only hurt performance...  Besides, there's
-> probably a better way of doing this than an idle notifier anyway.
+>   Filesystems that require a cursor in the 'struct file' to support
+>   (local) getdents cannot be used with NFS.
 > 
+> While it doesn't make it possible to support all conceivable
+> filesystems, it should make it easier for some filesystems to support
+> the demands of NFS.
 
-Agreed. I did not like local_irq_enable() in cpuidle either, but added it
-anyway as it was a corner case when cpuidle is active and no driver is
-active and not a common case. I thought we will have it as a bandaid solution
-until enter_idle, exit_idle is around.
+In order to be useful, I think you need to add a demand that the READDIR
+call cannot loop back on itself for the case of a series of sequential
+reads.
 
-Andi/Stephane: What are the plans around enter_idle exit_idle in x86-64.
-Is it still being used by perfmon for x86-64 arch?
+IOW: if a client attempts to step sequentially through the directory,
+and is supplying valid filenames+cookies from the preceding READDIR
+call, then the next READDIR call should be guaranteed never to loop back
+to an earlier entry. Alternatively, if there is a danger that it might
+due to some sudden and radical change in the directory layout, then it
+should notify the client by returning something like a BAD_COOKIE error.
 
-Thanks,
-Venki
+Otherwise, the client would have to cache _all_ previous READDIR results
+since the last opendir()/rewinddir() in order to be able to do its own
+loop detection and that will obviously never scale for large directories
+or for directories that change frequently...
+
+Cheers
+  Trond
+
