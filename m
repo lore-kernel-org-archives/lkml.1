@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161260AbXDKVvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161258AbXDKVvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161260AbXDKVvQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 17:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161252AbXDKVvQ
+	id S1161258AbXDKVvm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 17:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161264AbXDKVvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 17:51:16 -0400
-Received: from tmailer.gwdg.de ([134.76.10.23]:56821 "EHLO tmailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161224AbXDKVvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 17:51:15 -0400
-Date: Wed, 11 Apr 2007 23:49:36 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: Loud "pop" coming from hard drive on reboot
-In-Reply-To: <461D54AF.3060706@redhat.com>
-Message-ID: <Pine.LNX.4.61.0704112347230.20436@yvahk01.tjqt.qr>
-References: <461D4E2C.6000704@redhat.com> <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>
- <461D54AF.3060706@redhat.com>
+	Wed, 11 Apr 2007 17:51:42 -0400
+Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:62953 "EHLO
+	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161258AbXDKVvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 17:51:41 -0400
+Date: Wed, 11 Apr 2007 23:51:33 +0200 (CEST)
+From: Peter Osterlund <petero2@telia.com>
+X-X-Sender: petero@p4.localdomain
+To: Dmitry Torokhov <dtor@insightbb.com>
+cc: Pete Zaitcev <zaitcev@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: Fix sudden warps in mousedev
+In-Reply-To: <200703262114.45287.dtor@insightbb.com>
+Message-ID: <Pine.LNX.4.64.0704112349490.4764@p4.localdomain>
+References: <20070324001610.724a820a.zaitcev@redhat.com>
+ <d120d5000703261230h1724e453je2c14769fc099ad3@mail.gmail.com>
+ <20070326144206.93805eeb.zaitcev@redhat.com> <200703262114.45287.dtor@insightbb.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 Mar 2007, Dmitry Torokhov wrote:
 
-On Apr 11 2007 17:35, Chuck Ebbert wrote:
->Jan Engelhardt wrote:
->> On Apr 11 2007 17:07, Chuck Ebbert wrote:
->>> When I reboot my notebook, it powers off and powers back on.
->>> On poweroff a loud snapping noise seems to be coming from the
->>> hard drive. Today I noticed there is no "shutdown: hda" on
->>> the console when I reboot. Whne I do a normal poweroff the
->>> message is displayed and there is no noise. Should the IDE
->>> code be changed so it always shuts down the drive?
->> 
->> What sort of notebook? What sort of harddisk?
+> On Monday 26 March 2007 17:42, Pete Zaitcev wrote:
+>>
+>> I don't think that you need to concern yourself with this too much
+>> at present. If X11 people (e.g. Kristian) present evidence that kernel
+>> fails to deliver an event, then we'll look at it. However it might
+>> help if evtest continued to work when X11 reads from /dev/input/eventN.
+>> It was an unpleasant surprise that it doesn't.
 >
->Compaq Presario V2000 series, with a new Seagate ST9120821A
->120GB 5400RPM drive.
+> The driver grabs tochpad with EVIOCGRAB ioctl to prevent input events
+> from bveing delivered to X through /dev/input/mice which is still in
+> whidespread use. That's why evtest does not work. We could as Peter
+> (CCed) to implement an option to turn off grabbing so users who don't
+> use mousedev multiplexor can use evtest and other commands.
 
-I specifically hoped you might have a TOSHIBA MK2003GAH,
-which does a hard unload when left idle for too long.
+That sounds like a useful option. Implemented in my git tree:
 
-Only on reboots huh?
+git clone http://web.telia.com/~u89404340/touchpad/synaptics/.git
 
-What happens if you reboot another OS, freebsd f.ex.? (You can try that off
-CD1)
-
-Jan
 -- 
+Peter Osterlund - petero2@telia.com
+http://web.telia.com/~u89404340
