@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161388AbXDKW4C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161366AbXDKWze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161388AbXDKW4C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 18:56:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161380AbXDKWzj
+	id S1161366AbXDKWze (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 18:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161380AbXDKWzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 18:55:39 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55742 "EHLO
+	Wed, 11 Apr 2007 18:55:33 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55745 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161375AbXDKWz2 (ORCPT
+	with ESMTP id S1161342AbXDKWz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Apr 2007 18:55:28 -0400
-Date: Wed, 11 Apr 2007 15:52:36 -0700
+Date: Wed, 11 Apr 2007 15:52:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 23/31] softmac: avoid assert in ieee80211softmac_wx_get_rate
-Message-ID: <20070411225236.GX24814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Mark Lord <mlord@pobox.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: [patch 24/31] libata bugfix: preserve LBA bit for HDIO_DRIVE_TASK
+Message-ID: <20070411225239.GY24814@kroah.com>
 References: <20070411224329.866978349@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="softmac-avoid-assert-in-ieee80211softmac_wx_get_rate.patch"
+Content-Disposition: inline; filename="libata-bugfix-preserve-lba-bit-for-hdio_drive_task.patch"
 In-Reply-To: <20070411225100.GA24814@kroah.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,44 +37,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: John W. Linville <linville@tuxdriver.com>
+From: Mark Lord <mlord@pobox.com>
 
-[PATCH] softmac: avoid assert in ieee80211softmac_wx_get_rate
+libata bugfix: preserve LBA bit for HDIO_DRIVE_TASK
 
-Unconfigured bcm43xx device can hit an assert() during wx_get_rate
-queries.  This is because bcm43xx calls ieee80211softmac_start late
-(i.e. during open instead of probe).
+Preserve the LBA bit in the DevSel/Head register for HDIO_DRIVE_TASK.
 
-   bcm43xx_net_open ->
-      bcm43xx_init_board ->
-         bcm43xx_select_wireless_core ->
-            ieee80211softmac_start
-
-Fix is to check that device is running before completing
-ieee80211softmac_wx_get_rate.
-
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Mark Lord <mlord@pobox.com>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ieee80211/softmac/ieee80211softmac_wx.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/ata/libata-scsi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/ieee80211/softmac/ieee80211softmac_wx.c
-+++ b/net/ieee80211/softmac/ieee80211softmac_wx.c
-@@ -265,6 +265,12 @@ ieee80211softmac_wx_get_rate(struct net_
- 	int err = -EINVAL;
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -295,7 +295,7 @@ int ata_task_ioctl(struct scsi_device *s
+ 	scsi_cmd[8]  = args[3];
+ 	scsi_cmd[10] = args[4];
+ 	scsi_cmd[12] = args[5];
+-	scsi_cmd[13] = args[6] & 0x0f;
++	scsi_cmd[13] = args[6] & 0x4f;
+ 	scsi_cmd[14] = args[0];
  
- 	spin_lock_irqsave(&mac->lock, flags);
-+
-+	if (unlikely(!mac->running)) {
-+		err = -ENODEV;
-+		goto out_unlock;
-+	}
-+
- 	switch (mac->txrates.default_rate) {
- 	case IEEE80211_CCK_RATE_1MB:
- 		data->bitrate.value = 1000000;
+ 	/* Good values for timeout and retries?  Values below
 
 -- 
