@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXDKUCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXDKUEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030323AbXDKUCk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 16:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030339AbXDKUCk
+	id S1030419AbXDKUEE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 16:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030420AbXDKUED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 16:02:40 -0400
-Received: from main.gmane.org ([80.91.229.2]:43764 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030323AbXDKUCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 16:02:39 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: init's children list is long and slows reaping children.
-Date: Wed, 11 Apr 2007 15:55:42 -0400
-Message-ID: <461D3D3E.2060709@tmr.com>
-References: <46159987.6090006@redhat.com> <Pine.LNX.4.64.0704051825400.6730@woody.linux-foundation.org> <m1hcru9rki.fsf@ebiederm.dsl.xmission.com> <20070406104301.GB19755@lnx-holt.americas.sgi.com> <m1mz1l8qdr.fsf@ebiederm.dsl.xmission.com> <20070406163100.GA554@tv-sign.ru> <20070406173249.GA2517@elte.hu> <m11wix73ut.fsf@ebiederm.dsl.xmission.com> <20070410134814.GA28016@elte.hu> <m17iskz3i8.fsf@ebiederm.dsl.xmission.com> <20070410164441.GB104@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Robin Holt <holt@sgi.com>,
+	Wed, 11 Apr 2007 16:04:03 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59897 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030342AbXDKUEA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 16:04:00 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       Jack Steiner <steiner@americas.sgi.com>
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <20070410164441.GB104@tv-sign.ru>
+       Robin Holt <holt@sgi.com>, Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH] kthread: Don't depend on work queues (take 2)
+References: <20070410185133.GA104@tv-sign.ru>
+	<m13b37v517.fsf@ebiederm.dsl.xmission.com>
+	<20070411000316.52f2551e.akpm@linux-foundation.org>
+	<m1hcrmsr4g.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070411192809.GA106@tv-sign.ru>
+	<m14pnmsnrs.fsf@ebiederm.dsl.xmission.com>
+	<20070411194921.GA171@tv-sign.ru>
+Date: Wed, 11 Apr 2007 14:02:24 -0600
+In-Reply-To: <20070411194921.GA171@tv-sign.ru> (Oleg Nesterov's message of
+	"Wed, 11 Apr 2007 23:49:21 +0400")
+Message-ID: <m1zm5er86n.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 04/10, Eric W. Biederman wrote:
-> 
->> I'm trying to remember what the story is now.  There is a nasty
->> race somewhere with reparenting, a threaded parent setting SIGCHLD to
->> SIGIGN, and non-default signals that results in an zombie that no one
->> can wait for and reap.  It requires being reparented twice to trigger.
-> 
-> reparent_thread:
-> 
-> 	...
-> 
->         /* If we'd notified the old parent about this child's death,
->          * also notify the new parent.
->          */
->         if (!traced && p->exit_state == EXIT_ZOMBIE &&
->             p->exit_signal != -1 && thread_group_empty(p))
->                 do_notify_parent(p, p->exit_signal);
-> 
-> We notified /sbin/init. If it ignores SIGCHLD, we should release the task.
-> We don't do this.
-> 
-> The best fix I believe is to cleanup the forget_original_parent/reparent_thread
-> interaction and factor out this "exit_state == EXIT_ZOMBIE && exit_signal == -1"
-> checks.
-> 
-As long as the original parent is preserved for getppid(). There are 
-programs out there which communicate between the parent and child with 
-signals, and if the original parent dies, it undesirable to have the 
-child getppid() and start sending signals to a program not expecting 
-them. Invites undefined behavior.
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+> Ah yes, we still need to export kthreadd_task... I just worried about subtle
+> dependency this patch adds... This "kthreadd_task = find_task_by_pid" assumes
+> that init/main.c:init() takes lock_kernel() before the first kthread_create().
 
+There is a small element of that.  Mostly it assumes we are running in the idle
+thread until we call schedule.  Anyway the assumption and the code is out
+there in the open in the main code path so it is easy to find, and the code works
+today.
+
+At this point I am queuing up patches that kill daemonize.  I will be
+happy to revisit this part once daemonize is gone and the only interesting
+file is kthread.c
+
+Eric
