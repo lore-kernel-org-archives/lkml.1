@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXDLJjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945975AbXDLJkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964792AbXDLJjp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965494AbXDLJjo
+	id S1945975AbXDLJkb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945963AbXDLJka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:39:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45875 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964792AbXDLJjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:39:44 -0400
-Date: Thu, 12 Apr 2007 10:42:56 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pedro <linux_user@izecksohn.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: tmpfs and the OOM killer
-Message-ID: <20070412104256.132cd21c@the-village.bc.nu>
-In-Reply-To: <200704120219.03171.linux_user@izecksohn.com>
-References: <200704110223.31291.linux_user@izecksohn.com>
-	<200704111927.00609.linux_user@izecksohn.com>
-	<20070411233921.7a5c3cff@the-village.bc.nu>
-	<200704120219.03171.linux_user@izecksohn.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Apr 2007 05:40:30 -0400
+Received: from ns.suse.de ([195.135.220.2]:57868 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945959AbXDLJk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:40:29 -0400
+Message-Id: <20070412090836.943689000@suse.de>
+References: <20070412090809.917795000@suse.de>
+User-Agent: quilt/0.46-14
+Date: Thu, 12 Apr 2007 02:08:12 -0700
+From: jjohansen@suse.de
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, Steve Beattie <sbeattie@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 03/41] Remove redundant check from proc_sys_setattr()
+Content-Disposition: inline; filename=proc_sys_setattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 0 - try and spot obviously dumb allocations
-> > 1 - anything goes
-> > 2 - strictly control resource commit
-> 
->   I deduce that a fail-safe application must scanf overcommit_memory, warn 
-> the user and waitpid.
+notify_change() already calls security_inode_setattr() before
+calling iop->setattr.
 
-If you are building a fail safe system you need to look a bit beyond out
-of memory handling settings - power supplies, failover, fault tolerance
-requirements, error detection (eg ECC ram), raid arrays over
-non-electrically conductive links etc.
+Signed-off-by: Steve Beattie <sbeattie@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Alan
+---
+ fs/proc/proc_sysctl.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+--- a/fs/proc/proc_sysctl.c
++++ b/fs/proc/proc_sysctl.c
+@@ -429,11 +429,8 @@ static int proc_sys_setattr(struct dentr
+ 		return -EPERM;
+ 
+ 	error = inode_change_ok(inode, attr);
+-	if (!error) {
+-		error = security_inode_setattr(dentry, attr);
+-		if (!error)
+-			error = inode_setattr(inode, attr);
+-	}
++	if (!error)
++		error = inode_setattr(inode, attr);
+ 
+ 	return error;
+ }
+
+-- 
