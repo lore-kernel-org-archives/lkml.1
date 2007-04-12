@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992458AbXDLK0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992438AbXDLKbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992458AbXDLK0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 06:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992457AbXDLK0W
+	id S2992438AbXDLKbd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 06:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946120AbXDLKbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 06:26:22 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40892 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992440AbXDLK0V (ORCPT
+	Thu, 12 Apr 2007 06:31:33 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:56422 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946078AbXDLKbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 06:26:21 -0400
-Date: Thu, 12 Apr 2007 11:28:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: jjohansen@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       John Johansen <jjohansen@suse.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [AppArmor 39/41] AppArmor: Profile loading and manipulation,
- pathname matching
-Message-ID: <20070412112852.49819a73@the-village.bc.nu>
-In-Reply-To: <20070412090849.465428000@suse.de>
-References: <20070412090809.917795000@suse.de>
-	<20070412090849.465428000@suse.de>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Apr 2007 06:31:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=i4Gwyye6SbMqliP1iIT+TY2sTJk4B5vdhutvjTGJe9ZWdemiGC5t0T+Sx4NNZnvzJRMV9rauimJdor1vlK82JcSHmPC4UxYco2/nt6P+75itG3NFHYidKT4Jz+GWB86pqYKAimLHAQP052f2fgyhUFvsEt+Id3mYtSqHqkGoWjk=
+Message-ID: <6d6a94c50704120331m36957148iae111ab7324c88c2@mail.gmail.com>
+Date: Thu, 12 Apr 2007 18:31:30 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "Stephen Hemminger" <shemminger@osdl.org>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Matt Mackall" <mpm@selenic.com>
+Subject: udp checksum issue in netpoll mode.
+Cc: netdev@vger.kernel.org, "Linux Kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	th.td_id = ntohs(*(u16 *) (blob));
-> +	th.td_flags = ntohs(*(u16 *) (blob + 2));
-> +	th.td_lolen = ntohl(*(u32 *) (blob + 8));
+I think we discussed this issue before.
 
-Use cpu_to and _to_cpu functions for here so it is clear the intended
-direction and endianness.
+The current checksum function doesn't consider the kind of packet
+which is padded to reach a specific minimum length. I believe that's
+the problem caused my test case failed. Is this issue fixed? Or is it
+acceptable if I make a patch not calculating this kind of packet?
 
-> +
-> +static inline int aa_inbounds(struct aa_ext *e, size_t size)
-> +{
-> +	return (e->pos + size <= e->end);
-> +}
+Thanks,
+-Aubrey
+===============================================
+static __sum16 checksum_udp(struct sk_buff *skb, struct udphdr *uh,
+                            unsigned short ulen, __be32 saddr, __be32 daddr)
+{
+        __wsum psum;
 
-Can e->pos + size ever overflow. If so this check isn't safe.
+        if (uh->check == 0 || skb->ip_summed == CHECKSUM_UNNECESSARY)
+                return 0;
 
+        psum = csum_tcpudp_nofold(saddr, daddr, ulen, IPPROTO_UDP, 0);
+        if (skb->ip_summed == CHECKSUM_COMPLETE &&
+            !csum_fold(csum_add(psum, skb->csum)))
+                return 0;
 
-> + * aa_unpack_profile - unpack a serialized profile
-> + * @e: serialized data extent information
-> + * @error: error code returned if unpacking fails
-> + */
-> +static struct aa_profile *aa_unpack_profile(struct aa_ext *e)
-> +{
-> +	struct aa_profile *profile = NULL;
-> +
+        skb->csum = psum;
 
-> +	/* get optional subprofiles */
-> +	if (aa_is_nameX(e, AA_LIST, "hats")) {
-> +		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
-> +			struct aa_profile *subprofile;
-> +			subprofile = aa_unpack_profile(e);
-> +			if (IS_ERR(subprofile)) {
-
-What bounds recursion here on invalid input ?
-
+        return __skb_checksum_complete(skb);
+}
+===============================================
