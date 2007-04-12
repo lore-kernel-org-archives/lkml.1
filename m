@@ -1,100 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbXDLUcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbXDLUcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbXDLUcO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 16:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXDLUcN
+	id S1753189AbXDLUcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 16:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXDLUcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 16:32:13 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:45179 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753232AbXDLUcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 16:32:15 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:55224 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753189AbXDLUcL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Apr 2007 16:32:11 -0400
-Date: Thu, 12 Apr 2007 15:32:08 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-Message-ID: <20070412203208.GG27772@sergelap.austin.ibm.com>
-References: <20070412164541.580374744@szeredi.hu> <20070412164620.588752236@szeredi.hu>
+Date: Thu, 12 Apr 2007 22:25:19 +0200
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
+Message-ID: <20070412202519.GB14705@aitel.hist.no>
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070412164620.588752236@szeredi.hu>
+In-Reply-To: <Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Helge Hafting <helgehaf@aitel.hist.no>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> From: Miklos Szeredi <mszeredi@suse.cz>
+On Thu, Apr 12, 2007 at 08:32:50PM +0200, Jiri Kosina wrote:
+> OK, so it hangs somewhere nearby usbhid's hid_init(), and the 
+> usb_register() has been already invoked. Could you please apply the 
+> superstupid patch below and send me the output up to the point it hangs? I 
+> am curious to know whether it hangs somewhere inside usb_register(), or 
+> elsewhere.
 > 
-> If CLONE_NEWNS and CLONE_NEWNS_USERMNT are given to clone(2) or
-> unshare(2), then allow user mounts within the new namespace.
-> 
-> This is not flexible enough, because user mounts can't be enabled for
-> the initial namespace.
-> 
-> The remaining clone bits also getting dangerously few...
-> 
-> Alternatives are:
-> 
->   - prctl() flag
->   - setting through the containers filesystem
-
-Sorry, I know I had mentioned it, but this is definately my least
-favorite approach.
-
-Curious whether are any other suggestions/opinions from the containers
-list?
-
-thanks,
--serge
-
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
-> 
-> Index: linux/fs/namespace.c
-> ===================================================================
-> --- linux.orig/fs/namespace.c	2007-04-12 13:46:19.000000000 +0200
-> +++ linux/fs/namespace.c	2007-04-12 13:54:36.000000000 +0200
-> @@ -1617,6 +1617,8 @@ struct mnt_namespace *copy_mnt_ns(int fl
->  		return ns;
-> 
->  	new_ns = dup_mnt_ns(ns, new_fs);
-> +	if (new_ns && (flags & CLONE_NEWNS_USERMNT))
-> +		new_ns->flags |= MNT_NS_PERMIT_USERMOUNTS;
-> 
->  	put_mnt_ns(ns);
->  	return new_ns;
-> Index: linux/include/linux/sched.h
-> ===================================================================
-> --- linux.orig/include/linux/sched.h	2007-04-12 13:26:48.000000000 +0200
-> +++ linux/include/linux/sched.h	2007-04-12 13:54:36.000000000 +0200
-> @@ -26,6 +26,7 @@
->  #define CLONE_STOPPED		0x02000000	/* Start in stopped state */
->  #define CLONE_NEWUTS		0x04000000	/* New utsname group? */
->  #define CLONE_NEWIPC		0x08000000	/* New ipcs */
-> +#define CLONE_NEWNS_USERMNT	0x10000000	/* Allow user mounts in ns? */
-> 
->  /*
->   * Scheduling policies
-> Index: linux/kernel/fork.c
-> ===================================================================
-> --- linux.orig/kernel/fork.c	2007-04-11 18:27:46.000000000 +0200
-> +++ linux/kernel/fork.c	2007-04-12 13:59:10.000000000 +0200
-> @@ -1586,7 +1586,7 @@ asmlinkage long sys_unshare(unsigned lon
->  	err = -EINVAL;
->  	if (unshare_flags & ~(CLONE_THREAD|CLONE_FS|CLONE_NEWNS|CLONE_SIGHAND|
->  				CLONE_VM|CLONE_FILES|CLONE_SYSVSEM|
-> -				CLONE_NEWUTS|CLONE_NEWIPC))
-> +				CLONE_NEWUTS|CLONE_NEWIPC|CLONE_NEWNS_USERMNT))
->  		goto bad_unshare_out;
-> 
->  	if ((err = unshare_thread(unshare_flags)))
-> 
-> --
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Thanks.
+>
+Are you sure this is the correct patch - against 2.6.21-rc6-mm1 ?
+Hunk 1 out of 1 failed . . .
+ 
+> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+> index 1ddca31..d930f62 100644
+> --- a/drivers/hid/usbhid/hid-core.c
+> +++ b/drivers/hid/usbhid/hid-core.c
+> @@ -1550,15 +1550,22 @@ static int __init hid_init(void)
+>  	retval = hiddev_init();
+>  	if (retval)
+>  		goto hiddev_init_fail;
+> +	printk(KERN_DEBUG "hid_init: before usb_register()\n");
+>  	retval = usb_register(&hid_driver);
+> +	printk(KERN_DEBUG "hid_init: after usb_register(), retuned %d\n", retval);
+>  	if (retval)
+>  		goto usb_register_fail;
+>  	info(DRIVER_VERSION ":" DRIVER_DESC);
+>  
+> +	printk(KERN_DEBUG "hid_init: returning 0\n");
+> +	dump_stack();
+>  	return 0;
+>  usb_register_fail:
+> +	printk(KERN_DEBUG "hid_init: calling hiddev_exit()\n");
+>  	hiddev_exit();
+>  hiddev_init_fail:
+> +	printk(KERN_DEBUG "hid_init: returning %d\n", retval);
+> +	dump_stack();
+>  	return retval;
+>  }
+>  
