@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161464AbXDLCjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161483AbXDLClu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161464AbXDLCjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 22:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161483AbXDLCjR
+	id S1161483AbXDLClu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 22:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161489AbXDLClu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 22:39:17 -0400
-Received: from mga03.intel.com ([143.182.124.21]:32090 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161464AbXDLCjR convert rfc822-to-8bit (ORCPT
+	Wed, 11 Apr 2007 22:41:50 -0400
+Received: from lazybastard.de ([212.112.238.170]:35692 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161483AbXDLClt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 22:39:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,399,1170662400"; 
-   d="scan'208"; a="212065073:sNHT63313222"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Announce: New release of Linux-ready Firmware Dev Kit - Release 2
-Date: Wed, 11 Apr 2007 19:39:11 -0700
-Message-ID: <F8A0EBD0F30CA24B974BD57423860EAE02F939EF@orsmsx415.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Announce: New release of Linux-ready Firmware Dev Kit - Release 2
-Thread-Index: Acd8q8B/0KE6obGjS/Kno/oy6IITEA==
-From: "Selbak, Rolla N" <rolla.n.selbak@intel.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 12 Apr 2007 02:39:12.0239 (UTC) FILETIME=[C0FCBFF0:01C77CAB]
+	Wed, 11 Apr 2007 22:41:49 -0400
+Date: Thu, 12 Apr 2007 04:37:12 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Neil Brown <neilb@suse.de>
+Cc: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+Message-ID: <20070412023712.GA8175@lazybastard.org>
+References: <a36005b50704070957v2d2e6c4g5fac49b5ff1a5789@mail.gmail.com> <20070407203633.GA21555@thunk.org> <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <17947.65165.569482.976343@notabene.brown> <20070411144252.GB17778@thunk.org> <17949.25061.739035.688232@notabene.brown> <20070411232224.GF17778@thunk.org> <17949.36737.701327.104172@notabene.brown>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <17949.36737.701327.104172@notabene.brown>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 12 April 2007 11:46:41 +1000, Neil Brown wrote:
+> 
+> I could argue that nfs came before ext3+dirindex, so ext3 should have
+> been designed to work properly with NFS.  You could argue that fixing
+> it in nfsd fixes it for all filesystems.  But I'm not sure either of
+> those arguments are likely to be at all convincing...
 
-The Linux-ready Firmware Developer Kit team is pleased to announce the
-release R2 of the kit. 
+Caring about a non-ext3 filesystem, I sure would like an nfs solution as
+well. :)
 
-This release is mostly very heavy with bug-fixes,
-infrastructure re-org. to make it easier for outside developers to 
-write & contribute plugins, and of course, tons of documentation. A few
-new tests and features have been added, including things you've asked
-for
-such as ssh-upload and a text-based version of the results.
+> Hmmm. I wonder.  Which is more likely?
+>   - That two 64bit hashes from some set are the same
+>   - or that 65536 48bit hashes from a set of equal size are the same.
 
-The Linux-ready Firmware Developer Kit is a tool to test how well Linux
-works together with the firmware (BIOS or EFI) of your machine, and is
-designed for use by both firmware development teams and Linux kernel
-hackers to prevent and diagnose firmware bugs.
+The former.  Each bit going from hash strength to collision chain length
+reduces the likelihood of an overflow.  In the extreme case of a 0bit
+hash and 64bit collision chain, you need 2^64 entries compared to 2^32
+for the other extreme.
 
-Summary
-=======
+However, the collision chain gives me quite a bit of headache.  One
+would have to store each entry's position on the chain, deal with older
+entries getting deleted, newer entries getting removed, etc.  All this
+requires a lot of complicated code that basically never gets tested in
+the wild.
 
-Enhancements
-* ssh upload of results
-* globalized DSDT & SSDT lists for standalone and .so plugins
-* better logically implemented dmesg and e820 functions
-* text-based results
-* documentation of each plugin and the meaning if its results 
-	(Documentation/TestsInfo)
-* bug-fixes
+Just settling for a 64bit hash and returning -EEXIST when someone causes
+a collision an creat() sounds more appealing.  Directories with 4
+billion entries will cause problems, but that is hardly news to anyone.
 
+Jörn
 
-New Tests
-=========
-* ia64 error injection tool
-* fan test (now functional)
-* SUN test (now functional)
-* ebda test
-* cpufreq: added test for Ingo's _PSS bug
-* dmesg: added detection for buzilla.kernel.org bug 6859
-
-
-You can download this latest release of the kit from
-
-    http://www.linuxfirmwarekit.org
-
-
-The Linux-ready Firmware Developer Kit team
-	Jacob Pan
-	Rolla Selbak
-	Arjan van de Ven
-
-
-[Please cc my email on any replies or comments]
-
-Thanks,
-
-rs
-
+-- 
+Fantasy is more important than knowledge. Knowledge is limited,
+while fantasy embraces the whole world.
+-- Albert Einstein
