@@ -1,54 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946046AbXDLJsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946098AbXDLJtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946046AbXDLJsp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945980AbXDLJkd
+	id S1946098AbXDLJtQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946100AbXDLJtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:40:33 -0400
-Received: from mx1.suse.de ([195.135.220.2]:57867 "EHLO mx1.suse.de"
+	Thu, 12 Apr 2007 05:49:13 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56733 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945952AbXDLJk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:40:29 -0400
-Message-Id: <20070412090836.582976000@suse.de>
+	id S1945986AbXDLJkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:40:33 -0400
+Message-Id: <20070412090841.077405000@suse.de>
 References: <20070412090809.917795000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:11 -0700
+Date: Thu, 12 Apr 2007 02:08:24 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 02/41] Remove redundant check from proc_setattr()
-Content-Disposition: inline; filename=proc_setattr.diff
+Subject: [AppArmor 15/41] Pass the struct vfsmounts to the inode_link LSM hook
+Content-Disposition: inline; filename=security-link.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-notify_change() already calls security_inode_setattr() before
-calling iop->setattr.
+This is needed for computing pathnames in the AppArmor LSM.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/proc/base.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ fs/namei.c               |    3 ++-
+ include/linux/security.h |   18 +++++++++++++-----
+ security/dummy.c         |    6 ++++--
+ security/selinux/hooks.c |    9 +++++++--
+ 4 files changed, 26 insertions(+), 10 deletions(-)
 
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -344,11 +344,8 @@ static int proc_setattr(struct dentry *d
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2275,7 +2275,8 @@ int vfs_link(struct dentry *old_dentry, 
+ 	if (S_ISDIR(old_dentry->d_inode->i_mode))
  		return -EPERM;
  
- 	error = inode_change_ok(inode, attr);
--	if (!error) {
--		error = security_inode_setattr(dentry, attr);
--		if (!error)
--			error = inode_setattr(inode, attr);
--	}
-+	if (!error)
-+		error = inode_setattr(inode, attr);
- 	return error;
+-	error = security_inode_link(old_dentry, dir, new_dentry);
++	error = security_inode_link(old_dentry, old_mnt, dir, new_dentry,
++				    new_mnt);
+ 	if (error)
+ 		return error;
+ 
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -289,8 +289,10 @@ struct request_sock;
+  * @inode_link:
+  *	Check permission before creating a new hard link to a file.
+  *	@old_dentry contains the dentry structure for an existing link to the file.
++ *	@old_mnt is the vfsmount corresponding to @old_dentry (may be NULL).
+  *	@dir contains the inode structure of the parent directory of the new link.
+  *	@new_dentry contains the dentry structure for the new link.
++ *	@new_mnt is the vfsmount corresponding to @new_dentry (may be NULL).
+  *	Return 0 if permission is granted.
+  * @inode_unlink:
+  *	Check the permission to remove a hard link to a file. 
+@@ -1212,8 +1214,9 @@ struct security_operations {
+ 				    char **name, void **value, size_t *len);
+ 	int (*inode_create) (struct inode *dir, struct dentry *dentry,
+ 			     struct vfsmount *mnt, int mode);
+-	int (*inode_link) (struct dentry *old_dentry,
+-	                   struct inode *dir, struct dentry *new_dentry);
++	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
++	                   struct inode *dir, struct dentry *new_dentry,
++			   struct vfsmount *new_mnt);
+ 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+ 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
+ 			      struct vfsmount *mnt, const char *old_name);
+@@ -1628,12 +1631,15 @@ static inline int security_inode_create 
  }
  
+ static inline int security_inode_link (struct dentry *old_dentry,
++				       struct vfsmount *old_mnt,
+ 				       struct inode *dir,
+-				       struct dentry *new_dentry)
++				       struct dentry *new_dentry,
++				       struct vfsmount *new_mnt)
+ {
+ 	if (unlikely (IS_PRIVATE (old_dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_link (old_dentry, dir, new_dentry);
++	return security_ops->inode_link (old_dentry, old_mnt, dir,
++					 new_dentry, new_mnt);
+ }
+ 
+ static inline int security_inode_unlink (struct inode *dir,
+@@ -2359,8 +2365,10 @@ static inline int security_inode_create 
+ }
+ 
+ static inline int security_inode_link (struct dentry *old_dentry,
++				       struct vfsmount *old_mnt,
+ 				       struct inode *dir,
+-				       struct dentry *new_dentry)
++				       struct dentry *new_dentry,
++				       struct vfsmount *new_mnt)
+ {
+ 	return 0;
+ }
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -270,8 +270,10 @@ static int dummy_inode_create (struct in
+ 	return 0;
+ }
+ 
+-static int dummy_inode_link (struct dentry *old_dentry, struct inode *inode,
+-			     struct dentry *new_dentry)
++static int dummy_inode_link (struct dentry *old_dentry,
++			     struct vfsmount *old_mnt, struct inode *inode,
++			     struct dentry *new_dentry,
++			     struct vfsmount *new_mnt)
+ {
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2184,11 +2184,16 @@ static int selinux_inode_create(struct i
+ 	return may_create(dir, dentry, SECCLASS_FILE);
+ }
+ 
+-static int selinux_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
++static int selinux_inode_link(struct dentry *old_dentry,
++			      struct vfsmount *old_mnt,
++			      struct inode *dir,
++			      struct dentry *new_dentry,
++			      struct vfsmount *new_mnt)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->inode_link(old_dentry,dir,new_dentry);
++	rc = secondary_ops->inode_link(old_dentry, old_mnt, dir, new_dentry,
++				       new_mnt);
+ 	if (rc)
+ 		return rc;
+ 	return may_link(dir, old_dentry, MAY_LINK);
 
 -- 
