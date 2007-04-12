@@ -1,116 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161584AbXDLJsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946046AbXDLJsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161584AbXDLJsZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946076AbXDLJpa
+	id S1946046AbXDLJsp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945980AbXDLJkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:45:30 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56742 "EHLO mx2.suse.de"
+	Thu, 12 Apr 2007 05:40:33 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57867 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946010AbXDLJkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:40:36 -0400
-Message-Id: <20070412090838.373382000@suse.de>
+	id S1945952AbXDLJk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:40:29 -0400
+Message-Id: <20070412090836.582976000@suse.de>
 References: <20070412090809.917795000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:16 -0700
+Date: Thu, 12 Apr 2007 02:08:11 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 07/41] Add struct vfsmount parameter to vfs_mkdir()
-Content-Disposition: inline; filename=vfs-mkdir.diff
+Subject: [AppArmor 02/41] Remove redundant check from proc_setattr()
+Content-Disposition: inline; filename=proc_setattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+notify_change() already calls security_inode_setattr() before
+calling iop->setattr.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ecryptfs/inode.c   |    5 ++++-
- fs/namei.c            |    5 +++--
- fs/nfsd/nfs4recover.c |    3 ++-
- fs/nfsd/vfs.c         |    3 ++-
- include/linux/fs.h    |    2 +-
- 5 files changed, 12 insertions(+), 6 deletions(-)
+ fs/proc/base.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -509,11 +509,14 @@ static int ecryptfs_mkdir(struct inode *
- {
- 	int rc;
- 	struct dentry *lower_dentry;
-+	struct vfsmount *lower_mnt;
- 	struct dentry *lower_dir_dentry;
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -344,11 +344,8 @@ static int proc_setattr(struct dentry *d
+ 		return -EPERM;
  
- 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
-+	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	lower_dir_dentry = lock_parent(lower_dentry);
--	rc = vfs_mkdir(lower_dir_dentry->d_inode, lower_dentry, mode);
-+	rc = vfs_mkdir(lower_dir_dentry->d_inode, lower_dentry, lower_mnt,
-+		       mode);
- 	if (rc || !lower_dentry->d_inode)
- 		goto out;
- 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1916,7 +1916,8 @@ asmlinkage long sys_mknod(const char __u
- 	return sys_mknodat(AT_FDCWD, filename, mode, dev);
+ 	error = inode_change_ok(inode, attr);
+-	if (!error) {
+-		error = security_inode_setattr(dentry, attr);
+-		if (!error)
+-			error = inode_setattr(inode, attr);
+-	}
++	if (!error)
++		error = inode_setattr(inode, attr);
+ 	return error;
  }
  
--int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+int vfs_mkdir(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
-+	      int mode)
- {
- 	int error = may_create(dir, dentry, NULL);
- 
-@@ -1960,7 +1961,7 @@ asmlinkage long sys_mkdirat(int dfd, con
- 
- 	if (!IS_POSIXACL(nd.dentry->d_inode))
- 		mode &= ~current->fs->umask;
--	error = vfs_mkdir(nd.dentry->d_inode, dentry, mode);
-+	error = vfs_mkdir(nd.dentry->d_inode, dentry, nd.mnt, mode);
- 	dput(dentry);
- out_unlock:
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
---- a/fs/nfsd/nfs4recover.c
-+++ b/fs/nfsd/nfs4recover.c
-@@ -156,7 +156,8 @@ nfsd4_create_clid_dir(struct nfs4_client
- 		dprintk("NFSD: nfsd4_create_clid_dir: DIRECTORY EXISTS\n");
- 		goto out_put;
- 	}
--	status = vfs_mkdir(rec_dir.dentry->d_inode, dentry, S_IRWXU);
-+	status = vfs_mkdir(rec_dir.dentry->d_inode, dentry, rec_dir.mnt,
-+			   S_IRWXU);
- out_put:
- 	dput(dentry);
- out_unlock:
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1186,7 +1186,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
- 		break;
- 	case S_IFDIR:
--		host_err = vfs_mkdir(dirp, dchild, iap->ia_mode);
-+		host_err = vfs_mkdir(dirp, dchild, fhp->fh_export->ex_mnt,
-+				     iap->ia_mode);
- 		break;
- 	case S_IFCHR:
- 	case S_IFBLK:
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -980,7 +980,7 @@ extern void unlock_super(struct super_bl
-  */
- extern int vfs_permission(struct nameidata *, int);
- extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
--extern int vfs_mkdir(struct inode *, struct dentry *, int);
-+extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
- extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
- extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
 
 -- 
