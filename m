@@ -1,116 +1,390 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945978AbXDLJto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946111AbXDLJuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945978AbXDLJto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946110AbXDLJte
+	id S1946111AbXDLJuH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946108AbXDLJtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:49:34 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57875 "EHLO mx1.suse.de"
+	Thu, 12 Apr 2007 05:49:31 -0400
+Received: from mail.suse.de ([195.135.220.2]:57878 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945978AbXDLJkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1945977AbXDLJkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Apr 2007 05:40:32 -0400
-Message-Id: <20070412090838.723382000@suse.de>
+Message-Id: <20070412090837.648418000@suse.de>
 References: <20070412090809.917795000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:17 -0700
+Date: Thu, 12 Apr 2007 02:08:14 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 08/41] Pass struct vfsmount to the inode_mkdir LSM hook
-Content-Disposition: inline; filename=security-mkdir.diff
+Subject: [AppArmor 05/41] Add a vfsmount parameter to notify_change()
+Content-Disposition: inline; filename=vfs-notify_change.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+The vfsmount parameter must be set appropriately for files visibile
+outside the kernel. Files that are only used in a filesystem (e.g.,
+reiserfs xattr files) will have a NULL vfsmount.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/namei.c               |    2 +-
- include/linux/security.h |    8 ++++++--
- security/dummy.c         |    2 +-
- security/selinux/hooks.c |    3 ++-
- 4 files changed, 10 insertions(+), 5 deletions(-)
+ fs/attr.c           |    3 ++-
+ fs/ecryptfs/inode.c |    4 +++-
+ fs/exec.c           |    3 ++-
+ fs/fat/file.c       |    2 +-
+ fs/hpfs/namei.c     |    2 +-
+ fs/namei.c          |    3 ++-
+ fs/nfsd/vfs.c       |    8 ++++----
+ fs/open.c           |   28 +++++++++++++++-------------
+ fs/reiserfs/xattr.c |    6 +++---
+ fs/sysfs/file.c     |    2 +-
+ fs/utimes.c         |    4 ++--
+ include/linux/fs.h  |    6 +++---
+ mm/filemap.c        |    2 +-
+ mm/tiny-shmem.c     |    2 +-
+ 14 files changed, 41 insertions(+), 34 deletions(-)
 
+--- a/fs/attr.c
++++ b/fs/attr.c
+@@ -101,7 +101,8 @@ int inode_setattr(struct inode * inode, 
+ }
+ EXPORT_SYMBOL(inode_setattr);
+ 
+-int notify_change(struct dentry * dentry, struct iattr * attr)
++int notify_change(struct dentry *dentry, struct vfsmount *mnt,
++		  struct iattr *attr)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	mode_t mode;
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -870,12 +870,14 @@ static int ecryptfs_setattr(struct dentr
+ {
+ 	int rc = 0;
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct inode *inode;
+ 	struct inode *lower_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+ 
+ 	crypt_stat = &ecryptfs_inode_to_private(dentry->d_inode)->crypt_stat;
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	inode = dentry->d_inode;
+ 	lower_inode = ecryptfs_inode_to_lower(inode);
+ 	if (ia->ia_valid & ATTR_SIZE) {
+@@ -890,7 +892,7 @@ static int ecryptfs_setattr(struct dentr
+ 		if (rc < 0)
+ 			goto out;
+ 	}
+-	rc = notify_change(lower_dentry, ia);
++	rc = notify_change(lower_dentry, lower_mnt, ia);
+ out:
+ 	fsstack_copy_attr_all(inode, lower_inode, NULL);
+ 	return rc;
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1532,7 +1532,8 @@ int do_coredump(long signr, int exit_cod
+ 		goto close_fail;
+ 	if (!file->f_op->write)
+ 		goto close_fail;
+-	if (!ispipe && do_truncate(file->f_path.dentry, 0, 0, file) != 0)
++	if (!ispipe &&
++	    do_truncate(file->f_path.dentry, file->f_path.mnt, 0, 0, file) != 0)
+ 		goto close_fail;
+ 
+ 	retval = binfmt->core_dump(signr, regs, file);
+--- a/fs/fat/file.c
++++ b/fs/fat/file.c
+@@ -92,7 +92,7 @@ int fat_generic_ioctl(struct inode *inod
+ 		}
+ 
+ 		/* This MUST be done before doing anything irreversible... */
+-		err = notify_change(filp->f_path.dentry, &ia);
++		err = notify_change(filp->f_path.dentry, filp->f_path.mnt, &ia);
+ 		if (err)
+ 			goto up;
+ 
+--- a/fs/hpfs/namei.c
++++ b/fs/hpfs/namei.c
+@@ -426,7 +426,7 @@ again:
+ 			/*printk("HPFS: truncating file before delete.\n");*/
+ 			newattrs.ia_size = 0;
+ 			newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+-			err = notify_change(dentry, &newattrs);
++			err = notify_change(dentry, NULL, &newattrs);
+ 			put_write_access(inode);
+ 			if (!err)
+ 				goto again;
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1928,7 +1928,7 @@ int vfs_mkdir(struct inode *dir, struct 
- 		return -EPERM;
+@@ -1580,7 +1580,8 @@ int may_open(struct nameidata *nd, int a
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
+ 			
+-			error = do_truncate(dentry, 0, ATTR_MTIME|ATTR_CTIME, NULL);
++			error = do_truncate(dentry, nd->mnt, 0,
++					    ATTR_MTIME|ATTR_CTIME, NULL);
+ 		}
+ 		put_write_access(inode);
+ 		if (error)
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -358,7 +358,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
+ 	err = nfserr_notsync;
+ 	if (!check_guard || guardtime == inode->i_ctime.tv_sec) {
+ 		fh_lock(fhp);
+-		host_err = notify_change(dentry, iap);
++		host_err = notify_change(dentry, fhp->fh_export->ex_mnt, iap);
+ 		err = nfserrno(host_err);
+ 		fh_unlock(fhp);
+ 	}
+@@ -893,13 +893,13 @@ out:
+ 	return err;
+ }
  
- 	mode &= (S_IRWXUGO|S_ISVTX);
--	error = security_inode_mkdir(dir, dentry, mode);
-+	error = security_inode_mkdir(dir, dentry, mnt, mode);
+-static void kill_suid(struct dentry *dentry)
++static void kill_suid(struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	struct iattr	ia;
+ 	ia.ia_valid = ATTR_KILL_SUID | ATTR_KILL_SGID;
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+-	notify_change(dentry, &ia);
++	notify_change(dentry, mnt, &ia);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ }
+ 
+@@ -958,7 +958,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
+ 
+ 	/* clear setuid/setgid flag after write */
+ 	if (host_err >= 0 && (inode->i_mode & (S_ISUID | S_ISGID)))
+-		kill_suid(dentry);
++		kill_suid(dentry, exp->ex_mnt);
+ 
+ 	if (host_err >= 0 && stable) {
+ 		static ino_t	last_ino;
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -194,8 +194,8 @@ out:
+ 	return error;
+ }
+ 
+-int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
+-	struct file *filp)
++int do_truncate(struct dentry *dentry, struct vfsmount *mnt, loff_t length,
++		unsigned int time_attrs, struct file *filp)
+ {
+ 	int err;
+ 	struct iattr newattrs;
+@@ -212,7 +212,7 @@ int do_truncate(struct dentry *dentry, l
+ 	}
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+-	err = notify_change(dentry, &newattrs);
++	err = notify_change(dentry, mnt, &newattrs);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	return err;
+ }
+@@ -267,7 +267,7 @@ static long do_sys_truncate(const char _
+ 	error = locks_verify_truncate(inode, NULL, length);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+-		error = do_truncate(nd.dentry, length, 0, NULL);
++		error = do_truncate(nd.dentry, nd.mnt, length, 0, NULL);
+ 	}
+ 	put_write_access(inode);
+ 
+@@ -319,7 +319,8 @@ static long do_sys_ftruncate(unsigned in
+ 
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
+-		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
++		error = do_truncate(dentry, file->f_path.mnt, length,
++				    ATTR_MTIME|ATTR_CTIME, file);
+ out_putf:
+ 	fput(file);
+ out:
+@@ -519,7 +520,7 @@ asmlinkage long sys_fchmod(unsigned int 
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	err = notify_change(dentry, &newattrs);
++	err = notify_change(dentry, file->f_path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ out_putf:
+@@ -554,7 +555,7 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	error = notify_change(nd.dentry, &newattrs);
++	error = notify_change(nd.dentry, nd.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ dput_and_out:
+@@ -568,7 +569,8 @@ asmlinkage long sys_chmod(const char __u
+ 	return sys_fchmodat(AT_FDCWD, filename, mode);
+ }
+ 
+-static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
++static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
++			uid_t user, gid_t group)
+ {
+ 	struct inode * inode;
+ 	int error;
+@@ -597,7 +599,7 @@ static int chown_common(struct dentry * 
+ 	if (!S_ISDIR(inode->i_mode))
+ 		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(dentry, &newattrs);
++	error = notify_change(dentry, mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ out:
+ 	return error;
+@@ -611,7 +613,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = user_path_walk(filename, &nd);
  	if (error)
- 		return error;
+ 		goto out;
+-	error = chown_common(nd.dentry, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -631,7 +633,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = __user_walk_fd(dfd, filename, follow, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -645,7 +647,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = user_path_walk_link(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -664,7 +666,7 @@ asmlinkage long sys_fchown(unsigned int 
  
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -308,6 +308,7 @@ struct request_sock;
-  *	associated with inode strcture @dir. 
-  *	@dir containst the inode structure of parent of the directory to be created.
-  *	@dentry contains the dentry structure of new directory.
-+ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	@mode contains the mode of new directory.
-  *	Return 0 if permission is granted.
-  * @inode_rmdir:
-@@ -1213,7 +1214,8 @@ struct security_operations {
- 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
- 	int (*inode_symlink) (struct inode *dir,
- 	                      struct dentry *dentry, const char *old_name);
--	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry, int mode);
-+	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
-+			    struct vfsmount *mnt, int mode);
- 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
- 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
- 	                    int mode, dev_t dev);
-@@ -1650,11 +1652,12 @@ static inline int security_inode_symlink
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = chown_common(dentry, user, group);
++	error = chown_common(dentry, file->f_path.mnt, user, group);
+ 	fput(file);
+ out:
+ 	return error;
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -527,7 +527,7 @@ reiserfs_xattr_set(struct inode *inode, 
+ 	newattrs.ia_size = buffer_size;
+ 	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+ 	mutex_lock(&xinode->i_mutex);
+-	err = notify_change(fp->f_path.dentry, &newattrs);
++	err = notify_change(fp->f_path.dentry, NULL, &newattrs);
+ 	if (err)
+ 		goto out_filp;
  
- static inline int security_inode_mkdir (struct inode *dir,
- 					struct dentry *dentry,
-+					struct vfsmount *mnt,
- 					int mode)
- {
- 	if (unlikely (IS_PRIVATE (dir)))
- 		return 0;
--	return security_ops->inode_mkdir (dir, dentry, mode);
-+	return security_ops->inode_mkdir (dir, dentry, mnt, mode);
+@@ -867,7 +867,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
+ 	}
+ 
+ 	if (!S_ISDIR(xafile->d_inode->i_mode))
+-		err = notify_change(xafile, attrs);
++		err = notify_change(xafile, NULL, attrs);
+ 	dput(xafile);
+ 
+ 	return err;
+@@ -919,7 +919,7 @@ int reiserfs_chown_xattrs(struct inode *
+ 		goto out_dir;
+ 	}
+ 
+-	err = notify_change(dir, attrs);
++	err = notify_change(dir, NULL, attrs);
+ 	unlock_kernel();
+ 
+       out_dir:
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -584,7 +584,7 @@ int sysfs_chmod_file(struct kobject *kob
+ 			newattrs.ia_mode = (mode & S_IALLUGO) |
+ 						(inode->i_mode & ~S_IALLUGO);
+ 			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-			res = notify_change(victim, &newattrs);
++			res = notify_change(victim, NULL, &newattrs);
+ 			mutex_unlock(&inode->i_mutex);
+ 		}
+ 		dput(victim);
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -62,7 +62,7 @@ asmlinkage long sys_utime(char __user * 
+ 			goto dput_and_out;
+ 	}
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(nd.dentry, &newattrs);
++	error = notify_change(nd.dentry, nd.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ dput_and_out:
+ 	path_release(&nd);
+@@ -115,7 +115,7 @@ long do_utimes(int dfd, char __user *fil
+ 			goto dput_and_out;
+ 	}
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(nd.dentry, &newattrs);
++	error = notify_change(nd.dentry, nd.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ dput_and_out:
+ 	path_release(&nd);
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1458,8 +1458,8 @@ static inline int break_lease(struct ino
+ 
+ /* fs/open.c */
+ 
+-extern int do_truncate(struct dentry *, loff_t start, unsigned int time_attrs,
+-		       struct file *filp);
++extern int do_truncate(struct dentry *, struct vfsmount *, loff_t start,
++		       unsigned int time_attrs, struct file *filp);
+ extern long do_sys_open(int fdf, const char __user *filename, int flags,
+ 			int mode);
+ extern struct file *filp_open(const char *, int, int);
+@@ -1612,7 +1612,7 @@ extern int do_remount_sb(struct super_bl
+ #ifdef CONFIG_BLOCK
+ extern sector_t bmap(struct inode *, sector_t);
+ #endif
+-extern int notify_change(struct dentry *, struct iattr *);
++extern int notify_change(struct dentry *, struct vfsmount *, struct iattr *);
+ extern int permission(struct inode *, int, struct nameidata *);
+ extern int generic_permission(struct inode *, int,
+ 		int (*check_acl)(struct inode *, int));
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1877,7 +1877,7 @@ int __remove_suid(struct path *path, int
+ 	struct iattr newattrs;
+ 
+ 	newattrs.ia_valid = ATTR_FORCE | kill;
+-	return notify_change(path->dentry, &newattrs);
++	return notify_change(path->dentry, path->mnt, &newattrs);
  }
  
- static inline int security_inode_rmdir (struct inode *dir,
-@@ -2371,6 +2374,7 @@ static inline int security_inode_symlink
+ int remove_suid(struct path *path)
+--- a/mm/tiny-shmem.c
++++ b/mm/tiny-shmem.c
+@@ -86,7 +86,7 @@ struct file *shmem_file_setup(char *name
+ 	file->f_mode = FMODE_WRITE | FMODE_READ;
  
- static inline int security_inode_mkdir (struct inode *dir,
- 					struct dentry *dentry,
-+					struct vfsmount *mnt,
- 					int mode)
- {
- 	return 0;
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -288,7 +288,7 @@ static int dummy_inode_symlink (struct i
- }
+ 	/* notify everyone as to the change of file size */
+-	error = do_truncate(dentry, size, 0, file);
++	error = do_truncate(dentry, file->f_path.mnt, size, 0, file);
+ 	if (error < 0)
+ 		goto close_file;
  
- static int dummy_inode_mkdir (struct inode *inode, struct dentry *dentry,
--			      int mask)
-+			      struct vfsmount *mnt, int mask)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2209,7 +2209,8 @@ static int selinux_inode_symlink(struct 
- 	return may_create(dir, dentry, SECCLASS_LNK_FILE);
- }
- 
--static int selinux_inode_mkdir(struct inode *dir, struct dentry *dentry, int mask)
-+static int selinux_inode_mkdir(struct inode *dir, struct dentry *dentry,
-+			       struct vfsmount *mnt, int mask)
- {
- 	return may_create(dir, dentry, SECCLASS_DIR);
- }
 
 -- 
