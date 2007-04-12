@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992483AbXDLK6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992490AbXDLLGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992483AbXDLK6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 06:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992484AbXDLK6t
+	id S2992490AbXDLLGj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 07:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992499AbXDLLGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 06:58:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60980 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992483AbXDLK6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 06:58:47 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070412024938.27380.44677.patchbomb.py@localhost> 
-References: <20070412024938.27380.44677.patchbomb.py@localhost> 
-To: Nate Diller <nate.diller@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       Anton Altaparmakov <aia21@cantab.net>,
-       Evgeniy Dushistov <dushistov@mail.ru>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-dev@namesys.com
-Subject: Re: [PATCH 3/17] afs: convert afs_dir_get_page to read_kmap_page 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Thu, 12 Apr 2007 11:58:02 +0100
-Message-ID: <1273.1176375482@redhat.com>
+	Thu, 12 Apr 2007 07:06:39 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43706 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992490AbXDLLGi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 07:06:38 -0400
+Date: Thu, 12 Apr 2007 12:06:37 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RFC: initramfs unpack point and rules
+Message-ID: <20070412110637.GG4095@ftp.linux.org.uk>
+References: <m3ejmzdmow.fsf@maximus.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3ejmzdmow.fsf@maximus.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nate Diller <nate.diller@gmail.com> wrote:
+On Thu, Apr 05, 2007 at 02:34:39PM +0200, Krzysztof Halasa wrote:
+> First problem: initramfs is unpacked way before console drivers
+> are initialized, so you aren't going to see the panic():
+> 
+> init/initramfs.c:static int __init populate_rootfs(void)
+> ...
+> 		printk(KERN_INFO "Unpacking initramfs...");
+> 		err = unpack_to_rootfs((char *)initrd_start,
+> 			initrd_end - initrd_start, 0);
+> 		if (err)
+> 			panic(err);
+> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 		printk(" done\n");
+> 		free_initrd();
+> 
+> I wonder why is initramfs unpacked that early, before most drivers?
+> I'd expect it much later in the boot sequence, just before userspace
+> and initial devices (/dev/console etc) are needed. Should it be moved
+> there? populate_rootfs() unpacks both builtin and external initramfs.
 
-> -static struct page *afs_dir_get_page(struct inode *dir, unsigned long index)
-
-NAK.  This conflicts with my AFS security patches, and eliminates any way of
-passing the key through to readpage().
-
-David
+Nope.  The point is to have it as early as possible, so that we had more
+or less normal environment when drivers, etc. are being initialized.
