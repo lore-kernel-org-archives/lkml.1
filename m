@@ -1,79 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946099AbXDLJqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030690AbXDLJqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946099AbXDLJqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946065AbXDLJp5
+	id S1030690AbXDLJqy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945892AbXDLJpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:45:57 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57883 "EHLO mx1.suse.de"
+	Thu, 12 Apr 2007 05:45:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56739 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946003AbXDLJkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1946004AbXDLJkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Apr 2007 05:40:35 -0400
-Message-Id: <20070412090848.416173000@suse.de>
+Message-Id: <20070412090837.298988000@suse.de>
 References: <20070412090809.917795000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:45 -0700
+Date: Thu, 12 Apr 2007 02:08:13 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 36/41] Export audit subsystem for use by modules
-Content-Disposition: inline; filename=apparmor-audit.diff
+       chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 04/41] Pass struct file down to remove_suid and children
+Content-Disposition: inline; filename=remove_suid.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds necessary export symbols for audit subsystem routines.
-Changes audit_log_vformat to be externally visible (analagous to vprintf)
-Patch is not in mainline -- pending AppArmor code submission to lkml
+Pass struct path to remove_suid and should_remove_suid instead of
+only the dentry. Required by a later patch that adds a struct
+vfsmount parameter to notify_change().
 
+Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- include/linux/audit.h |    5 +++++
- kernel/audit.c        |    6 ++++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ fs/ntfs/file.c             |    2 +-
+ fs/ocfs2/file.c            |   10 +++++-----
+ fs/reiserfs/file.c         |    2 +-
+ fs/splice.c                |    6 +++---
+ fs/xfs/linux-2.6/xfs_lrw.c |    2 +-
+ include/linux/fs.h         |    6 +++---
+ mm/filemap.c               |   16 ++++++++--------
+ mm/filemap_xip.c           |    2 +-
+ mm/shmem.c                 |    2 +-
+ 9 files changed, 24 insertions(+), 24 deletions(-)
 
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -112,6 +112,8 @@
- #define AUDIT_LAST_KERN_ANOM_MSG    1799
- #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
+--- a/fs/ntfs/file.c
++++ b/fs/ntfs/file.c
+@@ -2162,7 +2162,7 @@ static ssize_t ntfs_file_aio_write_noloc
+ 		goto out;
+ 	if (!count)
+ 		goto out;
+-	err = remove_suid(file->f_path.dentry);
++	err = remove_suid(&file->f_path);
+ 	if (err)
+ 		goto out;
+ 	file_update_time(file);
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1035,13 +1035,13 @@ out:
+ 	return ret;
+ }
  
-+#define AUDIT_APPARMOR		1500	/* AppArmor audit */
-+
- #define AUDIT_KERNEL		2000	/* Asynchronous audit record. NOT A REQUEST. */
- 
- /* Rule flags */
-@@ -488,6 +490,9 @@ extern void		    audit_log(struct audit_
- 				      __attribute__((format(printf,4,5)));
- 
- extern struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask, int type);
-+extern void		    audit_log_vformat(struct audit_buffer *ab,
-+					      const char *fmt, va_list args)
-+			    __attribute__((format(printf,2,0)));
- extern void		    audit_log_format(struct audit_buffer *ab,
- 					     const char *fmt, ...)
- 			    __attribute__((format(printf,2,3)));
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -1054,8 +1054,7 @@ static inline int audit_expand(struct au
-  * will be called a second time.  Currently, we assume that a printk
-  * can't format message larger than 1024 bytes, so we don't either.
-  */
--static void audit_log_vformat(struct audit_buffer *ab, const char *fmt,
--			      va_list args)
-+void audit_log_vformat(struct audit_buffer *ab, const char *fmt, va_list args)
+-static int ocfs2_prepare_inode_for_write(struct dentry *dentry,
++static int ocfs2_prepare_inode_for_write(struct path *path,
+ 					 loff_t *ppos,
+ 					 size_t count,
+ 					 int appending)
  {
- 	int len, avail;
- 	struct sk_buff *skb;
-@@ -1311,3 +1310,6 @@ EXPORT_SYMBOL(audit_log_start);
- EXPORT_SYMBOL(audit_log_end);
- EXPORT_SYMBOL(audit_log_format);
- EXPORT_SYMBOL(audit_log);
-+EXPORT_SYMBOL_GPL(audit_log_vformat);
-+EXPORT_SYMBOL_GPL(audit_log_untrustedstring);
-+EXPORT_SYMBOL_GPL(audit_log_d_path);
+ 	int ret = 0, meta_level = appending;
+-	struct inode *inode = dentry->d_inode;
++	struct inode *inode = path->dentry->d_inode;
+ 	u32 clusters;
+ 	loff_t newsize, saved_pos;
+ 
+@@ -1067,7 +1067,7 @@ static int ocfs2_prepare_inode_for_write
+ 		 * inode. There's also the dinode i_size state which
+ 		 * can be lost via setattr during extending writes (we
+ 		 * set inode->i_size at the end of a write. */
+-		if (should_remove_suid(dentry)) {
++		if (should_remove_suid(path)) {
+ 			if (meta_level == 0) {
+ 				ocfs2_meta_unlock(inode, meta_level);
+ 				meta_level = 1;
+@@ -1176,7 +1176,7 @@ static ssize_t ocfs2_file_aio_write(stru
+ 		goto out;
+ 	}
+ 
+-	ret = ocfs2_prepare_inode_for_write(filp->f_path.dentry, &iocb->ki_pos,
++	ret = ocfs2_prepare_inode_for_write(&filp->f_path, &iocb->ki_pos,
+ 					    iocb->ki_left, appending);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+@@ -1239,7 +1239,7 @@ static ssize_t ocfs2_file_splice_write(s
+ 		goto out;
+ 	}
+ 
+-	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0);
++	ret = ocfs2_prepare_inode_for_write(&out->f_path, ppos, len, 0);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		goto out_unlock;
+--- a/fs/reiserfs/file.c
++++ b/fs/reiserfs/file.c
+@@ -1353,7 +1353,7 @@ static ssize_t reiserfs_file_write(struc
+ 	if (count == 0)
+ 		goto out;
+ 
+-	res = remove_suid(file->f_path.dentry);
++	res = remove_suid(&file->f_path);
+ 	if (res)
+ 		goto out;
+ 
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -797,7 +797,7 @@ generic_file_splice_write_nolock(struct 
+ 	ssize_t ret;
+ 	int err;
+ 
+-	err = remove_suid(out->f_path.dentry);
++	err = remove_suid(&out->f_path);
+ 	if (unlikely(err))
+ 		return err;
+ 
+@@ -843,10 +843,10 @@ generic_file_splice_write(struct pipe_in
+ 	ssize_t ret;
+ 	int err;
+ 
+-	err = should_remove_suid(out->f_path.dentry);
++	err = should_remove_suid(&out->f_path);
+ 	if (unlikely(err)) {
+ 		mutex_lock(&inode->i_mutex);
+-		err = __remove_suid(out->f_path.dentry, err);
++		err = __remove_suid(&out->f_path, err);
+ 		mutex_unlock(&inode->i_mutex);
+ 		if (err)
+ 			return err;
+--- a/fs/xfs/linux-2.6/xfs_lrw.c
++++ b/fs/xfs/linux-2.6/xfs_lrw.c
+@@ -799,7 +799,7 @@ start:
+ 	     !capable(CAP_FSETID)) {
+ 		error = xfs_write_clear_setuid(xip);
+ 		if (likely(!error))
+-			error = -remove_suid(file->f_path.dentry);
++			error = -remove_suid(&file->f_path);
+ 		if (unlikely(error)) {
+ 			xfs_iunlock(xip, iolock);
+ 			goto out_unlock_mutex;
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1685,9 +1685,9 @@ extern void __iget(struct inode * inode)
+ extern void clear_inode(struct inode *);
+ extern void destroy_inode(struct inode *);
+ extern struct inode *new_inode(struct super_block *);
+-extern int __remove_suid(struct dentry *, int);
+-extern int should_remove_suid(struct dentry *);
+-extern int remove_suid(struct dentry *);
++extern int __remove_suid(struct path *, int);
++extern int should_remove_suid(struct path *);
++extern int remove_suid(struct path *);
+ 
+ extern void __insert_inode_hash(struct inode *, unsigned long hashval);
+ extern void remove_inode_hash(struct inode *);
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1849,9 +1849,9 @@ repeat:
+  *	if suid or (sgid and xgrp)
+  *		remove privs
+  */
+-int should_remove_suid(struct dentry *dentry)
++int should_remove_suid(struct path *path)
+ {
+-	mode_t mode = dentry->d_inode->i_mode;
++	mode_t mode = path->dentry->d_inode->i_mode;
+ 	int kill = 0;
+ 
+ 	/* suid always must be killed */
+@@ -1872,20 +1872,20 @@ int should_remove_suid(struct dentry *de
+ }
+ EXPORT_SYMBOL(should_remove_suid);
+ 
+-int __remove_suid(struct dentry *dentry, int kill)
++int __remove_suid(struct path *path, int kill)
+ {
+ 	struct iattr newattrs;
+ 
+ 	newattrs.ia_valid = ATTR_FORCE | kill;
+-	return notify_change(dentry, &newattrs);
++	return notify_change(path->dentry, &newattrs);
+ }
+ 
+-int remove_suid(struct dentry *dentry)
++int remove_suid(struct path *path)
+ {
+-	int kill = should_remove_suid(dentry);
++	int kill = should_remove_suid(path);
+ 
+ 	if (unlikely(kill))
+-		return __remove_suid(dentry, kill);
++		return __remove_suid(path, kill);
+ 
+ 	return 0;
+ }
+@@ -2252,7 +2252,7 @@ __generic_file_aio_write_nolock(struct k
+ 	if (count == 0)
+ 		goto out;
+ 
+-	err = remove_suid(file->f_path.dentry);
++	err = remove_suid(&file->f_path);
+ 	if (err)
+ 		goto out;
+ 
+--- a/mm/filemap_xip.c
++++ b/mm/filemap_xip.c
+@@ -405,7 +405,7 @@ xip_file_write(struct file *filp, const 
+ 	if (count == 0)
+ 		goto out_backing;
+ 
+-	ret = remove_suid(filp->f_path.dentry);
++	ret = remove_suid(&filp->f_path);
+ 	if (ret)
+ 		goto out_backing;
+ 
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1516,7 +1516,7 @@ shmem_file_write(struct file *file, cons
+ 	if (err || !count)
+ 		goto out;
+ 
+-	err = remove_suid(file->f_path.dentry);
++	err = remove_suid(&file->f_path);
+ 	if (err)
+ 		goto out;
+ 
 
 -- 
