@@ -1,35 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbXDLAre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778AbXDLBCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbXDLAre (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 20:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbXDLAre
+	id S1753778AbXDLBCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 21:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXDLBCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 20:47:34 -0400
-Received: from mx7.mail.ru ([194.67.23.27]:12684 "EHLO mx7.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753735AbXDLArd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 20:47:33 -0400
-X-Greylist: delayed 4782 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Apr 2007 20:47:33 EDT
-Date: Thu, 12 Apr 2007 04:44:30 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] [RFC] External power framework
-Message-ID: <20070412004430.GA24758@zarina>
-Reply-To: cbou@mail.ru
-References: <20070411232446.GA20095@zarina>
+	Wed, 11 Apr 2007 21:02:21 -0400
+Received: from [202.78.101.198] ([202.78.101.198]:45506 "EHLO mail.hq.astra.ph"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753778AbXDLBCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 21:02:20 -0400
+Message-ID: <461D84EB.7040207@gmail.com>
+Date: Thu, 12 Apr 2007 09:01:31 +0800
+From: Carlo Florendo <subscribermail@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070411232446.GA20095@zarina>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "menu" versus "menuconfig" -- they're *both* a bad idea
+References: <Pine.LNX.4.64.0704110357200.9384@CPE00045a9c397f-CM001225dbafb6> <Pine.LNX.4.61.0704111059190.32056@yvahk01.tjqt.qr> <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6>
+In-Reply-To: <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff --git a/drivers/Kconfig b/drivers/Kconfig
-> index 050323f..c546de3 100644
+Robert P. J. Day wrote:
+>   (in short, if i, the builder, explicitly choose *not* to add a
+> certain feature to my build, i think i have every right to expect that
+> some other part of my configuration isn't quietly going to put some
+> sub-choice of that feature back in behind my back.)
 
-I've forgot to pass -s flag to git-format-patch. :-/
+I agree with this.  However, if another feature actually depends on another 
+explicitly unselected feature, there should at least be a warning prompt 
+that such is the case.
 
-Please count it for whole x/7 patch set:
+It probably would be hard though to track all dependencies.
 
-Signed-off-by: Anton Vorontsov <cbou@mail.ru>
+Best Regards,
+
+Carlo
+
+
+-- 
+Carlo Florendo
+Softare Engineer/Network Co-Administrator
+Astra Philippines Inc.
+UP-Ayala Technopark, Diliman 1101, Quezon City
+Philippines
+http://www.astra.ph
+
+--
+The Astra Group of Companies
+5-3-11 Sekido, Tama City
+Tokyo 206-0011, Japan
+http://www.astra.co.jp
