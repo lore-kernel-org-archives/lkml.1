@@ -1,98 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161591AbXDLMWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161607AbXDLMXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161591AbXDLMWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 08:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161598AbXDLMWL
+	id S1161607AbXDLMXB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 08:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161603AbXDLMXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 08:22:11 -0400
-Received: from thunk.org ([69.25.196.29]:52095 "EHLO thunker.thunk.org"
+	Thu, 12 Apr 2007 08:23:01 -0400
+Received: from neon.samage.net ([85.17.153.66]:42892 "EHLO neon.samage.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161591AbXDLMWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 08:22:10 -0400
-Date: Thu, 12 Apr 2007 08:21:16 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Neil Brown <neilb@suse.de>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-Message-ID: <20070412122116.GD28148@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Neil Brown <neilb@suse.de>,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Ulrich Drepper <drepper@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <17947.65165.569482.976343@notabene.brown> <20070411144252.GB17778@thunk.org> <17949.25061.739035.688232@notabene.brown> <20070411232224.GF17778@thunk.org> <17949.36737.701327.104172@notabene.brown> <20070412023712.GA8175@lazybastard.org> <17949.51797.386833.917451@notabene.brown>
+	id S1161602AbXDLMW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 08:22:59 -0400
+Message-ID: <3630.81.207.0.53.1176380573.squirrel@secure.samage.net>
+In-Reply-To: <a781481a0704120235q34d047c8q350b0ed29cde9f0f@mail.gmail.com>
+References: <4610D25F.7080005@ceid.upatras.gr>
+    <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com>
+    <4616BC09.2080509@tmr.com>
+    <4152.81.207.0.53.1175900790.squirrel@secure.samage.net>
+    <461715B4.9060701@tmr.com> <009501c77c22$2b4960f0$0864a8c0@scs1>
+    <1349.81.207.0.53.1176302225.squirrel@secure.samage.net>
+    <000401c77cdd$5ef79910$0864a8c0@scs1>
+    <a781481a0704120235q34d047c8q350b0ed29cde9f0f@mail.gmail.com>
+Date: Thu, 12 Apr 2007 14:22:53 +0200 (CEST)
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Cc: "Tasos Parisinos" <t.parisinos@sciensis.com>,
+       "Bill Davidsen" <davidsen@tmr.com>, "Andi Kleen" <andi@firstfloor.org>,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17949.51797.386833.917451@notabene.brown>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: d58e29c6f4e42f76447094ef3ccb23d2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 03:57:41PM +1000, Neil Brown wrote:
-> But my perspective is that a solution in nfsd at-best a work-around.
-> Caching the whole 'struct file' when there is just a small bit that we
-> might want seems like a heavy hammer.  The filesystem is in the best
-> place to know what needs to be cached, and it should be the one doing
-> the caching.
+On Thu, April 12, 2007 11:35, Satyam Sharma wrote:
+> Firstly, I'd like to steer clear of all the RSA-in-kernel-or-userspace
+> / MPI-in-kernel-or-userspace arguments. True, MPI / RSA / (PKI? that
+> even requires some knowledge of ASN.1 etc to parse certificates) do
+> add a lot of bloat to the kernel. That said, I don't see any other
+> reason to _not_ do asymmetric crypto in the kernel either. In some
+> situations, that in fact simplifies the overall system by avoiding the
+> use of additional userspace components / daemons to do the key
+> management stuff.
 
-Sure, but ext3 needs to cache the information in the file handle,
-because it's dynamic, per-directory stream information that needs to
-be cached.  The fundamental problem is the broken nature of the 64-bit
-cookie; it simply isn't big enough.  So what's being disputed is who
-gets to pay the cost of that particular design mistake, in POSIX and
-in NFS?
+Because it can all be done in userspace? Can trap all binary loading from
+user-space too, though that must be done carefully, without changing the
+kernel.
 
-In the POSIX case, right now only applications that use
-telldir/seekdir pay the cost, which is they might see some repeated
-directory entries in the case of hash collisions.
+> 1. First, sorry, I don't think an RSA implementation not conforming to
+> PKCS #1 qualifies to be called RSA at all. That is definitely a *must*
+> -- why break strong crypto algorithms such as RSA by implementing them
+> in insecure ways?
 
-Unfortunately, in the NFS case if there are hash collisions, under the
-wrong circumstances the NFS client could loop forever trying to
-readdir() a directory stream.
+It's still RSA, that it's not enough to get a complete and secure crypto
+system doesn't mean it isn't RSA anymore. Maybe you're right and having
+RSA without the rest makes no sense. But things like padding schemes change,
+the core RSA algorithm does't, so I think when adding anything that's unused
+by the rest of the kernel it has more chance if it's a low maintenance bare
+RSA implementation.
 
-> This is a simple consequence of the design decision to use hashes as
-> the search key.  They aren't dense and they will collide.  So the
-> solution will be a bit fuzzy around the edges.  And maybe that is an
-> acceptable tradeoff.  But the filesystem should take full
-> responsibility for it, whether in performance or correctness :-)
 
-Well, we could also say that it is NFS's fault that they used a
-limited size cookie as a fundamental part of their protocol.... 
+> 3. Please, try to re-use the MPI library from GnuPG that has already
+> been ported to the kernel -- not the mainline tree, but most
+> distributions such as Red Hat, Fedora, Debian, Suse(?) have maintained
+> an MPI library in crypto/ for the modsign stuff for years now -- that
+> would make your entire RSA module merely a set of wrappers
+> (implementing PKCS#1) to the core modular exponentiation functions in
+> that MPI library. It also contains implementations of optimized
+> algorithms for a lot of the mathematics involved, so you have only to
+> benefit from utilizing a library that has been used, maintained and
+> tested for years.
 
-> But there are alternatives.  e.g. internal chaining.
-> Insist on a unique 64bit hash for every file.  If the hash is in use,
-> increment and try again.  On lookup, if the hash leads you to a file
-> with the wrong name, increment and try again until you find a hole
-> (hash value that is not stored).  When you delete an entry, leave a
-> place holder if the next hash is in use.  Conversely if the next hash
-> is not in use, delete the entry and delete the previous one if it is a
-> place holder.
+Right, and that MPI implementation isn't merged. Perhaps a smaller, simpler,
+not complexified by optimisations version has more chance. RSA is damn slow
+anyway, so better to concentrate on other things than speed, IMHO.
 
-This solution requires an incompatible file format change.  In
-addition, it means trying to garbage collect directory entries when at
-the beginning or end of a directory block without dragging in the
-previous or next directory block.  This is a huge amount of hair, will
-screw over performance, and is not compatible with how we do things
-today.  
+That said, perhaps the different groups could concentrate on one implementation
+they all agree on? That's the main advantage of having it mainline, that there's
+a common place to cencentrate all effort into.
 
-(It also means that you have to store the hash in the directory entry,
-which we don't do today, since we can always calculate the hash from
-the file name.  But if in some cases the hash is going to be some
-small integer plus the calculated hash, you have to bloat the
-directory entry by an extra 8 bytes per dirent.)
+But keep in mind that it's a precaurious balance, at least that's how I see it.
+Right now it's about a rather static 800 lines of code which implements some
+common algorithms. Not much bloat, low maintenance, over all not much reason
+to not merge it, except that it isn't used by the rest of the kernel.
 
-Again, compared to a directory fd cache, what you're proposing a huge
-hit to the filesystem, and at the moment, given that telldir/seekdir
-is rarely used by everyone else, it's mainly NFS which is the main bad
-actor here by insisting on the use of a small 31/63-bit cookie as a
-condition of protocol correctness.
+If you're going to add the full kitchen sink, it might not look that appealing
+anymore, and merging it will become much harder, especially as no one provided
+good arguments why it can't be done in user space.
 
-						- Ted
+Perhaps, with that in mind, it's better to not merge the bare RSA version either,
+as it might give false hope for more, because it looks like most implementations
+should be done in user space (either because that's better anyway, or because of
+legal reasons).
+
+Greetings,
+
+Indan
+
+
