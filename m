@@ -1,176 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946058AbXDLJmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946056AbXDLJnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946058AbXDLJmr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946030AbXDLJlL
+	id S1946056AbXDLJnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946036AbXDLJlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:41:11 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56754 "EHLO mx2.suse.de"
+	Thu, 12 Apr 2007 05:41:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56753 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946029AbXDLJkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1946030AbXDLJkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Apr 2007 05:40:37 -0400
-Message-Id: <20070412090843.875165000@suse.de>
+Message-Id: <20070412090838.018481000@suse.de>
 References: <20070412090809.917795000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:32 -0700
+Date: Thu, 12 Apr 2007 02:08:15 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 23/41] Add a struct vfsmount parameter to vfs_setxattr()
-Content-Disposition: inline; filename=vfs-setxattr.diff
+Subject: [AppArmor 06/41] Pass struct vfsmount to the inode_setattr LSM hook
+Content-Disposition: inline; filename=security-setattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+This is needed for computing pathnames in the AppArmor LSM.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/nfsd/vfs.c         |   16 +++++++++++-----
- fs/xattr.c            |   16 ++++++++--------
- include/linux/xattr.h |    3 ++-
- 3 files changed, 21 insertions(+), 14 deletions(-)
+ fs/attr.c                |    4 ++--
+ include/linux/security.h |    8 ++++++--
+ security/dummy.c         |    3 ++-
+ security/selinux/hooks.c |    5 +++--
+ 4 files changed, 13 insertions(+), 7 deletions(-)
 
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -396,7 +396,8 @@ static ssize_t nfsd_getxattr(struct dent
+--- a/fs/attr.c
++++ b/fs/attr.c
+@@ -145,13 +145,13 @@ int notify_change(struct dentry *dentry,
+ 		down_write(&dentry->d_inode->i_alloc_sem);
  
- #if defined(CONFIG_NFSD_V4)
- static int
--set_nfsv4_acl_one(struct dentry *dentry, struct posix_acl *pacl, char *key)
-+set_nfsv4_acl_one(struct dentry *dentry, struct vfsmount *mnt,
-+		  struct posix_acl *pacl, char *key)
+ 	if (inode->i_op && inode->i_op->setattr) {
+-		error = security_inode_setattr(dentry, attr);
++		error = security_inode_setattr(dentry, mnt, attr);
+ 		if (!error)
+ 			error = inode->i_op->setattr(dentry, attr);
+ 	} else {
+ 		error = inode_change_ok(inode, attr);
+ 		if (!error)
+-			error = security_inode_setattr(dentry, attr);
++			error = security_inode_setattr(dentry, mnt, attr);
+ 		if (!error) {
+ 			if ((ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
+ 			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -358,6 +358,7 @@ struct request_sock;
+  *	file attributes change (such as when a file is truncated, chown/chmod
+  *	operations, transferring disk quotas, etc).
+  *	@dentry contains the dentry structure for the file.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@attr is the iattr structure containing the new file attributes.
+  *	Return 0 if permission is granted.
+  * @inode_getattr:
+@@ -1221,7 +1222,8 @@ struct security_operations {
+ 	int (*inode_readlink) (struct dentry *dentry);
+ 	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
+ 	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
+-	int (*inode_setattr)	(struct dentry *dentry, struct iattr *attr);
++	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
++			      struct iattr *attr);
+ 	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
+         void (*inode_delete) (struct inode *inode);
+ 	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
+@@ -1708,11 +1710,12 @@ static inline int security_inode_permiss
+ }
+ 
+ static inline int security_inode_setattr (struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  struct iattr *attr)
  {
- 	int len;
- 	size_t buflen;
-@@ -415,7 +416,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
- 		goto out;
- 	}
- 
--	error = vfs_setxattr(dentry, key, buf, len, 0);
-+	error = vfs_setxattr(dentry, mnt, key, buf, len, 0);
- out:
- 	kfree(buf);
- 	return error;
-@@ -428,6 +429,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
- 	__be32 error;
- 	int host_error;
- 	struct dentry *dentry;
-+	struct vfsmount *mnt;
- 	struct inode *inode;
- 	struct posix_acl *pacl = NULL, *dpacl = NULL;
- 	unsigned int flags = 0;
-@@ -438,6 +440,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
- 		goto out;
- 
- 	dentry = fhp->fh_dentry;
-+	mnt = fhp->fh_export->ex_mnt;
- 	inode = dentry->d_inode;
- 	if (S_ISDIR(inode->i_mode))
- 		flags = NFS4_ACL_DIR;
-@@ -449,12 +452,14 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
- 	} else if (host_error < 0)
- 		goto out_nfserr;
- 
--	host_error = set_nfsv4_acl_one(dentry, pacl, POSIX_ACL_XATTR_ACCESS);
-+	host_error = set_nfsv4_acl_one(dentry, mnt, pacl,
-+				       POSIX_ACL_XATTR_ACCESS);
- 	if (host_error < 0)
- 		goto out_nfserr;
- 
- 	if (S_ISDIR(inode->i_mode)) {
--		host_error = set_nfsv4_acl_one(dentry, dpacl, POSIX_ACL_XATTR_DEFAULT);
-+		host_error = set_nfsv4_acl_one(dentry, mnt, dpacl,
-+					       POSIX_ACL_XATTR_DEFAULT);
- 		if (host_error < 0)
- 			goto out_nfserr;
- 	}
-@@ -1978,7 +1983,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
- 		size = 0;
- 
- 	if (size)
--		error = vfs_setxattr(fhp->fh_dentry, name, value, size, 0);
-+		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt,
-+				     name, value, size,0);
- 	else {
- 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
- 			error = 0;
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -70,8 +70,8 @@ xattr_permission(struct inode *inode, co
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_setattr (dentry, attr);
++	return security_ops->inode_setattr (dentry, mnt, attr);
  }
  
- int
--vfs_setxattr(struct dentry *dentry, char *name, void *value,
--		size_t size, int flags)
-+vfs_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
-+	     void *value, size_t size, int flags)
+ static inline int security_inode_getattr (struct vfsmount *mnt,
+@@ -2412,6 +2415,7 @@ static inline int security_inode_permiss
+ }
+ 
+ static inline int security_inode_setattr (struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  struct iattr *attr)
  {
- 	struct inode *inode = dentry->d_inode;
- 	int error;
-@@ -194,8 +194,8 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
-  * Extended attribute SET operations
-  */
- static long
--setxattr(struct dentry *d, char __user *name, void __user *value,
--	 size_t size, int flags)
-+setxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
-+	 void __user *value, size_t size, int flags)
+ 	return 0;
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -328,7 +328,8 @@ static int dummy_inode_permission (struc
+ 	return 0;
+ }
+ 
+-static int dummy_inode_setattr (struct dentry *dentry, struct iattr *iattr)
++static int dummy_inode_setattr (struct dentry *dentry, struct vfsmount *mnt,
++				struct iattr *iattr)
  {
- 	int error;
- 	void *kvalue = NULL;
-@@ -222,7 +222,7 @@ setxattr(struct dentry *d, char __user *
- 		}
- 	}
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2269,11 +2269,12 @@ static int selinux_inode_permission(stru
+ 			       file_mask_to_av(inode->i_mode, mask), NULL);
+ }
  
--	error = vfs_setxattr(d, kname, kvalue, size, flags);
-+	error = vfs_setxattr(dentry, mnt, kname, kvalue, size, flags);
- 	kfree(kvalue);
- 	return error;
- }
-@@ -237,7 +237,7 @@ sys_setxattr(char __user *path, char __u
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
--	error = setxattr(nd.dentry, name, value, size, flags);
-+	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
- 	path_release(&nd);
- 	return error;
- }
-@@ -252,7 +252,7 @@ sys_lsetxattr(char __user *path, char __
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
--	error = setxattr(nd.dentry, name, value, size, flags);
-+	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
- 	path_release(&nd);
- 	return error;
- }
-@@ -270,7 +270,7 @@ sys_fsetxattr(int fd, char __user *name,
- 		return error;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
--	error = setxattr(dentry, name, value, size, flags);
-+	error = setxattr(dentry, f->f_vfsmnt, name, value, size, flags);
- 	fput(f);
- 	return error;
- }
---- a/include/linux/xattr.h
-+++ b/include/linux/xattr.h
-@@ -48,7 +48,8 @@ struct xattr_handler {
+-static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
++static int selinux_inode_setattr(struct dentry *dentry, struct vfsmount *mnt,
++				 struct iattr *iattr)
+ {
+ 	int rc;
  
- ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
- ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
--int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
-+int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
-+		 int);
- int vfs_removexattr(struct dentry *, char *);
+-	rc = secondary_ops->inode_setattr(dentry, iattr);
++	rc = secondary_ops->inode_setattr(dentry, mnt, iattr);
+ 	if (rc)
+ 		return rc;
  
- ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
 
 -- 
