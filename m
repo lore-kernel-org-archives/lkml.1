@@ -1,52 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXDLQrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965254AbXDLQre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965461AbXDLQrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 12:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965451AbXDLQrf
+	id S965254AbXDLQre (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 12:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965461AbXDLQre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 12:47:35 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:52733 "EHLO
+	Thu, 12 Apr 2007 12:47:34 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:52747 "EHLO
 	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965148AbXDLQrd (ORCPT
+	with ESMTP id S965254AbXDLQrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 12:47:33 -0400
-Message-Id: <20070412164541.580374744@szeredi.hu>
+	Thu, 12 Apr 2007 12:47:32 -0400
+Message-Id: <20070412164615.638049197@szeredi.hu>
+References: <20070412164541.580374744@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 12 Apr 2007 18:45:41 +0200
+Date: Thu, 12 Apr 2007 18:45:45 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
        linuxram@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org
-Subject: [patch 00/10] (resend) mount ownership and unprivileged mount syscall
+Subject: [patch 04/10] add "permit user mounts" flag to namespaces
+Content-Disposition: inline; filename=namespace_flag.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset adds support for keeping mount ownership information in
-the kernel, and allow unprivileged mount(2) and umount(2) in certain
-cases.
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-This can be useful for the following reasons:
+If MNT_NS_PERMIT_USERMOUNTS flag is not set for the current namespace,
+then unprivileged mounts will be denied.
 
-- mount(8) can store ownership ("user=XY" option) in the kernel
-  instead, or in addition to storing it in /etc/mtab.  For example if
-  private namespaces are used with mount propagations /etc/mtab
-  becomes unworkable, but using /proc/mounts works fine
+By default this flag is cleared in all namespaces.
 
-- fuse won't need a special suid-root mount/umount utility.  Plain
-  umount(8) can easily be made to work with unprivileged fuse mounts
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
-- users can use bind mounts without having to pre-configure them in
-  /etc/fstab
-
-Unprivileged mounts are restricted to private namespaces created with
-a special clone flag.
-
-Changes from the previous submission:
-
- - add namespace flag for allowing user mounts
- - add clone flag to set above namespace flag
- - make max number of user mounts default to 1024, since now the
-   namespace flag will prevent user mounts by default
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2007-04-12 16:50:16.000000000 +0200
++++ linux/fs/namespace.c	2007-04-12 16:50:17.000000000 +0200
+@@ -1526,6 +1526,19 @@ dput_out:
+ 	return retval;
+ }
+ 
++static struct mnt_namespace *alloc_ns(void)
++{
++	struct mnt_namespace *ns;
++
++	ns = kzalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
++	if (ns) {
++		atomic_set(&ns->count, 1);
++		INIT_LIST_HEAD(&ns->list);
++		init_waitqueue_head(&ns->poll);
++	}
++	return ns;
++}
++
+ /*
+  * Allocate a new namespace structure and populate it with contents
+  * copied from the namespace of the passed in task structure.
+@@ -1537,15 +1550,10 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	struct vfsmount *rootmnt = NULL, *pwdmnt = NULL, *altrootmnt = NULL;
+ 	struct vfsmount *p, *q;
+ 
+-	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
++	new_ns = alloc_ns();
+ 	if (!new_ns)
+ 		return NULL;
+ 
+-	atomic_set(&new_ns->count, 1);
+-	INIT_LIST_HEAD(&new_ns->list);
+-	init_waitqueue_head(&new_ns->poll);
+-	new_ns->event = 0;
+-
+ 	down_write(&namespace_sem);
+ 	/* First pass: copy the tree topology */
+ 	new_ns->root = copy_tree(mnt_ns->root, mnt_ns->root->mnt_root,
+@@ -1860,13 +1868,10 @@ static void __init init_mount_tree(void)
+ 	mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
+ 	if (IS_ERR(mnt))
+ 		panic("Can't create rootfs");
+-	ns = kmalloc(sizeof(*ns), GFP_KERNEL);
++	ns = alloc_ns();
+ 	if (!ns)
+ 		panic("Can't allocate initial namespace");
+-	atomic_set(&ns->count, 1);
+-	INIT_LIST_HEAD(&ns->list);
+-	init_waitqueue_head(&ns->poll);
+-	ns->event = 0;
++
+ 	list_add(&mnt->mnt_list, &ns->list);
+ 	ns->root = mnt;
+ 	mnt->mnt_ns = ns;
+Index: linux/include/linux/mnt_namespace.h
+===================================================================
+--- linux.orig/include/linux/mnt_namespace.h	2007-04-12 16:50:02.000000000 +0200
++++ linux/include/linux/mnt_namespace.h	2007-04-12 16:50:17.000000000 +0200
+@@ -6,12 +6,16 @@
+ #include <linux/sched.h>
+ #include <linux/nsproxy.h>
+ 
++/* mnt_namespace flags */
++#define MNT_NS_PERMIT_USERMOUNTS	(1 << 0)
++
+ struct mnt_namespace {
+ 	atomic_t		count;
+ 	struct vfsmount *	root;
+ 	struct list_head	list;
+ 	wait_queue_head_t poll;
+ 	int event;
++	int flags;
+ };
+ 
+ extern struct mnt_namespace *copy_mnt_ns(int, struct mnt_namespace *,
 
 --
