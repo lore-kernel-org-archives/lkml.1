@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751023AbXDLO6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751042AbXDLPAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751023AbXDLO6Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 10:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXDLO6Z
+	id S1751042AbXDLPAL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 11:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbXDLPAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 10:58:25 -0400
-Received: from ojjektum.uhulinux.hu ([62.112.194.64]:50869 "EHLO
-	ojjektum.uhulinux.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbXDLO6Y (ORCPT
+	Thu, 12 Apr 2007 11:00:11 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:21308 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbXDLPAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 10:58:24 -0400
-Date: Thu, 12 Apr 2007 16:58:22 +0200
-From: Egmont Koblinger <egmont@uhulinux.hu>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-Message-ID: <20070412145822.GA12310@uhulinux.hu>
-References: <20070407172603.GA25351@uhulinux.hu> <4617DBF7.5060009@zytor.com> <20070410094325.GB9143@uhulinux.hu> <461BB092.3070201@zytor.com> <20070410171924.GA18314@uhulinux.hu> <20070410183659.7341eeec@the-village.bc.nu> <20070411182801.GC26382@uhulinux.hu> <461D2AB8.5080902@zytor.com> <20070412125412.GA729@uhulinux.hu> <Pine.LNX.4.64.0704121556410.14458@scrub.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 12 Apr 2007 11:00:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AbBgGoXVEnodOZDLGxrFFhZ3z0zzCI+xM6aH0rDRXiz7JFLbT+J05Vm0LyS2IRBlwznDuVREl6GCK6R9uVF9j20IuBzde8cSXQJur+X94XbzAffjA3yOthtI2qqM36sk7auEs4huGFbUSw5oM85Q/ylOwOcy/0ScNdPDB+qC4V4=
+Message-ID: <41840b750704120800l6ab2b0f8qeda6931d7c7e9bc6@mail.gmail.com>
+Date: Thu, 12 Apr 2007 11:00:07 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Anton Vorontsov" <cbou@mail.ru>
+Subject: Re: [PATCH 3/7] [RFC] Battery monitoring class
+Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       dwmw2@infradead.org
+In-Reply-To: <20070411232503.GC20095@zarina>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704121556410.14458@scrub.home>
-User-Agent: Mutt/1.5.11
+References: <20070411232503.GC20095@zarina>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 04:38:54PM +0200, Roman Zippel wrote:
+Hi Anton,
 
-> Considering this possible volatility I'm not certain we really need this 
-> in the kernel.
-> The other point is that I have problems imagining, that this should be 
-> enough to edit random text files with a random editor without problems. 
+A few comments on the ever-contentious choice of battery attributes:
 
-No, this would not be enough for all special corner cases. It would just be
-better than currently it is. That's my goal.
+On 4/11/07, Anton Vorontsov <cbou@mail.ru> wrote:
+> + * All voltages, currents, capacities and temperatures in mV, mA, mAh and
+> + * tenths of a degree unless otherwise stated. It's driver's job to convert
+> + * its raw values to which this class operates. If for some reason driver
+> + * can't afford this requirement, then it have to create its own attributes,
+> + * plus additional "XYZ_units" for each of them.
+> + */
 
-> OTOH if the editor has to all this parsing anyway, the whole thing could 
-> be pushed to userspace and the Linux terminal could be marked as handling 
-> all characters equally (a good hint would be if the terminal doesn't even 
-> support wide characters). The terminfo database exists for a good reason 
-
-Currently not even applications and terminal emulators agree on the width. I
-don't think terminfo has anything to do with it. Width information should
-come from glibc, but unfortunately its database is quite old, so
-applications tend to implement their own version. (Example: according to
-glibc 2.5, U+0221 is not printable. Still it's present in many fonts, and at
-least vim and joe display them.)
-
-So, there are several (maybe a few hundred or few thousands) characters that
-are handled differently by different applications/libraries. On the other
-hand, there are approximately 42.000 characters in BMP that are double-width
-according to every width specification or implementation I've seen so far.
-That's roughly the 2/3 of all the code points in BMP. Why is a problem if
-the kernel knows to jump 2 character cells on them?
-
-I'm not seeking for a perfect solution. (Taking a look at the current state
-of specs/libs/apps perfect solution doesn't even exist.) I'm seeking for
-something that is just way better than the current situation.
+Many (most, I believe) laptop batteries report capacity in mWh
+(energy), not mAh (charge). You can't convert between the two without
+a detailed, up-to-date physical model of the battery. This is too
+common to relegate to a non-standardized "XYZ_units" extension.
 
 
--- 
-Egmont
+> +BATTERY_INT_ATTR(min_voltage);
+> +BATTERY_INT_ATTR(min_current);
+> +BATTERY_INT_ATTR(min_capacity);
+> +BATTERY_INT_ATTR(max_voltage);
+> +BATTERY_INT_ATTR(max_current);
+> +BATTERY_INT_ATTR(max_capacity);
+> +BATTERY_INT_ATTR(temp);
+> +BATTERY_INT_ATTR(voltage);
+> +BATTERY_INT_ATTR(current);
+> +BATTERY_INT_ATTR(capacity);
+
+I suggest adding "remaining operating time" and "remaining charging
+time". You can try deducing these from the above attributes, but in
+practice this gives very inaccurate predictions. On laptops (e.g.,
+ThinkPad) the BIOS or EC often provides much better estimates, using a
+more accurate physical model.
+
+I also see you omitted a host of other common attributes, like design
+capacity, cycle count, model string, and temperatures. There was an
+extensive LKML discussion of the choice and naming of attributes, in
+the context of David Woodhouse's patch; there are futher observations
+there. Also, here's the list of attributes in my tp_smapi ThinkPad
+driver: http://thinkwiki.org/wiki/tp_smapi#Battery_charge_control_features
+
+Does "max capaxity" correspond to what's usually denoted "last full capacity".
+
+I understand you allow adding custom attributes, but they're of
+limited use if generic userspace tools don't know their name and
+semantics. It's important to standardize all reasonably common
+attributes.
+
+  Shem
