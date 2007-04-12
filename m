@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161515AbXDLCxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161542AbXDLCxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161515AbXDLCxP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 22:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161529AbXDLCxL
+	id S1161542AbXDLCxz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 22:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161527AbXDLCxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 22:53:11 -0400
-Received: from qb-out-0506.google.com ([72.14.204.224]:61978 "EHLO
+	Wed, 11 Apr 2007 22:53:52 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:4941 "EHLO
 	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161515AbXDLCxF (ORCPT
+	with ESMTP id S1161537AbXDLCxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 22:53:05 -0400
+	Wed, 11 Apr 2007 22:53:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:cc:date:message-id:in-reply-to:subject;
-        b=jIm5osEv3rNIKnTvF7/TYZ2QeQMPsMZYZ4bEyjfYh4Ppes1xLHzzjM2m8wNNePfBomaWge+sraIp82KStpNb4IVgeTFzRzwFsG7tiahdB9bchjMd/AFZ3TDCJLOty08g4eyE+fZIpXWExLXX8H1lijm7IwOMU1DvRnRX0LPArZA=
+        b=OD19gjOjkk47pBwpJxU8pnYd391TdFPIYGkIE46d3r+pzC3vrXaPEgTabrxo12ZZ0SKsbbvaUSONA0JDLPGSOJDW3iQD4IcpsNtSimS8ekymVuMGXVRg4wKAhNZB1mulSkxBLEvFv6Hn5h97zmlo7US0BA36RZYo6daDoRdxOc4=
 From: Nate Diller <nate.diller@gmail.com>
 To: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -26,99 +26,54 @@ To: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        reiserfs-dev@namesys.com
 Date: Wed, 11 Apr 2007 19:49:38 -0700
-Message-Id: <20070412024938.27380.81259.patchbomb.py@localhost>
+Message-Id: <20070412024938.27380.89491.patchbomb.py@localhost>
 In-Reply-To: <20070412024938.27380.54538.patchbomb.py@localhost>
-Subject: [PATCH 10/17] mtd: convert page_read to read_kmap_page
+Subject: [PATCH 13/17] reiser4: remove redundant read_mapping_page error checks
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace page_read() with read_kmap_page()/__read_kmap_page().  This probably
-fixes behaviour on highmem systems, since page_address() was being used
-without kmap().  Also eliminate the need to re-take the page lock during
-writes to the page.
+read_mapping_page() is now fully synchronous, so there's no need wait for
+the page lock or check for I/O errors.
 
 Signed-off-by: Nate Diller <nate.diller@gmail.com>
 
 ---
 
-diff -urpN -X dontdiff linux-2.6.21-rc5-mm4/drivers/mtd/devices/block2mtd.c linux-2.6.21-rc5-mm4-test/drivers/mtd/devices/block2mtd.c
---- linux-2.6.21-rc5-mm4/drivers/mtd/devices/block2mtd.c	2007-04-05 17:14:24.000000000 -0700
-+++ linux-2.6.21-rc5-mm4-test/drivers/mtd/devices/block2mtd.c	2007-04-06 01:59:19.000000000 -0700
-@@ -39,12 +39,6 @@ struct block2mtd_dev {
- /* Static info about the MTD, used in cleanup_module */
- static LIST_HEAD(blkmtd_device_list);
- 
--
--static struct page *page_read(struct address_space *mapping, int index)
--{
--	return read_mapping_page(mapping, index, NULL);
--}
--
- /* erase a specified part of the device */
- static int _block2mtd_erase(struct block2mtd_dev *dev, loff_t to, size_t len)
- {
-@@ -56,23 +50,19 @@ static int _block2mtd_erase(struct block
- 	u_long *max;
- 
- 	while (pages) {
--		page = page_read(mapping, index);
--		if (!page)
--			return -ENOMEM;
-+		page = __read_kmap_page(mapping, index);
- 		if (IS_ERR(page))
- 			return PTR_ERR(page);
- 
- 		max = page_address(page) + PAGE_SIZE;
- 		for (p=page_address(page); p<max; p++)
- 			if (*p != -1UL) {
--				lock_page(page);
- 				memset(page_address(page), 0xff, PAGE_SIZE);
- 				set_page_dirty(page);
--				unlock_page(page);
- 				break;
- 			}
- 
--		page_cache_release(page);
-+		put_locked_page(page);
- 		pages--;
- 		index++;
- 	}
-@@ -125,14 +115,12 @@ static int block2mtd_read(struct mtd_inf
- 			cpylen = len;	// this page
- 		len = len - cpylen;
- 
--		page = page_read(dev->blkdev->bd_inode->i_mapping, index);
--		if (!page)
--			return -ENOMEM;
-+		page = read_kmap_page(dev->blkdev->bd_inode->i_mapping, index);
- 		if (IS_ERR(page))
- 			return PTR_ERR(page);
- 
- 		memcpy(buf, page_address(page) + offset, cpylen);
--		page_cache_release(page);
-+		put_kmapped_page(page);
- 
- 		if (retlen)
- 			*retlen += cpylen;
-@@ -163,19 +151,15 @@ static int _block2mtd_write(struct block
- 			cpylen = len;			// this page
- 		len = len - cpylen;
- 
--		page = page_read(mapping, index);
--		if (!page)
--			return -ENOMEM;
-+		page = __read_kmap_page(mapping, index);
- 		if (IS_ERR(page))
- 			return PTR_ERR(page);
- 
- 		if (memcmp(page_address(page)+offset, buf, cpylen)) {
--			lock_page(page);
- 			memcpy(page_address(page) + offset, buf, cpylen);
- 			set_page_dirty(page);
--			unlock_page(page);
+diff -urpN -X dontdiff linux-2.6.21-rc6-mm1/fs/reiser4/plugin/file/tail_conversion.c linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/file/tail_conversion.c
+--- linux-2.6.21-rc6-mm1/fs/reiser4/plugin/file/tail_conversion.c	2007-04-09 17:24:03.000000000 -0700
++++ linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/file/tail_conversion.c	2007-04-10 21:33:47.000000000 -0700
+@@ -608,14 +608,6 @@ int extent2tail(unix_file_info_t *uf_inf
+ 			break;
  		}
--		page_cache_release(page);
-+		put_locked_page(page);
  
- 		if (retlen)
- 			*retlen += cpylen;
+-		wait_on_page_locked(page);
+-
+-		if (!PageUptodate(page)) {
+-			page_cache_release(page);
+-			result = RETERR(-EIO);
+-			break;
+-		}
+-
+ 		/* cut part of file we have read */
+ 		start_byte = (__u64) (i << PAGE_CACHE_SHIFT);
+ 		set_key_offset(&from, start_byte);
+diff -urpN -X dontdiff linux-2.6.21-rc6-mm1/fs/reiser4/plugin/item/extent_file_ops.c linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/item/extent_file_ops.c
+--- linux-2.6.21-rc6-mm1/fs/reiser4/plugin/item/extent_file_ops.c	2007-04-10 19:41:14.000000000 -0700
++++ linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/item/extent_file_ops.c	2007-04-10 21:38:41.000000000 -0700
+@@ -1220,15 +1220,8 @@ int reiser4_read_extent(struct file *fil
+ 		page = read_mapping_page(mapping, cur_page, file);
+ 		if (IS_ERR(page))
+ 			return PTR_ERR(page);
+-		lock_page(page);
+-		if (!PageUptodate(page)) {
+-			unlock_page(page);
+-			page_cache_release(page);
+-			warning("jmacd-97178", "extent_read: page is not up to date");
+-			return RETERR(-EIO);
+-		}
++
+ 		mark_page_accessed(page);
+-		unlock_page(page);
+ 
+ 		/* If users can be writing to this page using arbitrary virtual
+ 		   addresses, take care about potential aliasing before reading
