@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbXDLOkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992554AbXDLOok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932309AbXDLOkX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 10:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992531AbXDLOkX
+	id S2992554AbXDLOok (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 10:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992551AbXDLOok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 10:40:23 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:35586 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932309AbXDLOkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 10:40:23 -0400
-Date: Thu, 12 Apr 2007 16:38:54 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Egmont Koblinger <egmont@uhulinux.hu>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-In-Reply-To: <20070412125412.GA729@uhulinux.hu>
-Message-ID: <Pine.LNX.4.64.0704121556410.14458@scrub.home>
-References: <20070407092451.GA8779@uhulinux.hu> <Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr>
- <20070407172603.GA25351@uhulinux.hu> <4617DBF7.5060009@zytor.com>
- <20070410094325.GB9143@uhulinux.hu> <461BB092.3070201@zytor.com>
- <20070410171924.GA18314@uhulinux.hu> <20070410183659.7341eeec@the-village.bc.nu>
- <20070411182801.GC26382@uhulinux.hu> <461D2AB8.5080902@zytor.com>
- <20070412125412.GA729@uhulinux.hu>
+	Thu, 12 Apr 2007 10:44:40 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:20354 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992546AbXDLOoj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 10:44:39 -0400
+Message-ID: <461E45C3.2050400@chelsio.com>
+Date: Thu, 12 Apr 2007 07:44:19 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steve Wise <swise@opengridcomputing.com>
+CC: Roland Dreier <rdreier@cisco.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
+       OpenFabrics General <general@lists.openfabrics.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 2.6.21] iw_cxgb3 - Add set_tcb_rpl_handler.
+References: <1176382594.9396.1.camel@stevo-desktop>
+In-Reply-To: <1176382594.9396.1.camel@stevo-desktop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Apr 2007 14:44:22.0635 (UTC) FILETIME=[0F344BB0:01C77D11]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, 12 Apr 2007, Egmont Koblinger wrote:
-
-> I tried to create such a script using ideas for regexps from glibc's
-> charmaps/UTF-8, but it seemed to be quite hopeless to create a small table.
-> It seems that Markus probably performed some reasonal manual optimisations
-> that cannot really be scripted. For example, within a huge CJK area there
-> are plenty of codepoints that are not (yet?) assigned. However, if they'll
-> be assigned in the future, most likely they'll be double-wide characters
-> too.
-
-Considering this possible volatility I'm not certain we really need this 
-in the kernel.
-The other point is that I have problems imagining, that this should be 
-enough to edit random text files with a random editor without problems. 
-Especially cursor positioning becomes a whole lot more complex and the 
-editor has to do exactly the same parsing as the kernel, i.e. changes to 
-this table are not easily possible anymore or later you may need to add 
-the possibility to read the table.
-OTOH if the editor has to all this parsing anyway, the whole thing could 
-be pushed to userspace and the Linux terminal could be marked as handling 
-all characters equally (a good hint would be if the terminal doesn't even 
-support wide characters). The terminfo database exists for a good reason 
-and a good editor has to support a wide range of terminals anyway, so I 
-don't really see the problem as to mark variable width characters as not 
-supported and keep the kernel implementation sane and simple.
-
-bye, Roman
+Steve Wise wrote:
+> Hey Roland,
+>
+> This patch is needed for iw_cxgb3 to handle a change in the cxgb3 driver
+> posted by Divy that Jeff recently applied.  If the cxgb3 change is
+> destined for 2.6.21, then this change to iw_cxgb3 also needs to go in
+> (otherwise we get an error log entry for every rdma connection).  
+>
+> It was an oversight that this patch didn't really get included in Divy's
+> series since the two go together.
+>
+> See http://marc.info/?l=linux-netdev&m=117617444422260&w=2
+>
+>
+> Thanks,
+>
+> Steve.
+>
+>
+> ---
+>
+>
+> Add set_tcb_rpl_handler.
+>
+> The Ethernet Driver no longer handles SET_TCB replies.
+>
+> Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+>   
+Acked-by: Divy Le Ray <divy@chelsio.com>
