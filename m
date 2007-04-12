@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751738AbXDLU0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXDLU3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751738AbXDLU0K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 16:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXDLU0K
+	id S1751744AbXDLU3T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 16:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXDLU3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 16:26:10 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:55218 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751738AbXDLU0I (ORCPT
+	Thu, 12 Apr 2007 16:29:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:15510 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbXDLU3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 16:26:08 -0400
-Date: Thu, 12 Apr 2007 22:19:13 +0200
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net, Corey Minyard <minyard@acm.org>
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
-Message-ID: <20070412201913.GA14705@aitel.hist.no>
-References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704120947230.12991@twin.jikos.cz> <Pine.LNX.4.64.0704121001400.12991@twin.jikos.cz> <Pine.LNX.4.64.0704121642110.12991@twin.jikos.cz>
-MIME-Version: 1.0
+	Thu, 12 Apr 2007 16:29:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=kb2/hanVTUF4MMweVy0LfbyDVnAiEmf487tJ+re5sNHsIxoFlNceqdmc9ptwZbHM8reArYd5yNHCRyM/uwOQx742Dkjd2yRfTPNGVkdEiQG8kzZnGkrtFft2F00pJpz/J6eTdJq38dkjfhHvIZvMgItm/Y9BfJQ9jkDzA6c3a/o=
+Date: Fri, 13 Apr 2007 02:01:13 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org, linux-ia64@vger.kernel.org,
+       discuss@x86-64.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tony.luck@intel.com, ak@suse.de
+Subject: [KJ][PATCH 01/03]ROUND_UP|DOWN macro cleanup in arch/ia64,x86_64
+Message-ID: <20070412203113.GA9353@arun.site>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704121642110.12991@twin.jikos.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Helge Hafting <helgehaf@aitel.hist.no>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 05:31:52PM +0200, Jiri Kosina wrote:
-> On Thu, 12 Apr 2007, Jiri Kosina wrote:
-> 
-> > > - try booting without any HID devices plugged in (i.e. usb mice, usb 
-> > >   keyboards) if the problem persists?
-> > > - recompile 2.6.21-rc6-mm1 with git-hid.patch reverted to see if it helps?
-> > Do you compile with CONFIG_HIDRAW?
-> 
-> Helge,
-> 
-> with your .config, my machine hangs upon IPMI initialization, the last 
-> thing I see before total freeze is 
-> 
-> ipmi_si: Trying PCI-specified kcs state machine at mem address 0xd0121000, slave address 0x0, irq 5
-> 
-> (this was run on 32bit machine)
-> 
-> When I turn IPMI off, I can't reproduce your hang, evetything runs 
-> smoothly. Could you please try recompiling the kernel with IPMI disabled, 
-> if it could be related?
-> 
-Removed IPMI, recompiled, rebooted, crashed the same way.
+Add ALIGN_DOWN and round_down macros to kernel.h
 
-Helge Hafting
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+
+---
+ kernel.h |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 9ddf25c..f8648b2 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -34,11 +34,13 @@ extern const char linux_proc_banner[];
+ 
+ #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+ #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
++#define ALIGN_DOWN(x,a)         ((x)&~((typeof(x))(a)-1))
++#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
++#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
++#define round_down(x, y) (((x) / (y)) * (y))
+ 
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+ #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+-#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+-#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+ 
+ #define	KERN_EMERG	"<0>"	/* system is unusable			*/
+ #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
+
+-- 
+Milind Arun Choudhary
