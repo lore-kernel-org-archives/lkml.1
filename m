@@ -1,211 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXDLI0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965485AbXDLIdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965483AbXDLI0e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 04:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXDLI0e
+	id S965485AbXDLIdO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 04:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965491AbXDLIdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 04:26:34 -0400
-Received: from gw.goop.org ([64.81.55.164]:59502 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965491AbXDLI0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 04:26:33 -0400
-Message-ID: <461DED14.1070603@goop.org>
-Date: Thu, 12 Apr 2007 01:25:56 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 12 Apr 2007 04:33:14 -0400
+Received: from mexforward.lss.emc.com ([128.222.32.20]:37135 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965485AbXDLIdM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 04:33:12 -0400
+From: Buytaert_Steven@emc.com
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Tim Yamin <plasmaroo@gentoo.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] deflate stack usage in lib/inflate.c
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: sched_yield proposals/rationale
+Date: Thu, 12 Apr 2007 04:31:19 -0400
+Message-ID: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: sched_yield proposals/rationale
+Thread-Index: Acd83PIUvTXFaF8RQzOXqjaBmkKSwg==
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 12 Apr 2007 08:31:21.0133 (UTC) FILETIME=[F2CA1DD0:01C77CDC]
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.4.12.10534
+X-PerlMx-Spam: Gauge=, SPAM=1%, Reason='EMC_FROM_0+ -3, NO_REAL_NAME 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __IMS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-inflate_fixed() and huft_build() together use around 2.7k of stack.  When
-using 4k stacks, I saw stack overflows from interrupts arriving while
-unpacking the root initrd:
+Since the new 2.6.x O(1) scheduler I'm having latency problems. Probably due
+to excessive use of sched_yield in code in components I don't have control
+over. This 'problem'/behavioral change has been reported also by other
+applications (e.g. OpenLDAP, Gnome netmeeting, Postgress, e.google...)
 
-do_IRQ: stack overflow: 384
- [<c0106b64>] show_trace_log_lvl+0x1a/0x30
- [<c01075e6>] show_trace+0x12/0x14
- [<c010763f>] dump_stack+0x16/0x18
- [<c0107ca4>] do_IRQ+0x6d/0xd9
- [<c010202b>] xen_evtchn_do_upcall+0x6e/0xa2
- [<c0106781>] xen_hypervisor_callback+0x25/0x2c
- [<c010116c>] xen_restore_fl+0x27/0x29
- [<c0330f63>] _spin_unlock_irqrestore+0x4a/0x50
- [<c0117aab>] change_page_attr+0x577/0x584
- [<c0117b45>] kernel_map_pages+0x8d/0xb4
- [<c016a314>] cache_alloc_refill+0x53f/0x632
- [<c016a6c2>] __kmalloc+0xc1/0x10d
- [<c0463d34>] malloc+0x10/0x12
- [<c04641c1>] huft_build+0x2a7/0x5fa
- [<c04645a5>] inflate_fixed+0x91/0x136
- [<c04657e2>] unpack_to_rootfs+0x5f2/0x8c1
- [<c0465acf>] populate_rootfs+0x1e/0xe4
+I have analysed the sched_yield code in kernel/sched.c (2.6.16 SLES10) and have 3 questions/proposals:
 
-(This was under Xen, but there's no reason it couldn't happen on bare
-  hardware.)
+1) Would it be beneficial to give each task one try to be enqueued on the
+end of the active queue (by means of a boolean flag, reset each time the
+time slices reach 0 and it is put in the expired list by scheduler_tick)?
 
-This patch mallocs the local variables, thereby reducing the stack
-usage to sane levels.
+2) When a task is eventually put in the expired list in sched_yield, give it
+back the full time slices round (as done in scheduler_tick), not with the
+remaining slices as is done now?
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Tim Yamin <plasmaroo@gentoo.org>
+3) Put the task in the expired list at a random position, not at the end as
+is done now?
 
-diff -r 4a30275bd596 lib/inflate.c
---- a/lib/inflate.c	Wed Apr 11 17:28:10 2007 -0700
-+++ b/lib/inflate.c	Thu Apr 12 00:45:35 2007 -0700
-@@ -292,7 +292,6 @@ STATIC int INIT huft_build(
-    oversubscribed set of lengths), and three if not enough memory. */
- {
-   unsigned a;                   /* counter for codes of length k */
--  unsigned c[BMAX+1];           /* bit length count table */
-   unsigned f;                   /* i repeats in table every f entries */
-   int g;                        /* maximum code length */
-   int h;                        /* table level */
-@@ -303,18 +302,33 @@ STATIC int INIT huft_build(
-   register unsigned *p;         /* pointer into c[], b[], or v[] */
-   register struct huft *q;      /* points to current table */
-   struct huft r;                /* table entry for structure assignment */
--  struct huft *u[BMAX];         /* table stack */
--  unsigned v[N_MAX];            /* values in order of bit length */
-   register int w;               /* bits before this table == (l * h) */
--  unsigned x[BMAX+1];           /* bit offsets, then code stack */
-   unsigned *xp;                 /* pointer into x */
-   int y;                        /* number of dummy codes added */
-   unsigned z;                   /* number of entries in current table */
-+  struct {
-+    unsigned c[BMAX+1];           /* bit length count table */
-+    struct huft *u[BMAX];         /* table stack */
-+    unsigned v[N_MAX];            /* values in order of bit length */
-+    unsigned x[BMAX+1];           /* bit offsets, then code stack */
-+  } *stk;    
-+  unsigned *c, *v, *x;
-+  struct huft **u;
-+  int ret;
- 
- DEBG("huft1 ");
- 
-+  stk = malloc(sizeof(*stk));
-+  if (stk == NULL)
-+    return 3;			/* out of memory */
-+
-+  c = stk->c;
-+  v = stk->v;
-+  x = stk->x;
-+  u = stk->u;
-+
-   /* Generate counts for each bit length */
--  memzero(c, sizeof(c));
-+  memzero(stk->c, sizeof(stk->c));
-   p = b;  i = n;
-   do {
-     Tracecv(*p, (stderr, (n-i >= ' ' && n-i <= '~' ? "%c %d\n" : "0x%x %d\n"), 
-@@ -326,7 +340,8 @@ DEBG("huft1 ");
-   {
-     *t = (struct huft *)NULL;
-     *m = 0;
--    return 2;
-+    ret = 2;
-+    goto out;
-   }
- 
- DEBG("huft2 ");
-@@ -351,10 +366,14 @@ DEBG("huft3 ");
- 
-   /* Adjust last length count to fill out codes, if needed */
-   for (y = 1 << j; j < i; j++, y <<= 1)
--    if ((y -= c[j]) < 0)
--      return 2;                 /* bad input: more codes than bits */
--  if ((y -= c[i]) < 0)
--    return 2;
-+    if ((y -= c[j]) < 0) {
-+      ret = 2;                 /* bad input: more codes than bits */
-+      goto out;
-+    }
-+  if ((y -= c[i]) < 0) {
-+    ret = 2;
-+    goto out;
-+  }
-   c[i] += y;
- 
- DEBG("huft4 ");
-@@ -428,7 +447,8 @@ DEBG1("3 ");
-         {
-           if (h)
-             huft_free(u[0]);
--          return 3;             /* not enough memory */
-+          ret = 3;             /* not enough memory */
-+	  goto out;
-         }
- DEBG1("4 ");
-         hufts += z + 1;         /* track memory usage */
-@@ -492,7 +512,11 @@ DEBG("huft7 ");
- DEBG("huft7 ");
- 
-   /* Return true (1) if we were given an incomplete table */
--  return y != 0 && g != 1;
-+  ret = y != 0 && g != 1;
-+
-+  out:
-+  free(stk);
-+  return ret;
- }
- 
- 
-@@ -705,9 +729,13 @@ STATIC int noinline INIT inflate_fixed(v
-   struct huft *td;      /* distance code table */
-   int bl;               /* lookup bits for tl */
-   int bd;               /* lookup bits for td */
--  unsigned l[288];      /* length list for huft_build */
-+  unsigned *l;          /* length list for huft_build */
- 
- DEBG("<fix");
-+
-+  l = malloc(sizeof(*l) * 288);
-+  if (l == NULL)
-+    return 3;			/* out of memory */
- 
-   /* set up literal table */
-   for (i = 0; i < 144; i++)
-@@ -719,9 +747,10 @@ DEBG("<fix");
-   for (; i < 288; i++)          /* make a complete, but wrong code set */
-     l[i] = 8;
-   bl = 7;
--  if ((i = huft_build(l, 288, 257, cplens, cplext, &tl, &bl)) != 0)
-+  if ((i = huft_build(l, 288, 257, cplens, cplext, &tl, &bl)) != 0) {
-+    free(l);
-     return i;
--
-+  }
- 
-   /* set up distance table */
-   for (i = 0; i < 30; i++)      /* make an incomplete code set */
-@@ -730,6 +759,7 @@ DEBG("<fix");
-   if ((i = huft_build(l, 30, 0, cpdist, cpdext, &td, &bd)) > 1)
-   {
-     huft_free(tl);
-+    free(l);
- 
-     DEBG(">");
-     return i;
-@@ -737,11 +767,13 @@ DEBG("<fix");
- 
- 
-   /* decompress until an end-of-block code */
--  if (inflate_codes(tl, td, bl, bd))
-+  if (inflate_codes(tl, td, bl, bd)) {
-+    free(l);
-     return 1;
--
-+  }
- 
-   /* free the decoding tables, return */
-+  free(l);
-   huft_free(tl);
-   huft_free(td);
-   return 0;
+Rationales:
+
+For 1) suppose the resource that the task wants to acquire (if any) and for
+which it yields, since it is not available, is kept by another task that is
+in the active list, behind this task. Putting the task on the expired list
+would induce some kind of 'tail chasing'. This would be broken by 1.
+
+For 2) When a task is put on the expired list with e.g. 1 time quantum left,
+next time it gets the resource and is put on the expired list at the next
+scheduler_tick occurence, before it has the chance to release the resource
+again, keeping it for a longer time than necessary.
+
+For 3) when the resource (if any) is requested by many tasks
+regularly, always putting the yielding task at the end of the expired list
+could result in 'unfairness' since the resource is handed out to the tasks
+as they get on the cpu. The only 'fairness' that can be applied with yield
+is than to insert in a random position.
+
+Any insight on these proposed changes? Thanks
+
+Steven Buytaert
+--
+La perfection est atteinte non quand il ne reste rien ajouter, mais quand il ne reste rien à enlever. (Antoine de Saint-Exupéry)
 
