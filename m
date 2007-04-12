@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161542AbXDLCxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161537AbXDLCyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161542AbXDLCxz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 22:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161527AbXDLCxw
+	id S1161537AbXDLCyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 22:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161534AbXDLCxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 22:53:52 -0400
-Received: from qb-out-0506.google.com ([72.14.204.226]:4941 "EHLO
+	Wed, 11 Apr 2007 22:53:55 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:61978 "EHLO
 	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161537AbXDLCxk (ORCPT
+	with ESMTP id S1161531AbXDLCxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 22:53:40 -0400
+	Wed, 11 Apr 2007 22:53:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:cc:date:message-id:in-reply-to:subject;
-        b=OD19gjOjkk47pBwpJxU8pnYd391TdFPIYGkIE46d3r+pzC3vrXaPEgTabrxo12ZZ0SKsbbvaUSONA0JDLPGSOJDW3iQD4IcpsNtSimS8ekymVuMGXVRg4wKAhNZB1mulSkxBLEvFv6Hn5h97zmlo7US0BA36RZYo6daDoRdxOc4=
+        b=rWyeRUY/auGcRDN1QfKWVTqoX9h4RcSGxNpnKeM3T8BOOSloBmcR7wuMCK/kDtSviyhYld5L8k1KOHyVd06yct1xiUqwah1+TLyWlYGNiAaoe+OKfOsnkro2VlwIvui8jalqV8PyFw5fn0Wp2f/Z9Ju1hvv6+ibonn/jDZ5tq7Y=
 From: Nate Diller <nate.diller@gmail.com>
 To: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@infradead.org>,
@@ -26,54 +26,45 @@ To: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        reiserfs-dev@namesys.com
 Date: Wed, 11 Apr 2007 19:49:38 -0700
-Message-Id: <20070412024938.27380.89491.patchbomb.py@localhost>
+Message-Id: <20070412024938.27380.55983.patchbomb.py@localhost>
 In-Reply-To: <20070412024938.27380.54538.patchbomb.py@localhost>
-Subject: [PATCH 13/17] reiser4: remove redundant read_mapping_page error checks
+Subject: [PATCH 12/17] partition: remove redundant read_mapping_page error checks
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-read_mapping_page() is now fully synchronous, so there's no need wait for
-the page lock or check for I/O errors.
+Remove unneeded PageError checking in read_dev_sector(), and clean up the
+code a bit.
+
+Can anyone point out why it's OK to use page_address() here on a page which
+has not been kmapped?  If it's not OK, then a good number of callers need to
+be fixed.
 
 Signed-off-by: Nate Diller <nate.diller@gmail.com>
 
 ---
 
-diff -urpN -X dontdiff linux-2.6.21-rc6-mm1/fs/reiser4/plugin/file/tail_conversion.c linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/file/tail_conversion.c
---- linux-2.6.21-rc6-mm1/fs/reiser4/plugin/file/tail_conversion.c	2007-04-09 17:24:03.000000000 -0700
-+++ linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/file/tail_conversion.c	2007-04-10 21:33:47.000000000 -0700
-@@ -608,14 +608,6 @@ int extent2tail(unix_file_info_t *uf_inf
- 			break;
- 		}
+diff -urpN -X dontdiff linux-2.6.21-rc6-mm1/fs/partitions/check.c linux-2.6.21-rc6-mm1-test/fs/partitions/check.c
+--- linux-2.6.21-rc6-mm1/fs/partitions/check.c	2007-04-09 17:24:03.000000000 -0700
++++ linux-2.6.21-rc6-mm1-test/fs/partitions/check.c	2007-04-10 21:59:01.000000000 -0700
+@@ -568,16 +568,12 @@ unsigned char *read_dev_sector(struct bl
  
--		wait_on_page_locked(page);
--
--		if (!PageUptodate(page)) {
--			page_cache_release(page);
--			result = RETERR(-EIO);
--			break;
--		}
--
- 		/* cut part of file we have read */
- 		start_byte = (__u64) (i << PAGE_CACHE_SHIFT);
- 		set_key_offset(&from, start_byte);
-diff -urpN -X dontdiff linux-2.6.21-rc6-mm1/fs/reiser4/plugin/item/extent_file_ops.c linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/item/extent_file_ops.c
---- linux-2.6.21-rc6-mm1/fs/reiser4/plugin/item/extent_file_ops.c	2007-04-10 19:41:14.000000000 -0700
-+++ linux-2.6.21-rc6-mm1-test/fs/reiser4/plugin/item/extent_file_ops.c	2007-04-10 21:38:41.000000000 -0700
-@@ -1220,15 +1220,8 @@ int reiser4_read_extent(struct file *fil
- 		page = read_mapping_page(mapping, cur_page, file);
- 		if (IS_ERR(page))
- 			return PTR_ERR(page);
--		lock_page(page);
--		if (!PageUptodate(page)) {
--			unlock_page(page);
--			page_cache_release(page);
--			warning("jmacd-97178", "extent_read: page is not up to date");
--			return RETERR(-EIO);
--		}
-+
- 		mark_page_accessed(page);
--		unlock_page(page);
+ 	page = read_mapping_page(mapping, (pgoff_t)(n >> (PAGE_CACHE_SHIFT-9)),
+ 				 NULL);
+-	if (!IS_ERR(page)) {
+-		if (PageError(page))
+-			goto fail;
+-		p->v = page;
+-		return (unsigned char *)page_address(page) +  ((n & ((1 << (PAGE_CACHE_SHIFT - 9)) - 1)) << 9);
+-fail:
+-		page_cache_release(page);
++	if (IS_ERR(page)) {
++		p->v = NULL;
++		return NULL;
+ 	}
+-	p->v = NULL;
+-	return NULL;
++	p->v = page;
++	return (unsigned char *)page_address(page) +  ((n & ((1 << (PAGE_CACHE_SHIFT - 9)) - 1)) << 9);
+ }
  
- 		/* If users can be writing to this page using arbitrary virtual
- 		   addresses, take care about potential aliasing before reading
+ EXPORT_SYMBOL(read_dev_sector);
