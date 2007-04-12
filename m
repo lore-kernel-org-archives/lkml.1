@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751276AbXDLSyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751234AbXDLS4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751276AbXDLSyN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 14:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXDLSyN
+	id S1751234AbXDLS4v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 14:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXDLS4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 14:54:13 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43936 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbXDLSyL (ORCPT
+	Thu, 12 Apr 2007 14:56:51 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:45621 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751234AbXDLS4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 14:54:11 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <461E8048.2010303@s5r6.in-berlin.de>
-Date: Thu, 12 Apr 2007 20:54:00 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Thu, 12 Apr 2007 14:56:50 -0400
+X-Sasl-enc: DSN0BLLHVlw5Tv18mi7zCzqhOKBf+G13BcBPb0rlQF0D 1176404210
+Date: Thu, 12 Apr 2007 15:56:30 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Paul Sokolovsky <pmiscml@gmail.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Anton Vorontsov <cbou@mail.ru>,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
+Message-ID: <20070412185630.GC27804@khazad-dum.debian.net>
+References: <20070411232503.GC20095@zarina> <20070412130817.GA29900@srcf.ucam.org> <20070412141505.GA25552@zarina> <20070412142430.GA31240@srcf.ucam.org> <1734853889.20070412173626@gmail.com>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Carlo Florendo <subscribermail@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "menu" versus "menuconfig" -- they're *both* a bad idea
-References: <Pine.LNX.4.64.0704110357200.9384@CPE00045a9c397f-CM001225dbafb6> <Pine.LNX.4.61.0704111059190.32056@yvahk01.tjqt.qr> <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6> <461D84EB.7040207@gmail.com> <Pine.LNX.4.64.0704121118390.24425@CPE00045a9c397f-CM001225dbafb6>
-In-Reply-To: <Pine.LNX.4.64.0704121118390.24425@CPE00045a9c397f-CM001225dbafb6>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1734853889.20070412173626@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> but it should be obvious that, if you look at the Kconfig files, each
-> and every "select" directive has the potential to override a decision
-> you think you might have made elsewhere.
+On Thu, 12 Apr 2007, Paul Sokolovsky wrote:
+>   Yes, that's apparently the way to go. We just should consider
+> if mAh and mWh are enough, or we go wider and allow whole collection of
+> units. Btw, original handhelds.org code used Joules ;-).
 
-In other words, the author of a Kconfig file should not assume he knows
-best how users want to configure kernels.
+FWIW, SBS only mentions mAh and mWh.  AFAIK, all other (meaningful) units
+should be able to be converted to either Ah or Wh, assuming enough precision
+on the math.  I never heard of any other way to fuel-gauge batteries than
+these two main modes (current-based or capacity-based), but I don't work on
+the battery field.
 
-IMO Kconfig files should be nothing more than a list of the existing
-options with statements how they depend on each other, plus the inline
-help texts, plus one default logical grouping (e.g. Drivers -> SCSI ->
-most of the SCSI drivers).  All the rest, i.e. supporting users to get
-to the desired configuration, should be left to the various UIs to
-Kconfig --- including the bidirectional tracking of dependencies,
-presentation in different logical groups than the default one, etc.
+That said, you may need to use uWh and uAh instead of mAh and mWh, though.
 
-However, the trend here seems to be to turn Kconfig into a _program_ (a
-script rather than a description), and to tune that program to the needs
-of a subgroup of Kconfig endusers.
-
-> I'm just sayin'.
-
-Me 2.
 -- 
-Stefan Richter
--=====-=-=== -=-- -==--
-http://arcgraph.de/sr/
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
