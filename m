@@ -1,38 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992576AbXDLPYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992562AbXDLP1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992576AbXDLPYN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 11:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992573AbXDLPYM
+	id S2992562AbXDLP1g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 11:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992564AbXDLP1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 11:24:12 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:30914 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992570AbXDLPYK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 11:24:10 -0400
-X-IronPort-AV: i="4.14,403,1170662400"; 
-   d="scan'208"; a="135025357:sNHT759994317"
-To: Divy Le Ray <divy@chelsio.com>
-Cc: Steve Wise <swise@opengridcomputing.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
-       OpenFabrics General <general@lists.openfabrics.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 2.6.21] iw_cxgb3 - Add set_tcb_rpl_handler.
-X-Message-Flag: Warning: May contain useful information
-References: <1176382594.9396.1.camel@stevo-desktop>
-	<461E45C3.2050400@chelsio.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 12 Apr 2007 08:23:57 -0700
-In-Reply-To: <461E45C3.2050400@chelsio.com> (Divy Le Ray's message of "Thu, 12 Apr 2007 07:44:19 -0700")
-Message-ID: <adaveg1ipki.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Thu, 12 Apr 2007 11:27:36 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50030 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992562AbXDLP1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 11:27:35 -0400
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: akpm@osdl.org
+Subject: [PATCH] Add keyboard blink driver
+Date: Thu, 12 Apr 2007 17:27:27 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Apr 2007 15:23:57.0174 (UTC) FILETIME=[968A3160:01C77D16]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704121727.27892.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So is the cxgb3 net driver change in question already in Linus's tree?
-What is the exact patch that this change goes with?
+Add a blink driver for debugging
+
+Simple driver that blinks the keyboard LEDs when loaded. Useful
+for checking that the kernel is still alive or for crashdumping.
+The kdump kernel currently typically doesn't give any feedback
+on the screen because it often cannot reinitialize the graphics
+state. This patch allows it to at least show blinking lights
+like panic.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ drivers/misc/Kconfig  |    9 +++++++++
+ drivers/misc/Makefile |    1 +
+ drivers/misc/blink.c  |   26 ++++++++++++++++++++++++++
+ 3 files changed, 36 insertions(+)
+
+Index: linux/drivers/misc/Kconfig
+===================================================================
+--- linux.orig/drivers/misc/Kconfig
++++ linux/drivers/misc/Kconfig
+@@ -107,4 +107,13 @@ config MSI_LAPTOP
+ 
+ 	  If you have an MSI S270 laptop, say Y or M here.
+ 
++config BLINK
++	tristate "Keyboard blink driver"
++	help
++	  Driver that when loaded will blink the keyboard LEDs continuously.
++	  This is useful for debugging and for kernels that cannot necessarily
++	  output something to the screen like kexec kernels to give the user
++	  a visual indication that the kernel is doing something.
++
++
+ endmenu
+Index: linux/drivers/misc/Makefile
+===================================================================
+--- linux.orig/drivers/misc/Makefile
++++ linux/drivers/misc/Makefile
+@@ -11,3 +11,4 @@ obj-$(CONFIG_LKDTM)		+= lkdtm.o
+ obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
+ obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
+ obj-$(CONFIG_SGI_IOC4)		+= ioc4.o
++obj-$(CONFIG_BLINK)		+= blink.o
+Index: linux/drivers/misc/blink.c
+===================================================================
+--- /dev/null
++++ linux/drivers/misc/blink.c
+@@ -0,0 +1,26 @@
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/timer.h>
++#include <linux/jiffies.h>
++
++static void do_blink(unsigned long data);
++
++static DEFINE_TIMER(blink_timer, do_blink, 0 ,0);
++
++static void do_blink(unsigned long data)
++{
++	static long count;
++	panic_blink(count++);
++	blink_timer.expires = jiffies + msecs_to_jiffies(1);
++	add_timer(&blink_timer);
++}
++
++static int blink_init(void)
++{
++	printk(KERN_INFO "Enabling keyboard blinking\n");
++	do_blink(0);
++	return 0;
++}
++
++module_init(blink_init);
++
