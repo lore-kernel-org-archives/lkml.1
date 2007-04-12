@@ -1,75 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965485AbXDLIdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965472AbXDLIzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965485AbXDLIdO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 04:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965491AbXDLIdO
+	id S965472AbXDLIzP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 04:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965496AbXDLIzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 04:33:14 -0400
-Received: from mexforward.lss.emc.com ([128.222.32.20]:37135 "EHLO
-	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965485AbXDLIdM convert rfc822-to-8bit (ORCPT
+	Thu, 12 Apr 2007 04:55:15 -0400
+Received: from mailout11.yourhostingaccount.com ([65.254.253.92]:50935 "EHLO
+	mailout11.yourhostingaccount.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965472AbXDLIzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 04:33:12 -0400
-From: Buytaert_Steven@emc.com
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 12 Apr 2007 04:55:12 -0400
+X-Greylist: delayed 1287 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Apr 2007 04:55:11 EDT
+Message-ID: <000401c77cdd$5ef79910$0864a8c0@scs1>
+From: "Tasos Parisinos" <t.parisinos@sciensis.com>
+To: "Indan Zupancic" <indan@nul.nu>
+Cc: "Bill Davidsen" <davidsen@tmr.com>, "Andi Kleen" <andi@firstfloor.org>,
+       <herbert@gondor.apana.org.au>, <linux-kernel@vger.kernel.org>,
+       <randy.dunlap@oracle.com>
+References: <4610D25F.7080005@ceid.upatras.gr>    <p73r6r3yn9f.fsf@bingen.suse.de> <4610EDF9.9000601@sciensis.com>    <4616BC09.2080509@tmr.com>    <4152.81.207.0.53.1175900790.squirrel@secure.samage.net>    <461715B4.9060701@tmr.com> <009501c77c22$2b4960f0$0864a8c0@scs1> <1349.81.207.0.53.1176302225.squirrel@secure.samage.net>
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+Date: Thu, 12 Apr 2007 11:34:09 +0300
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: sched_yield proposals/rationale
-Date: Thu, 12 Apr 2007 04:31:19 -0400
-Message-ID: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: sched_yield proposals/rationale
-Thread-Index: Acd83PIUvTXFaF8RQzOXqjaBmkKSwg==
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 12 Apr 2007 08:31:21.0133 (UTC) FILETIME=[F2CA1DD0:01C77CDC]
-X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.4.12.10534
-X-PerlMx-Spam: Gauge=, SPAM=1%, Reason='EMC_FROM_0+ -3, NO_REAL_NAME 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __IMS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3028
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-EN-UserInfo: 6b5ac0c6b5a8f649d336ffa6ba3f3bc4:297516c839f78035fb456ced5af6b435
+X-EN-AuthUser: tparisinos@sciensis.com
+X-EN-OrigIP: 88.218.94.102
+X-EN-OrigHost: dsl-88-218-94-102.customers.vivodi.gr
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the new 2.6.x O(1) scheduler I'm having latency problems. Probably due
-to excessive use of sched_yield in code in components I don't have control
-over. This 'problem'/behavioral change has been reported also by other
-applications (e.g. OpenLDAP, Gnome netmeeting, Postgress, e.google...)
+> On Wed, April 11, 2007 12:14, Tasos Parisinos wrote:
+>> If you are a vendor of a smart phone, a router, or worst, a point of sale
+>> terminal you care about three things. The first is that the end user can't open
+>> the device to probe it or alter it in a way that would create fraud. For example
+>> a salesman could alter a credit card reader to see all cards as genuine and do
+>> offline transactions.
+> 
+> I'd hope that for a smart phone and a router the owner can install whatever he wants
+> (that is, he has the private key). As for the card reader, I'd hope that using a
+> modified card reader isn't enough for fraud to succeed, or else the whole thing is
+> designed stupid. That said, the credit card system seems insecure anyway, with readers
+> being able to steal useful information.
 
-I have analysed the sched_yield code in kernel/sched.c (2.6.16 SLES10) and have 3 questions/proposals:
+Well with old credit cards (magnetic) it was possible (as a matter of fact it was trivial)
+With new chip cards its a lot harder but still possible, only the risk is smaller in means that
+the fraud will be very limited.
 
-1) Would it be beneficial to give each task one try to be enqueued on the
-end of the active queue (by means of a boolean flag, reset each time the
-time slices reach 0 and it is put in the expired list by scheduler_tick)?
+> Read: http://www.cl.cam.ac.uk/TechReports/UCAM-CL-TR-630.pdf
+> 
+> There are other similar papers. The conclusion is that if someone really wants it,
+> he will get it from your device. Not sure if it was this paper or another one, but
+> volatile memory can be read out after the power went off. It's even possible to
+> retrieve overwritten data if it wasn't done very carefully, both RAM and flash.
+> 
+> If the tampering is done for a very short time, the detectors will probably miss it.
+> Or the tampering is done with the one thing the device wasn't protected against.
+> Or they think up some new way to bypass the protections.
+> 
+> Anyway, the question is what you're trying to protect. In general it's to keep the
+> code hidden, because there are plenty of obscure companies that steal that expensive
+> code and use it for their products. But it can also be a private key or something.
+> 
+> 
 
-2) When a task is eventually put in the expired list in sched_yield, give it
-back the full time slices round (as done in scheduler_tick), not with the
-remaining slices as is done now?
+I didn't have time to read the pdf but i will. As for erasing ram it usually means to also 
+scramble it and there are chips that advertise that can do this in 1 cycle. Well reaching the bus or ram 
+to probe it is another thing. Most die in such chip are also hidden under protective meshes so it 
+takes some time. What you said is true, systems are created and broken, the question is what 
+you have to hide and whether the person that wants to break it has the money the will the knowledge and the equipment 
+to do it. Because if he is to spend a million euro only to create fraud of half a million euro then he wont do it.
+That has to do with risk management.
 
-3) Put the task in the expired list at a random position, not at the end as
-is done now?
+>> The second need is solved by authentication and encryption. The system of
+>> authentication must be asymmetric because if it is symmetric and the first need
+>> is not well implemented then you may get really exposed. Of course you have to
+>> secure first the software that does this authentication on the device.
+> 
+> True. (Though asymmetric doesn't mean it has to be RSA. ;-)
+> 
+> 
 
-Rationales:
+Sure, but its just more standardized and widely used
 
-For 1) suppose the resource that the task wants to acquire (if any) and for
-which it yields, since it is not available, is kept by another task that is
-in the active list, behind this task. Putting the task on the expired list
-would induce some kind of 'tail chasing'. This would be broken by 1.
+>> So we thought, hell why not give it to others as well so we GPL'd it.
+> 
+> You did? We only saw a MPI implementation, nothing more. All the above mentioned
+> arguments and reasoning only applies to a complete implementation, not to an
+> incomplete partial solution, which on its own is useless. Don't mix up the binary
+> signing thing with a nice stand alone RSA crypto module.
+> 
+> That said, it was nice to share the RSA code, no matter what.
+> 
+> 
 
-For 2) When a task is put on the expired list with e.g. 1 time quantum left,
-next time it gets the resource and is put on the expired list at the next
-scheduler_tick occurence, before it has the chance to release the resource
-again, keeping it for a longer time than necessary.
+I understand and i agree, thing is that i dont decide about which parts are given GPL.
+While the RSA module is given standalone, it can be still used by others to develop
+their own signing and authenticating mechanisms. For example some will decide to do 
+hashing of code with md5 while others with sha1 and some will do padding compliant
+with pkcs1 other will implement other schemas e.t.c. I want to say although this is not
+really ready to be used for binary signing, it has the advantage to provide basic functionality
+and freedom to other developers to implement their own schemas.
 
-For 3) when the resource (if any) is requested by many tasks
-regularly, always putting the yielding task at the end of the expired list
-could result in 'unfairness' since the resource is handed out to the tasks
-as they get on the cpu. The only 'fairness' that can be applied with yield
-is than to insert in a random position.
+> But I don't see why you're so mysterious about the rest anyway, because it looks rather
+> trivial to implement such binary signature checking thing. If it isn't trivial, then
+> small chance it's secure...
+> 
+> At least I won't ever buy "secure" hardware from any vendor who's mysterious about the
+> implemented protections. Because time after time it was proven that no matter how obscure
+> the protection is done, it's always bypassed if it couldn't stand on its own.
+> (Example: The GSM encryption used. Both reverse engineered and broken.)
+> 
 
-Any insight on these proposed changes? Thanks
+people think that by hiding implementations (which can be reverse engineered of course)
+will make it more difficult to break. Well i agree with you but... its not in my hands.
+So i will come back with these parts replaced with some of my own
 
-Steven Buytaert
---
-La perfection est atteinte non quand il ne reste rien ajouter, mais quand il ne reste rien à enlever. (Antoine de Saint-Exupéry)
+And a question
+Can someone provide me with a full list of kernel functions where code is loaded?
+
+Best regards 
+Tasos Parisinos
 
