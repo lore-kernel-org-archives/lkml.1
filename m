@@ -1,35 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946090AbXDLJv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946092AbXDLJwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946090AbXDLJv5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945994AbXDLJtG
+	id S1946092AbXDLJwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946088AbXDLJtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:49:06 -0400
-Received: from rwcrmhc11.comcast.net ([204.127.192.81]:62789 "EHLO
-	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946009AbXDLJsm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:48:42 -0400
-Subject: Re: sched_yield proposals/rationale
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Buytaert_Steven@emc.com
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com>
-References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: The Big Corporation
-Date: Thu, 12 Apr 2007 02:48:39 -0700
-Message-Id: <1176371319.3975.19.camel@sx.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 12 Apr 2007 05:49:01 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56734 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1945994AbXDLJke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:40:34 -0400
+Message-Id: <20070412090842.835046000@suse.de>
+References: <20070412090809.917795000@suse.de>
+User-Agent: quilt/0.46-14
+Date: Thu, 12 Apr 2007 02:08:29 -0700
+From: jjohansen@suse.de
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 20/41] Pass struct vfsmount to the inode_unlink LSM hook
+Content-Disposition: inline; filename=security-unlink.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-12 at 04:31 -0400, Buytaert_Steven@emc.com wrote:
-> Since the new 2.6.x O(1) scheduler I'm having latency problems. 
+This is needed for computing pathnames in the AppArmor LSM.
 
-1. Have you elevated the process priority?
-2. Have you tried running SCHED_FIFO, or SCHED_RR?
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
+---
+ fs/namei.c               |    2 +-
+ include/linux/security.h |   12 ++++++++----
+ security/dummy.c         |    3 ++-
+ security/selinux/hooks.c |    5 +++--
+ 4 files changed, 14 insertions(+), 8 deletions(-)
 
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2103,7 +2103,7 @@ int vfs_unlink(struct inode *dir, struct
+ 	if (d_mountpoint(dentry))
+ 		error = -EBUSY;
+ 	else {
+-		error = security_inode_unlink(dir, dentry);
++		error = security_inode_unlink(dir, dentry, mnt);
+ 		if (!error)
+ 			error = dir->i_op->unlink(dir, dentry);
+ 	}
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -298,6 +298,7 @@ struct request_sock;
+  *	Check the permission to remove a hard link to a file. 
+  *	@dir contains the inode structure of parent directory of the file.
+  *	@dentry contains the dentry structure for file to be unlinked.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	Return 0 if permission is granted.
+  * @inode_symlink:
+  *	Check the permission to create a symbolic link to a file.
+@@ -1218,7 +1219,8 @@ struct security_operations {
+ 	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
+ 	                   struct inode *dir, struct dentry *new_dentry,
+ 			   struct vfsmount *new_mnt);
+-	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
++	int (*inode_unlink) (struct inode *dir, struct dentry *dentry,
++			     struct vfsmount *mnt);
+ 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
+ 			      struct vfsmount *mnt, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
+@@ -1645,11 +1647,12 @@ static inline int security_inode_link (s
+ }
+ 
+ static inline int security_inode_unlink (struct inode *dir,
+-					 struct dentry *dentry)
++					 struct dentry *dentry,
++					 struct vfsmount *mnt)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_unlink (dir, dentry);
++	return security_ops->inode_unlink (dir, dentry, mnt);
+ }
+ 
+ static inline int security_inode_symlink (struct inode *dir,
+@@ -2377,7 +2380,8 @@ static inline int security_inode_link (s
+ }
+ 
+ static inline int security_inode_unlink (struct inode *dir,
+-					 struct dentry *dentry)
++					 struct dentry *dentry,
++					 struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -278,7 +278,8 @@ static int dummy_inode_link (struct dent
+ 	return 0;
+ }
+ 
+-static int dummy_inode_unlink (struct inode *inode, struct dentry *dentry)
++static int dummy_inode_unlink (struct inode *inode, struct dentry *dentry,
++			       struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2199,11 +2199,12 @@ static int selinux_inode_link(struct den
+ 	return may_link(dir, old_dentry, MAY_LINK);
+ }
+ 
+-static int selinux_inode_unlink(struct inode *dir, struct dentry *dentry)
++static int selinux_inode_unlink(struct inode *dir, struct dentry *dentry,
++			        struct vfsmount *mnt)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->inode_unlink(dir, dentry);
++	rc = secondary_ops->inode_unlink(dir, dentry, mnt);
+ 	if (rc)
+ 		return rc;
+ 	return may_link(dir, dentry, MAY_UNLINK);
+
+-- 
