@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXDLObl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXDLOgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbXDLObl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 10:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXDLObl
+	id S932282AbXDLOgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 10:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbXDLOgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 10:31:41 -0400
-Received: from kanga.kvack.org ([66.96.29.28]:56095 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932286AbXDLObk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 10:31:40 -0400
-Date: Thu, 12 Apr 2007 10:31:31 -0400
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: Ken Chen <kenchen@google.com>
-Cc: Zach Brown <zach.brown@oracle.com>, akpm@linux-foundation.org,
-       linux-aio@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
-Message-ID: <20070412143131.GP13621@kvack.org>
-References: <20070410235353.325A7346F64@localhost> <20070411180038.GN28322@mami.zabbo.net> <b040c32a0704120050h5b4f03d3ve8813d96c18e082f@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 12 Apr 2007 10:36:19 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:25653 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932282AbXDLOgT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 10:36:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
+        b=uquoIX4deLxXqKjDZoy3WcJd1Qalur/Orbjcm96AeLSfwhA6nCbkL2ngiYLHomQ4Zg8ows8DgcKMq1nKAI4Pyl4MOxbiVSp2gx8srd62kXT2mi2ckTbce1XBWeW1zqtU3wNUupzf4jtvG6hB5SVk9w1vHD7KLJlbUqStHRKydr4=
+Date: Thu, 12 Apr 2007 17:36:26 +0300
+From: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <1734853889.20070412173626@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Anton Vorontsov <cbou@mail.ru>, dwmw2@infradead.org,
+       <linux-kernel@vger.kernel.org>, <kernel-discuss@handhelds.org>
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
+In-Reply-To: <20070412142430.GA31240@srcf.ucam.org>
+References: <20070411232503.GC20095@zarina> <20070412130817.GA29900@srcf.ucam.org> <20070412141505.GA25552@zarina> <20070412142430.GA31240@srcf.ucam.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0704120050h5b4f03d3ve8813d96c18e082f@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 12:50:39AM -0700, Ken Chen wrote:
-> I ran through the autotest (with bug fix in the test code).  It passes
-> the regression tests. I made the following change since last rev:
+Hello Matthew,
 
-By removing the spinlock around ring insertion, you've made it possible 
-for two events being inserted on different CPUs to end up creating 
-inconsistent state, as there is nothing which guarantees that resulting 
-event in the ring will be wholely one event or another.
+Thursday, April 12, 2007, 5:24:30 PM, you wrote:
 
-Also, I don't like rounding up of the number of events to the nearest power 
-of two, as it can round things up significantly more than just going to the 
-end of the last actual page of memory allocated.
+> On Thu, Apr 12, 2007 at 06:15:05PM +0400, Anton Vorontsov wrote:
+>> On Thu, Apr 12, 2007 at 02:08:18PM +0100, Matthew Garrett wrote:
+>> > ACPI batteries can report capacity and rate in either mA or mW. Given
+>> 
+>> You sure, capacity in mA? Then I don't know. But you can safely
+>> fallback and create your own attribute (just as in David's battery class,
+>> where every battery required to create its own attributes), plus create
+>> capacity_units attribute. So, user space will know your driver's specific
+>> units.
 
-NAK.
+> Well, mAh, but yes. Clearly it's possible to add extra attributes, but
+> speccing standard attributes that don't entirely cover the most common
+> non-embedded battery class seems less than ideal. Why not just require
+> capacity_units and rate_units attributes?
 
-		-ben
+  Yes, that's apparently the way to go. We just should consider
+if mAh and mWh are enough, or we go wider and allow whole collection of
+units. Btw, original handhelds.org code used Joules ;-).
 
-PS  base64 encoded patches are incredibly difficult to quote.
+
 -- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <zyntrop@kvack.org>.
+Best regards,
+ Paul                            mailto:pmiscml@gmail.com
+
