@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992549AbXDLN1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992550AbXDLNcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992549AbXDLN1d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 09:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992550AbXDLN1c
+	id S2992550AbXDLNcB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 09:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992551AbXDLNcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 09:27:32 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:22713 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S2992549AbXDLN1c (ORCPT
+	Thu, 12 Apr 2007 09:32:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60630 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992550AbXDLNcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 09:27:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=e/JiKA+b3NsBLLN9dPELpThplOCO7ZTP7hSN0QNKiyKdKaNVmHL8TBU/CZE8RQdkFiD8ig6uoN/HG/beeoa9y1AntIplnsXoqTsKXcPblwfI7VUZk1a4ymTPrI94FJJS3kCw0j6mPAwXhSbbFbuhvHRcQEj4+KfPsCAdKSLPeac=  ;
-X-YMail-OSG: PGiR_HsVM1kI4G7DlDoiCmIlbOByDyfjoBs6OJP.50VZhHLxEF1QaM8nZ6gOR.t6k8MnlYePow--
-Message-ID: <461E33BA.2030104@yahoo.com.au>
-Date: Thu, 12 Apr 2007 23:27:22 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
+	Thu, 12 Apr 2007 09:32:01 -0400
+Date: Thu, 12 Apr 2007 15:31:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
 To: Buytaert_Steven@emc.com
-CC: andi@firstfloor.org, linux-kernel@vger.kernel.org
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
 Subject: Re: sched_yield proposals/rationale
+Message-ID: <20070412133158.GB31455@one.firstfloor.org>
 References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com> <p737ish90ss.fsf@bingen.suse.de> <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Buytaert_Steven@emc.com wrote:
->>-----Original Message-----
->>From: Andi Kleen
->>[ ... about use of sched_yield ...]
->>On the other hand when they fix their code to not rely on sched_yield
->>but use [...]
-> 
+On Thu, Apr 12, 2007 at 09:05:25AM -0400, Buytaert_Steven@emc.com wrote:
+> > -----Original Message-----
+> > From: Andi Kleen
+> > [ ... about use of sched_yield ...]
+> > On the other hand when they fix their code to not rely on sched_yield
+> > but use [...]
 > 
 > Agreed, but $ find . -name "*.[ch]" | xargs grep -E "yield[ ]*\(" | wc over
-> the 2.6.16 kernel yields 105 hits, note including comments...
+> the 2.6.16 kernel yields 105 hits, note including comments... An interesting spot is e.g. fs/buffer.c free_more_memory()
 
-Most of these (in core code, anyway) seem to use yield when they really don't
-care about running for a while.
+A lot of those are probably broken in some way agreed.
 
-> An interesting spot is e.g. fs/buffer.c free_more_memory()
+> > 
+> > > 2) When a task is eventually put in the expired list in sched_yield,
+> > > give it back the full time slices round (as done in scheduler_tick), not > > with the remaining slices as is done now?
+> > 
+> > That would likely be unfair and exploitable.
+> 
+> I don't understand; how more unfair would it be than passing via scheduler_tick? Grabbing a resource with a single time slice left would be more unfair towards other tasks IMHO when you get moved to the expired list with the resource in still in your possession.
 
-This one should be pretty rare (actually I think it is dead code in practice,
-due to the way the page allocator works).
+With a particular sleep pattern it could get more CPU time.
 
-Avoiding sched_yield is a really good idea outside realtime scheduling. Since
-we have gone this far with the current semantics, I think it would be sad to
-back down now.
+> > > 3) Put the task in the expired list at a random position, not at the end
+> > > is done now?
+> > 
+> > Sounds like an interesting approach, but to do it in O(1) you would
+> > need a new data structure with possibly much larger constant overhead.
+> 
+> Agreed, but not dramatic. Suppose you need to insert at position X, you would do, on the linked list after proper setup:
+> 
+> while (X--) { prev = current; current = current->next }
+> 
+> You could have a small duffs device to reduce the X-- checking overhead.
 
-It would be nice if you could pressure those other components to adapt :)
+You would need to rename the scheduler to "sometimes O(1)" first @)
 
--- 
-SUSE Labs, Novell Inc.
+Besides - but I guess you're aware of it - any randomized algorithms tend
+to drive benchmarkers and performance analysts crazy because their performance
+cannot be repeated. So it's usually better to avoid them unless there is 
+really no alternative.
+
+-Andi
