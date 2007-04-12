@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030484AbXDLXgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030781AbXDLXiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030484AbXDLXgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 19:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030781AbXDLXgA
+	id S1030781AbXDLXiG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 19:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030801AbXDLXiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 19:36:00 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37097 "EHLO smtp.osdl.org"
+	Thu, 12 Apr 2007 19:38:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38074 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030484AbXDLXgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 19:36:00 -0400
-Date: Thu, 12 Apr 2007 16:35:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	id S1030781AbXDLXiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 19:38:04 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
 To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/30] Use menuconfig objects
-Message-Id: <20070412163547.ebcc9b5a.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.61.0704130114350.14441@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
-	<20070412155012.789852c4.akpm@linux-foundation.org>
-	<Pine.LNX.4.61.0704130114350.14441@yvahk01.tjqt.qr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [PATCH UPDATE] deflate stack usage in lib/inflate.c
+Date: Fri, 13 Apr 2007 01:37:57 +0200
+User-Agent: KMail/1.9.6
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tim Yamin <plasmaroo@gentoo.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <461DED14.1070603@goop.org> <461EB515.4080106@goop.org> <Pine.LNX.4.61.0704130119470.14441@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704130119470.14441@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704130137.57323.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007 01:16:35 +0200 (MEST)
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-
-> On Apr 12 2007 15:50, Andrew Morton wrote:
-> >On Tue, 10 Apr 2007 21:17:40 +0200 (MEST)
-> >Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> >
-> >> the following patch series turns some menus into menuconfigs, so they 
-> >> can be disabled whilst "walking" thorugh the parent menu
-> >
-> >So I merged the 23 of these which survived review and which do not
-> >intersect with other outstanding work.
-> >
-> >I don't think I have an opinion on whether the change is actually an
-> >
-> >If we're going to make this change, we should ensure that it is done
-> >kernel-wide, for UI consistency reasons.
+On Friday 13 April 2007 01:20:40 Jan Engelhardt wrote:
 > 
-> If time permits, I'll go through the rest of the menus I find
-> eligible for menuconfig-izing.
+> On Apr 12 2007 15:39, Jeremy Fitzhardinge wrote:
+> >Andi Kleen wrote:
+> >> Hmm, does Xen perhaps not use interrupt stacks? Normally 2.7k should be still
+> >> green as long as there are not too many functions above/below it.
+> >
+> >That's a good point, I'll need to check that.  Still, nearly 3k of stack!
+> 
+> I bite. Would compressing the vmlinux binary with LZO or LZMA make an
+> improvement to the bootstrap uncompress stack usage?
 
-OK.  It's encouraging that Randy is on board.
+We don't care about the stack usage, as long as it doesn't overflow.
+It's a very limited piece of code that doesn't run on top or below
+other subsystems.
 
-> Does it help to base them on -mm to work better with outstanding work?
-
-At this stage in the development cycle:
-
- 5444 files changed, 530428 insertions(+), 179401 deletions(-)
-
-yes, it helps quite a lot.
+-Andi
