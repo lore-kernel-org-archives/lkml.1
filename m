@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992527AbXDLNOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992529AbXDLNSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992527AbXDLNOs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 09:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992529AbXDLNOs
+	id S2992529AbXDLNSb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 09:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992530AbXDLNSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 09:14:48 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:30435 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S2992527AbXDLNOr (ORCPT
+	Thu, 12 Apr 2007 09:18:31 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:40990 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992529AbXDLNSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 09:14:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=LTxqlby+/oAUFB2x8Ox6/zHJqG/fYSE9XZPepagGG0iE0a+vecV/3oOvmjrmljC1hLYxM94e7HRP+F/49u2yNXO37XvWdB1TmyWeiq4KAt5vBnMwRhthDzois8QwfX1yEH3QBnltFVas+fIbLw/SH3W4vWYMlxS9qb0OA2tiWrw=  ;
-X-YMail-OSG: h97fZToVM1lQ3kxHdYof4puAX04yRSGIxJbme3GMpL0XhiA8
-Message-ID: <461E30A6.5030203@yahoo.com.au>
-Date: Thu, 12 Apr 2007 23:14:14 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH] make MADV_FREE lazily free memory
-References: <461C6452.1000706@redhat.com> <461D6413.6050605@cosmosbay.com> <461D67A9.5020509@redhat.com> <461DC75B.8040200@cosmosbay.com> <461DCCEB.70004@yahoo.com.au> <461DCDDA.2030502@yahoo.com.au> <461DDE44.2040409@redhat.com>
-In-Reply-To: <461DDE44.2040409@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 12 Apr 2007 09:18:30 -0400
+X-Greylist: delayed 1314 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Apr 2007 09:18:30 EDT
+Subject: [PATCH 2.6.21] iw_cxgb3 - Add set_tcb_rpl_handler.
+From: Steve Wise <swise@opengridcomputing.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
+       OpenFabrics General <general@lists.openfabrics.org>,
+       Jeff Garzik <jeff@garzik.org>, Divy Le Ray <divy@chelsio.com>
+Content-Type: text/plain
+Date: Thu, 12 Apr 2007 07:56:34 -0500
+Message-Id: <1176382594.9396.1.camel@stevo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Nick Piggin wrote:
-> 
->> Nick Piggin wrote:
->>
->>> Eric Dumazet wrote:
+Hey Roland,
 
->>>> ah ok, this is because accessed/dirty bits are set by hardware and 
->>>> not a page fault.
->>>
->>>
->>>
->>> No it isn't.
->>
->>
->> That is to say, it isn't required for correctness. But if the
->> question was about avoiding a fault, then yes ;)
-> 
-> 
-> Making the pte clean also needs to clear the hardware writable
-> bit on architectures where we do pte dirtying in software.
-> 
-> If we don't, we would have corruption problems all over the VM,
-> for example in the code around pte_clean_one :)
+This patch is needed for iw_cxgb3 to handle a change in the cxgb3 driver
+posted by Divy that Jeff recently applied.  If the cxgb3 change is
+destined for 2.6.21, then this change to iw_cxgb3 also needs to go in
+(otherwise we get an error log entry for every rdma connection).  
 
-Sure. Hence why I say that having hardware set a/d bits are not
-required for correctness ;)
+It was an oversight that this patch didn't really get included in Divy's
+series since the two go together.
 
->> But as Linus recently said, even hardware handled faults still
->> take expensive microarchitectural traps.
-> 
-> 
-> Nowhere near as expensive as a full page fault, though...
-
-I don't doubt that. Do you know rough numbers?
+See http://marc.info/?l=linux-netdev&m=117617444422260&w=2
 
 
-> The lazy freeing is aimed at avoiding page faults on memory
-> that is freed and later realloced, which is quite a common
-> thing in many workloads.
+Thanks,
 
-I would be interested to see how it performs and what these
-workloads look like, although we do need to fix the basic glibc and
-madvise locking problems first.
+Steve.
 
-The obvious concerns I have with the patch are complexity (versus
-payoff), behaviour under reclaim, and behaviour when freed memory
-isn't reallocated very quickly (eg. degrading cache performance).
 
-We'll see, I guess...
+---
 
--- 
-SUSE Labs, Novell Inc.
+
+Add set_tcb_rpl_handler.
+
+The Ethernet Driver no longer handles SET_TCB replies.
+
+Signed-off-by: Steve Wise <swise@opengridcomputing.com>
+---
+
+ drivers/infiniband/hw/cxgb3/iwch_cm.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+index d0ed1d3..2d2de9b 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+@@ -2026,6 +2026,17 @@ static int sched(struct t3cdev *tdev, st
+ 	return 0;
+ }
+ 
++static int set_tcb_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
++{
++	struct cpl_set_tcb_rpl *rpl = cplhdr(skb);
++
++	if (rpl->status != CPL_ERR_NONE) {
++		printk(KERN_ERR MOD "Unexpected SET_TCB_RPL status %u "
++		       "for tid %u\n", rpl->status, GET_TID(rpl));
++	}
++	return CPL_RET_BUF_DONE;
++}
++
+ int __init iwch_cm_init(void)
+ {
+ 	skb_queue_head_init(&rxq);
+@@ -2053,6 +2064,7 @@ int __init iwch_cm_init(void)
+ 	t3c_handlers[CPL_ABORT_REQ_RSS] = sched;
+ 	t3c_handlers[CPL_RDMA_TERMINATE] = sched;
+ 	t3c_handlers[CPL_RDMA_EC_STATUS] = sched;
++	t3c_handlers[CPL_SET_TCB_RPL] = set_tcb_rpl;
+ 
+ 	/*
+ 	 * These are the real handlers that are called from a
+
