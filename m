@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161482AbXDLCVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161497AbXDLCVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161482AbXDLCVB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 22:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161485AbXDLCUd
+	id S1161497AbXDLCVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 22:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161486AbXDLCVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 22:20:33 -0400
-Received: from ozlabs.org ([203.10.76.45]:55490 "EHLO ozlabs.org"
+	Wed, 11 Apr 2007 22:21:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:55497 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161481AbXDLCUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 22:20:31 -0400
+	id S1161489AbXDLCUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 22:20:35 -0400
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Linux Memory Management <linux-mm@kvack.org>,
        <linux-kernel@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 12 Apr 2007 12:20:28 +1000
-Subject: [PATCH 3/12] get_unmapped_area handles MAP_FIXED on arm
+Date: Thu, 12 Apr 2007 12:20:33 +1000
+Subject: [PATCH 12/12] get_unmapped_area doesn't need hugetlbfs hacks anymore 
 In-Reply-To: <1176344427.242579.337989891532.qpush@grosgo>
-Message-Id: <20070412022030.976C9DDF27@ozlabs.org>
+Message-Id: <20070412022035.4BD9CDDF32@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ARM already had a case for MAP_FIXED in arch_get_unmapped_area() though
-it was not called before. Fix the comment to reflect that it will now
-be called.
+Remove the hugetlbfs specific hacks in toplevel get_unmapped_area() now
+that all archs and hugetlbfs itself do the right thing for both cases.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/arm/mm/mmap.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ mm/mmap.c |   16 ----------------
+ 1 file changed, 16 deletions(-)
 
-Index: linux-cell/arch/arm/mm/mmap.c
+Index: linux-cell/mm/mmap.c
 ===================================================================
---- linux-cell.orig/arch/arm/mm/mmap.c	2007-03-22 14:59:51.000000000 +1100
-+++ linux-cell/arch/arm/mm/mmap.c	2007-03-22 15:00:01.000000000 +1100
-@@ -49,8 +49,7 @@ arch_get_unmapped_area(struct file *filp
- #endif
+--- linux-cell.orig/mm/mmap.c	2007-04-12 12:14:46.000000000 +1000
++++ linux-cell/mm/mmap.c	2007-04-12 12:14:47.000000000 +1000
+@@ -1381,22 +1381,6 @@ get_unmapped_area(struct file *file, uns
+ 	if (addr & ~PAGE_MASK)
+ 		return -EINVAL;
  
- 	/*
--	 * We should enforce the MAP_FIXED case.  However, currently
--	 * the generic kernel code doesn't allow us to handle this.
-+	 * We enforce the MAP_FIXED case.
- 	 */
- 	if (flags & MAP_FIXED) {
- 		if (aliasing && flags & MAP_SHARED && addr & (SHMLBA - 1))
+-	if (file && is_file_hugepages(file))  {
+-		/*
+-		 * Check if the given range is hugepage aligned, and
+-		 * can be made suitable for hugepages.
+-		 */
+-		ret = prepare_hugepage_range(addr, len, pgoff);
+-	} else {
+-		/*
+-		 * Ensure that a normal request is not falling in a
+-		 * reserved hugepage range.  For some archs like IA-64,
+-		 * there is a separate region for hugepages.
+-		 */
+-		ret = is_hugepage_only_range(current->mm, addr, len);
+-	}
+-	if (ret)
+-		return -EINVAL;
+ 	return addr;
+ }
+ 
