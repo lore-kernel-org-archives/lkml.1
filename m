@@ -1,59 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXDLHpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161108AbXDLHuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161071AbXDLHpg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 03:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161105AbXDLHpg
+	id S1161108AbXDLHuv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 03:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161128AbXDLHuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 03:45:36 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56463 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161071AbXDLHpf (ORCPT
+	Thu, 12 Apr 2007 03:50:51 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:45654 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161108AbXDLHut (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 03:45:35 -0400
-Date: Thu, 12 Apr 2007 00:39:18 -0700
-From: Greg KH <greg@kroah.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: gregkh@suse.de, maneesh@in.ibm.com, dmitry.torokhov@gmail.com,
-       cornelia.huck@de.ibm.com, oneukum@suse.de, rpurdie@rpsys.net,
-       James.Bottomley@SteelEye.com, stern@rowland.harvard.edu,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 12/14 UPDATED] sysfs: implement sysfs_dirent active
-	reference and immediate disconnect
-Message-ID: <20070412073918.GA1680@kroah.com>
-References: <11760923261269-git-send-email-htejun@gmail.com> <11760923292724-git-send-email-htejun@gmail.com> <20070411041515.GA10619@htj.dyndns.org> <20070412071815.GD13047@kroah.com>
+	Thu, 12 Apr 2007 03:50:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:references;
+	b=dCI8T5hpWVf6GY+RGvqUqhh0wOJqYHeCk0L4ZSn0j+8ZaIR6wdaVHfPMPTjCoIUcB
+	fqMYjJaobOMi7Hd98oiZA==
+Message-ID: <b040c32a0704120050h5b4f03d3ve8813d96c18e082f@mail.gmail.com>
+Date: Thu, 12 Apr 2007 00:50:39 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Zach Brown" <zach.brown@oracle.com>
+Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
+Cc: akpm@linux-foundation.org, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org, "Benjamin LaHaise" <bcrl@kvack.org>
+In-Reply-To: <20070411180038.GN28322@mami.zabbo.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070412071815.GD13047@kroah.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_26996_31479838.1176364239484"
+References: <20070410235353.325A7346F64@localhost>
+	 <20070411180038.GN28322@mami.zabbo.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 12:18:15AM -0700, Greg KH wrote:
-> On Wed, Apr 11, 2007 at 01:15:15PM +0900, Tejun Heo wrote:
-> > [PATCH] sysfs: implement sysfs_dirent active reference and immediate disconnect
-> 
-> For some reason, this doesn't apply on top of your patches:
-> 
-> Applying patch sysfs-implement-sysfs_dirent-active-reference-and-immediate-disconnect.patch
-> patching file fs/sysfs/dir.c
-> patching file fs/sysfs/sysfs.h
-> patching file fs/sysfs/bin.c
-> patching file fs/sysfs/file.c
-> Hunk #1 succeeded at 96 (offset 8 lines).
-> Hunk #2 succeeded at 107 (offset 8 lines).
-> Hunk #3 succeeded at 240 (offset 8 lines).
-> Hunk #4 FAILED at 300.
-> Hunk #5 succeeded at 336 (offset 14 lines).
-> Hunk #6 succeeded at 368 (offset 14 lines).
-> Hunk #7 succeeded at 435 (offset 14 lines).
-> 1 out of 7 hunks FAILED -- rejects in file fs/sysfs/file.c
-> patching file fs/sysfs/inode.c
-> 
-> So I'll only apply the first 11 for now.  Can you respin the last 3 and
-> send them to me again?
+------=_Part_26996_31479838.1176364239484
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Oh nevermind, this was my fault, it was due to something else of mine
-that isn't in mainline, sorry for the noise...
+On 4/11/07, Zach Brown <zach.brown@oracle.com> wrote:
+> First, I'll NAK this and all AIO patches until the patch description
+> says that it's been run through the regression tests that we've started
+> collecting in autotest.  They're trivial to run, never fear:
+>
+>  cd /usr/local
+>  svn checkout svn://test.kernel.org/autotest/trunk/client autotest
+>  cd autotest
+>  bin/autotest tests/aio_dio_bugs/control
 
-greg k-h
+I ran through the autotest (with bug fix in the test code).  It passes
+the regression tests. I made the following change since last rev:
+
+* struct aio_ring stays unchanged.  I added a cast to atomic_cmpxchg()
+* aio_ring_event() has grown too big, I turned that into a function
+* take out white space change from previous rev.
+
+open issue that this patch does not try to fix:
+* kmap address alias needs a flush_dcache_page
+
+Zach, does this make you more comfortable? (or maybe less iffy is the
+right word?)
+
+
+From: Ken Chen <kenchen@google.com>
+
+Resurrect an old patch that uses atomic operation to update ring buffer
+index on AIO event queue.  This work allows further application/libaio
+optimization to run fast path io_getevents in user space.
+
+I've also added one more change on top of old implementation that rounds
+ring buffer size to power of 2 to allow fast head/tail calculation. With
+the new scheme, there is no more modulo operation on them and we simply
+increment either pointer index directly.  This scheme also automatically
+handles integer wrap nicely without any additional special treatment.
+
+Patch was stress tested and in addition, tested on
+autotest:aio_dio_bugs.  The results were all pass:  Output of
+autotest:aio_dio_bugs:
+ran for 200 seconds without error, passing
+AIO read of last block in file succeeded.
+aio-free-ring-with-bogus-nr-pages: Success!
+aio-io-setup-with-nonwritable-context-pointer: Success!
+GOOD aio_dio_bugs completed successfully
+
+
+Signed-off-by: Ken Chen <kenchen@google.com>
+
+------=_Part_26996_31479838.1176364239484
+Content-Type: text/x-patch; name=aio-use-atomic.patch; 
+	charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f0ewt2xh
+Content-Disposition: attachment; filename="aio-use-atomic.patch"
+
+ZGlmZiAtLWdpdCBhL2ZzL2Fpby5jIGIvZnMvYWlvLmMKaW5kZXggZTQ1OThkNi4uZjhiOGU0NSAx
+MDA2NDQKLS0tIGEvZnMvYWlvLmMKKysrIGIvZnMvYWlvLmMKQEAgLTEwOCw4ICsxMDgsOCBAQCBz
+dGF0aWMgaW50IGFpb19zZXR1cF9yaW5nKHN0cnVjdCBraW9jdHggKmN0eCkKIAl1bnNpZ25lZCBs
+b25nIHNpemU7CiAJaW50IG5yX3BhZ2VzOwogCi0JLyogQ29tcGVuc2F0ZSBmb3IgdGhlIHJpbmcg
+YnVmZmVyJ3MgaGVhZC90YWlsIG92ZXJsYXAgZW50cnkgKi8KLQlucl9ldmVudHMgKz0gMjsJLyog
+MSBpcyByZXF1aXJlZCwgMiBmb3IgZ29vZCBsdWNrICovCisJLyogcm91bmQgbnJfZXZlbnQgdG8g
+bmV4dCBwb3dlciBvZiAyICovCisJbnJfZXZlbnRzID0gcm91bmR1cF9wb3dfb2ZfdHdvKG5yX2V2
+ZW50cyk7CiAKIAlzaXplID0gc2l6ZW9mKHN0cnVjdCBhaW9fcmluZyk7CiAJc2l6ZSArPSBzaXpl
+b2Yoc3RydWN0IGlvX2V2ZW50KSAqIG5yX2V2ZW50czsKQEAgLTExOCw4ICsxMTgsNiBAQCBzdGF0
+aWMgaW50IGFpb19zZXR1cF9yaW5nKHN0cnVjdCBraW9jdHggKmN0eCkKIAlpZiAobnJfcGFnZXMg
+PCAwKQogCQlyZXR1cm4gLUVJTlZBTDsKIAotCW5yX2V2ZW50cyA9IChQQUdFX1NJWkUgKiBucl9w
+YWdlcyAtIHNpemVvZihzdHJ1Y3QgYWlvX3JpbmcpKSAvIHNpemVvZihzdHJ1Y3QgaW9fZXZlbnQp
+OwotCiAJaW5mby0+bnIgPSAwOwogCWluZm8tPnJpbmdfcGFnZXMgPSBpbmZvLT5pbnRlcm5hbF9w
+YWdlczsKIAlpZiAobnJfcGFnZXMgPiBBSU9fUklOR19QQUdFUykgewpAQCAtMTc3LDE0ICsxNzUs
+MTYgQEAgc3RhdGljIGludCBhaW9fc2V0dXBfcmluZyhzdHJ1Y3Qga2lvY3R4ICpjdHgpCiAjZGVm
+aW5lIEFJT19FVkVOVFNfRklSU1RfUEFHRQkoKFBBR0VfU0laRSAtIHNpemVvZihzdHJ1Y3QgYWlv
+X3JpbmcpKSAvIHNpemVvZihzdHJ1Y3QgaW9fZXZlbnQpKQogI2RlZmluZSBBSU9fRVZFTlRTX09G
+RlNFVAkoQUlPX0VWRU5UU19QRVJfUEFHRSAtIEFJT19FVkVOVFNfRklSU1RfUEFHRSkKIAotI2Rl
+ZmluZSBhaW9fcmluZ19ldmVudChpbmZvLCBuciwga20pICh7CQkJCQlcCi0JdW5zaWduZWQgcG9z
+ID0gKG5yKSArIEFJT19FVkVOVFNfT0ZGU0VUOwkJCVwKLQlzdHJ1Y3QgaW9fZXZlbnQgKl9fZXZl
+bnQ7CQkJCQlcCi0JX19ldmVudCA9IGttYXBfYXRvbWljKAkJCQkJCVwKLQkJCShpbmZvKS0+cmlu
+Z19wYWdlc1twb3MgLyBBSU9fRVZFTlRTX1BFUl9QQUdFXSwga20pOyBcCi0JX19ldmVudCArPSBw
+b3MgJSBBSU9fRVZFTlRTX1BFUl9QQUdFOwkJCQlcCi0JX19ldmVudDsJCQkJCQkJXAotfSkKK3N0
+YXRpYyBzdHJ1Y3QgaW9fZXZlbnQgKmFpb19yaW5nX2V2ZW50KHN0cnVjdCBhaW9fcmluZ19pbmZv
+ICppbmZvLAorCQkJCQl1bnNpZ25lZCBuciwgZW51bSBrbV90eXBlIGttKQoreworCXVuc2lnbmVk
+IHBvcyA9IChuciAmIChpbmZvLT5uciAtIDEpKSArIEFJT19FVkVOVFNfT0ZGU0VUOworCXN0cnVj
+dCBpb19ldmVudCAqZXZlbnQ7CisKKwlldmVudCA9IGttYXBfYXRvbWljKGluZm8tPnJpbmdfcGFn
+ZXNbcG9zIC8gQUlPX0VWRU5UU19QRVJfUEFHRV0sIGttKTsKKwlldmVudCArPSBwb3MgJSBBSU9f
+RVZFTlRTX1BFUl9QQUdFOworCXJldHVybiBldmVudDsKK30KIAogI2RlZmluZSBwdXRfYWlvX3Jp
+bmdfZXZlbnQoZXZlbnQsIGttKSBkbyB7CVwKIAlzdHJ1Y3QgaW9fZXZlbnQgKl9fZXZlbnQgPSAo
+ZXZlbnQpOwlcCkBAIC0yMjAsNyArMjIwLDYgQEAgc3RhdGljIHN0cnVjdCBraW9jdHggKmlvY3R4
+X2FsbG9jKHVuc2lnbmVkIG5yX2V2ZW50cykKIAogCWF0b21pY19zZXQoJmN0eC0+dXNlcnMsIDEp
+OwogCXNwaW5fbG9ja19pbml0KCZjdHgtPmN0eF9sb2NrKTsKLQlzcGluX2xvY2tfaW5pdCgmY3R4
+LT5yaW5nX2luZm8ucmluZ19sb2NrKTsKIAlpbml0X3dhaXRxdWV1ZV9oZWFkKCZjdHgtPndhaXQp
+OwogCiAJSU5JVF9MSVNUX0hFQUQoJmN0eC0+YWN0aXZlX3JlcXMpOwpAQCAtOTI3LDcgKzkyNiw3
+IEBAIGludCBmYXN0Y2FsbCBhaW9fY29tcGxldGUoc3RydWN0IGtpb2NiICppb2NiLCBsb25nIHJl
+cywgbG9uZyByZXMyKQogCXN0cnVjdCBhaW9fcmluZwkqcmluZzsKIAlzdHJ1Y3QgaW9fZXZlbnQJ
+KmV2ZW50OwogCXVuc2lnbmVkIGxvbmcJZmxhZ3M7Ci0JdW5zaWduZWQgbG9uZwl0YWlsOworCXVu
+c2lnbmVkCXRhaWw7CiAJaW50CQlyZXQ7CiAKIAkvKgpAQCAtOTY5LDggKzk2OCw2IEBAIGludCBm
+YXN0Y2FsbCBhaW9fY29tcGxldGUoc3RydWN0IGtpb2NiICppb2NiLCBsb25nIHJlcywgbG9uZyBy
+ZXMyKQogCiAJdGFpbCA9IGluZm8tPnRhaWw7CiAJZXZlbnQgPSBhaW9fcmluZ19ldmVudChpbmZv
+LCB0YWlsLCBLTV9JUlEwKTsKLQlpZiAoKyt0YWlsID49IGluZm8tPm5yKQotCQl0YWlsID0gMDsK
+IAogCWV2ZW50LT5vYmogPSAodTY0KSh1bnNpZ25lZCBsb25nKWlvY2ItPmtpX29iai51c2VyOwog
+CWV2ZW50LT5kYXRhID0gaW9jYi0+a2lfdXNlcl9kYXRhOwpAQCAtOTg2LDEzICs5ODMsMTQgQEAg
+aW50IGZhc3RjYWxsIGFpb19jb21wbGV0ZShzdHJ1Y3Qga2lvY2IgKmlvY2IsIGxvbmcgcmVzLCBs
+b25nIHJlczIpCiAJICovCiAJc21wX3dtYigpOwkvKiBtYWtlIGV2ZW50IHZpc2libGUgYmVmb3Jl
+IHVwZGF0aW5nIHRhaWwgKi8KIAorCXRhaWwrKzsKIAlpbmZvLT50YWlsID0gdGFpbDsKIAlyaW5n
+LT50YWlsID0gdGFpbDsKIAogCXB1dF9haW9fcmluZ19ldmVudChldmVudCwgS01fSVJRMCk7CiAJ
+a3VubWFwX2F0b21pYyhyaW5nLCBLTV9JUlExKTsKIAotCXByX2RlYnVnKCJhZGRlZCB0byByaW5n
+ICVwIGF0IFslbHVdXG4iLCBpb2NiLCB0YWlsKTsKKwlwcl9kZWJ1ZygiYWRkZWQgdG8gcmluZyAl
+cCBhdCBbJXVdXG4iLCBpb2NiLCB0YWlsKTsKIHB1dF9ycToKIAkvKiBldmVyeXRoaW5nIHR1cm5l
+ZCBvdXQgd2VsbCwgZGlzcG9zZSBvZiB0aGUgYWlvY2IuICovCiAJcmV0ID0gX19haW9fcHV0X3Jl
+cShjdHgsIGlvY2IpOwpAQCAtMTAwNywzOSArMTAwNSwzNSBAQCBwdXRfcnE6CiAvKiBhaW9fcmVh
+ZF9ldnQKICAqCVB1bGwgYW4gZXZlbnQgb2ZmIG9mIHRoZSBpb2N0eCdzIGV2ZW50IHJpbmcuICBS
+ZXR1cm5zIHRoZSBudW1iZXIgb2YgCiAgKglldmVudHMgZmV0Y2hlZCAoMCBvciAxIDstKQotICoJ
+RklYTUU6IG1ha2UgdGhpcyB1c2UgY21weGNoZy4KICAqCVRPRE86IG1ha2UgdGhlIHJpbmdidWZm
+ZXIgdXNlciBtbWFwKClhYmxlIChyZXF1aXJlcyBGSVhNRSkuCiAgKi8KIHN0YXRpYyBpbnQgYWlv
+X3JlYWRfZXZ0KHN0cnVjdCBraW9jdHggKmlvY3R4LCBzdHJ1Y3QgaW9fZXZlbnQgKmVudCkKIHsK
+IAlzdHJ1Y3QgYWlvX3JpbmdfaW5mbyAqaW5mbyA9ICZpb2N0eC0+cmluZ19pbmZvOwogCXN0cnVj
+dCBhaW9fcmluZyAqcmluZzsKLQl1bnNpZ25lZCBsb25nIGhlYWQ7Ci0JaW50IHJldCA9IDA7CisJ
+c3RydWN0IGlvX2V2ZW50ICpldnA7CisJdW5zaWduZWQgaGVhZDsKKwlpbnQgcmV0OwogCiAJcmlu
+ZyA9IGttYXBfYXRvbWljKGluZm8tPnJpbmdfcGFnZXNbMF0sIEtNX1VTRVIwKTsKIAlkcHJpbnRr
+KCJpbiBhaW9fcmVhZF9ldnQgaCVsdSB0JWx1IG0lbHVcbiIsCiAJCSAodW5zaWduZWQgbG9uZyly
+aW5nLT5oZWFkLCAodW5zaWduZWQgbG9uZylyaW5nLT50YWlsLAogCQkgKHVuc2lnbmVkIGxvbmcp
+cmluZy0+bnIpOwogCi0JaWYgKHJpbmctPmhlYWQgPT0gcmluZy0+dGFpbCkKLQkJZ290byBvdXQ7
+Ci0KLQlzcGluX2xvY2soJmluZm8tPnJpbmdfbG9jayk7Ci0KLQloZWFkID0gcmluZy0+aGVhZCAl
+IGluZm8tPm5yOwotCWlmIChoZWFkICE9IHJpbmctPnRhaWwpIHsKLQkJc3RydWN0IGlvX2V2ZW50
+ICpldnAgPSBhaW9fcmluZ19ldmVudChpbmZvLCBoZWFkLCBLTV9VU0VSMSk7CisJZG8geworCQlo
+ZWFkID0gcmluZy0+aGVhZDsKKwkJaWYgKGhlYWQgPT0gcmluZy0+dGFpbCkgeworCQkJcmV0ID0g
+MDsKKwkJCWJyZWFrOworCQl9CisJCWV2cCA9IGFpb19yaW5nX2V2ZW50KGluZm8sIGhlYWQsIEtN
+X1VTRVIxKTsKIAkJKmVudCA9ICpldnA7Ci0JCWhlYWQgPSAoaGVhZCArIDEpICUgaW5mby0+bnI7
+CiAJCXNtcF9tYigpOyAvKiBmaW5pc2ggcmVhZGluZyB0aGUgZXZlbnQgYmVmb3JlIHVwZGF0bmcg
+dGhlIGhlYWQgKi8KLQkJcmluZy0+aGVhZCA9IGhlYWQ7CiAJCXJldCA9IDE7CiAJCXB1dF9haW9f
+cmluZ19ldmVudChldnAsIEtNX1VTRVIxKTsKLQl9Ci0Jc3Bpbl91bmxvY2soJmluZm8tPnJpbmdf
+bG9jayk7CisJfSB3aGlsZSAoaGVhZCAhPSBhdG9taWNfY21weGNoZygoYXRvbWljX3QgKikgJnJp
+bmctPmhlYWQsCisJCQkJCWhlYWQsIGhlYWQgKyAxKSk7CiAKLW91dDoKIAlrdW5tYXBfYXRvbWlj
+KHJpbmcsIEtNX1VTRVIwKTsKIAlkcHJpbnRrKCJsZWF2aW5nIGFpb19yZWFkX2V2dDogJWQgIGgl
+bHUgdCVsdVxuIiwgcmV0LAogCQkgKHVuc2lnbmVkIGxvbmcpcmluZy0+aGVhZCwgKHVuc2lnbmVk
+IGxvbmcpcmluZy0+dGFpbCk7CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2Fpby5oIGIvaW5j
+bHVkZS9saW51eC9haW8uaAppbmRleCBhMzBlZjEzLi4wY2Q2NmEzIDEwMDY0NAotLS0gYS9pbmNs
+dWRlL2xpbnV4L2Fpby5oCisrKyBiL2luY2x1ZGUvbGludXgvYWlvLmgKQEAgLTE1Niw3ICsxNTYs
+NyBAQCBzdHJ1Y3QgYWlvX3JpbmcgewogCXN0cnVjdCBpb19ldmVudAkJaW9fZXZlbnRzWzBdOwog
+fTsgLyogMTI4IGJ5dGVzICsgcmluZyBzaXplICovCiAKLSNkZWZpbmUgYWlvX3JpbmdfYXZhaWwo
+aW5mbywgcmluZykJKCgocmluZyktPmhlYWQgKyAoaW5mbyktPm5yIC0gMSAtIChyaW5nKS0+dGFp
+bCkgJSAoaW5mbyktPm5yKQorI2RlZmluZSBhaW9fcmluZ19hdmFpbChpbmZvLCByaW5nKSAoKGlu
+Zm8pLT5uciArIChyaW5nKS0+aGVhZCAtIChyaW5nKS0+dGFpbCkKIAogI2RlZmluZSBBSU9fUklO
+R19QQUdFUwk4CiBzdHJ1Y3QgYWlvX3JpbmdfaW5mbyB7CkBAIC0xNjQsNyArMTY0LDYgQEAgc3Ry
+dWN0IGFpb19yaW5nX2luZm8gewogCXVuc2lnbmVkIGxvbmcJCW1tYXBfc2l6ZTsKIAogCXN0cnVj
+dCBwYWdlCQkqKnJpbmdfcGFnZXM7Ci0Jc3BpbmxvY2tfdAkJcmluZ19sb2NrOwogCWxvbmcJCQlu
+cl9wYWdlczsKIAogCXVuc2lnbmVkCQluciwgdGFpbDsK
+------=_Part_26996_31479838.1176364239484--
