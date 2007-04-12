@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965452AbXDLHXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422704AbXDLHXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965452AbXDLHXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 03:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965458AbXDLHXa
+	id S1422704AbXDLHXh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 03:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422710AbXDLHXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 03:23:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46045 "EHLO mx1.redhat.com"
+	Thu, 12 Apr 2007 03:23:37 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:60286 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965452AbXDLHX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 03:23:29 -0400
-Message-ID: <461DDE44.2040409@redhat.com>
-Date: Thu, 12 Apr 2007 03:22:44 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH] make MADV_FREE lazily free memory
-References: <461C6452.1000706@redhat.com> <461D6413.6050605@cosmosbay.com> <461D67A9.5020509@redhat.com> <461DC75B.8040200@cosmosbay.com> <461DCCEB.70004@yahoo.com.au> <461DCDDA.2030502@yahoo.com.au>
-In-Reply-To: <461DCDDA.2030502@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1422704AbXDLHXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 03:23:36 -0400
+Date: Thu, 12 Apr 2007 09:24:50 +0200
+From: DervishD <lkml@dervishd.net>
+To: Carlo Florendo <subscribermail@gmail.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "menu" versus "menuconfig" -- they're *both* a bad idea
+Message-ID: <20070412072450.GB24755@DervishD>
+Mail-Followup-To: Carlo Florendo <subscribermail@gmail.com>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0704110357200.9384@CPE00045a9c397f-CM001225dbafb6> <Pine.LNX.4.61.0704111059190.32056@yvahk01.tjqt.qr> <Pine.LNX.4.64.0704110509200.11343@CPE00045a9c397f-CM001225dbafb6> <461D84EB.7040207@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <461D84EB.7040207@gmail.com>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Nick Piggin wrote:
->> Eric Dumazet wrote:
->>
+    Hi Carlo :)
+
+ * Carlo Florendo <subscribermail@gmail.com> dixit:
+> Robert P. J. Day wrote:
+> >  (in short, if i, the builder, explicitly choose *not* to add a
+> >certain feature to my build, i think i have every right to expect that
+> >some other part of my configuration isn't quietly going to put some
+> >sub-choice of that feature back in behind my back.)
 > 
->>>> Two things can happen here.
->>>>
->>>> If this program used the pages before the kernel needed
->>>> them, the program will be reusing its old pages.
->>>
->>>
->>>
->>> ah ok, this is because accessed/dirty bits are set by hardware and 
->>> not a page fault.
->>
->>
->> No it isn't.
+> I agree with this.  However, if another feature actually depends on another 
+> explicitly unselected feature, there should at least be a warning prompt 
+> that such is the case.
 > 
-> That is to say, it isn't required for correctness. But if the
-> question was about avoiding a fault, then yes ;)
+> It probably would be hard though to track all dependencies.
 
-Making the pte clean also needs to clear the hardware writable
-bit on architectures where we do pte dirtying in software.
+    I think that it wouldn't be that hard: some cases (like
+CONFIG_EMBEDDED) are easy to spot, and the harder ones are going to bite
+someone's arse sooner or later. If a bad dependency tracking doesn't
+cause any harm, it doesn't need to be fixed right now, and if it bites,
+it can be fixed before the next -stable release sees the light.
+Fortunately, all dependencies (at least all that can cause harm if
+untracked) will be spotted before the next minor kernel release.
 
-If we don't, we would have corruption problems all over the VM,
-for example in the code around pte_clean_one :)
+    Hopefully...
 
-> But as Linus recently said, even hardware handled faults still
-> take expensive microarchitectural traps.
-
-Nowhere near as expensive as a full page fault, though...
-
-The lazy freeing is aimed at avoiding page faults on memory
-that is freed and later realloced, which is quite a common
-thing in many workloads.
+    Raúl Núñez de Arenas Coronado
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
