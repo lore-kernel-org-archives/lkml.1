@@ -1,22 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbXDLTP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751613AbXDLTXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751615AbXDLTP6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 15:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbXDLTP6
+	id S1751613AbXDLTXZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 15:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbXDLTXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 15:15:58 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55871 "EHLO smtp.osdl.org"
+	Thu, 12 Apr 2007 15:23:25 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:56124 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751623AbXDLTP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 15:15:56 -0400
-Date: Thu, 12 Apr 2007 12:15:53 -0700
+	id S1751570AbXDLTXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 15:23:24 -0400
+Date: Thu, 12 Apr 2007 12:21:49 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Cameron Schaus <cam@schaus.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20 OOM with 8Gb RAM
-Message-Id: <20070412121553.c7fd3249.akpm@linux-foundation.org>
-In-Reply-To: <20070412173830.GA31323@schaus.ca>
-References: <20070412173830.GA31323@schaus.ca>
+To: David Howells <dhowells@redhat.com>
+Cc: "Nate Diller" <nate.diller@gmail.com>,
+       "Alexander Viro" <viro@zeniv.linux.org.uk>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Mikulas Patocka" <mikulas@artax.karlin.mff.cuni.cz>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Dave Kleikamp" <shaggy@austin.ibm.com>,
+       "Anton Altaparmakov" <aia21@cantab.net>,
+       "Evgeniy Dushistov" <dushistov@mail.ru>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-dev@namesys.com
+Subject: Re: [PATCH 3/17] afs: convert afs_dir_get_page to read_kmap_page
+Message-Id: <20070412122149.6dfa8ff9.akpm@linux-foundation.org>
+In-Reply-To: <29898.1176404243@redhat.com>
+References: <5c49b0ed0704121123x341d10afxfdf6930b4b26417b@mail.gmail.com>
+	<20070412024938.27380.44677.patchbomb.py@localhost>
+	<1273.1176375482@redhat.com>
+	<29898.1176404243@redhat.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -24,49 +36,16 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Apr 2007 11:38:30 -0600
-Cameron Schaus <cam@schaus.ca> wrote:
+On Thu, 12 Apr 2007 19:57:23 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-> I am running the latest FC5-i686-smp kernel, 2.6.20, on a machine with
-> 8Gb of RAM, and 2 Xeon processors.  The system has a 750Mb ramdisk,
-> and one process allocating and deallocating memory that is also
-> writing lots of files to the ramdisk.  The process also reads and
-> writes from the network.  After the process runs for a while, the
-> linux OOM killer starts killing processes, even though there is lots
-> of memory available.
+> > Hmmm you're right.  Is your security work going into the next -mm?
 > 
-> The system does not ordinarily use swap space, but I've added swap to
-> see if it makes a difference, but it only defers the problem.
-> 
-> The OOM dump below shows that memory in the NORMAL_ZONE is exhausted,
-> but there is still plenty of memory (6Gb+) in the HighMem Zone.  I can
-> provide .config and dmesg data if these would be helpful.
-> 
-> Why is the OOM killer being invoked when there is still memory
-> available for use?
-> 
-> java invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0
-> java invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0
->  [<c0455f84>] out_of_memory+0x69/0x191
->  [<c0457460>] __alloc_pages+0x220/0x2aa
->  [<c046c80a>] cache_alloc_refill+0x26f/0x468
->  [<c046ca76>] __kmalloc+0x73/0x7d
->  [<c05bb4ce>] __alloc_skb+0x49/0xf7
->  [<c05e483d>] tcp_sendmsg+0x169/0xa04
->  [<c05fd76d>] inet_sendmsg+0x3b/0x45
->  [<c05b57d5>] sock_aio_write+0xf9/0x105
->  [<c0455708>] generic_file_aio_read+0x173/0x1a3
->  [<c046fd11>] do_sync_write+0xc7/0x10a
->  [<c04379fd>] autoremove_wake_function+0x0/0x35
->  [<c05e413e>] tcp_ioctl+0x10a/0x115
->  [<c05e4034>] tcp_ioctl+0x0/0x115
->  [<c05fd406>] inet_ioctl+0x8d/0x91
->  [<c0470564>] vfs_write+0xbc/0x154
->  [<c0470b62>] sys_write+0x41/0x67
->  [<c0403ef6>] sysenter_past_esp+0x5f/0x85
+> I don't know.  Andrew hasn't said anything.  Andrew?  Are you waiting for it
+> to go through DaveM's networking tree?
 
-All of ZONE_NORMAL got used by ramdisk, and networking wants to
-allocate a page from ZONE_NORMAL.  An oom-killing is the correct
-response, although probably not effective.
+AF_RXRPC is a davem thing and "AFS: Add security support and fix bugs"
+has dependencise upon it.  So we're waiting for you and the networking
+guys to sort all that out.
 
-ramdisk is a nasty thing - cannot you use ramfs or tmpfs?
+Or am I wrong??
