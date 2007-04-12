@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992466AbXDLKt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992483AbXDLK6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992466AbXDLKt0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 06:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992478AbXDLKt0
+	id S2992483AbXDLK6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 06:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992484AbXDLK6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 06:49:26 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34716 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992466AbXDLKtY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 06:49:24 -0400
-Date: Thu, 12 Apr 2007 11:49:24 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: jjohansen@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [AppArmor 33/41] Add d_namespace_path() to obtain namespace relative pathnames
-Message-ID: <20070412104924.GF4095@ftp.linux.org.uk>
-References: <20070412090809.917795000@suse.de> <20070412090847.351285000@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070412090847.351285000@suse.de>
-User-Agent: Mutt/1.4.1i
+	Thu, 12 Apr 2007 06:58:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60980 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992483AbXDLK6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 06:58:47 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070412024938.27380.44677.patchbomb.py@localhost> 
+References: <20070412024938.27380.44677.patchbomb.py@localhost> 
+To: Nate Diller <nate.diller@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Dave Kleikamp <shaggy@austin.ibm.com>,
+       Anton Altaparmakov <aia21@cantab.net>,
+       Evgeniy Dushistov <dushistov@mail.ru>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-dev@namesys.com
+Subject: Re: [PATCH 3/17] afs: convert afs_dir_get_page to read_kmap_page 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Thu, 12 Apr 2007 11:58:02 +0100
+Message-ID: <1273.1176375482@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +char *d_namespace_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-> +		       char *buf, int buflen)
-> +{
-> +	char *res;
-> +	struct vfsmount *rootmnt, *nsrootmnt;
-> +	struct dentry *root;
-> +
-> +	read_lock(&current->fs->lock);
-> +	rootmnt = mntget(current->fs->rootmnt);
-> +	read_unlock(&current->fs->lock);
-> +	spin_lock(&vfsmount_lock);
-> +	nsrootmnt = mntget(rootmnt->mnt_ns->root);
+Nate Diller <nate.diller@gmail.com> wrote:
 
-... and when somebody does umount -l on your chroot jail, you get
-NULL ->mnt_ns.  Oops...
+> -static struct page *afs_dir_get_page(struct inode *dir, unsigned long index)
+
+NAK.  This conflicts with my AFS security patches, and eliminates any way of
+passing the key through to readpage().
+
+David
