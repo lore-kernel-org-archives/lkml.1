@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbXDLVd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXDLVhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbXDLVd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 17:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXDLVd7
+	id S1751980AbXDLVhg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 17:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbXDLVhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 17:33:59 -0400
-Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:49288 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753900AbXDLVd6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 17:33:58 -0400
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
-Date: Thu, 12 Apr 2007 21:28:54 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <evm8am$h12$2@taverner.cs.berkeley.edu>
-References: <4610D25F.7080005@ceid.upatras.gr> <1349.81.207.0.53.1176302225.squirrel@secure.samage.net> <a781481a0704120235q34d047c8q350b0ed29cde9f0f@mail.gmail.com> <3630.81.207.0.53.1176380573.squirrel@secure.samage.net>
-Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1176413334 17442 128.32.168.222 (12 Apr 2007 21:28:54 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Thu, 12 Apr 2007 21:28:54 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Thu, 12 Apr 2007 17:37:36 -0400
+Received: from holomorphy.com ([66.93.40.71]:39123 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751980AbXDLVhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 17:37:35 -0400
+Date: Thu, 12 Apr 2007 14:37:50 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Buytaert_Steven@emc.com, linux-kernel@vger.kernel.org
+Subject: Re: sched_yield proposals/rationale
+Message-ID: <20070412213750.GF2986@holomorphy.com>
+References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com> <p737ish90ss.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p737ish90ss.fsf@bingen.suse.de>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Indan Zupancic wrote:
->On Thu, April 12, 2007 11:35, Satyam Sharma wrote:
->> 1. First, sorry, I don't think an RSA implementation not conforming to
->> PKCS #1 qualifies to be called RSA at all. That is definitely a *must*
->> -- why break strong crypto algorithms such as RSA by implementing them
->> in insecure ways?
->
->It's still RSA, that it's not enough to get a complete and secure crypto
->system doesn't mean it isn't RSA anymore. Maybe you're right and having
->RSA without the rest makes no sense.
+On Thu, Apr 12, 2007 at 03:31:31PM +0200, Andi Kleen wrote:
+> The only way I could think of to make sched_yield work the way they 
+> expect would be to define some way of gang scheduling and give
+> sched_yield semantics that it preferably yields to other members
+> of the gang.
+> But it would be still hard to get these semantics (how to define
+> the gangs) into your uncontrollable broken applications and also
+> it has the risk of either unfairness or not full utilization of the 
+> machine. Getting it to scale well on MP systems would be also likely 
+> a challenge.
 
-Yes, Satyam Sharma is 100% correct.  Unpadded RSA makes no sense.  RSA is
-not secure if you omit the padding.  If you have a good reason why RSA
-needs to be in the kernel for security reasons, then the padding has to be
-in the kernel, too.  Putting plain unpadded RSA in the kernel seems bogus.
+Gang scheduling isn't a squishy concept whose name can be arbitrarily
+repurposed. Perhaps "group scheduling" or similar would be appropriate
+if the standard gang scheduling semantics are not what you have in mind.
 
-I worry about the quality of this patch if it is using unpadded RSA.
-This is pretty elementary stuff.  No one should be implementing their
-own crypto code unless they have considerable competence and knowledge
-of cryptography.  This elementary error leaves reason to be concerned
-about whether the developer of this patch has the skills that are needed
-to write this kind of code and get it right.
+Standard gang scheduling would not be appropriate for applications that
+don't know what they're doing. All threads of a gang falling asleep
+when one sleeps (or more properly, the gang is considered either
+runnable or unrunnable as a unit) is not to be taken lightly.
 
-People often take it personally when I tell them that they do are not
-competent to write their own crypto code, but this is not a personal
-attack.  It takes very specialized knowledge and considerable study
-before one can write your own crypto implementation from scratch and
-have a good chance that the result will be secure.  People without
-those skills shouldn't be writing their own crypto code, at least not
-if security is important, because it's too easy to get something wrong.
-(No, just reading Applied Cryptography is not good enough.)  My experience
-is that code that contains elementary errors like this is also likely
-to contain more subtle errors that are harder to spot.  In short, I'm
-not getting warm fuzzies here.
+I'd call this something like a "directed yield with a group as a target,"
+but I wouldn't actually try to do this. I'd try to provide ways for a
+directed yield to donate remaining timeslice and dynamic priority if
+possible to a particular task associated with a resource, for instance,
+a futex or SysV semaphore owner. The priority inversion one desperately
+wants to avoid is the resource owner running out of timeslice or
+otherwise losing priority to where it falls behind busywaiters such as
+callers of sched_yield for the purposes of multitier locking.
 
-And no, you can't just blithely push padding into user space and expect
-that to make the security issues go away.  If you are putting the
-RSA exponentiation in the kernel because you don't trust user space,
-then you have to put the padding in the kernel, too, otherwise you're
-vulnerable to attack from evil user space code.
 
-It is also not true that padding schemes change all the time.  They're
-fairly stable.  Pick a reasonable modern padding scheme and leave it.
+-- wli
