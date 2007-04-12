@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161133AbXDLJWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945948AbXDLJfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161133AbXDLJWE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161157AbXDLJWE
+	id S1945948AbXDLJfn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945951AbXDLJfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:22:04 -0400
-Received: from ojjektum.uhulinux.hu ([62.112.194.64]:53501 "EHLO
-	ojjektum.uhulinux.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161133AbXDLJWC (ORCPT
+	Thu, 12 Apr 2007 05:35:42 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:51542 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945948AbXDLJfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:22:02 -0400
-Date: Thu, 12 Apr 2007 11:22:00 +0200
-From: Egmont Koblinger <egmont@uhulinux.hu>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-Message-ID: <20070412092200.GB15666@uhulinux.hu>
-References: <20070407092451.GA8779@uhulinux.hu> <Pine.LNX.4.61.0704071232560.22181@yvahk01.tjqt.qr> <20070407172603.GA25351@uhulinux.hu> <4617DBF7.5060009@zytor.com> <20070410094325.GB9143@uhulinux.hu> <461BB092.3070201@zytor.com> <20070410171924.GA18314@uhulinux.hu> <20070410183659.7341eeec@the-village.bc.nu> <20070411182801.GC26382@uhulinux.hu> <Pine.LNX.4.61.0704112048240.20436@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 12 Apr 2007 05:35:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=th3aGLjKTgor6huccbA/ElYJHbvTxbjhrKt/bMQb11rpwVcA9seim/vpsymbH6EYkrOek+WDFsWXgbn3zIOtScxry1FKK/ZR787vj4hDdmq7ZetPRisOy34NyC32BYn9bMaVj34DApelhuezRshtMKY/MlcDp2DAMxCcYBArKCQ=
+Message-ID: <a781481a0704120235q34d047c8q350b0ed29cde9f0f@mail.gmail.com>
+Date: Thu, 12 Apr 2007 15:05:39 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Tasos Parisinos" <t.parisinos@sciensis.com>
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+Cc: "Indan Zupancic" <indan@nul.nu>, "Bill Davidsen" <davidsen@tmr.com>,
+       "Andi Kleen" <andi@firstfloor.org>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
+In-Reply-To: <000401c77cdd$5ef79910$0864a8c0@scs1>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0704112048240.20436@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.11
+References: <4610D25F.7080005@ceid.upatras.gr> <p73r6r3yn9f.fsf@bingen.suse.de>
+	 <4610EDF9.9000601@sciensis.com> <4616BC09.2080509@tmr.com>
+	 <4152.81.207.0.53.1175900790.squirrel@secure.samage.net>
+	 <461715B4.9060701@tmr.com> <009501c77c22$2b4960f0$0864a8c0@scs1>
+	 <1349.81.207.0.53.1176302225.squirrel@secure.samage.net>
+	 <000401c77cdd$5ef79910$0864a8c0@scs1>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 11, 2007 at 09:00:49PM +0200, Jan Engelhardt wrote:
+Hello,
 
-> >+struct interval {
-> >+  int first;
-> >+  int last;
-> >+};
-> 
-> CodingStyle? uint16_t instead of int?
+> I understand and i agree, thing is that i dont decide about which parts are given GPL.
+> While the RSA module is given standalone, it can be still used by others to develop
+> their own signing and authenticating mechanisms. For example some will decide to do
+> hashing of code with md5 while others with sha1 and some will do padding compliant
+> with pkcs1 other will implement other schemas e.t.c. I want to say although this is not
+> really ready to be used for binary signing, it has the advantage to provide basic functionality
+> and freedom to other developers to implement their own schemas.
 
-> >+    { 0x1D173, 0x1D182 }, { 0x1D185, 0x1D18B }, { 0x1D1AA, 0x1D1AD },
-> >+    { 0xE0001, 0xE0001 }, { 0xE0020, 0xE007F }, { 0xE0100, 0xE01EF }
-> >+  };
-> 
-> Since Unicode above 0xFFFF is unsupported, could not these entries be killed?
+Firstly, I'd like to steer clear of all the RSA-in-kernel-or-userspace
+/ MPI-in-kernel-or-userspace arguments. True, MPI / RSA / (PKI? that
+even requires some knowledge of ASN.1 etc to parse certificates) do
+add a lot of bloat to the kernel. That said, I don't see any other
+reason to _not_ do asymmetric crypto in the kernel either. In some
+situations, that in fact simplifies the overall system by avoiding the
+use of additional userspace components / daemons to do the key
+management stuff.
 
-The UTF-8 decoder part already supports full 31-bit Unicode (including 5 and
-6 byte long UTF-8 sequences). It's only the font handling part that doesn't
-support Unicode beyond BMP. If an application prints a non-BMP character
-that is double-wide, or is a zero-width space, the expected behavior is to
-move the cursor by two or zero positions. In order to do this, width
-information is needed even beyond BMP.  It's a completely different story
-that there would be no real glyph displayed, just e.g. a replacement symbol
-followed by a space to pretend a real double-width character was printed.
+I do have some comments on the submitted patch, though:
 
+1. First, sorry, I don't think an RSA implementation not conforming to
+PKCS #1 qualifies to be called RSA at all. That is definitely a *must*
+-- why break strong crypto algorithms such as RSA by implementing them
+in insecure ways? It shouldn't be too difficult for you to add, and
+you _can_ still allow the user to choose the appropriate padding
+scheme by taking it as an argument to the encrypt / decrypt API
+functions (some possibilities I can think of are PKCS#1 v1.5 padding,
+v2.0 i.e. OAEP padding, or null padding).
 
-> unsigned int rescan:1;
-> unsigned int inverse:1;
-> unsigned int width; or even uint8_t.
-> I would not mind unsigned.
+2. Of course, you can forget about what digest was used to compute the
+plaintext input to RSA. We don't really care, as RSA should never be
+used to operate on multiple blocks anyway and no real-world hybrid
+cryptosystem uses it in such a way either. (RSA could be thought of as
+a block cipher of block size == modulus size)
 
-Okay.
+3. Please, try to re-use the MPI library from GnuPG that has already
+been ported to the kernel -- not the mainline tree, but most
+distributions such as Red Hat, Fedora, Debian, Suse(?) have maintained
+an MPI library in crypto/ for the modsign stuff for years now -- that
+would make your entire RSA module merely a set of wrappers
+(implementing PKCS#1) to the core modular exponentiation functions in
+that MPI library. It also contains implementations of optimized
+algorithms for a lot of the mathematics involved, so you have only to
+benefit from utilizing a library that has been used, maintained and
+tested for years.
 
-
-
--- 
-Egmont
+4. Anything in crypto/ belongs to the CryptoAPI. You definitely need
+to integrate with it.
