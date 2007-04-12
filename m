@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXDLJ5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965536AbXDLJ6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965522AbXDLJ5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945997AbXDLJ5P
+	id S965536AbXDLJ6M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965529AbXDLJ5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:57:15 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56718 "EHLO mx2.suse.de"
+	Thu, 12 Apr 2007 05:57:08 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56728 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945966AbXDLJkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:40:31 -0400
-Message-Id: <20070412090836.207973000@suse.de>
+	id S1945967AbXDLJkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:40:32 -0400
+Message-Id: <20070412090844.938011000@suse.de>
 References: <20070412090809.917795000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:10 -0700
+Date: Thu, 12 Apr 2007 02:08:35 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-Content-Disposition: inline; filename=security-create.diff
+Subject: [AppArmor 26/41] Pass struct vfsmount to the inode_getxattr LSM hook
+Content-Disposition: inline; filename=security-getxattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -30,88 +30,92 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/namei.c               |    2 +-
- include/linux/security.h |    9 ++++++---
- security/dummy.c         |    2 +-
+ fs/xattr.c               |    2 +-
+ include/linux/security.h |   13 ++++++++-----
+ security/dummy.c         |    3 ++-
  security/selinux/hooks.c |    3 ++-
- 4 files changed, 10 insertions(+), 6 deletions(-)
+ 4 files changed, 13 insertions(+), 8 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
- 		return -EACCES;	/* shouldn't it be ENOSYS? */
- 	mode &= S_IALLUGO;
- 	mode |= S_IFREG;
--	error = security_inode_create(dir, dentry, mode);
-+	error = security_inode_create(dir, dentry, nd ? nd->mnt : NULL, mode);
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -117,7 +117,7 @@ vfs_getxattr(struct dentry *dentry, stru
  	if (error)
  		return error;
- 	DQUOT_INIT(dir);
+ 
+-	error = security_inode_getxattr(dentry, name);
++	error = security_inode_getxattr(dentry, mnt, name);
+ 	if (error)
+ 		return error;
+ 
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -283,6 +283,7 @@ struct request_sock;
-  *	Check permission to create a regular file.
-  *	@dir contains inode structure of the parent of the new file.
-  *	@dentry contains the dentry structure for the file to be created.
-+ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	@mode contains the file mode of the file to be created.
-  *	Return 0 if permission is granted.
-  * @inode_link:
-@@ -1204,8 +1205,8 @@ struct security_operations {
- 	void (*inode_free_security) (struct inode *inode);
- 	int (*inode_init_security) (struct inode *inode, struct inode *dir,
- 				    char **name, void **value, size_t *len);
--	int (*inode_create) (struct inode *dir,
--	                     struct dentry *dentry, int mode);
-+	int (*inode_create) (struct inode *dir, struct dentry *dentry,
-+			     struct vfsmount *mnt, int mode);
- 	int (*inode_link) (struct dentry *old_dentry,
- 	                   struct inode *dir, struct dentry *new_dentry);
- 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
-@@ -1611,11 +1612,12 @@ static inline int security_inode_init_se
- 	
- static inline int security_inode_create (struct inode *dir,
- 					 struct dentry *dentry,
-+					 struct vfsmount *mnt,
- 					 int mode)
- {
- 	if (unlikely (IS_PRIVATE (dir)))
- 		return 0;
--	return security_ops->inode_create (dir, dentry, mode);
-+	return security_ops->inode_create (dir, dentry, mnt, mode);
+@@ -391,7 +391,7 @@ struct request_sock;
+  * 	@value identified by @name for @dentry and @mnt.
+  * @inode_getxattr:
+  * 	Check permission before obtaining the extended attributes
+- * 	identified by @name for @dentry.
++ * 	identified by @name for @dentry and @mnt.
+  * 	Return 0 if permission is granted.
+  * @inode_listxattr:
+  * 	Check permission before obtaining the list of extended attribute 
+@@ -1248,7 +1248,8 @@ struct security_operations {
+ 				     struct vfsmount *mnt,
+ 				     char *name, void *value,
+ 				     size_t size, int flags);
+-	int (*inode_getxattr) (struct dentry *dentry, char *name);
++	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
++			       char *name);
+ 	int (*inode_listxattr) (struct dentry *dentry);
+ 	int (*inode_removexattr) (struct dentry *dentry, char *name);
+ 	const char *(*inode_xattr_getsuffix) (void);
+@@ -1782,11 +1783,12 @@ static inline void security_inode_post_s
+ 	security_ops->inode_post_setxattr (dentry, mnt, name, value, size, flags);
  }
  
- static inline int security_inode_link (struct dentry *old_dentry,
-@@ -2338,6 +2340,7 @@ static inline int security_inode_init_se
- 	
- static inline int security_inode_create (struct inode *dir,
- 					 struct dentry *dentry,
-+					 struct vfsmount *mnt,
- 					 int mode)
+-static inline int security_inode_getxattr (struct dentry *dentry, char *name)
++static inline int security_inode_getxattr (struct dentry *dentry,
++					    struct vfsmount *mnt, char *name)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_getxattr (dentry, name);
++	return security_ops->inode_getxattr (dentry, mnt, name);
+ }
+ 
+ static inline int security_inode_listxattr (struct dentry *dentry)
+@@ -2487,7 +2489,8 @@ static inline void security_inode_post_s
+ 						 int flags)
+ { }
+ 
+-static inline int security_inode_getxattr (struct dentry *dentry, char *name)
++static inline int security_inode_getxattr (struct dentry *dentry,
++					    struct vfsmount *mnt, char *name)
  {
  	return 0;
+ }
 --- a/security/dummy.c
 +++ b/security/dummy.c
-@@ -265,7 +265,7 @@ static int dummy_inode_init_security (st
+@@ -368,7 +368,8 @@ static void dummy_inode_post_setxattr (s
+ {
  }
  
- static int dummy_inode_create (struct inode *inode, struct dentry *dentry,
--			       int mask)
-+			       struct vfsmount *mnt, int mask)
+-static int dummy_inode_getxattr (struct dentry *dentry, char *name)
++static int dummy_inode_getxattr (struct dentry *dentry,
++			          struct vfsmount *mnt, char *name)
  {
  	return 0;
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2178,7 +2178,8 @@ static int selinux_inode_init_security(s
- 	return 0;
+@@ -2395,7 +2395,8 @@ static void selinux_inode_post_setxattr(
+ 	return;
  }
  
--static int selinux_inode_create(struct inode *dir, struct dentry *dentry, int mask)
-+static int selinux_inode_create(struct inode *dir, struct dentry *dentry,
-+				 struct vfsmount *mnt, int mask)
+-static int selinux_inode_getxattr (struct dentry *dentry, char *name)
++static int selinux_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,
++				   char *name)
  {
- 	return may_create(dir, dentry, SECCLASS_FILE);
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
  }
 
 -- 
