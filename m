@@ -1,44 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbXDLXKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbXDLXNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246AbXDLXKi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 19:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbXDLXKi
+	id S1752249AbXDLXNM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 19:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXDLXNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 19:10:38 -0400
-Received: from holomorphy.com ([66.93.40.71]:45416 "EHLO holomorphy.com"
+	Thu, 12 Apr 2007 19:13:11 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:36361 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752235AbXDLXKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 19:10:38 -0400
-Date: Thu, 12 Apr 2007 16:10:50 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
-Message-ID: <20070412231050.GN2986@holomorphy.com>
-References: <1.486631555@selenic.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1.486631555@selenic.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752249AbXDLXNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 19:13:10 -0400
+Date: Thu, 12 Apr 2007 16:13:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: CaT <cat@zip.com.au>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>
+Subject: Re: intermittant petabyte usage reported with broadcom nic
+Message-Id: <20070412161305.09cb28b8.akpm@linux-foundation.org>
+In-Reply-To: <20070412225249.GU8345@zip.com.au>
+References: <20070402014319.GA8345@zip.com.au>
+	<20070402001300.3b66007d.akpm@linux-foundation.org>
+	<20070412225249.GU8345@zip.com.au>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 03, 2007 at 09:43:30PM -0500, Matt Mackall wrote:
-> This patch series introduces /proc/pid/pagemap and /proc/kpagemap,
-> which allow detailed run-time examination of process memory usage at a
-> page granularity.
-> The first several patches whip the page-walking code introduced for
-> /proc/pid/smaps and clear_refs into a more generic form, the next
-> couple make those interfaces optional, and the last two introduce the
-> new interfaces, also optional.
+On Fri, 13 Apr 2007 08:52:49 +1000
+CaT <cat@zip.com.au> wrote:
 
-This solves a real-life problem for Oracle system monitoring software
-(specifically EM). Among the tasks it must carry out is determining
-per-process memory footprint of a set of cooperating tasks (i.e. Oracle
-processes). RSS is inadequate for this due to page sharing; this work
-provides sufficient information to determine what EM needs.
+> On Mon, Apr 02, 2007 at 12:13:00AM -0700, Andrew Morton wrote:
+> > On Mon, 2 Apr 2007 11:43:19 +1000 CaT <cat@zip.com.au> wrote:
+> > 
+> > > I take minute by minute snapshots of network traffic by sampling
+> > > /proc/net/dev and most of the time everything works fine. Occasionally
+> > > though I get petabyte byte traffic and corresponding packet traffic.
+> > 
+> > How frequently?
+> > 
+> > Are you able to provide some actual numbers (expected and actual values),
+> > so we can look at the bit patterns?
+> 
+> I have some now. These are raw lines from /proc/net/dev. In this case it's
+> eth0 at 22:14 that chucked a wee wibbly.
+> 
+> Apr 11 22:13:02 '  eth0:17227166357 81379716    0    0    0     0          0         0 33090495625 86656584    0    0    0     0       0          0 '
+> Apr 11 22:13:02 '  eth1:30708022097 91219466    0    0    0     0          0         0 122989582024 125073786    0    0    0     0       0          0 '
+> Apr 11 22:14:02 '  eth0:220898233988841368 66750274    0    0    0     0          0  86458738 52386430545 101089219 199313    0    0     0  199313          0 '
 
+0x310_c9c6_006a_7f98
 
--- wli
+Not sure what to make of that.
+
+> Apr 11 22:14:02 '  eth1:30708307787 91220183    0    0    0     0          0         0 122989665004 125074344    0    0    0     0       0          0 '
+> Apr 11 22:15:02 '  eth0:17227454818 81381144    0    0    0     0          0         0 33091307388 86658381    0    0    0     0       0          0 '
+> Apr 11 22:15:02 '  eth1:30708569308 91220742    0    0    0     0          0         0 122989732601 125074712    0    0    0     0       0          0 '
+> 
+> On another server (same hardware except for 2ru case, more ram and more hds):
+> 
+> Apr  9 06:18:05 '  eth0:1556640056941 3598105481    0    0    0     0          0         0 2281147324747 3318270401    0    0    0     0       0          0 '
+> Apr  9 06:18:05 '  eth1:912389249044 1190286687    0    0    0     0          0         0 642943095469 991257887    0    0    0     0       0          0 '
+> Apr  9 06:19:04 '  eth0:14250798570591813804 2284720007938 18638    0    0 18638          0  27375938 1556640980159 3345714490    0    0    0     0       0          0 '
+
+0xc5c5_01cb_c5c5_00ac and 0x213_f3ec_ab02
+
+The first one looks like trashed memory: it got overwritten by kernel
+addresses.  Except they're x86-32 kernel addresses, and you're running
+x86_64 64-bit kernel.  hm.
+
+I don't see any pattern here.
+
+> Apr  9 06:19:04 '  eth1:912389281939 1190287072    0    0    0     0          0         0 642943219035 991258183    0    0    0     0       0          0 '
+> Apr  9 06:20:05 '  eth0:1556643514710 3598121584    0    0    0     0          0         0 2281154391794 3318284878    0    0    0     0       0          0 '
+> Apr  9 06:20:05 '  eth1:912389305767 1190287354    0    0    0     0          0         0 642943273879 991258351    0    0    0     0       0          0 '
+> 
+> > > This happens on an AMD64, dual core smp box with Broadcom NetXtreme II
+> > > nics.
+> > 
+> > What driver drivers that?  b44.c?
+> 
+> To clarify it's an Intel Dual Core Xeon (I just wound up as thinking of
+> them all as amd64s). Network card driver in use is the one defined by
+> CONFIG_BNX2. Kernel's monolithic.
+> 
+> > We do perform racy 64-bit updates of some of the stats counters.  But
+> > that'll only affect 32-bit kernels and I'm assuming you're running a 64-bit
+> > kernel on that AMD64 box (are you?)
+> 
+> Yes. With 32bit compat for executables built in.
+
+OK.  I was earlier assuming that you were seeing transient funny numbers. 
+But in fact I think you're saying that the numbers go bad, and then stay
+bad.
+
