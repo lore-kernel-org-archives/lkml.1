@@ -1,54 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXDLX3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbXDLXbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932339AbXDLX3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 19:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932368AbXDLX3O
+	id S1753532AbXDLXbU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 19:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbXDLXbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 19:29:14 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:25253 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932339AbXDLX3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 19:29:13 -0400
-Message-ID: <461EC10D.6010500@oracle.com>
-Date: Thu, 12 Apr 2007 16:30:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Thu, 12 Apr 2007 19:31:20 -0400
+Received: from neon.samage.net ([85.17.153.66]:47939 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753532AbXDLXbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 19:31:18 -0400
+Message-ID: <4264.81.207.0.53.1176420676.squirrel@secure.samage.net>
+In-Reply-To: <evm8am$h12$2@taverner.cs.berkeley.edu>
+References: <4610D25F.7080005@ceid.upatras.gr>
+    <1349.81.207.0.53.1176302225.squirrel@secure.samage.net>
+    <a781481a0704120235q34d047c8q350b0ed29cde9f0f@mail.gmail.com>
+    <3630.81.207.0.53.1176380573.squirrel@secure.samage.net>
+    <evm8am$h12$2@taverner.cs.berkeley.edu>
+Date: Fri, 13 Apr 2007 01:31:16 +0200 (CEST)
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+From: "Indan Zupancic" <indan@nul.nu>
+To: "David Wagner" <daw-usenet@taverner.cs.berkeley.edu>
+Cc: linux-kernel@vger.kernel.org, "Tasos Parisinos" <t.parisinos@sciensis.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/30] Use menuconfig objects
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr> <20070412155012.789852c4.akpm@linux-foundation.org> <20070412160722.e5e26039.randy.dunlap@oracle.com> <Pine.LNX.4.61.0704130117060.14441@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0704130117060.14441@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: 6c56b5a68734eff3bb82063186e8a5cf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> Hi,
-> 
-> On Apr 12 2007 16:07, Randy Dunlap wrote:
->> On Thu, 12 Apr 2007 15:50:12 -0700 Andrew Morton wrote:
->>> So I merged the 23 of these which survived review and which do not
->>> intersect with other outstanding work.
->>>
->>> I don't think I have an opinion on whether the change is actually an
->>> improvement, and I don't get a clear sense of what others think.  Shrug.
->> I like them, but then I have made & sent similar patches in the past.
-> 
-> Would you like to go through remaining menus and make the patches?
-> Just that efforts are not needlessy duplicated again. And of course
-> for you to get your share if you desire so.
+Hello,
 
-Hi,
+Next time, please do a reply-all so CC's aren't dropped.
 
-I'm a bit too busy at the moment so please go ahead with it.
+It seems you jumped halfway in, missing some background info, I'll try to
+clarify some things.
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+On Thu, April 12, 2007 23:28, David Wagner wrote:
+> Yes, Satyam Sharma is 100% correct.  Unpadded RSA makes no sense.  RSA is
+> not secure if you omit the padding.  If you have a good reason why RSA
+> needs to be in the kernel for security reasons, then the padding has to be
+> in the kernel, too.  Putting plain unpadded RSA in the kernel seems bogus.
+
+He is correct, I only argued that's it can still be named RSA (which Satyam
+disputed), no matter what critical features are missing for a complete
+infrastructure.
+
+I don't know if you read the patch, but right now it's only a multi-precision
+integer implementation, useful to implement RSA. The rest, including the
+binary checking, is missing. We're pondering a bit about what, in the end,
+would be useful to have in or around the kernel.
+
+
+> I worry about the quality of this patch if it is using unpadded RSA.
+> This is pretty elementary stuff.  No one should be implementing their
+> own crypto code unless they have considerable competence and knowledge
+> of cryptography.  This elementary error leaves reason to be concerned
+> about whether the developer of this patch has the skills that are needed
+> to write this kind of code and get it right.
+
+As said above, the patch is only an MPI implementation, not RSA, and neither
+the rest to make it useful, like a crypto API interface and padding.
+
+So we can't really judge the developer's skills or crypto knowledge.
+
+It does point out that having a hidden implementation can never foster
+much trust, as no one can read the code and judge if it's good or not.
+
+
+> People often take it personally when I tell them that they do are not
+> competent to write their own crypto code, but this is not a personal
+> attack.  It takes very specialized knowledge and considerable study
+> before one can write your own crypto implementation from scratch and
+> have a good chance that the result will be secure.  People without
+> those skills shouldn't be writing their own crypto code, at least not
+> if security is important, because it's too easy to get something wrong.
+
+To a certain degree you're right, but the nice thing about open source is
+that people who know better can spot errors, and if those are fixed, it
+can happen that an "incompetent" person created something excellent. Maybe
+not at first, but in the end. (I suspect that a good coder with no crypto
+knowledge, but with feedback from experts, can implement something better
+than one expert with mediocre coding skills.)
+
+The code should be judged, not the people writing it. Besides, it isn't
+always that hard to get something secure, if things are kept simple and
+straightforward. E.g. writing a secure AES implementation isn't magic.
+RSA is much more complex though. (Rather ironic, as the theory behind RSA
+is simple, but the implementation hairy. With AES it's exactly the opposite.
+The coder doesn't need to understand the algebra behind it, knowing that it
+can be done with a simple table lookup is enough).
+
+In general the tricky part is around the crypto implementation itself, how
+it's used, key management, etc. (Though the border is vague, so maybe you
+included all that when saying "crypto implementation".)
+
+
+> (No, just reading Applied Cryptography is not good enough.)  My experience
+> is that code that contains elementary errors like this is also likely
+> to contain more subtle errors that are harder to spot.  In short, I'm
+> not getting warm fuzzies here.
+
+The code posted has no such errors, see above. Maybe the part that wasn't has,
+who knows.
+
+
+> And no, you can't just blithely push padding into user space and expect
+> that to make the security issues go away.  If you are putting the
+> RSA exponentiation in the kernel because you don't trust user space,
+> then you have to put the padding in the kernel, too, otherwise you're
+> vulnerable to attack from evil user space code.
+
+True, but the code wasn't put into the kernel for security reasons. Why it
+was remains a bit of a mystery, but it looks like it was for convenience.
+
+Greetings,
+
+Indan
+
+
