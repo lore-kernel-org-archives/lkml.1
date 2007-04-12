@@ -1,160 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXDLT22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbXDLT3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490AbXDLT22 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 15:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXDLT22
+	id S1752388AbXDLT3u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 15:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbXDLT3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 15:28:28 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40889 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752490AbXDLT21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 15:28:27 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add keyboard blink driver
-Date: Thu, 12 Apr 2007 21:28:08 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <200704121727.27892.ak@novell.com> <20070412121028.d7e5c4b6.akpm@linux-foundation.org>
-In-Reply-To: <20070412121028.d7e5c4b6.akpm@linux-foundation.org>
+	Thu, 12 Apr 2007 15:29:50 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:55142 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752388AbXDLT3s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 15:29:48 -0400
+Date: Thu, 12 Apr 2007 21:22:57 +0200
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
+Message-ID: <20070412192257.GA13535@aitel.hist.no>
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704120947230.12991@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704122128.08869.ak@novell.com>
+In-Reply-To: <Pine.LNX.4.64.0704120947230.12991@twin.jikos.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Helge Hafting <helgehaf@aitel.hist.no>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 April 2007 21:10:28 Andrew Morton wrote:
-> On Thu, 12 Apr 2007 17:27:27 +0200
-> Andi Kleen <ak@novell.com> wrote:
+On Thu, Apr 12, 2007 at 09:50:54AM +0200, Jiri Kosina wrote:
+> On Thu, 12 Apr 2007, Helge Hafting wrote:
 > 
-> > Add a blink driver for debugging
-> > 
-> > Simple driver that blinks the keyboard LEDs when loaded. Useful
-> > for checking that the kernel is still alive or for crashdumping.
-> > The kdump kernel currently typically doesn't give any feedback
-> > on the screen because it often cannot reinitialize the graphics
-> > state. This patch allows it to at least show blinking lights
-> > like panic.
+> > > OK.  If you add initcall_debug to the kernel boot command line, what's the
+> > > last thing we call?
+> > The last messages (handwritten, somewhat shortened)
+> > calling hid_init+0x0/0x10()
+> > returned 0
+> > ran for 0 msec
+> > calling hid_init+0x0/0x50()
+> > usbcore registered new interface driver hiddev
+> > and then it hangs completely.
 > 
-> OK..
+> Hi Helge,
 > 
-> > --- /dev/null
-> > +++ linux/drivers/misc/blink.c
-> > @@ -0,0 +1,26 @@
-> > +#include <linux/kernel.h>
-> > +#include <linux/module.h>
-> > +#include <linux/timer.h>
-> > +#include <linux/jiffies.h>
-> > +
-> > +static void do_blink(unsigned long data);
-> > +
-> > +static DEFINE_TIMER(blink_timer, do_blink, 0 ,0);
-> > +
-> > +static void do_blink(unsigned long data)
-> > +{
-> > +	static long count;
-> > +	panic_blink(count++);
-> > +	blink_timer.expires = jiffies + msecs_to_jiffies(1);
-> > +	add_timer(&blink_timer);
-> > +}
-> > +
-> > +static int blink_init(void)
-> > +{
-> > +	printk(KERN_INFO "Enabling keyboard blinking\n");
-> > +	do_blink(0);
-> > +	return 0;
-> > +}
-> > +
-> > +module_init(blink_init);
+> 2.6.21-rc6 (without any -mm patches) works fine?
 > 
-> panic_blink is NULL in lots of setups.  `modprobe blink' will be deadly.
+> Could you please
+> 
+> - try booting without any HID devices plugged in (i.e. usb mice, usb 
+>   keyboards) if the problem persists?
 
-Oops sorry -- i must somehow have sent an old patch. I had fixed this of course
-Ahh, quilt refresh was missing.
+Pulled the usb mouse - this moved the crash around.
+usbhid was registered anyway, but later than usual.
 
-See the new patch.
+The last messages:
+
+md:  <...>
+cpuidle: <...>
+sdhci: <...>
+sdhci: <...>
+usbcore: registered new interface hiddev
+usbcore: registered new interface usbhid
+drivers/hid/usbhid/hid_core.c v2.6 USB HID coredriver
+Advanced linux sound architecture <...>
+ACPI: PCI Interrupt 0000:00:06.0[A]->GSI 17 (lewel,low)->IRQ 17
+
+And then it hung. Rebooting into rc5mm4, I got this as the next msgs:
+gameport: Trident 4DWave is pci0000:00:06.0/gameport0, speed 1966kHz
+ALSA device list:
+  #0: Trident TRID4DWAVENX PCI Audio at 0x9400, irq 17
+oprofile: using NMI interrupt.
+Netfilter messages via NETLINK v0.30.
+
+I don't know if this is another problem, or what.
+
+> - recompile 2.6.21-rc6-mm1 with git-hid.patch reverted to see if it helps?
+> 
+Just downloaded it. Unfortunately, it will not revert cleanly:
+$ patch -p1 -R --dry-run < ../git-hid.patch
  
-> I wonder if this facility would be more effective if it were to use
-> schedule_delayed_work().  That way, we're using more of the kernel and it
-> will more reliably detect kernel deadness.
- 
-Hmm, maybe
+patching file drivers/hid/Kconfig
+patching file drivers/hid/Makefile
+patching file drivers/hid/hid-core.c
+Hunk #1 succeeded at 30 (offset -1 lines).
+Hunk #2 succeeded at 871 (offset -1 lines).
+Hunk #3 succeeded at 968 (offset -1 lines).
+Hunk #4 succeeded at 984 (offset -1 lines).
+patching file drivers/hid/hid-input.c
+Hunk #1 succeeded at 433 (offset 2 lines).
+Hunk #2 succeeded at 533 (offset 2 lines).
+patching file drivers/hid/hidraw.c
+patching file drivers/hid/usbhid/Kconfig
+patching file drivers/hid/usbhid/Makefile
+patching file drivers/hid/usbhid/hid-core.c
+Unreversed patch detected!  Ignore -R? [n] 
+Apply anyway? [n] 
+Skipping patch.
+1 out of 1 hunk ignored -- saving rejects to file
+drivers/hid/usbhid/hid-core.c.
+rej
+patching file drivers/hid/usbhid/hid-ff.c
+patching file drivers/hid/usbhid/hid-lgff.c
+patching file drivers/hid/usbhid/hid-pidff.c
+patching file drivers/hid/usbhid/hid-plff.c
+patching file drivers/hid/usbhid/hid-tmff.c
+patching file drivers/hid/usbhid/hid-zpff.c
+patching file drivers/hid/usbhid/hiddev.c
+patching file drivers/hid/usbhid/usbhid.h
+patching file drivers/hid/usbhid/usbkbd.c
+patching file drivers/hid/usbhid/usbmouse.c
+patching file drivers/usb/Makefile
+patching file drivers/usb/input/Kconfig
+patching file drivers/usb/input/Makefile
+Hunk #1 FAILED at 4.
+1 out of 1 hunk FAILED -- saving rejects to file
+drivers/usb/input/Makefile.rej
+patching file drivers/usb/input/hid-core.c
+patching file drivers/usb/input/hid-ff.c
+patching file drivers/usb/input/hid-lgff.c
+patching file drivers/usb/input/hid-pidff.c
+patching file drivers/usb/input/hid-plff.c
+patching file drivers/usb/input/hid-tmff.c
+patching file drivers/usb/input/hid-zpff.c
+patching file drivers/usb/input/hiddev.c
+patching file drivers/usb/input/usbhid.h
+patching file drivers/usb/input/usbkbd.c
+patching file drivers/usb/input/usbmouse.c
+patching file include/linux/hid.h
+patching file include/linux/hidraw.h
 
--Andi
 
-Add a blink driver for debugging
+Do you want me to try that patch anyway?
 
-Simple driver that blinks the keyboard LEDs when loaded. Useful
-for checking that the kernel is still alive or for crashdumping
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- drivers/misc/Kconfig  |    9 +++++++++
- drivers/misc/Makefile |    1 +
- drivers/misc/blink.c  |   26 ++++++++++++++++++++++++++
- 3 files changed, 36 insertions(+)
-
-Index: linux-2.6.21-rc6-test/drivers/misc/Kconfig
-===================================================================
---- linux-2.6.21-rc6-test.orig/drivers/misc/Kconfig
-+++ linux-2.6.21-rc6-test/drivers/misc/Kconfig
-@@ -122,4 +122,13 @@ config SONY_LAPTOP
- 
- 	  Read <file:Documentation/sony-laptop.txt> for more information.
- 
-+config BLINK
-+	tristate "Keyboard blink driver"
-+	help
-+	  Driver that when loaded will blink the keyboard LEDs continuously.
-+	  This is useful for debugging and for kernels that cannot necessarily
-+	  output something to the screen like kexec kernels to give the user
-+	  a visual indication that the kernel is doing something.
-+
-+
- endmenu
-Index: linux-2.6.21-rc6-test/drivers/misc/Makefile
-===================================================================
---- linux-2.6.21-rc6-test.orig/drivers/misc/Makefile
-+++ linux-2.6.21-rc6-test/drivers/misc/Makefile
-@@ -12,3 +12,4 @@ obj-$(CONFIG_TIFM_CORE)       	+= tifm_c
- obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
- obj-$(CONFIG_SGI_IOC4)		+= ioc4.o
- obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
-+obj-$(CONFIG_BLINK)		+= blink.o
-Index: linux-2.6.21-rc6-test/drivers/misc/blink.c
-===================================================================
---- /dev/null
-+++ linux-2.6.21-rc6-test/drivers/misc/blink.c
-@@ -0,0 +1,27 @@
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/timer.h>
-+#include <linux/jiffies.h>
-+
-+static void do_blink(unsigned long data);
-+
-+static DEFINE_TIMER(blink_timer, do_blink, 0 ,0);
-+
-+static void do_blink(unsigned long data)
-+{
-+	static long count;
-+	if (panic_blink)
-+		panic_blink(count++);
-+	blink_timer.expires = jiffies + msecs_to_jiffies(1);
-+	add_timer(&blink_timer);
-+}
-+
-+static int blink_init(void)
-+{
-+	printk(KERN_INFO "Enabling keyboard blinking\n");
-+	do_blink(0);
-+	return 0;
-+}
-+
-+module_init(blink_init);
-+
+Helge Hafting
