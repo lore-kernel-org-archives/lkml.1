@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbXDLUP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751738AbXDLU0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751682AbXDLUP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 16:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXDLUP0
+	id S1751738AbXDLU0K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 16:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXDLU0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 16:15:26 -0400
-Received: from mail.suse.de ([195.135.220.2]:51376 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbXDLUPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 16:15:25 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
-Date: Thu, 12 Apr 2007 22:15:04 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de
-References: <20070411162904.232696302@mvista.com> <200704121945.54053.ak@novell.com> <461E8CAA.3020902@goop.org>
-In-Reply-To: <461E8CAA.3020902@goop.org>
+	Thu, 12 Apr 2007 16:26:10 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:55218 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751738AbXDLU0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 16:26:08 -0400
+Date: Thu, 12 Apr 2007 22:19:13 +0200
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, Corey Minyard <minyard@acm.org>
+Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
+Message-ID: <20070412201913.GA14705@aitel.hist.no>
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704120947230.12991@twin.jikos.cz> <Pine.LNX.4.64.0704121001400.12991@twin.jikos.cz> <Pine.LNX.4.64.0704121642110.12991@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704122215.04499.ak@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0704121642110.12991@twin.jikos.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Helge Hafting <helgehaf@aitel.hist.no>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 12, 2007 at 05:31:52PM +0200, Jiri Kosina wrote:
+> On Thu, 12 Apr 2007, Jiri Kosina wrote:
+> 
+> > > - try booting without any HID devices plugged in (i.e. usb mice, usb 
+> > >   keyboards) if the problem persists?
+> > > - recompile 2.6.21-rc6-mm1 with git-hid.patch reverted to see if it helps?
+> > Do you compile with CONFIG_HIDRAW?
+> 
+> Helge,
+> 
+> with your .config, my machine hangs upon IPMI initialization, the last 
+> thing I see before total freeze is 
+> 
+> ipmi_si: Trying PCI-specified kcs state machine at mem address 0xd0121000, slave address 0x0, irq 5
+> 
+> (this was run on 32bit machine)
+> 
+> When I turn IPMI off, I can't reproduce your hang, evetything runs 
+> smoothly. Could you please try recompiling the kernel with IPMI disabled, 
+> if it could be related?
+> 
+Removed IPMI, recompiled, rebooted, crashed the same way.
 
-> They could be huge differences - unbounded, in fact.  It would make
-> printk fairly hard to interpret,  I would think.  The only benefit to
-> using sched_clock in printk is that if you're using it to work out the
-> startup latencies you won't be confused by stolen time.  But I think
-> that's a fairly small benefit compared to the disadvantage of not being
-> able to meaningfully compare the timestamps on two printk messages.
-
-Ok so the right solution would be a separate printk_clock() that is
-implemented as the native sched_clock() even on Xen/VMI.  Should be a SMOP.
-
--Andi
+Helge Hafting
