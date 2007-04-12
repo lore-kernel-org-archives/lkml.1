@@ -1,109 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965565AbXDLQtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965552AbXDLQt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965565AbXDLQtI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 12:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965552AbXDLQtH
+	id S965552AbXDLQt2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 12:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965540AbXDLQtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 12:49:07 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:44423 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965540AbXDLQtE (ORCPT
+	Thu, 12 Apr 2007 12:49:11 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:53832 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965529AbXDLQs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 12:49:04 -0400
-Message-Id: <20070412164647.187045881@szeredi.hu>
+	Thu, 12 Apr 2007 12:48:57 -0400
+Message-Id: <20070412164631.200952141@szeredi.hu>
 References: <20070412164541.580374744@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 12 Apr 2007 18:45:51 +0200
+Date: Thu, 12 Apr 2007 18:45:48 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
        linuxram@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org
-Subject: [patch 10/10] allow unprivileged fuse mounts
-Content-Disposition: inline; filename=fuse_safe.patch
+Subject: [patch 07/10] allow unprivileged bind mounts
+Content-Disposition: inline; filename=unprivileged_bind_mount.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+Allow bind mounts to unprivileged users if the following conditions
+are met:
 
-FUSE was designed from the beginning to be safe for unprivileged
-users.  This has also been verified in practice over many years.  And
-unprivileged fuse mounts still require a private namespace with user
-mounts enabled, this is more strict than the current userspace policy.
+  - user mounts are permitted in the current mount namespace
+  - mountpoint is not a symlink or special file
+  - mountpoint is not a sticky directory or is owned by the current user
+  - mountpoint is writable by user
+  - the number of user mounts is below the maximum
 
-This will enable future installations to remove the suid-root
-fusermount utility.
-
-Don't require the "user_id=" and "group_id=" options for unprivileged
-mounts, but if they are present verify them for sanity.
-
-Disallow the "allow_other" option for unprivileged mounts.
+Unprivileged mounts imply MS_SETUSER, and will also have the "nosuid"
+and "nodev" mount flags set.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/inode.c
+Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/fuse/inode.c	2007-04-12 13:26:42.000000000 +0200
-+++ linux/fs/fuse/inode.c	2007-04-12 14:04:34.000000000 +0200
-@@ -311,6 +311,19 @@ static int parse_fuse_opt(char *opt, str
- 	d->max_read = ~0;
- 	d->blksize = 512;
+--- linux.orig/fs/namespace.c	2007-04-12 14:04:25.000000000 +0200
++++ linux/fs/namespace.c	2007-04-12 14:04:27.000000000 +0200
+@@ -237,11 +237,30 @@ static void dec_nr_user_mounts(void)
+ 	spin_unlock(&vfsmount_lock);
+ }
  
-+	/*
-+	 * For unprivileged mounts use current uid/gid.  Still allow
-+	 * "user_id" and "group_id" options for compatibility, but
-+	 * only if they match these values.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		d->user_id = current->uid;
-+		d->user_id_present = 1;
-+		d->group_id = current->gid;
-+		d->group_id_present = 1;
+-static void set_mnt_user(struct vfsmount *mnt)
++static int reserve_user_mount(void)
++{
++	int err = 0;
++	spin_lock(&vfsmount_lock);
++	if (nr_user_mounts >= max_user_mounts && !capable(CAP_SYS_ADMIN))
++		err = -EPERM;
++	else
++		nr_user_mounts++;
++	spin_unlock(&vfsmount_lock);
++	return err;
++}
 +
++static void __set_mnt_user(struct vfsmount *mnt)
+ {
+ 	BUG_ON(mnt->mnt_flags & MNT_USER);
+ 	mnt->mnt_uid = current->uid;
+ 	mnt->mnt_flags |= MNT_USER;
++	if (!capable(CAP_SYS_ADMIN))
++		mnt->mnt_flags |= MNT_NOSUID | MNT_NODEV;
++}
++
++static void set_mnt_user(struct vfsmount *mnt)
++{
++	__set_mnt_user(mnt);
+ 	spin_lock(&vfsmount_lock);
+ 	nr_user_mounts++;
+ 	spin_unlock(&vfsmount_lock);
+@@ -260,9 +279,16 @@ static struct vfsmount *clone_mnt(struct
+ 					int flag)
+ {
+ 	struct super_block *sb = old->mnt_sb;
+-	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
++	struct vfsmount *mnt;
++
++	if (flag & CL_SETUSER) {
++		int err = reserve_user_mount();
++		if (err)
++			return ERR_PTR(err);
 +	}
-+
- 	while ((p = strsep(&opt, ",")) != NULL) {
- 		int token;
- 		int value;
-@@ -339,6 +352,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_USER_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->user_id_present && d->user_id != value)
-+				return 0;
- 			d->user_id = value;
- 			d->user_id_present = 1;
- 			break;
-@@ -346,6 +361,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_GROUP_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->group_id_present && d->group_id != value)
-+				return 0;
- 			d->group_id = value;
- 			d->group_id_present = 1;
- 			break;
-@@ -536,6 +553,10 @@ static int fuse_fill_super(struct super_
- 	if (!parse_fuse_opt((char *) data, &d, is_bdev))
- 		return -EINVAL;
++	mnt = alloc_vfsmnt(old->mnt_devname);
+ 	if (!mnt)
+-		return ERR_PTR(-ENOMEM);
++		goto alloc_failed;
  
-+	/* This is a privileged option */
-+	if ((d.flags & FUSE_ALLOW_OTHER) && !capable(CAP_SYS_ADMIN))
+ 	mnt->mnt_flags = old->mnt_flags;
+ 	atomic_inc(&sb->s_active);
+@@ -274,7 +300,7 @@ static struct vfsmount *clone_mnt(struct
+ 	/* don't copy the MNT_USER flag */
+ 	mnt->mnt_flags &= ~MNT_USER;
+ 	if (flag & CL_SETUSER)
+-		set_mnt_user(mnt);
++		__set_mnt_user(mnt);
+ 
+ 	if (flag & CL_SLAVE) {
+ 		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+@@ -299,6 +325,11 @@ static struct vfsmount *clone_mnt(struct
+ 		spin_unlock(&vfsmount_lock);
+ 	}
+ 	return mnt;
++
++ alloc_failed:
++	if (flag & CL_SETUSER)
++		dec_nr_user_mounts();
++	return ERR_PTR(-ENOMEM);
+ }
+ 
+ static inline void __mntput(struct vfsmount *mnt)
+@@ -745,22 +776,35 @@ asmlinkage long sys_oldumount(char __use
+ 
+ #endif
+ 
+-static int mount_is_safe(struct nameidata *nd)
++/*
++ * Conditions for unprivileged mounts are:
++ * - user mounts are permitted in the current mount namespace
++ * - mountpoint is not a symlink or special file
++ * - mountpoint is "absolutely" writable by user
++ *  o if it's a sticky directory, it must be owned by the user
++ *  o it must not be an append-only file/directory
++ */
++static int mount_is_safe(struct nameidata *nd, int *flags)
+ {
++	struct inode *inode = nd->dentry->d_inode;
++
+ 	if (capable(CAP_SYS_ADMIN))
+ 		return 0;
+-	return -EPERM;
+-#ifdef notyet
+-	if (S_ISLNK(nd->dentry->d_inode->i_mode))
++
++	if (!(current->nsproxy->mnt_ns->flags & MNT_NS_PERMIT_USERMOUNTS))
+ 		return -EPERM;
+-	if (nd->dentry->d_inode->i_mode & S_ISVTX) {
+-		if (current->uid != nd->dentry->d_inode->i_uid)
+-			return -EPERM;
+-	}
+-	if (vfs_permission(nd, MAY_WRITE))
++
++	if (!S_ISDIR(inode->i_mode) && !S_ISREG(inode->i_mode))
 +		return -EPERM;
 +
- 	if (is_bdev) {
- #ifdef CONFIG_BLOCK
- 		if (!sb_set_blocksize(sb, d.blksize))
-@@ -639,6 +660,7 @@ static struct file_system_type fuse_fs_t
- 	.fs_flags	= FS_HAS_SUBTYPE,
- 	.get_sb		= fuse_get_sb,
- 	.kill_sb	= kill_anon_super,
-+	.fs_flags	= FS_SAFE,
- };
++	if ((inode->i_mode & S_ISVTX) && current->fsuid != inode->i_uid)
+ 		return -EPERM;
++
++	if (vfs_permission(nd, MAY_WRITE) || IS_APPEND(inode))
++		return -EPERM;
++
++	*flags |= MS_SETUSER;
+ 	return 0;
+-#endif
+ }
  
- #ifdef CONFIG_BLOCK
+ static int lives_below_in_same_fs(struct dentry *d, struct dentry *dentry)
+@@ -981,7 +1025,7 @@ static int do_loopback(struct nameidata 
+ 	int clone_flags;
+ 	struct nameidata old_nd;
+ 	struct vfsmount *mnt = NULL;
+-	int err = mount_is_safe(nd);
++	int err = mount_is_safe(nd, &flags);
+ 	if (err)
+ 		return err;
+ 	if (!old_name || !*old_name)
 
 --
