@@ -1,173 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161474AbXDLCJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161475AbXDLCOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161474AbXDLCJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 22:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161473AbXDLCJi
+	id S1161475AbXDLCOv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 22:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161476AbXDLCOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 22:09:38 -0400
-Received: from fed1rmmtao107.cox.net ([68.230.241.39]:46940 "EHLO
-	fed1rmmtao107.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161466AbXDLCJg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 22:09:36 -0400
-From: Junio C Hamano <junkio@cox.net>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.1.1
-cc: linux-kernel@vger.kernel.org
-Date: Wed, 11 Apr 2007 19:09:34 -0700
-Message-ID: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 11 Apr 2007 22:14:51 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:44954 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161475AbXDLCOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 22:14:50 -0400
+Date: Thu, 12 Apr 2007 07:52:20 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       mingo@elte.hu, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH 7/8] Clean up workqueue.c with respect to the freezer based cpu-hotplug
+Message-ID: <20070412022220.GA10176@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070402053457.GA9076@in.ibm.com> <20070402054206.GG12962@in.ibm.com> <20070403114729.GA776@tv-sign.ru> <20070403135919.GB32444@in.ibm.com> <20070403150336.GA850@tv-sign.ru> <20070403171820.GA8646@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070403171820.GA8646@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.1.1 is available at the
-usual places:
+On Tue, Apr 03, 2007 at 10:48:20PM +0530, Srivatsa Vaddagiri wrote:
+> > Actually, we should do this before destroy_workqueue() calls flush_workqueue().
+> > Otherwise flush_cpu_workqueue() can hang forever in a similar manner.
+> 
+> Yep. I guess these are a class of freezer deadlocks very similar to vfork
+> parent waiting on child case. I get a feeling these should become common
+> outside of kthread too (A waits on B for something, B gets frozen, which
+> means A won't freeze causing freezer to fail). Can freezer detect this
+> dependency somehow and thaw B automatically? Probably not that easy ..
 
-  http://www.kernel.org/pub/software/scm/git/
+I wonder if there is some value in "enforcing" an order in which
+processes get frozen i.e freeze A first before B. That may solve the
+deadlocks we have been discussing wrt kthread_stop and flush_workqueue
+as well.
 
-  git-1.5.1.1.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.1.1.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.1.1.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.1.1-1.$arch.rpm	(RPM)
+The idea is similar to how deadlock wrt multiple locks are solved -
+where a ordering is enforced. Take Lock A first before Lock B. 
 
-GIT v1.5.1.1 Release Notes
-==========================
+If process A waits on B (like in kthread_stop or flush_workqueue), then if we:
 
-Fixes since v1.5.1
-------------------
+	1. Insert A and B in a list (freeze_me_first_list)
+	2. Have freezer scan freeze_me_first_list before the master
+	   task-list, so that it:
+		2a. "freezes A and waits for A to get frozen" first
+		2b. "freezes B and waits for B to get frozen" next
 
-* Documentation updates
+then we would avoid the nastiness of "B getting frozen first and A doesnt
+freeze because of that" with lesser code changes?
 
-  - The --left-right option of rev-list and friends is documented.
-
-  - The documentation for cvsimport has been majorly improved.
-
-  - "git-show-ref --exclude-existing" was documented.
-
-* Bugfixes
-
-  - The implementation of -p option in "git cvsexportcommit" had
-    the meaning of -C (context reduction) option wrong, and
-    loosened the context requirements when it was told to be
-    strict.
-
-  - "git cvsserver" did not behave like the real cvsserver when
-    client side removed a file from the working tree without
-    doing anything else on the path.  In such a case, it should
-    restore it from the checked out revision.
-
-  - "git fsck" issued an alarming error message on detached
-    HEAD.  It is not an error since at least 1.5.0.
-
-  - "git send-email" produced of References header of unbounded length;
-    fixed this with line-folding.
-
-  - "git archive" to download from remote site should not
-    require you to be in a git repository, but it incorrectly
-    did.
-
-  - "git apply" ignored -p<n> for "diff --git" formatted
-    patches.
-
-  - "git rerere" recorded a conflict that had one side empty
-    (the other side adds) incorrectly; this made merging in the
-    other direction fail to use previously recorded resolution.
-
-  - t4200 test was broken where "wc -l" pads its output with
-    spaces.
-
-  - "git branch -m old new" to rename branch did not work
-    without a configuration file in ".git/config".
-
-  - The sample hook for notification e-mail was misnamed.
-
-  - gitweb did not show type-changing patch correctly in the
-    blobdiff view.
-
-  - git-svn did not error out with incorrect command line options.
-
-  - git-svn fell into an infinite loop when insanely long commit
-    message was found.
-
-  - git-svn dcommit and rebase was confused by patches that were
-    merged from another branch that is managed by git-svn.
-
-----------------------------------------------------------------
-
-Changes since v1.5.1 are as follows:
-
-Arjen Laarhoven (4):
-      usermanual.txt: some capitalization nits
-      t3200-branch.sh: small language nit
-      t5300-pack-object.sh: portability issue using /usr/bin/stat
-      Makefile: iconv() on Darwin has the old interface
-
-Brian Gernhardt (3):
-      Fix t4200-rerere for white-space from "wc -l"
-      Document --left-right option to rev-list.
-      Distinguish branches by more than case in tests.
-
-Dana How (1):
-      Fix lseek(2) calls with args 2 and 3 swapped
-
-Eric Wong (3):
-      git-svn: bail out on incorrect command-line options
-      git-svn: dcommit/rebase confused by patches with git-svn-id: lines
-      git-svn: fix log command to avoid infinite loop on long commit messages
-
-Frank Lichtenheld (7):
-      cvsimport: sync usage lines with existing options
-      cvsimport: Improve documentation of CVSROOT and CVS module determination
-      cvsimport: Improve usage error reporting
-      cvsimport: Reorder options in documentation for better understanding
-      cvsimport: Improve formating consistency
-      cvsserver: small corrections to asciidoc documentation
-      cvsserver: Fix handling of diappeared files on update
-
-Geert Bosch (1):
-      Fix renaming branch without config file
-
-Gerrit Pape (1):
-      rename contrib/hooks/post-receieve-email to contrib/hooks/post-receive-email.
-
-Jakub Narebski (1):
-      gitweb: Fix bug in "blobdiff" view for split (e.g. file to symlink) patches
-
-Jim Meyering (1):
-      (encode_85, decode_85): Mark source buffer pointer as "const".
-
-Julian Phillips (1):
-      Documentation: show-ref: document --exclude-existing
-
-Junio C Hamano (7):
-      rerere: make sorting really stable.
-      Fix dependency of common-cmds.h
-      Documentation: tighten dependency for git.{html,txt}
-      Prepare for 1.5.1.1
-      Add Documentation/cmd-list.made to .gitignore
-      fsck: do not complain on detached HEAD.
-      GIT 1.5.1.1
-
-Lars Hjemli (2):
-      rename_ref(): only print a warning when config-file update fails
-      Make builtin-branch.c handle the git config file
-
-René Scharfe (1):
-      Revert "builtin-archive: use RUN_SETUP"
-
-Shawn O. Pearce (1):
-      Honor -p<n> when applying git diffs
-
-Tomash Brechko (1):
-      cvsexportcommit -p : fix the usage of git-apply -C.
-
-Ville Skyttä (1):
-      DESTDIR support for git/contrib/emacs
-
-YOSHIFUJI Hideaki (1):
-      Avoid composing too long "References" header.
-
-
+-- 
+Regards,
+vatsa
