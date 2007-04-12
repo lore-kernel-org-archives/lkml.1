@@ -1,79 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161477AbXDLCUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161492AbXDLCVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161477AbXDLCUb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 22:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161482AbXDLCUb
+	id S1161492AbXDLCVA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 22:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161482AbXDLCUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 22:20:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:55480 "EHLO ozlabs.org"
+	Wed, 11 Apr 2007 22:20:32 -0400
+Received: from ozlabs.org ([203.10.76.45]:55487 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161477AbXDLCUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 22:20:30 -0400
+	id S1161479AbXDLCUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Apr 2007 22:20:31 -0400
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Linux Memory Management <linux-mm@kvack.org>,
        <linux-kernel@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 12 Apr 2007 12:20:27 +1000
-Subject: [PATCH 0/12] Pass MAP_FIXED down to get_unmapped_area
-Message-Id: <1176344427.242579.337989891532.qpush@grosgo>
+Date: Thu, 12 Apr 2007 12:20:28 +1000
+Subject: [PATCH 2/12] get_unmapped_area handles MAP_FIXED on alpha
+In-Reply-To: <1176344427.242579.337989891532.qpush@grosgo>
+Message-Id: <20070412022030.168E5DDF26@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a "first step" as there are still cleanups to be done in various
-areas touched by that code but I think it's probably good to go as is and
-at least enables me to implement what I need for PowerPC.
+Handle MAP_FIXED in alpha's arch_get_unmapped_area(), simple case, just
+return the address as passed in
 
-(Andrew, this is also candidate for 2.6.22 since I haven't had any real
-objection, mostly suggestion for improving further, which I'll try to
-do later, and I have further powerpc patches that rely on this).
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-The current get_unmapped_area code calls the f_ops->get_unmapped_area or
-the arch one (via the mm) only when MAP_FIXED is not passed. That makes
-it impossible for archs to impose proper constraints on regions of the
-virtual address space. To work around that, get_unmapped_area() then
-calls some hugetlbfs specific hacks.
+ arch/alpha/kernel/osf_sys.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-This cause several problems, among others:
-
- - It makes it impossible for a driver or filesystem to do the same thing
-that hugetlbfs does (for example, to allow a driver to use larger page
-sizes to map external hardware) if that requires applying a constraint
-on the addresses (constraining that mapping in certain regions and other
-mappings out of those regions).
-
- - Some archs like arm, mips, sparc, sparc64, sh and sh64 already want
-MAP_FIXED to be passed down in order to deal with aliasing issues.
-The code is there to handle it... but is never called.
-
-This serie of patches moves the logic to handle MAP_FIXED down to the
-various arch/driver get_unmapped_area() implementations, and then changes
-the generic code to always call them. The hugetlbfs hacks then disappear
-from the generic code.
-
-Since I need to do some special 64K pages mappings for SPEs on cell, I need
-to work around the first problem at least. I have further patches thus
-implementing a "slices" layer that handles multiple page sizes through
-slices of the address space for use by hugetlbfs, the SPE code, and possibly
-others, but it requires that serie of patches first/
-
-There is still a potential (but not practical) issue due to the fact that
-filesystems/drivers implemeting g_u_a will effectively bypass all arch
-checks. This is not an issue in practice as the only filesystems/drivers
-using that hook are doing so for arch specific purposes in the first place.
-
-There is also a problem with mremap that will completely bypass all arch
-checks. I'll try to address that separately, I'm not 100% certain yet how,
-possibly by making it not work when the vma has a file whose f_ops has a
-get_unmapped_area callback, and by making it use is_hugepage_only_range()
-before expanding into a new area.
-
-Also, I want to turn is_hugepage_only_range() into a more generic
-is_normal_page_range() as that's really what it will end up meaning
-when used in stack grow, brk grow and mremap.
-
-None of the above "issues" however are introduced by this patch, they are
-already there, so I think the patch can go in.
-
-Cheers,
-Ben.
-
+Index: linux-cell/arch/alpha/kernel/osf_sys.c
+===================================================================
+--- linux-cell.orig/arch/alpha/kernel/osf_sys.c	2007-03-22 14:58:33.000000000 +1100
++++ linux-cell/arch/alpha/kernel/osf_sys.c	2007-03-22 14:58:44.000000000 +1100
+@@ -1267,6 +1267,9 @@ arch_get_unmapped_area(struct file *filp
+ 	if (len > limit)
+ 		return -ENOMEM;
+ 
++	if (flags & MAP_FIXED)
++		return addr;
++
+ 	/* First, see if the given suggestion fits.
+ 
+ 	   The OSF/1 loader (/sbin/loader) relies on us returning an
