@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945895AbXDLHbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945901AbXDLHj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945895AbXDLHbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 03:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945913AbXDLHbU
+	id S1945901AbXDLHj3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 03:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945920AbXDLHj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 03:31:20 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:15558 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945895AbXDLHbT convert rfc822-to-8bit (ORCPT
+	Thu, 12 Apr 2007 03:39:29 -0400
+Received: from amsfep17-int.chello.nl ([62.179.120.12]:27767 "EHLO
+	amsfep17-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945901AbXDLHj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 03:31:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=lzg67Z7B29NSTRECfjU/QogGsR61M+2Eiw+Bkfi5UB8CPxG1Dw8t9NU0GRpRa6Z7MVuuceNW/vDFVAZxt2T+CYyFW8yT5P18rqAK2SV4rnptswrxQCJiebplnd4/CREyXRWZImLWKOu7IN63dnZLpPFgye/Z/CpLak4Keq6r1y0=
-Message-ID: <54d79d810704120031x561af38dle108c6514ae89dc5@mail.gmail.com>
-Date: Thu, 12 Apr 2007 13:01:18 +0530
-From: "Rahul Hirve" <rahulhirve@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: PCI BAR register assignment error
-MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 12 Apr 2007 03:39:28 -0400
+Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Zhao Forrest <forrest.zhao@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070411153040.a7e6c3b8.akpm@linux-foundation.org>
+References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
+	 <20070411153040.a7e6c3b8.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 12 Apr 2007 09:39:25 +0200
+Message-Id: <1176363565.6893.73.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
+On Wed, 2007-04-11 at 15:30 -0700, Andrew Morton wrote:
 
-I am using a customized PCI board of IXP2400 (Intel's network
-processor) on host PC having xeon dual core processor with Redhat
-2.6.9.
+> There used to be a cond_resched() in invalidate_mapping_pages() which would
+> have prevented this, but I rudely removed it to support
+> /proc/sys/vm/drop_caches (which needs to call invalidate_inode_pages()
+> under spinlock).
+> 
+> We could resurrect that cond_resched() by passing in some flag, I guess. 
+> Or change the code to poke the softlockup detector.  The former would be
+> better.
 
-My PCI card is running RedBoot on it.
+cond_resched() is conditional on __resched_legal(0), which should take
+care of being called under a spinlock.
 
-After booting I am not able to get BAR register on my IXP2400 card
-assigned properly.
+so I guess we can just reinstate the call in invalidate_mapping_pages()
 
-If I do lspci –vv on host following is the output I am getting for my card
+(still waiting on the compile to finish...)
+---
+invalidate_mapping_pages() is called under locks (usually preemptable)
+but can do a _lot_ of work, stick in a voluntary preemption point to
+avoid excessive latencies (over 10 seconds was reported by softlockup).
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ mm/truncate.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-
- 04:03.0 Co-processor: Intel Corp. IXP2400 Network Processor (rev 01)
-(prog-if 01)
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+
-Stepping- SERR+ FastB2B-
-	Status: Cap- 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 64 (250ns min, 1000ns max), Cache Line Size 10
-	Interrupt: pin A routed to IRQ 209
-	Region 0: Memory at <ignored> (32-bit, non-prefetchable)
-	Region 1: Memory at <ignored> (32-bit, prefetchable)
-	Region 2: Memory at <ignored> (32-bit, prefetchable)
-
-
-But if I reboot my host machine after this then next time I am getting
-BAR register assignment properly
-
-And my lspci –vv output is as
-
-
-
-04:03.0 Co-processor: Intel Corp. IXP2400 Network Processor (rev 01)
-(prog-if 01)
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+
-Stepping- SERR+ FastB2B-
-	Status: Cap- 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 64 (250ns min, 1000ns max), Cache Line Size 10
-	Interrupt: pin A routed to IRQ 209
-	Region 0: Memory at dee00000 (32-bit, non-prefetchable) [size=1M]
-	Region 1: Memory at ddf00000 (32-bit, prefetchable) [size=1M]
-	Region 2: Memory at c0000000 (32-bit, prefetchable) [size=256M]
+Index: linux-2.6-mm/mm/truncate.c
+===================================================================
+--- linux-2.6-mm.orig/mm/truncate.c
++++ linux-2.6-mm/mm/truncate.c
+@@ -292,6 +292,8 @@ unsigned long invalidate_mapping_pages(s
+ 			pgoff_t index;
+ 			int lock_failed;
+ 
++			cond_resched();
++
+ 			lock_failed = TestSetPageLocked(page);
+ 
+ 			/*
 
 
-
-I am not getting why this behavior happens, any guess?
-
-Thanks
-Rahul
