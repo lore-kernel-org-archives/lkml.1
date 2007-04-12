@@ -1,146 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbXDLVd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbXDLVd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751908AbXDLVd3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 17:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbXDLVd2
+	id S1753900AbXDLVd7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 17:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXDLVd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 17:33:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44038 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbXDLVd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 17:33:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Thu, 12 Apr 2007 23:36:57 +0200
-User-Agent: KMail/1.9.5
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-References: <460B6E4B.3060004@gmail.com> <200704111640.47171.rjw@sisk.pl> <461CF87C.4060801@gmail.com>
-In-Reply-To: <461CF87C.4060801@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704122336.57600.rjw@sisk.pl>
+	Thu, 12 Apr 2007 17:33:59 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:49288 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbXDLVd6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 17:33:58 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [PATCH resend][CRYPTO]: RSA algorithm patch
+Date: Thu, 12 Apr 2007 21:28:54 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <evm8am$h12$2@taverner.cs.berkeley.edu>
+References: <4610D25F.7080005@ceid.upatras.gr> <1349.81.207.0.53.1176302225.squirrel@secure.samage.net> <a781481a0704120235q34d047c8q350b0ed29cde9f0f@mail.gmail.com> <3630.81.207.0.53.1176380573.squirrel@secure.samage.net>
+Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1176413334 17442 128.32.168.222 (12 Apr 2007 21:28:54 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Thu, 12 Apr 2007 21:28:54 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 11 April 2007 17:02, Jiri Slaby wrote:
-> Rafael J. Wysocki napsal(a):
-> > On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
-> >> Rafael J. Wysocki napsal(a):
-> >>> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
-> >>>> Rafael J. Wysocki napsal(a):
-> >>>>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
-> >>>>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
-> >>>>>> in -rc6 too.
-> >>>>> I guess you mean you're still seeing the 'not enough memory to suspend'
-> >>>>> problem?
-> >>>> Yes:
-> >>>> Disabling non-boot CPUs ...
-> >>>> kvm: disabling virtualization on CPU1
-> >>>> Breaking affinity for irq 9
-> >>>> CPU 1 is now offline
-> >>>> SMP alternatives: switching to UP code
-> >>>> CPU1 is down
-> >>>> swsusp: critical section:
-> >>>> swsusp: Need to copy 158309 pages
-> >>>> swsusp: Not enough free memory
-> >>>> Error -12 suspending
-> >>>> Enabling non-boot CPUs ...
-> >>>> SMP alternatives: switching to SMP code
-> >>>> Booting processor 1/2 APIC 0x1
-> >>>> Initializing CPU#1
-> >>> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
-> >> My tip is one of three cases: after some work on fresh boot -- some
-> >> consumers such as thunderbird, firefox, 10 or so terminals with
-> >> gnome-session. Single xterm + gnome-session semms not to be a problem.
-> > 
-> > Does the workaround with setting the image size below 1/2 of RAM work for you?
-> 
-> Yes. Yesterday I must set the value to 350M -- 400M was not enough.
+Indan Zupancic wrote:
+>On Thu, April 12, 2007 11:35, Satyam Sharma wrote:
+>> 1. First, sorry, I don't think an RSA implementation not conforming to
+>> PKCS #1 qualifies to be called RSA at all. That is definitely a *must*
+>> -- why break strong crypto algorithms such as RSA by implementing them
+>> in insecure ways?
+>
+>It's still RSA, that it's not enough to get a complete and secure crypto
+>system doesn't mean it isn't RSA anymore. Maybe you're right and having
+>RSA without the rest makes no sense.
 
-Well, I can't reproduce it.
+Yes, Satyam Sharma is 100% correct.  Unpadded RSA makes no sense.  RSA is
+not secure if you omit the padding.  If you have a good reason why RSA
+needs to be in the kernel for security reasons, then the padding has to be
+in the kernel, too.  Putting plain unpadded RSA in the kernel seems bogus.
 
-Can you please try to reproduce it with the appended patch applied and send
-the output of dmesg to me?
+I worry about the quality of this patch if it is using unpadded RSA.
+This is pretty elementary stuff.  No one should be implementing their
+own crypto code unless they have considerable competence and knowledge
+of cryptography.  This elementary error leaves reason to be concerned
+about whether the developer of this patch has the skills that are needed
+to write this kind of code and get it right.
 
-Greetings,
-Rafael
+People often take it personally when I tell them that they do are not
+competent to write their own crypto code, but this is not a personal
+attack.  It takes very specialized knowledge and considerable study
+before one can write your own crypto implementation from scratch and
+have a good chance that the result will be secure.  People without
+those skills shouldn't be writing their own crypto code, at least not
+if security is important, because it's too easy to get something wrong.
+(No, just reading Applied Cryptography is not good enough.)  My experience
+is that code that contains elementary errors like this is also likely
+to contain more subtle errors that are harder to spot.  In short, I'm
+not getting warm fuzzies here.
 
----
- kernel/power/snapshot.c |    4 ++--
- kernel/power/swsusp.c   |   16 ++++++++++++----
- 2 files changed, 14 insertions(+), 6 deletions(-)
+And no, you can't just blithely push padding into user space and expect
+that to make the security issues go away.  If you are putting the
+RSA exponentiation in the kernel because you don't trust user space,
+then you have to put the padding in the kernel, too, otherwise you're
+vulnerable to attack from evil user space code.
 
-Index: linux-2.6.21-rc6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.21-rc6.orig/kernel/power/snapshot.c
-+++ linux-2.6.21-rc6/kernel/power/snapshot.c
-@@ -871,9 +871,9 @@ static int enough_free_mem(unsigned int 
- 		if (!is_highmem(zone))
- 			free += zone_page_state(zone, NR_FREE_PAGES);
- 	}
--
-+	printk("swsusp: Normal pages needed: %u\n", nr_pages);
- 	nr_pages += count_pages_for_highmem(nr_highmem);
--	pr_debug("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
-+	printk("swsusp: Normal pages needed: %u + %u + %u, available pages: %u\n",
- 		nr_pages, PAGES_FOR_IO, meta, free);
- 
- 	return free > nr_pages + PAGES_FOR_IO + meta;
-Index: linux-2.6.21-rc6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.21-rc6.orig/kernel/power/swsusp.c
-+++ linux-2.6.21-rc6/kernel/power/swsusp.c
-@@ -214,8 +214,8 @@ int swsusp_shrink_memory(void)
- 	long tmp;
- 	struct zone *zone;
- 	unsigned long pages = 0;
--	unsigned int i = 0;
--	char *p = "-\\|/";
-+	/*unsigned int i = 0;
-+	char *p = "-\\|/";*/
- 	struct timeval start, stop;
- 
- 	printk("Shrinking memory...  ");
-@@ -227,7 +227,9 @@ int swsusp_shrink_memory(void)
- 		size = count_data_pages() + PAGES_FOR_IO;
- 		tmp = size;
- 		size += highmem_size;
--		for_each_zone (zone)
-+		printk("Pages needed: %ld normal, %ld highmem\n",
-+			tmp, highmem_size);
-+		for_each_zone (zone) {
- 			if (populated_zone(zone)) {
- 				tmp += snapshot_additional_pages(zone);
- 				if (is_highmem(zone)) {
-@@ -238,11 +240,17 @@ int swsusp_shrink_memory(void)
- 					tmp += zone->lowmem_reserve[ZONE_NORMAL];
- 				}
- 			}
-+			printk("Pages needed: %ld normal, %ld highmem\n",
-+				tmp, highmem_size);
-+		}
- 
- 		if (highmem_size < 0)
- 			highmem_size = 0;
- 
-+		printk("Pages needed: %ld normal, %ld highmem\n",
-+			tmp, highmem_size);
- 		tmp += highmem_size;
-+		printk("Pages needed: %ld\n", tmp);
- 		if (tmp > 0) {
- 			tmp = __shrink_memory(tmp);
- 			if (!tmp)
-@@ -252,7 +260,7 @@ int swsusp_shrink_memory(void)
- 			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
- 			pages += tmp;
- 		}
--		printk("\b%c", p[i++%4]);
-+		/*printk("\b%c", p[i++%4]);*/
- 	} while (tmp > 0);
- 	do_gettimeofday(&stop);
- 	printk("\bdone (%lu pages freed)\n", pages);
+It is also not true that padding schemes change all the time.  They're
+fairly stable.  Pick a reasonable modern padding scheme and leave it.
