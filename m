@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbXDLObJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXDLObl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbXDLObJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 10:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbXDLObJ
+	id S932286AbXDLObl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 10:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXDLObl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 10:31:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:22366 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932290AbXDLObH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 10:31:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=RvKn+F1SlqFkb79w0JVLPh/bRHGf0O58NPshDSYtqHzid0KTywigaSZOfZSE0s07DwzjqEe1NWvjoxdJ+GvWucZ1g1OI+B5T3+iSw8AW+ADYpCOtCgyq/ohwqclwImjQyTFmybj+zCFLubIdHBtGCvR3pNDgou2HCl9N0cnumf0=
-Date: Thu, 12 Apr 2007 17:31:16 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <1177494873.20070412173116@gmail.com>
-To: Juergen Schindele <schindele@nentec.de>
-CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH 1/3] gpiodev - API definitions
-In-Reply-To: <200704110847.01107.schindele@nentec.de>
-References: <774343545.20070411003058@gmail.com> <200704110847.01107.schindele@nentec.de>
-MIME-Version: 1.0
+	Thu, 12 Apr 2007 10:31:41 -0400
+Received: from kanga.kvack.org ([66.96.29.28]:56095 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932286AbXDLObk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 10:31:40 -0400
+Date: Thu, 12 Apr 2007 10:31:31 -0400
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Ken Chen <kenchen@google.com>
+Cc: Zach Brown <zach.brown@oracle.com>, akpm@linux-foundation.org,
+       linux-aio@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
+Message-ID: <20070412143131.GP13621@kvack.org>
+References: <20070410235353.325A7346F64@localhost> <20070411180038.GN28322@mami.zabbo.net> <b040c32a0704120050h5b4f03d3ve8813d96c18e082f@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <b040c32a0704120050h5b4f03d3ve8813d96c18e082f@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Juergen,
+On Thu, Apr 12, 2007 at 12:50:39AM -0700, Ken Chen wrote:
+> I ran through the autotest (with bug fix in the test code).  It passes
+> the regression tests. I made the following change since last rev:
 
-Wednesday, April 11, 2007, 9:47:01 AM, you wrote:
+By removing the spinlock around ring insertion, you've made it possible 
+for two events being inserted on different CPUs to end up creating 
+inconsistent state, as there is nothing which guarantees that resulting 
+event in the ring will be wholely one event or another.
 
-> Am Dienstag, 10. April 2007 23:30 schrieb Paul Sokolovsky:
->> Hello linux-arm-kernel,
->>
->> GPIODEV API: Core API definitions. Provided are:
->> 1. struct gpiodev_ops which must be included into platform_data structure
->> of a device which will provide GPIODEV API; driver for a device must
->> initialize this structure.
->> 2. Structural definition of generalized GPIO identifier (struct gpio).
->> 2. Set of API calls for clients. This fully follow Generic GPIO API
->> naming and semantics, except that they have "gpiodev" prefix and
->> accept struct gpio instead of integer gpio identifiers.
->>
->>
-[]
->> +/* API functions */
->> +
->> +static inline int gpiodev_get_value(struct gpio *gpio)
->> +{
->> +       struct gpiodev_ops *ops = gpio->gpio_dev->dev.platform_data;
+Also, I don't like rounding up of the number of events to the nearest power 
+of two, as it can round things up significantly more than just going to the 
+end of the last actual page of memory allocated.
 
-> wouldn't it be more sure to verify if xxx function is NOT null
-> before using it ?? Perhaps something like that
->              BUG_ON(!ops->get);
+NAK.
 
-  GPIODEV is considered to be low-level one and critical for speed, so
-all method pointers assumed to be set properly. In particular, if some
-operation is not available for a device (say, GPI/GPO case), a method
-must be set to a stab function.
+		-ben
 
-  BUG_ON would be acceptable, as it can be compiled out based on
-CONFIG setting, but as was pointed out, doesn't add much into picture
-anyway.
-
-  But I'd be happy to add comment to struct gpiodev_ops declaration
-about the described method constraints, thanks for comment.
-
-[]
-
-
+PS  base64 encoded patches are incredibly difficult to quote.
 -- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
-
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
