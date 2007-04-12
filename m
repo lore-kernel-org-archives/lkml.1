@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945944AbXDLITk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945941AbXDLIUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945944AbXDLITk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 04:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945949AbXDLITk
+	id S1945941AbXDLIUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 04:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945943AbXDLIUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 04:19:40 -0400
-Received: from 1wt.eu ([62.212.114.60]:1762 "EHLO 1wt.eu"
+	Thu, 12 Apr 2007 04:20:43 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:33513 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945944AbXDLITj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 04:19:39 -0400
-Date: Thu, 12 Apr 2007 10:19:31 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Pedro <linux_user@izecksohn.com>, linux-kernel@vger.kernel.org
-Subject: Re: tmpfs and the OOM killer
-Message-ID: <20070412081931.GB9842@1wt.eu>
-References: <200704110223.31291.linux_user@izecksohn.com> <20070411194820.GI943@1wt.eu> <Pine.LNX.4.61.0704121011370.20436@yvahk01.tjqt.qr>
+	id S1945941AbXDLIUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 04:20:40 -0400
+Date: Thu, 12 Apr 2007 00:55:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Zhao Forrest <forrest.zhao@gmail.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
+Message-Id: <20070412005535.951ccb4b.akpm@linux-foundation.org>
+In-Reply-To: <1176363565.6893.73.camel@twins>
+References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
+	<20070411153040.a7e6c3b8.akpm@linux-foundation.org>
+	<1176363565.6893.73.camel@twins>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0704121011370.20436@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 10:13:05AM +0200, Jan Engelhardt wrote:
-> 
-> On Apr 11 2007 21:48, Willy Tarreau wrote:
-> >On Wed, Apr 11, 2007 at 02:23:31AM -0300, Pedro wrote:
-> >>   After suffering some days from a not|mis configured tmpfs,
-> >> 
-> >>   As the OOM killer is not Posix,
-> >> 
-> >>   Better than to kill processes would be to resize tmpfs, to use tmpfs empty 
-> >> space.
-> >
-> >Will not work, because tmpfs does not use any memory for unused space. If
-> >you don't believe me, simply create a large file on your tmpfs, then check
-> >free memory, then remove the file and check free memory again.
-> >
-> >So your problem is not caused by the empty space on tmpfs, but either by
-> >too much space used on tmpfs or by your application using too much memory.
-> >
-> >>   I'm using kernel 2.6.20.4. If someone ask I'll send a test application.
-> >
-> >Not needed, the one-liner "main(){while(malloc(4096));}" is enough to
-> >trigger an OOM.
-> 
-> No, that won't do anything, malloc happily returns NULL after a few seconds.
-> 
-> int main()
-> {
-> 	while(1) {
-> 		char *p = malloc(4096);
-> 		*p = 1;
-> 	}
-> }
-> 
-> This is more likely to trigger OOM, because it actually dirties the page.
+On Thu, 12 Apr 2007 09:39:25 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Yes, you're right, and that's indeed what my "freemem" program does ;-)
+> On Wed, 2007-04-11 at 15:30 -0700, Andrew Morton wrote:
+> 
+> > There used to be a cond_resched() in invalidate_mapping_pages() which would
+> > have prevented this, but I rudely removed it to support
+> > /proc/sys/vm/drop_caches (which needs to call invalidate_inode_pages()
+> > under spinlock).
+> > 
+> > We could resurrect that cond_resched() by passing in some flag, I guess. 
+> > Or change the code to poke the softlockup detector.  The former would be
+> > better.
+> 
+> cond_resched() is conditional on __resched_legal(0)
 
-Willy
+What's __resched_legal()?
+
+> which should take
+> care of being called under a spinlock.
+
+We only increment preempt_count() in spin_lock() if CONFIG_PREEMPT.
+
+> so I guess we can just reinstate the call in invalidate_mapping_pages()
+> 
+> (still waiting on the compile to finish...)
+> ---
+> invalidate_mapping_pages() is called under locks (usually preemptable)
+> but can do a _lot_ of work, stick in a voluntary preemption point to
+> avoid excessive latencies (over 10 seconds was reported by softlockup).
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  mm/truncate.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6-mm/mm/truncate.c
+> ===================================================================
+> --- linux-2.6-mm.orig/mm/truncate.c
+> +++ linux-2.6-mm/mm/truncate.c
+> @@ -292,6 +292,8 @@ unsigned long invalidate_mapping_pages(s
+>  			pgoff_t index;
+>  			int lock_failed;
+>  
+> +			cond_resched();
+> +
+>  			lock_failed = TestSetPageLocked(page);
+
+Is deadlocky on the drop_caches path and if CONFIG_PREEMPT we'll get
+scheduling-in-spinlock warnings.
+
+For the blkdev_close() path the change is unneeded if CONFIG_PREEMPT and
+will fix things if !CONFIG_PREEMPT.
+
+We can presumably just remove the invalidate_mapping_pages() call from the
+kill_bdev() path (at least) - kill_bdev()'s truncate_inode_pages() will do
+the same thing.
+
+It might be time to remove that unused-for-six-years destroy_dirty_buffers
+too.
 
