@@ -1,86 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXDLT1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXDLT22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752076AbXDLT1L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 15:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbXDLT1L
+	id S1752490AbXDLT22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 15:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXDLT22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 15:27:11 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:30038 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752076AbXDLT1J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 15:27:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=A1/rp3BRTHo67QL64bN8NabNPzv9Ao/GsGZHSNXM4gwPuev1hlfsgsPZGN91d289JfacsehkuM4o5PZR+qKTKBaoKIWZ2kd+/1X1V+JCRVUvXadC2v6o9pdWPKiBXd6yP/nudZ5E9l4cR5ke/8Efk4GAeSBOzVwDkM6OuP9IDxs=
-Message-ID: <5c49b0ed0704121227h48c3271bp2511e082704d639f@mail.gmail.com>
-Date: Thu, 12 Apr 2007 12:27:07 -0700
-From: "Nate Diller" <nate.diller@gmail.com>
-To: "David Howells" <dhowells@redhat.com>
-Subject: Re: [PATCH 3/17] afs: convert afs_dir_get_page to read_kmap_page
-Cc: "Andrew Morton" <akpm@osdl.org>,
-       "Alexander Viro" <viro@zeniv.linux.org.uk>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Mikulas Patocka" <mikulas@artax.karlin.mff.cuni.cz>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Dave Kleikamp" <shaggy@austin.ibm.com>,
-       "Anton Altaparmakov" <aia21@cantab.net>,
-       "Evgeniy Dushistov" <dushistov@mail.ru>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-dev@namesys.com
-In-Reply-To: <29898.1176404243@redhat.com>
+	Thu, 12 Apr 2007 15:28:28 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40889 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752490AbXDLT21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 15:28:27 -0400
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add keyboard blink driver
+Date: Thu, 12 Apr 2007 21:28:08 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <200704121727.27892.ak@novell.com> <20070412121028.d7e5c4b6.akpm@linux-foundation.org>
+In-Reply-To: <20070412121028.d7e5c4b6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070412024938.27380.44677.patchbomb.py@localhost>
-	 <1273.1176375482@redhat.com>
-	 <5c49b0ed0704121123x341d10afxfdf6930b4b26417b@mail.gmail.com>
-	 <29898.1176404243@redhat.com>
+Message-Id: <200704122128.08869.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/12/07, David Howells <dhowells@redhat.com> wrote:
-> Nate Diller <nate.diller@gmail.com> wrote:
->
-> > Hmmm you're right.  Is your security work going into the next -mm?
->
-> I don't know.  Andrew hasn't said anything.  Andrew?  Are you waiting for it
-> to go through DaveM's networking tree?
->
-> > If so, I'll just re-base this cleanup patch on that ... at the very least I
-> > want to get rid of afs_dir_put_page().
->
-> That's reasonable.
->
-> > Also, did you consider passing the key pointer directly and modifying the
-> > readpage actor to simply cast the pointer back, like
-> > read_mapping_page(mapping, page, (struct file *)key)?  It seems like a waste
-> > to allocate a whole file struct on the stack just for the ->private field.
->
-> There's one small problem with that...  And that's filemap_nopage() (it passes
-> vma->vm_file to readpage() unconditionally).  Unless, of course, your patches
-> fix that too...
+On Thursday 12 April 2007 21:10:28 Andrew Morton wrote:
+> On Thu, 12 Apr 2007 17:27:27 +0200
+> Andi Kleen <ak@novell.com> wrote:
+> 
+> > Add a blink driver for debugging
+> > 
+> > Simple driver that blinks the keyboard LEDs when loaded. Useful
+> > for checking that the kernel is still alive or for crashdumping.
+> > The kdump kernel currently typically doesn't give any feedback
+> > on the screen because it often cannot reinitialize the graphics
+> > state. This patch allows it to at least show blinking lights
+> > like panic.
+> 
+> OK..
+> 
+> > --- /dev/null
+> > +++ linux/drivers/misc/blink.c
+> > @@ -0,0 +1,26 @@
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/timer.h>
+> > +#include <linux/jiffies.h>
+> > +
+> > +static void do_blink(unsigned long data);
+> > +
+> > +static DEFINE_TIMER(blink_timer, do_blink, 0 ,0);
+> > +
+> > +static void do_blink(unsigned long data)
+> > +{
+> > +	static long count;
+> > +	panic_blink(count++);
+> > +	blink_timer.expires = jiffies + msecs_to_jiffies(1);
+> > +	add_timer(&blink_timer);
+> > +}
+> > +
+> > +static int blink_init(void)
+> > +{
+> > +	printk(KERN_INFO "Enabling keyboard blinking\n");
+> > +	do_blink(0);
+> > +	return 0;
+> > +}
+> > +
+> > +module_init(blink_init);
+> 
+> panic_blink is NULL in lots of setups.  `modprobe blink' will be deadly.
 
-But you can't mmap() a directory anyway so ... oh.  Interesting.
-afs_file_readpage() does directories too.  The only thing I can think
-of then is
+Oops sorry -- i must somehow have sent an old patch. I had fixed this of course
+Ahh, quilt refresh was missing.
 
-struct address_space_operations afs_file_aops = {
-        .readpage       = afs_file_readpage,
-}
-struct address_space_operations afs_dir_aops = {
-        .readpage       = afs_key_readpage,
-}
+See the new patch.
+ 
+> I wonder if this facility would be more effective if it were to use
+> schedule_delayed_work().  That way, we're using more of the kernel and it
+> will more reliably detect kernel deadness.
+ 
+Hmm, maybe
 
-int afs_file_readpage(file, page){
-    return afs_key_readpage(file->private, page)
-}
+-Andi
 
-but that's a lot of code to avoid a single stack allocation.  The
-whole fake file pointer thing still strikes me as a little ugly, and
-you're definitely not the first one who needed this sort of hackery.
-ugh
+Add a blink driver for debugging
 
-NATE
+Simple driver that blinks the keyboard LEDs when loaded. Useful
+for checking that the kernel is still alive or for crashdumping
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+ drivers/misc/Kconfig  |    9 +++++++++
+ drivers/misc/Makefile |    1 +
+ drivers/misc/blink.c  |   26 ++++++++++++++++++++++++++
+ 3 files changed, 36 insertions(+)
+
+Index: linux-2.6.21-rc6-test/drivers/misc/Kconfig
+===================================================================
+--- linux-2.6.21-rc6-test.orig/drivers/misc/Kconfig
++++ linux-2.6.21-rc6-test/drivers/misc/Kconfig
+@@ -122,4 +122,13 @@ config SONY_LAPTOP
+ 
+ 	  Read <file:Documentation/sony-laptop.txt> for more information.
+ 
++config BLINK
++	tristate "Keyboard blink driver"
++	help
++	  Driver that when loaded will blink the keyboard LEDs continuously.
++	  This is useful for debugging and for kernels that cannot necessarily
++	  output something to the screen like kexec kernels to give the user
++	  a visual indication that the kernel is doing something.
++
++
+ endmenu
+Index: linux-2.6.21-rc6-test/drivers/misc/Makefile
+===================================================================
+--- linux-2.6.21-rc6-test.orig/drivers/misc/Makefile
++++ linux-2.6.21-rc6-test/drivers/misc/Makefile
+@@ -12,3 +12,4 @@ obj-$(CONFIG_TIFM_CORE)       	+= tifm_c
+ obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
+ obj-$(CONFIG_SGI_IOC4)		+= ioc4.o
+ obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
++obj-$(CONFIG_BLINK)		+= blink.o
+Index: linux-2.6.21-rc6-test/drivers/misc/blink.c
+===================================================================
+--- /dev/null
++++ linux-2.6.21-rc6-test/drivers/misc/blink.c
+@@ -0,0 +1,27 @@
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/timer.h>
++#include <linux/jiffies.h>
++
++static void do_blink(unsigned long data);
++
++static DEFINE_TIMER(blink_timer, do_blink, 0 ,0);
++
++static void do_blink(unsigned long data)
++{
++	static long count;
++	if (panic_blink)
++		panic_blink(count++);
++	blink_timer.expires = jiffies + msecs_to_jiffies(1);
++	add_timer(&blink_timer);
++}
++
++static int blink_init(void)
++{
++	printk(KERN_INFO "Enabling keyboard blinking\n");
++	do_blink(0);
++	return 0;
++}
++
++module_init(blink_init);
++
