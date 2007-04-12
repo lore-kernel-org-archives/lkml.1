@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161604AbXDLMHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161597AbXDLMKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161604AbXDLMHV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 08:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161602AbXDLMHV
+	id S1161597AbXDLMKJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 08:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161598AbXDLMKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 08:07:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56334 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161598AbXDLMHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 08:07:20 -0400
-To: "Ken Chen" <kenchen@google.com>
-Cc: "Zach Brown" <zach.brown@oracle.com>, akpm@linux-foundation.org,
-       linux-aio@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-References: <20070410235353.325A7346F64@localhost>
-	<20070411180038.GN28322@mami.zabbo.net>
-	<b040c32a0704111228t5065253en9249ff88db5b1384@mail.gmail.com>
-	<b040c32a0704120029u423bfd39pfa0479c3c678ebe2@mail.gmail.com>
-From: Jeff Moyer <jmoyer@redhat.com>
-Date: Thu, 12 Apr 2007 08:06:28 -0400
-In-Reply-To: <b040c32a0704120029u423bfd39pfa0479c3c678ebe2@mail.gmail.com> (Ken Chen's message of "Thu, 12 Apr 2007 00:29:28 -0700")
-Message-ID: <x49ejmp3igr.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Thu, 12 Apr 2007 08:10:08 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:31552 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161597AbXDLMKG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 08:10:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QJ5KZaium1p05TAafcCRDJ1hOjWZXvcOsZmAGGVR/NXz9nWFxu767Mxcm88xA8qxww+BAi8cQveZkiJjnAH5PogONZg0NeWv1oRgZfuhcnRY5ROXBvC+K93tB3Mg0OMFGJg7V+VI5/InxiGY4K75XgJvzEm5lcQvZNGVNRBTsF4=
+Message-ID: <b647ffbd0704120510q58ad8b24ob7758b1e7e16c427@mail.gmail.com>
+Date: Thu, 12 Apr 2007 14:10:05 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "surya.prabhakar@wipro.com" <surya.prabhakar@wipro.com>
+Subject: Re: rsdl:mouse freezing while doing git-gc
+Cc: "Con Kolivas" <kernel@kolivas.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1176364262.2633.27.camel@bluegenie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1176279462.8833.8.camel@bluegenie>
+	 <b647ffbd0704110501x79b6dba7rf094113b59016559@mail.gmail.com>
+	 <1176364262.2633.27.camel@bluegenie>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-==> On Thu, 12 Apr 2007 00:29:28 -0700, "Ken Chen" <kenchen@google.com> said:
+On 12/04/07, surya.prabhakar@wipro.com <surya.prabhakar@wipro.com> wrote:
+> > [...]
+> >
+> > btw, it's sd-0.39, isn't?
+> No! it is not. I have updated it to 2.6.21-rc5-sd-0.39.patch   and
+> did the same tests.
 
-Ken> On 4/11/07, Ken Chen <kenchen@google.com> wrote:
-Ken> > On 4/11/07, Zach Brown <zach.brown@oracle.com> wrote:
-Ken> > > First, I'll NAK this and all AIO patches until the patch
-Ken> description > > says that it's been run through the regression
-Ken> tests that we've started > > collecting in autotest.  They're
-Ken> trivial to run, never fear:
-Ken> >
-Ken> > OK.  I will run those regression tests.
+It's nice-dependent. At least, that's something one would expect from
+this design..
 
-Ken> Unfortunately, the aio_dio_bugs test in autotest has bug in it
-Ken> :-( We need stress test the "test code".
+> PRI values s constantly changing while the git-gc is running. Is this
+> expected behaviour?
 
-Ken> on stock 2.6.21-rc6 kernel:
+Yep. Each nice level has a set of dynamic priorities which can be be
+used by a task. After exhausting a time quota on a current level, the
+task is moved to another (if there are no more -> "expired" array). So
+the "PRI" field shows the current dynamic level.
+The exceptions are SCHED_BATCH and Real-Time (FIFO and RR) tasks which
+have different priority scheme.
 
-Ken> [rock-me-baby]$ cd autotest/tests/aio_dio_bugs/src
-Ken> [rock-me-baby]$ make [rock-me-baby]$
-Ken> ./aio-free-ring-with-bogus-nr-pages
-Ken> aio-free-ring-with-bogus-nr-pages: Error: io_setup returned -22,
-Ken> expected -ENOMEM
+/*
+ * This contains a bitmap for each dynamic priority level with empty slots
+ * for the valid priorities each different nice level can have. It allows
+ * us to stagger the slots where differing priorities run in a way that
+ * keeps latency differences between different nice levels at a minimum.
+ * ie, where 0 means a slot for that priority, priority running from left to
+ * right:
+ * nice -20 0000000000000000000000000000000000000000
+ * nice -10 1001000100100010001001000100010010001000
+ * nice   0 0101010101010101010101010101010101010101
+ * nice   5 1101011010110101101011010110101101011011
+ * nice  10 0110111011011101110110111011101101110111
+ * nice  15 0111110111111011111101111101111110111111
+ * nice  19 1111111111111111111011111111111111111111
 
-Ken> hmm???  The problem is that the test code forgot to initialized
-Ken> ctx variable and in the kernel, sys_io_setup returns EINVAL if
-Ken> user address contain none-zero value.
+As you can see there is only a single possible level for nice 19
+tasks, that's why your first results looked strange _but_ it might
+have been due to the old version which lacks the prio_matrix (or it
+was broken.. PRI == 0 for NICE 19 is very strabge indeed). So it's
+good you have upgraded to the recent one.
 
-Zach had already sent a fix for that.  I wonder why it didn't go in.
+I have made a small debugging extension that allows to monitor all the
+priority levels (and how many times) being used by a given task
+(configured via proc).. will test it later (don't have sd-enabled
+kernel here). Just want to be sure that the "rules" are never broken.
+Most likely Con did it already but as he is off-line we can't know.
 
-I didn't see any response to Zach's request for code that actually
-tests out the shared ring buffer.  Do you have such code?
+>
+> Did another test with hackbench and git-gc both at same priorities
+> and captured the top output, in here all of them seem to have
+> same priority..
 
--Jeff
+Yep, this one looks good.
+
+
+> thanks.
+>
+> surya.
+
+-- 
+Best regards,
+Dmitry Adamushko
