@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945966AbXDLKBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946118AbXDLKGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945966AbXDLKBt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 06:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945980AbXDLKBt
+	id S1946118AbXDLKGc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 06:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946078AbXDLKGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 06:01:49 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51115 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945966AbXDLKBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 06:01:48 -0400
-Date: Thu, 12 Apr 2007 15:31:44 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, akpm@linux-foundation.org,
-       paulmck@us.ibm.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       mingo@elte.hu, dipankar@in.ibm.com, dino@in.ibm.com,
-       masami.hiramatsu.pt@hitachi.com
-Subject: Re: [PATCH 7/8] Clean up workqueue.c with respect to the freezer based cpu-hotplug
-Message-ID: <20070412100144.GA6673@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070402053457.GA9076@in.ibm.com> <20070402054206.GG12962@in.ibm.com> <20070403114729.GA776@tv-sign.ru> <20070403135919.GB32444@in.ibm.com> <20070403150336.GA850@tv-sign.ru> <20070403171820.GA8646@in.ibm.com> <20070412022220.GA10176@in.ibm.com>
-MIME-Version: 1.0
+	Thu, 12 Apr 2007 06:06:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35715 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945980AbXDLKG3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 06:06:29 -0400
+Date: Thu, 12 Apr 2007 11:06:28 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: jjohansen@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+Message-ID: <20070412100628.GA25078@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>, jjohansen@suse.de,
+	linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+	Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>
+References: <20070412090809.917795000@suse.de> <20070412090836.207973000@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070412022220.GA10176@in.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20070412090836.207973000@suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 07:52:20AM +0530, Srivatsa Vaddagiri wrote:
-> I wonder if there is some value in "enforcing" an order in which
-> processes get frozen i.e freeze A first before B. That may solve the
-> deadlocks we have been discussing wrt kthread_stop and flush_workqueue
-> as well.
->
-> The idea is similar to how deadlock wrt multiple locks are solved -
-> where a ordering is enforced. Take Lock A first before Lock B. 
+On Thu, Apr 12, 2007 at 02:08:10AM -0700, jjohansen@suse.de wrote:
+> This is needed for computing pathnames in the AppArmor LSM.
 > 
-> If process A waits on B (like in kthread_stop or flush_workqueue), then if we:
+> Signed-off-by: Tony Jones <tonyj@suse.de>
+> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> Signed-off-by: John Johansen <jjohansen@suse.de>
 > 
-> 	1. Insert A and B in a list (freeze_me_first_list)
+> ---
+>  fs/namei.c               |    2 +-
+>  include/linux/security.h |    9 ++++++---
+>  security/dummy.c         |    2 +-
+>  security/selinux/hooks.c |    3 ++-
+>  4 files changed, 10 insertions(+), 6 deletions(-)
+> 
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
+>  		return -EACCES;	/* shouldn't it be ENOSYS? */
+>  	mode &= S_IALLUGO;
+>  	mode |= S_IFREG;
+> -	error = security_inode_create(dir, dentry, mode);
+> +	error = security_inode_create(dir, dentry, nd ? nd->mnt : NULL, mode);
 
-In that case, A should insert the dependency into the
-freeze_me_first_list as B is unaware of the dependency yet.
+Once again very strong NACK.  Every conditional passing of vfsmounts get my
+veto.  As mentioned last time if you really want this send a patch series
+first that passed the vfsmount consistantly.
 
-What if by the time A has inserted the dependency B is already frozen?
-
-Can very well happen right?
-
-A:			B:			freezer
--------------------------------------------------------------------------------
-						*Check the list. don't find  A/B
-						*Mark A freezeable.
-						*Mark B freezeable.
-			*try_to_freeze();
-*insert A, B		.		
- into the		.	
- list.			.
-			.		
-		  	.
-* wait_for_		.
-  completion(done);	.			/* Freezer fails at this
-  			.			 *  point 
-			.			 */
-		  	.
-		  	.
-		  	*complete(done);
-
-*try_to_freeze();
-
-Example: A = a thread doing flush_workqueue.
-	 B = worker thread.
-
-
-Of course, we can always use the freezer_skip around this
-wait_for_completion as well as long as the thread A is not marked
-PF_NOFREEZE. But with multiple freeze events, it won't be as simple as
-that.
-
-> -- 
-> Regards,
-> vatsa
-
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
