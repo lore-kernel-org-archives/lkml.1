@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXDLQpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXDLQrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965105AbXDLQpv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 12:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965164AbXDLQpv
+	id S965461AbXDLQrg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 12:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965451AbXDLQrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 12:45:51 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60747 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965105AbXDLQpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 12:45:51 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
-Date: Thu, 12 Apr 2007 18:45:39 +0200
-User-Agent: KMail/1.9.6
-Cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de
-References: <20070411162904.232696302@mvista.com> <200704121136.03098.ak@novell.com> <20070412092348.70a4de05.akpm@linux-foundation.org>
-In-Reply-To: <20070412092348.70a4de05.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704121845.39961.ak@novell.com>
+	Thu, 12 Apr 2007 12:47:35 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:52733 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965148AbXDLQrd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 12:47:33 -0400
+Message-Id: <20070412164541.580374744@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Thu, 12 Apr 2007 18:45:41 +0200
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: [patch 00/10] (resend) mount ownership and unprivileged mount syscall
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patchset adds support for keeping mount ownership information in
+the kernel, and allow unprivileged mount(2) and umount(2) in certain
+cases.
 
-> I was proposing that i386 and x86_64 be given a new, lockless,
-> high-resolution printk_clock().  Presently x86 uses the default
-> printk_clock(), which uses sched_clock().  Presumably copying the
-> pre-x86_64-mm-sched-clock-share.patch version of sched_clock() into
-> printk_clock() will suffice.
+This can be useful for the following reasons:
 
-Ok. I think it's better to just fix sched_clock() again than to
-add another one.  I can probably
-eliminate the ktime_get() and use something based on jiffies. That will
-be inaccurate for the instable case of course.
+- mount(8) can store ownership ("user=XY" option) in the kernel
+  instead, or in addition to storing it in /etc/mtab.  For example if
+  private namespaces are used with mount propagations /etc/mtab
+  becomes unworkable, but using /proc/mounts works fine
 
-I will do that later today.
+- fuse won't need a special suid-root mount/umount utility.  Plain
+  umount(8) can easily be made to work with unprivileged fuse mounts
 
--Andi
+- users can use bind mounts without having to pre-configure them in
+  /etc/fstab
 
+Unprivileged mounts are restricted to private namespaces created with
+a special clone flag.
 
+Changes from the previous submission:
 
+ - add namespace flag for allowing user mounts
+ - add clone flag to set above namespace flag
+ - make max number of user mounts default to 1024, since now the
+   namespace flag will prevent user mounts by default
+
+--
