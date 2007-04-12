@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946086AbXDLJwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946053AbXDLJwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946086AbXDLJwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946078AbXDLJs6
+	id S1946053AbXDLJwu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946085AbXDLJs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:48:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56735 "EHLO mx2.suse.de"
+	Thu, 12 Apr 2007 05:48:56 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56736 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945993AbXDLJke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1945999AbXDLJke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Apr 2007 05:40:34 -0400
-Message-Id: <20070412090843.537644000@suse.de>
+Message-Id: <20070412090844.228315000@suse.de>
 References: <20070412090809.917795000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:31 -0700
+Date: Thu, 12 Apr 2007 02:08:33 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 22/41] Pass struct vfsmount to the inode_rename LSM hook
-Content-Disposition: inline; filename=security-rename.diff
+Subject: [AppArmor 24/41] Pass struct vfsmount to the inode_setxattr LSM hook
+Content-Disposition: inline; filename=security-setxattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -30,120 +30,187 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/namei.c               |    6 ++++--
- include/linux/security.h |   18 +++++++++++++-----
- security/dummy.c         |    4 +++-
+ fs/xattr.c               |    4 ++--
+ include/linux/security.h |   40 +++++++++++++++++++++++++---------------
+ security/commoncap.c     |    4 ++--
+ security/dummy.c         |    9 ++++++---
  security/selinux/hooks.c |    8 ++++++--
- 4 files changed, 26 insertions(+), 10 deletions(-)
+ 5 files changed, 41 insertions(+), 24 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2399,7 +2399,8 @@ static int vfs_rename_dir(struct inode *
- 			return error;
- 	}
- 
--	error = security_inode_rename(old_dir, old_dentry, new_dir, new_dentry);
-+	error = security_inode_rename(old_dir, old_dentry, old_mnt,
-+				      new_dir, new_dentry, new_mnt);
- 	if (error)
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -81,7 +81,7 @@ vfs_setxattr(struct dentry *dentry, stru
  		return error;
  
-@@ -2433,7 +2434,8 @@ static int vfs_rename_other(struct inode
- 	struct inode *target;
- 	int error;
- 
--	error = security_inode_rename(old_dir, old_dentry, new_dir, new_dentry);
-+	error = security_inode_rename(old_dir, old_dentry, old_mnt,
-+				      new_dir, new_dentry, new_mnt);
+ 	mutex_lock(&inode->i_mutex);
+-	error = security_inode_setxattr(dentry, name, value, size, flags);
++	error = security_inode_setxattr(dentry, mnt, name, value, size, flags);
  	if (error)
- 		return error;
- 
+ 		goto out;
+ 	error = -EOPNOTSUPP;
+@@ -89,7 +89,7 @@ vfs_setxattr(struct dentry *dentry, stru
+ 		error = inode->i_op->setxattr(dentry, name, value, size, flags);
+ 		if (!error) {
+ 			fsnotify_xattr(dentry);
+-			security_inode_post_setxattr(dentry, name, value,
++			security_inode_post_setxattr(dentry, mnt, name, value,
+ 						     size, flags);
+ 		}
+ 	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -336,8 +336,10 @@ struct request_sock;
-  *	Check for permission to rename a file or directory.
-  *	@old_dir contains the inode structure for parent of the old link.
-  *	@old_dentry contains the dentry structure of the old link.
-+ *	@old_mnt is the vfsmount corresponding to @old_dentry (may be NULL).
-  *	@new_dir contains the inode structure for parent of the new link.
-  *	@new_dentry contains the dentry structure of the new link.
-+ *	@new_mnt is the vfsmount corresponding to @new_dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_readlink:
-  *	Check the permission to read the symbolic link.
-@@ -1230,7 +1232,9 @@ struct security_operations {
- 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
- 			    struct vfsmount *mnt, int mode, dev_t dev);
- 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
--	                     struct inode *new_dir, struct dentry *new_dentry);
-+			     struct vfsmount *old_mnt,
-+	                     struct inode *new_dir, struct dentry *new_dentry,
-+			     struct vfsmount *new_mnt);
- 	int (*inode_readlink) (struct dentry *dentry, struct vfsmount *mnt);
- 	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
- 	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
-@@ -1696,14 +1700,16 @@ static inline int security_inode_mknod (
+@@ -49,7 +49,7 @@ extern void cap_capset_set (struct task_
+ extern int cap_bprm_set_security (struct linux_binprm *bprm);
+ extern void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe);
+ extern int cap_bprm_secureexec(struct linux_binprm *bprm);
+-extern int cap_inode_setxattr(struct dentry *dentry, char *name, void *value, size_t size, int flags);
++extern int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name, void *value, size_t size, int flags);
+ extern int cap_inode_removexattr(struct dentry *dentry, char *name);
+ extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
+ extern void cap_task_reparent_to_init (struct task_struct *p);
+@@ -384,11 +384,11 @@ struct request_sock;
+  *	inode.
+  * @inode_setxattr:
+  * 	Check permission before setting the extended attributes
+- * 	@value identified by @name for @dentry.
++ * 	@value identified by @name for @dentry and @mnt.
+  * 	Return 0 if permission is granted.
+  * @inode_post_setxattr:
+  * 	Update inode security field after successful setxattr operation.
+- * 	@value identified by @name for @dentry.
++ * 	@value identified by @name for @dentry and @mnt.
+  * @inode_getxattr:
+  * 	Check permission before obtaining the extended attributes
+  * 	identified by @name for @dentry.
+@@ -1242,9 +1242,11 @@ struct security_operations {
+ 			      struct iattr *attr);
+ 	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
+         void (*inode_delete) (struct inode *inode);
+-	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
+-			       size_t size, int flags);
+-	void (*inode_post_setxattr) (struct dentry *dentry, char *name, void *value,
++	int (*inode_setxattr) (struct dentry *dentry, struct vfsmount *mnt,
++			       char *name, void *value, size_t size, int flags);
++	void (*inode_post_setxattr) (struct dentry *dentry,
++				     struct vfsmount *mnt,
++				     char *name, void *value,
+ 				     size_t size, int flags);
+ 	int (*inode_getxattr) (struct dentry *dentry, char *name);
+ 	int (*inode_listxattr) (struct dentry *dentry);
+@@ -1760,20 +1762,24 @@ static inline void security_inode_delete
+ 	security_ops->inode_delete (inode);
+ }
  
- static inline int security_inode_rename (struct inode *old_dir,
- 					 struct dentry *old_dentry,
-+					 struct vfsmount *old_mnt,
- 					 struct inode *new_dir,
--					 struct dentry *new_dentry)
-+					 struct dentry *new_dentry,
-+					 struct vfsmount *new_mnt)
+-static inline int security_inode_setxattr (struct dentry *dentry, char *name,
++static inline int security_inode_setxattr (struct dentry *dentry,
++					   struct vfsmount *mnt, char *name,
+ 					   void *value, size_t size, int flags)
  {
-         if (unlikely (IS_PRIVATE (old_dentry->d_inode) ||
-             (new_dentry->d_inode && IS_PRIVATE (new_dentry->d_inode))))
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
  		return 0;
--	return security_ops->inode_rename (old_dir, old_dentry,
--					   new_dir, new_dentry);
-+	return security_ops->inode_rename (old_dir, old_dentry, old_mnt,
-+					   new_dir, new_dentry, new_mnt);
+-	return security_ops->inode_setxattr (dentry, name, value, size, flags);
++	return security_ops->inode_setxattr (dentry, mnt, name, value, size,
++					     flags);
  }
  
- static inline int security_inode_readlink (struct dentry *dentry,
-@@ -2419,8 +2425,10 @@ static inline int security_inode_mknod (
- 
- static inline int security_inode_rename (struct inode *old_dir,
- 					 struct dentry *old_dentry,
-+					 struct vfsmount *old_mnt,
- 					 struct inode *new_dir,
--					 struct dentry *new_dentry)
-+					 struct dentry *new_dentry,
-+					 struct vfsmount *new_mnt)
+-static inline void security_inode_post_setxattr (struct dentry *dentry, char *name,
+-						void *value, size_t size, int flags)
++static inline void security_inode_post_setxattr (struct dentry *dentry,
++						 struct vfsmount *mnt,
++						 char *name, void *value,
++						 size_t size, int flags)
  {
- 	return 0;
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return;
+-	security_ops->inode_post_setxattr (dentry, name, value, size, flags);
++	security_ops->inode_post_setxattr (dentry, mnt, name, value, size, flags);
  }
+ 
+ static inline int security_inode_getxattr (struct dentry *dentry, char *name)
+@@ -2467,14 +2473,18 @@ static inline int security_inode_getattr
+ static inline void security_inode_delete (struct inode *inode)
+ { }
+ 
+-static inline int security_inode_setxattr (struct dentry *dentry, char *name,
++static inline int security_inode_setxattr (struct dentry *dentry,
++					   struct vfsmount *mnt, char *name,
+ 					   void *value, size_t size, int flags)
+ {
+-	return cap_inode_setxattr(dentry, name, value, size, flags);
++	return cap_inode_setxattr(dentry, mnt, name, value, size, flags);
+ }
+ 
+-static inline void security_inode_post_setxattr (struct dentry *dentry, char *name,
+-						 void *value, size_t size, int flags)
++static inline void security_inode_post_setxattr (struct dentry *dentry,
++						 struct vfsmount *mnt,
++						 char *name,
++						 void *value, size_t size,
++						 int flags)
+ { }
+ 
+ static inline int security_inode_getxattr (struct dentry *dentry, char *name)
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -191,8 +191,8 @@ int cap_bprm_secureexec (struct linux_bi
+ 		current->egid != current->gid);
+ }
+ 
+-int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
+-		       size_t size, int flags)
++int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
++		       void *value, size_t size, int flags)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
 --- a/security/dummy.c
 +++ b/security/dummy.c
-@@ -310,8 +310,10 @@ static int dummy_inode_mknod (struct ino
+@@ -350,8 +350,9 @@ static void dummy_inode_delete (struct i
+ 	return;
+ }
  
- static int dummy_inode_rename (struct inode *old_inode,
- 			       struct dentry *old_dentry,
-+			       struct vfsmount *old_mnt,
- 			       struct inode *new_inode,
--			       struct dentry *new_dentry)
-+			       struct dentry *new_dentry,
-+			       struct vfsmount *new_mnt)
+-static int dummy_inode_setxattr (struct dentry *dentry, char *name, void *value,
+-				size_t size, int flags)
++static int dummy_inode_setxattr (struct dentry *dentry, struct vfsmount *mnt,
++				 char *name, void *value, size_t size,
++				 int flags)
  {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+@@ -360,7 +361,9 @@ static int dummy_inode_setxattr (struct 
  	return 0;
+ }
+ 
+-static void dummy_inode_post_setxattr (struct dentry *dentry, char *name, void *value,
++static void dummy_inode_post_setxattr (struct dentry *dentry,
++				       struct vfsmount *mnt,
++				       char *name, void *value,
+ 				       size_t size, int flags)
+ {
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2240,8 +2240,12 @@ static int selinux_inode_mknod(struct in
- 	return may_create(dir, dentry, inode_mode_to_security_class(mode));
+@@ -2307,7 +2307,9 @@ static int selinux_inode_getattr(struct 
+ 	return dentry_has_perm(current, mnt, dentry, FILE__GETATTR);
  }
  
--static int selinux_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
--                                struct inode *new_inode, struct dentry *new_dentry)
-+static int selinux_inode_rename(struct inode *old_inode,
-+				struct dentry *old_dentry,
-+				struct vfsmount *old_mnt,
-+                                struct inode *new_inode,
-+				struct dentry *new_dentry,
-+				struct vfsmount *new_mnt)
+-static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value, size_t size, int flags)
++static int selinux_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt,
++				  char *name, void *value, size_t size,
++				  int flags)
  {
- 	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
+ 	struct task_security_struct *tsec = current->security;
+ 	struct inode *inode = dentry->d_inode;
+@@ -2367,7 +2369,9 @@ static int selinux_inode_setxattr(struct
+ 			    &ad);
  }
+ 
+-static void selinux_inode_post_setxattr(struct dentry *dentry, char *name,
++static void selinux_inode_post_setxattr(struct dentry *dentry,
++					struct vfsmount *mnt,
++					char *name,
+                                         void *value, size_t size, int flags)
+ {
+ 	struct inode *inode = dentry->d_inode;
 
 -- 
