@@ -1,69 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992477AbXDLKey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161581AbXDLKk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992477AbXDLKey (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 06:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992475AbXDLKey
+	id S1161581AbXDLKk2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 06:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161149AbXDLKk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 06:34:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34281 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992469AbXDLKew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 06:34:52 -0400
-Date: Thu, 12 Apr 2007 11:37:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: jjohansen@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       John Johansen <jjohansen@suse.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [AppArmor 37/41] AppArmor: Main Part
-Message-ID: <20070412113723.2ec7e4f0@the-village.bc.nu>
-In-Reply-To: <20070412090848.752885000@suse.de>
-References: <20070412090809.917795000@suse.de>
-	<20070412090848.752885000@suse.de>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Apr 2007 06:40:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55100 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161581AbXDLKk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 06:40:27 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1176342114.8061.116.camel@localhost.localdomain> 
+References: <1176342114.8061.116.camel@localhost.localdomain> 
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] fix bogon in /dev/mem mmap'ing on nommu 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Thu, 12 Apr 2007 11:40:12 +0100
+Message-ID: <492.1176374412@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> + * aa_taskattr_access
-> + * @name: name of the file to check
-> + *
-> + * Check if name matches /proc/self/attr/current, with self resolved
-> + * to the current pid. This file is the usermode iterface for
-> + * changing one's hat.
-> + */
-> +static inline int aa_taskattr_access(const char *name)
-> +{
-> +	unsigned long pid;
-> +	char *end;
-> +
-> +	if (strncmp(name, "/proc/", 6) != 0)
-> +		return 0;
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-The proc file system may not be mounted at /proc. There are environments
-where this is done for good reason (eg not wanting the /proc info exposed
-to a low trust environment). Another is when FUSE is providing an
-arbitrated proc either by merging across clusters or by removing stuff.
+> While digging through my MAP_FIXED changes, I found that rather obvious
+> bug in /dev/mem mmap implementation for nommu archs. get_unmapped_area()
+> is expected to return an address, not a pfn.
 
-> +static int aa_file_denied(struct aa_profile *profile, const char *name,
-> +			  int mask)
-> +{
-> +	int perms;
-> +
-> +	/* Always allow write access to /proc/self/attr/current. */
-> +	if (mask == MAY_WRITE && aa_taskattr_access(name))
-> +		return 0;
-
-Why can't this be done in the profile itself to avoid kernel special case
-uglies and inflexibility ?
-
-> +		if (PTR_ERR(sa->name) == -ENOENT && (check & AA_CHECK_FD))
-> +			denied_mask = 0;
-
-Now there is an interesting question. Is PTR_ERR() safe for kernel
-pointers on all platforms or just for user ones ?
-
-
+Acked-By: David Howells <dhowells@redhat.com>
