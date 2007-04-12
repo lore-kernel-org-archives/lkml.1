@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161128AbXDLIGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161577AbXDLIN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161128AbXDLIGn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 04:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161342AbXDLIGn
+	id S1161577AbXDLIN7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 04:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161579AbXDLIN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 04:06:43 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:16493 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161128AbXDLIGl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 04:06:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=PdLSibF67q+9xMDRNnprIjcH+xlhdPYlwn2QQoDrsNFKLl+I87q7FWpsNu9MyPI9Us2WpakNv/kPj18Tu0IM3fugziJjt3pAmTGciiDNL86Y9D3iSOpIcyPetgGnymb94KTT155GLioDRwSC82VHwBnBMy+b6N4RyDS5ORmo/OE=
-Date: Thu, 12 Apr 2007 17:06:35 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: gregkh@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       cornelia.huck@de.ibm.com
-Subject: [PATCH] sysfs: make lockdep ignore s_active
-Message-ID: <20070412080635.GH10619@htj.dyndns.org>
+	Thu, 12 Apr 2007 04:13:58 -0400
+Received: from tmailer.gwdg.de ([134.76.10.23]:52202 "EHLO tmailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161577AbXDLIN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 04:13:57 -0400
+Date: Thu, 12 Apr 2007 10:13:05 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Willy Tarreau <w@1wt.eu>
+cc: Pedro <linux_user@izecksohn.com>, linux-kernel@vger.kernel.org
+Subject: Re: tmpfs and the OOM killer
+In-Reply-To: <20070411194820.GI943@1wt.eu>
+Message-ID: <Pine.LNX.4.61.0704121011370.20436@yvahk01.tjqt.qr>
+References: <200704110223.31291.linux_user@izecksohn.com> <20070411194820.GI943@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-s_active is released by the thread doing the final sysfs_put() which
-can be different from the thread which did sysfs_deactivate().  Make
-lockdep think that s_active is unlocked immediately after it's write
-locked.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
+On Apr 11 2007 21:48, Willy Tarreau wrote:
+>On Wed, Apr 11, 2007 at 02:23:31AM -0300, Pedro wrote:
+>>   After suffering some days from a not|mis configured tmpfs,
+>> 
+>>   As the OOM killer is not Posix,
+>> 
+>>   Better than to kill processes would be to resize tmpfs, to use tmpfs empty 
+>> space.
+>
+>Will not work, because tmpfs does not use any memory for unused space. If
+>you don't believe me, simply create a large file on your tmpfs, then check
+>free memory, then remove the file and check free memory again.
+>
+>So your problem is not caused by the empty space on tmpfs, but either by
+>too much space used on tmpfs or by your application using too much memory.
+>
+>>   I'm using kernel 2.6.20.4. If someone ask I'll send a test application.
+>
+>Not needed, the one-liner "main(){while(malloc(4096));}" is enough to
+>trigger an OOM.
 
-Greg, this patch fixes lockdep error reported by Cornelia.  Please add
-this to the patch series.  Andrew, this is the same one you took
-earlier only with comments added.
+No, that won't do anything, malloc happily returns NULL after a few seconds.
 
-Thanks.
+int main()
+{
+	while(1) {
+		char *p = malloc(4096);
+		*p = 1;
+	}
+}
 
- fs/sysfs/dir.c   |    7 ++++++-
- fs/sysfs/sysfs.h |    5 +++++
- 2 files changed, 11 insertions(+), 1 deletion(-)
+This is more likely to trigger OOM, because it actually dirties the page.
 
-Index: work/fs/sysfs/dir.c
-===================================================================
---- work.orig/fs/sysfs/dir.c
-+++ work/fs/sysfs/dir.c
-@@ -25,8 +25,13 @@ void release_sysfs_dirent(struct sysfs_d
- 	/* If @sd is being released after deletion, s_active is write
- 	 * locked.  If @sd is cursor for directory walk or being
- 	 * released prematurely, s_active has no reader or writer.
-+	 *
-+	 * sysfs_deactivate() lies to lockdep that s_active is
-+	 * unlocked immediately.  Lie one more time to cover the
-+	 * previous lie.
- 	 */
--	down_write_trylock(&sd->s_active);
-+	if (!down_write_trylock(&sd->s_active))
-+		rwsem_acquire(&sd->s_active.dep_map, 0, 0, _RET_IP_);
- 	up_write(&sd->s_active);
- 
- 	if (sd->s_type & SYSFS_KOBJ_LINK)
-Index: work/fs/sysfs/sysfs.h
-===================================================================
---- work.orig/fs/sysfs/sysfs.h
-+++ work/fs/sysfs/sysfs.h
-@@ -171,6 +171,11 @@ static inline void sysfs_put_active_two(
- static inline void sysfs_deactivate(struct sysfs_dirent *sd)
- {
- 	down_write(&sd->s_active);
-+
-+	/* s_active will be unlocked by the thread doing the final put
-+	 * on @sd.  Lie to lockdep.
-+	 */
-+	rwsem_release(&sd->s_active.dep_map, 1, _RET_IP_);
- }
- 
- static inline int sysfs_is_shadowed_inode(struct inode *inode)
+
+Jan
+-- 
