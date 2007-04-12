@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751234AbXDLS4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751325AbXDLS66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751234AbXDLS4v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 14:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbXDLS4v
+	id S1751325AbXDLS66 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 14:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXDLS66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 14:56:51 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:45621 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751234AbXDLS4u (ORCPT
+	Thu, 12 Apr 2007 14:58:58 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:55071 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751325AbXDLS65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 14:56:50 -0400
-X-Sasl-enc: DSN0BLLHVlw5Tv18mi7zCzqhOKBf+G13BcBPb0rlQF0D 1176404210
-Date: Thu, 12 Apr 2007 15:56:30 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Paul Sokolovsky <pmiscml@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Anton Vorontsov <cbou@mail.ru>,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org
-Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
-Message-ID: <20070412185630.GC27804@khazad-dum.debian.net>
-References: <20070411232503.GC20095@zarina> <20070412130817.GA29900@srcf.ucam.org> <20070412141505.GA25552@zarina> <20070412142430.GA31240@srcf.ucam.org> <1734853889.20070412173626@gmail.com>
+	Thu, 12 Apr 2007 14:58:57 -0400
+Date: Thu, 12 Apr 2007 20:52:05 +0200
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Helge Hafting <helge.hafting@aitel.hist.no>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: usb touchscreen breakage in 2.6.21-rc5-mm4 ?
+Message-ID: <20070412185205.GA12676@aitel.hist.no>
+References: <20070407005458.GA18985@aitel.hist.no> <200704062237.13118.dtor@insightbb.com> <20070409223643.GB2198@aitel.hist.no> <200704092230.04144.dtor@insightbb.com> <461B9DFF.9080704@aitel.hist.no> <d120d5000704100839s47d07ff1gc47ce9ea97d54002@mail.gmail.com> <461CAF73.3020201@aitel.hist.no> <d120d5000704110737o2d74b734xfc5756eac9dbbc29@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1734853889.20070412173626@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+In-Reply-To: <d120d5000704110737o2d74b734xfc5756eac9dbbc29@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Helge Hafting <helgehaf@aitel.hist.no>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Apr 2007, Paul Sokolovsky wrote:
->   Yes, that's apparently the way to go. We just should consider
-> if mAh and mWh are enough, or we go wider and allow whole collection of
-> units. Btw, original handhelds.org code used Joules ;-).
+On Wed, Apr 11, 2007 at 10:37:11AM -0400, Dmitry Torokhov wrote:
+> On 4/11/07, Helge Hafting <helge.hafting@aitel.hist.no> wrote:
+> >Dmitry Torokhov wrote:
+> >>
+> >> *sigh* When will I learn to spell names of kernel parameters
+> >> correctly? It is initcall_debug, not debug_initcall :( Could you try
+> >> again, please?
+> >Here is the dmesg for rc5mm4 with initcall_debug, showing how
+> >no usbtouch function is called at all.
+> >
+> 
+> Helge,
+> 
+> I don't have any explanation why we don't see usbtouch_init called at
+> all in -rc5-mm4. Could it be toolchain misbehaving? Do you see
+> references to usbtouch_init in the kernel image itself?
+> 
+I unpacked it, ran "strings" on it, and found no usbtouch in there.
+There were plenty of other usb names, such as usbfs, usbserial, usbcore
+and tons of messages that usb mass storage and usb serial might
+need to produce.
 
-FWIW, SBS only mentions mAh and mWh.  AFAIK, all other (meaningful) units
-should be able to be converted to either Ah or Wh, assuming enough precision
-on the math.  I never heard of any other way to fuel-gauge batteries than
-these two main modes (current-based or capacity-based), but I don't work on
-the battery field.
+Versions of some tools, I don't know if there are any
+known issues:
 
-That said, you may need to use uWh and uAh instead of mAh and mWh, though.
+$ gcc --version
+gcc (GCC) 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)
+$ ld --version
+GNU ld (GNU Binutils for Debian) 2.17.50.20070406
+$ dpkg -l binutils
+ii  binutils       2.17.20070406c The GNU assembler, linker and binary
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Helge Hafting
