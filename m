@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030515AbXDLRRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030573AbXDLRTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030515AbXDLRRc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 13:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030524AbXDLRRc
+	id S1030573AbXDLRTA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 13:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030574AbXDLRS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 13:17:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59143 "EHLO mx2.suse.de"
+	Thu, 12 Apr 2007 13:18:59 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:52244 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030515AbXDLRRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 13:17:31 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
-Date: Thu, 12 Apr 2007 19:17:26 +0200
-User-Agent: KMail/1.9.6
-Cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de
-References: <20070411162904.232696302@mvista.com> <20070411143357.e866b366.akpm@linux-foundation.org> <20070411173902.b2a9ab9d.akpm@linux-foundation.org>
-In-Reply-To: <20070411173902.b2a9ab9d.akpm@linux-foundation.org>
+	id S1030573AbXDLRS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 13:18:59 -0400
+Date: Thu, 12 Apr 2007 13:18:31 -0400
+To: Theodore Tso <tytso@mit.edu>, Neil Brown <neilb@suse.de>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+Message-ID: <20070412171831.GD3028@fieldses.org>
+References: <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <17947.65165.569482.976343@notabene.brown> <20070411144252.GB17778@thunk.org> <17949.25061.739035.688232@notabene.brown> <20070411232224.GF17778@thunk.org> <17949.36737.701327.104172@notabene.brown> <20070412023712.GA8175@lazybastard.org> <17949.51797.386833.917451@notabene.brown> <20070412122116.GD28148@thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704121917.27030.ak@novell.com>
+In-Reply-To: <20070412122116.GD28148@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 12, 2007 at 08:21:16AM -0400, Theodore Tso wrote:
+> Again, compared to a directory fd cache, what you're proposing a huge
+> hit to the filesystem, and at the moment, given that telldir/seekdir
+> is rarely used by everyone else, it's mainly NFS which is the main bad
+> actor here by insisting on the use of a small 31/63-bit cookie as a
+> condition of protocol correctness.
 
-> OK, so I resurrected x86_64-mm-sched-clock-share.patch and
-> x86_64-mm-sched-clock64.patch.  The x86_64 box hangs on boot when using
-> netconsole and printk timestamps too.  Removing "time" from the kernel boot
-> command line prevents that.
+If we want to get bigger cookies into the protocol, then the sooner we
+start working on that the better....  How big is big enough?  And is a
+larger cookie sufficient on its own?
 
-It's not worse than before for you CPU. The old code did 
-
-#ifndef CONFIG_NUMA
-        if (!cpu_khz || check_tsc_unstable())
-#endif
-                /* no locking but a rare wrong value is not a big deal */
-                return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
-
-
-So if it worked before it still will.
-
-> This explains why the hang only happens with
-> x86_64-mm-log-reason-why-tsc-was-marked-unstable.patch applied, too: that
-> patch must be triggering a printk inside xtime_lock.
-> 
-> Does someone want to cook up a lockless printk_clock() for i386 and x86_64?
-
-With the fall back case changed back to jiffies sched_clock will be fully lockless.
-
--Andi
+--b.
