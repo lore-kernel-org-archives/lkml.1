@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbXDLMsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbXDLMtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbXDLMsW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 08:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbXDLMsV
+	id S1753669AbXDLMtN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 08:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbXDLMtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 08:48:21 -0400
-Received: from ns2.suse.de ([195.135.220.15]:38851 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbXDLMsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 08:48:20 -0400
-To: jjohansen@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [AppArmor 39/41] AppArmor: Profile loading and manipulation, pathname matching
-References: <20070412090809.917795000@suse.de>
-	<20070412090849.465428000@suse.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 12 Apr 2007 15:46:38 +0200
-In-Reply-To: <20070412090849.465428000@suse.de>
-Message-ID: <p733b35903l.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Thu, 12 Apr 2007 08:49:13 -0400
+Received: from web52907.mail.re2.yahoo.com ([206.190.49.17]:47421 "HELO
+	web52907.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753665AbXDLMtM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 08:49:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=u0Wcrc9RIdin7dqXFeQL0tqzuNzxa4LhA5kn9A48OQ5rdKyfBL1DR7hvNfr2hWN4WKCQNC4fE/QdJ3Ho/KdTnQQ9GQ9DhDBZpPz3tLwS3BNxtxVJLczjpw7yJ6LGzPLTHifsXyCy67izmXKrrhMzf1XIu8ZiAl5FxxapPK88hz4=  ;
+Message-ID: <20070412124910.47686.qmail@web52907.mail.re2.yahoo.com>
+X-YMail-OSG: 9QztG.YVM1kVNCet83nZ8DiSMy0FzRnPoeSEFgGzhjDm9NwDKwMIu8u.B8T6N8aHUyQic3M40taWM7vrrrx22QA4.fulD58qW.2wfK1ARixPrbN12ca1k0HttKq4kQ--
+Date: Thu, 12 Apr 2007 13:49:10 +0100 (BST)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: [new 2.6.21-rc6 crash] BUG: unable to handle kernel paging request at virtual address 6b6b6ceb
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jjohansen@suse.de writes:
+Hmm, THAT looks familiar...
 
-[didn't review code fully, just some stuff I noticed]
+http://bugzilla.kernel.org/show_bug.cgi?id=8198
 
-> +
-> +struct aa_dfa {
-> +	struct table_header *tables[YYTD_ID_NXT];
-> +};
+Yes, it is in 2.6.20.x.
 
-If that is passed in from user space you would need special compat
-code for 64bit kernels who support 32bit userland.
-Better to avoid pointers.
+Cheers,
+Chris
 
-> +
-> +	/* get optional subprofiles */
-> +	if (aa_is_nameX(e, AA_LIST, "hats")) {
-> +		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
-> +			struct aa_profile *subprofile;
-> +			subprofile = aa_unpack_profile(e);
 
-Is there any check that would guard the recursion from stack
-overflow on malicious input?  
 
-> +	/*
-> +	 * Replacement needs to allocate a new aa_task_context for each
-> +	 * task confined by old_profile.  To do this the profile locks
-> +	 * are only held when the actual switch is done per task.  While
-> +	 * looping to allocate a new aa_task_context the old_task list
-> +	 * may get shorter if tasks exit/change their profile but will
-> +	 * not get longer as new task will not use old_profile detecting
-> +	 * that is stale.
-> +	 */
-> +	do {
-> +		new_cxt = aa_alloc_task_context(GFP_KERNEL | __GFP_NOFAIL);
-
-NOFAIL is usually a bad sign. It should be only used if there is no
-alternative.
-
--Andi
-
+      ___________________________________________________________
+Yahoo! Answers - Got a question? Someone out there knows the answer. Try it
+now.
+http://uk.answers.yahoo.com/ 
