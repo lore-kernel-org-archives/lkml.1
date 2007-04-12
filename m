@@ -1,40 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030824AbXDLWbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030837AbXDLWix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030824AbXDLWbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 18:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030825AbXDLWbq
+	id S1030837AbXDLWix (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 18:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030838AbXDLWix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 18:31:46 -0400
-Received: from holomorphy.com ([66.93.40.71]:42172 "EHLO holomorphy.com"
+	Thu, 12 Apr 2007 18:38:53 -0400
+Received: from waste.org ([66.93.16.53]:47527 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030835AbXDLWbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 18:31:45 -0400
-Date: Thu, 12 Apr 2007 15:32:01 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	id S1030837AbXDLWiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 18:38:51 -0400
+Date: Thu, 12 Apr 2007 17:25:48 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/12] get_unmapped_area doesn't need hugetlbfs hacks anymore
-Message-ID: <20070412223201.GM2986@holomorphy.com>
-References: <1176344427.242579.337989891532.qpush@grosgo> <20070412022035.4BD9CDDF32@ozlabs.org>
+       Tim Yamin <plasmaroo@gentoo.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH UPDATE] deflate stack usage in lib/inflate.c
+Message-ID: <20070412222547.GA11166@waste.org>
+References: <461DED14.1070603@goop.org> <461E9BAD.8050202@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070412022035.4BD9CDDF32@ozlabs.org>
-Organization: The Domain of Holomorphy
+In-Reply-To: <461E9BAD.8050202@goop.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 12:20:33PM +1000, Benjamin Herrenschmidt wrote:
-> Remove the hugetlbfs specific hacks in toplevel get_unmapped_area() now
-> that all archs and hugetlbfs itself do the right thing for both cases.
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->  mm/mmap.c |   16 ----------------
->  1 file changed, 16 deletions(-)
+On Thu, Apr 12, 2007 at 01:50:54PM -0700, Jeremy Fitzhardinge wrote:
+> -#define HEAP_SIZE             0x3000
+> +#define HEAP_SIZE             0x4000
 
-Acked-by: William Irwin <bill.irwin@oracle.com>
+There are a bunch more of these that'll need fixing.
 
-
--- wli
+-- 
+Mathematics is the supreme nostalgia of our time.
