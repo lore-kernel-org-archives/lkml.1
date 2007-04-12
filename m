@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422636AbXDLEQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422651AbXDLET6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422636AbXDLEQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 00:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422639AbXDLEQ1
+	id S1422651AbXDLET6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 00:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422650AbXDLET5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 00:16:27 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:46235 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422636AbXDLEQ0 (ORCPT
+	Thu, 12 Apr 2007 00:19:57 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:45888 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422651AbXDLET4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 00:16:26 -0400
+	Thu, 12 Apr 2007 00:19:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=moKGTHABy3/7lF8bsC+adgDi/Kn2urk+NfhZEsZ96FKfRJNEgKeSghNyPw1pGyAaw3UcONz9RiNSwL1scmsq5YWfTrKieXvxTjw4DEOiGB2gGt2uaLnhpcwkveTZXFkDxRqykiviM0lKc5n0fjVGyXrSlBC1JwmchzhzPlJOwv4=
-Message-ID: <b6a2187b0704112116u6bb3a344o2e02d6d612d0fcf7@mail.gmail.com>
-Date: Thu, 12 Apr 2007 12:16:25 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.21-rc6
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0704100833250.6730@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=uPEVXqVRmfkYegxoCcLbuw1SFBUdhO3kWtNkKTvwOXDtUT5aclFncPeYnEvLGpumOeGRHKJM1jlEplq3PpCvx0d2k6LbUhkPCmleRAaZfzOpR05ufnyZZfTpS2AFVqDu/jOgemy1k0aMklC8wEU27eIy12/bWZjW4tQ8ACuDGxQ=
+Date: Thu, 12 Apr 2007 09:51:50 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org, linuxsh-shmedia-dev@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       lethal@linux-sh.org
+Subject: [KJ][PATCH] ROUND_UP macro cleanup in arch/sh64/kernel/pci_sh5.c
+Message-ID: <20070412042150.GA11888@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	 <b6a2187b0704100735s733e2499k421e27cf650001f8@mail.gmail.com>
-	 <Pine.LNX.4.64.0704100833250.6730@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/10/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> On Tue, 10 Apr 2007, Jeff Chua wrote:
-> > I couldn't get suspend-to-disk to work with 2.6.21-rc6. I've tried
-> > set/unset CONFIG_NO_HZ/CONFIG_HPET_TIMER, but nothing worked.
->
-> Do you think you could busect it? You'd have to apply maxim's patch by
-> hand at each bisection step (up until the point where it's already applied
-> in the git tree, of course), so it's not a totally mindless bisection, but
-> it should still be fairly painless, since there is only 277 commits
-> between -rc5 and -rc6 (so bisection should rather quickly narrow it down)
+ROUND_UP macro cleanup, use ALIGN where ever appropriate.
 
-Linus,
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-I did that last night and realize that I could suspend to disk/ram
-with 2.6.21-rc6  CONFIG_NO_HZ unset. I must have done something wrong
-before.
+---
+ pci_sh5.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
-Thank you,
-Jeff.
+diff --git a/arch/sh64/kernel/pci_sh5.c b/arch/sh64/kernel/pci_sh5.c
+index 9dae689..11d1fef 100644
+--- a/arch/sh64/kernel/pci_sh5.c
++++ b/arch/sh64/kernel/pci_sh5.c
+@@ -376,8 +376,6 @@ irqreturn_t pcish5_serr_irq(int irq, void *dev_id, struct pt_regs *regs)
+ 	return IRQ_NONE;
+ }
+ 
+-#define ROUND_UP(x, a)		(((x) + (a) - 1) & ~((a) - 1))
+-
+ static void __init
+ pcibios_size_bridge(struct pci_bus *bus, struct resource *ior,
+ 		    struct resource *memr)
+@@ -434,8 +432,8 @@ pcibios_size_bridge(struct pci_bus *bus, struct resource *ior,
+ 	mem_res.end -= mem_res.start;
+ 
+ 	/* Align the sizes up by bridge rules */
+-	io_res.end = ROUND_UP(io_res.end, 4*1024) - 1;
+-	mem_res.end = ROUND_UP(mem_res.end, 1*1024*1024) - 1;
++	io_res.end = ALIGN(io_res.end, 4*1024) - 1;
++	mem_res.end = ALIGN(mem_res.end, 1*1024*1024) - 1;
+ 
+ 	/* Adjust the bridge's allocation requirements */
+ 	bridge->resource[0].end = bridge->resource[0].start + io_res.end;
+@@ -448,18 +446,16 @@ pcibios_size_bridge(struct pci_bus *bus, struct resource *ior,
+ 
+ 	/* adjust parent's resource requirements */
+ 	if (ior) {
+-		ior->end = ROUND_UP(ior->end, 4*1024);
++		ior->end = ALIGN(ior->end, 4*1024);
+ 		ior->end += io_res.end;
+ 	}
+ 
+ 	if (memr) {
+-		memr->end = ROUND_UP(memr->end, 1*1024*1024);
++		memr->end = ALIGN(memr->end, 1*1024*1024);
+ 		memr->end += mem_res.end;
+ 	}
+ }
+ 
+-#undef ROUND_UP
+-
+ static void __init pcibios_size_bridges(void)
+ {
+ 	struct resource io_res, mem_res;
+
+-- 
+Milind Arun Choudhary
