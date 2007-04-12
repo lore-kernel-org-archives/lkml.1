@@ -1,117 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946106AbXDLJvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946090AbXDLJv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946106AbXDLJvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946092AbXDLJtK
+	id S1946090AbXDLJv5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945994AbXDLJtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:49:10 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57879 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945992AbXDLJkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:40:33 -0400
-Message-Id: <20070412090840.402012000@suse.de>
-References: <20070412090809.917795000@suse.de>
-User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:22 -0700
-From: jjohansen@suse.de
-To: linux-kernel@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 13/41] Pass struct vfsmount to the inode_readlink LSM hook
-Content-Disposition: inline; filename=security-readlink.diff
+	Thu, 12 Apr 2007 05:49:06 -0400
+Received: from rwcrmhc11.comcast.net ([204.127.192.81]:62789 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946009AbXDLJsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:48:42 -0400
+Subject: Re: sched_yield proposals/rationale
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: Buytaert_Steven@emc.com
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com>
+References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: The Big Corporation
+Date: Thu, 12 Apr 2007 02:48:39 -0700
+Message-Id: <1176371319.3975.19.camel@sx.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+On Thu, 2007-04-12 at 04:31 -0400, Buytaert_Steven@emc.com wrote:
+> Since the new 2.6.x O(1) scheduler I'm having latency problems. 
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
+1. Have you elevated the process priority?
+2. Have you tried running SCHED_FIFO, or SCHED_RR?
 
----
- fs/stat.c                |    2 +-
- include/linux/security.h |   11 +++++++----
- security/dummy.c         |    2 +-
- security/selinux/hooks.c |    2 +-
- 4 files changed, 10 insertions(+), 7 deletions(-)
 
---- a/fs/stat.c
-+++ b/fs/stat.c
-@@ -307,7 +307,7 @@ asmlinkage long sys_readlinkat(int dfd, 
- 
- 		error = -EINVAL;
- 		if (inode->i_op && inode->i_op->readlink) {
--			error = security_inode_readlink(nd.dentry);
-+			error = security_inode_readlink(nd.dentry, nd.mnt);
- 			if (!error) {
- 				touch_atime(nd.mnt, nd.dentry);
- 				error = inode->i_op->readlink(nd.dentry, buf, bufsiz);
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -338,6 +338,7 @@ struct request_sock;
-  * @inode_readlink:
-  *	Check the permission to read the symbolic link.
-  *	@dentry contains the dentry structure for the file link.
-+ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_follow_link:
-  *	Check permission to follow a symbolic link when looking up a pathname.
-@@ -1223,7 +1224,7 @@ struct security_operations {
- 			    struct vfsmount *mnt, int mode, dev_t dev);
- 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
- 	                     struct inode *new_dir, struct dentry *new_dentry);
--	int (*inode_readlink) (struct dentry *dentry);
-+	int (*inode_readlink) (struct dentry *dentry, struct vfsmount *mnt);
- 	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
- 	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
- 	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
-@@ -1693,11 +1694,12 @@ static inline int security_inode_rename 
- 					   new_dir, new_dentry);
- }
- 
--static inline int security_inode_readlink (struct dentry *dentry)
-+static inline int security_inode_readlink (struct dentry *dentry,
-+					   struct vfsmount *mnt)
- {
- 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_readlink (dentry);
-+	return security_ops->inode_readlink (dentry, mnt);
- }
- 
- static inline int security_inode_follow_link (struct dentry *dentry,
-@@ -2407,7 +2409,8 @@ static inline int security_inode_rename 
- 	return 0;
- }
- 
--static inline int security_inode_readlink (struct dentry *dentry)
-+static inline int security_inode_readlink (struct dentry *dentry,
-+					   struct vfsmount *mnt)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -312,7 +312,7 @@ static int dummy_inode_rename (struct in
- 	return 0;
- }
- 
--static int dummy_inode_readlink (struct dentry *dentry)
-+static int dummy_inode_readlink (struct dentry *dentry, struct vfsmount *mnt)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2239,7 +2239,7 @@ static int selinux_inode_rename(struct i
- 	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
- }
- 
--static int selinux_inode_readlink(struct dentry *dentry)
-+static int selinux_inode_readlink(struct dentry *dentry, struct vfsmount *mnt)
- {
- 	return dentry_has_perm(current, NULL, dentry, FILE__READ);
- }
-
--- 
