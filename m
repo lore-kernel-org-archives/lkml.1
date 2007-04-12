@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992529AbXDLNSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992549AbXDLN1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992529AbXDLNSb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 09:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992530AbXDLNSb
+	id S2992549AbXDLN1d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 09:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992550AbXDLN1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 09:18:31 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:40990 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992529AbXDLNSa (ORCPT
+	Thu, 12 Apr 2007 09:27:32 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:22713 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2992549AbXDLN1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 09:18:30 -0400
-X-Greylist: delayed 1314 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Apr 2007 09:18:30 EDT
-Subject: [PATCH 2.6.21] iw_cxgb3 - Add set_tcb_rpl_handler.
-From: Steve Wise <swise@opengridcomputing.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Netdev@vger.kernel.org,
-       OpenFabrics General <general@lists.openfabrics.org>,
-       Jeff Garzik <jeff@garzik.org>, Divy Le Ray <divy@chelsio.com>
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 07:56:34 -0500
-Message-Id: <1176382594.9396.1.camel@stevo-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+	Thu, 12 Apr 2007 09:27:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=e/JiKA+b3NsBLLN9dPELpThplOCO7ZTP7hSN0QNKiyKdKaNVmHL8TBU/CZE8RQdkFiD8ig6uoN/HG/beeoa9y1AntIplnsXoqTsKXcPblwfI7VUZk1a4ymTPrI94FJJS3kCw0j6mPAwXhSbbFbuhvHRcQEj4+KfPsCAdKSLPeac=  ;
+X-YMail-OSG: PGiR_HsVM1kI4G7DlDoiCmIlbOByDyfjoBs6OJP.50VZhHLxEF1QaM8nZ6gOR.t6k8MnlYePow--
+Message-ID: <461E33BA.2030104@yahoo.com.au>
+Date: Thu, 12 Apr 2007 23:27:22 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Buytaert_Steven@emc.com
+CC: andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: sched_yield proposals/rationale
+References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com> <p737ish90ss.fsf@bingen.suse.de> <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com>
+In-Reply-To: <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Roland,
+Buytaert_Steven@emc.com wrote:
+>>-----Original Message-----
+>>From: Andi Kleen
+>>[ ... about use of sched_yield ...]
+>>On the other hand when they fix their code to not rely on sched_yield
+>>but use [...]
+> 
+> 
+> Agreed, but $ find . -name "*.[ch]" | xargs grep -E "yield[ ]*\(" | wc over
+> the 2.6.16 kernel yields 105 hits, note including comments...
 
-This patch is needed for iw_cxgb3 to handle a change in the cxgb3 driver
-posted by Divy that Jeff recently applied.  If the cxgb3 change is
-destined for 2.6.21, then this change to iw_cxgb3 also needs to go in
-(otherwise we get an error log entry for every rdma connection).  
+Most of these (in core code, anyway) seem to use yield when they really don't
+care about running for a while.
 
-It was an oversight that this patch didn't really get included in Divy's
-series since the two go together.
+> An interesting spot is e.g. fs/buffer.c free_more_memory()
 
-See http://marc.info/?l=linux-netdev&m=117617444422260&w=2
+This one should be pretty rare (actually I think it is dead code in practice,
+due to the way the page allocator works).
 
+Avoiding sched_yield is a really good idea outside realtime scheduling. Since
+we have gone this far with the current semantics, I think it would be sad to
+back down now.
 
-Thanks,
+It would be nice if you could pressure those other components to adapt :)
 
-Steve.
-
-
----
-
-
-Add set_tcb_rpl_handler.
-
-The Ethernet Driver no longer handles SET_TCB replies.
-
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
-
- drivers/infiniband/hw/cxgb3/iwch_cm.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-index d0ed1d3..2d2de9b 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-@@ -2026,6 +2026,17 @@ static int sched(struct t3cdev *tdev, st
- 	return 0;
- }
- 
-+static int set_tcb_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
-+{
-+	struct cpl_set_tcb_rpl *rpl = cplhdr(skb);
-+
-+	if (rpl->status != CPL_ERR_NONE) {
-+		printk(KERN_ERR MOD "Unexpected SET_TCB_RPL status %u "
-+		       "for tid %u\n", rpl->status, GET_TID(rpl));
-+	}
-+	return CPL_RET_BUF_DONE;
-+}
-+
- int __init iwch_cm_init(void)
- {
- 	skb_queue_head_init(&rxq);
-@@ -2053,6 +2064,7 @@ int __init iwch_cm_init(void)
- 	t3c_handlers[CPL_ABORT_REQ_RSS] = sched;
- 	t3c_handlers[CPL_RDMA_TERMINATE] = sched;
- 	t3c_handlers[CPL_RDMA_EC_STATUS] = sched;
-+	t3c_handlers[CPL_SET_TCB_RPL] = set_tcb_rpl;
- 
- 	/*
- 	 * These are the real handlers that are called from a
-
+-- 
+SUSE Labs, Novell Inc.
