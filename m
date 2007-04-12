@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945951AbXDLJgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945949AbXDLJh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945951AbXDLJgT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945953AbXDLJgT
+	id S1945949AbXDLJh4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945956AbXDLJh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:36:19 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56380 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945951AbXDLJgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:36:09 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
-Date: Thu, 12 Apr 2007 11:36:02 +0200
-User-Agent: KMail/1.9.6
-Cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de
-References: <20070411162904.232696302@mvista.com> <20070411143357.e866b366.akpm@linux-foundation.org> <20070411173902.b2a9ab9d.akpm@linux-foundation.org>
-In-Reply-To: <20070411173902.b2a9ab9d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Apr 2007 05:37:56 -0400
+Received: from lazybastard.de ([212.112.238.170]:34295 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945949AbXDLJhz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:37:55 -0400
+Date: Thu, 12 Apr 2007 11:33:11 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Neil Brown <neilb@suse.de>
+Cc: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+Message-ID: <20070412093310.GC8175@lazybastard.org>
+References: <20070407233037.GA16508@infradead.org> <46193048.6000606@zytor.com> <20070408184129.GA20871@lazybastard.org> <17947.65165.569482.976343@notabene.brown> <20070411144252.GB17778@thunk.org> <17949.25061.739035.688232@notabene.brown> <20070411232224.GF17778@thunk.org> <17949.36737.701327.104172@notabene.brown> <20070412023712.GA8175@lazybastard.org> <17949.51797.386833.917451@notabene.brown>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200704121136.03098.ak@novell.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <17949.51797.386833.917451@notabene.brown>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> OK, so I resurrected x86_64-mm-sched-clock-share.patch and
-> x86_64-mm-sched-clock64.patch.  The x86_64 box hangs on boot when using
-> netconsole and printk timestamps too.  Removing "time" from the kernel boot
-> command line prevents that.
-
-Ah. But ktime_get shouldn't printk. Or did you change that?
-
+On Thu, 12 April 2007 15:57:41 +1000, Neil Brown wrote:
 > 
-> This explains why the hang only happens with
-> x86_64-mm-log-reason-why-tsc-was-marked-unstable.patch applied, too: that
-> patch must be triggering a printk inside xtime_lock.
+> > However, the collision chain gives me quite a bit of headache.  One
+> > would have to store each entry's position on the chain, deal with older
+> > entries getting deleted, newer entries getting removed, etc.  All this
+> > requires a lot of complicated code that basically never gets tested in
+> > the wild.
 > 
-> Does someone want to cook up a lockless printk_clock() for i386 and x86_64?
+> This is a simple consequence of the design decision to use hashes as
+> the search key.  They aren't dense and they will collide.  So the
+> solution will be a bit fuzzy around the edges.  And maybe that is an
+> acceptable tradeoff.  But the filesystem should take full
+> responsibility for it, whether in performance or correctness :-)
 
-Just use jiffies directly in printk. That's only HZ accurate, but should
-be good enough for printk.  
+Sure.  And seeing that not using hashes would kill performance long
+before 4 billion dentries are reached, there don't seem to be many
+downsides to hashing in principle.
 
-One could use pure monotonic xtime as fallback instead of ktime_get in sched_clock. 
-The trouble is  just that they might cause sched_clock to go backwards during 
-a temporary instability period (cpufreq change) because the xtime will be 
-always a bit behind the TSC and a TSC->xtime conversion will lose time.
-At least the scheduler doesn't handle backwards time warp on a CPU gratefully.
-Ok I guess it could  return max(last_value_before_instability, xtime) 
+> > Just settling for a 64bit hash and returning -EEXIST when someone causes
+> > a collision an creat() sounds more appealing.  Directories with 4
+> > billion entries will cause problems, but that is hardly news to anyone.
+> 
+> I think you want -EFBIG or -ENOSPC.  -EEXIST sounds just wrong.
 
--Andi
+None of them are 100% correct.  But you are right, -ENOSPC seems to do
+less harm.
 
+> But there are alternatives.  e.g. internal chaining.
+> Insist on a unique 64bit hash for every file.  If the hash is in use,
+> increment and try again.  On lookup, if the hash leads you to a file
+> with the wrong name, increment and try again until you find a hole
+> (hash value that is not stored).  When you delete an entry, leave a
+> place holder if the next hash is in use.  Conversely if the next hash
+> is not in use, delete the entry and delete the previous one if it is a
+> place holder.
 
+That would work and is limited to reasonable complexity.  It still
+suffers from getting virtually no testing in the wild and therefore
+being one of the dark corners little critters thrive in.  But one can at
+least add a config option to fold the hash to 16bit or so.  And cross
+fingers that at least one person will occasionally test with that
+option.
+
+> You have to require 64bit cookies/fpos, but I think that today, that
+> is a reasonable thing to require (5 years ago it might not have been).
+
+Which brings us back to the start of this thread.
+
+Jörn
+
+-- 
+Why do musicians compose symphonies and poets write poems?
+They do it because life wouldn't have any meaning for them if they didn't.
+That's why I draw cartoons.  It's my life.
+-- Charles Shultz
