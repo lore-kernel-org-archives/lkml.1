@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945908AbXDLGMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945910AbXDLGOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945908AbXDLGMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 02:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945910AbXDLGMu
+	id S1945910AbXDLGOM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 02:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945911AbXDLGOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 02:12:50 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:46850 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1945908AbXDLGMt (ORCPT
+	Thu, 12 Apr 2007 02:14:12 -0400
+Received: from hoemail1.lucent.com ([192.11.226.161]:42100 "EHLO
+	hoemail1.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945910AbXDLGOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 02:12:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=PD5bhsL+U/0muwde0vgWAsjUgrEYFDc9hPdjJOVgOznmHtL7+NU5jgA1E2/ZNHx7qFGYsjqlAVX8HMHG0Q6BxzPoQCsqUvoXvwPo6iSyzGt4HfHoR7Fip3k9eGp01gGmgCSgjWKI0G/Sj4Gtl1GqdaAHjac87vvemIteKgYgSMk=  ;
-X-YMail-OSG: JofyAPwVM1lNhZPJYPqjxhxD9GUOosvg7iWTPW1xMwZNnNOF
-Message-ID: <461DCDDA.2030502@yahoo.com.au>
-Date: Thu, 12 Apr 2007 16:12:42 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Thu, 12 Apr 2007 02:14:11 -0400
+X-Greylist: delayed 462 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Apr 2007 02:14:11 EDT
+Message-ID: <461DCC3E.9020900@alcatel-lucent.com>
+Date: Thu, 12 Apr 2007 14:05:50 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH] make MADV_FREE lazily free memory
-References: <461C6452.1000706@redhat.com> <461D6413.6050605@cosmosbay.com> <461D67A9.5020509@redhat.com> <461DC75B.8040200@cosmosbay.com> <461DCCEB.70004@yahoo.com.au>
-In-Reply-To: <461DCCEB.70004@yahoo.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linux-kernel@vger.kernel.org
+Subject: help me on 2.6.15 kernel on MPC850
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Apr 2007 06:05:30.0964 (UTC) FILETIME=[93484940:01C77CC8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Eric Dumazet wrote:
-> 
+Hey Guys,
 
->>> Two things can happen here.
->>>
->>> If this program used the pages before the kernel needed
->>> them, the program will be reusing its old pages.
->>
->>
->>
->> ah ok, this is because accessed/dirty bits are set by hardware and not 
->> a page fault.
-> 
-> 
-> No it isn't.
+The CPU was spinning when executing in head_8xx.S::initial_mmu. I have 
+located the instruction that cause the spinning through on-board leds. 
+Do you have any ideas?
 
-That is to say, it isn't required for correctness. But if the
-question was about avoiding a fault, then yes ;)
+#ifdef CONFIG_8xx_COPYBACK
+       mtspr   SPRN_DC_CST, r8                                     <<< 
+The spinning was caused by this instruction
+#endif
 
-But as Linus recently said, even hardware handled faults still
-take expensive microarchitectural traps.
+#else
+       /*
+        * For a debug option, I left this here to easily enable
+        * the write through cache mode
+        */
+       lis     r8, DC_SFWT@h
+       mtspr   SPRN_DC_CST, r8
+       lis     r8, IDC_ENABLE@h
+       mtspr   SPRN_DC_CST, r8
+#endif
 
-> 
->> Is it true for all architectures ?
-> 
-> 
-> No.
-> 
+       blr
 
+-----------------------------
 
--- 
-SUSE Labs, Novell Inc.
+The output from u-boot:
+
+=> tftp 0x100000 uImage
+Using SCC ETHERNET device
+TFTP from server 90.0.0.3; our IP address is 90.0.0.50
+Filename 'uImage'.
+Load address: 0x100000
+Loading: #################################################################
+        #################################################################
+        ###################################
+done
+Bytes transferred = 844738 (ce3c2 hex)
+=> bootm
+## Booting image at 00100000 ...
+  Image Name:   Linux-2.6.15
+  Created:      2007-04-07  17:25:29 UTC
+  Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+  Data Size:    844674 Bytes = 824.9 kB
+  Load Address: 00000000
+  Entry Point:  00000000
+  Verifying Checksum ... OK
+  Uncompressing Kernel Image ... OK               <<< The CPU is 
+spinning then
+
+-----------------------------
+
+The hardware, bootloader, linux I'm using:
+
+1) MPC850, 1KB DCache + 2KB ICache
+2) u-boot 1.1.4 ( Data Cache is turned off all the way, but instruction 
+cache is always on)
+3) ppclinux 2.6.15
+
+Thanks,
+Gavin
+
