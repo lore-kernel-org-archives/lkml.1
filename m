@@ -1,58 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161461AbXDLB55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161474AbXDLCJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161461AbXDLB55 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 21:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161464AbXDLB55
+	id S1161474AbXDLCJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Apr 2007 22:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161473AbXDLCJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 21:57:57 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:25758 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161461AbXDLB54 (ORCPT
+	Wed, 11 Apr 2007 22:09:38 -0400
+Received: from fed1rmmtao107.cox.net ([68.230.241.39]:46940 "EHLO
+	fed1rmmtao107.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161466AbXDLCJg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 21:57:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=GUtzVG0I4aAn+7zIih71itnygVy6M9pVNkVIPRyDLbsLTLBXrWsBDayyVqRuMdzEdAAQ+ZD07wCWOk2ZnOSWZSu7xHee3sojW7sbH5//iSEJM/TPRYxL6+MWD4O5TyoMmBPSXPtGwSLrtRTmUw97UtBsi5DmyiVdXwavGveAHCI=  ;
-X-YMail-OSG: FvL1Lr0VM1lBH8ZeMYfo6H63ufZzrBNdCzWPGNh.lFoWuevL.KiOVx6C6iOL6bX0hD821ircuw--
-Message-ID: <461D91EE.6020404@yahoo.com.au>
-Date: Thu, 12 Apr 2007 11:57:02 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 11 Apr 2007 22:09:36 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.1.1
+cc: linux-kernel@vger.kernel.org
+Date: Wed, 11 Apr 2007 19:09:34 -0700
+Message-ID: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       pravin b shelar <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, take4] FUTEX : new PRIVATE futexes
-References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<461764A6.3080703@yahoo.com.au>	<20070407120051.9ed0e69a.dada1@cosmosbay.com>	<461C8CD1.3080707@yahoo.com.au>	<20070411101458.114125ee.dada1@cosmosbay.com>	<461CA90E.3080306@yahoo.com.au> <20070411113525.baf8deb0.dada1@cosmosbay.com>
-In-Reply-To: <20070411113525.baf8deb0.dada1@cosmosbay.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> On Wed, 11 Apr 2007 19:23:26 +1000
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+The latest maintenance release GIT 1.5.1.1 is available at the
+usual places:
 
->>>As this external thing certainly is not doing the check itself, to be on the safe side we should enforce it in get_futex_key(). I agree with you : If we want to maximize performance, we could say : The check *must* be done by the caller.
->>
->>Well we _control_ the API, so let's make it as clean and performant as possible
->>from the start.
-> 
-> 
-> Take a look at do_futex().
-> Adding checks in callers just increase code size. I tried this got only bad results.
-> This would speedup only the slow path (ie when some user code want to give us non aligned addrs)
-> A single factorized check is cleaner and not slower, since we reduce icache pressure.
+  http://www.kernel.org/pub/software/scm/git/
 
-1 extra check versus all that additional argument passing? I don't think it
-is conclusive.
+  git-1.5.1.1.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.1.1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.1.1.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.1.1-1.$arch.rpm	(RPM)
 
--- 
-SUSE Labs, Novell Inc.
+GIT v1.5.1.1 Release Notes
+==========================
+
+Fixes since v1.5.1
+------------------
+
+* Documentation updates
+
+  - The --left-right option of rev-list and friends is documented.
+
+  - The documentation for cvsimport has been majorly improved.
+
+  - "git-show-ref --exclude-existing" was documented.
+
+* Bugfixes
+
+  - The implementation of -p option in "git cvsexportcommit" had
+    the meaning of -C (context reduction) option wrong, and
+    loosened the context requirements when it was told to be
+    strict.
+
+  - "git cvsserver" did not behave like the real cvsserver when
+    client side removed a file from the working tree without
+    doing anything else on the path.  In such a case, it should
+    restore it from the checked out revision.
+
+  - "git fsck" issued an alarming error message on detached
+    HEAD.  It is not an error since at least 1.5.0.
+
+  - "git send-email" produced of References header of unbounded length;
+    fixed this with line-folding.
+
+  - "git archive" to download from remote site should not
+    require you to be in a git repository, but it incorrectly
+    did.
+
+  - "git apply" ignored -p<n> for "diff --git" formatted
+    patches.
+
+  - "git rerere" recorded a conflict that had one side empty
+    (the other side adds) incorrectly; this made merging in the
+    other direction fail to use previously recorded resolution.
+
+  - t4200 test was broken where "wc -l" pads its output with
+    spaces.
+
+  - "git branch -m old new" to rename branch did not work
+    without a configuration file in ".git/config".
+
+  - The sample hook for notification e-mail was misnamed.
+
+  - gitweb did not show type-changing patch correctly in the
+    blobdiff view.
+
+  - git-svn did not error out with incorrect command line options.
+
+  - git-svn fell into an infinite loop when insanely long commit
+    message was found.
+
+  - git-svn dcommit and rebase was confused by patches that were
+    merged from another branch that is managed by git-svn.
+
+----------------------------------------------------------------
+
+Changes since v1.5.1 are as follows:
+
+Arjen Laarhoven (4):
+      usermanual.txt: some capitalization nits
+      t3200-branch.sh: small language nit
+      t5300-pack-object.sh: portability issue using /usr/bin/stat
+      Makefile: iconv() on Darwin has the old interface
+
+Brian Gernhardt (3):
+      Fix t4200-rerere for white-space from "wc -l"
+      Document --left-right option to rev-list.
+      Distinguish branches by more than case in tests.
+
+Dana How (1):
+      Fix lseek(2) calls with args 2 and 3 swapped
+
+Eric Wong (3):
+      git-svn: bail out on incorrect command-line options
+      git-svn: dcommit/rebase confused by patches with git-svn-id: lines
+      git-svn: fix log command to avoid infinite loop on long commit messages
+
+Frank Lichtenheld (7):
+      cvsimport: sync usage lines with existing options
+      cvsimport: Improve documentation of CVSROOT and CVS module determination
+      cvsimport: Improve usage error reporting
+      cvsimport: Reorder options in documentation for better understanding
+      cvsimport: Improve formating consistency
+      cvsserver: small corrections to asciidoc documentation
+      cvsserver: Fix handling of diappeared files on update
+
+Geert Bosch (1):
+      Fix renaming branch without config file
+
+Gerrit Pape (1):
+      rename contrib/hooks/post-receieve-email to contrib/hooks/post-receive-email.
+
+Jakub Narebski (1):
+      gitweb: Fix bug in "blobdiff" view for split (e.g. file to symlink) patches
+
+Jim Meyering (1):
+      (encode_85, decode_85): Mark source buffer pointer as "const".
+
+Julian Phillips (1):
+      Documentation: show-ref: document --exclude-existing
+
+Junio C Hamano (7):
+      rerere: make sorting really stable.
+      Fix dependency of common-cmds.h
+      Documentation: tighten dependency for git.{html,txt}
+      Prepare for 1.5.1.1
+      Add Documentation/cmd-list.made to .gitignore
+      fsck: do not complain on detached HEAD.
+      GIT 1.5.1.1
+
+Lars Hjemli (2):
+      rename_ref(): only print a warning when config-file update fails
+      Make builtin-branch.c handle the git config file
+
+René Scharfe (1):
+      Revert "builtin-archive: use RUN_SETUP"
+
+Shawn O. Pearce (1):
+      Honor -p<n> when applying git diffs
+
+Tomash Brechko (1):
+      cvsexportcommit -p : fix the usage of git-apply -C.
+
+Ville Skyttä (1):
+      DESTDIR support for git/contrib/emacs
+
+YOSHIFUJI Hideaki (1):
+      Avoid composing too long "References" header.
+
+
