@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbXDLVXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030769AbXDLV1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbXDLVXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 17:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXDLVXW
+	id S1030769AbXDLV1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 17:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030775AbXDLV1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 17:23:22 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:52845 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753884AbXDLVXV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 17:23:21 -0400
-Date: Thu, 12 Apr 2007 17:23:18 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: USB development list <linux-usb-devel@lists.sourceforge.net>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: How should an exit routine wait for release() callbacks?
-Message-ID: <Pine.LNX.4.44L0.0704121706040.2472-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Apr 2007 17:27:46 -0400
+Received: from palrel11.hp.com ([156.153.255.246]:43404 "EHLO palrel11.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030769AbXDLV1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 17:27:45 -0400
+Date: Thu, 12 Apr 2007 16:27:41 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: akpm@linux-foundation.org, jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       steve.cameron@hp.com
+Subject: [PATCH 1/1] cciss: kconfig patch to make cciss dependent on scsi for SG_IO ioctl
+Message-ID: <20070412212741.GA10654@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a not-so-theoretical question.
+PATCH 1/1
 
-I've got a module which registers a struct device.  (It represents a
-virtual device, not a real one, but that doesn't matter.)  Obviously the
-module's exit routine has to wait until the release() routine for that
-device has been invoked -- if it returned too early then the release()
-call would oops.
+This kconfig patch makes cciss dependent on scsi for the new SG_IO ioctl we just
+added. If cciss is built into the kernel it makes sures that scsi is also statically
+linked. If scsi is a module then cciss will also be built as a module. Please consider
+this for inclusion.
 
-How should it wait?
+Signed-off-by: Stephen M. Cameron <steve.cameron@hp.com>
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+------------------------------------------------------------------------------------------
 
-The most straightforward approach is to use a struct completion, like 
-this:
+ block/cciss.c         |    0 
+ drivers/block/Kconfig |    2 +-
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-	static struct {
-		struct device dev;
-		...
-	} my_dev;
-
-	static DECLARE_COMPLETION(my_completion);
-
-	static void my_release(struct device *dev)
-	{
-		complete(&my_completion);
-	}
-
-	static void __exit my_exit(void)
-	{
-		device_unregister(&my_dev.dev);
-		wait_for_completion(&my_completion);
-	}
-
-The problem is that there is no guarantee a context switch won't take
-place after my_release() has called complete() and before my_release()  
-returns.  If that happens and my_exit() finishes running, then the module
-will be unloaded and the next context switch back to finish off
-my_release() will oops.
-
-Other approaches have similar defects.  So how can this problem be solved?
-
-Alan Stern
-
+diff -puN drivers/block/cciss.c~cciss_sg_io_kconfig drivers/block/cciss.c
+diff -puN drivers/block/Kconfig~cciss_sg_io_kconfig drivers/block/Kconfig
+--- linux-2.6.21-rc6/drivers/block/Kconfig~cciss_sg_io_kconfig	2007-04-12 08:16:45.000000000 -0500
++++ linux-2.6.21-rc6-scameron/drivers/block/Kconfig	2007-04-12 08:20:41.000000000 -0500
+@@ -152,6 +152,7 @@ config BLK_CPQ_DA
+ config BLK_CPQ_CISS_DA
+ 	tristate "Compaq Smart Array 5xxx support"
+ 	depends on PCI
++	depends on SCSI
+ 	help
+ 	  This is the driver for Compaq Smart Array 5xxx controllers.
+ 	  Everyone using these boards should say Y here.
+@@ -162,7 +163,6 @@ config BLK_CPQ_CISS_DA
+ config CISS_SCSI_TAPE
+ 	bool "SCSI tape drive support for Smart Array 5xxx"
+ 	depends on BLK_CPQ_CISS_DA && PROC_FS
+-	depends on SCSI=y || SCSI=BLK_CPQ_CISS_DA
+ 	help
+ 	  When enabled (Y), this option allows SCSI tape drives and SCSI medium
+ 	  changers (tape robots) to be accessed via a Compaq 5xxx array 
+_
