@@ -1,89 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945941AbXDLIUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXDLI0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945941AbXDLIUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 04:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945943AbXDLIUn
+	id S965483AbXDLI0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 04:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXDLI0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 04:20:43 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:33513 "EHLO smtp.osdl.org"
+	Thu, 12 Apr 2007 04:26:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:59502 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945941AbXDLIUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 04:20:40 -0400
-Date: Thu, 12 Apr 2007 00:55:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Zhao Forrest <forrest.zhao@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Why kmem_cache_free occupy CPU for more than 10 seconds?
-Message-Id: <20070412005535.951ccb4b.akpm@linux-foundation.org>
-In-Reply-To: <1176363565.6893.73.camel@twins>
-References: <ac8af0be0704102317q50fe72b1m9e4825a769a63963@mail.gmail.com>
-	<20070411153040.a7e6c3b8.akpm@linux-foundation.org>
-	<1176363565.6893.73.camel@twins>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S965491AbXDLI0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 04:26:33 -0400
+Message-ID: <461DED14.1070603@goop.org>
+Date: Thu, 12 Apr 2007 01:25:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Tim Yamin <plasmaroo@gentoo.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] deflate stack usage in lib/inflate.c
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Apr 2007 09:39:25 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+inflate_fixed() and huft_build() together use around 2.7k of stack.  When
+using 4k stacks, I saw stack overflows from interrupts arriving while
+unpacking the root initrd:
 
-> On Wed, 2007-04-11 at 15:30 -0700, Andrew Morton wrote:
-> 
-> > There used to be a cond_resched() in invalidate_mapping_pages() which would
-> > have prevented this, but I rudely removed it to support
-> > /proc/sys/vm/drop_caches (which needs to call invalidate_inode_pages()
-> > under spinlock).
-> > 
-> > We could resurrect that cond_resched() by passing in some flag, I guess. 
-> > Or change the code to poke the softlockup detector.  The former would be
-> > better.
-> 
-> cond_resched() is conditional on __resched_legal(0)
+do_IRQ: stack overflow: 384
+ [<c0106b64>] show_trace_log_lvl+0x1a/0x30
+ [<c01075e6>] show_trace+0x12/0x14
+ [<c010763f>] dump_stack+0x16/0x18
+ [<c0107ca4>] do_IRQ+0x6d/0xd9
+ [<c010202b>] xen_evtchn_do_upcall+0x6e/0xa2
+ [<c0106781>] xen_hypervisor_callback+0x25/0x2c
+ [<c010116c>] xen_restore_fl+0x27/0x29
+ [<c0330f63>] _spin_unlock_irqrestore+0x4a/0x50
+ [<c0117aab>] change_page_attr+0x577/0x584
+ [<c0117b45>] kernel_map_pages+0x8d/0xb4
+ [<c016a314>] cache_alloc_refill+0x53f/0x632
+ [<c016a6c2>] __kmalloc+0xc1/0x10d
+ [<c0463d34>] malloc+0x10/0x12
+ [<c04641c1>] huft_build+0x2a7/0x5fa
+ [<c04645a5>] inflate_fixed+0x91/0x136
+ [<c04657e2>] unpack_to_rootfs+0x5f2/0x8c1
+ [<c0465acf>] populate_rootfs+0x1e/0xe4
 
-What's __resched_legal()?
+(This was under Xen, but there's no reason it couldn't happen on bare
+  hardware.)
 
-> which should take
-> care of being called under a spinlock.
+This patch mallocs the local variables, thereby reducing the stack
+usage to sane levels.
 
-We only increment preempt_count() in spin_lock() if CONFIG_PREEMPT.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Tim Yamin <plasmaroo@gentoo.org>
 
-> so I guess we can just reinstate the call in invalidate_mapping_pages()
-> 
-> (still waiting on the compile to finish...)
-> ---
-> invalidate_mapping_pages() is called under locks (usually preemptable)
-> but can do a _lot_ of work, stick in a voluntary preemption point to
-> avoid excessive latencies (over 10 seconds was reported by softlockup).
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  mm/truncate.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: linux-2.6-mm/mm/truncate.c
-> ===================================================================
-> --- linux-2.6-mm.orig/mm/truncate.c
-> +++ linux-2.6-mm/mm/truncate.c
-> @@ -292,6 +292,8 @@ unsigned long invalidate_mapping_pages(s
->  			pgoff_t index;
->  			int lock_failed;
->  
-> +			cond_resched();
-> +
->  			lock_failed = TestSetPageLocked(page);
-
-Is deadlocky on the drop_caches path and if CONFIG_PREEMPT we'll get
-scheduling-in-spinlock warnings.
-
-For the blkdev_close() path the change is unneeded if CONFIG_PREEMPT and
-will fix things if !CONFIG_PREEMPT.
-
-We can presumably just remove the invalidate_mapping_pages() call from the
-kill_bdev() path (at least) - kill_bdev()'s truncate_inode_pages() will do
-the same thing.
-
-It might be time to remove that unused-for-six-years destroy_dirty_buffers
-too.
+diff -r 4a30275bd596 lib/inflate.c
+--- a/lib/inflate.c	Wed Apr 11 17:28:10 2007 -0700
++++ b/lib/inflate.c	Thu Apr 12 00:45:35 2007 -0700
+@@ -292,7 +292,6 @@ STATIC int INIT huft_build(
+    oversubscribed set of lengths), and three if not enough memory. */
+ {
+   unsigned a;                   /* counter for codes of length k */
+-  unsigned c[BMAX+1];           /* bit length count table */
+   unsigned f;                   /* i repeats in table every f entries */
+   int g;                        /* maximum code length */
+   int h;                        /* table level */
+@@ -303,18 +302,33 @@ STATIC int INIT huft_build(
+   register unsigned *p;         /* pointer into c[], b[], or v[] */
+   register struct huft *q;      /* points to current table */
+   struct huft r;                /* table entry for structure assignment */
+-  struct huft *u[BMAX];         /* table stack */
+-  unsigned v[N_MAX];            /* values in order of bit length */
+   register int w;               /* bits before this table == (l * h) */
+-  unsigned x[BMAX+1];           /* bit offsets, then code stack */
+   unsigned *xp;                 /* pointer into x */
+   int y;                        /* number of dummy codes added */
+   unsigned z;                   /* number of entries in current table */
++  struct {
++    unsigned c[BMAX+1];           /* bit length count table */
++    struct huft *u[BMAX];         /* table stack */
++    unsigned v[N_MAX];            /* values in order of bit length */
++    unsigned x[BMAX+1];           /* bit offsets, then code stack */
++  } *stk;    
++  unsigned *c, *v, *x;
++  struct huft **u;
++  int ret;
+ 
+ DEBG("huft1 ");
+ 
++  stk = malloc(sizeof(*stk));
++  if (stk == NULL)
++    return 3;			/* out of memory */
++
++  c = stk->c;
++  v = stk->v;
++  x = stk->x;
++  u = stk->u;
++
+   /* Generate counts for each bit length */
+-  memzero(c, sizeof(c));
++  memzero(stk->c, sizeof(stk->c));
+   p = b;  i = n;
+   do {
+     Tracecv(*p, (stderr, (n-i >= ' ' && n-i <= '~' ? "%c %d\n" : "0x%x %d\n"), 
+@@ -326,7 +340,8 @@ DEBG("huft1 ");
+   {
+     *t = (struct huft *)NULL;
+     *m = 0;
+-    return 2;
++    ret = 2;
++    goto out;
+   }
+ 
+ DEBG("huft2 ");
+@@ -351,10 +366,14 @@ DEBG("huft3 ");
+ 
+   /* Adjust last length count to fill out codes, if needed */
+   for (y = 1 << j; j < i; j++, y <<= 1)
+-    if ((y -= c[j]) < 0)
+-      return 2;                 /* bad input: more codes than bits */
+-  if ((y -= c[i]) < 0)
+-    return 2;
++    if ((y -= c[j]) < 0) {
++      ret = 2;                 /* bad input: more codes than bits */
++      goto out;
++    }
++  if ((y -= c[i]) < 0) {
++    ret = 2;
++    goto out;
++  }
+   c[i] += y;
+ 
+ DEBG("huft4 ");
+@@ -428,7 +447,8 @@ DEBG1("3 ");
+         {
+           if (h)
+             huft_free(u[0]);
+-          return 3;             /* not enough memory */
++          ret = 3;             /* not enough memory */
++	  goto out;
+         }
+ DEBG1("4 ");
+         hufts += z + 1;         /* track memory usage */
+@@ -492,7 +512,11 @@ DEBG("huft7 ");
+ DEBG("huft7 ");
+ 
+   /* Return true (1) if we were given an incomplete table */
+-  return y != 0 && g != 1;
++  ret = y != 0 && g != 1;
++
++  out:
++  free(stk);
++  return ret;
+ }
+ 
+ 
+@@ -705,9 +729,13 @@ STATIC int noinline INIT inflate_fixed(v
+   struct huft *td;      /* distance code table */
+   int bl;               /* lookup bits for tl */
+   int bd;               /* lookup bits for td */
+-  unsigned l[288];      /* length list for huft_build */
++  unsigned *l;          /* length list for huft_build */
+ 
+ DEBG("<fix");
++
++  l = malloc(sizeof(*l) * 288);
++  if (l == NULL)
++    return 3;			/* out of memory */
+ 
+   /* set up literal table */
+   for (i = 0; i < 144; i++)
+@@ -719,9 +747,10 @@ DEBG("<fix");
+   for (; i < 288; i++)          /* make a complete, but wrong code set */
+     l[i] = 8;
+   bl = 7;
+-  if ((i = huft_build(l, 288, 257, cplens, cplext, &tl, &bl)) != 0)
++  if ((i = huft_build(l, 288, 257, cplens, cplext, &tl, &bl)) != 0) {
++    free(l);
+     return i;
+-
++  }
+ 
+   /* set up distance table */
+   for (i = 0; i < 30; i++)      /* make an incomplete code set */
+@@ -730,6 +759,7 @@ DEBG("<fix");
+   if ((i = huft_build(l, 30, 0, cpdist, cpdext, &td, &bd)) > 1)
+   {
+     huft_free(tl);
++    free(l);
+ 
+     DEBG(">");
+     return i;
+@@ -737,11 +767,13 @@ DEBG("<fix");
+ 
+ 
+   /* decompress until an end-of-block code */
+-  if (inflate_codes(tl, td, bl, bd))
++  if (inflate_codes(tl, td, bl, bd)) {
++    free(l);
+     return 1;
+-
++  }
+ 
+   /* free the decoding tables, return */
++  free(l);
+   huft_free(tl);
+   huft_free(td);
+   return 0;
 
