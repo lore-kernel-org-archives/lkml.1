@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751250AbXDLRqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030603AbXDLRuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751250AbXDLRqh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 13:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXDLRqh
+	id S1030603AbXDLRuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 13:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030621AbXDLRuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 13:46:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:32930 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbXDLRqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 13:46:36 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
-Date: Thu, 12 Apr 2007 19:45:53 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de
-References: <20070411162904.232696302@mvista.com> <200704121845.39961.ak@novell.com> <461E6F5F.1030008@goop.org>
-In-Reply-To: <461E6F5F.1030008@goop.org>
+	Thu, 12 Apr 2007 13:50:19 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:41849 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030603AbXDLRuS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 13:50:18 -0400
+Message-ID: <461E713F.3090603@zytor.com>
+Date: Thu, 12 Apr 2007 10:49:51 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Egmont Koblinger <egmont@uhulinux.hu>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] console UTF-8 fixes
+References: <20070410183659.7341eeec@the-village.bc.nu> <20070411182801.GC26382@uhulinux.hu> <461D2AB8.5080902@zytor.com> <20070412091120.GA15666@uhulinux.hu> <461E5212.8070807@zytor.com> <Pine.LNX.4.61.0704121840350.14441@yvahk01.tjqt.qr> <20070412165540.GB21576@uhulinux.hu> <461E653E.6020400@zytor.com> <20070412171606.GA24756@uhulinux.hu> <461E6DDC.7050202@zytor.com> <20070412174443.GA26002@uhulinux.hu>
+In-Reply-To: <20070412174443.GA26002@uhulinux.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704121945.54053.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 April 2007 19:41:51 Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> > Ok. I think it's better to just fix sched_clock() again than to
-> > add another one.  I can probably
-> > eliminate the ktime_get() and use something based on jiffies. That will
-> > be inaccurate for the instable case of course.
-> >
-> > I will do that later today.
+Egmont Koblinger wrote:
+> On Thu, Apr 12, 2007 at 10:35:24AM -0700, H. Peter Anvin wrote:
 > 
-> sched_clock seems a bit weird to use.  In the pv_ops world, it only
-> counts unstolen time, and it is therefore inherently per-cpu.  The
-> timestamps should be at least system-wide monotonic.
+>> Yes, I didn't realize at the time that that was dead code.
+> 
+> :-))))
+> 
+> Version 4 of the patch follows. Dead code omitted from version 3.
 
-Even on real hardware it's also per CPU, although the errors
-are usually not big. At least the scheduler deals with that by
-only ever comparing time stamps from the same CPU.
+Looks good to me.
 
-If you have big deviations between CPUs then it might cause problems
-for non scheduler uses. I guess printk_clock is not critical, but
-it might be a little confusing.
-
--Andi
+	-hpa
