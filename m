@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965578AbXDLQ4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXDLQ4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965578AbXDLQ4L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 12:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964934AbXDLQ4K
+	id S964934AbXDLQ4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 12:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965573AbXDLQ4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 12:56:10 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:40222 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030357AbXDLQ4I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 12:56:08 -0400
-Message-Id: <20070412164609.993152209@szeredi.hu>
-References: <20070412164541.580374744@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Thu, 12 Apr 2007 18:45:43 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       linuxram@us.ibm.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: [patch 02/10] allow unprivileged umount
-Content-Disposition: inline; filename=unprivileged_umount.patch
+	Thu, 12 Apr 2007 12:56:18 -0400
+Received: from mail.screens.ru ([213.234.233.54]:59738 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964934AbXDLQ4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 12:56:16 -0400
+Date: Thu, 12 Apr 2007 20:00:04 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       paulmck@us.ibm.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       mingo@elte.hu, dipankar@in.ibm.com, dino@in.ibm.com,
+       masami.hiramatsu.pt@hitachi.com
+Subject: Re: [PATCH 7/8] Clean up workqueue.c with respect to the freezer based cpu-hotplug
+Message-ID: <20070412160004.GA4183@tv-sign.ru>
+References: <20070402053457.GA9076@in.ibm.com> <20070402054206.GG12962@in.ibm.com> <20070403114729.GA776@tv-sign.ru> <20070403135919.GB32444@in.ibm.com> <20070403150336.GA850@tv-sign.ru> <20070403171820.GA8646@in.ibm.com> <20070412022220.GA10176@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070412022220.GA10176@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On 04/12, Srivatsa Vaddagiri wrote:
+>
+> On Tue, Apr 03, 2007 at 10:48:20PM +0530, Srivatsa Vaddagiri wrote:
+> > > Actually, we should do this before destroy_workqueue() calls flush_workqueue().
+> > > Otherwise flush_cpu_workqueue() can hang forever in a similar manner.
+> > 
+> > Yep. I guess these are a class of freezer deadlocks very similar to vfork
+> > parent waiting on child case. I get a feeling these should become common
+> > outside of kthread too (A waits on B for something, B gets frozen, which
+> > means A won't freeze causing freezer to fail). Can freezer detect this
+> > dependency somehow and thaw B automatically? Probably not that easy ..
+> 
+> I wonder if there is some value in "enforcing" an order in which
+> processes get frozen i.e freeze A first before B. That may solve the
+> deadlocks we have been discussing wrt kthread_stop and flush_workqueue
+> as well.
 
-The owner doesn't need sysadmin capabilities to call umount().
+Perhaps we can add "atomic_t xxx" to task_struct.
 
-Similar behavior as umount(8) on mounts having "user=UID" option in
-/etc/mtab.  The difference is that umount also checks /etc/fstab,
-presumably to exclude another mount on the same mountpoint.
+	int freezing(struct task_struct *p)
+	{
+		return test_tsk_thread_flag(p, TIF_FREEZE)
+			&& atomic_read(&p->xxx) == 0;
+	}
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
+	void xxx_start(struct task_struct *p)
+	{
+		atomic_inc(p->xxx);
+		thaw_process(p);
+	}
 
-Index: linux/fs/namespace.c
-===================================================================
---- linux.orig/fs/namespace.c	2007-04-11 20:07:51.000000000 +0200
-+++ linux/fs/namespace.c	2007-04-11 20:08:05.000000000 +0200
-@@ -659,6 +659,25 @@ static int do_umount(struct vfsmount *mn
- }
- 
- /*
-+ * umount is permitted for
-+ *  - sysadmin
-+ *  - mount owner, if not forced umount
-+ */
-+static bool permit_umount(struct vfsmount *mnt, int flags)
-+{
-+	if (capable(CAP_SYS_ADMIN))
-+		return true;
-+
-+	if (!(mnt->mnt_flags & MNT_USER))
-+		return false;
-+
-+	if (flags & MNT_FORCE)
-+		return false;
-+
-+	return mnt->mnt_uid == current->uid;
-+}
-+
-+/*
-  * Now umount can handle mount points as well as block devices.
-  * This is important for filesystems which use unnamed block devices.
-  *
-@@ -681,7 +700,7 @@ asmlinkage long sys_umount(char __user *
- 		goto dput_and_out;
- 
- 	retval = -EPERM;
--	if (!capable(CAP_SYS_ADMIN))
-+	if (!permit_umount(nd.mnt, flags))
- 		goto dput_and_out;
- 
- 	retval = do_umount(nd.mnt, flags);
+	xxx_end(struct task_struct *p)
+	{
+		atomic_dec(p->xxx);
+	}
 
---
+Now,
+
+	xxx_start(p);
+	... wait for something which depends on p...
+	xxx_end(p);
+
+Of course we need other changes, freeze_process() should check ->xxx, etc.
+I am not sure this makes sense.
+
+Oleg.
+
