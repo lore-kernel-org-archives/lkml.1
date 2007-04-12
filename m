@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751325AbXDLS66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbXDLS7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751325AbXDLS66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 14:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXDLS66
+	id S1751399AbXDLS7H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 14:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXDLS7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 14:58:58 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:55071 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751325AbXDLS65 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 14:58:57 -0400
-Date: Thu, 12 Apr 2007 20:52:05 +0200
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: usb touchscreen breakage in 2.6.21-rc5-mm4 ?
-Message-ID: <20070412185205.GA12676@aitel.hist.no>
-References: <20070407005458.GA18985@aitel.hist.no> <200704062237.13118.dtor@insightbb.com> <20070409223643.GB2198@aitel.hist.no> <200704092230.04144.dtor@insightbb.com> <461B9DFF.9080704@aitel.hist.no> <d120d5000704100839s47d07ff1gc47ce9ea97d54002@mail.gmail.com> <461CAF73.3020201@aitel.hist.no> <d120d5000704110737o2d74b734xfc5756eac9dbbc29@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000704110737o2d74b734xfc5756eac9dbbc29@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Helge Hafting <helgehaf@aitel.hist.no>
+	Thu, 12 Apr 2007 14:59:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40752 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbXDLS7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 14:59:03 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <5c49b0ed0704121123x341d10afxfdf6930b4b26417b@mail.gmail.com> 
+References: <5c49b0ed0704121123x341d10afxfdf6930b4b26417b@mail.gmail.com>  <20070412024938.27380.44677.patchbomb.py@localhost> <1273.1176375482@redhat.com> 
+To: "Nate Diller" <nate.diller@gmail.com>
+Cc: "Andrew Morton" <akpm@osdl.org>,
+       "Alexander Viro" <viro@zeniv.linux.org.uk>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Mikulas Patocka" <mikulas@artax.karlin.mff.cuni.cz>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Dave Kleikamp" <shaggy@austin.ibm.com>,
+       "Anton Altaparmakov" <aia21@cantab.net>,
+       "Evgeniy Dushistov" <dushistov@mail.ru>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-dev@namesys.com
+Subject: Re: [PATCH 3/17] afs: convert afs_dir_get_page to read_kmap_page 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Thu, 12 Apr 2007 19:57:23 +0100
+Message-ID: <29898.1176404243@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 11, 2007 at 10:37:11AM -0400, Dmitry Torokhov wrote:
-> On 4/11/07, Helge Hafting <helge.hafting@aitel.hist.no> wrote:
-> >Dmitry Torokhov wrote:
-> >>
-> >> *sigh* When will I learn to spell names of kernel parameters
-> >> correctly? It is initcall_debug, not debug_initcall :( Could you try
-> >> again, please?
-> >Here is the dmesg for rc5mm4 with initcall_debug, showing how
-> >no usbtouch function is called at all.
-> >
-> 
-> Helge,
-> 
-> I don't have any explanation why we don't see usbtouch_init called at
-> all in -rc5-mm4. Could it be toolchain misbehaving? Do you see
-> references to usbtouch_init in the kernel image itself?
-> 
-I unpacked it, ran "strings" on it, and found no usbtouch in there.
-There were plenty of other usb names, such as usbfs, usbserial, usbcore
-and tons of messages that usb mass storage and usb serial might
-need to produce.
+Nate Diller <nate.diller@gmail.com> wrote:
 
-Versions of some tools, I don't know if there are any
-known issues:
+> Hmmm you're right.  Is your security work going into the next -mm?
 
-$ gcc --version
-gcc (GCC) 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)
-$ ld --version
-GNU ld (GNU Binutils for Debian) 2.17.50.20070406
-$ dpkg -l binutils
-ii  binutils       2.17.20070406c The GNU assembler, linker and binary
+I don't know.  Andrew hasn't said anything.  Andrew?  Are you waiting for it
+to go through DaveM's networking tree?
 
-Helge Hafting
+> If so, I'll just re-base this cleanup patch on that ... at the very least I
+> want to get rid of afs_dir_put_page().
+
+That's reasonable.
+
+> Also, did you consider passing the key pointer directly and modifying the
+> readpage actor to simply cast the pointer back, like
+> read_mapping_page(mapping, page, (struct file *)key)?  It seems like a waste
+> to allocate a whole file struct on the stack just for the ->private field.
+
+There's one small problem with that...  And that's filemap_nopage() (it passes
+vma->vm_file to readpage() unconditionally).  Unless, of course, your patches
+fix that too...
+
+David
