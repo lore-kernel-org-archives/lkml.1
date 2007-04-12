@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161556AbXDLDwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422636AbXDLEQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161556AbXDLDwF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Apr 2007 23:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422627AbXDLDwE
+	id S1422636AbXDLEQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 00:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422639AbXDLEQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Apr 2007 23:52:04 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:37007 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161556AbXDLDwD (ORCPT
+	Thu, 12 Apr 2007 00:16:27 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:46235 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422636AbXDLEQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Apr 2007 23:52:03 -0400
-Date: Wed, 11 Apr 2007 20:43:23 -0700
-From: Greg KH <greg@kroah.com>
-To: Anton Vorontsov <cbou@mail.ru>
-Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       dwmw2@infradead.org
-Subject: Re: [PATCH 3/7] [RFC] Battery monitoring class
-Message-ID: <20070412034323.GA7017@kroah.com>
-References: <20070411232503.GC20095@zarina>
+	Thu, 12 Apr 2007 00:16:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=moKGTHABy3/7lF8bsC+adgDi/Kn2urk+NfhZEsZ96FKfRJNEgKeSghNyPw1pGyAaw3UcONz9RiNSwL1scmsq5YWfTrKieXvxTjw4DEOiGB2gGt2uaLnhpcwkveTZXFkDxRqykiviM0lKc5n0fjVGyXrSlBC1JwmchzhzPlJOwv4=
+Message-ID: <b6a2187b0704112116u6bb3a344o2e02d6d612d0fcf7@mail.gmail.com>
+Date: Thu, 12 Apr 2007 12:16:25 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.21-rc6
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704100833250.6730@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070411232503.GC20095@zarina>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+	 <b6a2187b0704100735s733e2499k421e27cf650001f8@mail.gmail.com>
+	 <Pine.LNX.4.64.0704100833250.6730@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 03:25:03AM +0400, Anton Vorontsov wrote:
-> Here is battery monitor class. According to first copyright string, we're
-> maintaining it since 2003. I've took few days and cleaned it up to be
-> more suitable for mainline inclusion.
-> 
-> It differs from battery class at git://git.infradead.org/battery-2.6.git:
+On 4/10/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Tue, 10 Apr 2007, Jeff Chua wrote:
+> > I couldn't get suspend-to-disk to work with 2.6.21-rc6. I've tried
+> > set/unset CONFIG_NO_HZ/CONFIG_HPET_TIMER, but nothing worked.
+>
+> Do you think you could busect it? You'd have to apply maxim's patch by
+> hand at each bisection step (up until the point where it's already applied
+> in the git tree, of course), so it's not a totally mindless bisection, but
+> it should still be fairly painless, since there is only 277 commits
+> between -rc5 and -rc6 (so bisection should rather quickly narrow it down)
 
-Why fork from David's work?  Does he not like these changes for some
-reason?
+Linus,
 
-> +static int battery_create_attrs(struct battery *bat)
-> +{
-> +	int rc;
-> +
-> +	#define create_bat_attr_conditional(name)                    \
-> +	if(bat->get_##name) {                                        \
-> +		rc = device_create_file(bat->dev, &dev_attr_##name); \
-> +		if (rc) goto name##_failed;                          \
-> +	}
-> +
-> +	create_bat_attr_conditional(status);
-> +	create_bat_attr_conditional(min_voltage);
-> +	create_bat_attr_conditional(min_current);
-> +	create_bat_attr_conditional(min_capacity);
-> +	create_bat_attr_conditional(max_voltage);
-> +	create_bat_attr_conditional(max_current);
-> +	create_bat_attr_conditional(max_capacity);
-> +	create_bat_attr_conditional(temp);
-> +	create_bat_attr_conditional(voltage);
-> +	create_bat_attr_conditional(current);
-> +	create_bat_attr_conditional(capacity);
+I did that last night and realize that I could suspend to disk/ram
+with 2.6.21-rc6  CONFIG_NO_HZ unset. I must have done something wrong
+before.
 
-Use an attribute group please.  It's much simpler and will be created at
-the proper time so your userspace tools don't have to sit and spin in
-order to properly wait for them to show up.
-
-Ok, yes, you want a conditional type of attribute group, like the
-new firewire code does.  I have no problem adding that if you like.
-
-thanks,
-
-greg k-h
+Thank you,
+Jeff.
