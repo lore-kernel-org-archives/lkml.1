@@ -1,198 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbXDLUaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751890AbXDLUb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753329AbXDLUaO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 16:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXDLUaM
+	id S1751890AbXDLUb7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 16:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXDLUb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 16:30:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:15510 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753195AbXDLUaI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 16:30:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=HWdFz0vlh62zsfDcFFifa5jdbmX5zJC9+tB22FXR+mA/zl1DSMQAF+fFDCDFJ6YbDcF35n9/kMFI5Vy7QwFQm5Mk5ERMIQbw28N1jinOxChCq1iRLXggkmCdBr/tI96Oster6LIWQ2kLW5pngmj+8by+XGR1QGwoZ9Wi0FM/yB4=
-Date: Fri, 13 Apr 2007 02:02:05 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: kernel-janitors@lists.osdl.org, linux-ia64@vger.kernel.org,
-       discuss@x86-64.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tony.luck@intel.com, ak@suse.de
-Subject: [KJ][PATCH 03/03]ROUND_UP|DOWN macro cleanup in arch/ia64,x86_64
-Message-ID: <20070412203205.GC9353@arun.site>
+	Thu, 12 Apr 2007 16:31:59 -0400
+Received: from 1wt.eu ([62.212.114.60]:1766 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753189AbXDLUb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 16:31:58 -0400
+Date: Thu, 12 Apr 2007 22:31:53 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Pedro <linux_user@izecksohn.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: tmpfs and the OOM killer
+Message-ID: <20070412203153.GJ943@1wt.eu>
+References: <200704110223.31291.linux_user@izecksohn.com> <200704120219.03171.linux_user@izecksohn.com> <20070412112545.GA28148@thunk.org> <200704121135.32160.linux_user@izecksohn.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <200704121135.32160.linux_user@izecksohn.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ROUND_UP macro cleanup in arch/x86_64
-ALIGN, ALIGN_DOWN  where ever appropriate.
+On Thu, Apr 12, 2007 at 11:35:32AM -0300, Pedro wrote:
+> On Thursday 12 April 2007 08:25, Theodore Tso wrote:
+> > likely going to be in deep trouble anyway.  Even if you disable the
+> > OOM killer, now random malloc()'s will start returning NULL because
+> > your system doesn't have enough memory.  Do you have intelligent error
+> > handling and recovery mechanisms for every single malloc() failure?
+> 
+>   When malloc return NULL, the process may tell the user ENOMEM.
+>   When OOM kill the process, the user claim the program sometimes die.
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Then use overcommit=2. The default overcommit mode is a convenience provided
+to allow poorly designed applications run even when they pretend they need
+gigs of RAM when they only use a few tens of megs.
 
----
- arch/x86_64/kernel/e820.c   |   16 ++++++++--------
- arch/x86_64/kernel/signal.c |    4 ++--
- arch/x86_64/mm/init.c       |    8 ++++----
- arch/x86_64/mm/numa.c       |    8 ++++----
- include/asm-x86_64/proto.h  |    3 ---
- 5 files changed, 18 insertions(+), 21 deletions(-)
+If your application correctly handles malloc(), simply switch overcommit
+to 2 and let the system refuse to allocate memory when none is available,
+then your application will be aware of this by the NULL result to malloc()
+calls. It is a normal behaviour.
 
-diff --git a/arch/x86_64/kernel/e820.c b/arch/x86_64/kernel/e820.c
-index a490fab..d556177 100644
---- a/arch/x86_64/kernel/e820.c
-+++ b/arch/x86_64/kernel/e820.c
-@@ -207,11 +207,11 @@ unsigned long __init e820_hole_size(unsigned long start, unsigned long end)
- 		    ei->addr >= end)
- 			continue;
- 
--		addr = round_up(ei->addr, PAGE_SIZE);
-+		addr = ALIGN(ei->addr, PAGE_SIZE);
- 		if (addr < start)
- 			addr = start;
- 
--		last = round_down(ei->addr + ei->size, PAGE_SIZE);
-+		last = ALIGN_DOWN(ei->addr + ei->size, PAGE_SIZE);
- 		if (last >= end)
- 			last = end;
- 
-@@ -284,17 +284,17 @@ void __init e820_mark_nosave_regions(void)
- 	int i;
- 	unsigned long paddr;
- 
--	paddr = round_down(e820.map[0].addr + e820.map[0].size, PAGE_SIZE);
-+	paddr = ALIGN_DOWN(e820.map[0].addr + e820.map[0].size, PAGE_SIZE);
- 	for (i = 1; i < e820.nr_map; i++) {
- 		struct e820entry *ei = &e820.map[i];
- 
- 		if (paddr < ei->addr)
- 			e820_mark_nosave_range(paddr,
--					round_up(ei->addr, PAGE_SIZE));
-+					ALIGN(ei->addr, PAGE_SIZE));
- 
--		paddr = round_down(ei->addr + ei->size, PAGE_SIZE);
-+		paddr = ALIGN_DOWN(ei->addr + ei->size, PAGE_SIZE);
- 		if (ei->type != E820_RAM)
--			e820_mark_nosave_range(round_up(ei->addr, PAGE_SIZE),
-+			e820_mark_nosave_range(ALIGN(ei->addr, PAGE_SIZE),
- 					paddr);
- 
- 		if (paddr >= (end_pfn << PAGE_SHIFT))
-@@ -311,8 +311,8 @@ e820_register_active_regions(int nid, unsigned long start_pfn,
- 	unsigned long ei_startpfn, ei_endpfn;
- 	for (i = 0; i < e820.nr_map; i++) {
- 		struct e820entry *ei = &e820.map[i];
--		ei_startpfn = round_up(ei->addr, PAGE_SIZE) >> PAGE_SHIFT;
--		ei_endpfn = round_down(ei->addr + ei->size, PAGE_SIZE)
-+		ei_startpfn = ALIGN(ei->addr, PAGE_SIZE) >> PAGE_SHIFT;
-+		ei_endpfn = ALIGN_DOWN(ei->addr + ei->size, PAGE_SIZE)
- 								>> PAGE_SHIFT;
- 
- 		/* Skip map entries smaller than a page */
-diff --git a/arch/x86_64/kernel/signal.c b/arch/x86_64/kernel/signal.c
-index 49ec324..b89de2b 100644
---- a/arch/x86_64/kernel/signal.c
-+++ b/arch/x86_64/kernel/signal.c
-@@ -211,7 +211,7 @@ get_stack(struct k_sigaction *ka, struct pt_regs *regs, unsigned long size)
- 			rsp = current->sas_ss_sp + current->sas_ss_size;
- 	}
- 
--	return (void __user *)round_down(rsp - size, 16); 
-+	return (void __user *)ALIGN_DOWN(rsp - size, 16); 
- }
- 
- static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
-@@ -224,7 +224,7 @@ static int setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 
- 	if (used_math()) {
- 		fp = get_stack(ka, regs, sizeof(struct _fpstate)); 
--		frame = (void __user *)round_down(
-+		frame = (void __user *)ALIGN_DOWN(
- 			(unsigned long)fp - sizeof(struct rt_sigframe), 16) - 8;
- 
- 		if (!access_ok(VERIFY_WRITE, fp, sizeof(struct _fpstate)))
-diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
-index ec31534..d573f63 100644
---- a/arch/x86_64/mm/init.c
-+++ b/arch/x86_64/mm/init.c
-@@ -225,7 +225,7 @@ static __meminit void unmap_low_page(int i)
- /* Must run before zap_low_mappings */
- __init void *early_ioremap(unsigned long addr, unsigned long size)
- {
--	unsigned long map = round_down(addr, LARGE_PAGE_SIZE); 
-+	unsigned long map = ALIGN_DOWN(addr, LARGE_PAGE_SIZE); 
- 
- 	/* actually usually some more */
- 	if (size >= LARGE_PAGE_SIZE) { 
-@@ -241,7 +241,7 @@ __init void *early_ioremap(unsigned long addr, unsigned long size)
- /* To avoid virtual aliases later */
- __init void early_iounmap(void *addr, unsigned long size)
- {
--	if ((void *)round_down((unsigned long)addr, LARGE_PAGE_SIZE) != temp_mappings[0].address)
-+	if ((void *)ALIGN_DOWN((unsigned long)addr, LARGE_PAGE_SIZE) != temp_mappings[0].address)
- 		printk("early_iounmap: bad address %p\n", addr);
- 	set_pmd(temp_mappings[0].pmd, __pmd(0));
- 	set_pmd(temp_mappings[1].pmd, __pmd(0));
-@@ -323,8 +323,8 @@ static void __init find_early_table_space(unsigned long end)
- 
- 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
- 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
--	tables = round_up(puds * sizeof(pud_t), PAGE_SIZE) +
--		 round_up(pmds * sizeof(pmd_t), PAGE_SIZE);
-+	tables = ALIGN(puds * sizeof(pud_t), PAGE_SIZE) +
-+		 ALIGN(pmds * sizeof(pmd_t), PAGE_SIZE);
- 
-  	/* RED-PEN putting page tables only on node 0 could
-  	   cause a hotspot and fill up ZONE_DMA. The page tables
-diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
-index 41b8fb0..3d98ecf 100644
---- a/arch/x86_64/mm/numa.c
-+++ b/arch/x86_64/mm/numa.c
-@@ -180,9 +180,9 @@ void __init setup_node_bootmem(int nodeid, unsigned long start, unsigned long en
- 	unsigned long start_pfn, end_pfn, bootmap_pages, bootmap_size, bootmap_start; 
- 	unsigned long nodedata_phys;
- 	void *bootmap;
--	const int pgdat_size = round_up(sizeof(pg_data_t), PAGE_SIZE);
-+	const int pgdat_size = ALIGN(sizeof(pg_data_t), PAGE_SIZE);
- 
--	start = round_up(start, ZONE_ALIGN); 
-+	start = ALIGN(start, ZONE_ALIGN); 
- 
- 	printk(KERN_INFO "Bootmem setup node %d %016lx-%016lx\n", nodeid, start, end);
- 
-@@ -201,7 +201,7 @@ void __init setup_node_bootmem(int nodeid, unsigned long start, unsigned long en
- 
- 	/* Find a place for the bootmem map */
- 	bootmap_pages = bootmem_bootmap_pages(end_pfn - start_pfn); 
--	bootmap_start = round_up(nodedata_phys + pgdat_size, PAGE_SIZE);
-+	bootmap_start = ALIGN(nodedata_phys + pgdat_size, PAGE_SIZE);
- 	bootmap = early_node_mem(nodeid, bootmap_start, end,
- 					bootmap_pages<<PAGE_SHIFT);
- 	if (bootmap == NULL)  {
-@@ -246,7 +246,7 @@ void __init setup_node_zones(int nodeid)
- 	NODE_DATA(nodeid)->node_mem_map = 
- 		__alloc_bootmem_core(NODE_DATA(nodeid)->bdata, 
- 				memmapsize, SMP_CACHE_BYTES, 
--				round_down(limit - memmapsize, PAGE_SIZE), 
-+				ALIGN_DOWN(limit - memmapsize, PAGE_SIZE), 
- 				limit);
- #endif
- } 
-diff --git a/include/asm-x86_64/proto.h b/include/asm-x86_64/proto.h
-index b6e65a6..7e63559 100644
---- a/include/asm-x86_64/proto.h
-+++ b/include/asm-x86_64/proto.h
-@@ -123,7 +123,4 @@ extern void smp_local_timer_interrupt(void);
- 
- long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
- 
--#define round_up(x,y) (((x) + (y) - 1) & ~((y)-1))
--#define round_down(x,y) ((x) & ~((y)-1))
--
- #endif
--- 
-Milind Arun Choudhary
+I do have appliances which run perfectly controlled software with
+overcommit_mode=2 and overcommit_ratio around 70% and without any
+swap, and they work like a charm. It just requires some finer grained
+tuning on your side. I don't see what the problem is here. You know
+the app, you know how much RAM you want to allocate to it, you know
+how much you want to keep free. Then say this to the system.
+
+BTW, ulimit -v is your friend here too, and does not require to be root.
+
+Regards,
+Willy
+
