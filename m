@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030657AbXDLSTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030669AbXDLSXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030657AbXDLSTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 14:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030658AbXDLSTb
+	id S1030669AbXDLSXJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 14:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030682AbXDLSXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 14:19:31 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:37048 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030657AbXDLSTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 14:19:30 -0400
-Date: Thu, 12 Apr 2007 20:17:47 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net, Corey Minyard <minyard@acm.org>,
-       Greg KH <greg@kroah.com>, Mike Galbraith <efault@gmx.de>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
-In-Reply-To: <Pine.LNX.4.64.0704121937310.12991@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.64.0704121955190.12991@twin.jikos.cz>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
- <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org>
- <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704120947230.12991@twin.jikos.cz>
- <Pine.LNX.4.64.0704121001400.12991@twin.jikos.cz>
- <Pine.LNX.4.64.0704121642110.12991@twin.jikos.cz>
- <20070412095531.d792f671.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704121937310.12991@twin.jikos.cz>
+	Thu, 12 Apr 2007 14:23:08 -0400
+Received: from qb-out-0506.google.com ([72.14.204.228]:39599 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030666AbXDLSXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 14:23:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=B7b6whszAdOM8E5BVooPkRhIZHNK7D8VZ6Dfttwb2tnQcDsUrOLAShADg2ER4z9+jreOrujlGGoOt8xmXQn07/a/9lYsx1xE895lO15LxaEiRIXZnk5vTBTXnCJWd8ZMi1qzRviDvB4oq+LSzWMpwtO0OAYNf3CVPg3Y+/rU090=
+Message-ID: <5c49b0ed0704121123x341d10afxfdf6930b4b26417b@mail.gmail.com>
+Date: Thu, 12 Apr 2007 11:23:03 -0700
+From: "Nate Diller" <nate.diller@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH 3/17] afs: convert afs_dir_get_page to read_kmap_page
+Cc: "Andrew Morton" <akpm@osdl.org>,
+       "Alexander Viro" <viro@zeniv.linux.org.uk>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Mikulas Patocka" <mikulas@artax.karlin.mff.cuni.cz>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Dave Kleikamp" <shaggy@austin.ibm.com>,
+       "Anton Altaparmakov" <aia21@cantab.net>,
+       "Evgeniy Dushistov" <dushistov@mail.ru>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, reiserfs-dev@namesys.com
+In-Reply-To: <1273.1176375482@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070412024938.27380.44677.patchbomb.py@localhost>
+	 <1273.1176375482@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Apr 2007, Jiri Kosina wrote:
+On 4/12/07, David Howells <dhowells@redhat.com> wrote:
+> Nate Diller <nate.diller@gmail.com> wrote:
+>
+> > -static struct page *afs_dir_get_page(struct inode *dir, unsigned long index)
+>
+> NAK.  This conflicts with my AFS security patches, and eliminates any way of
+> passing the key through to readpage().
 
-> CONFIG_IPMI_SI=y
-> hangs upon boot on the already mentioned printk from ipmi_si. With
-> CONFIG_IPMI_SI=m
-> the boot succeeds. When manually trying to modprobe ipmi_si after that, 
-> the modprobe itself hangs, but the machine remains usable otherwise.
+Hmmm you're right.  Is your security work going into the next -mm?  If
+so, I'll just re-base this cleanup patch on that ... at the very least
+I want to get rid of afs_dir_put_page().  Also, did you consider
+passing the key pointer directly and modifying the readpage actor to
+simply cast the pointer back, like read_mapping_page(mapping, page,
+(struct file *)key)?  It seems like a waste to allocate a whole file
+struct on the stack just for the ->private field.
 
-Actually, after approximately 6 minutes 30 seconds, the modprobe finishes 
-with -ENODEV and the following is spitted into dmesg:
+Andrew in the mean time just disregard this patch.
 
-ipmi_si: There appears to be no BMC at this location
-ACPI: PCI interrupt for device 0000:02:00.4 disabled
-ipmi_si: Unable to find any System Interface(s)
-
-Anyway I just checked that I get precisely the same behavior with plain 
-2.6.21-rc6, so we can rule out -mm with this issue.
-
-It's possible that this system has some broken KCS. I will try to narrow 
-this down.
-
-Anyway, the USB-related hang Helge is seeing is therefore a different 
-story.
-
--- 
-Jiri Kosina
+NATE
