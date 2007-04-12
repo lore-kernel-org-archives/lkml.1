@@ -1,204 +1,350 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992588AbXDLPt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992590AbXDLPui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992588AbXDLPt4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 11:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992586AbXDLPt4
+	id S2992590AbXDLPui (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 11:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992593AbXDLPui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 11:49:56 -0400
-Received: from styx.suse.cz ([82.119.242.94]:34301 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992588AbXDLPtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 11:49:55 -0400
-Date: Thu, 12 Apr 2007 17:57:51 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Improve heuristic detecting sequential reads
-Message-ID: <20070412155751.GC23348@duck.suse.cz>
-References: <20070410155411.GF13445@duck.suse.cz> <20070410192722.9e6efc8b.akpm@linux-foundation.org>
+	Thu, 12 Apr 2007 11:50:38 -0400
+Received: from mx33.mail.ru ([194.67.23.194]:11556 "EHLO mx33.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992591AbXDLPuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 11:50:23 -0400
+Date: Thu, 12 Apr 2007 19:47:09 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
+Subject: Re: [PATCH 5/7] [RFC] ds2760 W1 slave
+Message-ID: <20070412154709.GA2066@zarina>
+Reply-To: cbou@mail.ru
+References: <20070411232517.GE20095@zarina> <20070412070854.GA32440@2ka.mipt.ru> <20070412140807.GA25532@zarina> <20070412142023.GA18134@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="IrhDeMKUP4DT/M7F"
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070410192722.9e6efc8b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070412142023.GA18134@2ka.mipt.ru>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---IrhDeMKUP4DT/M7F
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue 10-04-07 19:27:22, Andrew Morton wrote:
-> And shouldn't offset be called prev_offset?  Or should prev_page be called
-> page?  Or index?  Or prev_index?  Or Marmaduke?  The naming is all a mess.
+On Thu, Apr 12, 2007 at 06:20:23PM +0400, Evgeniy Polyakov wrote:
+> On Thu, Apr 12, 2007 at 06:08:07PM +0400, Anton Vorontsov (cbou@mail.ru) wrote:
+> > > > +int w1_ds2760_read(struct device *dev, char *buf, int addr, size_t count)
+> > > > +{
+> > > > +	return w1_ds2760_io(dev, buf, addr, count, 0);
+> > > > +}
+> > > > +
+> > > > +int w1_ds2760_write(struct device *dev, char *buf, int addr, size_t count)
+> > > > +{
+> > > > +	return w1_ds2760_io(dev, buf, addr, count, 1);
+> > > > +}
+> > > 
+> > > Both are exported, who use them?
+> > 
+> > ds2760_battery driver. W1 does not have any API to "talk" to w1 slaves
+> > in generic manner (at least I didn't found any).
+> > So, ds2760_battery using it.
 > 
-> Wanna take a look at all of this, please?
-  OK, attached is a patch which changes prev_page to prev_index and offset
-to prev_offset. It's still a bit misleading that in mm/filemap.c, variables
-with page-numbers are called <something>_index while in mm/readahead.c they
-are often called just offset... But let's leave it for next time.
+> It was - bus masters were accessed through generic find_bus() via
+> device/driver model, bus master has links to all devices found on
+> controlled bus.
+> But find_bus() was removed, so there is no such mechanism right now.
+> 
+> I have no objections against this driver, feel free to add my ack (when
+> trivialities described are resolved) or I can push w1 part myself.
 
-									Honza
+Cleaned up patch follows. Before acking, please take a look at "#if 0",
+I don't know if it's okay for you.
+
+> -- 
+> 	Evgeniy Polyakov
+
+Thanks,
+
+
+From: Anton Vorontsov <cbou@mail.ru>
+Subject: [PATCH] [RFC] ds2760 W1 slave
+
+This is W1 slave for ds2760 chip, found inside almost every HP iPaq and
+HTC PDAs/phones.
+
+Signed-off-by: Anton Vorontsov <cbou@mail.ru>
+---
+ drivers/w1/slaves/Kconfig     |   13 +++
+ drivers/w1/slaves/Makefile    |    1 +
+ drivers/w1/slaves/w1_ds2760.c |  162 +++++++++++++++++++++++++++++++++++++++++
+ drivers/w1/slaves/w1_ds2760.h |   50 +++++++++++++
+ drivers/w1/w1_family.h        |    1 +
+ 5 files changed, 227 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/w1/slaves/w1_ds2760.c
+ create mode 100644 drivers/w1/slaves/w1_ds2760.h
+
+diff --git a/drivers/w1/slaves/Kconfig b/drivers/w1/slaves/Kconfig
+index 904e5ae..df95d6c 100644
+--- a/drivers/w1/slaves/Kconfig
++++ b/drivers/w1/slaves/Kconfig
+@@ -35,4 +35,17 @@ config W1_SLAVE_DS2433_CRC
+ 	  Each block has 30 bytes of data and a two byte CRC16.
+ 	  Full block writes are only allowed if the CRC is valid.
+ 
++config W1_SLAVE_DS2760
++	tristate "Dallas 2760 battery monitor chip (HP iPAQ & others)"
++	depends on W1
++	help
++	  If you enable this you will have the DS2760 battery monitor
++	  chip support.
++
++	  The battery monitor chip is used in many batteries/devices
++	  as the one who is responsible for charging/discharging/monitoring
++	  Li+ batteries.
++
++	  If you are unsure, say N.
++
+ endmenu
+diff --git a/drivers/w1/slaves/Makefile b/drivers/w1/slaves/Makefile
+index 725dcfd..a8eb752 100644
+--- a/drivers/w1/slaves/Makefile
++++ b/drivers/w1/slaves/Makefile
+@@ -5,4 +5,5 @@
+ obj-$(CONFIG_W1_SLAVE_THERM)	+= w1_therm.o
+ obj-$(CONFIG_W1_SLAVE_SMEM)	+= w1_smem.o
+ obj-$(CONFIG_W1_SLAVE_DS2433)	+= w1_ds2433.o
++obj-$(CONFIG_W1_SLAVE_DS2760)	+= w1_ds2760.o
+ 
+diff --git a/drivers/w1/slaves/w1_ds2760.c b/drivers/w1/slaves/w1_ds2760.c
+new file mode 100644
+index 0000000..1bd1c6d
+--- /dev/null
++++ b/drivers/w1/slaves/w1_ds2760.c
+@@ -0,0 +1,162 @@
++/*
++ * 1-Wire implementation for the ds2760 chip
++ *
++ * Copyright (c) 2004-2005, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
++ *
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/device.h>
++#include <linux/types.h>
++
++#include "../w1.h"
++#include "../w1_int.h"
++#include "../w1_family.h"
++#include "w1_ds2760.h"
++
++static int w1_ds2760_io(struct device *dev, char *buf, int addr, size_t count,
++                        int io)
++{
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++
++	if (!dev)
++		return 0;
++
++	mutex_lock(&sl->master->mutex);
++
++	if (addr > DS2760_DATA_SIZE || addr < 0) {
++		count = 0;
++		goto out;
++	}
++	if (addr + count > DS2760_DATA_SIZE)
++		count = DS2760_DATA_SIZE - addr;
++
++	if (!w1_reset_select_slave(sl)) {
++		if (!io) {
++			w1_write_8(sl->master, W1_DS2760_READ_DATA);
++			w1_write_8(sl->master, addr);
++			count = w1_read_block(sl->master, buf, count);
++		} else {
++			w1_write_8(sl->master, W1_DS2760_WRITE_DATA);
++			w1_write_8(sl->master, addr);
++			w1_write_block(sl->master, buf, count);
++			/* XXX w1_write_block returns void, not n_written */
++		}
++	}
++
++out:
++	mutex_unlock(&sl->master->mutex);
++
++	return count;
++}
++
++int w1_ds2760_read(struct device *dev, char *buf, int addr, size_t count)
++{
++	return w1_ds2760_io(dev, buf, addr, count, 0);
++}
++
++int w1_ds2760_write(struct device *dev, char *buf, int addr, size_t count)
++{
++	return w1_ds2760_io(dev, buf, addr, count, 1);
++}
++
++#if 0
++/* Code below works, but unused currently, thus produces "defined but not
++ * used" warning. It stays here for reference and future needs, feel free
++ * to drop "#if 0" when you're about to use it. */
++
++/* io = 0 means copy from EEPROM to SRAM, 1 means from SRAM to EEPROM */
++static int w1_ds2760_eeprom(struct device *dev, int addr, int io)
++{
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = 0;
++
++	mutex_lock(&sl->master->mutex);
++
++	if (!w1_reset_select_slave(sl)) {
++		if (!io)
++		    w1_write_8(sl->master, W1_DS2760_RECALL_DATA);
++		else
++		    w1_write_8(sl->master, W1_DS2760_COPY_DATA);
++		w1_write_8(sl->master, addr);
++	}
++
++	mutex_unlock(&sl->master->mutex);
++
++	return ret;
++}
++
++static int w1_ds2760_recall(struct device *dev, int addr)
++{
++	return w1_ds2760_eeprom(dev, addr, 0);
++}
++
++static int w1_ds2760_copy(struct device *dev, int addr)
++{
++	return w1_ds2760_eeprom(dev, addr, 1);
++}
++#endif
++
++static ssize_t w1_ds2760_read_bin(struct kobject *kobj, char *buf, loff_t off,
++                                  size_t count)
++{
++	struct device *dev = container_of(kobj, struct device, kobj);
++	return w1_ds2760_read(dev, buf, off, count);
++}
++
++static struct bin_attribute w1_ds2760_bin_attr = {
++	.attr = {
++		.name = "w1_slave",
++		.mode = S_IRUGO,
++		.owner = THIS_MODULE,
++	},
++	.size = DS2760_DATA_SIZE,
++	.read = w1_ds2760_read_bin,
++};
++
++static int w1_ds2760_add_slave(struct w1_slave *sl)
++{
++	return sysfs_create_bin_file(&sl->dev.kobj, &w1_ds2760_bin_attr);
++}
++
++static void w1_ds2760_remove_slave(struct w1_slave *sl)
++{
++	sysfs_remove_bin_file(&sl->dev.kobj, &w1_ds2760_bin_attr);
++}
++
++static struct w1_family_ops w1_ds2760_fops = {
++	.add_slave    = w1_ds2760_add_slave,
++	.remove_slave = w1_ds2760_remove_slave,
++};
++
++static struct w1_family w1_ds2760_family = {
++	.fid = W1_FAMILY_DS2760,
++	.fops = &w1_ds2760_fops,
++};
++
++static int __init w1_ds2760_init(void)
++{
++	printk(KERN_INFO "1-Wire driver for the DS2760 battery monitor "
++	       " chip  - (c) 2004-2005, Szabolcs Gyurko\n");
++	return w1_register_family(&w1_ds2760_family);
++}
++
++static void __exit w1_ds2760_exit(void)
++{
++	w1_unregister_family(&w1_ds2760_family);
++}
++
++EXPORT_SYMBOL(w1_ds2760_read);
++EXPORT_SYMBOL(w1_ds2760_write);
++
++module_init(w1_ds2760_init);
++module_exit(w1_ds2760_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>");
++MODULE_DESCRIPTION("1-wire Driver Dallas 2760 battery monitor chip");
+diff --git a/drivers/w1/slaves/w1_ds2760.h b/drivers/w1/slaves/w1_ds2760.h
+new file mode 100644
+index 0000000..0ee92b9
+--- /dev/null
++++ b/drivers/w1/slaves/w1_ds2760.h
+@@ -0,0 +1,50 @@
++/*
++ * 1-Wire implementation for the ds2760 chip
++ *
++ * Copyright (c) 2004-2005, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
++ *
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
++ *
++ */
++
++#ifndef __w1_ds2760_h__
++#define __w1_ds2760_h__
++
++/* Known commands to the DS2760 chip */
++#define W1_DS2760_SWAP                      0xAA
++#define W1_DS2760_READ_DATA                 0x69
++#define W1_DS2760_WRITE_DATA                0x6C
++#define W1_DS2760_COPY_DATA                 0x48
++#define W1_DS2760_RECALL_DATA               0xB8
++#define W1_DS2760_LOCK                      0x6A
++
++/* Number of valid register addresses */
++#define DS2760_DATA_SIZE	    0x40
++
++#define DS2760_PROTECTION_REG	    0x00
++#define DS2760_STATUS_REG	    0x01
++#define DS2760_EEPROM_REG	    0x07
++#define DS2760_SPECIAL_FEATURE_REG  0x08
++#define DS2760_VOLTAGE_MSB	    0x0c
++#define DS2760_VOLTAGE_LSB	    0x0d
++#define DS2760_CURRENT_MSB	    0x0e
++#define DS2760_CURRENT_LSB	    0x0f
++#define DS2760_CURRENT_ACCUM_MSB    0x10
++#define DS2760_CURRENT_ACCUM_LSB    0x11
++#define DS2760_TEMP_MSB		    0x18
++#define DS2760_TEMP_LSB		    0x19
++#define DS2760_EEPROM_BLOCK0	    0x20
++#define DS2760_ACTIVE_FULL	    0x20
++#define DS2760_EEPROM_BLOCK1	    0x30
++#define DS2760_RATED_CAPACITY	    0x32
++#define DS2760_CURRENT_OFFSET_BIAS  0x33
++#define DS2760_ACTIVE_EMPTY	    0x3b
++
++extern int w1_ds2760_read(struct device *dev, char *buf, int addr,
++                          size_t count);
++extern int w1_ds2760_write(struct device *dev, char *buf, int addr,
++                           size_t count);
++
++#endif /* !__w1_ds2760_h__ */
+diff --git a/drivers/w1/w1_family.h b/drivers/w1/w1_family.h
+index 1e2ac40..ef1e1da 100644
+--- a/drivers/w1/w1_family.h
++++ b/drivers/w1/w1_family.h
+@@ -33,6 +33,7 @@
+ #define W1_THERM_DS1822  	0x22
+ #define W1_EEPROM_DS2433  	0x23
+ #define W1_THERM_DS18B20 	0x28
++#define W1_FAMILY_DS2760	0x30
+ 
+ #define MAXNAMELEN		32
+ 
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+1.5.0.5-dirty
 
---IrhDeMKUP4DT/M7F
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="readahead-2.6.21-rc6-tidy.diff"
-
-Rename file_ra_state.prev_page to prev_index and file_ra_state.offset to
-prev_offset.  Also update of prev_index in do_generic_mapping_read() is now
-moved close to the update of prev_offset.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.21-rc6-1-readahead/include/linux/fs.h linux-2.6.21-rc6-2-readahead-tidy/include/linux/fs.h
---- linux-2.6.21-rc6-1-readahead/include/linux/fs.h	2007-04-10 17:14:42.000000000 +0200
-+++ linux-2.6.21-rc6-2-readahead-tidy/include/linux/fs.h	2007-04-12 17:01:08.000000000 +0200
-@@ -696,13 +696,13 @@ struct file_ra_state {
- 	unsigned long size;
- 	unsigned long flags;		/* ra flags RA_FLAG_xxx*/
- 	unsigned long cache_hit;	/* cache hit count*/
--	unsigned long prev_page;	/* Cache last read() position */
-+	unsigned long prev_index;	/* Cache last read() position */
- 	unsigned long ahead_start;	/* Ahead window */
- 	unsigned long ahead_size;
- 	unsigned long ra_pages;		/* Maximum readahead window */
- 	unsigned long mmap_hit;		/* Cache hit stat for mmap accesses */
- 	unsigned long mmap_miss;	/* Cache miss stat for mmap accesses */
--	unsigned int offset;		/* Offset where last read() ended in a page */
-+	unsigned int prev_offset;	/* Offset where last read() ended in a page */
- };
- #define RA_FLAG_MISS 0x01	/* a cache miss occured against this file */
- #define RA_FLAG_INCACHE 0x02	/* file is already in cache */
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.21-rc6-1-readahead/mm/filemap.c linux-2.6.21-rc6-2-readahead-tidy/mm/filemap.c
---- linux-2.6.21-rc6-1-readahead/mm/filemap.c	2007-04-10 17:18:10.000000000 +0200
-+++ linux-2.6.21-rc6-2-readahead-tidy/mm/filemap.c	2007-04-12 16:19:25.000000000 +0200
-@@ -877,8 +877,8 @@ void do_generic_mapping_read(struct addr
- 	cached_page = NULL;
- 	index = *ppos >> PAGE_CACHE_SHIFT;
- 	next_index = index;
--	prev_index = ra.prev_page;
--	prev_offset = ra.offset;
-+	prev_index = ra.prev_index;
-+	prev_offset = ra.prev_offset;
- 	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
- 	offset = *ppos & ~PAGE_CACHE_MASK;
- 
-@@ -931,7 +931,6 @@ page_ok:
- 		 */
- 		if (prev_index != index || offset != prev_offset)
- 			mark_page_accessed(page);
--		prev_index = index;
- 
- 		/*
- 		 * Ok, we have the page, and it's up-to-date, so
-@@ -947,7 +946,8 @@ page_ok:
- 		offset += ret;
- 		index += offset >> PAGE_CACHE_SHIFT;
- 		offset &= ~PAGE_CACHE_MASK;
--		prev_offset = ra.offset = offset;
-+		prev_index = index;
-+		prev_offset = ra.prev_offset = offset;
- 
- 		page_cache_release(page);
- 		if (ret == nr && desc->count)
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.21-rc6-1-readahead/mm/readahead.c linux-2.6.21-rc6-2-readahead-tidy/mm/readahead.c
---- linux-2.6.21-rc6-1-readahead/mm/readahead.c	2007-04-10 17:14:42.000000000 +0200
-+++ linux-2.6.21-rc6-2-readahead-tidy/mm/readahead.c	2007-04-12 17:03:18.000000000 +0200
-@@ -37,7 +37,7 @@ void
- file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
- {
- 	ra->ra_pages = mapping->backing_dev_info->ra_pages;
--	ra->prev_page = -1;
-+	ra->prev_index = -1;
- }
- EXPORT_SYMBOL_GPL(file_ra_state_init);
- 
-@@ -202,19 +202,19 @@ out:
-  * size:	Number of pages in that read
-  *              Together, these form the "current window".
-  *              Together, start and size represent the `readahead window'.
-- * prev_page:   The page which the readahead algorithm most-recently inspected.
-+ * prev_index:  The page which the readahead algorithm most-recently inspected.
-  *              It is mainly used to detect sequential file reading.
-  *              If page_cache_readahead sees that it is again being called for
-  *              a page which it just looked at, it can return immediately without
-  *              making any state changes.
-- * offset:      Offset in the prev_page where the last read ended - used for
-+ * offset:      Offset in the prev_index where the last read ended - used for
-  *              detection of sequential file reading.
-  * ahead_start,
-  * ahead_size:  Together, these form the "ahead window".
-  * ra_pages:	The externally controlled max readahead for this fd.
-  *
-  * When readahead is in the off state (size == 0), readahead is disabled.
-- * In this state, prev_page is used to detect the resumption of sequential I/O.
-+ * In this state, prev_index is used to detect the resumption of sequential I/O.
-  *
-  * The readahead code manages two windows - the "current" and the "ahead"
-  * windows.  The intent is that while the application is walking the pages
-@@ -417,7 +417,7 @@ static int make_ahead_window(struct addr
- 	ra->ahead_size = get_next_ra_size(ra);
- 	ra->ahead_start = ra->start + ra->size;
- 
--	block = force || (ra->prev_page >= ra->ahead_start);
-+	block = force || (ra->prev_index >= ra->ahead_start);
- 	ret = blockable_page_cache_readahead(mapping, filp,
- 			ra->ahead_start, ra->ahead_size, ra, block);
- 
-@@ -469,13 +469,13 @@ page_cache_readahead(struct address_spac
- 	 * We avoid doing extra work and bogusly perturbing the readahead
- 	 * window expansion logic.
- 	 */
--	if (offset == ra->prev_page && --req_size)
-+	if (offset == ra->prev_index && --req_size)
- 		++offset;
- 
--	/* Note that prev_page == -1 if it is a first read */
--	sequential = (offset == ra->prev_page + 1);
--	ra->prev_page = offset;
--	ra->offset = 0;
-+	/* Note that prev_index == -1 if it is a first read */
-+	sequential = (offset == ra->prev_index + 1);
-+	ra->prev_index = offset;
-+	ra->prev_offset = 0;
- 
- 	max = get_max_readahead(ra);
- 	newsize = min(req_size, max);
-@@ -484,7 +484,7 @@ page_cache_readahead(struct address_spac
- 	if (newsize == 0 || (ra->flags & RA_FLAG_INCACHE))
- 		goto out;
- 
--	ra->prev_page += newsize - 1;
-+	ra->prev_index += newsize - 1;
- 
- 	/*
- 	 * Special case - first read at start of file. We'll assume it's
-@@ -540,18 +540,18 @@ page_cache_readahead(struct address_spac
- 	 * we get called back on the first page of the ahead window which
- 	 * will allow us to submit more IO.
- 	 */
--	if (ra->prev_page >= ra->ahead_start) {
-+	if (ra->prev_index >= ra->ahead_start) {
- 		ra->start = ra->ahead_start;
- 		ra->size = ra->ahead_size;
- 		make_ahead_window(mapping, filp, ra, 0);
- recheck:
--		/* prev_page shouldn't overrun the ahead window */
--		ra->prev_page = min(ra->prev_page,
-+		/* prev_index shouldn't overrun the ahead window */
-+		ra->prev_index = min(ra->prev_index,
- 			ra->ahead_start + ra->ahead_size - 1);
- 	}
- 
- out:
--	return ra->prev_page + 1;
-+	return ra->prev_index + 1;
- }
- EXPORT_SYMBOL_GPL(page_cache_readahead);
- 
-
---IrhDeMKUP4DT/M7F--
