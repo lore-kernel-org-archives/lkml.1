@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992634AbXDLQUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751024AbXDLQYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992634AbXDLQUc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 12:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992635AbXDLQUc
+	id S1751024AbXDLQYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 12:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXDLQYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 12:20:32 -0400
-Received: from mta3.adelphia.net ([68.168.78.181]:45615 "EHLO
-	mta3.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992634AbXDLQUb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 12:20:31 -0400
-Message-ID: <461E57E1.50201@acm.org>
-Date: Thu, 12 Apr 2007 11:01:37 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Jiri Kosina <jikos@jikos.cz>
-CC: Helge Hafting <helgehaf@aitel.hist.no>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
-References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704120947230.12991@twin.jikos.cz> <Pine.LNX.4.64.0704121001400.12991@twin.jikos.cz> <Pine.LNX.4.64.0704121642110.12991@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0704121642110.12991@twin.jikos.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 12 Apr 2007 12:24:19 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:47716 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbXDLQYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 12:24:17 -0400
+Date: Thu, 12 Apr 2007 09:23:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@novell.com>
+Cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, tglx@linutronix.de
+Subject: Re: [PATCH] i386 tsc: remove xtime_lock'ing around cpufreq notifier
+Message-Id: <20070412092348.70a4de05.akpm@linux-foundation.org>
+In-Reply-To: <200704121136.03098.ak@novell.com>
+References: <20070411162904.232696302@mvista.com>
+	<20070411143357.e866b366.akpm@linux-foundation.org>
+	<20070411173902.b2a9ab9d.akpm@linux-foundation.org>
+	<200704121136.03098.ak@novell.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri, can you send me the output of "lspci -x" ?
+On Thu, 12 Apr 2007 11:36:02 +0200 Andi Kleen <ak@novell.com> wrote:
 
--corey
+> 
+> > OK, so I resurrected x86_64-mm-sched-clock-share.patch and
+> > x86_64-mm-sched-clock64.patch.  The x86_64 box hangs on boot when using
+> > netconsole and printk timestamps too.  Removing "time" from the kernel boot
+> > command line prevents that.
+> 
+> Ah. But ktime_get shouldn't printk. Or did you change that?
 
-Jiri Kosina wrote:
-> On Thu, 12 Apr 2007, Jiri Kosina wrote:
->
->   
->>> - try booting without any HID devices plugged in (i.e. usb mice, usb 
->>>   keyboards) if the problem persists?
->>> - recompile 2.6.21-rc6-mm1 with git-hid.patch reverted to see if it helps?
->>>       
->> Do you compile with CONFIG_HIDRAW?
->>     
->
-> Helge,
->
-> with your .config, my machine hangs upon IPMI initialization, the last 
-> thing I see before total freeze is 
->
-> ipmi_si: Trying PCI-specified kcs state machine at mem address 0xd0121000, slave address 0x0, irq 5
->
-> (this was run on 32bit machine)
->
-> When I turn IPMI off, I can't reproduce your hang, evetything runs 
-> smoothly. Could you please try recompiling the kernel with IPMI disabled, 
-> if it could be related?
->
-> Corey added to CC.
->
-> Thanks,
->
->   
+I didn't change anything.
+
+If we change printk() to do a read_seqretry(xtime_lock) (as your patches
+apparently do), then any printk() inside write_seqlock(xtime_lock) will
+hang.
+
+> > 
+> > This explains why the hang only happens with
+> > x86_64-mm-log-reason-why-tsc-was-marked-unstable.patch applied, too: that
+> > patch must be triggering a printk inside xtime_lock.
+> > 
+> > Does someone want to cook up a lockless printk_clock() for i386 and x86_64?
+> 
+> Just use jiffies directly in printk. That's only HZ accurate, but should
+> be good enough for printk.  
+
+Bit sad.  printk timestamping was originally implemented as a way of
+observing and measuring bootup delays.  It seems pretty popular now and
+probably quite a few people like high resolution on it.
+
+> One could use pure monotonic xtime as fallback instead of ktime_get in sched_clock. 
+> The trouble is  just that they might cause sched_clock to go backwards during 
+> a temporary instability period (cpufreq change) because the xtime will be 
+> always a bit behind the TSC and a TSC->xtime conversion will lose time.
+> At least the scheduler doesn't handle backwards time warp on a CPU gratefully.
+> Ok I guess it could  return max(last_value_before_instability, xtime) 
+> 
+
+I wasn't proposing any change in sched_clock().
+
+I was proposing that i386 and x86_64 be given a new, lockless,
+high-resolution printk_clock().  Presently x86 uses the default
+printk_clock(), which uses sched_clock().  Presumably copying the
+pre-x86_64-mm-sched-clock-share.patch version of sched_clock() into
+printk_clock() will suffice.
 
