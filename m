@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXDLFUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422672AbXDLF0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422663AbXDLFUV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 01:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422665AbXDLFUU
+	id S1422672AbXDLF0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 01:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422669AbXDLF0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 01:20:20 -0400
-Received: from server2.meudns3.com ([74.52.31.50]:26391 "EHLO
-	server2.meudns3.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422663AbXDLFUU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 01:20:20 -0400
-From: Pedro <linux_user@izecksohn.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: tmpfs and the OOM killer
-Date: Thu, 12 Apr 2007 02:19:02 -0300
-User-Agent: KMail/1.9.5
-References: <200704110223.31291.linux_user@izecksohn.com> <200704111927.00609.linux_user@izecksohn.com> <20070411233921.7a5c3cff@the-village.bc.nu>
-In-Reply-To: <20070411233921.7a5c3cff@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 12 Apr 2007 01:26:51 -0400
+Received: from mga02.intel.com ([134.134.136.20]:48488 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422664AbXDLF0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 01:26:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,399,1170662400"; 
+   d="scan'208"; a="226051487:sNHT28494914"
+Subject: Re: [PATCH] NET: [UPDATED] Multiqueue network device support
+	implementation.
+From: Zhu Yi <yi.zhu@intel.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       davem@davemloft.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       cramerj <cramerj@intel.com>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       "Leech, Christopher" <christopher.leech@intel.com>
+In-Reply-To: <461D14E1.6020100@trash.net>
+References: <D5C1322C3E673F459512FB59E0DDC32902A1A535@orsmsx414.amr.corp.intel.com>
+	 <461D14E1.6020100@trash.net>
+Content-Type: text/plain
+Organization: Intel Corp.
+Date: Thu, 12 Apr 2007 13:24:23 +0800
+Message-Id: <1176355463.16123.243.camel@debian.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704120219.03171.linux_user@izecksohn.com>
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server2.meudns3.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - izecksohn.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 April 2007 19:39, Alan Cox wrote:
-> >   2) How should an application be written to not be killed by OOM?
->
-> OOM isn't an application matter. The kernel has to choose between
-> allowing overcommit on the basis it might run out of memory and have to
-> kill stuff, or that it won't in which case an applicatio which correctly
-> handles malloc() and similar failures will not be killed (unless it is
-> out of space on a stack grow which is a C language flaw as you can't
-> catch that event in C)
->
-> It's configured by /proc/sys/vm/overcommit_memory
->
-> 0 - try and spot obviously dumb allocations
-> 1 - anything goes
-> 2 - strictly control resource commit
+On Wed, 2007-04-11 at 19:03 +0200, Patrick McHardy wrote:
+> 
+> You bring up a good point, it would be good to hear the opinion from
+> one of the wireless people on this since they have their own
+> multiqueue scheduler in the wireless-dev tree. 
 
-  I deduce that a fail-safe application must scanf overcommit_memory, warn 
-the user and waitpid.
+The one in the wireless-dev is pretty much like this one. It existed
+only because there was not such a multiqueue aware qdisc available at
+that time.
+
+The requirement for wireless is the same as the strict PRIO with an
+addition that the dequeued SKB's corresponding NIC hardware queue must
+be active (this is also true for other devices I think, otherwise it has
+to be requeued which leads a busy or dead loop in the end). In other
+words, the dequeue method should select the SKB with the highest
+priority from all the ACTIVE hardware queues (not all queues). The
+wireless hardware then schedules all the packets from its 4 hardware TX
+queues based on the priority and network environment.
+
+Thanks,
+-yi
