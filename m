@@ -1,120 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965526AbXDLJ4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946122AbXDLJ4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965526AbXDLJ4J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 05:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161583AbXDLJyb
+	id S1946122AbXDLJ4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 05:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946118AbXDLJ4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 05:54:31 -0400
-Received: from mx1.suse.de ([195.135.220.2]:57876 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945974AbXDLJkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 05:40:32 -0400
-Message-Id: <20070412090841.747306000@suse.de>
+	Thu, 12 Apr 2007 05:56:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49568 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161595AbXDLJ4L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 05:56:11 -0400
+Date: Thu, 12 Apr 2007 10:58:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: jjohansen@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [AppArmor 31/41] Fix __d_path() for lazy unmounts and make it
+ unambiguous; exclude unreachable mount points from /proc/mounts
+Message-ID: <20070412105825.15f4df39@the-village.bc.nu>
+In-Reply-To: <20070412090846.670863000@suse.de>
 References: <20070412090809.917795000@suse.de>
-User-Agent: quilt/0.46-14
-Date: Thu, 12 Apr 2007 02:08:26 -0700
-From: jjohansen@suse.de
-To: linux-kernel@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 17/41] Pass struct vfsmount to the inode_rmdir LSM hook
-Content-Disposition: inline; filename=security-rmdir.diff
+	<20070412090846.670863000@suse.de>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+> Third, sys_getcwd() shouldn't return disconnected paths.  The patch checks for
+> that, and makes it fail with -ENOENT in that case
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
+That is a fairly significant and sudden change to the existing
+kernel/user interface.
 
----
- fs/namei.c               |    2 +-
- include/linux/security.h |   12 ++++++++----
- security/dummy.c         |    3 ++-
- security/selinux/hooks.c |    3 ++-
- 4 files changed, 13 insertions(+), 7 deletions(-)
+> Fourth, this now allows us to tell unreachable mount points from reachable
+> ones when generating the /proc/mounts and /proc/$pid/mountstats files. 
+> Unreachable mount points are not interesting to processes (they can't get
+> there, anyway), so we hide unreachable mounts.  In particular, ordinary
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2023,7 +2023,7 @@ int vfs_rmdir(struct inode *dir, struct 
- 	if (d_mountpoint(dentry))
- 		error = -EBUSY;
- 	else {
--		error = security_inode_rmdir(dir, dentry);
-+		error = security_inode_rmdir(dir, dentry, mnt);
- 		if (!error) {
- 			error = dir->i_op->rmdir(dir, dentry);
- 			if (!error)
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -318,6 +318,7 @@ struct request_sock;
-  *	Check the permission to remove a directory.
-  *	@dir contains the inode structure of parent of the directory to be removed.
-  *	@dentry contains the dentry structure of directory to be removed.
-+ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_mknod:
-  *	Check permissions when creating a special file (or a socket or a fifo
-@@ -1222,7 +1223,8 @@ struct security_operations {
- 			      struct vfsmount *mnt, const char *old_name);
- 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
- 			    struct vfsmount *mnt, int mode);
--	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
-+	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry,
-+			    struct vfsmount *mnt);
- 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
- 			    struct vfsmount *mnt, int mode, dev_t dev);
- 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
-@@ -1671,11 +1673,12 @@ static inline int security_inode_mkdir (
- }
- 
- static inline int security_inode_rmdir (struct inode *dir,
--					struct dentry *dentry)
-+					struct dentry *dentry,
-+					struct vfsmount *mnt)
- {
- 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_rmdir (dir, dentry);
-+	return security_ops->inode_rmdir (dir, dentry, mnt);
- }
- 
- static inline int security_inode_mknod (struct inode *dir,
-@@ -2396,7 +2399,8 @@ static inline int security_inode_mkdir (
- }
- 
- static inline int security_inode_rmdir (struct inode *dir,
--					struct dentry *dentry)
-+					struct dentry *dentry,
-+					struct vfsmount *mnt)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -295,7 +295,8 @@ static int dummy_inode_mkdir (struct ino
- 	return 0;
- }
- 
--static int dummy_inode_rmdir (struct inode *inode, struct dentry *dentry)
-+static int dummy_inode_rmdir (struct inode *inode, struct dentry *dentry,
-+			      struct vfsmount *mnt)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2221,7 +2221,8 @@ static int selinux_inode_mkdir(struct in
- 	return may_create(dir, dentry, SECCLASS_DIR);
- }
- 
--static int selinux_inode_rmdir(struct inode *dir, struct dentry *dentry)
-+static int selinux_inode_rmdir(struct inode *dir, struct dentry *dentry,
-+			       struct vfsmount *mnt)
- {
- 	return may_link(dir, dentry, MAY_RMDIR);
- }
+This is untrue. The process can get there (via fd passing with another
+task) and the process can be producing output for the human operators,
+who most definitely need to know and see this stuff.
 
--- 
+> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> Reviewed-by: NeilBrown <neilb@suse.de>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+I don't think this is fit to apply in current form. The hiding of mounts
+and mountstats is the wrong approach. The changes to getcwd behaviour
+bother me too as we are changing user space behaviour without warning.
+
+The general idea of pushing some of the fail detect logic into __d_path()
+seems good though.
+
+Alan
