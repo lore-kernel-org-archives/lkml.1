@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbXDLXPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbXDLXQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbXDLXPp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 19:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbXDLXPo
+	id S932386AbXDLXQY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 19:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932398AbXDLXQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 19:15:44 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:6924 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752262AbXDLXPk (ORCPT
+	Thu, 12 Apr 2007 19:16:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42317
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932386AbXDLXQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 19:15:40 -0400
-X-IronPort-AV: i="4.14,405,1170662400"; 
-   d="scan'208"; a="135247547:sNHT45838503"
-To: CaT <cat@zip.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: intermittant petabyte usage reported with broadcom nic
-X-Message-Flag: Warning: May contain useful information
-References: <20070402014319.GA8345@zip.com.au>
-	<20070402001300.3b66007d.akpm@linux-foundation.org>
-	<20070412225249.GU8345@zip.com.au>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 12 Apr 2007 16:15:26 -0700
-In-Reply-To: <20070412225249.GU8345@zip.com.au> (cat@zip.com.au's message of "Fri, 13 Apr 2007 08:52:49 +1000")
-Message-ID: <adaslb5dw1d.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Apr 2007 23:15:27.0184 (UTC) FILETIME=[74B32500:01C77D58]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Thu, 12 Apr 2007 19:16:22 -0400
+Date: Thu, 12 Apr 2007 16:16:23 -0700 (PDT)
+Message-Id: <20070412.161623.71575524.davem@davemloft.net>
+To: paulus@samba.org
+Cc: torvalds@linux-foundation.org, jeremy@goop.org, zach@vmware.com,
+       rusty@rustcorp.com.au, ebiederm@xmission.com, ak@muc.de, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, netdev@vger.kernel.org
+Subject: Re: [patch 13/26] Xen-paravirt_ops: Consistently wrap paravirt ops
+ callsites to make them patchable
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <17920.30274.608018.34484@cargo.ozlabs.ibm.com>
+References: <45FF770C.7050301@goop.org>
+	<Pine.LNX.4.64.0703200805450.6730@woody.linux-foundation.org>
+	<17920.30274.608018.34484@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Apr  9 06:19:04 '  eth0:14250798570591813804 2284720007938 18638    0    0 18638          0  27375938 1556640980159 3345714490    0    0    0     0       0          0 '
+From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 21 Mar 2007 11:03:14 +1100
 
-One odd thing is that crazy number 14250798570591813804 is
-c5c501cbc5c500ac in hex.  I dunno what the significant of the 0xc5 bit
-pattern is though...
+> Linus Torvalds writes:
+> 
+> > We should just do this natively. There's been several tests over the years 
+> > saying that it's much more efficient to do sti/cli as a simple store, and 
+> > handling the "oops, we got an interrupt while interrupts were disabled" as 
+> > a special case.
+> > 
+> > I have this dim memory that ARM has done it that way for a long time 
+> > because it's so expensive to do a "real" cli/sti.
+> > 
+> > And I think -rt does it for other reasons. It's just more flexible.
+> 
+> 64-bit powerpc does this now as well.
 
-The other line has 220898233988841368, which is 0x310c9c6006a7f98, not
-nearly so regular a patter.
+I was curious about this so I had a look.
 
-I don't think I'm helping much...
+There appears to be three pieces of state used to manage this
+on powerpc, PACASOFTIRQEN(r13), PACAHARDIRQEN(r13) and the
+SOFTE() in the stackframe.
+
+Plus there is all of this complicated logic on trap entry and
+exit to manage these three values properly.
+
+local_irq_restore() doesn't look like a simple piece of code
+either.  Logically it should be simple, update the software
+binary state, and if enabling see if any interrupts came in
+while we were disable so we can run them.
+
+Given all of that, is it really cheaper than just flipping the
+bit in the cpu control register? :-/
