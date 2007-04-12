@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030519AbXDLRNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030522AbXDLRQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030519AbXDLRNA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 13:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030524AbXDLRNA
+	id S1030522AbXDLRQM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 13:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030532AbXDLRQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 13:13:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:2564 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030519AbXDLRM6 (ORCPT
+	Thu, 12 Apr 2007 13:16:12 -0400
+Received: from ojjektum.uhulinux.hu ([62.112.194.64]:35072 "EHLO
+	ojjektum.uhulinux.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030522AbXDLRQL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 13:12:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=LEK+TDey+7wvRaZUZl0IjbmCxHLH30qPOGVuovpefnPS9JYmoWWxfnTcqKvgHdVCg303qeOrmL2n25xlt/Kq5uBs8rrV472sKL+8rt32KOnBMGW7xURiLDnpyMMmVrO2bLaUIwWaQ9o+uyYl900SXGxqB3ro2DWVQtJvpvknJtc=
-Date: Thu, 12 Apr 2007 22:44:53 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: kernel-janitors@lists.osdl.org, sparclinux@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       davem@davemloft.net, wli@holomorphy.com
-Subject: [KJ][PATCH]ROUND_UP macro cleanup in arch/sparc,sparc64
-Message-ID: <20070412171452.GA8884@arun.site>
+	Thu, 12 Apr 2007 13:16:11 -0400
+Date: Thu, 12 Apr 2007 19:16:06 +0200
+From: Egmont Koblinger <egmont@uhulinux.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] console UTF-8 fixes
+Message-ID: <20070412171606.GA24756@uhulinux.hu>
+References: <461BB092.3070201@zytor.com> <20070410171924.GA18314@uhulinux.hu> <20070410183659.7341eeec@the-village.bc.nu> <20070411182801.GC26382@uhulinux.hu> <461D2AB8.5080902@zytor.com> <20070412091120.GA15666@uhulinux.hu> <461E5212.8070807@zytor.com> <Pine.LNX.4.61.0704121840350.14441@yvahk01.tjqt.qr> <20070412165540.GB21576@uhulinux.hu> <461E653E.6020400@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <461E653E.6020400@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ROUND_UP macro cleanup, use ALIGN
+On Thu, Apr 12, 2007 at 09:58:38AM -0700, H. Peter Anvin wrote:
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
----
- sparc/kernel/sys_sunos.c     |    5 ++---
- sparc64/kernel/sys_sunos32.c |    5 ++---
- 2 files changed, 4 insertions(+), 6 deletions(-)
+> Not leaving dead code in the kernel is long-standing policy; it's 
+> nothing new.  We constantly remove #if 0'd code that the authors have 
+> left in.
 
-diff --git a/arch/sparc/kernel/sys_sunos.c b/arch/sparc/kernel/sys_sunos.c
-index da6606f..23f4efe 100644
---- a/arch/sparc/kernel/sys_sunos.c
-+++ b/arch/sparc/kernel/sys_sunos.c
-@@ -322,7 +322,6 @@ struct sunos_dirent_callback {
- };
- 
- #define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
--#define ROUND_UP(x) (((x)+sizeof(long)-1) & ~(sizeof(long)-1))
- 
- static int sunos_filldir(void * __buf, const char * name, int namlen,
- 			 loff_t offset, u64 ino, unsigned int d_type)
-@@ -330,7 +329,7 @@ static int sunos_filldir(void * __buf, const char * name, int namlen,
- 	struct sunos_dirent __user *dirent;
- 	struct sunos_dirent_callback * buf = __buf;
- 	unsigned long d_ino;
--	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1);
-+	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(long));
- 
- 	buf->error = -EINVAL;	/* only used if we fail.. */
- 	if (reclen > buf->count)
-@@ -415,7 +414,7 @@ static int sunos_filldirentry(void * __buf, const char * name, int namlen,
- 	struct sunos_direntry __user *dirent;
- 	struct sunos_direntry_callback *buf = __buf;
- 	unsigned long d_ino;
--	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1);
-+	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(long));
- 
- 	buf->error = -EINVAL;	/* only used if we fail.. */
- 	if (reclen > buf->count)
-diff --git a/arch/sparc64/kernel/sys_sunos32.c b/arch/sparc64/kernel/sys_sunos32.c
-index 4cff95b..937f19b 100644
---- a/arch/sparc64/kernel/sys_sunos32.c
-+++ b/arch/sparc64/kernel/sys_sunos32.c
-@@ -273,14 +273,13 @@ struct sunos_dirent_callback {
- };
- 
- #define NAME_OFFSET(de) ((int) ((de)->d_name - (char __user *) (de)))
--#define ROUND_UP(x) (((x)+sizeof(s32)-1) & ~(sizeof(s32)-1))
- 
- static int sunos_filldir(void * __buf, const char * name, int namlen,
- 			 loff_t offset, ino_t ino, unsigned int d_type)
- {
- 	struct sunos_dirent __user *dirent;
- 	struct sunos_dirent_callback * buf = (struct sunos_dirent_callback *) __buf;
--	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1);
-+	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(s32));
- 	u32 d_ino;
- 
- 	buf->error = -EINVAL;	/* only used if we fail.. */
-@@ -367,7 +366,7 @@ static int sunos_filldirentry(void * __buf, const char * name, int namlen,
- 	struct sunos_direntry __user *dirent;
- 	struct sunos_direntry_callback * buf =
- 		(struct sunos_direntry_callback *) __buf;
--	int reclen = ROUND_UP(NAME_OFFSET(dirent) + namlen + 1);
-+	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(s32));
- 	u32 d_ino;
- 
- 	buf->error = -EINVAL;	/* only used if we fail.. */
+I see. However, you wrote it recently:
+
+> Besides, would it not make more sense to have a single table with the
+> width information, if you insist on having one, instead of multiple ones?
+
+If I rework the code according to this then the zero-width information will
+no longer be dead code, right? The unchanged kernel would be slightly larger
+and would run slightly slower, but it would be much easier to patch it to
+reach the other possible behavior regarding combining characters.
+
+
 
 -- 
-Milind Arun Choudhary
+Egmont
