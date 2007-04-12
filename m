@@ -1,69 +1,327 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992550AbXDLNcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbXDLNqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992550AbXDLNcB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 09:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992551AbXDLNcB
+	id S1752683AbXDLNqk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 09:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbXDLNqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 09:32:01 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60630 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992550AbXDLNcB (ORCPT
+	Thu, 12 Apr 2007 09:46:40 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:23128 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752683AbXDLNqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 09:32:01 -0400
-Date: Thu, 12 Apr 2007 15:31:58 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Buytaert_Steven@emc.com
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: sched_yield proposals/rationale
-Message-ID: <20070412133158.GB31455@one.firstfloor.org>
-References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com> <p737ish90ss.fsf@bingen.suse.de> <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 12 Apr 2007 09:46:38 -0400
+Message-ID: <461E383B.6030905@ru.mvista.com>
+Date: Thu, 12 Apr 2007 17:46:35 +0400
+From: Maxim Uvarov <muvarov@ru.mvista.com>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux-kernel@vger.kernel.org, davidsen@tmr.com, randy.dunlap@oracle.com,
+       Valdis.Kletnieks@vt.edu, jesper.juhl@gmail.com
+Subject: Re: Performance Stats: Kernel patch
+References: <461A4C1E.3070309@ru.mvista.com>	<20070410102111.923b92a9.dada1@cosmosbay.com>	<461CCD94.6010507@ru.mvista.com> <20070411161536.926d79e1.dada1@cosmosbay.com> <461D047B.90800@ru.mvista.com> <461D3586.30003@cosmosbay.com>
+In-Reply-To: <461D3586.30003@cosmosbay.com>
+Content-Type: multipart/mixed;
+ boundary="------------010402090604010202050406"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 09:05:25AM -0400, Buytaert_Steven@emc.com wrote:
-> > -----Original Message-----
-> > From: Andi Kleen
-> > [ ... about use of sched_yield ...]
-> > On the other hand when they fix their code to not rely on sched_yield
-> > but use [...]
-> 
-> Agreed, but $ find . -name "*.[ch]" | xargs grep -E "yield[ ]*\(" | wc over
-> the 2.6.16 kernel yields 105 hits, note including comments... An interesting spot is e.g. fs/buffer.c free_more_memory()
+This is a multi-part message in MIME format.
+--------------010402090604010202050406
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-A lot of those are probably broken in some way agreed.
+Eric Dumazet wrote:
 
-> > 
-> > > 2) When a task is eventually put in the expired list in sched_yield,
-> > > give it back the full time slices round (as done in scheduler_tick), not > > with the remaining slices as is done now?
-> > 
-> > That would likely be unfair and exploitable.
-> 
-> I don't understand; how more unfair would it be than passing via scheduler_tick? Grabbing a resource with a single time slice left would be more unfair towards other tasks IMHO when you get moved to the expired list with the resource in still in your possession.
+> [snip]
+> What I meant is : You falsely speak of 'PROCESS performance statistics'.
+>
+> Your implementation only cares about threads, not processes.
+> There is a slight difference, that getrusage() can do.
+>
+> So if you do "cat /proc/PID/status", you'll get counters not for the 
+> PROCESS, only the main thread of the process.
+>
+> If you want an analogy, imagine a "ps aux" that doesnt show the cpu 
+> time of all threads of a process, but only the cpu time of the main 
+> thread. Quite meaningless isnt it ?
+>
+> So either :
+>
+> 1) You change all your description to mention 'thread' instead of 
+> 'process'.
+>
+> 2) You change your implementation to match your claim.
 
-With a particular sleep pattern it could get more CPU time.
 
-> > > 3) Put the task in the expired list at a random position, not at the end
-> > > is done now?
-> > 
-> > Sounds like an interesting approach, but to do it in O(1) you would
-> > need a new data structure with possibly much larger constant overhead.
-> 
-> Agreed, but not dramatic. Suppose you need to insert at position X, you would do, on the linked list after proper setup:
-> 
-> while (X--) { prev = current; current = current->next }
-> 
-> You could have a small duffs device to reduce the X-- checking overhead.
+Thanks again Eric, very useful notes. 
 
-You would need to rename the scheduler to "sometimes O(1)" first @)
+Important information is per-thread counters. So I changed only description.
+Seems no issues now?
 
-Besides - but I guess you're aware of it - any randomized algorithms tend
-to drive benchmarkers and performance analysts crazy because their performance
-cannot be repeated. So it's usually better to avoid them unless there is 
-really no alternative.
+Patch is attached.
 
--Andi
+Best regards,
+Maxim.
+
+--------------010402090604010202050406
+Content-Type: text/plain;
+ name="perf_stat.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="perf_stat.patch"
+
+Patch makes available to the user the following 
+thread performance statistics:
+   * Involuntary Context Switches (task_struct->nivcsw)
+   * Voluntary Context Switches (task_struct->nvcsw)
+   * Number of system calls (added new counter 
+     thread_info->sysc_cnt)
+
+Statistics information is available from
+/proc/PID/status
+   
+This data is useful for detecting hyperactivity 
+patterns between processes.
+
+Signed-off-by: Maxim Uvarov muvarov@ru.mvista.com
+
+ arch/i386/kernel/asm-offsets.c    |    3 +++
+ arch/i386/kernel/entry.S          |    3 +++
+ arch/powerpc/kernel/asm-offsets.c |    4 ++++
+ arch/powerpc/kernel/entry_32.S    |    5 +++++
+ arch/powerpc/kernel/entry_64.S    |    5 +++++
+ arch/x86_64/kernel/asm-offsets.c  |    3 +++
+ arch/x86_64/kernel/entry.S        |    3 +++
+ fs/proc/array.c                   |   17 +++++++++++++++++
+ include/asm-i386/thread_info.h    |    5 +++--
+ include/asm-powerpc/thread_info.h |    3 +++
+ include/asm-x86_64/thread_info.h  |    4 +++-
+ kernel/fork.c                     |    4 ++++
+ lib/Kconfig.debug                 |   15 +++++++++++++++
+ 13 files changed, 71 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.21-rc5/fs/proc/array.c
+===================================================================
+--- linux-2.6.21-rc5.orig/fs/proc/array.c
++++ linux-2.6.21-rc5/fs/proc/array.c
+@@ -291,6 +291,20 @@ static inline char *task_cap(struct task
+ 			    cap_t(p->cap_effective));
+ }
+ 
++#ifdef CONFIG_THREAD_PERF_STAT
++static inline char *task_perf(struct task_struct *p, char *buffer)
++{
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++       buffer += sprintf(buffer, "Syscalls:\t%lu\n", p->thread_info->sysc_cnt);
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
++
++       return buffer + sprintf(buffer, "Nvcsw:\t%lu\n"
++                           "Nivcsw:\t%lu\n",
++                           p->nvcsw,
++                           p->nivcsw);
++}
++#endif /* CONFIG_THREAD_PERF_STAT */
++
+ int proc_pid_status(struct task_struct *task, char * buffer)
+ {
+ 	char * orig = buffer;
+@@ -309,6 +323,9 @@ int proc_pid_status(struct task_struct *
+ #if defined(CONFIG_S390)
+ 	buffer = task_show_regs(task, buffer);
+ #endif
++#ifdef CONFIG_THREAD_PERF_STAT
++	buffer = task_perf(task, buffer);
++#endif /* CONFIG_THREAD_PERF_STAT */
+ 	return buffer - orig;
+ }
+ 
+Index: linux-2.6.21-rc5/kernel/fork.c
+===================================================================
+--- linux-2.6.21-rc5.orig/kernel/fork.c
++++ linux-2.6.21-rc5/kernel/fork.c
+@@ -1044,6 +1044,10 @@ static struct task_struct *copy_process(
+ 	p->syscr = 0;		/* I/O counter: read syscalls */
+ 	p->syscw = 0;		/* I/O counter: write syscalls */
+ #endif
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++        p->thread_info->sysc_cnt = 0;   /* Syscall counter: total numbers of syscalls */
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
++
+ 	task_io_accounting_init(p);
+ 	acct_clear_integrals(p);
+ 
+Index: linux-2.6.21-rc5/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.21-rc5.orig/lib/Kconfig.debug
++++ linux-2.6.21-rc5/lib/Kconfig.debug
+@@ -446,3 +446,18 @@ config FAULT_INJECTION_STACKTRACE_FILTER
+ 	select FRAME_POINTER
+ 	help
+ 	  Provide stacktrace filter for fault-injection capabilities
++
++config THREAD_PERF_STAT
++       bool "Thread performance statistics"
++       help
++         Make available to the user the following per-thread performance statistics:
++            * Number of involuntary context switches
++            * Number of voluntary context switches
++            * Number of system calls (optional)
++         This information is available via /proc/PID/status.
++
++config THREAD_PERF_STAT_SYSC
++       bool "Enable syscall counter"
++       depends on THREAD_PERF_STAT && (X86 || PPC)
++       help
++         This option adds a syscall counter to /proc/PID/status.
+Index: linux-2.6.21-rc5/arch/i386/kernel/entry.S
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/i386/kernel/entry.S
++++ linux-2.6.21-rc5/arch/i386/kernel/entry.S
+@@ -334,6 +334,9 @@ sysenter_past_esp:
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	SAVE_ALL
+ 	GET_THREAD_INFO(%ebp)
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++        incl    TI_sysc_cnt(%ebp)       # Increment syscalls counter
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 
+ 	/* Note, _TIF_SECCOMP is bit number 8, and so it needs testw and not testb */
+ 	testw $(_TIF_SYSCALL_EMU|_TIF_SYSCALL_TRACE|_TIF_SECCOMP|_TIF_SYSCALL_AUDIT),TI_flags(%ebp)
+Index: linux-2.6.21-rc5/arch/i386/kernel/asm-offsets.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/i386/kernel/asm-offsets.c
++++ linux-2.6.21-rc5/arch/i386/kernel/asm-offsets.c
+@@ -56,6 +56,9 @@ void foo(void)
+ 	OFFSET(TI_addr_limit, thread_info, addr_limit);
+ 	OFFSET(TI_restart_block, thread_info, restart_block);
+ 	OFFSET(TI_sysenter_return, thread_info, sysenter_return);
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++        OFFSET(TI_sysc_cnt, thread_info, sysc_cnt);
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	BLANK();
+ 
+ 	OFFSET(GDS_size, Xgt_desc_struct, size);
+Index: linux-2.6.21-rc5/include/asm-i386/thread_info.h
+===================================================================
+--- linux-2.6.21-rc5.orig/include/asm-i386/thread_info.h
++++ linux-2.6.21-rc5/include/asm-i386/thread_info.h
+@@ -31,8 +31,9 @@ struct thread_info {
+ 	unsigned long		status;		/* thread-synchronous flags */
+ 	__u32			cpu;		/* current CPU */
+ 	int			preempt_count;	/* 0 => preemptable, <0 => BUG */
+-
+-
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	unsigned long		sysc_cnt;	/* Syscall counter */
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	mm_segment_t		addr_limit;	/* thread address space:
+ 					 	   0-0xBFFFFFFF for user-thead
+ 						   0-0xFFFFFFFF for kernel-thread
+Index: linux-2.6.21-rc5/arch/powerpc/kernel/asm-offsets.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/powerpc/kernel/asm-offsets.c
++++ linux-2.6.21-rc5/arch/powerpc/kernel/asm-offsets.c
+@@ -94,6 +94,10 @@ int main(void)
+ 	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, local_flags));
+ 	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
+ 	DEFINE(TI_TASK, offsetof(struct thread_info, task));
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++        DEFINE(TI_SYSC_CNT, offsetof(struct thread_info, sysc_cnt));
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
++
+ #ifdef CONFIG_PPC32
+ 	DEFINE(TI_EXECDOMAIN, offsetof(struct thread_info, exec_domain));
+ 	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
+Index: linux-2.6.21-rc5/arch/powerpc/kernel/entry_32.S
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/powerpc/kernel/entry_32.S
++++ linux-2.6.21-rc5/arch/powerpc/kernel/entry_32.S
+@@ -202,6 +202,11 @@ _GLOBAL(DoSyscall)
+ 	bl	do_show_syscall
+ #endif /* SHOW_SYSCALLS */
+ 	rlwinm	r10,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	lwz r11,TI_SYSC_CNT(r10)
++	addi r11,r11,1
++	stw r11,TI_SYSC_CNT(r10)
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	lwz	r11,TI_FLAGS(r10)
+ 	andi.	r11,r11,_TIF_SYSCALL_T_OR_A
+ 	bne-	syscall_dotrace
+Index: linux-2.6.21-rc5/arch/powerpc/kernel/entry_64.S
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/powerpc/kernel/entry_64.S
++++ linux-2.6.21-rc5/arch/powerpc/kernel/entry_64.S
+@@ -115,6 +115,11 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISER
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ #endif
+ 	clrrdi	r11,r1,THREAD_SHIFT
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	ld r10,TI_SYSC_CNT(r11)
++	addi r10,r10,1
++	std r10,TI_SYSC_CNT(r11)
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	ld	r10,TI_FLAGS(r11)
+ 	andi.	r11,r10,_TIF_SYSCALL_T_OR_A
+ 	bne-	syscall_dotrace
+Index: linux-2.6.21-rc5/arch/x86_64/kernel/asm-offsets.c
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/x86_64/kernel/asm-offsets.c
++++ linux-2.6.21-rc5/arch/x86_64/kernel/asm-offsets.c
+@@ -35,6 +35,9 @@ int main(void)
+ 	ENTRY(addr_limit);
+ 	ENTRY(preempt_count);
+ 	ENTRY(status);
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	ENTRY(sysc_cnt);
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	BLANK();
+ #undef ENTRY
+ #define ENTRY(entry) DEFINE(pda_ ## entry, offsetof(struct x8664_pda, entry))
+Index: linux-2.6.21-rc5/arch/x86_64/kernel/entry.S
+===================================================================
+--- linux-2.6.21-rc5.orig/arch/x86_64/kernel/entry.S
++++ linux-2.6.21-rc5/arch/x86_64/kernel/entry.S
+@@ -229,6 +229,9 @@ ENTRY(system_call)
+ 	movq  %rcx,RIP-ARGOFFSET(%rsp)
+ 	CFI_REL_OFFSET rip,RIP-ARGOFFSET
+ 	GET_THREAD_INFO(%rcx)
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	addq $1, threadinfo_sysc_cnt(%rcx)   # Increment syscalls counter
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	testl $(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP),threadinfo_flags(%rcx)
+ 	jnz tracesys
+ 	cmpq $__NR_syscall_max,%rax
+Index: linux-2.6.21-rc5/include/asm-powerpc/thread_info.h
+===================================================================
+--- linux-2.6.21-rc5.orig/include/asm-powerpc/thread_info.h
++++ linux-2.6.21-rc5/include/asm-powerpc/thread_info.h
+@@ -35,6 +35,9 @@ struct thread_info {
+ 	int		cpu;			/* cpu we're on */
+ 	int		preempt_count;		/* 0 => preemptable,
+ 						   <0 => BUG */
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	unsigned long	sysc_cnt;		/* Syscall counter */
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	struct restart_block restart_block;
+ 	unsigned long	local_flags;		/* private flags for thread */
+ 
+Index: linux-2.6.21-rc5/include/asm-x86_64/thread_info.h
+===================================================================
+--- linux-2.6.21-rc5.orig/include/asm-x86_64/thread_info.h
++++ linux-2.6.21-rc5/include/asm-x86_64/thread_info.h
+@@ -30,7 +30,9 @@ struct thread_info {
+ 	__u32			status;		/* thread synchronous flags */
+ 	__u32			cpu;		/* current CPU */
+ 	int 			preempt_count;	/* 0 => preemptable, <0 => BUG */
+-
++#ifdef CONFIG_THREAD_PERF_STAT_SYSC
++	unsigned long		sysc_cnt;	/* Syscall counter */
++#endif /* CONFIG_THREAD_PERF_STAT_SYSC */
+ 	mm_segment_t		addr_limit;	
+ 	struct restart_block    restart_block;
+ };
+
+--------------010402090604010202050406--
