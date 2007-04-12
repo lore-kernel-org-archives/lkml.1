@@ -1,176 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965552AbXDLQt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030332AbXDLQty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965552AbXDLQt2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 12:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965540AbXDLQtL
+	id S1030332AbXDLQty (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 12:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030404AbXDLQtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 12:49:11 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:53832 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965529AbXDLQs5 (ORCPT
+	Thu, 12 Apr 2007 12:49:51 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:44590 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030346AbXDLQtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 12:48:57 -0400
-Message-Id: <20070412164631.200952141@szeredi.hu>
+	Thu, 12 Apr 2007 12:49:40 -0400
+Message-Id: <20070412164612.610879791@szeredi.hu>
 References: <20070412164541.580374744@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 12 Apr 2007 18:45:48 +0200
+Date: Thu, 12 Apr 2007 18:45:44 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
        linuxram@us.ibm.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org
-Subject: [patch 07/10] allow unprivileged bind mounts
-Content-Disposition: inline; filename=unprivileged_bind_mount.patch
+Subject: [patch 03/10] account user mounts
+Content-Disposition: inline; filename=account_user_mounts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Allow bind mounts to unprivileged users if the following conditions
-are met:
+Add sysctl variables for accounting and limiting the number of user
+mounts.
 
-  - user mounts are permitted in the current mount namespace
-  - mountpoint is not a symlink or special file
-  - mountpoint is not a sticky directory or is owned by the current user
-  - mountpoint is writable by user
-  - the number of user mounts is below the maximum
-
-Unprivileged mounts imply MS_SETUSER, and will also have the "nosuid"
-and "nodev" mount flags set.
+The maximum number of user mounts is set to 1024 by default.  This
+won't in itself enable user mounts, setting the "permit user mount in
+namespace" flag will also be needed.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
+Index: linux/include/linux/sysctl.h
+===================================================================
+--- linux.orig/include/linux/sysctl.h	2007-04-11 18:27:46.000000000 +0200
++++ linux/include/linux/sysctl.h	2007-04-11 20:08:16.000000000 +0200
+@@ -818,6 +818,8 @@ enum
+ 	FS_AIO_NR=18,	/* current system-wide number of aio requests */
+ 	FS_AIO_MAX_NR=19,	/* system-wide maximum number of aio requests */
+ 	FS_INOTIFY=20,	/* inotify submenu */
++	FS_NR_USER_MOUNTS=21,	/* int:current number of user mounts */
++	FS_MAX_USER_MOUNTS=22,	/* int:maximum number of user mounts */
+ 	FS_OCFS2=988,	/* ocfs2 */
+ };
+ 
+Index: linux/kernel/sysctl.c
+===================================================================
+--- linux.orig/kernel/sysctl.c	2007-04-11 18:27:46.000000000 +0200
++++ linux/kernel/sysctl.c	2007-04-11 20:08:16.000000000 +0200
+@@ -1063,6 +1063,22 @@ static ctl_table fs_table[] = {
+ #endif	
+ #endif
+ 	{
++		.ctl_name	= FS_NR_USER_MOUNTS,
++		.procname	= "nr_user_mounts",
++		.data		= &nr_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
++		.ctl_name	= FS_MAX_USER_MOUNTS,
++		.procname	= "max_user_mounts",
++		.data		= &max_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
+ 		.ctl_name	= KERN_SETUID_DUMPABLE,
+ 		.procname	= "suid_dumpable",
+ 		.data		= &suid_dumpable,
+Index: linux/Documentation/filesystems/proc.txt
+===================================================================
+--- linux.orig/Documentation/filesystems/proc.txt	2007-04-11 18:27:44.000000000 +0200
++++ linux/Documentation/filesystems/proc.txt	2007-04-12 13:32:14.000000000 +0200
+@@ -923,6 +923,15 @@ reaches aio-max-nr then io_setup will fa
+ raising aio-max-nr does not result in the pre-allocation or re-sizing
+ of any kernel data structures.
+ 
++nr_user_mounts and max_user_mounts
++----------------------------------
++
++These represent the number of "user" mounts and the maximum number of
++"user" mounts respectively.  User mounts may be created by
++unprivileged users.  User mounts may also be created with sysadmin
++privileges on behalf of a user, in which case nr_user_mounts may
++exceed max_user_mounts.
++
+ 2.2 /proc/sys/fs/binfmt_misc - Miscellaneous binary formats
+ -----------------------------------------------------------
+ 
 Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/namespace.c	2007-04-12 14:04:25.000000000 +0200
-+++ linux/fs/namespace.c	2007-04-12 14:04:27.000000000 +0200
-@@ -237,11 +237,30 @@ static void dec_nr_user_mounts(void)
- 	spin_unlock(&vfsmount_lock);
+--- linux.orig/fs/namespace.c	2007-04-11 20:08:05.000000000 +0200
++++ linux/fs/namespace.c	2007-04-12 13:29:05.000000000 +0200
+@@ -39,6 +39,9 @@ static int hash_mask __read_mostly, hash
+ static struct kmem_cache *mnt_cache __read_mostly;
+ static struct rw_semaphore namespace_sem;
+ 
++int nr_user_mounts;
++int max_user_mounts = 1024;
++
+ /* /sys/fs */
+ decl_subsys(fs, NULL, NULL);
+ EXPORT_SYMBOL_GPL(fs_subsys);
+@@ -227,11 +230,30 @@ static struct vfsmount *skip_mnt_tree(st
+ 	return p;
  }
  
--static void set_mnt_user(struct vfsmount *mnt)
-+static int reserve_user_mount(void)
++static void dec_nr_user_mounts(void)
 +{
-+	int err = 0;
 +	spin_lock(&vfsmount_lock);
-+	if (nr_user_mounts >= max_user_mounts && !capable(CAP_SYS_ADMIN))
-+		err = -EPERM;
-+	else
-+		nr_user_mounts++;
++	nr_user_mounts--;
 +	spin_unlock(&vfsmount_lock);
-+	return err;
 +}
 +
-+static void __set_mnt_user(struct vfsmount *mnt)
+ static void set_mnt_user(struct vfsmount *mnt)
  {
  	BUG_ON(mnt->mnt_flags & MNT_USER);
  	mnt->mnt_uid = current->uid;
  	mnt->mnt_flags |= MNT_USER;
-+	if (!capable(CAP_SYS_ADMIN))
-+		mnt->mnt_flags |= MNT_NOSUID | MNT_NODEV;
++	spin_lock(&vfsmount_lock);
++	nr_user_mounts++;
++	spin_unlock(&vfsmount_lock);
 +}
 +
-+static void set_mnt_user(struct vfsmount *mnt)
++static void clear_mnt_user(struct vfsmount *mnt)
 +{
-+	__set_mnt_user(mnt);
- 	spin_lock(&vfsmount_lock);
- 	nr_user_mounts++;
- 	spin_unlock(&vfsmount_lock);
-@@ -260,9 +279,16 @@ static struct vfsmount *clone_mnt(struct
- 					int flag)
- {
- 	struct super_block *sb = old->mnt_sb;
--	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
-+	struct vfsmount *mnt;
-+
-+	if (flag & CL_SETUSER) {
-+		int err = reserve_user_mount();
-+		if (err)
-+			return ERR_PTR(err);
-+	}
-+	mnt = alloc_vfsmnt(old->mnt_devname);
- 	if (!mnt)
--		return ERR_PTR(-ENOMEM);
-+		goto alloc_failed;
- 
- 	mnt->mnt_flags = old->mnt_flags;
- 	atomic_inc(&sb->s_active);
-@@ -274,7 +300,7 @@ static struct vfsmount *clone_mnt(struct
- 	/* don't copy the MNT_USER flag */
- 	mnt->mnt_flags &= ~MNT_USER;
- 	if (flag & CL_SETUSER)
--		set_mnt_user(mnt);
-+		__set_mnt_user(mnt);
- 
- 	if (flag & CL_SLAVE) {
- 		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
-@@ -299,6 +325,11 @@ static struct vfsmount *clone_mnt(struct
- 		spin_unlock(&vfsmount_lock);
- 	}
- 	return mnt;
-+
-+ alloc_failed:
-+	if (flag & CL_SETUSER)
++	if (mnt->mnt_flags & MNT_USER) {
++		mnt->mnt_uid = 0;
++		mnt->mnt_flags &= ~MNT_USER;
 +		dec_nr_user_mounts();
-+	return ERR_PTR(-ENOMEM);
++	}
  }
  
- static inline void __mntput(struct vfsmount *mnt)
-@@ -745,22 +776,35 @@ asmlinkage long sys_oldumount(char __use
- 
- #endif
- 
--static int mount_is_safe(struct nameidata *nd)
-+/*
-+ * Conditions for unprivileged mounts are:
-+ * - user mounts are permitted in the current mount namespace
-+ * - mountpoint is not a symlink or special file
-+ * - mountpoint is "absolutely" writable by user
-+ *  o if it's a sticky directory, it must be owned by the user
-+ *  o it must not be an append-only file/directory
-+ */
-+static int mount_is_safe(struct nameidata *nd, int *flags)
+ static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
+@@ -283,6 +305,7 @@ static inline void __mntput(struct vfsmo
  {
-+	struct inode *inode = nd->dentry->d_inode;
-+
- 	if (capable(CAP_SYS_ADMIN))
- 		return 0;
--	return -EPERM;
--#ifdef notyet
--	if (S_ISLNK(nd->dentry->d_inode->i_mode))
-+
-+	if (!(current->nsproxy->mnt_ns->flags & MNT_NS_PERMIT_USERMOUNTS))
- 		return -EPERM;
--	if (nd->dentry->d_inode->i_mode & S_ISVTX) {
--		if (current->uid != nd->dentry->d_inode->i_uid)
--			return -EPERM;
--	}
--	if (vfs_permission(nd, MAY_WRITE))
-+
-+	if (!S_ISDIR(inode->i_mode) && !S_ISREG(inode->i_mode))
-+		return -EPERM;
-+
-+	if ((inode->i_mode & S_ISVTX) && current->fsuid != inode->i_uid)
- 		return -EPERM;
-+
-+	if (vfs_permission(nd, MAY_WRITE) || IS_APPEND(inode))
-+		return -EPERM;
-+
-+	*flags |= MS_SETUSER;
- 	return 0;
--#endif
+ 	struct super_block *sb = mnt->mnt_sb;
+ 	dput(mnt->mnt_root);
++	clear_mnt_user(mnt);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
  }
+@@ -1023,6 +1046,7 @@ static int do_remount(struct nameidata *
+ 	down_write(&sb->s_umount);
+ 	err = do_remount_sb(sb, flags, data, 0);
+ 	if (!err) {
++		clear_mnt_user(nd->mnt);
+ 		nd->mnt->mnt_flags = mnt_flags;
+ 		if (flags & MS_SETUSER)
+ 			set_mnt_user(nd->mnt);
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h	2007-04-11 20:07:51.000000000 +0200
++++ linux/include/linux/fs.h	2007-04-12 13:26:42.000000000 +0200
+@@ -50,6 +50,9 @@ extern struct inodes_stat_t inodes_stat;
  
- static int lives_below_in_same_fs(struct dentry *d, struct dentry *dentry)
-@@ -981,7 +1025,7 @@ static int do_loopback(struct nameidata 
- 	int clone_flags;
- 	struct nameidata old_nd;
- 	struct vfsmount *mnt = NULL;
--	int err = mount_is_safe(nd);
-+	int err = mount_is_safe(nd, &flags);
- 	if (err)
- 		return err;
- 	if (!old_name || !*old_name)
+ extern int leases_enable, lease_break_time;
+ 
++extern int nr_user_mounts;
++extern int max_user_mounts;
++
+ #ifdef CONFIG_DNOTIFY
+ extern int dir_notify_enable;
+ #endif
 
 --
