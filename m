@@ -1,103 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751610AbXDLTP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbXDLTP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751610AbXDLTP4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 15:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXDLTP4
+	id S1751615AbXDLTP6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 15:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbXDLTP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 15:15:56 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:54606 "EHLO atlrel7.hp.com"
+	Thu, 12 Apr 2007 15:15:58 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:55871 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbXDLTPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 15:15:55 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch] EFI: warn only for pre-1.00 system tables
-Date: Thu, 12 Apr 2007 13:15:40 -0600
-User-Agent: KMail/1.9.5
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S1751623AbXDLTP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 15:15:56 -0400
+Date: Thu, 12 Apr 2007 12:15:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Cameron Schaus <cam@schaus.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20 OOM with 8Gb RAM
+Message-Id: <20070412121553.c7fd3249.akpm@linux-foundation.org>
+In-Reply-To: <20070412173830.GA31323@schaus.ca>
+References: <20070412173830.GA31323@schaus.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704121315.40754.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We used to warn unless the EFI system table major revision was exactly 1.
-But EFI 2.00 firmware is starting to appear, and the 2.00 changes don't
-affect anything in Linux.
+On Thu, 12 Apr 2007 11:38:30 -0600
+Cameron Schaus <cam@schaus.ca> wrote:
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> I am running the latest FC5-i686-smp kernel, 2.6.20, on a machine with
+> 8Gb of RAM, and 2 Xeon processors.  The system has a 750Mb ramdisk,
+> and one process allocating and deallocating memory that is also
+> writing lots of files to the ramdisk.  The process also reads and
+> writes from the network.  After the process runs for a while, the
+> linux OOM killer starts killing processes, even though there is lots
+> of memory available.
+> 
+> The system does not ordinarily use swap space, but I've added swap to
+> see if it makes a difference, but it only defers the problem.
+> 
+> The OOM dump below shows that memory in the NORMAL_ZONE is exhausted,
+> but there is still plenty of memory (6Gb+) in the HighMem Zone.  I can
+> provide .config and dmesg data if these would be helpful.
+> 
+> Why is the OOM killer being invoked when there is still memory
+> available for use?
+> 
+> java invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0
+> java invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0
+>  [<c0455f84>] out_of_memory+0x69/0x191
+>  [<c0457460>] __alloc_pages+0x220/0x2aa
+>  [<c046c80a>] cache_alloc_refill+0x26f/0x468
+>  [<c046ca76>] __kmalloc+0x73/0x7d
+>  [<c05bb4ce>] __alloc_skb+0x49/0xf7
+>  [<c05e483d>] tcp_sendmsg+0x169/0xa04
+>  [<c05fd76d>] inet_sendmsg+0x3b/0x45
+>  [<c05b57d5>] sock_aio_write+0xf9/0x105
+>  [<c0455708>] generic_file_aio_read+0x173/0x1a3
+>  [<c046fd11>] do_sync_write+0xc7/0x10a
+>  [<c04379fd>] autoremove_wake_function+0x0/0x35
+>  [<c05e413e>] tcp_ioctl+0x10a/0x115
+>  [<c05e4034>] tcp_ioctl+0x0/0x115
+>  [<c05fd406>] inet_ioctl+0x8d/0x91
+>  [<c0470564>] vfs_write+0xbc/0x154
+>  [<c0470b62>] sys_write+0x41/0x67
+>  [<c0403ef6>] sysenter_past_esp+0x5f/0x85
 
-Index: w/include/linux/efi.h
-===================================================================
---- w.orig/include/linux/efi.h	2007-04-12 13:07:13.000000000 -0600
-+++ w/include/linux/efi.h	2007-04-12 13:07:15.000000000 -0600
-@@ -213,7 +213,6 @@
- } efi_config_table_t;
- 
- #define EFI_SYSTEM_TABLE_SIGNATURE ((u64)0x5453595320494249ULL)
--#define EFI_SYSTEM_TABLE_REVISION  ((1 << 16) | 00)
- 
- typedef struct {
- 	efi_table_hdr_t hdr;
-Index: w/arch/i386/kernel/efi.c
-===================================================================
---- w.orig/arch/i386/kernel/efi.c	2007-04-12 13:07:13.000000000 -0600
-+++ w/arch/i386/kernel/efi.c	2007-04-12 13:07:15.000000000 -0600
-@@ -349,14 +349,12 @@
- 		printk(KERN_ERR PFX "Woah! Couldn't map the EFI system table.\n");
- 	if (efi.systab->hdr.signature != EFI_SYSTEM_TABLE_SIGNATURE)
- 		printk(KERN_ERR PFX "Woah! EFI system table signature incorrect\n");
--	if ((efi.systab->hdr.revision ^ EFI_SYSTEM_TABLE_REVISION) >> 16 != 0)
--		printk(KERN_ERR PFX
--		       "Warning: EFI system table major version mismatch: "
--		       "got %d.%02d, expected %d.%02d\n",
-+	if ((efi.systab->hdr.revision >> 16) == 0)
-+		printk(KERN_ERR PFX "Warning: EFI system table version "
-+		       "%d.%02d, expected 1.00 or greater\n",
- 		       efi.systab->hdr.revision >> 16,
--		       efi.systab->hdr.revision & 0xffff,
--		       EFI_SYSTEM_TABLE_REVISION >> 16,
--		       EFI_SYSTEM_TABLE_REVISION & 0xffff);
-+		       efi.systab->hdr.revision & 0xffff);
-+
- 	/*
- 	 * Grab some details from the system table
- 	 */
-Index: w/arch/ia64/kernel/efi.c
-===================================================================
---- w.orig/arch/ia64/kernel/efi.c	2007-04-12 13:07:13.000000000 -0600
-+++ w/arch/ia64/kernel/efi.c	2007-04-12 13:07:15.000000000 -0600
-@@ -448,11 +448,11 @@
- 		panic("Woah! Can't find EFI system table.\n");
- 	if (efi.systab->hdr.signature != EFI_SYSTEM_TABLE_SIGNATURE)
- 		panic("Woah! EFI system table signature incorrect\n");
--	if ((efi.systab->hdr.revision ^ EFI_SYSTEM_TABLE_REVISION) >> 16 != 0)
--		printk(KERN_WARNING "Warning: EFI system table major version mismatch: "
--		       "got %d.%02d, expected %d.%02d\n",
--		       efi.systab->hdr.revision >> 16, efi.systab->hdr.revision & 0xffff,
--		       EFI_SYSTEM_TABLE_REVISION >> 16, EFI_SYSTEM_TABLE_REVISION & 0xffff);
-+	if ((efi.systab->hdr.revision >> 16) == 0)
-+		printk(KERN_WARNING "Warning: EFI system table version "
-+		       "%d.%02d, expected 1.00 or greater\n",
-+		       efi.systab->hdr.revision >> 16,
-+		       efi.systab->hdr.revision & 0xffff);
- 
- 	config_tables = __va(efi.systab->tables);
- 
-Index: w/arch/ia64/hp/sim/boot/fw-emu.c
-===================================================================
---- w.orig/arch/ia64/hp/sim/boot/fw-emu.c	2007-04-12 13:07:13.000000000 -0600
-+++ w/arch/ia64/hp/sim/boot/fw-emu.c	2007-04-12 13:07:15.000000000 -0600
-@@ -287,7 +287,7 @@
- 
- 	memset(efi_systab, 0, sizeof(efi_systab));
- 	efi_systab->hdr.signature = EFI_SYSTEM_TABLE_SIGNATURE;
--	efi_systab->hdr.revision  = EFI_SYSTEM_TABLE_REVISION;
-+	efi_systab->hdr.revision  = ((1 << 16) | 00);
- 	efi_systab->hdr.headersize = sizeof(efi_systab->hdr);
- 	efi_systab->fw_vendor = __pa("H\0e\0w\0l\0e\0t\0t\0-\0P\0a\0c\0k\0a\0r\0d\0\0");
- 	efi_systab->fw_revision = 1;
+All of ZONE_NORMAL got used by ramdisk, and networking wants to
+allocate a page from ZONE_NORMAL.  An oom-killing is the correct
+response, although probably not effective.
+
+ramdisk is a nasty thing - cannot you use ramfs or tmpfs?
