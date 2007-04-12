@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXDLOVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbXDLOYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbXDLOVH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 10:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXDLOVH
+	id S1753878AbXDLOYq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 10:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXDLOYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 10:21:07 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:56611 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753865AbXDLOVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 10:21:05 -0400
-Date: Thu, 12 Apr 2007 18:20:23 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Thu, 12 Apr 2007 10:24:46 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:44096 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753878AbXDLOYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 10:24:46 -0400
+Date: Thu, 12 Apr 2007 15:24:30 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: Anton Vorontsov <cbou@mail.ru>
-Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
-Subject: Re: [PATCH 5/7] [RFC] ds2760 W1 slave
-Message-ID: <20070412142023.GA18134@2ka.mipt.ru>
-References: <20070411232517.GE20095@zarina> <20070412070854.GA32440@2ka.mipt.ru> <20070412140807.GA25532@zarina>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       dwmw2@infradead.org
+Message-ID: <20070412142430.GA31240@srcf.ucam.org>
+References: <20070411232503.GC20095@zarina> <20070412130817.GA29900@srcf.ucam.org> <20070412141505.GA25552@zarina>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070412140807.GA25532@zarina>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 12 Apr 2007 18:20:49 +0400 (MSD)
+In-Reply-To: <20070412141505.GA25552@zarina>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH 3/7] [RFC] Battery monitoring class
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 06:08:07PM +0400, Anton Vorontsov (cbou@mail.ru) wrote:
-> > > +int w1_ds2760_read(struct device *dev, char *buf, int addr, size_t count)
-> > > +{
-> > > +	return w1_ds2760_io(dev, buf, addr, count, 0);
-> > > +}
-> > > +
-> > > +int w1_ds2760_write(struct device *dev, char *buf, int addr, size_t count)
-> > > +{
-> > > +	return w1_ds2760_io(dev, buf, addr, count, 1);
-> > > +}
-> > 
-> > Both are exported, who use them?
+On Thu, Apr 12, 2007 at 06:15:05PM +0400, Anton Vorontsov wrote:
+> On Thu, Apr 12, 2007 at 02:08:18PM +0100, Matthew Garrett wrote:
+> > ACPI batteries can report capacity and rate in either mA or mW. Given
 > 
-> ds2760_battery driver. W1 does not have any API to "talk" to w1 slaves
-> in generic manner (at least I didn't found any).
-> So, ds2760_battery using it.
+> You sure, capacity in mA? Then I don't know. But you can safely
+> fallback and create your own attribute (just as in David's battery class,
+> where every battery required to create its own attributes), plus create
+> capacity_units attribute. So, user space will know your driver's specific
+> units.
 
-It was - bus masters were accessed through generic find_bus() via
-device/driver model, bus master has links to all devices found on
-controlled bus.
-But find_bus() was removed, so there is no such mechanism right now.
-
-I have no objections against this driver, feel free to add my ack (when
-trivialities described are resolved) or I can push w1 part myself.
+Well, mAh, but yes. Clearly it's possible to add extra attributes, but 
+speccing standard attributes that don't entirely cover the most common 
+non-embedded battery class seems less than ideal. Why not just require
+capacity_units and rate_units attributes?
 
 -- 
-	Evgeniy Polyakov
+Matthew Garrett | mjg59@srcf.ucam.org
