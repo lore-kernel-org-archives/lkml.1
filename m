@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030632AbXDLSKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXDLSTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030632AbXDLSKp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 14:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030654AbXDLSKp
+	id S1030628AbXDLSTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 14:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030657AbXDLSTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 14:10:45 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:35858 "EHLO scrub.xs4all.nl"
+	Thu, 12 Apr 2007 14:19:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56274 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030632AbXDLSKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 14:10:45 -0400
-Date: Thu, 12 Apr 2007 20:09:43 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Egmont Koblinger <egmont@uhulinux.hu>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-In-Reply-To: <20070412163650.GA19801@uhulinux.hu>
-Message-ID: <Pine.LNX.4.64.0704121958550.14457@scrub.home>
-References: <20070410094325.GB9143@uhulinux.hu> <461BB092.3070201@zytor.com>
- <20070410171924.GA18314@uhulinux.hu> <20070410183659.7341eeec@the-village.bc.nu>
- <20070411182801.GC26382@uhulinux.hu> <461D2AB8.5080902@zytor.com>
- <20070412125412.GA729@uhulinux.hu> <Pine.LNX.4.64.0704121556410.14458@scrub.home>
- <20070412145822.GA12310@uhulinux.hu> <Pine.LNX.4.64.0704121714280.14457@scrub.home>
- <20070412163650.GA19801@uhulinux.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1030628AbXDLSTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 14:19:19 -0400
+Date: Thu, 12 Apr 2007 14:18:09 -0400
+From: Dave Jones <davej@redhat.com>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>, Hugh Dickins <hugh@veritas.com>,
+       David Rientjes <rientjes@google.com>,
+       Michel Lespinasse <walken@vmware.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/4] Pte xchg optimization.patch
+Message-ID: <20070412181809.GC25646@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Zachary Amsden <zach@vmware.com>, Andrew Morton <akpm@osdl.org>,
+	Andi Kleen <ak@muc.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Chris Wright <chrisw@sous-sol.org>, Hugh Dickins <hugh@veritas.com>,
+	David Rientjes <rientjes@google.com>,
+	Michel Lespinasse <walken@vmware.com>,
+	Virtualization Mailing List <virtualization@lists.osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200704120530.l3C5UweV022834@zach-dev.vmware.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704120530.l3C5UweV022834@zach-dev.vmware.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Apr 11, 2007 at 10:30:58PM -0700, Zachary Amsden wrote:
+ > In situations where page table updates need only be made locally, and there
+ > is no cross-processor A/D bit races involved, we need not use the heavyweight
+ > xchg instruction to atomically fetch and clear page table entries.  Instead,
+ > we can just read and clear them directly.
+ > 
+ > This introduces a neat optimization for non-SMP kernels; drop the atomic
+ > xchg operations from page table updates.
 
-On Thu, 12 Apr 2007, Egmont Koblinger wrote:
+Would it be feasible to do this using the smp_alternatives stuff?
+Given many distros are now shipping SMP-only kernels, it'd be nice
+to get that win without using having to rebuild their kernels.
 
-> On Thu, Apr 12, 2007 at 05:52:49PM +0200, Roman Zippel wrote:
-> 
-> > Well, it often doesn't end there, other users may report these as bugs and 
-> > want to get them fixed, so we have to look ahead a little for possible 
-> > problems.
-> 
-> They may even report that the current behavior of not knowing anything about
-> double-width characters is wrong. If Unicode is updated and someone reports
-> the kernel code is outdated, it's going to be fairly easy to update that one
-> as well.
+	Dave
 
-As far as Unicode is concerned we could go really wild here, e.g. how do 
-we handle decomposed characters, there are also halfwidth characters...
-So the primary question is still: is this a kernel problem? The kernel 
-only implements a simple fixed char width output device. Does it really 
-make sense to pretend being able to handle characters, we can't display 
-in first place?
-
-> > It has everything to do with this. It describes the terminal capabilities, 
-> > so why should variable width support not one part of it?
-> 
-> Nice idea. Terminfo database should tell whether a particular terminal
-> supports double-width characters. Applications should expect the cursor to
-> move one or two cells depending on this. So both terminfo databases as well
-> as plenty of libraries and applications would need update.
-
-If everyone reimplements this kind of stuff, something is seriously 
-wrong...
-
-bye, Roman
+-- 
+http://www.codemonkey.org.uk
