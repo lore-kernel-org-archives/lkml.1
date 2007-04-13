@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbXDMErV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbXDMF2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751806AbXDMErV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 00:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXDMErV
+	id S1751906AbXDMF2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 01:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbXDMF23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 00:47:21 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44759 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbXDMErU (ORCPT
+	Fri, 13 Apr 2007 01:28:29 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50329 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbXDMF23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 00:47:20 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, containers@lists.osdl.org,
-       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, linuxram@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-References: <20070412164541.580374744@szeredi.hu>
-	<20070412164620.588752236@szeredi.hu>
-	<20070412203208.GG27772@sergelap.austin.ibm.com>
-Date: Thu, 12 Apr 2007 22:45:33 -0600
-In-Reply-To: <20070412203208.GG27772@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Thu, 12 Apr 2007 15:32:08 -0500")
-Message-ID: <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 13 Apr 2007 01:28:29 -0400
+Date: Fri, 13 Apr 2007 14:26:22 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH]Fix parsing kernelcore boot option for ia64
+Cc: Mel Gorman <mel@csn.ul.ie>, Linux Kernel ML <linux-kernel@vger.kernel.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070413140533.A239.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+Hello.
 
-> Quoting Miklos Szeredi (miklos@szeredi.hu):
->> From: Miklos Szeredi <mszeredi@suse.cz>
->> 
->> If CLONE_NEWNS and CLONE_NEWNS_USERMNT are given to clone(2) or
->> unshare(2), then allow user mounts within the new namespace.
->> 
->> This is not flexible enough, because user mounts can't be enabled for
->> the initial namespace.
->> 
->> The remaining clone bits also getting dangerously few...
->> 
->> Alternatives are:
->> 
->>   - prctl() flag
->>   - setting through the containers filesystem
->
-> Sorry, I know I had mentioned it, but this is definately my least
-> favorite approach.
->
-> Curious whether are any other suggestions/opinions from the containers
-> list?
+cmdline_parse_kernelcore() should return the next pointer of boot option
+like memparse() doing. If not, it is cause of eternal loop on ia64 box.
+This patch is for 2.6.21-rc6-mm1.
 
-Given the existence of shared subtrees allowing/denying this at the mount
-namespace level is silly and wrong.
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
-If we need more than just the filesystem permission checks can we
-make it a mount flag settable with mount and remount that allows
-non-privileged users the ability to create mount points under it
-in directories they have full read/write access to.
+----
 
-I don't like the use of clone flags for this purpose but in this
-case the shared subtress are a much more fundamental reasons for not
-doing this at the namespace level.
+ arch/ia64/kernel/efi.c |    2 +-
+ include/linux/mm.h     |    2 +-
+ mm/page_alloc.c        |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-Eric
+Index: current_test/arch/ia64/kernel/efi.c
+===================================================================
+--- current_test.orig/arch/ia64/kernel/efi.c	2007-04-12 17:33:28.000000000 +0900
++++ current_test/arch/ia64/kernel/efi.c	2007-04-13 12:13:21.000000000 +0900
+@@ -424,7 +424,7 @@ efi_init (void)
+ 		} else if (memcmp(cp, "max_addr=", 9) == 0) {
+ 			max_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
+ 		} else if (memcmp(cp, "kernelcore=",11) == 0) {
+-			cmdline_parse_kernelcore(cp+11);
++			cmdline_parse_kernelcore(cp+11, &cp);
+ 		} else if (memcmp(cp, "min_addr=", 9) == 0) {
+ 			min_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
+ 		} else {
+Index: current_test/mm/page_alloc.c
+===================================================================
+--- current_test.orig/mm/page_alloc.c	2007-04-12 18:25:37.000000000 +0900
++++ current_test/mm/page_alloc.c	2007-04-13 12:12:58.000000000 +0900
+@@ -3736,13 +3736,13 @@ void __init free_area_init_nodes(unsigne
+  * kernelcore=size sets the amount of memory for use for allocations that
+  * cannot be reclaimed or migrated.
+  */
+-int __init cmdline_parse_kernelcore(char *p)
++int __init cmdline_parse_kernelcore(char *p, char **retp)
+ {
+ 	unsigned long long coremem;
+ 	if (!p)
+ 		return -EINVAL;
+ 
+-	coremem = memparse(p, &p);
++	coremem = memparse(p, retp);
+ 	required_kernelcore = coremem >> PAGE_SHIFT;
+ 
+ 	/* Paranoid check that UL is enough for required_kernelcore */
+Index: current_test/include/linux/mm.h
+===================================================================
+--- current_test.orig/include/linux/mm.h	2007-04-11 14:15:33.000000000 +0900
++++ current_test/include/linux/mm.h	2007-04-13 12:12:20.000000000 +0900
+@@ -1051,7 +1051,7 @@ extern unsigned long find_max_pfn_with_a
+ extern void free_bootmem_with_active_regions(int nid,
+ 						unsigned long max_low_pfn);
+ extern void sparse_memory_present_with_active_regions(int nid);
+-extern int cmdline_parse_kernelcore(char *p);
++extern int cmdline_parse_kernelcore(char *p, char **retp);
+ #ifndef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
+ extern int early_pfn_to_nid(unsigned long pfn);
+ #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
+
+-- 
+Yasunori Goto 
+
+
