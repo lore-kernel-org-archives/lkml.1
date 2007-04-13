@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965662AbXDMW4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965668AbXDMW6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965662AbXDMW4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 18:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965668AbXDMW4o
+	id S965668AbXDMW6X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 18:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965673AbXDMW6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 18:56:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51995 "EHLO mx2.suse.de"
+	Fri, 13 Apr 2007 18:58:23 -0400
+Received: from smtp1-g19.free.fr ([212.27.42.27]:45686 "EHLO smtp1-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965662AbXDMW4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 18:56:43 -0400
-Subject: patch pci-add-debug-information-to-resource-collision-message.patch added to gregkh-2.6 tree
-To: cebbert@redhat.com, greg@kroah.com, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Fri, 13 Apr 2007 15:54:18 -0700
-In-Reply-To: <461B9E68.6040008@redhat.com>
-Message-Id: <20070413225634.B0B90D3E31B@imap.suse.de>
+	id S965668AbXDMW6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 18:58:22 -0400
+From: Duncan Sands <baldrick@free.fr>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH] usbatm_heavy_init: don't use CLONE_SIGHAND
+Date: Sat, 14 Apr 2007 00:59:23 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070412235631.GA1050@tv-sign.ru>
+In-Reply-To: <20070412235631.GA1050@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704140059.23475.baldrick@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 13 April 2007 01:56:31 Oleg Nesterov wrote:
+> usbatm_do_heavy_init() calls allow_signal() which plays with parent process's
+> ->sighand.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-This is a note to let you know that I've just added the patch titled
+Acked-by: Duncan Sands <baldrick@free.fr>
 
-     Subject: PCI: add debug information to resource collision message
-
-to my gregkh-2.6 tree.  Its filename is
-
-     pci-add-debug-information-to-resource-collision-message.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From cebbert@redhat.com Tue Apr 10 07:26:01 2007
-From: Chuck Ebbert <cebbert@redhat.com>
-Date: Tue, 10 Apr 2007 10:25:44 -0400
-Subject: PCI: add debug information to resource collision message
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@atrey.karlin.mff.cuni.cz
-Message-ID: <461B9E68.6040008@redhat.com>
-
-
-Add more information to PCI resource collision message
-to help with debugging.
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/i386/pci/i386.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- a/arch/i386/pci/i386.c
-+++ b/arch/i386/pci/i386.c
-@@ -246,8 +246,8 @@ int pcibios_enable_resources(struct pci_
- 			continue;
- 		if (!r->start && r->end) {
- 			printk(KERN_ERR "PCI: Device %s not available "
--				"because of resource collisions\n",
--				pci_name(dev));
-+				"because of resource %d collisions\n",
-+				pci_name(dev), idx);
- 			return -EINVAL;
- 		}
- 		if (r->flags & IORESOURCE_IO)
+> --- 2.6.21-rc5/drivers/usb/atm/usbatm.c~usbatm	2006-11-27 21:19:30.000000000 +0300
+> +++ 2.6.21-rc5/drivers/usb/atm/usbatm.c	2007-04-13 03:34:56.000000000 +0400
+> @@ -1019,7 +1019,7 @@ static int usbatm_do_heavy_init(void *ar
+>  
+>  static int usbatm_heavy_init(struct usbatm_data *instance)
+>  {
+> -	int ret = kernel_thread(usbatm_do_heavy_init, instance, CLONE_KERNEL);
+> +	int ret = kernel_thread(usbatm_do_heavy_init, instance, CLONE_FS | CLONE_FILES);
+>  
+>  	if (ret < 0) {
+>  		usb_err(instance, "%s: failed to create kernel_thread (%d)!\n", __func__, ret);
+> 
+> 
 
 
-Patches currently in gregkh-2.6 which might be from cebbert@redhat.com are
-
-pci/pci-add-debug-information-to-resource-collision-message.patch
