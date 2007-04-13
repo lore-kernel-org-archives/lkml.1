@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbXDMEXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555AbXDME3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751732AbXDMEXQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 00:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbXDMEXQ
+	id S1751555AbXDME3q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 00:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbXDME3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 00:23:16 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:52839 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbXDMEXP (ORCPT
+	Fri, 13 Apr 2007 00:29:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:37095 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbXDME3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 00:23:15 -0400
-Date: Fri, 13 Apr 2007 00:21:56 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: "Christopher S. Aker" <caker@theshore.net>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       "Bill Rugolsky Jr." <brugolsky@telemetry-investments.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [Feature Request?] Inline compression of process core dumps
-Message-ID: <20070413042156.GA12786@c2.user-mode-linux.org>
-References: <461E55C6.1030905@theshore.net> <20070412172845.58bfeff5@the-village.bc.nu> <20070412164251.GC11736@ti88.telemetry-investments.com> <p73ps697agf.fsf@bingen.suse.de> <461EE95A.3090600@theshore.net> <20070412193838.ea98238b.randy.dunlap@oracle.com> <461EF1A1.3070102@theshore.net>
+	Fri, 13 Apr 2007 00:29:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=N1ODpiLttNRScAsbVOAeaI8XQ3v8XPSrwAdY/x6f9cMz04AQzNBXOWWrHCFD7slF+MT+HCNDjLNcow6rEuYq4VHO9U5AfLIeu85NbG8Nni+6DUsfQylxDMIS5A9s1wHaSwgyFOOAz/wdTvakXA6PVbBH/pdySMoBHa3ekpd8X80=
+Date: Fri, 13 Apr 2007 10:01:40 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: kernel-janitors@lists.osdl.org, linux-ia64@vger.kernel.org,
+       discuss@x86-64.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de
+Subject: Re: [KJ][PATCH 02/03]ROUND_UP|DOWN macro cleanup in arch/ia64,x86_64
+Message-ID: <20070413043140.GA9431@arun.site>
+References: <20070412203140.GB9353@arun.site> <20070412211334.GA5892@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <461EF1A1.3070102@theshore.net>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070412211334.GA5892@intel.com>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 10:57:37PM -0400, Christopher S. Aker wrote:
-> The process is a UML instance (skas mode, so at least a kernel, 
-> userspace, and io thread), which will generate a single, usable, core 
-> file just fine with a non-pipe core_pattern...
+On 14:13 Thu 12 Apr     , Luck, Tony wrote:
+> On Fri, Apr 13, 2007 at 02:01:40AM +0530, Milind Arun Choudhary wrote:
+> > -	size = ROUNDUP(size, iovp_size);
+> > +	size = ALIGN(size, iovp_size);
+> 
+> Why is "ALIGN" better than "ROUNDUP"?  I can't see any point
+> to this change.
+Its a janitorial work. I'm trying to celanup 
+all the corners where ROUNDUP/DOWN & likes are defined.
+Kernel.h currently has macros like ALIGN roundup DIV_ROUND_UP.
+in this patch series I've added ALIGN_DOWN & round_down
+[waiting for comments on the same.]
 
-Yeah, but can you get a core file without the .pid on the end?  I just
-tried, with core_pattern == core and core_uses_pid == 0, and I still
-got core.pid.
-
-I can fix this on my end - just have to kill off a bunch of things
-before aborting.
-
-				Jeff
+So as ALIGN macro does the same work as ROUNDUP,
+      is at a common place
+      & is accessible to everyone
+it should be used instead...i think
 
 -- 
-Work email - jdike at linux dot intel dot com
+Milind Arun Choudhary
