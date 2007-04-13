@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161202AbXDMXcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030369AbXDMXfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161202AbXDMXcq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161260AbXDMXcq
+	id S1030369AbXDMXfb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030891AbXDMXfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:32:46 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:60828 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161202AbXDMXcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:32:45 -0400
-Date: Fri, 13 Apr 2007 16:32:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Jason Lunz <lunz@falooley.org>, Cameron Schaus <cam@schaus.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20 OOM with 8Gb RAM
-Message-Id: <20070413163242.7d9283e1.akpm@linux-foundation.org>
-In-Reply-To: <20070413225433.GV2986@holomorphy.com>
-References: <20070412173830.GA31323@schaus.ca>
-	<20070412121553.c7fd3249.akpm@linux-foundation.org>
-	<20070413223935.GA6783@metaxa.reflex>
-	<20070413154653.21fdb914.akpm@linux-foundation.org>
-	<20070413225433.GV2986@holomorphy.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 13 Apr 2007 19:35:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46082
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1030369AbXDMXfa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 19:35:30 -0400
+Date: Fri, 13 Apr 2007 16:35:21 -0700 (PDT)
+Message-Id: <20070413.163521.45883605.davem@davemloft.net>
+To: drraid@gmail.com
+Cc: linux-kernel@vger.kernel.org, kaber@trash.net
+Subject: Re: Kernel 2.6.20.4 Unaligned address
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1f8291090704101602q41e30a7doe79f3606643b628b@mail.gmail.com>
+References: <1f8291090704101602q41e30a7doe79f3606643b628b@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007 15:54:33 -0700
-William Lee Irwin III <wli@holomorphy.com> wrote:
+From: "doctor raid" <drraid@gmail.com>
+Date: Tue, 10 Apr 2007 16:02:01 -0700
 
-> On Fri, Apr 13, 2007 at 03:46:53PM -0700, Andrew Morton wrote:
-> > It's just weird - it exploits internal knowledge of VFS behaviour, diddles
-> > with pagecache within a fake disk strategy handler, etc.
-> > Furthermore, because it pretends to be a block device, the VFS will not use
-> > highmem pages when accessing the ramdisk.  So the 8GB machine will go splat
-> > with only 800MB of ramdisk.
-> > ramfs is much cleaner and does not have that limitation.
+> [1] kernel errors reporting unaligned access of memory
+> [2]  The following two lines iterate twice a piece, about once every 2 minutes:
 > 
-> After all this time, bdevs are still lowmem etc. Crying shame.
+>       Kernel unaligned access at TPC[79c344] arpt_do_table+0x3cc/0x640
+>        Kernel unaligned access at TPC[79c33c] arpt_do_table+0x3c4/0x640
 
-One would need to hunt down every use of b_data in filesystems and switch
-them to kmap the page.
+This patch below should fix this problem.
 
-Possibly it could be done on a per-fs basis.
+Patrick I'm going to push this to Linus.  Even if it doesn't
+fix this person's problem, either both the input device loop
+and the output device loop should use the "long" casting
+optimization or both should not :-)
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/net/ipv4/netfilter/arp_tables.c b/net/ipv4/netfilter/arp_tables.c
+index 5170f5c..57b0221 100644
+--- a/net/ipv4/netfilter/arp_tables.c
++++ b/net/ipv4/netfilter/arp_tables.c
+@@ -166,13 +166,9 @@ static inline int arp_packet_match(const struct arphdr *arphdr,
+ 		return 0;
+ 	}
+ 
+-	for (i = 0, ret = 0; i < IFNAMSIZ/sizeof(unsigned long); i++) {
+-		unsigned long odev;
+-		memcpy(&odev, outdev + i*sizeof(unsigned long),
+-		       sizeof(unsigned long));
+-		ret |= (odev
+-			^ ((const unsigned long *)arpinfo->outiface)[i])
+-			& ((const unsigned long *)arpinfo->outiface_mask)[i];
++	for (i = 0, ret = 0; i < IFNAMSIZ; i++) {
++		ret |= (outdev[i] ^ arpinfo->outiface[i])
++			& arpinfo->outiface_mask[i];
+ 	}
+ 
+ 	if (FWINV(ret != 0, ARPT_INV_VIA_OUT)) {
