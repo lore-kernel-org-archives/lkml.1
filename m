@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbXDMWJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbXDMWKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbXDMWJK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 18:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXDMWJK
+	id S1754148AbXDMWKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 18:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXDMWKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 18:09:10 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:55591 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754134AbXDMWJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 18:09:08 -0400
-Date: Fri, 13 Apr 2007 15:08:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] make kthread_create() more scalable
-Message-Id: <20070413150841.a978bf4d.akpm@linux-foundation.org>
-In-Reply-To: <m1lkgwndsu.fsf@ebiederm.dsl.xmission.com>
-References: <20070413130201.GA170@tv-sign.ru>
-	<20070413143104.99a1eeb9.akpm@linux-foundation.org>
-	<m1lkgwndsu.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Apr 2007 18:10:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35320 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754148AbXDMWKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 18:10:24 -0400
+Date: Sat, 14 Apr 2007 00:10:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@nigel.suspend2.net, Jiri Slaby <jirislaby@gmail.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org
+Subject: Re: [RFD] swsusp problem: Drivers allocate much memory during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
+Message-ID: <20070413221016.GQ28264@elf.ucw.cz>
+References: <460B6E4B.3060004@gmail.com> <200704131400.12021.rjw@sisk.pl> <1176466896.7112.159.camel@nigel.suspend2.net> <200704132241.52725.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704132241.52725.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007 15:51:29 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+Hi!
 
-> Andrew Morton <akpm@linux-foundation.org> writes:
+> > > Well, it looks like someone allocated about 6000 pages after we had freed
+> > > enough memory for suspending.
+> > 
+> > We have a tunable allowance in Suspend2 for this, because fglrx
+> > allocates a lot of pages in its suspend routine if DRI is enabled. I
+> > think some other drivers do too, but fglrx is the main one I know.
 > 
-> > On Fri, 13 Apr 2007 17:02:01 +0400
-> > Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> >
-> >> If kernel_thread(kthread) succeeds, kthread() can not fail on its path to
-> >> complete(&create->started) + schedule(). After that it can't be woken because
-> >> nobody can see the new task yet. This means:
-> >> 
-> >> 	- we don't need tasklist_lock for find_task_by_pid().
-> >> 
-> >> 	- create_kthread() doesn't need to wait for create->started. Instead,
-> >> 	  kthread_create() first waits for create->created to get the result of
-> >> 	  kernel_thread(), then waits for create->started to synchronize with
-> >> 	  kthread().
-> >
-> > Why don't we need tasklist_lock for find_task_by_pid()?  I'd have though that
-> > we'd at least need rcu_read_lock(), and I'm not sure that the implicit
-> > understanding of pid-management internals here is a great idea.
+> I wasn't aware of that, thanks for the information.
 > 
-> We need rcu_read_lock().  Or else something could permute the pid hash table
-> and get us into trouble.
-> 
+> I think this means we'll probably need to add a tunable, similar to image_size,
+> that will allow the users to specify how much spare memory they want to reserve
+> for suspending (instead of the constant PAGES_FOR_IO).  IMO we can call it
+> 'spare_memory'.
 
-OK, I fixed that up.
+Just increase PAGES_FOR_IO. This should not be tunable.
 
-The next patch (make-kthread_stop-scalable) removes the find_task_by_pid()
-anyway.
+> Still, this doesn't look like a real solution, because it would require the
+> users affected by this problem to experiment with suspending in order to
+> figure out how much spare memory they will need.
 
-Our kthread creation performance will be pretty poor anyway, due to the
-need to do two (or more?) context switches.  If we ever need
-super-low-latency kernel thread creation (eg, on-demand threads for AIO)
-then that code would need to go direct to kernel_thread(), I guess.
+Exactly.
 
+> IMO to really fix the problem, we should let the drivers that need much memory
+> for suspending allocate it _before_ the memory shrinker is called.  For this
+> purpose we can use notifiers that will be called before we start the shrinking
+> of memory.  Namely, if a driver needs to allocate substantial amount
+> of memory
+
+Yes please. Using that notifier without leaking the memory will be
+"interesting" but if someone needs so much memory during suspend, let
+them eat their own complexity.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
