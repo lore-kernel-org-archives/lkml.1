@@ -1,110 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbXDMMgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbXDMMnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbXDMMgE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 08:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbXDMMgE
+	id S1753962AbXDMMnH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 08:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbXDMMnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 08:36:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34634 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753967AbXDMMgD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 08:36:03 -0400
-Date: Fri, 13 Apr 2007 13:39:15 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Christopher S. Aker" <caker@theshore.net>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Bill Rugolsky Jr." <brugolsky@telemetry-investments.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Feature Request?] Inline compression of process core dumps
-Message-ID: <20070413133915.55cbf012@the-village.bc.nu>
-In-Reply-To: <461EE95A.3090600@theshore.net>
-References: <461E55C6.1030905@theshore.net>
-	<20070412172845.58bfeff5@the-village.bc.nu>
-	<20070412164251.GC11736@ti88.telemetry-investments.com>
-	<p73ps697agf.fsf@bingen.suse.de>
-	<461EE95A.3090600@theshore.net>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Fri, 13 Apr 2007 08:43:07 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60693 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753962AbXDMMnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 08:43:04 -0400
+Date: Fri, 13 Apr 2007 14:43:03 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] generic rwsems
+Message-ID: <20070413124303.GD966@wotan.suse.de>
+References: <20070413100416.GC31487@wotan.suse.de> <25821.1176466182@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <25821.1176466182@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Looking at the code, it seems to me that format_corename() is appending 
-> .pid, regardless if !core_uses_pid and corename[0]=='|', in which case 
-> it creates an invalid path for call_usermodehelper_pipe().
+David, you keep saying the same things and don't listen to me.
+
+On Fri, Apr 13, 2007 at 01:09:42PM +0100, David Howells wrote:
+> Nick Piggin <npiggin@suse.de> wrote:
 > 
-> Bug in the code, or bug in my methods?
+> > This patch converts all architectures to a generic rwsem implementation,
+> > which will compile down to the same code for i386, or powerpc, for
+> > example,
+> 
+> > and will allow some (eg. x86-64) to move away from spinlock based rwsems.
+> 
+> Which are better on UP kernels because spinlocks degrade to nothing, and then
+> you're left with a single disable/enable interrupt pair per operation, and no
+> requirement for atomic ops at all.
 
-This looks somewhat better and might do the trick. Also fixes a very very
-obscure security corner case. If you change core pattern to start with
-the program name then the user can run a program called "|myevilhack" as
-it stands. The patch checks for "|" in the pattern not the output and
-doesn't nail a pid on to a piped name.
+On UP, if an IRQ disable/enable pair operation is _faster_ than the atomic
+op, then the architecture can and should impelemnt atomic ops on UP by
+doing exactly that.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.21-rc6-mm1/fs/exec.c linux-2.6.21-rc6-mm1/fs/exec.c
---- linux.vanilla-2.6.21-rc6-mm1/fs/exec.c	2007-04-12 14:15:05.000000000 +0100
-+++ linux-2.6.21-rc6-mm1/fs/exec.c	2007-04-13 13:11:20.709835952 +0100
-@@ -1265,13 +1265,17 @@
-  * name into corename, which must have space for at least
-  * CORENAME_MAX_SIZE bytes plus one byte for the zero terminator.
-  */
--static void format_corename(char *corename, const char *pattern, long signr)
-+static int format_corename(char *corename, const char *pattern, long signr)
- {
- 	const char *pat_ptr = pattern;
- 	char *out_ptr = corename;
- 	char *const out_end = corename + CORENAME_MAX_SIZE;
- 	int rc;
- 	int pid_in_pattern = 0;
-+	int ispipe = 0;
-+	
-+	if (*pattern == '|')
-+		ispipe = 1;
- 
- 	/* Repeat as long as we have more pattern to process and more output
- 	   space */
-@@ -1362,8 +1366,8 @@
- 	 *
- 	 * If core_pattern does not include a %p (as is the default)
- 	 * and core_uses_pid is set, then .%pid will be appended to
--	 * the filename */
--	if (!pid_in_pattern
-+	 * the filename. Do not do this for piped commands. */
-+	if (!ispipe && !pid_in_pattern
-             && (core_uses_pid || atomic_read(&current->mm->mm_users) != 1)) {
- 		rc = snprintf(out_ptr, out_end - out_ptr,
- 			      ".%d", current->tgid);
-@@ -1371,8 +1375,9 @@
- 			goto out;
- 		out_ptr += rc;
- 	}
--      out:
-+out:
- 	*out_ptr = 0;
-+	return ispipe;
- }
- 
- static void zap_process(struct task_struct *start)
-@@ -1523,16 +1528,15 @@
- 	 * uses lock_kernel()
- 	 */
-  	lock_kernel();
--	format_corename(corename, core_pattern, signr);
-+	ispipe = format_corename(corename, core_pattern, signr);
- 	unlock_kernel();
-- 	if (corename[0] == '|') {
-+ 	if (ispipe) {
- 		/* SIGPIPE can happen, but it's just never processed */
-  		if(call_usermodehelper_pipe(corename+1, NULL, NULL, &file)) {
-  			printk(KERN_INFO "Core dump to %s pipe failed\n",
- 			       corename);
-  			goto fail_unlock;
-  		}
--		ispipe = 1;
-  	} else
-  		file = filp_open(corename,
- 				 O_CREAT | 2 | O_NOFOLLOW | O_LARGEFILE | flag,
+> What you propose may wind up with several per op because if the CPU does not
+> support atomic ops directly and cannot emulate them through other atomic ops,
+> then these have to be emulated by:
+> 
+> 	atomic_op() {
+> 		spin_lock_irqsave
+> 		do op
+> 		spin_unlock_irqrestore
+> 	}
+
+Yes, this is the case on our 2 premiere SMP powerhouse architectures,
+sparc32 and parsic.
+
+The other way happens to be better for everyone else, which is why I
+think your suggestion to instead move everyone to the spinlock version
+was weird.
+
+Finally: as I said, even for those 2 architectures, this may not be so
+bad because it is using a different spinlock for the fastpath as it is
+for the slowpath. So your uncontested, cache cold case will get a little
+slower, but the contested case could improve a lot (eg. I saw an order of
+magnitude improvement).
+
+
+> > Move to an architecture independent rwsem implementation, using the
+> > better of the two rwsem implementations
+> 
+> That's not necessarily the case, as I said above.
+> 
+> Furthermore, the spinlock implementation struct is smaller on 64-bit machines,
+> and is less prone to counter overrun on 32-bit machines.
+
+I think 64-bit machines will be happy to take the extra word it if they
+have double the single threaded performance, quadruple the parallel read
+performance, and 10 times the contested read performance.
+
+32-bit machines might indeed overflow, but if it hasn't been a problem
+for i386 or (even 64-bit) powerpc yet, is it a real worry? 
+
+
+> > Out-of-line the fastpaths, to bring rw-semaphores into line with
+> > mutexes and spinlocks WRT our icache vs function call policy.
+> 
+> That should depend on whether you optimise for space or for speed.  Function
+> calls are relatively heavyweight.
+
+This is what spinlocks and mutexes do, and they're much more common than
+rwsems. I'm just trying to make it consistent, and you can muck around
+with it all you want after that. It is actually very easy to inline
+things now, unlike before my patch.
+
+
+> Please re-inline and fix Ingo's mess if you must clean up.  Take the i386
+> version, for instance, I'd made it so that the compiler didn't know it was
+> taking a function call when it went down the slow path, thus meaning the
+> compiler didn't have to deal with that.  Furthermore, it only interpolated two
+> or three instructions into the calling code in the fastpath.  It's a real shame
+> that gcc inline asm doesn't allow you to use status flags as boolean returns,
+> otherwise I could reduce that even further.
+
+I cleaned it.
+
+
+> > Spinlock based rwsems are inferior to atomic based ones one most
+> > architectures that can do atomic ops without spinlocks:
+> 
+> Note the "most" in your statement...
+> 
+> Think about it.  This algorithm is only optimal where XADD is available.  If
+> you don't have XADD, but you do have LL/SC or CMPXCHG, you can do better.
+
+You keep saying this too, and I have thought about it but I couldn't think
+of a much better way. I'm not saying you're wrong, but why don't you just
+tell me what that better way is?
+
+
+> If the only atomic op you have is XCHG, then this is a really poor choice;
+
+What is better? spinlocks? I think that considering only 2 dead archs
+really care at this stage, and I have good reason to believe that the
+contested case will be impreoved, then why don't you come up with some
+numbers to prove me wrong?
+
+
+> similarly if you are using a UP-compiled kernel.
+
+Then your UP-compiled kernel's atomic ops are suboptimal, not the rwsem
+implementation.
+
+Anyway, thanks for taking the time again. If you would please address each
+of my points, then we might finally be able to stop having this discussion
+every 6 months ;)
+
+Nick
+
