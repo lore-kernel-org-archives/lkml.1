@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030778AbXDMVgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030811AbXDMVi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030778AbXDMVgO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 17:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030817AbXDMVgO
+	id S1030811AbXDMVi1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030812AbXDMVi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 17:36:14 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:38066
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030812AbXDMVgN (ORCPT
+	Fri, 13 Apr 2007 17:38:27 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42648 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030811AbXDMVi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 17:36:13 -0400
-Date: Fri, 13 Apr 2007 14:35:48 -0700
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070413213548.GA15279@gnuppy.monkey.org>
-References: <20070413202100.GA9957@elte.hu> <20070413202745.GA17993@gnuppy.monkey.org> <20070413205545.GA18032@elte.hu> <20070413212110.GU2986@holomorphy.com>
+	Fri, 13 Apr 2007 17:38:26 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] change kernel threads to ignore signals instead of blocking them
+References: <20070413073116.GA1540@tv-sign.ru>
+	<m1bqhspdkj.fsf@ebiederm.dsl.xmission.com>
+	<20070413140802.3798a6bc.akpm@linux-foundation.org>
+Date: Fri, 13 Apr 2007 15:36:52 -0600
+In-Reply-To: <20070413140802.3798a6bc.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 13 Apr 2007 14:08:02 -0700")
+Message-ID: <m1ps68neh7.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070413212110.GU2986@holomorphy.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 02:21:10PM -0700, William Lee Irwin III wrote:
-> On Fri, Apr 13, 2007 at 10:55:45PM +0200, Ingo Molnar wrote:
-> > Yeah. Note that there are some subtle but crutial differences between 
-> > PlugSched (which Con used, and which i opposed in the past) and this 
-> > approach.
-> > PlugSched cuts the interfaces at a high level in a monolithic way and 
-> > introduces kernel/scheduler.c that uses one pluggable scheduler 
-> > (represented via the 'scheduler' global template) at a time.
-> 
-> What I originally did did so for a good reason, which was that it was
-> intended to support far more radical reorganizations, for instance,
-> things that changed the per-cpu runqueue affairs for gang scheduling.
-> I wrote a top-level driver that did support scheduling classes in a
-> similar fashion, though it didn't survive others maintaining the patches.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Also, gang scheduling is needed to solve virtualization issues regarding
-spinlocks in a guest image. You could potentally be spinning on a thread
-that isn't currently running which, needless to say, is very bad.
+> jffs2 actually wants its head examined.  W. T. F. does it think it's
+> doing in there?
 
-bill
+Good question, especially with respect to SIGHUP.
 
+It is on my short list of very annoying kernel threads...
+
+NFS and a few kernel threads others currently need a way to abort an
+interruptible sleep when the are terminated.  Which has been a pain
+finding a simple way to allow that without too much trouble.
+
+I'm within about a day of having everything converted over to
+kthreads, allowing me to kill daemonize.  Hopefully things I don't run
+into any serious snags in testing...
+
+Eric
