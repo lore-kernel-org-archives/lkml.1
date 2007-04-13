@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030891AbXDMXgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXDMXkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030891AbXDMXgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030895AbXDMXgW
+	id S1030323AbXDMXkY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030455AbXDMXkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:36:22 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37655 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030891AbXDMXgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:36:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] make kthread_create() more scalable
-References: <20070413130201.GA170@tv-sign.ru>
-Date: Fri, 13 Apr 2007 17:34:46 -0600
-In-Reply-To: <20070413130201.GA170@tv-sign.ru> (Oleg Nesterov's message of
-	"Fri, 13 Apr 2007 17:02:01 +0400")
-Message-ID: <m18xcvonl5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 13 Apr 2007 19:40:24 -0400
+Received: from holomorphy.com ([66.93.40.71]:53318 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030323AbXDMXkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 19:40:23 -0400
+Date: Fri, 13 Apr 2007 16:40:10 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Lunz <lunz@falooley.org>, Cameron Schaus <cam@schaus.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20 OOM with 8Gb RAM
+Message-ID: <20070413234010.GX2986@holomorphy.com>
+References: <20070412173830.GA31323@schaus.ca> <20070412121553.c7fd3249.akpm@linux-foundation.org> <20070413223935.GA6783@metaxa.reflex> <20070413154653.21fdb914.akpm@linux-foundation.org> <20070413225433.GV2986@holomorphy.com> <20070413163242.7d9283e1.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070413163242.7d9283e1.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Fri, 13 Apr 2007 15:54:33 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
+>> After all this time, bdevs are still lowmem etc. Crying shame.
 
-> If kernel_thread(kthread) succeeds, kthread() can not fail on its path to
-> complete(&create->started) + schedule(). After that it can't be woken because
-> nobody can see the new task yet. This means:
->
-> 	- we don't need tasklist_lock for find_task_by_pid().
+On Fri, Apr 13, 2007 at 04:32:42PM -0700, Andrew Morton wrote:
+> One would need to hunt down every use of b_data in filesystems and switch
+> them to kmap the page.
+> Possibly it could be done on a per-fs basis.
 
-Well we do need rcu_read_lock();
-But if we are going to wait until the thread has run we can just pass
-back current.
-
-> 	- create_kthread() doesn't need to wait for create->started. Instead,
-> 	  kthread_create() first waits for create->created to get the result of
-> 	  kernel_thread(), then waits for create->started to synchronize with
-> 	  kthread().
-
-We can do even better.  We only need a single completion. 
-If it was an error create_create can complete it.
-Otherwise kthread() can complete it.
-
-Patch in a bit as soon as I finish testing...
+Queued right behind a dozen other massive sweeps for me to do.
 
 
-Eric
+-- wli
