@@ -1,144 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbXDMMnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbXDMMok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962AbXDMMnH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 08:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbXDMMnH
+	id S1753971AbXDMMok (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 08:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXDMMok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 08:43:07 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60693 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753962AbXDMMnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 08:43:04 -0400
-Date: Fri, 13 Apr 2007 14:43:03 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] generic rwsems
-Message-ID: <20070413124303.GD966@wotan.suse.de>
-References: <20070413100416.GC31487@wotan.suse.de> <25821.1176466182@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <25821.1176466182@redhat.com>
-User-Agent: Mutt/1.5.9i
+	Fri, 13 Apr 2007 08:44:40 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:52275 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbXDMMoj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 08:44:39 -0400
+X-AuditID: d80ac287-9ff42bb000002c59-19-461f7b360261 
+Date: Fri, 13 Apr 2007 13:43:39 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Francesco Ricci <francesco.ricci@rcm.inet.it>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: kernel BUG at mm/rmap.c:522!
+In-Reply-To: <fc.000f4a4a07756028000f4a4a07756028.7756a2e@rcm.inet.it>
+Message-ID: <Pine.LNX.4.64.0704131308370.21507@blonde.wat.veritas.com>
+References: <fc.000f4a4a07756028000f4a4a07756028.7756a2e@rcm.inet.it>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 13 Apr 2007 12:43:42.0250 (UTC) FILETIME=[5E02F8A0:01C77DC9]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David, you keep saying the same things and don't listen to me.
-
-On Fri, Apr 13, 2007 at 01:09:42PM +0100, David Howells wrote:
-> Nick Piggin <npiggin@suse.de> wrote:
+On Fri, 13 Apr 2007, Francesco Ricci wrote:
 > 
-> > This patch converts all architectures to a generic rwsem implementation,
-> > which will compile down to the same code for i386, or powerpc, for
-> > example,
+> [7.7.] Other information that might be relevant to the problem
+>        (please look in /proc and include all information that you
+>        think to be relevant):
+
+Thanks for your report, and for your patience in supplying all that
+scarcely relevant info you were asked for.
+
 > 
-> > and will allow some (eg. x86-64) to move away from spinlock based rwsems.
-> 
-> Which are better on UP kernels because spinlocks degrade to nothing, and then
-> you're left with a single disable/enable interrupt pair per operation, and no
-> requirement for atomic ops at all.
+> from dmesg:
+> Apr 13 11:31:35 localhost kernel: Bad pte = 461b43d4, process = ???,
+> vm_flags = 75, vaddr = b7868000
 
-On UP, if an IRQ disable/enable pair operation is _faster_ than the atomic
-op, then the architecture can and should impelemnt atomic ops on UP by
-doing exactly that.
+Oh dear, one of your page tables has got corrupted, the page table
+entry for virtual address b7868000 contains 461b43d4 - nonsense.
 
+> Apr 13 11:31:35 localhost kernel:  [<c014b0ea>] vm_normal_page+0x3e/0x53
+> Apr 13 11:31:35 localhost kernel:  [<c014b6fa>] unmap_vmas+0x183/0x4af
+> Apr 13 11:31:35 localhost kernel:  [<c014de31>] exit_mmap+0x6a/0xd7
+> Apr 13 11:31:35 localhost kernel:  [<c011b217>] mmput+0x20/0x76
+> Apr 13 11:31:35 localhost kernel:  [<c011fa05>] do_exit+0x193/0x71b
+> Apr 13 11:31:35 localhost kernel:  [<c0120003>] sys_exit_group+0x0/0xd
+> Apr 13 11:31:35 localhost kernel:  [<c0127a6d>]
+> get_signal_to_deliver+0x395/0x3bc
+> Apr 13 11:31:35 localhost kernel:  [<c01023a6>] do_notify_resume+0x71/0x5d7
+> Apr 13 11:31:35 localhost kernel:  [<c0117778>]
+> default_wake_function+0x0/0xc
+> Apr 13 11:31:35 localhost kernel:  [<c0124657>] do_gettimeofday+0x31/0xce
+> Apr 13 11:31:35 localhost kernel:  [<c0131ffc>] sys_futex+0xdc/0xf1
+> Apr 13 11:31:35 localhost kernel:  [<c0102d0a>] work_notifysig+0x13/0x19
+> Apr 13 11:31:35 localhost kernel: ------------[ cut here ]------------
+> Apr 13 11:31:35 localhost kernel: kernel BUG at mm/rmap.c:522!
+> Apr 13 11:31:35 localhost kernel: invalid opcode: 0000 [#1]
+> Apr 13 11:31:35 localhost kernel: SMP 
+> Apr 13 11:31:35 localhost kernel: Modules linked in: smbfs ext3 jbd
+> mbcache mga drm ppdev lp button ac battery ipv6 fuse dm_snapshot dm_mirror
+> dm_mod loop tsdev snd_via82xx gameport snd_ac97_codec snd_ac97_bus
+> snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc snd_mpu401_uart
+> snd_seq_dummy snd_seq_oss snd_seq_midi snd_seq_midi_event snd_seq
+> i2c_viapro i2c_core snd_timer snd_rawmidi snd_seq_device via_agp
+> parport_pc parport via_ircc psmouse serio_raw floppy snd soundcore pcspkr
+> rtc agpgart shpchp pci_hotplug irda crc_ccitt evdev reiserfs ide_cd cdrom
+> ide_disk generic via_rhine mii ehci_hcd uhci_hcd via82cxxx ide_core
+> usbcore thermal processor fan
+> Apr 13 11:31:35 localhost kernel: CPU:    0
+> Apr 13 11:31:35 localhost kernel: EIP:    0060:[<c01506c9>]    Not tainted
+> VLI
+> Apr 13 11:31:35 localhost kernel: EFLAGS: 00210286   (2.6.18-4-686 #1) 
+> Apr 13 11:31:35 localhost kernel: EIP is at page_remove_rmap+0x14/0x2d
+> Apr 13 11:31:35 localhost kernel: eax: ffffffff   ebx: c1000000   ecx:
+> c1000000   edx: 00000000
+> Apr 13 11:31:35 localhost kernel: esi: b7869000   edi: 00000000   ebp:
+> d08011a4   esp: c9be9e14
+> Apr 13 11:31:35 localhost kernel: ds: 007b   es: 007b   ss: 0068
+> Apr 13 11:31:35 localhost kernel: Process iceape-bin (pid: 20500,
+> ti=c9be8000 task=c2128aa0 task.ti=c9be8000)
+> Apr 13 11:31:35 localhost kernel: Stack: c014b7d5 00000000 df10d278
+> c9be9e7c 00000000 00000001 b7884000 c4bc7b78 
+> Apr 13 11:31:35 localhost kernel:        e80fbe40 c16058a0 00000000
+> ffffffe2 c121002c c4bc7b78 0011ed07 b7884000 
+> Apr 13 11:31:35 localhost kernel:        00000000 c9be9e7c df4c7710
+> e80fbe40 c9be9eb8 c014de31 ffffffff c9be9e78 
 
-> What you propose may wind up with several per op because if the CPU does not
-> support atomic ops directly and cannot emulate them through other atomic ops,
-> then these have to be emulated by:
-> 
-> 	atomic_op() {
-> 		spin_lock_irqsave
-> 		do op
-> 		spin_unlock_irqrestore
-> 	}
+And the next page table entry, for virtual address b7869000, has also
+got corrupted: I'm rather guessing, but I believe the c1000000 implies
+it's looking at pfn 0, so the page table entry in question would be
+that 00000001 seen on the stack (1 for present).
 
-Yes, this is the case on our 2 premiere SMP powerhouse architectures,
-sparc32 and parsic.
+That by itself would suggest a single-bit error, which would point
+you to running memtest86 overnight to check your RAM.  Worth a try.
 
-The other way happens to be better for everyone else, which is why I
-think your suggestion to instead move everyone to the spinlock version
-was weird.
+But the 461b43d4 before it suggests corruption from elsewhere in
+the kernel: sorry, I've no clue on that.  Just wait and see if this
+happens again, and whether a pattern emerges - unless someone else
+can suggest something better.
 
-Finally: as I said, even for those 2 architectures, this may not be so
-bad because it is using a different spinlock for the fastpath as it is
-for the slowpath. So your uncontested, cache cold case will get a little
-slower, but the contested case could improve a lot (eg. I saw an order of
-magnitude improvement).
+Hugh
 
-
-> > Move to an architecture independent rwsem implementation, using the
-> > better of the two rwsem implementations
-> 
-> That's not necessarily the case, as I said above.
-> 
-> Furthermore, the spinlock implementation struct is smaller on 64-bit machines,
-> and is less prone to counter overrun on 32-bit machines.
-
-I think 64-bit machines will be happy to take the extra word it if they
-have double the single threaded performance, quadruple the parallel read
-performance, and 10 times the contested read performance.
-
-32-bit machines might indeed overflow, but if it hasn't been a problem
-for i386 or (even 64-bit) powerpc yet, is it a real worry? 
-
-
-> > Out-of-line the fastpaths, to bring rw-semaphores into line with
-> > mutexes and spinlocks WRT our icache vs function call policy.
-> 
-> That should depend on whether you optimise for space or for speed.  Function
-> calls are relatively heavyweight.
-
-This is what spinlocks and mutexes do, and they're much more common than
-rwsems. I'm just trying to make it consistent, and you can muck around
-with it all you want after that. It is actually very easy to inline
-things now, unlike before my patch.
-
-
-> Please re-inline and fix Ingo's mess if you must clean up.  Take the i386
-> version, for instance, I'd made it so that the compiler didn't know it was
-> taking a function call when it went down the slow path, thus meaning the
-> compiler didn't have to deal with that.  Furthermore, it only interpolated two
-> or three instructions into the calling code in the fastpath.  It's a real shame
-> that gcc inline asm doesn't allow you to use status flags as boolean returns,
-> otherwise I could reduce that even further.
-
-I cleaned it.
-
-
-> > Spinlock based rwsems are inferior to atomic based ones one most
-> > architectures that can do atomic ops without spinlocks:
-> 
-> Note the "most" in your statement...
-> 
-> Think about it.  This algorithm is only optimal where XADD is available.  If
-> you don't have XADD, but you do have LL/SC or CMPXCHG, you can do better.
-
-You keep saying this too, and I have thought about it but I couldn't think
-of a much better way. I'm not saying you're wrong, but why don't you just
-tell me what that better way is?
-
-
-> If the only atomic op you have is XCHG, then this is a really poor choice;
-
-What is better? spinlocks? I think that considering only 2 dead archs
-really care at this stage, and I have good reason to believe that the
-contested case will be impreoved, then why don't you come up with some
-numbers to prove me wrong?
-
-
-> similarly if you are using a UP-compiled kernel.
-
-Then your UP-compiled kernel's atomic ops are suboptimal, not the rwsem
-implementation.
-
-Anyway, thanks for taking the time again. If you would please address each
-of my points, then we might finally be able to stop having this discussion
-every 6 months ;)
-
-Nick
-
+> Apr 13 11:31:35 localhost kernel: Call Trace:
+> Apr 13 11:31:35 localhost kernel:  [<c014b7d5>] unmap_vmas+0x25e/0x4af
+> Apr 13 11:31:35 localhost kernel:  [<c014de31>] exit_mmap+0x6a/0xd7
+> Apr 13 11:31:35 localhost kernel:  [<c011b217>] mmput+0x20/0x76
+> Apr 13 11:31:35 localhost kernel:  [<c011fa05>] do_exit+0x193/0x71b
+> Apr 13 11:31:35 localhost kernel:  [<c0120003>] sys_exit_group+0x0/0xd
+> Apr 13 11:31:35 localhost kernel:  [<c0127a6d>]
+> get_signal_to_deliver+0x395/0x3bc
+> Apr 13 11:31:35 localhost kernel:  [<c01023a6>] do_notify_resume+0x71/0x5d7
+> Apr 13 11:31:35 localhost kernel:  [<c0117778>]
+> default_wake_function+0x0/0xc
+> Apr 13 11:31:35 localhost kernel:  [<c0124657>] do_gettimeofday+0x31/0xce
+> Apr 13 11:31:35 localhost kernel:  [<c0131ffc>] sys_futex+0xdc/0xf1
+> Apr 13 11:31:35 localhost kernel:  [<c0102d0a>] work_notifysig+0x13/0x19
+> Apr 13 11:31:35 localhost kernel: Code: ff ff 85 c0 89 c6 75 c9 b0 01 86
+> 43 28 83 c4 20 89 e8 5b 5e 5f 5d c3 89 c1 90 83 40 08 ff 0f 98 c0 84 c0 74
+> 1e 8b 41 08 40 79 08 <0f> 0b 0a 02 40 ab 29 c0 8b 51 10 89 c8 83 f2 01 83
+> e2 01 e9 97 
+> Apr 13 11:31:35 localhost kernel: EIP: [<c01506c9>]
+> page_remove_rmap+0x14/0x2d SS:ESP 0068:c9be9e14
+> Apr 13 11:31:35 localhost kernel:  <1>Fixing recursive fault but reboot is
+> needed!
