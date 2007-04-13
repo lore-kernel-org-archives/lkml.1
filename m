@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751709AbXDMCps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbXDMCu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751709AbXDMCps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 22:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXDMCpr
+	id S1752984AbXDMCu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 22:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbXDMCu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 22:45:47 -0400
-Received: from [69.90.0.18] ([69.90.0.18]:38111 "EHLO mtl.rackplans.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbXDMCpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 22:45:47 -0400
-Date: Thu, 12 Apr 2007 22:45:44 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Roland Dreier <rdreier@cisco.com>
-cc: Benny Amorsen <benny+usenet@amorsen.dk>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <adabqhtip2n.fsf@cisco.com>
-Message-ID: <Pine.LNX.4.64.0704122243280.9866@mtl.rackplans.net>
-References: <1175644642.10567.31.camel@shinybook.infradead.org>
- <20070403221002.GA13210@cynthia.pants.nu> <1175648051.10567.61.camel@shinybook.infradead.org>
- <20070403.181645.68159458.davem@davemloft.net> <20070404022828.5c9b97f3@the-village.bc.nu>
- <Pine.LNX.4.64.0704032307001.7802@mtl.rackplans.net> <m3tzvm6fgw.fsf@ursa.amorsen.dk>
- <adabqhtip2n.fsf@cisco.com>
+	Thu, 12 Apr 2007 22:50:28 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:34611 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752914AbXDMCu1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 22:50:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=U7Z1tXvnu7pILMXBjNrncFEB0iTIQIo6oNPBf6dPfFbPuQY0vHi2xwhMjlytySWSXVwgYea+3jR7CcUa0VpJiBm8E7ZSWoEec/+XvLa+sY2Jk8aIJk21A/GiDn+UusAHzih6SQ4REknBiKjaRX11zq6f27bPPJ2vSZBntHlSPjI=  ;
+X-YMail-OSG: yp2KWSQVM1lfBQcHSRtbBh2o1rSgWTaaI.ElS3w1vUgQWe2QLZrPtOWSPk3SHPBIDUF3IpjeOA--
+Message-ID: <461EEFEC.2010205@yahoo.com.au>
+Date: Fri, 13 Apr 2007 12:50:20 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: William Lee Irwin III <wli@holomorphy.com>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
+References: <1.486631555@selenic.com>	<20070412231050.GN2986@holomorphy.com>	<20070412163235.dd030637.akpm@linux-foundation.org>	<461ECB9C.8060000@yahoo.com.au>	<20070412174201.065068b2.akpm@linux-foundation.org>	<461ED96C.5030606@yahoo.com.au>	<20070412182213.a18cc4a7.akpm@linux-foundation.org>	<461EE005.6070605@yahoo.com.au>	<20070412185723.5a5f0443.akpm@linux-foundation.org>	<461EE890.2040601@yahoo.com.au> <20070412193255.62a0b8ed.akpm@linux-foundation.org>
+In-Reply-To: <20070412193255.62a0b8ed.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes it's not the speed it's the cost.. The best I've ever done is 
-5.5 interfaces per u/ Although with a better motherboard and case it might 
-have been different.
-
-http://innerfire.net/pics/projects/21portfirewall_2.jpg
-(assigns each port it's ip range and blocks any address not assigned to 
-that port)
-
-
-On Thu, 12 Apr 2007, Roland Dreier wrote:
-
-> Date: Thu, 12 Apr 2007 08:34:40 -0700
-> From: Roland Dreier <rdreier@cisco.com>
-> To: Benny Amorsen <benny+usenet@amorsen.dk>
-> Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Andrew Morton wrote:
+> On Fri, 13 Apr 2007 12:18:56 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
->  > Indeed, port density is disappointingly poor in modern servers. Do you
->  > know any with more than 14 ports per U? (That's an MBX 1U server with
->  > 8 on-board and a 6-port expansion).
 > 
-> If you really need a ton of ports you could probably build a 1U server
-> with 2 * 2-port 10gig NICs, and use VLAN-capable switches with 10gig
-> and 1gig ports to fan out each 10gig link from your server to 10 1-gig
-> ports.  That would get you 40 ports of 1-gig from each server (plus
-> whatever the server has on board).
+>>>I guess one could generate an answer to the static question with systemtap,
+>>>by accumulating running counts across the application lifetime and then
+>>>snapshotting them.  Sounds hard though.
+>>
+>>Can't you just traverse arbitrary kernel data structures at a given point
+>>in time, exactly like the /proc/ call is doing?
 > 
->  - R.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 > 
+> Do a full pagetable walk, with all the associated locking from within
+> a systemtap script?  I'd be surprised.  Maybe if it's mostly hand-coded
+> in C, perhaps.
 
---
-Gerhard Mack
+It looks like you can traverse arbitrary data structures, yes.
 
-gmack@innerfire.net
+It definitely seems like you can use some kernel functions, but the
+ones I saw may just be systemtap facilities. But what is so surprising
+about being able to call a kernel function when running in kernel
+context? Perhaps there is some fundamental limitation of kprobes that
+I don't understand.
 
-<>< As a computer I find your faith in technology amusing.
+>  Then you just end up with the same thing, don't you?
+
+Well _you_ do, because that happens to be exactly what you want. Bill
+ends up with something that displays page_mapcount instead. And I
+end up with something that traverses LRU lists rather than pfns. And
+none of it goes in /proc/ or linux-2.6/.
+
+So it isn't really the same thing at all.
+
+-- 
+SUSE Labs, Novell Inc.
