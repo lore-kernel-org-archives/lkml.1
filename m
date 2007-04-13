@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbXDMTcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXDMTd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbXDMTcF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 15:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXDMTcF
+	id S932409AbXDMTd4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 15:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932431AbXDMTd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 15:32:05 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56760 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932195AbXDMTcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 15:32:04 -0400
-Date: Fri, 13 Apr 2007 21:32:50 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: make clean for DocBook
-Message-ID: <20070413193250.GA15361@uranus.ravnborg.org>
-References: <20070413090658.b4c4bc8f.randy.dunlap@oracle.com> <20070413164142.GA14706@uranus.ravnborg.org> <20070413112316.44141d34.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Apr 2007 15:33:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:14232 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932409AbXDMTdz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 15:33:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ZhXvi7OfvIaHZjqxgKlaIoy4zsoBq4MgHefDZm3zjG7EhJFnwe5EnmDKA28/mwL29ow8j0Zs9OYWEnbjQcYpaYylweAnjt4vE0vqKmGq2+wZyQZ0/CTlCXLUNk4dipPVBDR9JXU0slAH0lGb8/kV7h/JWXGRlwBYJ4HbaIMw49Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+Date: Fri, 13 Apr 2007 21:42:29 +0200
+User-Agent: KMail/1.9.6
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+References: <461D4E2C.6000704@redhat.com> <Pine.LNX.4.61.0704112347230.20436@yvahk01.tjqt.qr> <461D5C24.9080506@redhat.com>
+In-Reply-To: <461D5C24.9080506@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070413112316.44141d34.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200704132142.29582.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 12 April 2007, Chuck Ebbert wrote:
+> Jan Engelhardt wrote:
+> > On Apr 11 2007 17:35, Chuck Ebbert wrote:
+> >> Jan Engelhardt wrote:
+> >>> On Apr 11 2007 17:07, Chuck Ebbert wrote:
+> >>>> When I reboot my notebook, it powers off and powers back on.
+> >>>> On poweroff a loud snapping noise seems to be coming from the
+> >>>> hard drive. Today I noticed there is no "shutdown: hda" on
+> >>>> the console when I reboot. Whne I do a normal poweroff the
+> >>>> message is displayed and there is no noise. Should the IDE
+> >>>> code be changed so it always shuts down the drive?
+> >>> What sort of notebook? What sort of harddisk?
+> >> Compaq Presario V2000 series, with a new Seagate ST9120821A
+> >> 120GB 5400RPM drive.
 > > 
+> > I specifically hoped you might have a TOSHIBA MK2003GAH,
+> > which does a hard unload when left idle for too long.
 > > 
-> > And we will visit DocBook with mrproper - but not clean.
-> > I have no stron opinion when to delete generated files in DocBook.
+> > Only on reboots huh?
+> > 
+> > What happens if you reboot another OS, freebsd f.ex.? (You can try that off
+> > CD1)
 > 
-> OK, that's fine, thanks for the info...
-> but trying 'make mrproper' gives me:
+> Now we're getting somewhere. There is some other OS on here because
+> it's required for doing BIOS updates. I booted it and shut down.
+> The power cycle count increased but the power off retract count did not.
 > 
-> make -f scripts/Makefile.clean obj=Documentation/DocBook
-> make -f scripts/Makefile.clean obj=Documentation/DocBook/man/
-> make[2]: execvp: /bin/sh: Argument list too long
-> make[2]: *** [__clean] Error 127
-> make[1]: *** [Documentation/DocBook/man/] Error 2
-> make: *** [_mrproper_Documentation/DocBook] Error 2
+> The counts are:
 > 
-> DocBook/man/ contains about 2000 files.
-> Is there some way to have scripts/Makefile.clean just do
-> 	rm -rf Documentation/DocBook/man/
-> ?  or some other solution?
+> power cycle ... 111
+> power off retract ... 92
+> 
+> The difference is now 19; it was 18 before.
 
-Something like this should do it.
-This deletes the man/ directory entirely so
-I have to do that when I check in the patch.
+Is the noise present if you reboot the other OS?
+Does it result in Power-Off_Retract count increase?
 
-Let me know if this works for you.
-
-	Sam
-
-diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
-index 867608a..960f402 100644
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -152,6 +152,7 @@ quiet_cmd_db2man = MAN     $@
- 	@(which xmlto > /dev/null 2>&1) || \
- 	 (echo "*** You need to install xmlto ***"; \
- 	  exit 1)
-+	$(Q)mkdir -p $(obj)/man
- 	$(call cmd,db2man)
- 	@touch $@
- 
-@@ -212,11 +213,7 @@ clean-files := $(DOCBOOKS) \
- 	$(patsubst %.xml, %.9,    $(DOCBOOKS)) \
- 	$(C-procfs-example)
- 
--clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS))
--
--#man put files in man subdir - traverse down
--subdir- := man/
--
-+clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS)) man
- 
- # Declare the contents of the .PHONY variable as phony.  We keep that
- # information in a variable se we can use it in if_changed and friends.
-diff --git a/Documentation/DocBook/man/Makefile b/Documentation/DocBook/man/Makefile
-deleted file mode 100644
-index 4fb7ea0..0000000
---- a/Documentation/DocBook/man/Makefile
-+++ /dev/null
-@@ -1,3 +0,0 @@
--# Rules are put in Documentation/DocBook
--
--clean-files := *.9.gz *.sgml manpage.links manpage.refs
-
+Bart
