@@ -1,68 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXDMSzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXDMTE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbXDMSzs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 14:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbXDMSzs
+	id S1754145AbXDMTE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 15:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbXDMTE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 14:55:48 -0400
-Received: from waste.org ([66.93.16.53]:48938 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754132AbXDMSzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 14:55:47 -0400
-Date: Fri, 13 Apr 2007 13:42:34 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Tim Yamin <plasmaroo@gentoo.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH UPDATE] deflate stack usage in lib/inflate.c
-Message-ID: <20070413184234.GB11166@waste.org>
-References: <461DED14.1070603@goop.org> <461E9BAD.8050202@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <461E9BAD.8050202@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 13 Apr 2007 15:04:59 -0400
+Received: from www.osadl.org ([213.239.205.134]:42238 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754145AbXDMTE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 15:04:58 -0400
+Subject: [PATCH] highres/dyntick: prevent xtime lock contention
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Darren Hart <dvhltc@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 13 Apr 2007 21:05:57 +0200
+Message-Id: <1176491157.3387.34.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 01:50:54PM -0700, Jeremy Fitzhardinge wrote:
-> Subject: deflate stack usage in lib/inflate.c
-> 
-> inflate_fixed and huft_build together use around 2.7k of stack.  When
-> using 4k stacks, I saw stack overflows from interrupts arriving while
-> unpacking the root initrd:
-> 
-> do_IRQ: stack overflow: 384
->  [<c0106b64>] show_trace_log_lvl+0x1a/0x30
->  [<c01075e6>] show_trace+0x12/0x14
->  [<c010763f>] dump_stack+0x16/0x18
->  [<c0107ca4>] do_IRQ+0x6d/0xd9
->  [<c010202b>] xen_evtchn_do_upcall+0x6e/0xa2
->  [<c0106781>] xen_hypervisor_callback+0x25/0x2c
->  [<c010116c>] xen_restore_fl+0x27/0x29
->  [<c0330f63>] _spin_unlock_irqrestore+0x4a/0x50
->  [<c0117aab>] change_page_attr+0x577/0x584
->  [<c0117b45>] kernel_map_pages+0x8d/0xb4
->  [<c016a314>] cache_alloc_refill+0x53f/0x632
->  [<c016a6c2>] __kmalloc+0xc1/0x10d
->  [<c0463d34>] malloc+0x10/0x12
->  [<c04641c1>] huft_build+0x2a7/0x5fa
->  [<c04645a5>] inflate_fixed+0x91/0x136
->  [<c04657e2>] unpack_to_rootfs+0x5f2/0x8c1
->  [<c0465acf>] populate_rootfs+0x1e/0xe4
-> 
-> (This was under Xen, but there's no reason it couldn't happen on bare
->   hardware.)
-> 
-> This patch mallocs the local variables, thereby reducing the stack
-> usage to sane levels.
-> 
-> Also, up the heap size for the kernel decompressor to deal with the
-> extra allocation.
+While the !highres/!dyntick code assigns the duty of the do_timer() call
+to one specific CPU, this was dropped in the highres/dyntick part during
+development.
 
-Lost the non-x86 bits again.
+Steven Rostedt discovered the xtime lock contention on highres/dyntick
+due to several CPUs trying to update jiffies.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Add the single CPU assignement back. In the dyntick case this needs to
+be handled carefully, as the CPU which has the do_timer() duty must drop
+the assignement and let it be grabbed by another CPU, which is active.
+Otherwise the do_timer() calls would not happen during the long sleep.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+index bfda3f7..a96ec9a 100644
+--- a/kernel/time/tick-common.c
++++ b/kernel/time/tick-common.c
+@@ -31,7 +31,7 @@ DEFINE_PER_CPU(struct tick_device, tick_cpu_device);
+  */
+ ktime_t tick_next_period;
+ ktime_t tick_period;
+-static int tick_do_timer_cpu = -1;
++int tick_do_timer_cpu __read_mostly = -1;
+ DEFINE_SPINLOCK(tick_device_lock);
+ 
+ /*
+@@ -295,6 +295,12 @@ static void tick_shutdown(unsigned int *cpup)
+ 		clockevents_exchange_device(dev, NULL);
+ 		td->evtdev = NULL;
+ 	}
++	/* Transfer the do_timer job away from this cpu */
++	if (*cpup == tick_do_timer_cpu) {
++		int cpu = first_cpu(cpu_online_map);
++
++		tick_do_timer_cpu = (cpu != NR_CPUS) ? cpu : -1;
++	}
+ 	spin_unlock_irqrestore(&tick_device_lock, flags);
+ }
+ 
+diff --git a/kernel/time/tick-internal.h b/kernel/time/tick-internal.h
+index c9d203b..5645e6a 100644
+--- a/kernel/time/tick-internal.h
++++ b/kernel/time/tick-internal.h
+@@ -5,6 +5,7 @@ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
+ extern spinlock_t tick_device_lock;
+ extern ktime_t tick_next_period;
+ extern ktime_t tick_period;
++extern int tick_do_timer_cpu __read_mostly;
+ 
+ extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
+ extern void tick_handle_periodic(struct clock_event_device *dev);
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 51556b9..3a8e524 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -221,6 +221,18 @@ void tick_nohz_stop_sched_tick(void)
+ 			ts->tick_stopped = 1;
+ 			ts->idle_jiffies = last_jiffies;
+ 		}
++
++		/*
++		 * If this cpu is the one which updates jiffies, then
++		 * give up the assignment and let it be taken by the
++		 * cpu which runs the tick timer next, which might be
++		 * this cpu as well. If we don't drop this here the
++		 * jiffies might be stale and do_timer() never
++		 * invoked.
++		 */
++		if (cpu == tick_do_timer_cpu)
++			tick_do_timer_cpu = -1;
++
+ 		/*
+ 		 * calculate the expiry time for the next timer wheel
+ 		 * timer
+@@ -338,12 +350,24 @@ static void tick_nohz_handler(struct clock_event_device *dev)
+ {
+ 	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
+ 	struct pt_regs *regs = get_irq_regs();
++	int cpu = smp_processor_id();
+ 	ktime_t now = ktime_get();
+ 
+ 	dev->next_event.tv64 = KTIME_MAX;
+ 
++	/*
++	 * Check if the do_timer duty was dropped. We don't care about
++	 * concurrency: This happens only when the cpu in charge went
++	 * into a long sleep. If two cpus happen to assign themself to
++	 * this duty, then the jiffies update is still serialized by
++	 * xtime_lock.
++	 */
++	if (unlikely(tick_do_timer_cpu == -1))
++		tick_do_timer_cpu = cpu;
++
+ 	/* Check, if the jiffies need an update */
+-	tick_do_update_jiffies64(now);
++	if (tick_do_timer_cpu == cpu)
++		tick_do_update_jiffies64(now);
+ 
+ 	/*
+ 	 * When we are idle and the tick is stopped, we have to touch
+@@ -431,9 +455,23 @@ static enum hrtimer_restart tick_sched_timer(struct hrtimer *timer)
+ 	struct hrtimer_cpu_base *base = timer->base->cpu_base;
+ 	struct pt_regs *regs = get_irq_regs();
+ 	ktime_t now = ktime_get();
++	int cpu = smp_processor_id();
++
++#ifdef CONFIG_NO_HZ
++	/*
++	 * Check if the do_timer duty was dropped. We don't care about
++	 * concurrency: This happens only when the cpu in charge went
++	 * into a long sleep. If two cpus happen to assign themself to
++	 * this duty, then the jiffies update is still serialized by
++	 * xtime_lock.
++	 */
++	if (unlikely(tick_do_timer_cpu == -1))
++		tick_do_timer_cpu = cpu;
++#endif
+ 
+ 	/* Check, if the jiffies need an update */
+-	tick_do_update_jiffies64(now);
++	if (tick_do_timer_cpu == cpu)
++		tick_do_update_jiffies64(now);
+ 
+ 	/*
+ 	 * Do not call, when we are not in irq context and have
+
+
