@@ -1,118 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbXDMIPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbXDMIPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752404AbXDMIPg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 04:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXDMIPg
+	id S1752696AbXDMIPm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 04:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbXDMIPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 04:15:36 -0400
-Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:4387 "EHLO
-	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404AbXDMIPd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 04:15:33 -0400
-X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Apr 2007 04:15:33 EDT
-Message-ID: <7088.213.222.28.155.1176451483.squirrel@webmail.xs4all.nl>
-In-Reply-To: <20070412090809.917795000@suse.de>
-References: <20070412090809.917795000@suse.de>
-Date: Fri, 13 Apr 2007 10:04:43 +0200 (CEST)
-Subject: Re: [AppArmor 00/41] AppArmor security module overview
-From: "Rob Meijer" <capibara@xs4all.nl>
-To: jjohansen@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org
-Reply-To: capibara@xs4all.nl
-User-Agent: SquirrelMail/1.4.8
+	Fri, 13 Apr 2007 04:15:42 -0400
+Received: from holomorphy.com ([66.93.40.71]:41108 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752696AbXDMIPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 04:15:40 -0400
+Date: Fri, 13 Apr 2007 01:15:44 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
+Message-ID: <20070413081544.GS2986@holomorphy.com>
+References: <461ED96C.5030606@yahoo.com.au> <20070412182213.a18cc4a7.akpm@linux-foundation.org> <461EE005.6070605@yahoo.com.au> <20070412185723.5a5f0443.akpm@linux-foundation.org> <461EE890.2040601@yahoo.com.au> <20070412193255.62a0b8ed.akpm@linux-foundation.org> <461EEFEC.2010205@yahoo.com.au> <20070413065357.GP2986@holomorphy.com> <461F2BCB.2020200@yahoo.com.au> <20070413075142.GA23822@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070413075142.GA23822@infradead.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've posted on the subject before, and as noone seemed to truely relate
-to the concept I concequently dropped my effords, but as you seem to be half
-a step in the general right direction, this may be a good time to bring
-it up again.
+On Fri, Apr 13, 2007 at 08:51:42AM +0100, Christoph Hellwig wrote:
+> Umm, folks.  systemtap basically means people compile kernel modules
+> from an odd scripting language with embedded C snipplets into kernel
+> modules.  The kernel modules don't use normal exported APIs but use
+> kallsysms and dwarf info to poke into every possible private bit.
+> Saying you don't care the slightest whether oracle will load huge
+> amounts of code into the kernel that depends on intimate implementation
+> details, and that you don't even have source to to debug it is not what
+> I'd call "none of us need to care in the slightest", at least for those
+> of you working for distributions that may actually have to debug this
+> shit in the end.
+> While we're at it, what happened to the idea of tainting the kernel
+> as soon as krpobes are placed in the kernel to at least make people
+> aware of it?
 
-If instead of 'least privilege' and fat profiles, you would opt for 'least
-authority' and (potentialy) thin profiles, this would make the whole also
-usable for systems initialy designed with security in mind.
-To accomplish such a thing I proposed that the non 'at' family of calls
-for filesystems should be considdered to be priviledged operations (within
-a least authority context), and the 'at' family of operations should have
-invocations with uptree path tokens also be considdered priviledged
-(within a least authority context). The non uptree invocations of the 'at'
-family
-should be considdered unpriviledged, and should thus always be allowed
-seperately from any profile.
+This is for a system monitoring app outside the database proper that
+just happens to be done by the same .com as makes the database. It's
+got little to do with the database itself apart from knowing how to
+tell the database to e.g. let fewer clients in. The part that deals
+with this is sort of like a custom procps that does things rather
+specifically how they need them, including being portable to other
+OS's IIRC, though the scope of the app is much larger than that.
 
-With this distinction implemented, you could than potentialy use thin
-profiles and dynamicly exchange authority by passing along directory
-file handles when needed.
+They're actually quite concerned about issues of this sort since they
+want to run all the time in the background in order to respond to
+system conditions, though probably not necessarily rapid-fire sorts of
+responses to second-by-second changes in conditions.
 
-Where with the 'least priviledge' approach the profile would need to grant
-the each priviledge the application might need, but when you would be able
-to use both file handles, socket handles and directory handles as tokens
-of authorization that can be comunicated seperately and freely, without
-being stopped from being used by least priviledge profiles, the profiles
-needed will start out much thiner, and will dynamicly expand to just a
-limited subset of the fat least priviledge profile.
+Basically, they're not a debugging affair, and they need to be able to
+run in supported conditions. They're rather disinterested in things
+that would, say, taint the kernel or take customers out of supported
+configurations. They'll fall back to the known-grossly-inaccurate
+RSS-based estimates they're using now in preference to such.
 
-I believe that being able to be able to distinguish between the
-the least authority (no uptree) usage of open file/dir/socket handles and
-other operations is essential. If a profile blocks a program from using
-these open file/dir/socket handles in a way not violating least authority
-(that is no uptree tokens in at family calls), this would be a major
-design flaw.
-
-Rob
-
-
-On Thu, April 12, 2007 11:08, jjohansen@suse.de wrote:
-
-> AppArmor's Overall Design
-> =========================
->
-> AppArmor protects systems from vulnerable software by confining
-> processes, giving them "least privilege" access to the system's
-> resources: with least privilege, processes are allowed exactly what they
-> need, nothing more, and nothing less. Systems are thus protected from
-> bugs in applications that would lead to privilege escalation, such as
-> remote system access because of a buffer overflow in a web server, etc.
->
-> AppArmor does this by defining application profiles which list allowed
-> accesses, and assigning those profiles to processes. AppArmor does *not*
-> require the user to confine all processes on the system.  Rather, you
-> need to provide AppArmor profiles for every process that is potentially
-> subject to manipulation by the attacker. For instance, to defend against
-> network attack, confine all process that access the network.
->
-> The corollary to this is that attacks against AppArmor that start with
-> "assume some unconfined process does ..." are outside the AppArmor
-> threat model. Any process that might do something malicious to an
-> AppArmor system should be confined by an AppArmor profile.
->
-> The kernel manages many different kinds of resources.  AppArmor
-> currently controls access to two key resources among them: files, and
-> POSIX Capabilities.  (Additional protection for things like rlimits,
-> interprocess communication, and network access are being worked on, and
-> are expected to become available in a future version.)
->
->
-> File Access Control
-> -------------------
->
-> Application profiles control file access by pathname: each profile
-> contains a list of fully qualified pathnames (potentially containing
-> globbing) and associated access modes: read (r), write (w), different
-> kinds of execute (ix, Px, px, Ux, ux), create hard-link (l), and memory
-> map for execution (m).
->
-> For example, the following two rules permit read access to any file
-> below /srv/www/htdocs/**.html, and memory map for execution (m), execute
-> inheriting the current profile (ix), and read (r) access to
-> /usr/sbin/suexec2:
->
->     /srv/www/htdocs/**.html r,
->     /usr/sbin/suexec2 mixr,
+They don't want omnibus back doors into the kernel and I honestly
+expect them to NAK the systemtap solution. They really want the
+"uniquely attributable RSS" or "proportional RSS" reported directly,
+and it takes some doing to convince them that this can't be done
+directly for various reasons, e.g. floating point in the kernel won't
+fly. They can program sufficiently well to maintain a database of pfn's,
+pid's of processes mapping them, and user virtual addresses they're
+mapped at (easy enough to kick off a database instance for it if they
+don't feel comfortable just hashing the triples) and do the tabulation
+from there, though they're not happy having to do so much of the
+calculation themselves. Actually, I promised them reporting of mapcount
+which would make per-process UARSS/PRSS calculation able to be done on
+a process-by-process basis, though I can probably convince them to do
+whole-system pfn-by-pfn tabulation if such is lacking.
 
 
+-- wli
