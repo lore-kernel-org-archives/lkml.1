@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbXDMMSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXDMMVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbXDMMSu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 08:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbXDMMSu
+	id S1753956AbXDMMVa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 08:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXDMMVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 08:18:50 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:49969 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753955AbXDMMSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 08:18:50 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: greg@uclinux.org
-Subject: [patch] dont force uclinux mtd map to be root dev
-Date: Fri, 13 Apr 2007 08:19:31 -0400
-User-Agent: KMail/1.9.6
-Cc: michele.damico@fitre.it, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1243165.ftno1yTx3V";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704130819.32657.vapier@gentoo.org>
+	Fri, 13 Apr 2007 08:21:30 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:53073 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753956AbXDMMV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 08:21:29 -0400
+Date: Fri, 13 Apr 2007 17:54:58 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
+Message-ID: <20070413122458.GB30280@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20070412163235.dd030637.akpm@linux-foundation.org> <461ECB9C.8060000@yahoo.com.au> <20070412174201.065068b2.akpm@linux-foundation.org> <461ED96C.5030606@yahoo.com.au> <20070412182213.a18cc4a7.akpm@linux-foundation.org> <461EE005.6070605@yahoo.com.au> <20070413015712.GL11115@waste.org> <461EE925.1000301@yahoo.com.au> <20070413022345.GN11115@waste.org> <461EF0EC.4090908@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <461EF0EC.4090908@yahoo.com.au>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1243165.ftno1yTx3V
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, Apr 13, 2007 at 12:54:36PM +1000, Nick Piggin wrote:
+> Matt Mackall wrote:
+> >On Fri, Apr 13, 2007 at 12:21:25PM +1000, Nick Piggin wrote:
+> >
+> >>Matt Mackall wrote:
+> >>
+> >>>On Fri, Apr 13, 2007 at 11:42:29AM +1000, Nick Piggin wrote:
+> >>
+> >>>>If kprobes is simply crappy and doesn't work properly for this, then I
+> >>>>could accept that. I'm not someone trying to get this info. So why can't
+> >>>>it be used? (not just for kpagemap, but for clear_refs and all that gunk
+> >>>>too).
+> >>>
+> >>>
+> >>>kprobes is good for looking at events, but bad for looking at state.
+> >>>Especially metric shitloads of state.
+> >>
+> >>Why? Why is a kprobes trap significantly more expensive than a read
+> >>syscall?
+> >
+> >
+> >I guess I'm not clear on what you're proposing. From my understanding
+> >of kprobes (admittedly not an expert), this is hard to do and not a
+> >very good match.
+> 
+> But you have an idea that it is bad for exposing lots of data. Why?
+> (I'm not a kprobes expert either, these are not rhetorical questions)
 
-the cheesy uclinux mtd maps can be used for more than just the root device,=
- so=20
-i think we should drop the forcing.  also, i feel like this is a policy=20
-decision that shouldnt be in the kernel in the first place.  people who hav=
-e=20
-been lazy and boot with uclinux mtd maps and dont put root=3D into their=20
-commandline can simply add the appropriate root=3D line either into their=20
-bootloader or into the compiled in bootargs
+You could tie your kprobe module to use relay channels. Kprobe handlers
+run lockless and using the per-cpu relay channels will provide a fast
+transport mechanism for exposing lots of data.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-=2D--
-diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
-index 389fea2..14ffb1a 100644
-=2D-- a/drivers/mtd/maps/uclinux.c
-+++ b/drivers/mtd/maps/uclinux.c
-@@ -16,7 +16,6 @@
- #include <linux/kernel.h>
- #include <linux/fs.h>
- #include <linux/major.h>
-=2D#include <linux/root_dev.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/map.h>
- #include <linux/mtd/partitions.h>
-@@ -89,10 +88,6 @@ int __init uclinux_mtd_init(void)
- 	uclinux_ram_mtdinfo =3D mtd;
- 	add_mtd_partitions(mtd, uclinux_romfs, NUM_PARTITIONS);
-=20
-=2D	printk("uclinux[mtd]: set %s to be root filesystem\n",
-=2D	     	uclinux_romfs[0].name);
-=2D	ROOT_DEV =3D MKDEV(MTD_BLOCK_MAJOR, 0);
-=2D
- 	return(0);
- }
-=20
+http://relayfs.sourceforge.net/examples.html#tprintk_kprobes is an
+example using the earlier relayfs interface. It shouldn't be that hard
+to change it to use the newer relay stuff.
 
---nextPart1243165.ftno1yTx3V
-Content-Type: application/pgp-signature
+AFAIK acme is using a similar mechanism for ctracer
+(http://oops.ghostprotocols.net:81/blog/?p=50)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iQIVAwUARh91VEFjO5/oN/WBAQL5ExAAplSQ+wLMsRxlJPBq4hPC1xyQGLmmgryy
-oc+j337+dk1vBxOSFNwF1e8DjLF3+07A1s/A9071z1oWeh+Dyw6B7rTOTzRW1EGv
-xGBXgY8hBto1UBSZa4TESJZzwDFjuP8YHIth5sUxsitxvWREA31YusMok6sygX0m
-ujApooOqj3udJkMa86rvzPs383vhwKRhLQFyEVQdcVVB5C5vQ8397NWxrrheQf91
-0IXSugBcAUAzYcB6DOWyrImIkXWAaONVMg+tX5F84bGVxXHVNR1CHo3sWXWypc+Y
-HQ6VVyHpkuSMVg89JvOAcSdFF8lQOEBCZQIxPBR2pKHzy2K4sficndV7iFK/bZEF
-GaJvJ7C4NHqMVHl0SgdOuXHs1/+YUwz1o2EJCdz7vGxA0StOtVLRnHLVgcAZMKkS
-UOJuGkwC3v2uNQV5NIVcIoE3ZKV/Nb+krbqs3GUwz9NYiG48sZxoUHqNvi+6xwYO
-v2o6dtFndtVlAZ8Sf99LIHdl/Qqg3kNMqS+b/fy8ozf1haZ7cdSTtahQuTeYw6e0
-lZaCrcbHQSmloDfUSdAOhLGgR6KN1qnkeCy1NUipihaoEmeYXfO28yKSsEBASejA
-5Ed+57O1WttAkPIT2ITNiKV/q6k0DQqjBjA0amHJbnOICM+QG8mZQcj8qoIylpRc
-bRXP8aDQk3g=
-=llhC
------END PGP SIGNATURE-----
-
---nextPart1243165.ftno1yTx3V--
+Ananth
