@@ -1,46 +1,482 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbXDMXno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030476AbXDMXpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752069AbXDMXno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXDMXno
+	id S1030476AbXDMXpG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030495AbXDMXpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:43:44 -0400
-Received: from mx1.suse.de ([195.135.220.2]:43796 "EHLO mx1.suse.de"
+	Fri, 13 Apr 2007 19:45:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54896 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752069AbXDMXno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:43:44 -0400
-From: Neil Brown <neilb@suse.de>
-To: "David R. Litwin" <presently42@gmail.com>
-Date: Sat, 14 Apr 2007 09:43:29 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17952.5537.364603.419364@notabene.brown>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: message from David R. Litwin on Friday April 13
-References: <op.tqqwdfzcftfxs2@localhost.localdomain>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	id S1030476AbXDMXpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 19:45:01 -0400
+Date: Sat, 14 Apr 2007 01:44:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070413234444.GA23575@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <20070413222151.GD8915@holomorphy.com> <20070413225216.GA11384@elte.hu> <20070413233049.GW2986@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="TB36FDmn/VVEgNH/"
+Content-Disposition: inline
+In-Reply-To: <20070413233049.GW2986@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday April 13, presently42@gmail.com wrote:
-> Before I go on, let me appologise. I don't really know what I hope to  
-> accomplish, beyond trying to garner thoughts (and support?) for the topic.
-> 
-> Essentially: I want to use Linux and ZFS. I don't particularly care about  
-> licences
 
-You may not care about licenses, but a lot of people do.  And they are
-a real issue.
+--TB36FDmn/VVEgNH/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-But I'm more interested in what you really want.
-What, specifically, is there in ZFS that you want to use in Linux?
-There is lots of interesting stuff in there, but which bit has caught
-your attention?  It is possible that that functionality can be
-incorporated into Linux without trying to clone or copy ZFS.
 
-NeilBrown
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+
+> Where it gets complex is when the behavior patterns vary, e.g. they're 
+> not entirely CPU-bound and their desired in-isolation CPU utilization 
+> varies, or when nice levels vary, or both vary. [...]
+
+yes. I tested things like 'massive_intr.c' (attached, written by Satoru 
+Takeuchi) which starts N tasks which each work for 8msec then sleep 
+1msec:
+
+from its output, the second column is the CPU time each thread got, the 
+more even, the fairer the scheduling. On vanilla i get:
+
+ mercury:~> ./massive_intr 10 10
+ 024873  00000150
+ 024874  00000123
+ 024870  00000069
+ 024868  00000068
+ 024866  00000051
+ 024875  00000206
+ 024872  00000093
+ 024869  00000138
+ 024867  00000078
+ 024871  00000223
+
+on CFS i get:
+
+ neptune:~> ./massive_intr 10 10
+ 002266  00000112
+ 002260  00000113
+ 002261  00000112
+ 002267  00000112
+ 002269  00000112
+ 002265  00000112
+ 002262  00000113
+ 002268  00000113
+ 002264  00000112
+ 002263  00000113
+
+so it is quite a bit more even ;)
+
+another related test-utility is one i wrote:
+
+  http://people.redhat.com/mingo/scheduler-patches/ring-test.c
+
+this is a ring of 100 tasks each doing work for 100 msecs and then 
+sleeping for 1 msec. I usually test this by also running a CPU hog in 
+parallel to it, and checking whether it gets ~50.0% of CPU time under 
+CFS. (it does)
+
+	Ingo
+
+--TB36FDmn/VVEgNH/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="massive_intr.c"
+
+
+#if 0
+
+Hi Ingo and all,
+
+When I was executing massive interactive processes, I found that some of them
+occupy CPU time and the others hardly run.
+
+It seems that some of processes which occupy CPU time always has max effective
+prio (default+5) and the others have max - 1. What happen here is...
+
+ 1. If there are moderate number of max interactive processes, they can be
+    re-inserted into active queue without falling down its priority again and
+    again.
+ 2. In this case, the others seldom run, and can't get max effective priority
+    at next exhausting because scheduler considers them to sleep too long.
+ 3. Goto 1, OOPS!
+
+Unfortunately I haven't been able to make the patch resolving this problem
+yet. Any idea?
+
+I also attach the test program which easily recreates this problem.
+
+Test program flow:
+
+  1. First process starts child proesses and wait for 5 minutes.
+  2. Each child process executes "work 8 msec and sleep 1 msec" loop
+     continuously.
+  3. After 3 minits have passed, each child processes prints the # of loops
+     which executed.
+
+What expected:
+
+  Each child processes execute nearly equal # of loops.
+
+Test environment:
+
+  - kernel:                 2.6.20(*1)
+  - # of CPUs:                 1 or 2
+  - # of child processes:  200 or 400
+  - nice value:            0 or 20(*2)
+
+*1) I confirmed that 2.6.21-rc5 has no change regarding this problem.
+*2) If a process have nice 20, scheduler never regards it as interactive.
+
+Test results:
+
+-----------+----------------+------+------------------------------------
+ # of CPUs | # of processes | nice |              result
+-----------+----------------+------+------------------------------------
+           |                |   20 | looks good
+   1(i386) |                +------+------------------------------------
+           |                |    0 | 4 processes occupy 98% of CPU time
+-----------+            200 +------+------------------------------------
+           |                |   20 | looks good
+           |                +------+------------------------------------
+           |                |    0 | 8 processes occupy 72% of CPU time
+   2(ia64) +----------------+------+------------------------------------
+           |            400 |   20 | looks good
+           |                +------+------------------------------------
+           |                |    0 | 8 processes occupy 98% of CPU time
+-----------+----------------+------+------------------------------------
+
+FYI. 2.6.21-rc3-mm1 (enabling RSDL scheduler) works fine in the all casees :-)
+
+Thanks,
+
+Satoru
+
+-------------------------------------------------------------------------------
+#endif
+/*
+ * massive_intr - run @nproc interactive processes and print the number of
+ *		  loops(*1) each process executes in @runtime secs.
+ *
+ *		  *1) "work 8 msec and sleep 1msec" loop
+ *
+ *	Usage:  massive_intr <nproc> <runtime>
+ *
+ *		 @nproc:   number of processes
+ *		 @runtime: execute time[sec]
+ *
+ *	ex) If you want to run 300 processes for 5 mins, issue the
+ *	    command as follows:
+ *
+ *		$ massive_intr 300 300
+ *
+ *	How to build:
+ *
+ *		cc -o massive_intr massive_intr.c -lrt
+ *
+ *
+ *  Copyright (C) 2007  Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or (at
+ *  your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <semaphore.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include <errno.h>
+#include <err.h>
+
+#define WORK_MSECS	8
+#define SLEEP_MSECS	1
+
+#define MAX_PROC	1024
+#define SAMPLE_COUNT	1000000000
+#define USECS_PER_SEC	1000000
+#define USECS_PER_MSEC	1000
+#define NSECS_PER_MSEC	1000000
+#define SHMEMSIZE	4096
+
+static const char *shmname = "/sched_interactive_shmem";
+static void *shmem;
+static sem_t *printsem;
+static int nproc;
+static int runtime;
+static int fd;
+static time_t *first;
+static pid_t pid[MAX_PROC];
+static int return_code;
+
+static void cleanup_resources(void)
+{
+	if (sem_destroy(printsem) < 0)
+		warn("sem_destroy() failed");
+	if (munmap(shmem, SHMEMSIZE) < 0)
+		warn("munmap() failed");
+	if (close(fd) < 0)
+		warn("close() failed");
+}	
+
+static void abnormal_exit(void)
+{
+	if (kill(getppid(), SIGUSR2) < 0)
+		err(EXIT_FAILURE, "kill() failed");
+}
+
+static void sighandler(int signo)
+{
+}
+
+static void sighandler2(int signo)
+{
+	return_code = EXIT_FAILURE;
+}
+
+static void loopfnc(int nloop)
+{
+	int i;
+	for (i = 0; i < nloop; i++)
+		;
+}
+
+static int loop_per_msec(void)
+{
+	struct timeval tv[2];
+	int before, after;
+
+	if (gettimeofday(&tv[0], NULL) < 0)
+		return -1;
+	loopfnc(SAMPLE_COUNT);
+	if (gettimeofday(&tv[1], NULL) < 0)
+		return -1;
+	before = tv[0].tv_sec*USECS_PER_SEC+tv[0].tv_usec;
+	after = tv[1].tv_sec*USECS_PER_SEC+tv[1].tv_usec;
+
+	return SAMPLE_COUNT/(after - before)*USECS_PER_MSEC;
+}
+
+static void *test_job(void *arg)
+{
+	int l = (int)arg;
+	int count = 0;
+	time_t current;
+	sigset_t sigset;
+	struct sigaction sa;
+	struct timespec ts = { 0, NSECS_PER_MSEC*SLEEP_MSECS};
+
+	sa.sa_handler = sighandler;
+	if (sigemptyset(&sa.sa_mask) < 0) {
+		warn("sigemptyset() failed");
+		abnormal_exit();
+	}
+	sa.sa_flags = 0;
+	if (sigaction(SIGUSR1, &sa, NULL) < 0) {
+		warn("sigaction() failed");
+		abnormal_exit();
+	}
+	if (sigemptyset(&sigset) < 0) {
+		warn("sigfillset() failed");
+		abnormal_exit();
+	}
+	sigsuspend(&sigset);
+	if (errno != EINTR) {
+		warn("sigsuspend() failed");
+		abnormal_exit();
+	}
+	/* main loop */
+	do {
+		loopfnc(WORK_MSECS*l);
+		if (nanosleep(&ts, NULL) < 0) {
+			warn("nanosleep() failed");
+			abnormal_exit();
+		}
+		count++;
+		if (time(&current) == -1) {
+			warn("time() failed");
+			abnormal_exit();
+		}
+	} while (difftime(current, *first) < runtime);
+
+	if (sem_wait(printsem) < 0) {
+		warn("sem_wait() failed");
+		abnormal_exit();
+	}
+	printf("%06d\t%08d\n", getpid(), count);
+	if (sem_post(printsem) < 0) {
+		warn("sem_post() failed");
+		abnormal_exit();
+	}
+	exit(EXIT_SUCCESS);
+}
+
+static void usage(void)
+{
+	fprintf(stderr,
+		"Usage : massive_intr <nproc> <runtime>\n"
+		"\t\tnproc  : number of processes\n"
+		"\t\truntime   : execute time[sec]\n");
+	exit(EXIT_FAILURE);
+}
+
+int main(int argc, char **argv)
+{
+	int i, j;
+	int status;
+	sigset_t sigset;
+	struct sigaction sa;
+	int c;
+
+	if (argc != 3)
+		usage();
+
+	nproc = strtol(argv[1], NULL, 10);
+	if (errno || nproc < 1 || nproc > MAX_PROC)
+		err(EXIT_FAILURE, "invalid multinum");
+	runtime = strtol(argv[2], NULL, 10);
+	if (errno || runtime <= 0)
+		err(EXIT_FAILURE, "invalid runtime");
+
+	sa.sa_handler = sighandler2;
+	if (sigemptyset(&sa.sa_mask) < 0)
+		err(EXIT_FAILURE, "sigemptyset() failed");
+	sa.sa_flags = 0;
+	if (sigaction(SIGUSR2, &sa, NULL) < 0)
+		err(EXIT_FAILURE, "sigaction() failed");
+	if (sigemptyset(&sigset) < 0)
+		err(EXIT_FAILURE, "sigemptyset() failed");
+	if (sigaddset(&sigset, SIGUSR1) < 0)
+		err(EXIT_FAILURE, "sigaddset() failed");
+	if (sigaddset(&sigset, SIGUSR2) < 0)
+		err(EXIT_FAILURE, "sigaddset() failed");
+	if (sigprocmask(SIG_BLOCK, &sigset, NULL) < 0)
+		err(EXIT_FAILURE, "sigprocmask() failed");
+
+	/* setup shared memory */
+	if ((fd = shm_open(shmname, O_CREAT | O_RDWR, 0644)) < 0)
+		err(EXIT_FAILURE, "shm_open() failed");
+	if (shm_unlink(shmname) < 0) {
+		warn("shm_unlink() failed");
+		goto err_close;
+	}
+	if (ftruncate(fd, SHMEMSIZE) < 0) {
+		warn("ftruncate() failed");
+		goto err_close;
+	}
+	shmem = mmap(NULL, SHMEMSIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (shmem == (void *)-1) {
+		warn("mmap() failed");
+		goto err_unmap;
+	}
+	printsem = shmem;
+	first = shmem + sizeof(*printsem);
+	
+	/* initialize semaphore */
+	if ((sem_init(printsem, 1, 1)) < 0) {
+		warn("sem_init() failed");
+		goto err_unmap;
+	}
+
+	if ((c = loop_per_msec()) < 0) {
+		fprintf(stderr, "loop_per_msec() failed\n");
+		goto err_sem;
+	}
+
+	for (i = 0; i < nproc; i++) {
+		pid[i] = fork();
+		if (pid[i] == -1) {
+			warn("fork() failed\n");
+			for (j = 0; j < i; j++)
+				if (kill(pid[j], SIGKILL) < 0)
+					warn("kill() failed");
+			goto err_sem;
+		}
+		if (pid[i] == 0)
+			test_job((void *)c);
+	}
+
+	if (sigemptyset(&sigset) < 0) {
+		warn("sigemptyset() failed");
+		goto err_proc;
+	}
+	if (sigaddset(&sigset, SIGUSR2) < 0) {
+		warn("sigaddset() failed");
+		goto err_proc;
+	}
+	if (sigprocmask(SIG_UNBLOCK, &sigset, NULL) < 0) {
+		warn("sigprocmask() failed");
+		goto err_proc;
+	}
+	if (time(first) < 0) {
+		warn("time() failed");
+		goto err_proc;
+	}
+	if ((kill(0, SIGUSR1)) == -1) {
+		warn("kill() failed");
+		goto err_proc;
+	}
+	for (i = 0; i < nproc; i++) {
+		if (wait(&status) < 0) {
+			warn("wait() failed");
+			goto err_proc;
+		}
+	}
+	cleanup_resources();
+	exit(return_code);
+ err_proc:
+	for (i = 0; i < nproc; i++)
+		if (kill(pid[i], SIGKILL) < 0)
+			if (errno != ESRCH)
+				warn("kill() failed");
+ err_sem:
+	if (sem_destroy(printsem) < 0)
+		warn("sem_destroy() failed");
+ err_unmap:
+	if (munmap(shmem, SHMEMSIZE) < 0)
+		warn("munmap() failed");
+ err_close:
+	if (close(fd) < 0)
+		warn("close() failed");	
+	exit(EXIT_FAILURE);
+}
+
+--TB36FDmn/VVEgNH/--
