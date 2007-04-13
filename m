@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbXDMIJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbXDMILP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752658AbXDMIJk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 04:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbXDMIJk
+	id S1752770AbXDMILP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 04:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbXDMILO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 04:09:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58894 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752658AbXDMIJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 04:09:39 -0400
-Date: Fri, 13 Apr 2007 18:09:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
-Message-Id: <20070413180942.b7cf0665.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__13_Apr_2007_18_09_42_+1000__f4Eyy77q9_GLQjs"
+	Fri, 13 Apr 2007 04:11:14 -0400
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:40840 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbXDMILM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 04:11:12 -0400
+Date: Fri, 13 Apr 2007 10:09:47 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Lang <david.lang@digitalinsight.com>
+Cc: Gerhard Mack <gmack@innerfire.net>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Benny Amorsen <benny+usenet@amorsen.dk>
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+In-Reply-To: <Pine.LNX.4.63.0704121917260.29621@qynat.qvtvafvgr.pbz>
+Message-ID: <Pine.LNX.4.64.0704131009190.16292@anakin>
+References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
+ 02.GA13210@cynthia.pants.nu> <1175648051.10567.61.camel@shinybook.infradead.org><20070403.181645.6815945
+ 8.davem@davemloft.net> <20070404022828.5c9b97f3@the-village.bc.nu><Pine.LNX.4.64.0704032307001.780
+ 2@mtl.rackplans.net> <m3tzvm6fgw.fsf@ursa.amorsen.dk><adabqhtip2n.fsf@cisco.com>
+ <Pine.LNX.4.64.0704122243280.9866@mtl.rackplans.net>
+ <Pine.LNX.4.63.0704121917260.29621@qynat.qvtvafvgr.pbz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__13_Apr_2007_18_09_42_+1000__f4Eyy77q9_GLQjs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Thu, 12 Apr 2007, David Lang wrote:
+> On Thu, 12 Apr 2007, Gerhard Mack wrote:
+> > Sometimes it's not the speed it's the cost.. The best I've ever done is
+> > 5.5 interfaces per u/ Although with a better motherboard and case it might
+> > have been different.
+> 
+> I have a bunch of servers from rackable, dual core cpu, 2G ram 2xgigE on the 
+> motherboard (1x100M on motherboard), 4x Intel E1000 quad port cards, 120G SATA 
+> drive, DVD burner, floppy
+> 
+> 3u, 18 gig ports, just under $5k
 
-On Thu, 12 Apr 2007 20:33:16 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
->
-> just something i threw together, not in final form, but it represents
-> tossing the legacy PM stuff.  at the moment, the menuconfig entry for
-> PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
-> "obsolete."  that's a good sign that it's getting close to the time
-> for it to go, and the removal is fairly straightforward, but there's
-> no mention of its removal in the feature removal schedule file.
+I don't think we're still talking about _serial_ ports?
 
-One thing that comes to mind is that you will need some way to make sure
-that only one of ACPI and APM get initialized ...
+Gr{oetje,eeting}s,
 
+						Geert
+
+P.S. Yes, Ethernet is serial ;-)
 --
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---Signature=_Fri__13_Apr_2007_18_09_42_+1000__f4Eyy77q9_GLQjs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGHzrMFdBgD/zoJvwRAjSkAJ0dazeXRpeBxl32d3vH8ggPrzMD6wCeLaAx
-WaFahF9Pg3xs39QfDOkT4SI=
-=wDWz
------END PGP SIGNATURE-----
-
---Signature=_Fri__13_Apr_2007_18_09_42_+1000__f4Eyy77q9_GLQjs--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
