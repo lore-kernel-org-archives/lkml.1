@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbXDMSUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbXDMSVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbXDMSUB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 14:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDMSUB
+	id S1754125AbXDMSVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 14:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDMSVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 14:20:01 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:45727 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754119AbXDMSUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 14:20:00 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Date: Fri, 13 Apr 2007 12:18:43 -0600
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-References: <45D5EA88.7090300@redhat.com> <20070302114023.GD2163@elf.ucw.cz> <20070302150313.198b6053.khali@linux-fr.org>
-In-Reply-To: <20070302150313.198b6053.khali@linux-fr.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 13 Apr 2007 14:21:16 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23578 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754126AbXDMSVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 14:21:15 -0400
+Date: Fri, 13 Apr 2007 11:23:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: make clean for DocBook
+Message-Id: <20070413112316.44141d34.randy.dunlap@oracle.com>
+In-Reply-To: <20070413164142.GA14706@uranus.ravnborg.org>
+References: <20070413090658.b4c4bc8f.randy.dunlap@oracle.com>
+	<20070413164142.GA14706@uranus.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704131218.44045.bjorn.helgaas@hp.com>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 March 2007 07:03, Jean Delvare wrote:
-> ... The primary issue is the concurrent access
-> to resources, which cause lots of trouble which are hard to investigate.
-> If ACPI reserves the ports, then the SMBus or hardware monitoring
-> drivers (or any other conflicting driver) will cleanly fail to load,
-> which would be a move in the right direction. ...
+On Fri, 13 Apr 2007 18:41:42 +0200 Sam Ravnborg wrote:
+
+> On Fri, Apr 13, 2007 at 09:06:58AM -0700, Randy Dunlap wrote:
+> > Hi Sam,
+> > 
+> > 'make clean' doesn't seem to descend into Documentation/DocBook/.
+> > At least 'make V=1 clean' doesn't show me any references in DocBook.
+> > 
+> > I guess that this is because DocBook doesn't have anything that
+> > qualifies in obj-y/m/n and subdir-y/m/n.  (?)
 > 
-> So, can ACPI actually reserve the ports it accesses?
+> Documentation/ is handled explicit i top-level Makefile:
+> 
+> mrproper-dirs      := $(addprefix _mrproper_,Documentation/DocBook scripts)
+> 
+> PHONY += $(mrproper-dirs) mrproper archmrproper
+> $(mrproper-dirs):
+>         $(Q)$(MAKE) $(clean)=$(patsubst _mrproper_%,%,$@)
+> 
+> 
+> And we will visit DocBook with mrproper - but not clean.
+> I have no stron opinion when to delete generated files in DocBook.
 
-Sorry to join this discussion so late.
+OK, that's fine, thanks for the info...
+but trying 'make mrproper' gives me:
 
-ACPI tells us the resources used by devices.  Today, we don't reserve
-ACPI resources until a driver claims a device.  PCI does some sort of
-reservation up front, before the driver claims devices.  Conceptually,
-I think ACPI should do the same thing, and I don't think it's that
-hard to do.
+make -f scripts/Makefile.clean obj=Documentation/DocBook
+make -f scripts/Makefile.clean obj=Documentation/DocBook/man/
+make[2]: execvp: /bin/sh: Argument list too long
+make[2]: *** [__clean] Error 127
+make[1]: *** [Documentation/DocBook/man/] Error 2
+make: *** [_mrproper_Documentation/DocBook] Error 2
 
-But breaking things like lmsensors would make the transition painful.
+DocBook/man/ contains about 2000 files.
+Is there some way to have scripts/Makefile.clean just do
+	rm -rf Documentation/DocBook/man/
+?  or some other solution?
 
-Bjorn
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
