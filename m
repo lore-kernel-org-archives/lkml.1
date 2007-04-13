@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbXDMC40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbXDMC5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbXDMC40 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 22:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbXDMC40
+	id S1753157AbXDMC5t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 22:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXDMC5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 22:56:26 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:52424 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1753141AbXDMC4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 22:56:25 -0400
-Date: Thu, 12 Apr 2007 19:24:29 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Gerhard Mack <gmack@innerfire.net>
-cc: Benny Amorsen <benny+usenet@amorsen.dk>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <Pine.LNX.4.64.0704122243280.9866@mtl.rackplans.net>
-Message-ID: <Pine.LNX.4.63.0704121917260.29621@qynat.qvtvafvgr.pbz>
-References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
- 02.GA13210@cynthia.pants.nu>  <1175648051.10567.61.camel@shinybook.infradead.org><20070403.181645.6815945
- 8.davem@davemloft.net>  <20070404022828.5c9b97f3@the-village.bc.nu><Pine.LNX.4.64.0704032307001.780
- 2@mtl.rackplans.net>  <m3tzvm6fgw.fsf@ursa.amorsen.dk><adabqhtip2n.fsf@cisco.com>
- <Pine.LNX.4.64.0704122243280.9866@mtl.rackplans.net>
+	Thu, 12 Apr 2007 22:57:49 -0400
+Received: from ns.theshore.net ([67.18.92.50]:50959 "EHLO www.theshore.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753157AbXDMC5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 22:57:48 -0400
+Message-ID: <461EF1A1.3070102@theshore.net>
+Date: Thu, 12 Apr 2007 22:57:37 -0400
+From: "Christopher S. Aker" <caker@theshore.net>
+User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "Bill Rugolsky Jr." <brugolsky@telemetry-investments.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [Feature Request?] Inline compression of process core dumps
+References: <461E55C6.1030905@theshore.net>	<20070412172845.58bfeff5@the-village.bc.nu>	<20070412164251.GC11736@ti88.telemetry-investments.com>	<p73ps697agf.fsf@bingen.suse.de>	<461EE95A.3090600@theshore.net> <20070412193838.ea98238b.randy.dunlap@oracle.com>
+In-Reply-To: <20070412193838.ea98238b.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 12 Apr 2007, Gerhard Mack wrote:
-
-> Sometimes it's not the speed it's the cost.. The best I've ever done is
-> 5.5 interfaces per u/ Although with a better motherboard and case it might
-> have been different.
-
-I have a bunch of servers from rackable, dual core cpu, 2G ram 2xgigE on the 
-motherboard (1x100M on motherboard), 4x Intel E1000 quad port cards, 120G SATA 
-drive, DVD burner, floppy
-
-3u, 18 gig ports, just under $5k
-
-if you have 36" deep racks you can put them back to back and have two of these 
-in 3u (12 gig ports per u)
-
-not nessasarily the cheapest available, but they've been reliable, and there's 
-pleanty of CPU and ram to handle firewall tasks.
-
-besides, sometimes you don't want to trust the closed-source vlan 
-implementations on the switches ;-)
-
-David Lang
-
-> http://innerfire.net/pics/projects/21portfirewall_2.jpg
-> (assigns each port it's ip range and blocks any address not assigned to
-> that port)
->
->
-> On Thu, 12 Apr 2007, Roland Dreier wrote:
->
->> Date: Thu, 12 Apr 2007 08:34:40 -0700
->> From: Roland Dreier <rdreier@cisco.com>
->> To: Benny Amorsen <benny+usenet@amorsen.dk>
->> Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
->> Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Randy Dunlap wrote:
+> On Thu, 12 Apr 2007 22:22:18 -0400 Christopher S. Aker wrote:
+> 
+>> Alan Cox wrote:
+>>  > Indeed. So useful that in current kernels you can set the core dump
+>>  > path to be
+>>  >
+>>  > 	"|application"
 >>
->> > Indeed, port density is disappointingly poor in modern servers. Do you
->> > know any with more than 14 ports per U? (That's an MBX 1U server with
->> > 8 on-board and a 6-port expansion).
+>> Cool stuff!  However, it's not working (2.6.20.6):
 >>
->> If you really need a ton of ports you could probably build a 1U server
->> with 2 * 2-port 10gig NICs, and use VLAN-capable switches with 10gig
->> and 1gig ports to fan out each 10gig link from your server to 10 1-gig
->> ports.  That would get you 40 ports of 1-gig from each server (plus
->> whatever the server has on board).
+>> 	Core dump to |/home/caker/bin/dumper.pl.4442 pipe failed
 >>
->>  - R.
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+>> even though...
 >>
->
-> --
-> Gerhard Mack
->
-> gmack@innerfire.net
->
-> <>< As a computer I find your faith in technology amusing.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+>> 	# cat /proc/sys/kernel/core_uses_pid
+>> 	0
+>> 	# cat /proc/sys/kernel/core_pattern
+>> 	|/home/caker/bin/dumper.pl
+>>
+>> Looking at the code, it seems to me that format_corename() is appending 
+>> .pid, regardless if !core_uses_pid and corename[0]=='|', in which case 
+>> it creates an invalid path for call_usermodehelper_pipe().
+>>
+>> Bug in the code, or bug in my methods?
+> 
+> What are you trying to dump?  is it a multi-thread group app,
+> not a "simple" app?  I ask because of this (I'm looking at 2.6.21-rc6)
+> <mm_users> reference (not that I know what that is):
+> 
+> 	if (!pid_in_pattern
+>             && (core_uses_pid || atomic_read(&current->mm->mm_users) != 1)) {
+> 		rc = snprintf(out_ptr, out_end - out_ptr,
+> 			      ".%d", current->tgid);
+> 		if (rc > out_end - out_ptr)
+> 			goto out;
+> 		out_ptr += rc;
+> 	}
+
+I saw that too, and unfortunately I don't know what what that condition 
+represents, either.  It's the only other element in that if statement 
+that could make it take that path, so I'm assuming that's part of the 
+problem.
+
+The process is a UML instance (skas mode, so at least a kernel, 
+userspace, and io thread), which will generate a single, usable, core 
+file just fine with a non-pipe core_pattern...
+
+-Chris
+
