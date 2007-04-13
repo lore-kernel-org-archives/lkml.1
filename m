@@ -1,134 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXDMLtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXDML5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbXDMLtz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 07:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXDMLtz
+	id S1753413AbXDML5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 07:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXDML5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 07:49:55 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:64388 "EHLO
-	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753180AbXDMLty (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 07:49:54 -0400
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Message-ID: <461F6C8C.1020901@amd.com>
-Date: Fri, 13 Apr 2007 13:42:04 +0200
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070304)
+	Fri, 13 Apr 2007 07:57:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46737 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753413AbXDML5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 07:57:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Jiri Slaby" <jirislaby@gmail.com>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+Date: Fri, 13 Apr 2007 14:00:11 +0200
+User-Agent: KMail/1.9.5
+Cc: "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+References: <460B6E4B.3060004@gmail.com> <200704122336.57600.rjw@sisk.pl> <4af2d03a0704130314s78d0d831ja52fe8f92efe097a@mail.gmail.com>
+In-Reply-To: <4af2d03a0704130314s78d0d831ja52fe8f92efe097a@mail.gmail.com>
 MIME-Version: 1.0
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "USB development list" <linux-usb-devel@lists.sourceforge.net>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-Subject: Re: How should an exit routine wait for release() callbacks?
-References: <Pine.LNX.4.44L0.0704121706040.2472-100000@iolanthe.rowland.org>
- <20070413110313.352330ce@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070413110313.352330ce@gondolin.boeblingen.de.ibm.com>
-X-OriginalArrivalTime: 13 Apr 2007 11:32:24.0143 (UTC)
- FILETIME=[680FA5F0:01C77DBF]
-X-WSS-ID: 6A01B5C13284003564-01-01
 Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704131400.12021.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
+On Friday, 13 April 2007 12:14, Jiri Slaby wrote:
+> On 4/12/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Wednesday, 11 April 2007 17:02, Jiri Slaby wrote:
+> > > Rafael J. Wysocki napsal(a):
+> > > > On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
+> > > >> Rafael J. Wysocki napsal(a):
+> > > >>> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
+> > > >>>> Rafael J. Wysocki napsal(a):
+> > > >>>>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
+> > > >>>>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
+> > > >>>>>> in -rc6 too.
+> > > >>>>> I guess you mean you're still seeing the 'not enough memory to suspend'
+> > > >>>>> problem?
+> > > >>>> Yes:
+> > > >>>> Disabling non-boot CPUs ...
+> > > >>>> kvm: disabling virtualization on CPU1
+> > > >>>> Breaking affinity for irq 9
+> > > >>>> CPU 1 is now offline
+> > > >>>> SMP alternatives: switching to UP code
+> > > >>>> CPU1 is down
+> > > >>>> swsusp: critical section:
+> > > >>>> swsusp: Need to copy 158309 pages
+> > > >>>> swsusp: Not enough free memory
+> > > >>>> Error -12 suspending
+> > > >>>> Enabling non-boot CPUs ...
+> > > >>>> SMP alternatives: switching to SMP code
+> > > >>>> Booting processor 1/2 APIC 0x1
+> > > >>>> Initializing CPU#1
+> > > >>> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
+> > > >> My tip is one of three cases: after some work on fresh boot -- some
+> > > >> consumers such as thunderbird, firefox, 10 or so terminals with
+> > > >> gnome-session. Single xterm + gnome-session semms not to be a problem.
+> > > >
+> > > > Does the workaround with setting the image size below 1/2 of RAM work for you?
+> > >
+> > > Yes. Yesterday I must set the value to 350M -- 400M was not enough.
+> >
+> > Well, I can't reproduce it.
+> >
+> > Can you please try to reproduce it with the appended patch applied and send
+> > the output of dmesg to me?
+> >
+> > Greetings,
+> > Rafael
+> >
+> > ---
+> >  kernel/power/snapshot.c |    4 ++--
+> >  kernel/power/swsusp.c   |   16 ++++++++++++----
+> >  2 files changed, 14 insertions(+), 6 deletions(-)
+> 
+> Shrinking memory...  Pages needed: 128103 normal, 0 highmem
+> Pages needed: 125226 normal, 0 highmem
+> Pages needed: -5757 normal, 0 highmem
+> Pages needed: -5757 normal, 0 highmem
+> Pages needed: -5757 normal, 0 highmem
+> Pages needed: -5757
+> Pages needed: 127953 normal, 0 highmem
+> Pages needed: 125076 normal, 0 highmem
+> Pages needed: -6043 normal, 0 highmem
+> Pages needed: -6043 normal, 0 highmem
+> Pages needed: -6043 normal, 0 highmem
+> Pages needed: -6043
+> done (200 pages freed)
+> Freed 800 kbytes in 0.16 seconds (5.00 MB/s)
+> Suspending console(s)
+> ...
+> CPU1 is down
+> swsusp: critical section:
+> swsusp: Need to copy 131358 pages
+> swsusp: Normal pages needed: 131358
+> swsusp: Normal pages needed: 131358 + 1024 + 22, available pages: 130607
 
-seems like you have the same problem as the dvb framework has/had.
+Well, it looks like someone allocated about 6000 pages after we had freed
+enough memory for suspending.
 
-http://mcentral.de/hg/~mrec/v4l-dvb-stable
+I suspect one of the device drivers plays some dirty tricks in its .suspend()
+routine.  Now the question is which one.
 
-The last 3 changesets do the trick to not oops, it will delay the 
-deinitialization of the device till the last user closed the device node.
+I wonder if setting PAGES_FOR_IO in include/linux/suspend.h to eg. 8192 will
+help.
 
-Markus
+> swsusp: Not enough free memory
+> Error -12 suspending
+> Enabling non-boot CPUs ...
+> SMP alternatives: switching to SMP code
+> Booting processor 1/2 APIC 0x1
+> Not responding.
+> Inquiring remote APIC #1...
+> ... APIC #1 ID: failed
+> ... APIC #1 VERSION: failed
+> ... APIC #1 SPIV: failed
+> kvm: disabling virtualization on CPU1
+> Error taking CPU1 up: -5
+> PCI: Setting latency timer of device 0000:00:01.0 to 64
+> 
+> Please note the CPU#1 bring up problem too.
 
-Cornelia Huck wrote:
-> On Thu, 12 Apr 2007 17:23:18 -0400 (EDT),
-> Alan Stern <stern@rowland.harvard.edu> wrote:
->
->   
->> Here's a not-so-theoretical question.
->>
->> I've got a module which registers a struct device.  (It represents a
->> virtual device, not a real one, but that doesn't matter.)  Obviously the
->> module's exit routine has to wait until the release() routine for that
->> device has been invoked -- if it returned too early then the release()
->> call would oops.
->>
->> How should it wait?
->>     
->
-> Device lifetime vs. module lifetime - that's a fun one...
->
->   
->> The most straightforward approach is to use a struct completion, like 
->> this:
->>
->> 	static struct {
->> 		struct device dev;
->> 		...
->> 	} my_dev;
->>
->> 	static DECLARE_COMPLETION(my_completion);
->>
->> 	static void my_release(struct device *dev)
->> 	{
->> 		complete(&my_completion);
->> 	}
->>
->> 	static void __exit my_exit(void)
->> 	{
->> 		device_unregister(&my_dev.dev);
->> 		wait_for_completion(&my_completion);
->> 	}
->>
->> The problem is that there is no guarantee a context switch won't take
->> place after my_release() has called complete() and before my_release()  
->> returns.  If that happens and my_exit() finishes running, then the module
->> will be unloaded and the next context switch back to finish off
->> my_release() will oops.
->>
->> Other approaches have similar defects.  So how can this problem be solved?
->>     
->
-> What I see that a device driver may do now is the following:
-> - disallow module unloading (duh)
-> - move the release function outside the module
->
-> To make the completion approach work, the complete() would need to be
-> after the release function. This would imply an upper layer, but this
-> upper layer would need to access the completion structure in the
-> module...
->
-> One could think about a owner field (for getting/putting the module
-> reference) for the object (with a final module_put() after the release
-> function has been called). The problem there would be that it would
-> preclude unloading of the module if there isn't a "self destruct" knob
-> for the object.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->
->
->   
+Yes, and this seems to be related to the APIC.
 
+Gautham, can you please tell me who's the right person to ask about it?
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
-  System   |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
-  Center   |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
-
-
-
+Rafael
