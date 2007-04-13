@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXDMXkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030455AbXDMXlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030323AbXDMXkY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030455AbXDMXkY
+	id S1030455AbXDMXlm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030476AbXDMXlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:40:24 -0400
-Received: from holomorphy.com ([66.93.40.71]:53318 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030323AbXDMXkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:40:23 -0400
-Date: Fri, 13 Apr 2007 16:40:10 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jason Lunz <lunz@falooley.org>, Cameron Schaus <cam@schaus.ca>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20 OOM with 8Gb RAM
-Message-ID: <20070413234010.GX2986@holomorphy.com>
-References: <20070412173830.GA31323@schaus.ca> <20070412121553.c7fd3249.akpm@linux-foundation.org> <20070413223935.GA6783@metaxa.reflex> <20070413154653.21fdb914.akpm@linux-foundation.org> <20070413225433.GV2986@holomorphy.com> <20070413163242.7d9283e1.akpm@linux-foundation.org>
+	Fri, 13 Apr 2007 19:41:42 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:19181 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030455AbXDMXll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 19:41:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=BNLqdxD3PmHP5s8CTbtYhGS8BUwGpDwMfiwsjCwQD5rIszJLpREB5znw5KOy20KF7upW85FlrbftXu7bxN2l0x7pTA4pONs/Yk8M8p86rRYhFFOgGSkFLL286Rh16obf06XyGnlAE0vAhCWOINjpvJSsQUaAA2bZeAC8bDUm1Cw=
+Message-ID: <462014CA.1040104@googlemail.com>
+Date: Sat, 14 Apr 2007 01:39:54 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070207)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070413163242.7d9283e1.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+References: <20070413202100.GA9957@elte.hu> <46200D47.70108@googlemail.com> <20070413232550.GB15894@elte.hu>
+In-Reply-To: <20070413232550.GB15894@elte.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007 15:54:33 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
->> After all this time, bdevs are still lowmem etc. Crying shame.
+Ingo Molnar wrote:
+> * Gabriel C <nix.or.die@googlemail.com> wrote:
+>
+>   
+>>> as usual, any sort of feedback, bugreports, fixes and suggestions 
+>>> are more than welcome,
+>>>       
+>> Compile error here.
+>>     
+>
+> ah, !CONFIG_SMP. Does the patch below do the trick for you? (I've also 
+> updated the full patch at the cfs-scheduler URL)
+>   
 
-On Fri, Apr 13, 2007 at 04:32:42PM -0700, Andrew Morton wrote:
-> One would need to hunt down every use of b_data in filesystems and switch
-> them to kmap the page.
-> Possibly it could be done on a per-fs basis.
+Yes it does , thx :) , only the " warning: unused variable 'j' " left.
 
-Queued right behind a dozen other massive sweeps for me to do.
+> 	Ingo
+>   
 
+Regards,
 
--- wli
+Gabriel
+
