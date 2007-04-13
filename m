@@ -1,95 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965055AbXDMUY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965042AbXDMU1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965055AbXDMUY6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbXDMUY6
+	id S965042AbXDMU1V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 16:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965051AbXDMU1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:24:58 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57238 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965051AbXDMUY5 (ORCPT
+	Fri, 13 Apr 2007 16:27:20 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45635 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965042AbXDMU1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:24:57 -0400
-X-AuditID: d80ac287-9c8acbb000002c59-ac-461fe71953bb 
-Date: Fri, 13 Apr 2007 21:24:55 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Zachary Amsden <zach@vmware.com>
-cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
-In-Reply-To: <461FD9BF.90609@vmware.com>
-Message-ID: <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com>
- <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
- <461FD9BF.90609@vmware.com>
+	Fri, 13 Apr 2007 16:27:20 -0400
+Message-ID: <461FE77A.6020307@zytor.com>
+Date: Fri, 13 Apr 2007 13:26:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 13 Apr 2007 20:24:56.0508 (UTC) FILETIME=[CD279FC0:01C77E09]
-X-Brightmail-Tracker: AAAAAA==
+To: Zachary Amsden <zach@vmware.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Chris Wright <chrisw@sous-sol.org>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Crash while mapping memory in pagetable_init() (Was: Re: .config)
+References: <20070413174913.GA25234@ezr.goop.org> <20070413183841.GP10574@sequoia.sous-sol.org> <20070413190552.GQ10574@sequoia.sous-sol.org> <461FD97B.1010203@goop.org> <461FE36D.1050205@vmware.com>
+In-Reply-To: <461FE36D.1050205@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007, Zachary Amsden wrote:
-> Hugh Dickins wrote:
-> > Zach, while looking at your recent patches, I ran across the comment
-> > on pte_update_defer, and where it was being used, and now think that
-> > David's patch is actually incorrect.  Previously pte_update_defer
-> > was being used where a flush_tlb_page followed immediately after
-> > within the same macro; with David's patch, mm's clear_refs_pte_range
-> > is calling ptep_test_and_clear_young (including pte_update_defer) on
-> > several ptes, then unlocking the page table, and later flushing TLB.
-> > That's exactly wrong for pte_update_defer, isn't it?
-> >   
+Zachary Amsden wrote:
+> Jeremy Fitzhardinge wrote:
+>> It seems to me that the problem is simply that it runs out of space. 
+>> head.S maps 8Mbytes of memory.
+
+8 MB was a long time ago.
+head.S maps the kernel size plus INIT_MAP_BEYOND_END, which is currently 
+set to 128K.
+
+   The kernel takes ~6.8M of that, and
+>> there simply isn't enough remaining space to fit the pagetables to map
+>> all memory into the kernel address space.  Here's my dump of all pte
+>> allocations.  Notice the jump at c070b000 where skips over the kernel,
+>> and then it just runs into the 8M limit.  This is with CONFIG_PARAVIRT,
+>> but no CONFIG_XEN.
+>>
+>> I don't see why this doesn't happen all the time; I can't see anything
+>> about this which is PARAVIRT-specific.  But I think only specific
+>> combinations of memory size and kernel size can trigger the problem,
+>> because the code in head.S will often end up mapping enough memory to
+>> fit everything in.  It tries to map kernelsize+initial_pagetables+128k
+>> of space; in this case it happens to map 8M, but if the kernel were much
+>> larger it would map 12M.
+>>
+>> But surely this must have been seen before?  Or is there something
+>> subtle I'm missing?
+>>   
 > 
-> Ok, disregard most of my last e-mail.
+> Wow, that is a huge kernel.  No wonder I've never seen this.  Seems when 
+> you go over 6meg there will be a problem.  For PAE, this requires page 
+> tables to map up to about 896 of lowmem - each page table can map 2 meg 
+> of memory, so you need up to 448 page tables, or 1792k of page table 
+> memory - adding 16k for pmd tables, this comes to 1808k.  With 6.24M 
+> kernel, you simply will run out of space to map all of lowmem in 8M.
+ >
+> With 6.8M PAE kernel, 608M of lowmem mappings will cause you to go 
+> beyond 8M of initially mapped space.  Non-PAE kernels will be ok until 
+> you get to a kernel size of about 7.04M.
 
-Phew!  That's a lot quicker than digesting it ;)
-But thanks for going to so much trouble.
+This means INIT_MAP_BEYOND_END is set incorrectly.
 
-> It is fine to decouple the flush from
-> the update, as long as they stay close enough that you can reason they happen
-> together.  I guess I hadn't seen the other parts of the patch which release
-> the page table spinlock in between the two, and somehow missed it again when
-> responding to the above as I got too excited explaining why the decoupling is
-> ok.  It is not ok to release the spinlock when using shadow page tables on
-> SMP.  There are some rather complex races that can result.  Here's one case:
-> 
-> CPU-0                    CPU-1
-> -----------------------  ---------------------------
-> test_and_clear_dirty(x)
-> spin_unlock(ptl)
->                         write address mapped by X
->                         (harware updates dirty bit)
->                         spin_lock(ptl)
->                         set_pte_wrprotect(x)
->                         flush
-> flush
-> 
-> Now, the write protected pte which maps a dirty page gets broken in two ways;
-> it is unclear if dirty bit or entiry PTE from CPU-0 is deferred until flush,
-> so either write protected PTE for modified page loses the dirty bit (BAD!), or
-> write protected PTE loses both dirty and write protect bits (VERY BAD!).
-> 
-> To prevent this, we need a flush before dropping the spinlock.  If that gets
-> too complicated, we can drop the defer logic and just use pte_update instead,
-> which notifies the hypervisor immediately of the mapping change.
+> Note you can always run out of space; to ensure safety, the init code 
+> needs to not use a fixed mapping size, it needs to map 
+> end_kernel_address + pae ? 1808k : 896k, assuming 128M vmalloc hole.
 
-David (clear_refs_pte_range) is only using ptep_test_and_clear_young,
-though he did change the ptep_test_and_clear_dirty definition to be
-consistent with it.  old/young is never so serious as clean/dirty, so
-it may be that there's very little problem with what's in there now;
-it just becomes a shame if the wrong decision gets made too often e.g.
-if the misflushing is such that his clear_youngs never really take
-effect.  I simply cannot tell whether or not that's the case myself.
+Really (pae ? 2M : 1M), in other words, plus the 128K for bootmem.  Note 
+that this is creating page tables for, not erasing.  To map 2M, we will 
+only use 2K of additional memory (meaning there is 50% chance we end up 
+using an additional 4K page.)
 
-But once the pte_update_defers get moved away from their flush_tlb_pages,
-as is the case now, it feels like we're on thin ice.
+So the solution is simply to change INIT_MAP_BEYOND_END in head.S 
+appropriately.
 
-Actually, I don't really get pte_update_defer at all: I can understand
-wanting to defer a call down, but it appears to be a call down to say
-we're deferring the shadow update?  Why not just do it with pte_update?
-I'd be happier without it until this could be restructured more safely
-(but my incomprehension is not necessarily the best guiding principle).
+> This could cause problems like running into initrd, however, so might 
+> require loader changes, or perhaps relocating the initrd.  Is the 
+> solution to just cap the kernel size at some fixed maximum?  6.2M 
+> appears to be the safe limit for all configurations.
 
-Hugh
+The initrd is supposed to be loaded as far away from the kernel as 
+possible.  Mapping 2M hardly seems like a problem.  When we set up the 
+memory manager we actively have to watch out for the pages that belong 
+to the initrd anyway.  I have on my list to be able to pull initrd out 
+of highmem; that way the bootloader can always load the initrd from end 
+of memory.
+
+> I'm pulling this back onto lkml; seems this is a serious bug which needs 
+> attention.  I've also cc'd some parties that might have relevant 
+> knowledge.  Why do I seem to recall head.S mapping 128M of mappings at 
+> one point in time?
+
+You're probably confusing it with the 128K number, which was set to fit 
+the maximum possible memory for the bootmem pagetables.
+
+	-hpa
