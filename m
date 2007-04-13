@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030185AbXDMWQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030259AbXDMWVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030185AbXDMWQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 18:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030468AbXDMWQ5
+	id S1030259AbXDMWVN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 18:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030853AbXDMWVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 18:16:57 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:30191 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030314AbXDMWQ4 (ORCPT
+	Fri, 13 Apr 2007 18:21:13 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:43112 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030259AbXDMWVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 18:16:56 -0400
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Fri, 13 Apr 2007 18:21:13 -0400
+Message-ID: <462001A9.3030006@vmware.com>
+Date: Fri, 13 Apr 2007 15:18:17 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070413202100.GA9957@elte.hu>
-References: <20070413202100.GA9957@elte.hu>
-Content-Type: text/plain
-Date: Fri, 13 Apr 2007 15:15:46 -0700
-Message-Id: <1176502546.3129.79.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup
+ less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>
+In-Reply-To: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-13 at 22:21 +0200, Ingo Molnar wrote:
-> [announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-> 
-> i'm pleased to announce the first release of the "Modular Scheduler Core
-> and Completely Fair Scheduler [CFS]" patchset:
-> 
->    http://redhat.com/~mingo/cfs-scheduler/sched-modular+cfs.patch
-> 
-> This project is a complete rewrite of the Linux task scheduler. My goal
-> is to address various feature requests and to fix deficiencies in the
-> vanilla scheduler that were suggested/found in the past few years, both
-> for desktop scheduling and for server scheduling workloads.
+H. Peter Anvin wrote:
+> +	/*
+> +	 * End condition: we must map up to and including
+> +	 * INIT_MAP_BEYOND_END bytes beyond the end of our
+> +	 * own page tables; 0x1000 is the size of the page
+> +	 * table were about to write, and +0x007 is the
+> +	 * attribute bits.
+> +	 */
+> +	leal (INIT_MAP_BEYOND_END+0x1000+0x007)(%edi),%ebp
+>   
 
-I'm not in love with the current or other schedulers, so I'm indifferent
-to this change. However, I was reviewing your release notes and the
-patch and found myself wonder what the logarithmic complexity of this
-new scheduler is .. I assumed it would also be constant time , but the
-__enqueue_task_fair doesn't appear to be constant time (rbtree insert
-complexity).. Maybe that's not a critical path , but I thought I would
-at least comment on it.
+hrmm?  Shouldn't that still be INIT_MAP_BEYOND_END+0x0007?  Seems you 
+are mapping 4M more than you need.
 
-Daniel
-
+Zach
