@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030495AbXDMXqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030503AbXDMXuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030495AbXDMXqQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030899AbXDMXqQ
+	id S1030503AbXDMXuL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030899AbXDMXuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:46:16 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39169 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030495AbXDMXqO (ORCPT
+	Fri, 13 Apr 2007 19:50:10 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:49914 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030503AbXDMXuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:46:14 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] make kthread_stop() scalable
-References: <20070413130236.GA173@tv-sign.ru>
-Date: Fri, 13 Apr 2007 17:44:41 -0600
-In-Reply-To: <20070413130236.GA173@tv-sign.ru> (Oleg Nesterov's message of
-	"Fri, 13 Apr 2007 17:02:36 +0400")
-Message-ID: <m14pnjon4m.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 13 Apr 2007 19:50:09 -0400
+Date: Sat, 14 Apr 2007 01:50:17 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz
+Cc: linux-pm@lists.osdl.org
+Subject: Re: Linux 2.6.21-rc6
+Message-ID: <20070413235017.GR5907@stusta.de>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070413212954.GA2545@melchior.yamamaya.is-a-geek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070413212954.GA2545@melchior.yamamaya.is-a-geek.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Fri, Apr 13, 2007 at 11:29:55PM +0200, Tobias Diedrich wrote:
+> Linus Torvalds wrote:
+> 
+> > We should be getting close to a 2.6.21 release, so please update any 
+> > regression reports you've done,
+> 
+> For me, suspend to disk works only once (has been the case for all
+> .21-rcs IIRC, but I didn't get around to report it so far).
+> There are some threads about an issue like this, which is supposed
+> to be fixed by disabling CONFIG_PCI_MSI, but on my system the
+> problem persists nonetheless.
+> 
+> On the second suspend attempt, the last message I see is
+> "Suspending console(s)"
+> 
+> If I find the time, I'll try to bisect it this weekend.
+>...
 
-> It's a shame kthread_stop() (may take a while!) runs with a global semaphore
-> held. With this patch kthread() allocates all neccesary data (struct kthread)
-> on its own stack, globals kthread_stop_xxx are deleted.
+Does CONFIG_HPET_TIMER=n make any difference?
+Does the latest -git work?
+ 
+cu
+Adrian
 
-Oleg so fare you patches  have been inspiring.  However..
+-- 
 
-> HACKS:
->
-> 	- re-use task_struct->set_child_tid to point to "struct kthread"
-
-	 task_struct->vfork_done is a better cannidate.
-
-> 	- use do_exit() directly to preserve "struct kthread" on stack
-
-Calling do_exit directly like that is not a hack, as it appears the preferred
-way to exit is to call do_exit, or complete_and_exit.
-
-While this does improve the scalability and remove a global variable.  It
-also introduces a complex special case in the form of struct kthread.
-
-It also doesn't solve the biggest problem with the current kthread interface
-in that calling kthread_stop does not cause the code to break out of
-interruptible sleeps.
-
->  static int kthread(void *_create)
->  {
-> -	struct kthread_create_info *create = _create;
-> -	int (*threadfn)(void *data);
-> -	void *data;
-> -	int ret = -EINTR;
-> +	struct kthread self = {
-> +		.task = current,
-> +		.err = -EINTR,
-> +	};
->  
->  	/* Copy data: it's on kthread's stack */
-> -	threadfn = create->threadfn;
-> -	data = create->data;
-> +	struct kthread_create_info *create = _create;
-> +	int (*threadfn)(void *data) = create->threadfn;
-> +	void *data = create->data;
-> +
-> +	/*
-> +	 * This should be enough to assure that self is still on
-> +	 * stack when we enter do_exit()
-> +	 */
-> +	set_kthread(&self);
-> +	create->result = &self;
->  
-
-> @@ -91,7 +105,7 @@ static void create_kthread(struct kthrea
->  
->  	/* We want our own signal handler (we take no signals by default). */
->  	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
-> -	create->result = pid;
-> +	create->result = ERR_PTR(pid);
-
-Ouch.    You have a nasty race here.
-
-If kthread runs before kernel_thread returns then setting
-"create->result = ERR_PTR(pid);" could easily stomp 
-"create->result = &self".
-
-
-Eric
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
