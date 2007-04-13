@@ -1,74 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030293AbXDMU77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXDMVBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030293AbXDMU77 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030283AbXDMU76
+	id S1030301AbXDMVBT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030278AbXDMVBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:59:58 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:52664 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030297AbXDMU74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:59:56 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Date: Fri, 13 Apr 2007 14:59:45 -0600
-User-Agent: KMail/1.9.5
-Cc: Jean Delvare <khali@linux-fr.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-References: <45D5EA88.7090300@redhat.com> <200704131218.44045.bjorn.helgaas@hp.com> <20070413200746.GD28264@elf.ucw.cz>
-In-Reply-To: <20070413200746.GD28264@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 13 Apr 2007 17:01:19 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41138 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030283AbXDMVBS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 17:01:18 -0400
+Date: Fri, 13 Apr 2007 14:03:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: make clean for DocBook
+Message-Id: <20070413140337.9ecba871.randy.dunlap@oracle.com>
+In-Reply-To: <20070413193250.GA15361@uranus.ravnborg.org>
+References: <20070413090658.b4c4bc8f.randy.dunlap@oracle.com>
+	<20070413164142.GA14706@uranus.ravnborg.org>
+	<20070413112316.44141d34.randy.dunlap@oracle.com>
+	<20070413193250.GA15361@uranus.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704131459.45867.bjorn.helgaas@hp.com>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 April 2007 14:07, Pavel Machek wrote:
-> > > ... The primary issue is the concurrent access
-> > > to resources, which cause lots of trouble which are hard to investigate.
-> > > If ACPI reserves the ports, then the SMBus or hardware monitoring
-> > > drivers (or any other conflicting driver) will cleanly fail to load,
-> > > which would be a move in the right direction. ...
+On Fri, 13 Apr 2007 21:32:50 +0200 Sam Ravnborg wrote:
+
 > > > 
-> > > So, can ACPI actually reserve the ports it accesses?
+> > > 
+> > > And we will visit DocBook with mrproper - but not clean.
+> > > I have no stron opinion when to delete generated files in DocBook.
 > > 
-> > Sorry to join this discussion so late.
+> > OK, that's fine, thanks for the info...
+> > but trying 'make mrproper' gives me:
 > > 
-> > ACPI tells us the resources used by devices.  Today, we don't
-> > reserve
+> > make -f scripts/Makefile.clean obj=Documentation/DocBook
+> > make -f scripts/Makefile.clean obj=Documentation/DocBook/man/
+> > make[2]: execvp: /bin/sh: Argument list too long
+> > make[2]: *** [__clean] Error 127
+> > make[1]: *** [Documentation/DocBook/man/] Error 2
+> > make: *** [_mrproper_Documentation/DocBook] Error 2
+> > 
+> > DocBook/man/ contains about 2000 files.
+> > Is there some way to have scripts/Makefile.clean just do
+> > 	rm -rf Documentation/DocBook/man/
+> > ?  or some other solution?
 > 
-> Problem seems to be that ACPI does _not_ tell us which ports it
-> accesses from AML code.
+> Something like this should do it.
+> This deletes the man/ directory entirely so
+> I have to do that when I check in the patch.
+> 
+> Let me know if this works for you.
 
-I think that would violate at least the spirit of the ACPI spec.
-The example in section 11.6 of the ACPI 3.0 spec shows a _TMP
-method that runs an EC method to read the temp, and the EC ioport
-usage is correctly declared in the EC device's _CRS method.
+Yes, thanks.
 
-Of course, there are always BIOS defects.  But if we could make a
-case that a BIOS that doesn't declare the resources used by the AML
-is defective, we could add quirks to reserve the undeclared resources.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Chuck's last update (http://lkml.org/lkml/2007/2/20/136) says his
-problem turned out to be unrelated to k8temp and may have gone away
-after a BIOS update.
 
-> But we already found a lock we can take; AFAICT we know how to solve
-> this problem.
+> 	Sam
+> 
+> diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
+> index 867608a..960f402 100644
+> --- a/Documentation/DocBook/Makefile
+> +++ b/Documentation/DocBook/Makefile
+> @@ -152,6 +152,7 @@ quiet_cmd_db2man = MAN     $@
+>  	@(which xmlto > /dev/null 2>&1) || \
+>  	 (echo "*** You need to install xmlto ***"; \
+>  	  exit 1)
+> +	$(Q)mkdir -p $(obj)/man
+>  	$(call cmd,db2man)
+>  	@touch $@
+>  
+> @@ -212,11 +213,7 @@ clean-files := $(DOCBOOKS) \
+>  	$(patsubst %.xml, %.9,    $(DOCBOOKS)) \
+>  	$(C-procfs-example)
+>  
+> -clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS))
+> -
+> -#man put files in man subdir - traverse down
+> -subdir- := man/
+> -
+> +clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS)) man
+>  
+>  # Declare the contents of the .PHONY variable as phony.  We keep that
+>  # information in a variable se we can use it in if_changed and friends.
+> diff --git a/Documentation/DocBook/man/Makefile b/Documentation/DocBook/man/Makefile
+> deleted file mode 100644
+> index 4fb7ea0..0000000
+> --- a/Documentation/DocBook/man/Makefile
+> +++ /dev/null
+> @@ -1,3 +0,0 @@
+> -# Rules are put in Documentation/DocBook
+> -
+> -clean-files := *.9.gz *.sgml manpage.links manpage.refs
+> 
+> -
 
-This might solve it, but doesn't seem like a clean way to do it.
-I don't like the idea of sharing a lock between drivers and ACPI.
-k8temp happens to be x86-dependent, so we'll always have ACPI, but
-in principle, we could have the same problem with an arch-independent
-PCI driver that only has ACPI on x86 and ia64 platforms.
-
-(BTW, if Chuck's problem was solved by the BIOS update, I assume
-there *is* another instance of the problem that we're trying to
-solve with this lock.)
-
-Bjorn
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
