@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbXDMJvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbXDMJvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbXDMJvi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 05:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbXDMJvi
+	id S1753049AbXDMJvy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 05:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbXDMJvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 05:51:38 -0400
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:4740 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752929AbXDMJvi (ORCPT
+	Fri, 13 Apr 2007 05:51:54 -0400
+Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:45375 "HELO
+	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753000AbXDMJvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 05:51:38 -0400
-Date: Fri, 13 Apr 2007 11:50:36 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/30] Use menuconfig objects
-Message-ID: <20070413115036.1be7c595@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Apr 2007 05:51:53 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=S9fbqEkZ5s/nNcnU7adrOXAgiziaRN/CEAivVWnMDCL0VxgZ6q2TaXaoixNH/dOOfma6KKvf/WxUMr4SVMvZ5enFMXngCP/p0RWrHRroOeyC0/m0/UljGuocv+7ZspA5k0tumWzIyyOiQPz51OoF+yOouSs1AX7TixBbyR4x2+E=  ;
+X-YMail-OSG: OkglYAkVM1mIdtdgSgnQ.LdH5bUxvDuhYU6Xksj9_dfseLSr0rvVxLCOp.wu.YPnza3v31aTug--
+From: David Brownell <david-b@pacbell.net>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH][RFC] Kill off legacy power management stuff.
+Date: Fri, 13 Apr 2007 02:51:50 -0700
+User-Agent: KMail/1.7.1
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6> <200704131022.45315.rjw@sisk.pl>
+In-Reply-To: <200704131022.45315.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704130251.50655.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan,
-
-On Tue, 10 Apr 2007 21:17:40 +0200 (MEST), Jan Engelhardt wrote:
-> the following patch series turns some menus into menuconfigs, so they 
-> can be disabled whilst "walking" thorugh the parent menu (check the 
-> videos [1], [2] to see what I mean), enabling for disabling lots of 
-> options _quickly_.
+On Friday 13 April 2007 1:22 am, Rafael J. Wysocki wrote:
+> [appropriate CCs added]
 > 
-> I'll send the patches (as a reply to this mail) piece by piece out
-> when I figure out the maintainers to Cc for each.
+> On Friday, 13 April 2007 02:33, Robert P. J. Day wrote:
+> > 
+> > just something i threw together, not in final form, but it represents
+> > tossing the legacy PM stuff.  at the moment, the menuconfig entry for
+> > PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
+> > "obsolete."  that's a good sign that it's getting close to the time
+> > for it to go, and the removal is fairly straightforward, but there's
+> > no mention of its removal in the feature removal schedule file.
 > 
-> [1] 6.04 MB(1000s) 70 sec http://jengelh.hopto.org/mc/without.ogg
-> [2] 1.96 MB(1000s) 44 sec http://jengelh.hopto.org/mc/with.ogg
+> It's been like this for a long long time.  I think you're right that it can be
+> dropped, but I don't know the details (eg. why it hasn't been dropped yet).
 
-You might want to try the -q flag of quilt push and quilt pop.
+I was just thinking about this the other day.  I did an inventory of
+the actual _users_ of this code when I added the deprecation to Kconfig,
+and the only driver that would catch the notification was for some
+old m68k platform serial driver (Amiga?) ... that won't have changed.
 
-> I have not poked on all subsystems (it is quite a lot), but I can 
-> already give a glimpse (`ls -1`) of who gets one and who does not.
-> And, I am not completely finished changing some subsystems - but
-> the patches are already big enough for a first wave. I want to get
-> some feedback first. Thanks!
-> 
-> `ls -1`:
-> 	menuconfig-acpi.diff
-> 	menuconfig-apm.diff
-> 	menuconfig-ata.diff
-> 	menuconfig-block.diff
-> 	menuconfig-connector.diff
-> 	menuconfig-crypto.diff
-> 	menuconfig-crypto2.diff
-> 	menuconfig-dccp.diff
-> 	menuconfig-fusion.diff
-> 	menuconfig-i2c.diff
-> 	menuconfig-i2o.diff
-> 	menuconfig-ide.diff
-> 	menuconfig-ieee1394.diff
-> 	menuconfig-md.diff
-> 	menuconfig-modules.diff
-> 	menuconfig-mtd.diff
-> 	menuconfig-net-ipvs.diff
-> 	menuconfig-net-sctp.diff
-> 	menuconfig-net-tipc.diff
-> 	menuconfig-netdev-arcnet.diff
-> 	menuconfig-netdev-phy.diff
-> 	menuconfig-netdev-tr.diff
-> 	menuconfig-netdev.diff
-> 	menuconfig-oldcd.diff
-> 	menuconfig-parport.diff
-> 	menuconfig-pcihotplug.diff
-> 	menuconfig-pcmcia.diff
-> 	menuconfig-pnp.diff
-> 	menuconfig-scsi.diff
-> 	menuconfig-w1.diff
+So the only reason not to remove it at that time was to make sure that
+folk had a chance to squawk about it going away.  I think it's past
+time for this ancient stuff to vanish, since it's been obsolete for
+most of 2.5..2.6 and there's only that one event consumer left.
 
-As far as I can see, the hwmon subsystem would benefit from that too.
+Go for it!
 
--- 
-Jean Delvare
+- Dave
+
+
+
+
