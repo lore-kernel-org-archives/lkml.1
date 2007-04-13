@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXDMTTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbXDMTay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932318AbXDMTTJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 15:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932263AbXDMTTI
+	id S1754139AbXDMTay (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 15:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXDMTay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 15:19:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58703 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932318AbXDMTTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 15:19:07 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/v2kszpwHv6lmIfeDQTz5rS0jMwvNfmwHGx8ABWy
-	x1o7cBKldGEZh5
-Date: Fri, 13 Apr 2007 21:19:04 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linux-kernel@vger.kernel.org
-cc: James Bottomley <James.Bottomley@SteelEye.com>, Greg KH <greg@kroah.com>,
-       Eric Miao <eric.y.miao@gmail.com>
-Subject: dma_declare_coherent_memory() for accessing platform-wide memory
-Message-ID: <Pine.LNX.4.60.0704132018100.5919@poirot.grange>
+	Fri, 13 Apr 2007 15:30:54 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:33360 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754139AbXDMTax (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 15:30:53 -0400
+Message-ID: <461FD9BF.90609@vmware.com>
+Date: Fri, 13 Apr 2007 12:27:59 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+To: Hugh Dickins <hugh@veritas.com>
+CC: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
+References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com> <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hugh Dickins wrote:
+> Zach, while looking at your recent patches, I ran across the comment
+> on pte_update_defer, and where it was being used, and now think that
+> David's patch is actually incorrect.  Previously pte_update_defer
+> was being used where a flush_tlb_page followed immediately after
+> within the same macro; with David's patch, mm's clear_refs_pte_range
+> is calling ptep_test_and_clear_young (including pte_update_defer) on
+> several ptes, then unlocking the page table, and later flushing TLB.
+> That's exactly wrong for pte_update_defer, isn't it?
+>   
 
-On a PXA270 based system I modified the framebuffer driver to use SRAM on 
-the SoC to reduce bus load caused by DMA transfers. For this I just 
-assigned the entire SRAM to the fb driver. It works.
+Ok, disregard most of my last e-mail.  It is fine to decouple the flush 
+from the update, as long as they stay close enough that you can reason 
+they happen together.  I guess I hadn't seen the other parts of the 
+patch which release the page table spinlock in between the two, and 
+somehow missed it again when responding to the above as I got too 
+excited explaining why the decoupling is ok.  It is not ok to release 
+the spinlock when using shadow page tables on SMP.  There are some 
+rather complex races that can result.  Here's one case:
 
-Then Eric Miao (CCed) rightfully noticed, that other devices might also 
-benefit from using SRAM. So, I started thinking about creating a special 
-(platform) device owning that SRAM block and making all its potential 
-users its children. The device-local memory API even has provisional 
-support for this with the DMA_MEMORY_INCLUDES_CHILDREN flag.
+ CPU-0                    CPU-1
+-----------------------  ---------------------------
+test_and_clear_dirty(x)
+spin_unlock(ptl)
+                         write address mapped by X
+                         (harware updates dirty bit)
+                         spin_lock(ptl)
+                         set_pte_wrprotect(x)
+                         flush
+flush
 
-But there are problems with this approach too. For example, some PXA 
-machines already occupy framebuffer's parent. I think, they are fixing 
-power up/down sequence problems in this way, but I am not sure that's a 
-good idea from the point of view of the bus locality.
+Now, the write protected pte which maps a dirty page gets broken in two 
+ways; it is unclear if dirty bit or entiry PTE from CPU-0 is deferred 
+until flush, so either write protected PTE for modified page loses the 
+dirty bit (BAD!), or write protected PTE loses both dirty and write 
+protect bits (VERY BAD!).
 
-Otherwise, maybe the best way would be assigning that SRAM block to the 
-struct device platform_bus directly? But that way all platform devices 
-would get their DMA buffers from that (rather small) block on the "first 
-come first served" basis.
+To prevent this, we need a flush before dropping the spinlock.  If that 
+gets too complicated, we can drop the defer logic and just use 
+pte_update instead, which notifies the hypervisor immediately of the 
+mapping change.
 
-What would be the best way to solve this?
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Zach
