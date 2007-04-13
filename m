@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751068AbXDMBBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbXDMBJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751068AbXDMBBv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 21:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXDMBBu
+	id S1751143AbXDMBJL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 21:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbXDMBJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 21:01:50 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:44664 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751068AbXDMBBu (ORCPT
+	Thu, 12 Apr 2007 21:09:11 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:16173 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbXDMBJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 21:01:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=zctfg1C7phgul8ZiBIQe+tewHweO1RV8vYFlc+AbA/+ylKnw6HGXpQhNIbIl+hmB3FpdcWUdGWsM+u93qlHvi8RHymDrZ66+5js11ZRkTW+71DkMC+coUSdJ80A7udG7MrL7giGZgC6Fct6EjvGTIX1lslmkn1UQB7tRVMCtCHU=  ;
-X-YMail-OSG: Srd8PGAVM1mUEJxbFZJRLAFQiW1m6RhbgnonHJUn2dAAdypPA7hl0B2zOGtSezl1juBvJBHKDA--
-Message-ID: <461ED675.3060909@yahoo.com.au>
-Date: Fri, 13 Apr 2007 11:01:41 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Thu, 12 Apr 2007 21:09:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=H4heur5FqD/ut1MHVDKG/r16srpGe6qSbYNLKg6IO8U9JPp25LNoLdgKJoSTVJ464
+	8iAC/4atvXwNe0OK9aUhQ==
+Message-ID: <b040c32a0704121808u63dd169bhecba2a0596a546eb@mail.gmail.com>
+Date: Thu, 12 Apr 2007 18:08:56 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Jeff Moyer" <jmoyer@redhat.com>
+Subject: Re: [patch] convert aio event reap to use atomic-op instead of spin_lock
+Cc: "Zach Brown" <zach.brown@oracle.com>, akpm@linux-foundation.org,
+       linux-aio@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <b040c32a0704121757p728654cdte652c2a900e4c2d4@mail.gmail.com>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
-References: <1.486631555@selenic.com> <20070412231050.GN2986@holomorphy.com> <20070412163235.dd030637.akpm@linux-foundation.org> <461ECB9C.8060000@yahoo.com.au> <20070413002538.GJ11115@waste.org>
-In-Reply-To: <20070413002538.GJ11115@waste.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070410235353.325A7346F64@localhost>
+	 <20070411180038.GN28322@mami.zabbo.net>
+	 <b040c32a0704111228t5065253en9249ff88db5b1384@mail.gmail.com>
+	 <b040c32a0704120029u423bfd39pfa0479c3c678ebe2@mail.gmail.com>
+	 <x49ejmp3igr.fsf@segfault.boston.devel.redhat.com>
+	 <b040c32a0704121757p728654cdte652c2a900e4c2d4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Fri, Apr 13, 2007 at 10:15:24AM +1000, Nick Piggin wrote:
-> 
->>Andrew Morton wrote:
->>
->>>On Thu, 12 Apr 2007 16:10:50 -0700
->>>William Lee Irwin III <wli@holomorphy.com> wrote:
->>
->>>>+       while (count > 0) {
->>>>+               chunk = min_t(size_t, count, PAGE_SIZE);
->>>>+               i = 0;
->>>>+
->>>>+               if (pfn == -1) {
->>>>+                       page[0] = 0;
->>>>+                       page[1] = 0;
->>>>+                       ((char *)page)[0] = (ntohl(1) != 1);
->>>
->>>
->>>OK.
->>>
->>>
->>>
->>>>+                       ((char *)page)[1] = PAGE_SHIFT;
->>>
->>>
->>>OK.
->>
->>Shouldn't we just expose page size and endianness by other means? (another 
->>file or
->>syscall).
-> 
-> 
-> If I send you this file dumped from a random machine, you won't know
-> what to make of it.
+On 4/12/07, Ken Chen <kenchen@google.com> wrote:
+> On 4/12/07, Jeff Moyer <jmoyer@redhat.com> wrote:
+> > I didn't see any response to Zach's request for code that actually
+> > tests out the shared ring buffer.  Do you have such code?
+>
+> Yes, I do.  I was stress testing the code since last night.  After 20+
+> hours of stress run with fio and aio-stress, now I'm posting it with
+> confidence.
+>
+> I modified libaio's io_getevents to take advantage of new user level
+> reap function. The feature is exported out via ring->compat_features.
+> btw, is compat_feature suppose to be a version number or a bit mask?
+> I think bitmask make more sense and more flexible.
 
-That's a good reason ;)
+Additional patch on the kernel side to export the new features.  On
+top of patch posted at:
+http://marc.info/?l=linux-kernel&m=117636401818057&w=2
 
-> I'm planning to write a trivial server to sit on, say, my embedded
-> target and spew this over the wire to a client. 
-> 
-> 
->>>Not a good idea to expose raw flags in this manner - it changes at the drop
->>>of a hat.  We'd need to also expose the kernel's PG_foo-to-bitnumber
->>>mapping to make this viable.
->>
->>I don't think it is viable because that makes the flags part of the
->>userspace ABI. I wonder what they are needed for.
-> 
-> 
-> Basically: to show what the hell's going on in the VM.
+--- a/include/linux/aio.h
++++ b/include/linux/aio.h
+@@ -138,8 +138,11 @@ #define init_sync_kiocb(x, filp)			\
+ 		init_wait((&(x)->ki_wait));             \
+ 	} while (0)
 
-kprobes / systemtap isn't good enough?
-
--- 
-SUSE Labs, Novell Inc.
++#define AIO_RING_BASE		1
++#define AIO_RING_USER_REAP	2
++
+ #define AIO_RING_MAGIC			0xa10a10a1
+-#define AIO_RING_COMPAT_FEATURES	1
++#define AIO_RING_COMPAT_FEATURES	(AIO_RING_BASE | AIO_RING_USER_REAP)
+ #define AIO_RING_INCOMPAT_FEATURES	0
+ struct aio_ring {
+ 	unsigned	id;	/* kernel internal index number */
