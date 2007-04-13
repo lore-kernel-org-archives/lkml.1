@@ -1,131 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXDML5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXDMMAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbXDML5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 07:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXDML5h
+	id S1753507AbXDMMAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 08:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXDMMAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 07:57:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46737 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753413AbXDML5g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 07:57:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Jiri Slaby" <jirislaby@gmail.com>, Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
-Date: Fri, 13 Apr 2007 14:00:11 +0200
-User-Agent: KMail/1.9.5
-Cc: "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-References: <460B6E4B.3060004@gmail.com> <200704122336.57600.rjw@sisk.pl> <4af2d03a0704130314s78d0d831ja52fe8f92efe097a@mail.gmail.com>
-In-Reply-To: <4af2d03a0704130314s78d0d831ja52fe8f92efe097a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704131400.12021.rjw@sisk.pl>
+	Fri, 13 Apr 2007 08:00:16 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:51653 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753507AbXDMMAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 08:00:14 -0400
+To: linuxram@us.ibm.com
+CC: serue@us.ibm.com, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <1176316116.2811.39.camel@ram.us.ibm.com> (message from Ram Pai
+	on Wed, 11 Apr 2007 11:28:36 -0700)
+Subject: Re: [patch 0/8] unprivileged mount syscall
+References: <20070404183012.429274832@szeredi.hu>
+	 <20070406160238.f3178189.akpm@linux-foundation.org>
+	 <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu>
+	 <20070409143802.GB4891@sergelap.austin.ibm.com>
+	 <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu>
+	 <20070409170743.GF24415@sergelap.austin.ibm.com>
+	 <E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu>
+	 <1176194285.2903.67.camel@ram.us.ibm.com>
+	 <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu> <1176316116.2811.39.camel@ram.us.ibm.com>
+Message-Id: <E1HcKQd-0001yO-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 13 Apr 2007 13:58:59 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 13 April 2007 12:14, Jiri Slaby wrote:
-> On 4/12/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday, 11 April 2007 17:02, Jiri Slaby wrote:
-> > > Rafael J. Wysocki napsal(a):
-> > > > On Wednesday, 11 April 2007 12:45, Jiri Slaby wrote:
-> > > >> Rafael J. Wysocki napsal(a):
-> > > >>> On Wednesday, 11 April 2007 09:36, Jiri Slaby wrote:
-> > > >>>> Rafael J. Wysocki napsal(a):
-> > > >>>>> On Monday, 9 April 2007 22:07, Jiri Slaby wrote:
-> > > >>>>>> I have bad news for you :(. I thought I had unpatched kernel, but it happens
-> > > >>>>>> in -rc6 too.
-> > > >>>>> I guess you mean you're still seeing the 'not enough memory to suspend'
-> > > >>>>> problem?
-> > > >>>> Yes:
-> > > >>>> Disabling non-boot CPUs ...
-> > > >>>> kvm: disabling virtualization on CPU1
-> > > >>>> Breaking affinity for irq 9
-> > > >>>> CPU 1 is now offline
-> > > >>>> SMP alternatives: switching to UP code
-> > > >>>> CPU1 is down
-> > > >>>> swsusp: critical section:
-> > > >>>> swsusp: Need to copy 158309 pages
-> > > >>>> swsusp: Not enough free memory
-> > > >>>> Error -12 suspending
-> > > >>>> Enabling non-boot CPUs ...
-> > > >>>> SMP alternatives: switching to SMP code
-> > > >>>> Booting processor 1/2 APIC 0x1
-> > > >>>> Initializing CPU#1
-> > > >>> How reproducible is it?  I'm going to try to reproduce it on one of my boxes.
-> > > >> My tip is one of three cases: after some work on fresh boot -- some
-> > > >> consumers such as thunderbird, firefox, 10 or so terminals with
-> > > >> gnome-session. Single xterm + gnome-session semms not to be a problem.
-> > > >
-> > > > Does the workaround with setting the image size below 1/2 of RAM work for you?
-> > >
-> > > Yes. Yesterday I must set the value to 350M -- 400M was not enough.
-> >
-> > Well, I can't reproduce it.
-> >
-> > Can you please try to reproduce it with the appended patch applied and send
-> > the output of dmesg to me?
-> >
-> > Greetings,
-> > Rafael
-> >
-> > ---
-> >  kernel/power/snapshot.c |    4 ++--
-> >  kernel/power/swsusp.c   |   16 ++++++++++++----
-> >  2 files changed, 14 insertions(+), 6 deletions(-)
+> On Wed, 2007-04-11 at 12:44 +0200, Miklos Szeredi wrote:
+> > > 1. clone the master namespace.
+> > > 
+> > > 2. in the new namespace
+> > > 
+> > > 	move the tree under /share/$me to /
+> > >         for each ($user, $what, $how) {
+> > >             move /share/$user/$what to /$what
+> > > 	    if ($how == slave) {
+> > >                  make the mount tree under /$what as slave
+> > >             }
+> > >         }
+> > >         
+> > > 3. in the new namespace make the tree under 
+> > >        /share as private and unmount /share
+> > 
+> > Thanks.  I get the basic idea now: the namespace itself need not be
+> > shared between the sessions, it is enough if "share" propagation is
+> > set up between the different namespaces of a user.
+> > 
+> > I don't yet see either in your or Viro's description how the trees
+> > under /share/$USER are initialized.  I guess they are recursively
+> > bound from /, and are made slaves.
 > 
-> Shrinking memory...  Pages needed: 128103 normal, 0 highmem
-> Pages needed: 125226 normal, 0 highmem
-> Pages needed: -5757 normal, 0 highmem
-> Pages needed: -5757 normal, 0 highmem
-> Pages needed: -5757 normal, 0 highmem
-> Pages needed: -5757
-> Pages needed: 127953 normal, 0 highmem
-> Pages needed: 125076 normal, 0 highmem
-> Pages needed: -6043 normal, 0 highmem
-> Pages needed: -6043 normal, 0 highmem
-> Pages needed: -6043 normal, 0 highmem
-> Pages needed: -6043
-> done (200 pages freed)
-> Freed 800 kbytes in 0.16 seconds (5.00 MB/s)
-> Suspending console(s)
-> ...
-> CPU1 is down
-> swsusp: critical section:
-> swsusp: Need to copy 131358 pages
-> swsusp: Normal pages needed: 131358
-> swsusp: Normal pages needed: 131358 + 1024 + 22, available pages: 130607
-
-Well, it looks like someone allocated about 6000 pages after we had freed
-enough memory for suspending.
-
-I suspect one of the device drivers plays some dirty tricks in its .suspend()
-routine.  Now the question is which one.
-
-I wonder if setting PAGES_FOR_IO in include/linux/suspend.h to eg. 8192 will
-help.
-
-> swsusp: Not enough free memory
-> Error -12 suspending
-> Enabling non-boot CPUs ...
-> SMP alternatives: switching to SMP code
-> Booting processor 1/2 APIC 0x1
-> Not responding.
-> Inquiring remote APIC #1...
-> ... APIC #1 ID: failed
-> ... APIC #1 VERSION: failed
-> ... APIC #1 SPIV: failed
-> kvm: disabling virtualization on CPU1
-> Error taking CPU1 up: -5
-> PCI: Setting latency timer of device 0000:00:01.0 to 64
+> yes. I suppose, when a userid is created one of the steps would be
 > 
-> Please note the CPU#1 bring up problem too.
+> mount --rbind / /share/$USER
+> mount --make-rslave /share/$USER
+> mount --make-rshared /share/$USER
 
-Yes, and this seems to be related to the APIC.
+Thinking a bit more about this, I'm quite sure most users wouldn't
+even want private namespaces.  It would be enough to
 
-Gautham, can you please tell me who's the right person to ask about it?
+  chroot /share/$USER
 
-Rafael
+and be done with it.
+
+Private namespaces are only good for keeping a bunch of mounts
+referenced by a group of processes.  But my guess is, that the natural
+behavior for users is to see a persistent set of mounts.
+
+If for example they mount something on a remote machine, then log out
+from the ssh session and later log back in, they would want to see
+their previous mount still there.
+
+Miklos
