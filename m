@@ -1,40 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXDMTqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXDMTzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964834AbXDMTqF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 15:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964810AbXDMTqE
+	id S932184AbXDMTzp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 15:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbXDMTzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 15:46:04 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:3895 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964862AbXDMTqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 15:46:03 -0400
-Message-ID: <461FDDF9.7040503@rtr.ca>
-Date: Fri, 13 Apr 2007 15:46:01 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Buytaert_Steven@emc.com
-Cc: davidsen@tmr.com, andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: sched_yield proposals/rationale
-References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com> <p737ish90ss.fsf@bingen.suse.de> <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com> <20070412133158.GB31455@one.firstfloor.org> <585DC2133F7C974F87D4EC432896F1720309F485@CORPUSMX10A.corp.emc.com> <461EB367.1050405@tmr.com> <585DC2133F7C974F87D4EC432896F1720309F645@CORPUSMX10A.corp.emc.com>
-In-Reply-To: <585DC2133F7C974F87D4EC432896F1720309F645@CORPUSMX10A.corp.emc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Apr 2007 15:55:45 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:48331 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932184AbXDMTzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 15:55:43 -0400
+Date: Fri, 13 Apr 2007 12:55:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] make iunique use a do/while loop rather than its
+ obscure goto loop
+Message-Id: <20070413125512.af11f013.akpm@linux-foundation.org>
+In-Reply-To: <461FD536.80903@redhat.com>
+References: <200704112158.l3BLwunk023090@dantu.rdu.redhat.com>
+	<20070413114214.cb9328f5.akpm@linux-foundation.org>
+	<461FD536.80903@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Buytaert_Steven@emc.com wrote:
->> From: Bill Davidsen
->>
->> And having gotten same, are you going to code up what appears to be a
->> solution, based on this feedback?
-> 
-> The feedback was helpful in verifying whether there are any arguments against my approach. The real proof is in the pudding.
-> 
-> I'm running a kernel with these changes, as we speak. Overall system throughput is about up 20%. With 'system throughput' I mean measured performance of a rather large (experimental) system. The patch isn't even 24h old... Also the application latency has improved.
+On Fri, 13 Apr 2007 15:08:38 -0400
+Jeff Layton <jlayton@redhat.com> wrote:
 
-Cool.  You *do know* that there is a brand new CPU scheduler
-scheduled to replace the current one for the 2.6.22 Kernel, right?
+> > 
+> > ino_t iunique(struct super_block *sb, ino_t max_reserved)
+> > {
+> > 	static ino_t counter;
+> > 	struct inode *inode;
+> > 	struct hlist_head * head;
+> > 	ino_t res;
+> > 
+> > 	spin_lock(&inode_lock);
+> > 	do {
+> > 		if (counter <= max_reserved)
+> > 			counter = max_reserved + 1;
+> > 		res = counter++;
+> > 		head = inode_hashtable + hash(sb, res);
+> > 		inode = find_inode_fast(sb, head, res);
+> > 	} while (inode != NULL);
+> > 	spin_unlock(&inode_lock);
+> > 
+> > 	return res;
+> > }
+> > 
+> > The counter-vs-max_reserved test can be moved outside the loop, can't it?
+> > 
+> 
+> No. If the counter wraps while we're looping, then we'll need to skip 
+> past the "reserved" inode numbers. So we need to check this on every 
+> loop iteration.
 
--ml
+oh.
+
+(wonders why alpha and s390 use unsigned int for ino_t while everyone
+else uses unsigned long)
+
+> We could potentially put that in an "unlikely" if you 
+> think that would be better.
+
+Doubt if it'd make much difference.
+
+> > Shouldn't counter be per-sb?
+> 
+> I doubt it really matters too much, but it could potentially be more 
+> efficient to do that, especially after a wraparound on the counter. It 
+> might be reasonable to make new_inode use a per-sb counter as well. Do 
+> you think it's worth respinning?
+
+Well, that'd be a separate patch.  Sometime, if you're keen.
+
+If that function is ever a performance problem, it'll be an awful
+performance problem and we'd need to so something smarter than
+a linear search - an idr tree, for example.
