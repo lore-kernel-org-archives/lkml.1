@@ -1,46 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXDMLpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbXDMLsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbXDMLpF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 07:45:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbXDMLpF
+	id S1753182AbXDMLsL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 07:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXDMLsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 07:45:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60674 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376AbXDMLpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 07:45:03 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070413102518.GD31487@wotan.suse.de> 
-References: <20070413102518.GD31487@wotan.suse.de>  <20070413100416.GC31487@wotan.suse.de> 
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] generic rwsems 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 13 Apr 2007 12:44:50 +0100
-Message-ID: <25428.1176464690@redhat.com>
+	Fri, 13 Apr 2007 07:48:11 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:16449 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbXDMLsK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 07:48:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=n4WOv74jLS7AAOPq+VX3hRcizAJadUIWJ/0dB863jTLwgFTZaFkPdcyXy0W0GhADmbdALr9kIBooHPvdwwbAwDTEWEXYA+FZGd0bk9okZB/KfcmUIGqjN22QZEHrTKZhoTvCs8USBBj/3XCD5A+BfjBP7Gwsi38OF2UZnjN4TI8=
+Message-ID: <abe01d5c0704130448r66aec7c1ocbbcbf172e84acff@mail.gmail.com>
+Date: Fri, 13 Apr 2007 08:48:04 -0300
+From: "Fausto Carvalho" <faustocarva@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: ACPI problem revealed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> wrote:
+Bill Gates once said:
 
-> I think I should put wait_lock after wait_list, so as to get a better
-> packing on most 64-bit architectures.
-
-It makes no difference.  struct lockdep_map contains at least one pointer and
-so is going to be 8-byte aligned (assuming it's there at all).  struct
-rw_semaphore contains at least one pointer/long, so it will be padded out to
-8-byte size.
-
-If you want to make a difference, you'd need to add __attribute__((packed))
-but you would need to be very careful with that.
-
-David
+http://antitrust.slated.org/www.iowaconsumercase.org/011607/3000/PX03020.pdf
+-- 
+Fausto Carvalho
