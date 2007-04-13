@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964865AbXDMUNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXDMUQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964865AbXDMUNg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964988AbXDMUNg
+	id S964988AbXDMUQB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 16:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965013AbXDMUQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:13:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:33510 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964865AbXDMUNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:13:35 -0400
-Message-ID: <461FE448.70605@goop.org>
-Date: Fri, 13 Apr 2007 13:12:56 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 13 Apr 2007 16:16:01 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:58320 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964988AbXDMUQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 16:16:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O/CdEbgbVN4nzS+RzwSgP7neBCmThRY0wzp6o32C7hEBlGvtl35HfPZtp9wDZEcsHV0+c5GnE83h1tiyLwEj4ntTNGY6jzd8o6r07W4jhj6c1GdKyPXf6ZAxlzJ3wix1oTsh80qurSy3RXGIKlvissZZsiiITYu7o+pbXEqOkpY=
+Message-ID: <d120d5000704131315m7b062ca3rd648f27236ae970c@mail.gmail.com>
+Date: Fri, 13 Apr 2007 16:15:59 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Dave Jones" <davej@redhat.com>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: i8042 lockdep false positive.
+In-Reply-To: <20070413200202.GC27682@redhat.com>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Crash while mapping memory in pagetable_init() (Was: Re: .config)
-References: <20070413174913.GA25234@ezr.goop.org> <20070413183841.GP10574@sequoia.sous-sol.org> <20070413190552.GQ10574@sequoia.sous-sol.org> <461FD97B.1010203@goop.org> <461FE36D.1050205@vmware.com>
-In-Reply-To: <461FE36D.1050205@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070413191415.GA27682@redhat.com>
+	 <d120d5000704131218x4e0485d7vbc290d1821a65ca3@mail.gmail.com>
+	 <20070413200202.GC27682@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Note you can always run out of space; to ensure safety, the init code
-> needs to not use a fixed mapping size, it needs to map
-> end_kernel_address + pae ? 1808k : 896k, assuming 128M vmalloc hole. 
-> This could cause problems like running into initrd, however, so might
-> require loader changes, or perhaps relocating the initrd.  Is the
-> solution to just cap the kernel size at some fixed maximum?  6.2M
-> appears to be the safe limit for all configurations.
+On 4/13/07, Dave Jones <davej@redhat.com> wrote:
+> On Fri, Apr 13, 2007 at 03:18:32PM -0400, Dmitry Torokhov wrote:
+>  > Hi Dave,
+>  >
+>  > On 4/13/07, Dave Jones <davej@redhat.com> wrote:
+>  > > I just had a user file the report below, which iirc, was deemed a false
+>  > > positive.  Didn't we add something to the code so that lockdep would
+>  > > ignore what this was doing ?  Did we regress?
+>  > >
+>  >
+>  > For some reasn lockdep annotations cease to work when you reload
+>  > psmouse module. I did not have time to look further.
 >
-> I'm pulling this back onto lkml; seems this is a serious bug which
-> needs attention.  I've also cc'd some parties that might have relevant
-> knowledge.  Why do I seem to recall head.S mapping 128M of mappings at
-> one point in time? 
+> In the case reported, psmouse was non-modular.
+>
 
-I just posted a patch.  Oops, forgot to Cc: Eric.
+OK, I was not precise. Every time we destroy and re-create passthrough
+port lockdep starts bitching. For some reason annotation works only
+once.
 
-    J
+I am more quirious why synaptics could not simply reconnect upon
+resume and went into full-blown cleanup/find driver/connect cycle...
+
+-- 
+Dmitry
