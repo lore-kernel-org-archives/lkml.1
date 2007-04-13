@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXDMMVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXDMMVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbXDMMVa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 08:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXDMMVa
+	id S1753957AbXDMMVe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 08:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXDMMVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 08:21:30 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:53073 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753956AbXDMMV3 (ORCPT
+	Fri, 13 Apr 2007 08:21:34 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:33470 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753957AbXDMMVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 08:21:29 -0400
-Date: Fri, 13 Apr 2007 17:54:58 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
-Message-ID: <20070413122458.GB30280@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070412163235.dd030637.akpm@linux-foundation.org> <461ECB9C.8060000@yahoo.com.au> <20070412174201.065068b2.akpm@linux-foundation.org> <461ED96C.5030606@yahoo.com.au> <20070412182213.a18cc4a7.akpm@linux-foundation.org> <461EE005.6070605@yahoo.com.au> <20070413015712.GL11115@waste.org> <461EE925.1000301@yahoo.com.au> <20070413022345.GN11115@waste.org> <461EF0EC.4090908@yahoo.com.au>
+	Fri, 13 Apr 2007 08:21:33 -0400
+Subject: Re: 2.6.21-rc5: swsusp: Not enough free memory
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, pavel@suse.cz
+In-Reply-To: <200704131400.12021.rjw@sisk.pl>
+References: <460B6E4B.3060004@gmail.com> <200704122336.57600.rjw@sisk.pl>
+	 <4af2d03a0704130314s78d0d831ja52fe8f92efe097a@mail.gmail.com>
+	 <200704131400.12021.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mkceuk3h5Uk8zTq6tD29"
+Date: Fri, 13 Apr 2007 22:21:36 +1000
+Message-Id: <1176466896.7112.159.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <461EF0EC.4090908@yahoo.com.au>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 12:54:36PM +1000, Nick Piggin wrote:
-> Matt Mackall wrote:
-> >On Fri, Apr 13, 2007 at 12:21:25PM +1000, Nick Piggin wrote:
-> >
-> >>Matt Mackall wrote:
-> >>
-> >>>On Fri, Apr 13, 2007 at 11:42:29AM +1000, Nick Piggin wrote:
-> >>
-> >>>>If kprobes is simply crappy and doesn't work properly for this, then I
-> >>>>could accept that. I'm not someone trying to get this info. So why can't
-> >>>>it be used? (not just for kpagemap, but for clear_refs and all that gunk
-> >>>>too).
-> >>>
-> >>>
-> >>>kprobes is good for looking at events, but bad for looking at state.
-> >>>Especially metric shitloads of state.
-> >>
-> >>Why? Why is a kprobes trap significantly more expensive than a read
-> >>syscall?
-> >
-> >
-> >I guess I'm not clear on what you're proposing. From my understanding
-> >of kprobes (admittedly not an expert), this is hard to do and not a
-> >very good match.
-> 
-> But you have an idea that it is bad for exposing lots of data. Why?
-> (I'm not a kprobes expert either, these are not rhetorical questions)
 
-You could tie your kprobe module to use relay channels. Kprobe handlers
-run lockless and using the per-cpu relay channels will provide a fast
-transport mechanism for exposing lots of data.
+--=-mkceuk3h5Uk8zTq6tD29
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-http://relayfs.sourceforge.net/examples.html#tprintk_kprobes is an
-example using the earlier relayfs interface. It shouldn't be that hard
-to change it to use the newer relay stuff.
+Hi.
 
-AFAIK acme is using a similar mechanism for ctracer
-(http://oops.ghostprotocols.net:81/blog/?p=50)
+On Fri, 2007-04-13 at 14:00 +0200, Rafael J. Wysocki wrote:
+> >=20
+> > Shrinking memory...  Pages needed: 128103 normal, 0 highmem
+> > Pages needed: 125226 normal, 0 highmem
+> > Pages needed: -5757 normal, 0 highmem
+> > Pages needed: -5757 normal, 0 highmem
+> > Pages needed: -5757 normal, 0 highmem
+> > Pages needed: -5757
+> > Pages needed: 127953 normal, 0 highmem
+> > Pages needed: 125076 normal, 0 highmem
+> > Pages needed: -6043 normal, 0 highmem
+> > Pages needed: -6043 normal, 0 highmem
+> > Pages needed: -6043 normal, 0 highmem
+> > Pages needed: -6043
+> > done (200 pages freed)
+> > Freed 800 kbytes in 0.16 seconds (5.00 MB/s)
+> > Suspending console(s)
+> > ...
+> > CPU1 is down
+> > swsusp: critical section:
+> > swsusp: Need to copy 131358 pages
+> > swsusp: Normal pages needed: 131358
+> > swsusp: Normal pages needed: 131358 + 1024 + 22, available pages: 13060=
+7
+>=20
+> Well, it looks like someone allocated about 6000 pages after we had freed
+> enough memory for suspending.
 
-Ananth
+We have a tunable allowance in Suspend2 for this, because fglrx
+allocates a lot of pages in its suspend routine if DRI is enabled. I
+think some other drivers do too, but fglrx is the main one I know.
+
+Nigel
+
+
+--=-mkceuk3h5Uk8zTq6tD29
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGH3XQN0y+n1M3mo0RAuS5AJ9mug/OU4FsWTvpszg8pQfjo81lBQCfdZ5O
+NpGLgwEnKMhXy3nkbqvSaYs=
+=52K3
+-----END PGP SIGNATURE-----
+
+--=-mkceuk3h5Uk8zTq6tD29--
+
