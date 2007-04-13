@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030885AbXDMXSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030878AbXDMXWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030885AbXDMXSk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030886AbXDMXSk
+	id S1030878AbXDMXWf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030889AbXDMXWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:18:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:52401 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030885AbXDMXSj (ORCPT
+	Fri, 13 Apr 2007 19:22:35 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:40474 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030878AbXDMXWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:18:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:from:content-type:mime-version:content-transfer-encoding:message-id:user-agent;
-        b=UQowrqx1aqFERAhHTT1D5uiSKEiTpMwE4kK4i+boiq8/3LmTSlZNzbpwLkcRN4HTSpFJpNv8RXOC+f0VAhoDsoJKVrumqLhPqKrBU+Q8yhLHNzYiOMZQNrbnKLYVQJG7e5HyjPO0ikN6ro/JNNREFwg88axPQj9CqIjQ4rfDcnE=
-Date: Fri, 13 Apr 2007 19:18:41 -0400
-To: linux-kernel@vger.kernel.org
-Subject: ZFS with Linux: An Open Plea
-From: "David R. Litwin" <presently42@gmail.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Message-ID: <op.tqqwdfzcftfxs2@localhost.localdomain>
-User-Agent: Opera Mail/9.20 (Linux)
+	Fri, 13 Apr 2007 19:22:33 -0400
+Date: Fri, 13 Apr 2007 17:21:06 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+In-reply-to: <fa.nTNVZ3bPe8773+gVV7CvcwBT5zY@ifi.uio.no>
+To: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Message-id: <46201062.1030005@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.nTNVZ3bPe8773+gVV7CvcwBT5zY@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before I go on, let me appologise. I don't really know what I hope to  
-accomplish, beyond trying to garner thoughts (and support?) for the topic.
+Chuck Ebbert wrote:
+> When I reboot my notebook, it powers off and powers back on.
+> On poweroff a loud snapping noise seems to be coming from the
+> hard drive. Today I noticed there is no "shutdown: hda" on
+> the console when I reboot. Whne I do a normal poweroff the
+> message is displayed and there is no noise. Should the IDE
+> code be changed so it always shuts down the drive?
 
-Essentially: I want to use Linux and ZFS. I don't particularly care about  
-licences or any of the rest of that nonsense. The code is there; it merely  
-needs to be made to work with Linux. Done and done -- provided I can find  
-some one to do this for me (I'd do it myself, but I haven't the foggiest  
-notion how to go about such a feat).
+The question is why the laptop powers off and back on. Do reboots from 
+Windows do that? That is why the drive makes so much noise, because the 
+kernel didn't standby the drive before rebooting, since it shouldn't 
+have to, and yet the drive loses power so it does an emergency retract.
 
-By the way, forget about this FUSE business. I don't know why they're  
-bothering: It's not real, it's slow and, in general, silly.
-
-What are the thoughts of the Linux community?
-
-I appologise right now for my intrusion. I am a Linux-nobody; I freely  
-admit it. I haven't even subscribed to this list (so do CC me) because I  
-don't want to be over-whelmed with the list's glorious posts. But, part of  
-Linux is it's being a community. If a member of this community (that is, a  
-user of Linux) can't ask the others their
-thoughts and opinions, then the community has failed in a large respect.  
-Take this letter as you will.
+Making the kernel shutdown on reboot would only add more spindown/up 
+cycles for normally working systems.
 
 -- 
-—A watched bread-crumb never boils.
-—My hover-craft is full of eels.
-—[...]and that's the he and the she of it.
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
