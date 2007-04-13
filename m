@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbXDMQOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXDMQTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbXDMQOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 12:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbXDMQOl
+	id S1754078AbXDMQTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 12:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbXDMQTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 12:14:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37764 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754039AbXDMQOk (ORCPT
+	Fri, 13 Apr 2007 12:19:18 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59863 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754078AbXDMQTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 12:14:40 -0400
-Date: Fri, 13 Apr 2007 17:17:27 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Christopher S. Aker" <caker@theshore.net>,
-       "Bill Rugolsky Jr." <brugolsky@telemetry-investments.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Feature Request?] Inline compression of process core dumps
-Message-ID: <20070413171727.6a54d80e@the-village.bc.nu>
-In-Reply-To: <461F9ABE.6060709@oracle.com>
-References: <461E55C6.1030905@theshore.net>
-	<20070412172845.58bfeff5@the-village.bc.nu>
-	<20070412164251.GC11736@ti88.telemetry-investments.com>
-	<p73ps697agf.fsf@bingen.suse.de>
-	<461EE95A.3090600@theshore.net>
-	<20070412193838.ea98238b.randy.dunlap@oracle.com>
-	<461EF1A1.3070102@theshore.net>
-	<20070413115526.69e61016@the-village.bc.nu>
-	<p73d528799k.fsf@bingen.suse.de>
-	<461F9ABE.6060709@oracle.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Apr 2007 12:19:17 -0400
+X-AuditID: d80ac287-9beabbb000002c59-1a-461fad84d4bb 
+Date: Fri, 13 Apr 2007 17:19:14 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH mm] fix i386 get_gate_vma oops
+Message-ID: <Pine.LNX.4.64.0704131714160.3687@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 13 Apr 2007 16:19:16.0473 (UTC) FILETIME=[7B68C690:01C77DE7]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Here's a patch. It just doesn't do any formatting for the pipe case.
+Fix oops from i386-make-compat_vdso-runtime-selectable.patch.
 
-I don't see a reaosn for removing the formatting features. There are ways
-that can usefully be used, although not many. It's also messier than the
-patch I posted while less functional IMHO.
+Even mingetty at system startup finds it easy to trigger an oops
+while reading /proc/PID/maps: though it has a good hold on the mm
+itself, that cannot stop exit_mm() from resetting tsk->mm to NULL.
 
-Alan
+(It is usually show_map()'s call to get_gate_vma() which oopses,
+and I expect we could change that to check priv->tail_vma instead;
+but no matter, even m_start()'s call just after get_task_mm() is racy.)
+
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+
+--- 2.6.21-rc6-mm1/arch/i386/kernel/sysenter.c	2007-04-10 11:37:23.000000000 +0100
++++ linux/arch/i386/kernel/sysenter.c	2007-04-13 16:43:45.000000000 +0100
+@@ -326,8 +326,10 @@ const char *arch_vma_name(struct vm_area
+ 
+ struct vm_area_struct *get_gate_vma(struct task_struct *tsk)
+ {
++	struct mm_struct *mm = tsk->mm;
++
+ 	/* Check to see if this task was created in compat vdso mode */
+-	if (tsk->mm->context.vdso == (void *)VDSO_HIGH_BASE)
++	if (mm && mm->context.vdso == (void *)VDSO_HIGH_BASE)
+ 		return &gate_vma;
+ 	return NULL;
+ }
