@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbXDMSVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXDMSnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbXDMSVQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 14:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDMSVQ
+	id S1754130AbXDMSnX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 14:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXDMSnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 14:21:16 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:23578 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754126AbXDMSVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 14:21:15 -0400
-Date: Fri, 13 Apr 2007 11:23:16 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: make clean for DocBook
-Message-Id: <20070413112316.44141d34.randy.dunlap@oracle.com>
-In-Reply-To: <20070413164142.GA14706@uranus.ravnborg.org>
-References: <20070413090658.b4c4bc8f.randy.dunlap@oracle.com>
-	<20070413164142.GA14706@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 13 Apr 2007 14:43:23 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:45656 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754131AbXDMSnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 14:43:19 -0400
+Date: Fri, 13 Apr 2007 11:42:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeffrey Layton <jlayton@redhat.com>
+Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] make iunique use a do/while loop rather than its
+ obscure goto loop
+Message-Id: <20070413114214.cb9328f5.akpm@linux-foundation.org>
+In-Reply-To: <200704112158.l3BLwunk023090@dantu.rdu.redhat.com>
+References: <200704112158.l3BLwunk023090@dantu.rdu.redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007 18:41:42 +0200 Sam Ravnborg wrote:
+On Wed, 11 Apr 2007 17:58:56 -0400
+Jeffrey Layton <jlayton@redhat.com> wrote:
 
-> On Fri, Apr 13, 2007 at 09:06:58AM -0700, Randy Dunlap wrote:
-> > Hi Sam,
-> > 
-> > 'make clean' doesn't seem to descend into Documentation/DocBook/.
-> > At least 'make V=1 clean' doesn't show me any references in DocBook.
-> > 
-> > I guess that this is because DocBook doesn't have anything that
-> > qualifies in obj-y/m/n and subdir-y/m/n.  (?)
+> A while back, Christoph mentioned that he thought that iunique ought to be
+> cleaned up to use a more conventional loop construct. This patch does that,
+> turning the strange goto loop into a do/while.
 > 
-> Documentation/ is handled explicit i top-level Makefile:
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
 > 
-> mrproper-dirs      := $(addprefix _mrproper_,Documentation/DocBook scripts)
-> 
-> PHONY += $(mrproper-dirs) mrproper archmrproper
-> $(mrproper-dirs):
->         $(Q)$(MAKE) $(clean)=$(patsubst _mrproper_%,%,$@)
-> 
-> 
-> And we will visit DocBook with mrproper - but not clean.
-> I have no stron opinion when to delete generated files in DocBook.
+> diff --git a/fs/inode.c b/fs/inode.c
+> index 23fc1fd..90e7587 100644
+> --- a/fs/inode.c
+> +++ b/fs/inode.c
+> @@ -689,21 +689,18 @@ ino_t iunique(struct super_block *sb, ino_t max_reserved)
+>  	struct inode *inode;
+>  	struct hlist_head * head;
+>  	ino_t res;
+> +
+>  	spin_lock(&inode_lock);
+> -retry:
+> -	if (counter > max_reserved) {
+> -		head = inode_hashtable + hash(sb,counter);
+> +	do {
+> +		if (counter <= max_reserved)
+> +			counter = max_reserved + 1;
+>  		res = counter++;
+> +		head = inode_hashtable + hash(sb, res);
+>  		inode = find_inode_fast(sb, head, res);
+> -		if (!inode) {
+> -			spin_unlock(&inode_lock);
+> -			return res;
+> -		}
+> -	} else {
+> -		counter = max_reserved + 1;
+> -	}
+> -	goto retry;
+> -	
+> +	} while (inode != NULL);
+> +	spin_unlock(&inode_lock);
+> +
+> +	return res;
+>  }
+>  
 
-OK, that's fine, thanks for the info...
-but trying 'make mrproper' gives me:
+hm.
 
-make -f scripts/Makefile.clean obj=Documentation/DocBook
-make -f scripts/Makefile.clean obj=Documentation/DocBook/man/
-make[2]: execvp: /bin/sh: Argument list too long
-make[2]: *** [__clean] Error 127
-make[1]: *** [Documentation/DocBook/man/] Error 2
-make: *** [_mrproper_Documentation/DocBook] Error 2
+ino_t iunique(struct super_block *sb, ino_t max_reserved)
+{
+	static ino_t counter;
+	struct inode *inode;
+	struct hlist_head * head;
+	ino_t res;
 
-DocBook/man/ contains about 2000 files.
-Is there some way to have scripts/Makefile.clean just do
-	rm -rf Documentation/DocBook/man/
-?  or some other solution?
+	spin_lock(&inode_lock);
+	do {
+		if (counter <= max_reserved)
+			counter = max_reserved + 1;
+		res = counter++;
+		head = inode_hashtable + hash(sb, res);
+		inode = find_inode_fast(sb, head, res);
+	} while (inode != NULL);
+	spin_unlock(&inode_lock);
 
+	return res;
+}
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+The counter-vs-max_reserved test can be moved outside the loop, can't it?
+
+Shouldn't counter be per-sb?
+
