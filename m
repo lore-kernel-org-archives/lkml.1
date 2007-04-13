@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbXDMCWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbXDMC10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985AbXDMCWe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 22:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbXDMCWe
+	id S1753012AbXDMC10 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 22:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbXDMC10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 22:22:34 -0400
-Received: from ns.theshore.net ([67.18.92.50]:55695 "EHLO www.theshore.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752969AbXDMCWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 22:22:34 -0400
-Message-ID: <461EE95A.3090600@theshore.net>
-Date: Thu, 12 Apr 2007 22:22:18 -0400
-From: "Christopher S. Aker" <caker@theshore.net>
-User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
+	Thu, 12 Apr 2007 22:27:26 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:42493 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753007AbXDMC1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 22:27:25 -0400
+Message-ID: <461EE9E5.6060403@vmware.com>
+Date: Thu, 12 Apr 2007 19:24:37 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: "Bill Rugolsky Jr." <brugolsky@telemetry-investments.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [Feature Request?] Inline compression of process core dumps
-References: <461E55C6.1030905@theshore.net>	<20070412172845.58bfeff5@the-village.bc.nu>	<20070412164251.GC11736@ti88.telemetry-investments.com> <p73ps697agf.fsf@bingen.suse.de>
-In-Reply-To: <p73ps697agf.fsf@bingen.suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>, Hugh Dickins <hugh@veritas.com>,
+       David Rientjes <rientjes@google.com>,
+       Michel Lespinasse <walken@vmware.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] i386 - pte update optimizations
+References: <200704120530.l3C5UGbv022814@zach-dev.vmware.com> <461EDBF1.4080904@zytor.com>
+In-Reply-To: <461EDBF1.4080904@zytor.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
- > Indeed. So useful that in current kernels you can set the core dump
- > path to be
- >
- > 	"|application"
+H. Peter Anvin wrote:
+> Zachary Amsden wrote:
+>> Some PTE optimizations for native and paravirt-ops kernels; this
+>> provides a huge win for shadow mode hypervisors and gets rid of
+>> some unnecessary atomic instructions in native kernels, saving
+>> even more on UP by getting rid of implicit LOCK on xchg instruction.
+>
+> You do know that P6 and higher don't do locked bus references as long 
+> as the value is in the cache, right?
 
-Cool stuff!  However, it's not working (2.6.20.6):
+Yes.  Even then, last time I clocked instructions, xchg was still slower 
+than read / write, although I could be misremembering.  And it's not 
+totally clear that they will always be in cached state, however, and for 
+SMP, we still want to drop the implicit lock in cases where the 
+processor might not know they are cached exclusive, but we know there 
+are no other racing users.  And there are plenty of old processors out 
+there to still make it worthwhile.
 
-	Core dump to |/home/caker/bin/dumper.pl.4442 pipe failed
-
-even though...
-
-	# cat /proc/sys/kernel/core_uses_pid
-	0
-	# cat /proc/sys/kernel/core_pattern
-	|/home/caker/bin/dumper.pl
-
-Looking at the code, it seems to me that format_corename() is appending 
-.pid, regardless if !core_uses_pid and corename[0]=='|', in which case 
-it creates an invalid path for call_usermodehelper_pipe().
-
-Bug in the code, or bug in my methods?
-
--Chris
+Zach
