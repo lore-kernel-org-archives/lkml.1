@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965337AbXDMUv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030266AbXDMU4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965337AbXDMUv3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030278AbXDMUv3
+	id S1030266AbXDMU4F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 16:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965626AbXDMU4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:51:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:9833 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965337AbXDMUv2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:51:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=J+Vei5i+Zg23AGyDWS9JraQFJwXuCudfQIHk9/gs3e+AkYALSbstjtTGd9BDlStRM0FCWZNUQ9e1YLib1aSyA/dEJMUuqhJ3rrbYnHopR8162TNE5F65FFsZyXYAid1whSGBOsUSX2gpGx6A+OlRyyj9V1uzos+DGT8p53r+kIM=
-Message-ID: <38b2ab8a0704131351la5085vf0ab58e85cf49879@mail.gmail.com>
-Date: Fri, 13 Apr 2007 22:51:27 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: dbrownell@users.sourceforge.net
-Subject: question on generic gpio interface
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Apr 2007 16:56:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58285 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965632AbXDMU4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 16:56:03 -0400
+Date: Fri, 13 Apr 2007 22:55:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bill Huey <billh@gnuppy.monkey.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070413205545.GA18032@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <20070413202745.GA17993@gnuppy.monkey.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070413202745.GA17993@gnuppy.monkey.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm trying to port my old gpio code to the generic one to see if it
-can fit my needs.
+* Bill Huey <billh@gnuppy.monkey.org> wrote:
 
-The gpio controller is a home made one and has a really weird
-interface. It has several registers to read the gpio status, to
-configure gpio directions, or to configure if a gpio can trigger an
-interrupt and on which event (level or edge). All gpios use the same
-IRQ and a gpio controller register allows to read which gpio has
-triggered the interrupt.
+> Con has been asking for module support for years if I understand your 
+> patch corectly. [...]
 
-Now the question is how should irq_to_gpio()  work ? Is it supposed to
-be called only when a gpio interrupt occure ?
+Yeah. Note that there are some subtle but crutial differences between 
+PlugSched (which Con used, and which i opposed in the past) and this 
+approach.
 
-Another question is how can I specify if a gpio interrupt trigger on
-level or on edge ?
+PlugSched cuts the interfaces at a high level in a monolithic way and 
+introduces kernel/scheduler.c that uses one pluggable scheduler 
+(represented via the 'scheduler' global template) at a time.
 
-thanks
--- 
-Francis
+while in this CFS patchset i'm using modularization ('scheduler 
+classes') to simplify the _existing_ multi-policy implementation of the 
+scheduler. These 'scheduler classes' are in a hierarchy and are stacked 
+on top of each other. They are in use at once. Currently there's two of 
+them: sched_ops_rt is stacked ontop of sched_ops_fair. Fortunately the 
+performance impact is minimal.
+
+So scheduler classes are mainly a simplification of the design of the 
+scheduler - not just a mere facility to select multiple schedulers. 
+Their ability to also facilitate easier experimentation with schedulers 
+is 'just' a happy side-effect. So all in one: it's a fairly different 
+model from PlugSched (and that's why i didnt reuse PlugSched) - but 
+there's indeed overlap.
+
+> [...] You'll also need this for -rt as well with regards to bandwidth 
+> scheduling.
+
+yeah.
+
+scheduler classes are also useful for other purposes like containers and 
+virtualization, hierarchical/group scheduling, security encapsulation, 
+etc. - features that can be on-demand layered, and which we dont 
+necessarily want to have enabled all the time.
+
+> [...] Good to see that you're moving in this direction.
+
+thanks! :)
+
+	Ingo
