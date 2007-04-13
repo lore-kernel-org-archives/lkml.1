@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbXDMQqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbXDMQwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbXDMQqZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 12:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbXDMQqZ
+	id S1754089AbXDMQwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 12:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbXDMQwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 12:46:25 -0400
-Received: from mga03.intel.com ([143.182.124.21]:40778 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754091AbXDMQqY convert rfc822-to-8bit (ORCPT
+	Fri, 13 Apr 2007 12:52:20 -0400
+Received: from mail.darkstartechnologies.net ([83.142.224.43]:51847 "EHLO
+	mail.dst-labs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754089AbXDMQwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 12:46:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,408,1170662400"; 
-   d="scan'208"; a="213046902:sNHT708804537"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 13 Apr 2007 12:52:20 -0400
+From: Witold Krecicki <wpk@dst-labs.com>
+Organization: SCMP
+To: linux-kernel@vger.kernel.org
+Subject: Oddness with reading /proc/net/tcp
+Date: Fri, 13 Apr 2007 18:46:16 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [KJ][PATCH 02/03]ROUND_UP|DOWN macro cleanup in arch/ia64,x86_64
-Date: Fri, 13 Apr 2007 09:45:49 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A015B4E12@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070413043140.GA9431@arun.site>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [KJ][PATCH 02/03]ROUND_UP|DOWN macro cleanup in arch/ia64,x86_64
-Thread-Index: Acd9hF0NZzHmBNV5S7maTkUBfaSzNgAZHGjw
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Milind Arun Choudhary" <milindchoudhary@gmail.com>
-Cc: <kernel-janitors@lists.osdl.org>, <linux-ia64@vger.kernel.org>,
-       <discuss@x86-64.org>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <ak@suse.de>
-X-OriginalArrivalTime: 13 Apr 2007 16:45:46.0261 (UTC) FILETIME=[2EFF2C50:01C77DEB]
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704131846.16358.wpk@dst-labs.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So as ALIGN macro does the same work as ROUNDUP,
+Reading data from /proc/net/tcp is slower with progress of reading data, 
+tested on system with >200k active connections.
 
-Although it is mathematically the same operation, the
-semantic associations of the name are important too.
-If I have an I/O device that works in blocks of a given
-size, I don't think that I'm "aligning" a request to make
-it match the capabilities of the device, I think that I'm
-"rounding up" to a multiple of the size.
+Sample code:
+#include <stdio.h>
+#include <sys/time.h>
+#include <unistd.h>
 
-Maybe this is because I started out in mathematics before
-discovering that computers were so much fun, or maybe it
-is a British-English bias ... I can't tell, but it makes
-sense to me to use ROUNDUP in some places, and ALIGN in
-others.
+int main(int argc, char ** argv)
+{
+  struct timeval starttime, endtime;
+  FILE * fd;
+  char buf[1024*1024*4];
+  int pk;
+  fd=fopen("/proc/net/tcp","r");
+  gettimeofday(&starttime,0);
+  pk=0;
+  while (!feof(fd) && pk<10000)
+    {
+      fread(buf, 1, 1024, fd);
+      pk++;
+      if (pk%512==0)
+      {
+        gettimeofday(&endtime,0);
+        printf("%d %ld\n",pk, (endtime.tv_usec-starttime.tv_usec) 
++1000000*(endtime.tv_sec - starttime.tv_sec));
+        gettimeofday(&starttime,0);
+      }
+    }
+  fclose(fd);
+  return 0;
+}
 
-I haven't scanned through all usages to see whether existing
-usage matches my bias ... but changing them all to use just
-one name doesn't feel like the right thing to do.  It makes
-some code less clear (to me).
+Result:
+$ time ./a.out
+512 231781
+1024 1057159
+1536 1726530
+2048 2474851
+2560 3236269
+3072 3856587
+3584 3438862
+4096 3108675
+4608 3500559
+5120 4090534
+5632 4612594
+6144 5135624
+6656 5266945
+7168 5491547
+7680 6355916
+8192 6661789
+8704 7095428
+9216 7565589
+9728 7982981
 
->      is at a common place
->      & is accessible to everyone
+real    1m27.347s
+user    0m0.024s
+sys     1m27.309s
 
-If ROUNDUP isn't available everywhere, then it should be. To
-avoid code duplication perhaps we should add:
-
-    #define ROUNDUP(size, len) ALIGN((size), (len))
-
-and delete the previous ROUNDUP definition?
-
--Tony
