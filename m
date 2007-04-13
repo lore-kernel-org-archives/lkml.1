@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbXDLX5C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXDMABG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbXDLX5C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 19:57:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbXDLX5B
+	id S1750719AbXDMABG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 20:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbXDMABG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 19:57:01 -0400
-Received: from mail.screens.ru ([213.234.233.54]:57289 "EHLO mail.screens.ru"
+	Thu, 12 Apr 2007 20:01:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:32964 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbXDLX4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 19:56:54 -0400
-Date: Fri, 13 Apr 2007 03:56:32 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adam Belay <ambx1@neo.rr.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] pnpbios_thread_init: don't use CLONE_SIGHAND
-Message-ID: <20070412235632.GA1053@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S1750719AbXDMABF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 20:01:05 -0400
+Message-ID: <461EC81D.6020609@goop.org>
+Date: Thu, 12 Apr 2007 17:00:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Tim Yamin <plasmaroo@gentoo.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH UPDATE] deflate stack usage in lib/inflate.c
+References: <461DED14.1070603@goop.org> <200704122321.23318.ak@suse.de> <461EB938.6080807@goop.org> <200704130102.30588.ak@suse.de>
+In-Reply-To: <200704130102.30588.ak@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pnp_dock_thread() calls allow_signal() which plays with parent process's
-->sighand.
+Andi Kleen wrote:
+> Yes, but then we should have seen more frequently, shouldn't we? I always
+> run with the stack overflow check enabled and I don't think I ever saw 
+> warnings in inflate.
+>   
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+I guess the window is just while decompressing the root filesystem. 
+Interrupts under Xen might be using a little more stack (~40-50 bytes?),
+but its not a qualitative difference.  It might have more to do with
+different timing.
 
---- 2.6.21-rc5/drivers/pnp/pnpbios/core.c~3_pnp	2006-12-17 19:06:40.000000000 +0300
-+++ 2.6.21-rc5/drivers/pnp/pnpbios/core.c	2007-04-13 03:44:34.000000000 +0400
-@@ -589,7 +589,7 @@ static int __init pnpbios_thread_init(vo
- 		return 0;
- #ifdef CONFIG_HOTPLUG
- 	init_completion(&unload_sem);
--	if (kernel_thread(pnp_dock_thread, NULL, CLONE_KERNEL) > 0)
-+	if (kernel_thread(pnp_dock_thread, NULL, CLONE_FS | CLONE_FILES) > 0)
- 		unloading = 0;
- #endif
- 	return 0;
-
+    J
