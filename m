@@ -1,127 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbXDMPu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbXDMPvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753646AbXDMPu4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 11:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXDMPu4
+	id S1754058AbXDMPvZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 11:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbXDMPvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 11:50:56 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:38918 "EHLO
+	Fri, 13 Apr 2007 11:51:25 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:39001 "EHLO
 	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753646AbXDMPuz (ORCPT
+	with ESMTP id S1754045AbXDMPvY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 11:50:55 -0400
-Date: Fri, 13 Apr 2007 17:50:50 +0200 (CEST)
+	Fri, 13 Apr 2007 11:51:24 -0400
+Date: Fri, 13 Apr 2007 17:51:19 +0200 (CEST)
 From: Bernhard Kaindl <bk@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 cc: Andi Kleen <ak@suse.de>, Dave Jones <davej@codemonkey.org.uk>,
        Bernhard Kaindl <bk@suse.de>
-Subject: [PATCH 1/4] Adds mtrr_save_fixed_ranges() for use in two later
- patches.
-Message-ID: <Pine.LNX.4.64.0704131735570.17956@jbgna.fhfr.qr>
+Subject: [PATCH 2/4] Save the MTRRs of the BSP before booting an AP
+Message-ID: <Pine.LNX.4.64.0704131751120.17956@jbgna.fhfr.qr>
 References: <20070413121533.082325752@mahler.suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------------------------------------------------------------------
-Update: Rediffed against 2.6.21-rc6-mm1, the only change I had
-to make was tiny: Andrew's tree has a patch applied which changes
-many functions from being prefixed with __init to __cpuinit, which
-is actually wrong and will (IMHO) be replaced by another patch:
+Applied fix by Andew Morton:
+http://lkml.org/lkml/2007/4/8/88 - Fix `make headers_check'.
 
-http://lkml.org/lkml/2007/4/7/113
-Jeremy Fitzhardinge: [PATCH 2/2] x86: clean up identify_cpu)
+AMD and Intel x86 CPU manuals state that it is the responsibility of
+system software to initialize and maintain MTRR consistency across
+all processors in Multi-Processing Environments.
 
-The above patch splits up identify_cpu() into a part for the BSP and
-the APs, which also means that the patch to which this patch rejected
-to, will then be obsolete, many of the functions can be freed with
-__init again, but this is a incremental cleanup which can happen
-after the patch from Jeremy Fitzhardinge above is applied. NOTE:
-I didn't test Jeremy's patch on x86_64 so far (he has no such
-machine) but it's definitely right to do what his patch does, IMHO.
------------------------------------------------------------------
+Quote from page 188 of the AMD64 System Programming manual (Volume 2):
 
-In this current implementation which is used in other patches,
-mtrr_save_fixed_ranges() accepts a dummy void pointer because
-in the current implementation of one of these patches, this
-function may be called from smp_call_function_single() which
-requires that this function takes a void pointer argument.
+7.6.5 MTRRs in Multi-Processing Environments
 
-This function calls get_fixed_ranges(), passing mtrr_state.fixed_ranges
-which is the element of the static struct which stores our current
-backup of the fixed-range MTRR values which all CPUs shall be
-using.
+"In multi-processing environments, the MTRRs located in all processors must
+characterize memory in the same way. Generally, this means that identical
+values are written to the MTRRs used by the processors." (short omission here)
+"Failure to do so may result in coherency violations or loss of atomicity.
+Processor implementations do not check the MTRR settings in other processors
+to ensure consistency. It is the responsibility of system software to
+initialize and maintain MTRR consistency across all processors."
 
-Because  mtrr_save_fixed_ranges calls get_fixed_ranges after
-kernel initialisation time, __init needs to be removed from
-the declaration of get_fixed_ranges().
+Current Linux MTRR code already implements the above in the case that the
+BIOS does not properly initialize MTRRs on the secondary processors,
+but the case where the fixed-range MTRRs of the boot processor are changed
+after Linux started to boot, before the initialsation of a secondary
+processor, is not handled yet.
 
-If CONFIG_MTRR is not set, we define mtrr_save_fixed_ranges
+In this case, secondary processors are currently initialized by Linux
+with MTRRs which the boot processor had very early, when mtrr_bp_init()
+did run, but not with the MTRRs which the boot processor uses at the
+time when that secondary processors is actually booted,
+causing differing MTRR contents on the secondary processors.
+
+Such situation happens on Acer Ferrari 1000 and 5000 notebooks where the
+BIOS enables and sets AMD-specific IORR bits in the fixed-range MTRRs
+of the boot processor when it transitions the system into ACPI mode.
+The SMI handler of the BIOS does this in SMM, entered while Linux ACPI
+code runs acpi_enable().
+
+Other occasions where the SMI handler of the BIOS may change bits in
+the MTRRs could occur as well. To initialize newly booted secodary
+processors with the fixed-range MTRRs which the boot processor uses
+at that time, this patch saves the fixed-range MTRRs of the boot
+processor before new secondary processors are started. When the
+secondary processors run their Linux initialisation code, their
+fixed-range MTRRs will be updated with the saved fixed-range MTRRs.
+
+If CONFIG_MTRR is not set, we define mtrr_save_state
 as an empty statement because there is nothing to do.
 
+Possible TODOs:
+
+*) CPU-hotplugging outside of SMP suspend/resume is not yet tested
+   with this patch.
+
+*) If, even in this case, an AP never runs i386/do_boot_cpu or x86_64/cpu_up,
+   then the calls to mtrr_save_state() could be replaced by calls to
+   mtrr_save_fixed_ranges(NULL) and  mtrr_save_state() would not be
+   needed.
+
+   That would need either verification of the CPU-hotplug code or
+   at least a test on a >2 CPU machine.
+
+*) The MTRRs of other running processors are not yet checked at this
+   time but it might be interesting to syncronize the MTTRs of all
+   processors before booting. That would be an incremental patch,
+   but of rather low priority since there is no machine known so
+   far which would require this.
+
 Signed-off-by: Bernhard Kaindl <bk@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>
 Cc: Dave Jones <davej@codemonkey.org.uk>
 
 ---
- arch/i386/kernel/cpu/mtrr/generic.c |   16 +++++++++++++++-
- include/asm-i386/mtrr.h             |    2 ++
- include/asm-x86_64/proto.h          |    2 ++
- 3 files changed, 19 insertions(+), 1 deletion(-)
+ arch/i386/kernel/cpu/mtrr/main.c |   11 +++++++++++
+ arch/i386/kernel/smpboot.c       |    7 +++++++
+ arch/x86_64/kernel/smpboot.c     |    6 ++++++
+ include/asm-i386/mtrr.h          |    2 ++
+ include/asm-x86_64/proto.h       |    2 ++
+ 5 files changed, 28 insertions(+)
 
-Index: 2.6.21-rc6-mm1/arch/i386/kernel/cpu/mtrr/generic.c
+Index: 2.6.21-rc6-mm1/arch/i386/kernel/smpboot.c
 ===================================================================
---- 2.6.21-rc6-mm1.orig/arch/i386/kernel/cpu/mtrr/generic.c
-+++ 2.6.21-rc6-mm1/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -37,7 +37,11 @@ get_mtrr_var_range(unsigned int index, s
- 	rdmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
- }
+--- 2.6.21-rc6-mm1.orig/arch/i386/kernel/smpboot.c
++++ 2.6.21-rc6-mm1/arch/i386/kernel/smpboot.c
+@@ -58,6 +58,7 @@
+ #include <mach_wakecpu.h>
+ #include <smpboot_hooks.h>
+ #include <asm/vmi.h>
++#include <asm/mtrr.h>
 
--static void __cpuinit
-+/**
-+ * Retrieves the current fixed-range MTRRs from the current CPU
-+ * \param frs address where to write the current MTRR contents
-+ */
-+static void
- get_fixed_ranges(mtrr_type * frs)
- {
- 	unsigned int *p = (unsigned int *) frs;
-@@ -51,6 +55,16 @@ get_fixed_ranges(mtrr_type * frs)
- 		rdmsr(MTRRfix4K_C0000_MSR + i, p[6 + i * 2], p[7 + i * 2]);
- }
+ /* Set if we find a B stepping CPU */
+ static int __devinitdata smp_b_stepping;
+@@ -816,6 +817,12 @@ static int __cpuinit do_boot_cpu(int api
+ 	unsigned short nmi_high = 0, nmi_low = 0;
 
-+/**
-+ * Updates our copy of the state of the fixed-range MTRR values
-+ * with the current fixed-range MTRR contents from the current CPU
-+ * \param info dummy needed for use by smp_call_function_single()
-+ */
-+void mtrr_save_fixed_ranges(void *info)
-+{
-+	get_fixed_ranges(mtrr_state.fixed_ranges);
-+}
+ 	/*
++	 * Save current MTRR state in case it was changed since early boot
++	 * (e.g. by the ACPI SMI) to initialize new CPUs with MTRRs in sync:
++	 */
++	mtrr_save_state();
 +
- static void __cpuinit print_fixed(unsigned base, unsigned step, const mtrr_type*types)
- {
- 	unsigned i;
++	/*
+ 	 * We can't use kernel_thread since we must avoid to
+ 	 * reschedule the child.
+ 	 */
+Index: 2.6.21-rc6-mm1/arch/x86_64/kernel/smpboot.c
+===================================================================
+--- 2.6.21-rc6-mm1.orig/arch/x86_64/kernel/smpboot.c
++++ 2.6.21-rc6-mm1/arch/x86_64/kernel/smpboot.c
+@@ -943,6 +943,12 @@ int __cpuinit __cpu_up(unsigned int cpu)
+  		return -ENOSYS;
+ 	}
+
++	/*
++	 * Save current MTRR state in case it was changed since early boot
++	 * (e.g. by the ACPI SMI) to initialize new CPUs with MTRRs in sync:
++	 */
++	mtrr_save_state();
++
+ 	per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
+ 	/* Boot it! */
+ 	err = do_boot_cpu(cpu, apicid);
 Index: 2.6.21-rc6-mm1/include/asm-i386/mtrr.h
 ===================================================================
 --- 2.6.21-rc6-mm1.orig/include/asm-i386/mtrr.h
 +++ 2.6.21-rc6-mm1/include/asm-i386/mtrr.h
-@@ -69,6 +69,7 @@ struct mtrr_gentry
-
+@@ -70,6 +70,7 @@ struct mtrr_gentry
  /*  The following functions are for use by other drivers  */
  # ifdef CONFIG_MTRR
-+extern void mtrr_save_fixed_ranges(void *);
+ extern void mtrr_save_fixed_ranges(void *);
++extern void mtrr_save_state(void);
  extern int mtrr_add (unsigned long base, unsigned long size,
  		     unsigned int type, char increment);
  extern int mtrr_add_page (unsigned long base, unsigned long size,
-@@ -79,6 +80,7 @@ extern void mtrr_centaur_report_mcr(int
- extern void mtrr_ap_init(void);
+@@ -81,6 +82,7 @@ extern void mtrr_ap_init(void);
  extern void mtrr_bp_init(void);
  #  else
-+#define mtrr_save_fixed_ranges(arg) do {} while (0)
+ #define mtrr_save_fixed_ranges(arg) do {} while (0)
++#define mtrr_save_state() do {} while (0)
  static __inline__ int mtrr_add (unsigned long base, unsigned long size,
  				unsigned int type, char increment)
  {
@@ -129,17 +169,40 @@ Index: 2.6.21-rc6-mm1/include/asm-x86_64/proto.h
 ===================================================================
 --- 2.6.21-rc6-mm1.orig/include/asm-x86_64/proto.h
 +++ 2.6.21-rc6-mm1/include/asm-x86_64/proto.h
-@@ -17,9 +17,11 @@ extern void mcheck_init(struct cpuinfo_x
- #ifdef CONFIG_MTRR
+@@ -18,10 +18,12 @@ extern void mcheck_init(struct cpuinfo_x
  extern void mtrr_ap_init(void);
  extern void mtrr_bp_init(void);
-+extern void mtrr_save_fixed_ranges(void *);
+ extern void mtrr_save_fixed_ranges(void *);
++extern void mtrr_save_state(void);
  #else
  #define mtrr_ap_init() do {} while (0)
  #define mtrr_bp_init() do {} while (0)
-+#define mtrr_save_fixed_ranges(arg) do {} while (0)
+ #define mtrr_save_fixed_ranges(arg) do {} while (0)
++#define mtrr_save_state() do {} while (0)
  #endif
  extern void init_memory_mapping(unsigned long start, unsigned long end);
 
+Index: 2.6.21-rc6-mm1/arch/i386/kernel/cpu/mtrr/main.c
+===================================================================
+--- 2.6.21-rc6-mm1.orig/arch/i386/kernel/cpu/mtrr/main.c
++++ 2.6.21-rc6-mm1/arch/i386/kernel/cpu/mtrr/main.c
+@@ -729,6 +729,17 @@ void mtrr_ap_init(void)
+ 	local_irq_restore(flags);
+ }
+
++/**
++ * Save current fixed-range MTRR state of the BSP
++ */
++void mtrr_save_state(void)
++{
++	if (smp_processor_id() == 0)
++		mtrr_save_fixed_ranges(NULL);
++	else
++		smp_call_function_single(0, mtrr_save_fixed_ranges, NULL, 1, 1);
++}
++
+ static int __init mtrr_init_finialize(void)
+ {
+ 	if (!mtrr_if)
 
 -- 
