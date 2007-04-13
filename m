@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030858AbXDMVww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbXDMVzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030858AbXDMVww (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 17:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030859AbXDMVww
+	id S1753635AbXDMVzx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbXDMVzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 17:52:52 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38016 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030858AbXDMVwv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 17:52:51 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] make kthread_create() more scalable
-References: <20070413130201.GA170@tv-sign.ru>
-	<20070413143104.99a1eeb9.akpm@linux-foundation.org>
-Date: Fri, 13 Apr 2007 15:51:29 -0600
-In-Reply-To: <20070413143104.99a1eeb9.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 13 Apr 2007 14:31:04 -0700")
-Message-ID: <m1lkgwndsu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 13 Apr 2007 17:55:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35491 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753635AbXDMVzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 17:55:52 -0400
+Message-ID: <461FFC19.1020208@redhat.com>
+Date: Fri, 13 Apr 2007 17:54:33 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.20.7
+References: <20070413205659.GA5935@kroah.com>
+In-Reply-To: <20070413205659.GA5935@kroah.com>
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Greg KH wrote:
+> We (the -stable team) are announcing the release of the 2.6.20.7 kernel.
+> This release has a number of bugfixes and any user of the 2.6.20 kernel
+> series is encouraged to upgrade.
+> 
+> The diffstat and short summary of the fixes are below.
+> 
+> I'll also be replying to this message with a copy of the patch between
+> 2.6.20.6 and 2.6.20.7.
+> 
+> The updated 2.6.20.y git tree can be found at:
+>         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+> and can be browsed at the normal kernel.org git web browser:
+>         www.kernel.org/git/
 
-> On Fri, 13 Apr 2007 17:02:01 +0400
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
->
->> If kernel_thread(kthread) succeeds, kthread() can not fail on its path to
->> complete(&create->started) + schedule(). After that it can't be woken because
->> nobody can see the new task yet. This means:
->> 
->> 	- we don't need tasklist_lock for find_task_by_pid().
->> 
->> 	- create_kthread() doesn't need to wait for create->started. Instead,
->> 	  kthread_create() first waits for create->created to get the result of
->> 	  kernel_thread(), then waits for create->started to synchronize with
->> 	  kthread().
->
-> Why don't we need tasklist_lock for find_task_by_pid()?  I'd have though that
-> we'd at least need rcu_read_lock(), and I'm not sure that the implicit
-> understanding of pid-management internals here is a great idea.
-
-We need rcu_read_lock().  Or else something could permute the pid hash table
-and get us into trouble.
-
-Eric
-
-
-
-
+How long should that take to show up on kernel.org?
 
