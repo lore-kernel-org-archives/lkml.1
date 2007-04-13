@@ -1,69 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbXDMJvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbXDMJ42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753049AbXDMJvy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 05:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbXDMJvy
+	id S1753149AbXDMJ42 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 05:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXDMJ42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 05:51:54 -0400
-Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:45375 "HELO
-	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753000AbXDMJvx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 05:51:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=S9fbqEkZ5s/nNcnU7adrOXAgiziaRN/CEAivVWnMDCL0VxgZ6q2TaXaoixNH/dOOfma6KKvf/WxUMr4SVMvZ5enFMXngCP/p0RWrHRroOeyC0/m0/UljGuocv+7ZspA5k0tumWzIyyOiQPz51OoF+yOouSs1AX7TixBbyR4x2+E=  ;
-X-YMail-OSG: OkglYAkVM1mIdtdgSgnQ.LdH5bUxvDuhYU6Xksj9_dfseLSr0rvVxLCOp.wu.YPnza3v31aTug--
-From: David Brownell <david-b@pacbell.net>
-To: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] [PATCH][RFC] Kill off legacy power management stuff.
-Date: Fri, 13 Apr 2007 02:51:50 -0700
-User-Agent: KMail/1.7.1
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6> <200704131022.45315.rjw@sisk.pl>
-In-Reply-To: <200704131022.45315.rjw@sisk.pl>
+	Fri, 13 Apr 2007 05:56:28 -0400
+Received: from mx3.mail.ru ([194.67.23.149]:14421 "EHLO mx3.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753149AbXDMJ41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 05:56:27 -0400
+Date: Fri, 13 Apr 2007 13:52:37 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/7] [RFC] Common power driver for Linux gadgets
+Message-ID: <20070413095237.GA14851@zarina>
+Reply-To: cbou@mail.ru
+References: <200704122306.46518.david-b@pacbell.net> <20070413073650.GA3763@zarina> <200704130142.37081.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-Message-Id: <200704130251.50655.david-b@pacbell.net>
+In-Reply-To: <200704130142.37081.david-b@pacbell.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 April 2007 1:22 am, Rafael J. Wysocki wrote:
-> [appropriate CCs added]
-> 
-> On Friday, 13 April 2007 02:33, Robert P. J. Day wrote:
+On Fri, Apr 13, 2007 at 01:42:36AM -0700, David Brownell wrote:
+> On Friday 13 April 2007 12:36 am, Anton Vorontsov wrote:
+> > Hello David,
+> > > 
+> > >  - The API needs to say *how much power* can be drawn...
+> > > 
+> > >  - Sensing VBUS power is not the same thing as being allowed to consume
+> > >    it.  Again, USB OTG devices are different:  OTG hosts **SUPPLY** the
+> > >    current, ...
 > > 
-> > just something i threw together, not in final form, but it represents
-> > tossing the legacy PM stuff.  at the moment, the menuconfig entry for
-> > PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
-> > "obsolete."  that's a good sign that it's getting close to the time
-> > for it to go, and the removal is fairly straightforward, but there's
-> > no mention of its removal in the feature removal schedule file.
+> > I see. Current devices I have just consumes power from USB host. I.e.
+> > they able to boot using only USB and discharged battery. :-/ Even
+> > more, HP iPaq hx4700 able to charge battery from USB (using that driver).
+> > We just setting USB charging GPIO, and it starts consume power from
+> > the host.
 > 
-> It's been like this for a long long time.  I think you're right that it can be
-> dropped, but I don't know the details (eg. why it hasn't been dropped yet).
+> Sounds like it could be more power than the host expects it to consume;
+> or in some cases, not as much as it could ... ISTR only the Ethernet
+> gadget defaults to 100mA (in non-OTG configs), the others are set for
+> only 2 mA (expecting self-powered configs).
+> 
+> 
+> > But I got the point, and yes I can't explain why it works correctly.
+> 
+> It probably doesn't work correctly.  But it's not broken enough to
+> fail badly.
 
-I was just thinking about this the other day.  I did an inventory of
-the actual _users_ of this code when I added the deprecation to Kconfig,
-and the only driver that would catch the notification was for some
-old m68k platform serial driver (Amiga?) ... that won't have changed.
+Can that comment be an explanation?
 
-So the only reason not to remove it at that time was to make sure that
-folk had a chance to squawk about it going away.  I think it's past
-time for this ancient stuff to vanish, since it's been obsolete for
-most of 2.5..2.6 and there's only that one event consumer left.
+--- drivers/usb/gadget/pxa2xx_udc.c:
+static const struct usb_gadget_ops pxa2xx_udc_ops = {
+        .get_frame      = pxa2xx_udc_get_frame,
+        .wakeup         = pxa2xx_udc_wakeup,
+        .vbus_session   = pxa2xx_udc_vbus_session,
+        .pullup         = pxa2xx_udc_pullup,
 
-Go for it!
-
-- Dave
-
-
+        // .vbus_draw ... boards may consume current from VBUS, up to
+        // 100-500mA based on config.  the 500uA suspend ceiling means
+        // that exclusively vbus-powered PXA designs violate USB specs.
+};
 
 
+Comparing to omap_udc.
+
+--- drivers/usb/gadget/omap_udc.c
+static int omap_vbus_draw(struct usb_gadget *gadget, unsigned mA)
+{
+        struct omap_udc *udc;
+
+        udc = container_of(gadget, struct omap_udc, gadget);
+        if (udc->transceiver)
+                return otg_set_power(udc->transceiver, mA);
+        return -EOPNOTSUPP;
+}
+[...]
+static struct usb_gadget_ops omap_gadget_ops = {
+        .get_frame              = omap_get_frame,
+        .wakeup                 = omap_wakeup,
+        .set_selfpowered        = omap_set_selfpowered,
+        .vbus_session           = omap_vbus_session,
+        .vbus_draw              = omap_vbus_draw,
+        .pullup                 = omap_pullup,
+};
+
+
+
+Regarding API. If you all you want is to know how much power you need to
+ask from VBUS, we can extend external power interface... thus suppliers
+could ask their power consumption requirements in mA/uA, and these
+requests will be forwarded to power supply driver, and power driver will
+forward that request to USB transceiver (via platform hook).
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
