@@ -1,41 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030902AbXDNAAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030909AbXDNABT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030902AbXDNAAz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 20:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030903AbXDNAAz
+	id S1030909AbXDNABT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 20:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030905AbXDNABS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 20:00:55 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:58847 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030902AbXDNAAy (ORCPT
+	Fri, 13 Apr 2007 20:01:18 -0400
+Received: from smtp-out20.alice.it ([85.33.2.20]:4611 "EHLO
+	smtp-out01.alice.it" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030906AbXDNABQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 20:00:54 -0400
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
+	Fri, 13 Apr 2007 20:01:16 -0400
+X-Greylist: delayed 849 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Apr 2007 20:01:15 EDT
+Date: Sat, 14 Apr 2007 01:45:13 +0200
+From: Mattia Dongili <malattia@linux.it>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070413223017.GA8961@elte.hu>
-References: <20070413202100.GA9957@elte.hu>
-	 <1176502546.3129.79.camel@imap.mvista.com>  <20070413223017.GA8961@elte.hu>
-Content-Type: text/plain
-Date: Fri, 13 Apr 2007 16:59:44 -0700
-Message-Id: <1176508785.3129.89.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
-Content-Transfer-Encoding: 7bit
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Shaohua Li <shaohua.li@intel.com>
+Subject: CPU_IDLE prevents resuming from STR [was: Re: 2.6.21-rc6-mm1]
+Message-ID: <20070413234513.GA2940@inferi.kami.home>
+References: <20070408143559.f5014629.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070408143559.f5014629.akpm@linux-foundation.org>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.21-rc6-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 13 Apr 2007 23:45:11.0656 (UTC) FILETIME=[C6BDB680:01C77E25]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 08, 2007 at 02:35:59PM -0700, Andrew Morton wrote:
+...
+>  git-acpi.patch
 
-One other thing, what happens in the case of slow, frequency changing,
-are/or inaccurate clocks .. Is the old sched_clock behavior still
-tolerated?
+after bisecting I can finally say what breaks resume from STR here:
 
-Daniel 
+tadaaaaa: CPU_IDLE.
+I first spotted the git-acpi.patch then reapplied it and disabled
+CPU_IDLE, now my laptop resumes.
 
+Any useful information I should add?
+
+$ cat /sys/devices/system/cpu/cpuidle/*
+acpi_idle 
+no governors
+acpi_idle
+no governor
+
+$ cat /proc/cpuinfo
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU         T5600  @ 1.83GHz
+stepping	: 6
+cpu MHz		: 1000.000
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 3671.24
+clflush size	: 64
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU         T5600  @ 1.83GHz
+stepping	: 6
+cpu MHz		: 1000.000
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 15805.85
+clflush size	: 64
+
+-- 
+mattia
+:wq!
