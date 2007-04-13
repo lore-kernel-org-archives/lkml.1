@@ -1,353 +1,615 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbXDMNxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXDMNxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000AbXDMNxg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 09:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXDMNxf
+	id S1753997AbXDMNxk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 09:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXDMNxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 09:53:35 -0400
-Received: from mx34.mail.ru ([194.67.23.200]:1193 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753998AbXDMNxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 09:53:23 -0400
-Date: Fri, 13 Apr 2007 17:50:01 +0400
+	Fri, 13 Apr 2007 09:53:37 -0400
+Received: from mx3.mail.ru ([194.67.23.149]:21624 "EHLO mx3.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753997AbXDMNxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 09:53:19 -0400
+Date: Fri, 13 Apr 2007 17:49:57 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: linux-kernel@vger.kernel.org
 Cc: kernel-discuss@handhelds.org
-Subject: Re: [PATCH 2/7] [RFC] Common power driver for Linux gadgets
-Message-ID: <20070413135001.GD20618@zarina>
+Subject: Re: [PATCH 6/7] [RFC] ds2760 battery driver
+Message-ID: <20070413134957.GC20618@zarina>
 Reply-To: cbou@mail.ru
-References: <20070411232456.GB20095@zarina>
+References: <20070411232522.GF20095@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070411232456.GB20095@zarina>
+In-Reply-To: <20070411232522.GF20095@zarina>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 03:24:56AM +0400, Anton Vorontsov wrote:
-> This driver used to stop code/logic duplication through different
-> machines we porting at handhelds.org. pda_power register machs' power
-> supplies, and will take care about notifying batteries about power
-> changes through external power interface.
-> 
-> This driver should be suitable for almost every Linux gadget today.
+On Thu, Apr 12, 2007 at 03:25:45AM +0400, Anton Vorontsov wrote:
+> This is driver for batteries with ds2760 chip inside. Such batteries
+> used in almost every HP iPaq and HTC PDAs/phones.
 
 Changes:
 
-- implement timer, it's used for two purposes:
-   1) on some machines you can't read is_{ac,usb}_online() values just
-      after interrupt. Should wait a bit to read reliable values.
-   2) irq debouncing
+- follow battery class changes (get rid of vast amount of macro-created
+  functions).
 
-- cleanups
+- cleanups based on comments by Randy Dunlap.
 
 
-Subject: [PATCH] [take2] pda_power driver
+Subject: [PATCH] [take2] ds2760 battery driver
 
 
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/power/Kconfig     |    8 ++
- drivers/power/Makefile    |    1 +
- drivers/power/pda_power.c |  231 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pda_power.h |   25 +++++
- 4 files changed, 265 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/pda_power.c
- create mode 100644 include/linux/pda_power.h
+ drivers/battery/Kconfig          |    7 +
+ drivers/battery/Makefile         |    1 +
+ drivers/battery/ds2760_battery.c |  493 ++++++++++++++++++++++++++++++++++++++
+ include/linux/ds2760_battery.h   |   32 +++
+ 4 files changed, 533 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/battery/ds2760_battery.c
+ create mode 100644 include/linux/ds2760_battery.h
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 17349c1..b87779e 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -10,4 +10,12 @@ config EXTERNAL_POWER
+diff --git a/drivers/battery/Kconfig b/drivers/battery/Kconfig
+index c386593..0c14ae0 100644
+--- a/drivers/battery/Kconfig
++++ b/drivers/battery/Kconfig
+@@ -8,4 +8,11 @@ config BATTERY
+ 	  Say Y here to enable generic battery status reporting in
+ 	  the /sys filesystem.
  
- 	  This interface is mandatory for battery class support.
- 
-+config PDA_POWER
-+	tristate "Generic PDA/phone power driver"
-+	depends on EXTERNAL_POWER
++config BATTERY_DS2760
++	tristate "DS2760 battery driver (HP iPAQ & others)"
++	depends on BATTERY && W1
++	select W1_SLAVE_DS2760
 +	help
-+	  Say Y here to enable generic power driver for PDAs and phones with
-+	  one or two external power supplies (AC/USB) connected to main and
-+	  backup batteries, and optional builtin charger.
++	  Say Y here to enable support for batteries with ds2760 chip.
 +
  endmenu
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index c303b45..6f084e7 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
+diff --git a/drivers/battery/Makefile b/drivers/battery/Makefile
+index a2239cb..9902513 100644
+--- a/drivers/battery/Makefile
++++ b/drivers/battery/Makefile
 @@ -1 +1,2 @@
- obj-$(CONFIG_EXTERNAL_POWER)  += external_power.o
-+obj-$(CONFIG_PDA_POWER)       += pda_power.o
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+ obj-$(CONFIG_BATTERY)              += battery.o
++obj-$(CONFIG_BATTERY_DS2760)       += ds2760_battery.o
+diff --git a/drivers/battery/ds2760_battery.c b/drivers/battery/ds2760_battery.c
 new file mode 100644
-index 0000000..ae90bd7
+index 0000000..d996994
 --- /dev/null
-+++ b/drivers/power/pda_power.c
-@@ -0,0 +1,231 @@
++++ b/drivers/battery/ds2760_battery.c
+@@ -0,0 +1,493 @@
 +/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
++ * Driver for batteries with DS2760 chips inside.
 + *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
++ * Copyright (c) 2007 Anton Vorontsov
++ *               2004 Matt Reimer
++ *               2004 Szabolcs Gyurko
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
++ *
++ * Author:  Anton Vorontsov <cbou@mail.ru>
++ *          February 2007
++ *
++ *          Matt Reimer <mreimer@vpop.net>
++ *          April 2004, 2005
++ *
++ *          Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
++ *          September 2004
 + */
 +
 +#include <linux/module.h>
++#include <linux/param.h>
++#include <linux/jiffies.h>
++#include <linux/workqueue.h>
++#include <linux/pm.h>
 +#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
-+#include <linux/external_power.h>
-+#include <linux/pda_power.h>
-+#include <linux/timer.h>
++#include <linux/ds2760_battery.h>
 +
-+/*
-+ * include/linux/ioport.h does not provide flags for generic IRQ trigger
-+ * types. So, we're using "ISA PnP IRQ specific bits", and converting them.
-+ */
-+static unsigned int get_irq_flags(struct resource *res)
-+{
-+	unsigned int flags = IRQF_DISABLED;
++#include "../w1/w1.h"
++#include "../w1/slaves/w1_ds2760.h"
 +
-+	if (res->flags & IORESOURCE_IRQ_HIGHEDGE)
-+		flags |= IRQF_TRIGGER_RISING;
-+	if (res->flags & IORESOURCE_IRQ_LOWEDGE)
-+		flags |= IRQF_TRIGGER_FALLING;
-+	if (res->flags & IORESOURCE_IRQ_HIGHLEVEL)
-+		flags |= IRQF_TRIGGER_HIGH;
-+	if (res->flags & IORESOURCE_IRQ_LOWLEVEL)
-+		flags |= IRQF_TRIGGER_LOW;
-+	if (res->flags & IORESOURCE_IRQ_SHAREABLE)
-+		flags |= IRQF_SHARED;
++struct ds2760_device_info {
++	struct battery_info *bi;
 +
-+	return flags;
-+}
++	/* DS2760 data, valid after calling ds2760_battery_read_status() */
++	unsigned long update_time;      /* jiffies when data read */
++	char raw[DS2760_DATA_SIZE];     /* raw DS2760 data */
++	int voltage_raw;                /* units of 4.88 mV */
++	int voltage_mV;                 /* units of mV */
++	int current_raw;                /* units of 0.625 mA */
++	int current_mA;                 /* units of mA */
++	int accum_current_raw;          /* units of 0.25 mAh */
++	int accum_current_mAh;          /* units of mAh */
++	int temp_raw;                   /* units of 0.125 C */
++	int temp_C;                     /* units of 0.1 C */
++	int rated_capacity;             /* units of mAh */
++	int rem_capacity;               /* percentage */
++	int full_active_mAh;            /* units of mAh */
++	int empty_mAh;                  /* units of mAh */
++	int life_min;                   /* units of minutes */
++	int charge_status;              /* BATTERY_STATUS_* */
 +
-+static struct resource *ac_irq, *usb_irq;
-+static struct pda_power_pdata *pdata;
-+static struct timer_list isr_timer;
-+
-+static int pda_power_is_ac_online(struct power_supply *psy)
-+{
-+	return pdata->is_ac_online ? pdata->is_ac_online() : 0;
-+}
-+
-+static int pda_power_is_usb_online(struct power_supply *psy)
-+{
-+	return pdata->is_usb_online ? pdata->is_usb_online() : 0;
-+}
-+
-+static char *pda_power_supplied_to[] = {
-+	"main-battery",
-+	"backup-battery",
++	int full_counter;
++	struct battery batt;
++	struct device *w1_dev;
++	struct workqueue_struct *monitor_wqueue;
++	struct delayed_work monitor_work;
 +};
 +
-+static struct power_supply pda_power_supplies[] = {
-+	{
-+		.name = "ac",
-+		.type = "ac",
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.is_online = pda_power_is_ac_online,
-+	},
-+	{
-+		.name = "usb",
-+		.type = "dc",
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.is_online = pda_power_is_usb_online,
-+	},
++static unsigned int cache_time = 1000;
++module_param(cache_time, uint, 0644);
++MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
++
++/* Some batteries have their rated capacity stored a N * 10 mAh, while
++ * others use an index into this table. */
++static int rated_capacities[] = {
++	0,
++	920,        /* Samsung */
++	920,        /* BYD */
++	920,        /* Lishen */
++	920,        /* NEC */
++	1440,       /* Samsung */
++	1440,       /* BYD */
++	1440,       /* Lishen */
++	1440,       /* NEC */
++	2880,       /* Samsung */
++	2880,       /* BYD */
++	2880,       /* Lishen */
++	2880        /* NEC */
 +};
 +
-+static void update_charger(void)
++/* array is level at temps 0C, 10C, 20C, 30C, 40C
++ * temp is in Celsius */
++static int battery_interpolate(int array[], int temp)
 +{
-+	if (!pdata->set_charge)
-+		return;
++	int index, dt;
 +
-+	if (pdata->is_ac_online && pdata->is_ac_online()) {
-+		pr_debug("pda_power: charger on (AC)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_AC);
-+	}
-+	else if (pdata->is_usb_online && pdata->is_usb_online()) {
-+		pr_debug("pda_power: charger on (USB)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_USB);
++	if (temp <= 0)
++		return array[0];
++	if (temp >= 40)
++		return array[4];
++
++	index = temp / 10;
++	dt    = temp % 10;
++
++	return array[index] + (((array[index + 1] - array[index]) * dt) / 10);
++}
++
++static int ds2760_battery_read_status(struct ds2760_device_info *di)
++{
++	int ret, i, start, count, scale[5];
++
++	if (di->update_time && time_before(jiffies, di->update_time +
++	                                   msecs_to_jiffies(cache_time)))
++		return 0;
++
++	if (!di->w1_dev)
++		return 0;
++
++	/* The first time we read the entire contents of SRAM/EEPROM,
++	 * but after that we just read the interesting bits that change. */
++	if (di->update_time == 0) {
++		start = 0;
++		count = DS2760_DATA_SIZE;
 +	}
 +	else {
-+		pr_debug("pda_power: charger off\n");
-+		pdata->set_charge(0);
++		start = DS2760_VOLTAGE_MSB;
++		count = DS2760_TEMP_LSB - start + 1;
 +	}
 +
-+	return;
-+}
-+
-+static void isr_timer_func(unsigned long irq)
-+{
-+	if (ac_irq && irq == ac_irq->start) {
-+		power_supply_changed(&pda_power_supplies[0]);
-+	}
-+	else if (usb_irq && irq == usb_irq->start) {
-+		power_supply_changed(&pda_power_supplies[1]);
-+	}
-+	else {
-+		printk(KERN_WARNING "pda_power: spurious irq %li", irq);
-+		return;
++	ret = w1_ds2760_read(di->w1_dev, di->raw + start, start, count);
++	if (ret != count) {
++		printk("call to w1_ds2760_read failed (0x%08x)\n",
++		       (unsigned int)di->w1_dev);
++		return 1;
 +	}
 +
-+	update_charger();
++	di->update_time = jiffies;
 +
-+	return;
-+}
++	/* DS2760 reports voltage in units of 4.88mV, but the battery class
++	 * reports in units of mV, so convert by multiplying by 4.875.
++	 * We approximate because integer math is cheap, and close enough. */
++	di->voltage_raw = (di->raw[DS2760_VOLTAGE_MSB] << 3) |
++	                  (di->raw[DS2760_VOLTAGE_LSB] >> 5);
++	di->voltage_mV = (di->voltage_raw * 5) - (di->voltage_raw / 8);
 +
-+static irqreturn_t power_changed_isr(int irq, void *unused)
-+{
-+	isr_timer.data = irq;
-+	mod_timer(&isr_timer, jiffies + HZ);
-+	return IRQ_HANDLED;
-+}
++	/* DS2760 reports current in signed units of 0.625mA, but the battery
++	 * class reports in units of mA, so convert by multiplying by 0.625. */
++	di->current_raw =
++	    (((signed char)di->raw[DS2760_CURRENT_MSB]) << 5) |
++	                  (di->raw[DS2760_CURRENT_LSB] >> 3);
++	di->current_mA = (di->current_raw / 2) + (di->current_raw / 8);
 +
-+static int pda_power_probe(struct platform_device *pdev)
-+{
-+	int ret = 0;
++	/* DS2760 reports accumulated current in signed units of 0.25mAh. */
++	di->accum_current_raw =
++	    (((signed char)di->raw[DS2760_CURRENT_ACCUM_MSB]) << 8) |
++	                   di->raw[DS2760_CURRENT_ACCUM_LSB];
++	di->accum_current_mAh = di->accum_current_raw / 4;
 +
-+	if (pdev->id != -1) {
-+		printk(KERN_WARNING "pda_power: it's meaningless to "
-+		       "register several pda_powers, use id = -1\n");
-+		ret = -EINVAL;
-+		goto wrongid;
-+	}
++	/* DS2760 reports temperature in signed units of 0.125C, but the
++	 * battery class reports in units of 1/10 C, so we convert by
++	 * multiplying by .125 * 10 = 1.25. */
++	di->temp_raw = (((signed char)di->raw[DS2760_TEMP_MSB]) << 3) |
++	                             (di->raw[DS2760_TEMP_LSB] >> 5);
++	di->temp_C = di->temp_raw + (di->temp_raw / 4);
 +
-+	pdata = pdev->dev.platform_data;
++	/* At least some battery monitors (e.g. HP iPAQ) store the battery's
++	 * maximum rated capacity. */
++	if (di->raw[DS2760_RATED_CAPACITY] < ARRAY_SIZE(rated_capacities))
++		di->rated_capacity = rated_capacities[
++		        (unsigned int)di->raw[DS2760_RATED_CAPACITY]];
++	else
++		di->rated_capacity = di->raw[DS2760_RATED_CAPACITY] * 10;
 +
-+	setup_timer(&isr_timer, isr_timer_func, 0);
++	/* Calculate the full level at the present temperature. */
++	di->full_active_mAh = di->raw[DS2760_ACTIVE_FULL] << 8 |
++	                      di->raw[DS2760_ACTIVE_FULL + 1];
 +
-+	ac_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "ac");
-+	usb_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "usb");
-+	if (!ac_irq && !usb_irq) {
-+		printk(KERN_ERR "pda_power: no ac/usb irq specified\n");
-+		ret = -ENODEV;
-+		goto noirqs;
-+	}
++	scale[0] = di->raw[DS2760_ACTIVE_FULL] << 8 |
++	           di->raw[DS2760_ACTIVE_FULL + 1];
++	for (i = 1; i < 5; i++)
++		scale[i] = scale[i - 1] + di->raw[DS2760_ACTIVE_FULL + 2 + i];
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[0]);
-+	if (ret) {
-+		printk(KERN_ERR "pda_power: failed to register %s power "
-+		       "supply\n", pda_power_supplies[0].name);
-+		goto supply0_failed;
-+	}
++	di->full_active_mAh = battery_interpolate(scale, di->temp_C / 10);
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[1]);
-+	if (ret) {
-+		printk(KERN_ERR "pda_power: failed to register %s power "
-+		       "supply\n", pda_power_supplies[1].name);
-+		goto supply1_failed;
-+	}
++	/* Calculate the empty level at the present temperature. */
++	scale[4] = di->raw[DS2760_ACTIVE_EMPTY + 4];
++	for (i = 3; i >= 0; i--)
++		scale[i] = scale[i + 1] + di->raw[DS2760_ACTIVE_EMPTY + i];
 +
-+	if (ac_irq) {
-+		ret = request_irq(ac_irq->start, power_changed_isr,
-+		           get_irq_flags(ac_irq), ac_irq->name, NULL);
-+		if (ret) {
-+			printk(KERN_ERR "pda_power: request ac irq failed\n");
-+			goto ac_irq_failed;
-+		}
-+	}
++	di->empty_mAh = battery_interpolate(scale, di->temp_C / 10);
 +
-+	if (usb_irq) {
-+		ret = request_irq(usb_irq->start, power_changed_isr,
-+		           get_irq_flags(ac_irq), usb_irq->name, NULL);
-+		if (ret) {
-+			printk(KERN_ERR "pda_power: request usb irq failed\n");
-+			goto usb_irq_failed;
-+		}
-+	}
++	/* From Maxim Application Note 131: remaining capacity =
++	 * ((ICA - Empty Value) / (Full Value - Empty Value)) x 100% */
++	di->rem_capacity = ((di->accum_current_mAh - di->empty_mAh) * 100) /
++	                    (di->full_active_mAh - di->empty_mAh);
 +
-+	update_charger();
++	if (di->rem_capacity < 0)
++		di->rem_capacity = 0;
++	if (di->rem_capacity > 100)
++		di->rem_capacity = 100;
 +
-+	goto success;
++	if (di->current_mA)
++		di->life_min = -((di->accum_current_mAh - di->empty_mAh) *
++		                 60) / di->current_mA;
++	else
++		di->life_min = 0;
 +
-+usb_irq_failed:
-+	if (ac_irq)
-+		free_irq(ac_irq->start, NULL);
-+ac_irq_failed:
-+	power_supply_unregister(&pda_power_supplies[1]);
-+supply1_failed:
-+	power_supply_unregister(&pda_power_supplies[0]);
-+supply0_failed:
-+noirqs:
-+wrongid:
-+success:
-+	return ret;
-+}
-+
-+static int pda_power_remove(struct platform_device *pdev)
-+{
-+	if (usb_irq)
-+		free_irq(usb_irq->start, NULL);
-+	if (ac_irq)
-+		free_irq(ac_irq->start, NULL);
-+	del_timer_sync(&isr_timer);
-+	power_supply_unregister(&pda_power_supplies[1]);
-+	power_supply_unregister(&pda_power_supplies[0]);
 +	return 0;
 +}
 +
-+static struct platform_driver pda_power_pdrv = {
-+	.driver = {
-+		.name = "pda-power",
-+	},
-+	.probe = pda_power_probe,
-+	.remove = pda_power_remove,
-+};
-+
-+static int __init pda_power_init(void)
++static void ds2760_battery_update_status(struct ds2760_device_info *di)
 +{
-+	return platform_driver_register(&pda_power_pdrv);
-+}
++	int old_charge_status = di->charge_status;
 +
-+static void __exit pda_power_exit(void)
-+{
-+	platform_driver_unregister(&pda_power_pdrv);
++	ds2760_battery_read_status(di);
++
++	if (di->charge_status == BATTERY_STATUS_UNKNOWN)
++		di->full_counter = 0;
++
++	if (battery_is_external_power_supplied(&di->batt)) {
++		if (di->current_mA > 10) {
++			di->charge_status = BATTERY_STATUS_CHARGING;
++			di->full_counter = 0;
++		}
++		else if (di->current_mA < -5) {
++			if (di->charge_status != BATTERY_STATUS_DISCHARGING)
++				printk(KERN_WARNING "%s: not enough power to "
++				       "charge\n", di->bi->name);
++			di->charge_status = BATTERY_STATUS_DISCHARGING;
++			di->full_counter = 0;
++		}
++		else if (di->current_mA < 10 &&
++		            di->charge_status != BATTERY_STATUS_FULL) {
++
++			/* Don't consider the battery to be full unless
++			 * we've seen the current < 10 mA at least two
++			 * consecutive times. */
++
++			di->full_counter++;
++
++			if (di->full_counter < 2)
++				di->charge_status = BATTERY_STATUS_CHARGING;
++			else {
++				unsigned char acr[2];
++
++				acr[0] = (di->full_active_mAh * 4) >> 8;
++				acr[1] = (di->full_active_mAh * 4) & 0xff;
++
++				if (w1_ds2760_write(di->w1_dev, acr,
++				    DS2760_CURRENT_ACCUM_MSB, 2) < 2)
++					printk(KERN_ERR "ACR reset failed\n");
++				di->charge_status = BATTERY_STATUS_FULL;
++			}
++		}
++	}
++	else {
++		di->charge_status = BATTERY_STATUS_DISCHARGING;
++		di->full_counter = 0;
++	}
++
++	if (di->charge_status != old_charge_status)
++		battery_status_changed(&di->batt);
++
 +	return;
 +}
 +
-+module_init(pda_power_init);
-+module_exit(pda_power_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Anton Vorontsov <cbou@mail.ru>");
-diff --git a/include/linux/pda_power.h b/include/linux/pda_power.h
-new file mode 100644
-index 0000000..0d414a8
---- /dev/null
-+++ b/include/linux/pda_power.h
-@@ -0,0 +1,25 @@
-+/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
-+ *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
++static int ds2760_battery_match_callback(struct device *dev, void *data)
++{
++	struct w1_slave *sl;
 +
-+#ifndef __PDA_POWER_H__
-+#define __PDA_POWER_H__
++	if (!(dev->driver && dev->driver->name &&
++	     (strcmp(dev->driver->name, "w1_slave_driver") == 0)))
++		return 0;
 +
-+#define PDA_POWER_CHARGE_AC  (1 << 0)
-+#define PDA_POWER_CHARGE_USB (1 << 1)
++	sl = container_of(dev, struct w1_slave, dev);
 +
-+struct pda_power_pdata {
-+	int (*is_ac_online)(void);
-+	int (*is_usb_online)(void);
-+	void (*set_charge)(int flags);
++	/* DS2760 w1 slave device names begin with the family number 0x30. */
++	if (strncmp(sl->name, "30-", 3) != 0)
++		return 0;
++
++	return 1;
++}
++
++static void ds2760_battery_work(struct work_struct *work)
++{
++	struct ds2760_device_info *di = container_of(work,
++		struct ds2760_device_info, monitor_work.work);
++	struct bus_type *bus;
++	int interval = HZ * 60;
++
++	pr_debug("%s\n", __FUNCTION__);
++
++	if (!di->w1_dev) {
++		/* Get the battery w1 slave device. */
++		bus = find_bus("w1");
++		if (bus)
++			di->w1_dev = bus_find_device(bus, NULL, NULL,
++			                   ds2760_battery_match_callback);
++
++		if (!di->w1_dev) {
++			pr_debug("%s: no dev found\n", __FUNCTION__);
++			interval = HZ * 10;
++			goto again_please;
++		}
++		pr_debug("%s: dev found\n", __FUNCTION__);
++	}
++
++	ds2760_battery_update_status(di);
++
++again_please:
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, interval);
++	return;
++}
++
++#define to_ds2760_device_info(x) container_of((x), struct ds2760_device_info, \
++                                              batt);
++
++static void ds2760_battery_external_power_changed(struct battery *bat)
++{
++	struct ds2760_device_info *di = to_ds2760_device_info(bat);
++
++	pr_debug("%s\n", __FUNCTION__);
++
++	cancel_delayed_work(&di->monitor_work);
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ/10);
++
++	return;
++}
++
++static void *ds2760_battery_get_property(struct battery *bat,
++                                         enum battery_property bp)
++{
++	struct ds2760_device_info *di = to_ds2760_device_info(bat);
++
++	switch (bp) {
++	case BATTERY_PROP_MAX_VOLTAGE:
++		return &di->bi->max_voltage;
++	case BATTERY_PROP_MIN_VOLTAGE:
++		return &di->bi->min_voltage;
++	case BATTERY_PROP_VOLTAGE:
++		ds2760_battery_read_status(di);
++		return &di->voltage_mV;
++	case BATTERY_PROP_MAX_CURRENT:
++		return &di->bi->max_current;
++	case BATTERY_PROP_CURRENT:
++		ds2760_battery_read_status(di);
++		return &di->current_mA;
++	case BATTERY_PROP_MAX_CHARGE:
++		ds2760_battery_read_status(di);
++		return &di->full_active_mAh;
++	case BATTERY_PROP_MIN_CHARGE:
++		ds2760_battery_read_status(di);
++		return &di->empty_mAh;
++	case BATTERY_PROP_CHARGE:
++		ds2760_battery_read_status(di);
++		return &di->accum_current_mAh;
++	case BATTERY_PROP_TEMP:
++		ds2760_battery_read_status(di);
++		return &di->temp_C;
++	case BATTERY_PROP_STATUS:
++		return &di->charge_status;
++	default:
++		return NULL;
++	};
++}
++
++static int ds2760_battery_properties[] = {
++	BATTERY_PROP_MAX_VOLTAGE,
++	BATTERY_PROP_MIN_VOLTAGE,
++	BATTERY_PROP_VOLTAGE,
++	BATTERY_PROP_MAX_CURRENT,
++	BATTERY_PROP_CURRENT,
++	BATTERY_PROP_MAX_CHARGE,
++	BATTERY_PROP_MIN_CHARGE,
++	BATTERY_PROP_CHARGE,
++	BATTERY_PROP_TEMP,
++	BATTERY_PROP_STATUS,
 +};
 +
-+#endif /* __PDA_POWER_H__ */
++static int ds2760_battery_probe(struct platform_device *pdev)
++{
++	int retval = 0;
++	struct ds2760_device_info *di;
++	struct ds2760_platform_data *pdata;
++
++	di = kzalloc(sizeof(*di), GFP_KERNEL);
++	if (!di) {
++		retval = -ENOMEM;
++		goto di_alloc_failed;
++	}
++
++	platform_set_drvdata(pdev, di);
++
++	pdata = pdev->dev.platform_data;
++	di->bi = &pdata->battery_info;
++
++	di->batt.name           = di->bi->name;
++	di->batt.properties     = ds2760_battery_properties;
++	di->batt.num_properties = ARRAY_SIZE(ds2760_battery_properties);
++	di->batt.get_property   = ds2760_battery_get_property;
++	di->batt.external_power_changed =
++	                          ds2760_battery_external_power_changed;
++
++	di->charge_status = BATTERY_STATUS_UNKNOWN;
++
++	retval = battery_register(&pdev->dev, &di->batt);
++	if (retval) {
++		printk(KERN_ERR "Failed to register class dev for %s",
++		       pdev->name);
++		goto batt_failed;
++	}
++
++	INIT_DELAYED_WORK(&di->monitor_work, ds2760_battery_work);
++	di->monitor_wqueue = create_singlethread_workqueue("ds2760_mon");
++	if (!di->monitor_wqueue) {
++		retval = -ESRCH;
++		goto workqueue_failed;
++	}
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ * 1);
++
++	goto success;
++
++workqueue_failed:
++	battery_unregister(&di->batt);
++batt_failed:
++	kfree(di);
++di_alloc_failed:
++success:
++	return retval;
++}
++
++static int ds2760_battery_remove(struct platform_device *pdev)
++{
++	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++
++	cancel_rearming_delayed_workqueue(di->monitor_wqueue,
++	                                  &di->monitor_work);
++	destroy_workqueue(di->monitor_wqueue);
++	battery_unregister(&di->batt);
++	if (di->w1_dev)
++		put_device(di->w1_dev);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int ds2760_battery_suspend(struct platform_device *pdev,
++                                  pm_message_t state)
++{
++	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++
++	di->charge_status = BATTERY_STATUS_UNKNOWN;
++	battery_status_changed(&di->batt);
++
++	return 0;
++}
++
++static int ds2760_battery_resume(struct platform_device *pdev)
++{
++	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++
++	di->charge_status = BATTERY_STATUS_UNKNOWN;
++	battery_status_changed(&di->batt);
++
++	cancel_delayed_work(&di->monitor_work);
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ);
++
++	return 0;
++}
++#endif /* CONFIG_PM */
++
++static struct platform_driver ds2760_battery_driver = {
++	.driver = {
++		.name = "ds2760-battery",
++	},
++	.probe	  = ds2760_battery_probe,
++	.remove   = ds2760_battery_remove,
++#ifdef CONFIG_PM
++	.suspend  = ds2760_battery_suspend,
++	.resume	  = ds2760_battery_resume,
++#endif
++};
++
++static int __init ds2760_battery_init(void)
++{
++	return platform_driver_register(&ds2760_battery_driver);
++}
++
++static void __exit ds2760_battery_exit(void)
++{
++	platform_driver_unregister(&ds2760_battery_driver);
++}
++
++module_init(ds2760_battery_init);
++module_exit(ds2760_battery_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>, "
++              "Matt Reimer <mreimer@vpop.net>, "
++              "Anton Vorontsov <cbou@mail.ru>");
++MODULE_DESCRIPTION("ds2760 battery driver");
+diff --git a/include/linux/ds2760_battery.h b/include/linux/ds2760_battery.h
+new file mode 100644
+index 0000000..2937a54
+--- /dev/null
++++ b/include/linux/ds2760_battery.h
+@@ -0,0 +1,32 @@
++/*
++ * Driver for batteries with DS2760 chips inside.
++ *
++ * Copyright (c) 2007 Anton Vorontsov
++ *               2004 Matt Reimer
++ *               2004 Szabolcs Gyurko
++ *
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
++ *
++ * Author:  Anton Vorontsov <cbou@mail.ru>
++ *          February 2007
++ *
++ *          Matt Reimer <mreimer@vpop.net>
++ *          April 2004, 2005
++ *
++ *          Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
++ *          September 2004
++ */
++
++#ifndef __DS2760_BATTERY__
++#define __DS2760_BATTERY__
++
++#include <linux/battery.h>
++
++struct ds2760_platform_data {
++	/* Battery information and characteristics. */
++	struct battery_info battery_info;
++};
++
++#endif
 -- 
 1.5.0.5-dirty
 
