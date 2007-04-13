@@ -1,94 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030278AbXDMVCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030283AbXDMVGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030278AbXDMVCG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 17:02:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXDMVCG
+	id S1030283AbXDMVGO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030284AbXDMVGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 17:02:06 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:45545 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030278AbXDMVCD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 17:02:03 -0400
-Message-ID: <461FEF1C.5010806@vmware.com>
-Date: Fri, 13 Apr 2007 13:59:08 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Fri, 13 Apr 2007 17:06:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:34457 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030283AbXDMVGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 17:06:13 -0400
+Message-ID: <461FF09D.4020902@goop.org>
+Date: Fri, 13 Apr 2007 14:05:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
-References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com> <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com> <461FD9BF.90609@vmware.com> <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
+       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Crash while mapping memory in pagetable_init() (Was: Re: .config)
+References: <20070413174913.GA25234@ezr.goop.org> <20070413183841.GP10574@sequoia.sous-sol.org> <20070413190552.GQ10574@sequoia.sous-sol.org> <461FD97B.1010203@goop.org> <461FE36D.1050205@vmware.com> <461FE77A.6020307@zytor.com> <461FE7C7.7050204@goop.org> <461FE8EC.3090304@zytor.com> <461FE9D1.1000803@goop.org> <461FEB46.3000702@zytor.com>
+In-Reply-To: <461FEB46.3000702@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> David (clear_refs_pte_range) is only using ptep_test_and_clear_young,
-> though he did change the ptep_test_and_clear_dirty definition to be
-> consistent with it.  old/young is never so serious as clean/dirty, so
-> it may be that there's very little problem with what's in there now;
-> it just becomes a shame if the wrong decision gets made too often e.g.
-> if the misflushing is such that his clear_youngs never really take
-> effect.  I simply cannot tell whether or not that's the case myself.
->   
+H. Peter Anvin wrote:
+> Even with PSE?
 
-If the logic is too difficult to reason about without entering ganda 
-bherundasana, then it is simpler to just drop the _defer suffix.  Old / 
-young actually is just as serious, not because A-bit is critical 
-(although misvirtualizing it will do strange things to the page 
-clocking), but because the entire PTE update is delayed - and thus an 
-intervening PTE update which remaps the physical page can come in before 
-the A-bit update is flushed.  The A-bit update carries the PPN of the 
-original physical page, destroying the remap.
+Perhaps not.
 
-> But once the pte_update_defers get moved away from their flush_tlb_pages,
-> as is the case now, it feels like we're on thin ice.
->   
+> However, the main reason I wanted it done that way is to avoid cargo
+> cult programming; this makes it much clearer where the numbers
+> actually come from.
 
-Yes, that is why I think I did the original hack of having #defines 
-without implementations - to ensure the flush stayed coupled with the 
-use of pte_update_defer.
+Well, how about this then?
 
-> Actually, I don't really get pte_update_defer at all: I can understand
-> wanting to defer a call down, but it appears to be a call down to say
-> we're deferring the shadow update?  Why not just do it with pte_update?
-> I'd be happier without it until this could be restructured more safely
-> (but my incomprehension is not necessarily the best guiding principle).
->   
+Subject: i386: map enough initial memory to create lowmem mappings
 
-So pte_update does the update immediately; it is always safe.  For 
-select cases, where there is an immediate pte_update + flush 
-combination, it is beneficial to combine the two into one hypercall, 
-saving the several thousand cycle round trip into the hypervisor from 
-happening twice.  This is why pte_update_defer was used close to the 
-flushes.  I thought David was just defining the ptep_test_and_clear_xxx 
-functions properly; I didn't realize he was actually using them to 
-decouple the flush across a spinlock or logically complex code region.  
-If that is the case, I agree pte_update instead of defer is absolutely 
-the right thing to do.
+head.S creates the very initial pagetable for the kernel.  This just
+maps enough space for the kernel itself, and an allocation bitmap.
+The amount of mapped memory is rounded up to 4Mbytes, and so this
+typically ends up mapping 8Mbytes of memory.
 
-I'm a little worried about the TLB consistency here, on real hardware.  
-If you drop the spinlock, you could end up preempted.  If the preemption 
-runs a kernel thread, which accesses the same memory for which you just 
-modified the page table mappings, the TLB could still have a stale 
-entry.  So, a clear of a dirty bit might happen in a writeback thread, 
-but get preempted before the flush, then the hardware TLB still has a 
-dirty entry.  This means writes through the same virtual address will 
-skip the A/D bit update in the pte.  Now, for regular user memory 
-access, that might not be a problem, but if it is the kernel touching 
-user memory through kmap, the kernel virtual address might well ..  I'm 
-off in the weeds.  But still slightly concerned about leaving that TLB 
-entry stale across a possible preemption.
+When booting, pagetable_init() needs to create mappings for all
+lowmem, and the pagetables for these mappings are allocated from the
+free pages around the kernel in low memory.  If the number of
+pagetable pages + kernel size exceeds head.S's initial mapping, it
+will end up faulting on an unmapped page.  This will only happen with
+specific combinations of kernel size and memory size.
 
-As an aside, in the tree I'm looking at, I don't see any users of 
-ptep_clear_flush_dirty at all.. doesn't that mean writeback which 
-undirties pages will leave the PTEs with latent dirty bits, causing them 
-to get written back again when the process exits?  Or does rmap take 
-care of this.  Ahh, I just discovered page_mkclean_one.  Never mind.  
-But still no users of ptep_clear_flush_dirty.
+This patch makes sure that head.S also maps enough space to fit the
+kernel pagetables as well as the kernel itself.  It ends up using an
+additional two pages of unreclaimable memory.
 
-Zach
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@osdl.org>,
+
+---
+ arch/i386/kernel/asm-offsets.c |    5 +++++
+ arch/i386/kernel/head.S        |   25 ++++++++++++++++++++-----
+ 2 files changed, 25 insertions(+), 5 deletions(-)
+
+===================================================================
+--- a/arch/i386/kernel/asm-offsets.c
++++ b/arch/i386/kernel/asm-offsets.c
+@@ -96,6 +96,11 @@ void foo(void)
+ 		 sizeof(struct tss_struct));
+ 
+ 	DEFINE(PAGE_SIZE_asm, PAGE_SIZE);
++	DEFINE(PAGE_SHIFT_asm, PAGE_SHIFT);
++	DEFINE(PTRS_PER_PTE, PTRS_PER_PTE);
++	DEFINE(PTRS_PER_PMD, PTRS_PER_PMD);
++	DEFINE(PTRS_PER_PGD, PTRS_PER_PGD);
++
+ 	DEFINE(VDSO_PRELINK_asm, VDSO_PRELINK);
+ 
+ 	OFFSET(crypto_tfm_ctx_offset, crypto_tfm, __crt_ctx);
+===================================================================
+--- a/arch/i386/kernel/head.S
++++ b/arch/i386/kernel/head.S
+@@ -34,17 +34,32 @@
+ 
+ /*
+  * This is how much memory *in addition to the memory covered up to
+- * and including _end* we need mapped initially.  We need one bit for
+- * each possible page, but only in low memory, which means
+- * 2^32/4096/8 = 128K worst case (4G/4G split.)
++ * and including _end* we need mapped initially.
++ * We need:
++ *  - one bit for each possible page, but only in low memory, which means
++ *     2^32/4096/8 = 128K worst case (4G/4G split.)
++ *  - enough space to map all low memory, which means
++ *     (2^32/4096) / 1024 pages (worst case, non PAE)
++ *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
++ *  - a few pages for allocator use before the kernel pagetable has
++ *     been set up
+  *
+  * Modulo rounding, each megabyte assigned here requires a kilobyte of
+  * memory, which is currently unreclaimed.
+  *
+  * This should be a multiple of a page.
+  */
+-#define INIT_MAP_BEYOND_END	(128*1024)
+-
++LOW_PAGES = 1<<(32-PAGE_SHIFT_asm)
++
++#if PTRS_PER_PMD > 1
++PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
++#else
++PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
++#endif
++BOOTBITMAP_SIZE = LOW_PAGES / 8
++ALLOCATOR_SLOP = 4
++
++INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE + ALLOCATOR_SLOP)*PAGE_SIZE_asm
+ 
+ /*
+  * 32-bit kernel entrypoint; only used by the boot CPU.  On entry,
+
