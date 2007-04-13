@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXDMAmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbXDMAvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbXDMAmK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 20:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXDMAmK
+	id S1752801AbXDMAvb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 20:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXDMAvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 20:42:10 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:39263 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752694AbXDMAmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 20:42:09 -0400
-Date: Thu, 12 Apr 2007 17:42:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: William Lee Irwin III <wli@holomorphy.com>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
-Message-Id: <20070412174201.065068b2.akpm@linux-foundation.org>
-In-Reply-To: <461ECB9C.8060000@yahoo.com.au>
-References: <1.486631555@selenic.com>
-	<20070412231050.GN2986@holomorphy.com>
-	<20070412163235.dd030637.akpm@linux-foundation.org>
-	<461ECB9C.8060000@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Apr 2007 20:51:31 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:42580 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752801AbXDMAva (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Apr 2007 20:51:30 -0400
+X-Sasl-enc: A1wtagui4+ewA/D4NEfLP5/IpukR8baggKJtBgQSTdYR 1176425489
+Date: Thu, 12 Apr 2007 21:51:12 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Anton Vorontsov <cbou@mail.ru>
+Cc: Paul Sokolovsky <pmiscml@gmail.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Shem Multinymous <multinymous@gmail.com>
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
+Message-ID: <20070413005112.GA20890@khazad-dum.debian.net>
+References: <20070411232503.GC20095@zarina> <20070412130817.GA29900@srcf.ucam.org> <20070412141505.GA25552@zarina> <20070412142430.GA31240@srcf.ucam.org> <1734853889.20070412173626@gmail.com> <20070412185630.GC27804@khazad-dum.debian.net> <20070412204413.GA3151@zarina>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070412204413.GA3151@zarina>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007 10:15:24 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Fri, 13 Apr 2007, Anton Vorontsov wrote:
+> Let's name attributes with mWh units as {min_,max_,design_,}energy,
+> and attributes with mAh units as {min_,max_,design_,}charge.
 
-> >>+                       ((char *)page)[1] = PAGE_SHIFT;
-> > 
-> > 
-> > OK.
+[...]
+
+> * Yup, I've read last discussion regarding batteries, and I've seen
+>   objections against "charge" term, quoting Shem Multinymous:
 > 
-> Shouldn't we just expose page size and endianness by other means? (another file or
-> syscall).
-
-I don't think so - this file exposes fairly deep kernel internals and
-that's unavoidable, really - it's *supposed* to do that.  It is explicitly
-designed for monitoring kernel behaviour.
-
-So it needs special handling by userspace.  Keeping the number of files
-which need such special handling to a minimum will keep the number of
-applications which are exposed to kernel changes to a minimum.
-
-> >>+               for (; i < 2 * chunk / KPMSIZE; i += 2, pfn++) {
-> >>+                       ppage = pfn_to_page(pfn);
-> >>+                       if (!ppage) {
-> >>+                               page[i] = 0;
-> >>+                               page[i + 1] = 0;
-> >>+                       } else {
-> >>+                               page[i] = ppage->flags;
-> >>+                               page[i + 1] = atomic_read(&ppage->_count);
-> >>+                       }
-> >>+               }
-> > 
-> > 
-> > Not a good idea to expose raw flags in this manner - it changes at the drop
-> > of a hat.  We'd need to also expose the kernel's PG_foo-to-bitnumber
-> > mapping to make this viable.
+>   "And, for the reasons I explained earlier, I strongly suggest not using
+>   the term "charge" except when referring to the action of charging.
+>   Hence:
+>   s/charge_rate/rate/;  s/charge/capacity/"
 > 
-> I don't think it is viable because that makes the flags part of the
-> userspace ABI.
+>   But lets think about it once again? We'll make things much cleaner
+>   if we'll drop "capacity" at all.
 
-It *will* be viable.  If the application wants to know if a page is dirty,
-it looks up "PG_dirty" in /proc/pg_foo-to-bitnumber and uses PG_dirty's
-numerical offset when inspecting fields in /proc/kpagemap.  If correctly
-designed, such a monitoring application will be able to report upon page
-flags which we haven't even thought up yet.
+I stand with Shem on this one.  The people behind the SBS specification
+seems to agree... that specification is aimed at *engineers* and still
+avoids the obvious trap of using "charge" due to its high potential for
+confusion.
 
-> I wonder what they are needed for.
+I don't even want to know how much of a mess the people writing applets
+woudl make of it...
 
-Poking deeply into the kernel to provide information about kernel state. 
+> > That said, you may need to use uWh and uAh instead of mAh and mWh, though.
+> 
+> Not sure. Is there any existing chip that can report uAh/uWh? That is
+> great precision.
 
-There are real-world needs for this, and the people who develop tools to
-process this information will have decent kernel understanding and will
-know that the file's contents may alter across kernel versions.  It sure
-beats poking around in /dev/kmem.
+The way things are going, it should be feasible for small embedded systems
+quite soon.  Refer to the previous thread.
 
-I doubt if there's a sensible way in which we can prettify this interface
-without losing information.  But we should aim to make it as robust as
-possible agaisnt future kenrel changes, of course.
-
-And we should satisfy ourselves that all the required information has been
-made available.  The fact that it will satisfy the Oracle requirement is
-encouraging.
-
-Matt, these changes make the new field in /proc/pid/smaps redundant, don't
-they?
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
