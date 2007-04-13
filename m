@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbXDOJLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbXDOJhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246AbXDOJLd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 05:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXDOJLc
+	id S1752826AbXDOJhO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 05:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXDOJhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 05:11:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59645 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752246AbXDOJLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 05:11:31 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+6ppZ3iaq6grI7S+V8zBFAS3gGx1qT2cIdTet6w9
-	9OxBGBI27Rpc3a
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Willy Tarreau <w@1wt.eu>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070415085825.GE24886@elte.hu>
-References: <20070413202100.GA9957@elte.hu>
-	 <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu>
-	 <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu>
-	 <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu>
-	 <20070414130101.GA2538@1wt.eu>
-	 <1176623688.30350.23.camel@Homer.simpson.net>
-	 <20070415085825.GE24886@elte.hu>
-Content-Type: text/plain
-Date: Sun, 15 Apr 2007 11:11:28 +0200
-Message-Id: <1176628288.30350.70.camel@Homer.simpson.net>
+	Sun, 15 Apr 2007 05:37:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1073 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752826AbXDOJhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 05:37:12 -0400
+Date: Fri, 13 Apr 2007 15:59:50 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: Greg KH <greg@kroah.com>, Zhang Rui <rui.zhang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, lenb@kernel.org,
+       "linux-acpi@vger" <linux-acpi@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
+Message-ID: <20070413155949.GA9157@ucw.cz>
+References: <200704031741.42273.david-b@pacbell.net> <200704060843.30723.david-b@pacbell.net> <20070407050131.GB25511@kroah.com> <200704071308.07571.david-b@pacbell.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704071308.07571.david-b@pacbell.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-15 at 10:58 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
+Hi!
 
-> > [...] (I know a trivial way to cure that, and this framework makes 
-> > that possible without dorking up fairness as a general policy.)
+> > Are you _sure_ you have a 1-to-1 relationship here?  No multiple devices
+> > pointing to the same acpi node?  Or the other way around?  If so, you
+> > are going to have to change the name to be something more unique.
 > 
-> great! Please send patches so i can add them (once you are happy with 
-> the solution) - i think your workload isnt special in any way and could 
-> hit other people too.
+> I've wondered that too.  The short answer:  APCI only supports 1-1
+> here.  It will emit warnings if it tries to bind more than one ACPI
+...
+> Assuming they all adopt that same "parallel tree" model, that seems
+> like a good idea.  The tools will likely need to understand how ACPI
+> and OF differ, but there's no point in reserving more names than we
+> really need.  Though it may be that "parallel trees" should go away.
 
-I'll give it a shot.  (have to read and actually understand your new
-code first though, then see if it's really viable)
-
-	-Mike
-
+If mapping is indeed 1-to-1 in acpi... it would be nice to just merge
+the trees.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
