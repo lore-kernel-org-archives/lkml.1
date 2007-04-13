@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbXDMNWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbXDMNWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974AbXDMNWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 09:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbXDMNWl
+	id S1753609AbXDMNWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 09:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbXDMNWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 09:22:41 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52147 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbXDMNWk (ORCPT
+	Fri, 13 Apr 2007 09:22:52 -0400
+Received: from ccerelbas01.cce.hp.com ([161.114.21.104]:55869 "EHLO
+	ccerelbas01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753609AbXDMNWq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 09:22:40 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] worker_thread: don't play with SIGCHLD
-References: <20070413072910.GA1522@tv-sign.ru>
-Date: Fri, 13 Apr 2007 07:21:49 -0600
-In-Reply-To: <20070413072910.GA1522@tv-sign.ru> (Oleg Nesterov's message of
-	"Fri, 13 Apr 2007 11:29:10 +0400")
-Message-ID: <m1irc0pfyq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 13 Apr 2007 09:22:46 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 1/1] cciss: kconfig patch to make cciss dependent onscsi for SG_IO ioctl
+Date: Fri, 13 Apr 2007 14:22:31 +0100
+Message-ID: <558F4D473FD7FE419B019232BF2D37B40B2473@G3W0634.americas.hpqcorp.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] cciss: kconfig patch to make cciss dependent onscsi for SG_IO ioctl
+Thread-Index: Acd9T16h/XuffIhTR3qaP4kMidx5VwAfBdK3AAAkth4=
+References: <20070412212741.GA10654@beardog.cca.cpqcorp.net> <1176415635.3711.25.camel@mulgrave.il.steeleye.com> <558F4D473FD7FE419B019232BF2D37B40B2472@G3W0634.americas.hpqcorp.net>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: "Cameron, Steve" <Steve.Cameron@hp.com>,
+       "James Bottomley" <James.Bottomley@SteelEye.com>,
+       "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: <akpm@linux-foundation.org>, <jens.axboe@oracle.com>,
+       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+X-OriginalArrivalTime: 13 Apr 2007 13:22:33.0270 (UTC) FILETIME=[CB686560:01C77DCE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-> depends on Eric's
->
-> 	kthread-dont-depend-on-work-queues-take-2.patch
->
-> worker_thread() inherits ignored SIGCHLD from its parent, kthreadd.
-> We can remove unneeded do_sigaction().
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Hmm, now that I look again, those ioctls it's complaining
+about are ones for which we just return ENOTTY, so I guess 
+we don't really need them listed explicitly, and if they
+weren't, the Kconfig patch would be unnecessary.
 
-Looks good.
+-- steve
 
-We could delete all of:
+-----Original Message-----
+From: Cameron, Steve
+Sent: Fri 4/13/2007 7:58 AM
+To: James Bottomley; Mike Miller (OS Dev)
+Cc: akpm@linux-foundation.org; jens.axboe@oracle.com; linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
+Subject: RE: [PATCH 1/1] cciss: kconfig patch to make cciss dependent onscsi for SG_IO ioctl
+ 
 
-> 	set_user_nice(current, -5);
-> 
-> 	/* Block and flush all signals */
-> 	sigfillset(&blocked);
-> 	sigprocmask(SIG_BLOCK, &blocked, NULL);
-> 	flush_signals(current);
-> 
-> 	/*
-> 	 * We inherited MPOL_INTERLEAVE from the booting kernel.
-> 	 * Set MPOL_DEFAULT to insure node local allocations.
-> 	 */
-> 	numa_default_policy();
-> 
-> 	/* SIG_IGN makes children autoreap: see do_notify_parent(). */
-> 	sa.sa.sa_handler = SIG_IGN;
-> 	sa.sa.sa_flags = 0;
-> 	siginitset(&sa.sa.sa_mask, sigmask(SIGCHLD));
-> 	do_sigaction(SIGCHLD, &sa, (struct k_sigaction *)0);
+Well, with SCSI turned off, it didn't compile:
 
-If we wanted to, as that all comes by default from kthreadd.
 
-Eric
+drivers/block/cciss.c: In function `cciss_ioctl':
+drivers/block/cciss.c:1180: error: `SCSI_IOCTL_GET_IDLUN' undeclared (first use in this function)
+drivers/block/cciss.c:1180: error: (Each undeclared identifier is reported only once
+drivers/block/cciss.c:1180: error: for each function it appears in.)
+drivers/block/cciss.c:1181: error: `SCSI_IOCTL_GET_BUS_NUMBER' undeclared (first use in this function)
+make[2]: *** [drivers/block/cciss.o] Error 1
+make[1]: *** [drivers/block] Error 2
+make: *** [drivers] Error 2
+
+-- steve
+
+
+-----Original Message-----
+From: James Bottomley [mailto:James.Bottomley@SteelEye.com]
+Sent: Thu 4/12/2007 5:07 PM
+To: Mike Miller (OS Dev)
+Cc: akpm@linux-foundation.org; jens.axboe@oracle.com; linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Cameron, Steve
+Subject: Re: [PATCH 1/1] cciss: kconfig patch to make cciss dependent onscsi for SG_IO ioctl
+ 
+On Thu, 2007-04-12 at 16:27 -0500, Mike Miller (OS Dev) wrote:
+> This kconfig patch makes cciss dependent on scsi for the new SG_IO ioctl we just
+> added. If cciss is built into the kernel it makes sures that scsi is also statically
+> linked. If scsi is a module then cciss will also be built as a module. Please consider
+> this for inclusion.
+
+Erm, I don't think this is necessary: SG_IO is a property of the block
+layer, not SCSI (as in it will work without SCSI even present).  SCSI
+has a special driver: the sg driver that has its own implementation of
+SG_IO, but that's the only connection.
+
+James
+
+
+
+
