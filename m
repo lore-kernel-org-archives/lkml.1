@@ -1,176 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbXDMNzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbXDMN4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbXDMNzH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 09:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbXDMNzH
+	id S1753354AbXDMN4a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 09:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbXDMN4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 09:55:07 -0400
-Received: from mail.macqel.be ([194.78.208.39]:2890 "EHLO mail.macqel.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753998AbXDMNzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 09:55:05 -0400
-Date: Fri, 13 Apr 2007 15:55:01 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: linux-kernel@vger.kernel.org
-Subject: retry [PATCH] partition : add support for sysv68 partitions
-Message-ID: <20070413135501.GA27439@ingate.macqel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Fri, 13 Apr 2007 09:56:30 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44718 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753354AbXDMN43 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 09:56:29 -0400
+Message-ID: <461F8C15.3020002@bull.net>
+Date: Fri, 13 Apr 2007 15:56:37 +0200
+From: Jean-Pierre Dion <jean-pierre.dion@bull.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rohit Seth <rohitseth@goog.frec.bull.fr>
+Subject: Re: [PATCH 2/8] Add container pointer on struct page
+References: <461A3010.90403@sw.ru> <461A3483.10402@sw.ru>
+In-Reply-To: <461A3483.10402@sw.ru>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/04/2007 15:58:57,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 13/04/2007 15:58:59,
+	Serialize complete at 13/04/2007 15:58:59
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi Pavel,
 
-Add support for the Motorola sysv68 disk partition table (slices in motorola
-doc).
+I have been implied in the work for the
+memory controller of res groups a few months ago.
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+I see that you propose to modify the struct
+page to point to rss container struct.
+This has made some debate because of the struct
+page size increase, but this allows a quicker
+scan to reclaim pages (I mean having per-container
+lists of active/inactive pages).
+We (here at Bull and others) proposed this implementation
+for res groups and I am interested in knowing
+if this has a chance of being accepted today (hope so).
+I know this uses memory for internal management
+and increases a lot the memory size used for
+a large memory configuration, but in that case
+we have lot of memory, so where is the issue ?
+We tested this on a 28 GB server and it worked.
+Also we can use larger page size to reduce
+the overhead, and I believe this makes sense
+on large servers with big memory.
 
-diff -r 1b54f1d81bc5 fs/partitions/Kconfig
---- a/fs/partitions/Kconfig	Thu Apr 12 15:44:52 2007 -0700
-+++ b/fs/partitions/Kconfig	Fri Apr 13 15:51:58 2007 +0200
-@@ -236,3 +236,12 @@ config EFI_PARTITION
- 	help
- 	  Say Y here if you would like to use hard disks under Linux which
- 	  were partitioned using EFI GPT.
-+
-+config SYSV68_PARTITION
-+	bool "SYSV68 partition table support" if PARTITION_ADVANCED
-+	default y if M68K
-+	help
-+	  Say Y here if you would like to be able to read the hard disk
-+	  partition table format used by Motorola Delta machines (using
-+	  sysv68).
-+	  Otherwise, say N.
-diff -r 1b54f1d81bc5 fs/partitions/Makefile
---- a/fs/partitions/Makefile	Thu Apr 12 15:44:52 2007 -0700
-+++ b/fs/partitions/Makefile	Fri Apr 13 15:51:58 2007 +0200
-@@ -17,3 +17,4 @@ obj-$(CONFIG_IBM_PARTITION) += ibm.o
- obj-$(CONFIG_IBM_PARTITION) += ibm.o
- obj-$(CONFIG_EFI_PARTITION) += efi.o
- obj-$(CONFIG_KARMA_PARTITION) += karma.o
-+obj-$(CONFIG_SYSV68_PARTITION) += sysv68.o
-diff -r 1b54f1d81bc5 fs/partitions/check.c
---- a/fs/partitions/check.c	Thu Apr 12 15:44:52 2007 -0700
-+++ b/fs/partitions/check.c	Fri Apr 13 15:51:58 2007 +0200
-@@ -34,6 +34,7 @@
- #include "ultrix.h"
- #include "efi.h"
- #include "karma.h"
-+#include "sysv68.h"
- 
- #ifdef CONFIG_BLK_DEV_MD
- extern void md_autodetect_dev(dev_t dev);
-@@ -104,6 +105,9 @@ static int (*check_part[])(struct parsed
- #endif
- #ifdef CONFIG_KARMA_PARTITION
- 	karma_partition,
-+#endif
-+#ifdef CONFIG_SYSV68_PARTITION
-+	sysv68_partition,
- #endif
- 	NULL
- };
-diff -r 1b54f1d81bc5 fs/partitions/sysv68.c
---- /dev/null	Thu Jan  1 00:00:00 1970 +0000
-+++ b/fs/partitions/sysv68.c	Fri Apr 13 15:51:58 2007 +0200
-@@ -0,0 +1,92 @@
-+/*
-+ *  fs/partitions/sysv68.c
-+ *
-+ *  Copyright (C) 2007 Philippe De Muyter <phdm@macqel.be>
-+ */
-+
-+#include "check.h"
-+#include "sysv68.h"
-+
-+/*
-+ *	Volume ID structure: on first 256-bytes sector of disk
-+ */
-+
-+struct	volumeid {
-+	u8	vid_unused[248];
-+	u8	vid_mac[8];	/* ASCII string "MOTOROLA" */
-+};
-+
-+/*
-+ *	config block: second 256-bytes sector on disk
-+ */
-+
-+struct dkconfig {
-+	u8	ios_unused0[128];
-+	__be32	ios_slcblk;	/* Slice table block number */
-+	__be16	ios_slccnt;	/* Number of entries in slice table */
-+	u8	ios_unused1[122];
-+};
-+
-+/*
-+ *	combined volumeid and dkconfig block
-+ */
-+
-+struct dkblk0 {
-+	struct volumeid dk_vid;
-+	struct dkconfig dk_ios;
-+};
-+
-+/*
-+ *	Slice Table Structure
-+ */
-+
-+struct slice {
-+	__be32	nblocks;		/* slice size (in blocks) */
-+	__be32	blkoff;			/* block offset of slice */
-+};
-+
-+
-+int sysv68_partition(struct parsed_partitions *state, struct block_device *bdev)
-+{
-+	int i, slices;
-+	int slot = 1;
-+	Sector sect;
-+	unsigned char *data;
-+	struct dkblk0 *b;
-+	struct slice *slice;
-+
-+	data = read_dev_sector(bdev, 0, &sect);
-+	if (!data)
-+		return -1;
-+
-+	b = (struct dkblk0 *) data;
-+	if (memcmp(b->dk_vid.vid_mac, "MOTOROLA", sizeof(b->dk_vid.vid_mac))) {
-+		put_dev_sector(sect);
-+		return 0;
-+	}
-+	slices = be16_to_cpu(b->dk_ios.ios_slccnt);
-+	i = be32_to_cpu(b->dk_ios.ios_slcblk);
-+	put_dev_sector(sect);
-+
-+	data = read_dev_sector(bdev, i, &sect);
-+	if (!data)
-+		return -1;
-+
-+	slices -= 1; /* last slice is the whole disk */
-+	printk("sysV68: %s(s%u)", state->name, slices);
-+	slice = (struct slice *)data;
-+	for (i = 0 ; i < slices; i++, slice++) {
-+		if (slot == state->limit)
-+		        break;
-+		if (be32_to_cpu(slice->nblocks)) {
-+			put_partition(state, slot,
-+				be32_to_cpu(slice->blkoff),
-+				be32_to_cpu(slice->nblocks));
-+			printk("(s%u)", i);
-+		}
-+		slot++;
-+	}
-+	printk("\n");
-+	put_dev_sector(sect);
-+	return 1;
-+}
-diff -r 1b54f1d81bc5 fs/partitions/sysv68.h
---- /dev/null	Thu Jan  1 00:00:00 1970 +0000
-+++ b/fs/partitions/sysv68.h	Fri Apr 13 15:51:58 2007 +0200
-@@ -0,0 +1,1 @@
-+extern int sysv68_partition(struct parsed_partitions *state, struct block_device *bdev);
+So we balance between using more memory internally
+and so getting faster access to pages for reclaim,
+or do nothing. ;-)
+
+
+jean-pierre
+
+
