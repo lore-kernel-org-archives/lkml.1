@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbXDMDIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbXDMDKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753198AbXDMDIr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 23:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbXDMDIr
+	id S1753164AbXDMDKm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 23:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXDMDKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 23:08:47 -0400
-Received: from mail.bandrich.com ([211.72.242.84]:58362 "EHLO
-	mail.bandrich.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753198AbXDMDIq (ORCPT
+	Thu, 12 Apr 2007 23:10:42 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:23732 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753164AbXDMDKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 23:08:46 -0400
-X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Apr 2007 23:08:45 EDT
-Subject: [PATCH] USB: BandRich BandLuxe HSDPA Data Card Driver
-From: Leon Leong <upleong@bandrich.com>
-To: smurf@smurf.noris.de
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Content-Type: text/plain
-Date: Fri, 13 Apr 2007 11:03:07 +0800
-Message-Id: <1176433387.4649.8.camel@upleong.brtpe.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
+	Thu, 12 Apr 2007 23:10:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=1IlBwaM7/vPNSLN8VQ12R4zA13KJJrLYW26RNIzdqi7Tvjdb2YnFOlmVzpC49fL3sM8kUBzalW4nNPUPWZPi7UUSdvhW9sDjvNkt50NgSq8LJ32bilKgeMSFClBYHeRwqf546rPNkn6slKxwIwPn6TNfkb/7MXQ0Fvk6GV/5mDM=  ;
+X-YMail-OSG: KbE2R4UVM1kC2cMPT2BBXFDW9K8k5NJNSrQJCHh1ynuJVZgHGDQ0Aeg3w2FAPxVtmzh_MIUD4Q--
+Message-ID: <461EF4A5.4090604@yahoo.com.au>
+Date: Fri, 13 Apr 2007 13:10:29 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
+References: <1.486631555@selenic.com>	<20070412231050.GN2986@holomorphy.com>	<20070412163235.dd030637.akpm@linux-foundation.org>	<461ECB9C.8060000@yahoo.com.au>	<20070412174201.065068b2.akpm@linux-foundation.org>	<461ED96C.5030606@yahoo.com.au>	<20070412182213.a18cc4a7.akpm@linux-foundation.org>	<461EE005.6070605@yahoo.com.au>	<20070412185723.5a5f0443.akpm@linux-foundation.org>	<461EE890.2040601@yahoo.com.au> <20070412193255.62a0b8ed.akpm@linux-foundation.org> <461EEFEC.2010205@yahoo.com.au>
+In-Reply-To: <461EEFEC.2010205@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the detection for the BandRich BandLuxe C100/C100S/C120 
-HSDPA Data Card.  With the vendor and product IDs are set properly, 
-the data card can be detected and works fine.
-It was patched based on Kernel 2.6.20.1.
+Nick Piggin wrote:
+> Andrew Morton wrote:
 
-Signed-off-by: Leon Leong <upleong@bandrich.com>
+>>  Then you just end up with the same thing, don't you?
+> 
+> 
+> Well _you_ do, because that happens to be exactly what you want. Bill
+> ends up with something that displays page_mapcount instead. And I
+> end up with something that traverses LRU lists rather than pfns. And
+> none of it goes in /proc/ or linux-2.6/.
 
----
+Oh, and you get to change it without recompiling and rebooting your
+kernel.
 
-Index: drivers/usb/serial/option.c
-===================================================================
---- linux-2.6.20.1/drivers/usb/serial/option.c.orig	2007-02-05
-02:44:54.000000000 +0800
-+++ linux-2.6.20.1/drivers/usb/serial/option.c	2007-04-13
-10:36:33.000000000 +0800
-@@ -72,6 +72,7 @@ static int  option_send_setup(struct usb
- #define AUDIOVOX_VENDOR_ID              0x0F3D
- #define NOVATELWIRELESS_VENDOR_ID       0x1410
- #define ANYDATA_VENDOR_ID               0x16d5
-+#define BANDRICH_VENDOR_ID              0x1A8D
- 
- #define OPTION_PRODUCT_OLD              0x5000
- #define OPTION_PRODUCT_FUSION           0x6000
-@@ -84,6 +85,8 @@ static int  option_send_setup(struct usb
- #define AUDIOVOX_PRODUCT_AIRCARD        0x0112
- #define NOVATELWIRELESS_PRODUCT_U740    0x1400
- #define ANYDATA_PRODUCT_ID              0x6501
-+#define BANDRICH_PRODUCT_C100_1         0x1002
-+#define BANDRICH_PRODUCT_C100_2         0x1003
- 
- static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_OLD) },
-@@ -97,6 +100,8 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(AUDIOVOX_VENDOR_ID, AUDIOVOX_PRODUCT_AIRCARD) },
-
-{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,NOVATELWIRELESS_PRODUCT_U740) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ID) },
-+	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_1) },
-+	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_2) },
- 	{ } /* Terminating entry */
- };
- 
-@@ -112,6 +117,8 @@ static struct usb_device_id option_ids1[
- 	{ USB_DEVICE(AUDIOVOX_VENDOR_ID, AUDIOVOX_PRODUCT_AIRCARD) },
-
-{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,NOVATELWIRELESS_PRODUCT_U740) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ID) },
-+	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_1) },
-+	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_2) },
- 	{ } /* Terminating entry */
- };
-
-===================================================================
-
--
-Leon Leong
-upleong@bandrich.com
-
-
+-- 
+SUSE Labs, Novell Inc.
