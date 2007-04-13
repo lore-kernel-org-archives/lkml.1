@@ -1,80 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXDMAPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbXDMAQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbXDMAPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Apr 2007 20:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbXDMAPi
+	id S1753941AbXDMAQQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Apr 2007 20:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXDMAQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Apr 2007 20:15:38 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:20705 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753933AbXDMAPg (ORCPT
+	Thu, 12 Apr 2007 20:16:15 -0400
+Received: from stinky.trash.net ([213.144.137.162]:57040 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753938AbXDMAQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Apr 2007 20:15:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=0r82WR4eXlrA6Al+46l1m9RW0PzlcX3TUBL/J6mvevPqUbSUQqU9R76zGwqWHeVpl8vQBjl1d4fJ0gm7P99+lwfNW30Jz6UYgOib7CtF4ClkYKrccRVCB7ngFV0fUvnCP9S6Y+mxBIyffr244r7Z+P5dtwPXK2X/UPXRdRgK3wg=  ;
-X-YMail-OSG: C8v6pUIVM1mv1u8LcBxr02wXms1dAH5mfmTrD0UdrYfNtRoAyF1UrPpDi6sV9scRr8RQz_13tg--
-Message-ID: <461ECB9C.8060000@yahoo.com.au>
-Date: Fri, 13 Apr 2007 10:15:24 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Thu, 12 Apr 2007 20:16:14 -0400
+Message-ID: <461ECBBC.3040400@trash.net>
+Date: Fri, 13 Apr 2007 02:15:56 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: William Lee Irwin III <wli@holomorphy.com>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
-References: <1.486631555@selenic.com>	<20070412231050.GN2986@holomorphy.com> <20070412163235.dd030637.akpm@linux-foundation.org>
-In-Reply-To: <20070412163235.dd030637.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+CC: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, cramerj@intel.com, auke-jan.h.kok@intel.com,
+       christopher.leech@intel.com
+Subject: Re: [PATCH 2/3] NET: [UPDATED] Multiqueue network device support
+ implementation.
+References: <20070413001630.18763.41107.stgit@gitlost.site> <20070413001955.18763.35268.stgit@gitlost.site>
+In-Reply-To: <20070413001955.18763.35268.stgit@gitlost.site>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 12 Apr 2007 16:10:50 -0700
-> William Lee Irwin III <wli@holomorphy.com> wrote:
+Peter P Waskiewicz Jr wrote:
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index 219a57f..3ce449e 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -1471,6 +1471,8 @@ gso:
+>  		q = dev->qdisc;
+>  		if (q->enqueue) {
+>  			rc = q->enqueue(skb, q);
+> +			/* reset queue_mapping to zero */
+> +			skb->queue_mapping = 0;
 
->>+       while (count > 0) {
->>+               chunk = min_t(size_t, count, PAGE_SIZE);
->>+               i = 0;
->>+
->>+               if (pfn == -1) {
->>+                       page[0] = 0;
->>+                       page[1] = 0;
->>+                       ((char *)page)[0] = (ntohl(1) != 1);
-> 
-> 
-> OK.
-> 
-> 
->>+                       ((char *)page)[1] = PAGE_SHIFT;
-> 
-> 
-> OK.
 
-Shouldn't we just expose page size and endianness by other means? (another file or
-syscall).
+This must be done before enqueueing. At this point you don't even have
+a valid reference to the skb anymore.
 
->>+               for (; i < 2 * chunk / KPMSIZE; i += 2, pfn++) {
->>+                       ppage = pfn_to_page(pfn);
->>+                       if (!ppage) {
->>+                               page[i] = 0;
->>+                               page[i + 1] = 0;
->>+                       } else {
->>+                               page[i] = ppage->flags;
->>+                               page[i + 1] = atomic_read(&ppage->_count);
->>+                       }
->>+               }
-> 
-> 
-> Not a good idea to expose raw flags in this manner - it changes at the drop
-> of a hat.  We'd need to also expose the kernel's PG_foo-to-bitnumber
-> mapping to make this viable.
+> @@ -3326,12 +3330,23 @@ struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+>  	if (sizeof_priv)
+>  		dev->priv = netdev_priv(dev);
+>  
+> + 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
+> + 
+> + 	p = kzalloc(alloc_size, GFP_KERNEL);
+> + 	if (!p) {
+> + 		printk(KERN_ERR "alloc_netdev: Unable to allocate queues.\n");
+> + 		return NULL;
 
-I don't think it is viable because that makes the flags part of the
-userspace ABI. I wonder what they are needed for.
 
--- 
-SUSE Labs, Novell Inc.
+Still leaks the device
+
+> diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c
+> index 5cfe60b..6a38905 100644
+> --- a/net/sched/sch_prio.c
+> +++ b/net/sched/sch_prio.c
+> @@ -144,11 +152,17 @@ prio_dequeue(struct Qdisc* sch)
+>  	struct Qdisc *qdisc;
+>  
+>  	for (prio = 0; prio < q->bands; prio++) {
+> -		qdisc = q->queues[prio];
+> -		skb = qdisc->dequeue(qdisc);
+> -		if (skb) {
+> -			sch->q.qlen--;
+> -			return skb;
+> +		/* Check if the target subqueue is available before
+> +		 * pulling an skb.  This way we avoid excessive requeues
+> +		 * for slower queues.
+> +		 */
+> +		if (!netif_subqueue_stopped(sch->dev, q->band2queue[prio])) {
+> +			qdisc = q->queues[prio];
+> +			skb = qdisc->dequeue(qdisc);
+> +			if (skb) {
+> +				sch->q.qlen--;
+> +				return skb;
+> +			}
+>  		}
+>  	}
+>  	return NULL;
+> @@ -200,6 +214,10 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
+>  	struct prio_sched_data *q = qdisc_priv(sch);
+>  	struct tc_prio_qopt *qopt = RTA_DATA(opt);
+>  	int i;
+> +	int queue;
+> +	int qmapoffset;
+> +	int offset;
+> +	int mod;
+>  
+>  	if (opt->rta_len < RTA_LENGTH(sizeof(*qopt)))
+>  		return -EINVAL;
+> @@ -242,6 +260,30 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
+>  			}
+>  		}
+>  	}
+> +	/* setup queue to band mapping */
+> +	if (q->bands < sch->dev->egress_subqueue_count) {
+> +		qmapoffset = 1;
+> +		mod = sch->dev->egress_subqueue_count;
+> +	} else {
+> +		mod = q->bands % sch->dev->egress_subqueue_count;
+> +		qmapoffset = q->bands / sch->dev->egress_subqueue_count +
+> +				((mod) ? 1 : 0);
+> +	}
+> +
+> +	queue = 0;
+> +	offset = 0;
+> +	for (i = 0; i < q->bands; i++) {
+> +		q->band2queue[i] = queue;
+> +		if ( ((i + 1) - offset) == qmapoffset) {
+> +			queue++;
+> +			offset += qmapoffset;
+> +			if (mod)
+> +				mod--;
+> +			qmapoffset = q->bands /
+> +				sch->dev->egress_subqueue_count +
+> +				((mod) ? 1 : 0);
+> +		}
+> +	}
+>  	return 0;
+>  }
+
+
+I stand by my point, this needs to be explicitly enabled by the
+user since it changes the behaviour of prio on multiqueue capable
+device.
