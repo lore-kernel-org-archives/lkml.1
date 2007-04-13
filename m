@@ -1,106 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbXDMHkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXDMHvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752625AbXDMHkL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 03:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXDMHkK
+	id S1752342AbXDMHvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 03:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbXDMHvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 03:40:10 -0400
-Received: from mx33.mail.ru ([194.67.23.194]:5943 "EHLO mx33.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752625AbXDMHkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 03:40:09 -0400
-Date: Fri, 13 Apr 2007 11:36:50 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/7] [RFC] Common power driver for Linux gadgets
-Message-ID: <20070413073650.GA3763@zarina>
-Reply-To: cbou@mail.ru
-References: <200704122306.46518.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	Fri, 13 Apr 2007 03:51:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45601 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752342AbXDMHvu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 03:51:50 -0400
+Date: Fri, 13 Apr 2007 08:51:42 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
+Message-ID: <20070413075142.GA23822@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
+References: <20070412174201.065068b2.akpm@linux-foundation.org> <461ED96C.5030606@yahoo.com.au> <20070412182213.a18cc4a7.akpm@linux-foundation.org> <461EE005.6070605@yahoo.com.au> <20070412185723.5a5f0443.akpm@linux-foundation.org> <461EE890.2040601@yahoo.com.au> <20070412193255.62a0b8ed.akpm@linux-foundation.org> <461EEFEC.2010205@yahoo.com.au> <20070413065357.GP2986@holomorphy.com> <461F2BCB.2020200@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704122306.46518.david-b@pacbell.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <461F2BCB.2020200@yahoo.com.au>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+On Fri, Apr 13, 2007 at 05:05:47PM +1000, Nick Piggin wrote:
+> Ah, OK. Anyway, with kprobes/systemtap they can do whatever they like
+> and none of us need to care in the slightest ;)
 
-On Thu, Apr 12, 2007 at 11:06:46PM -0700, David Brownell wrote:
-> > This driver used to stop code/logic duplication through different
-> > machines we porting at handhelds.org. pda_power register machs' power
-> > supplies, and will take care about notifying batteries about power
-> > changes through external power interface.
-> 
-> It gets USB power management wrong though.  Have a look at two I2C drivers
-> in drivers/i2c/chips:  tps65010.c (which would talk to this API) and then
-> isp1301_omap.c (which would talk to the tps65010 driver).  The tps65010
-> chip accepts the same two power sources you're addressing here, as part
-> of its battery charging responsibilities. [1]
-> 
-> Key points:
-> 
->  - The API needs to say *how much power* can be drawn.  Common values
->    are 8 mA (OTG peripherals before configuration), 100 mA (non-OTG ones
->    before configuration), 500 mA (high power configurations) ... but the
->    exact value depends on what's listed in the configuration descriptor
->    for the chosen configuration, any value 0..500 mA (increments of two)
->    could be appropriate.
-> 
->  - Sensing VBUS power is not the same thing as being allowed to consume
->    it.  Again, USB OTG devices are different:  OTG hosts **SUPPLY** the
->    current, so you really don't want to be telling the OTG transceiver to
->    fire up its charge pump (say, 3.0V VBAT converted to 5V VBUS) while at
->    the same time telling the battery manager to use that battery-derived
->    VBUS current to recharge its battery!  Not only would that waste power,
->    but it also deprives the peripheral of the power it needs to draw.
-> 
-> In general, no component other than the USB peripheral (or host) controller
-> driver has any business trying to control how VBUS power is used.  It's
-> likely to get it wrong ... as shown by this patch.  ;)
-> 
-> And that's exactly why the USB gadget API has had calls to manage the USB
-> power consumption since mid-2004.  And I wonder why H5000 code evidently
-> doesn't implement those calls.
-> 
-> - Dave
-> 
-> [1] You may find http://www.linux-usb.org/gadget/h2-otg.html useful too.
->     It gives a high level map of the complicated OTG case, including
->     those drivers, and points out how simpler peripheral-only systems
->     could behave with the same drivers.  However it does turn out to
->     be useful if USB peripheral drivers have a "transciever" notion
->     that can receive "VBUS present" interrupts, letting the peripheral
->     controller driver power down almost *everything* to save power,
->     and that otg_transceiver interface does that job.
+Umm, folks.  systemtap basically means people compile kernel modules
+from an odd scripting language with embedded C snipplets into kernel
+modules.  The kernel modules don't use normal exported APIs but use
+kallsysms and dwarf info to poke into every possible private bit.
 
-I see. Current devices I have just consumes power from USB host. I.e.
-they able to boot using only USB and discharged battery. :-/ Even
-more, HP iPaq hx4700 able to charge battery from USB (using that driver).
-We just setting USB charging GPIO, and it starts consume power from
-the host.
+Saying you don't care the slightest whether oracle will load huge
+amounts of code into the kernel that depends on intimate implementation
+details, and that you don't even have source to to debug it is not what
+I'd call "none of us need to care in the slightest", at least for those
+of you working for distributions that may actually have to debug this
+shit in the end.
 
-But I got the point, and yes I can't explain why it works correctly.
+While we're at it, what happened to the idea of tainting the kernel
+as soon as krpobes are placed in the kernel to at least make people
+aware of it?
 
-(1) Anyway, you're hinting that you'd want to see some
-"usb_vbus_start_consume_power(how much)" callback, which will be
-handled by gadget driver? Or it should just start using some gadget api?
-Or even pda_battery must become an "usb power supplicant" gadget itself
-to consume power by law?
-
--
-
-I'm stuck in null-modem century, so don't wonder my USB-dumbness.
-Will read http://www.linux-usb.org/gadget/h2-otg.html, of course.
-
-Though I'd appreciate answers for (1), thus I can think in right
-direction from the start.
-
-Much thanks for your comments.
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
