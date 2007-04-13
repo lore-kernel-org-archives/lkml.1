@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXDMUrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965337AbXDMUv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965292AbXDMUrv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965365AbXDMUrv
+	id S965337AbXDMUv3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 16:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030278AbXDMUv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:47:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:20689 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965337AbXDMUrt (ORCPT
+	Fri, 13 Apr 2007 16:51:29 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:9833 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965337AbXDMUv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:47:49 -0400
+	Fri, 13 Apr 2007 16:51:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hPfFt4wVFw330rBQwtmkcsnqfvKJiTt3U5TAjhbhX16kg7wibScl7D63e5UUWQo6bgaXQkLAYFCaE1AGmTMab6WdbVP3aPTjEcusU2V1mM9Lxb0Welw8nfUSAz5kJwXQui3jgTa5BceFIpYnP183BWEfby7KnTPYjPBmimqF7EM=
-Message-ID: <58cb370e0704131347qa3439b5u26c8532deac50cd2@mail.gmail.com>
-Date: Fri, 13 Apr 2007 22:47:48 +0200
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-In-Reply-To: <461FDBB4.8070208@redhat.com>
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=J+Vei5i+Zg23AGyDWS9JraQFJwXuCudfQIHk9/gs3e+AkYALSbstjtTGd9BDlStRM0FCWZNUQ9e1YLib1aSyA/dEJMUuqhJ3rrbYnHopR8162TNE5F65FFsZyXYAid1whSGBOsUSX2gpGx6A+OlRyyj9V1uzos+DGT8p53r+kIM=
+Message-ID: <38b2ab8a0704131351la5085vf0ab58e85cf49879@mail.gmail.com>
+Date: Fri, 13 Apr 2007 22:51:27 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: dbrownell@users.sourceforge.net
+Subject: question on generic gpio interface
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <461D4E2C.6000704@redhat.com>
-	 <Pine.LNX.4.61.0704112347230.20436@yvahk01.tjqt.qr>
-	 <461D5C24.9080506@redhat.com> <200704132142.29582.bzolnier@gmail.com>
-	 <461FDBB4.8070208@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/13/07, Chuck Ebbert <cebbert@redhat.com> wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> >> Now we're getting somewhere. There is some other OS on here because
-> >> it's required for doing BIOS updates. I booted it and shut down.
-> >> The power cycle count increased but the power off retract count did not.
-> >>
-> >> The counts are:
-> >>
-> >> power cycle ... 111
-> >> power off retract ... 92
-> >>
-> >> The difference is now 19; it was 18 before.
-> >
-> > Is the noise present if you reboot the other OS?
-> > Does it result in Power-Off_Retract count increase?
->
-> There is no noise and the retract count does not increase when I boot
-> and then shutdown/power off the other OS.
+Hi,
 
-What about shutdown/reboot?
+I'm trying to port my old gpio code to the generic one to see if it
+can fit my needs.
+
+The gpio controller is a home made one and has a really weird
+interface. It has several registers to read the gpio status, to
+configure gpio directions, or to configure if a gpio can trigger an
+interrupt and on which event (level or edge). All gpios use the same
+IRQ and a gpio controller register allows to read which gpio has
+triggered the interrupt.
+
+Now the question is how should irq_to_gpio()  work ? Is it supposed to
+be called only when a gpio interrupt occure ?
+
+Another question is how can I specify if a gpio interrupt trigger on
+level or on edge ?
+
+thanks
+-- 
+Francis
