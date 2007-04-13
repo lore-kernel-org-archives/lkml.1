@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbXDMQwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbXDMQ5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbXDMQwj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 12:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbXDMQwj
+	id S1754092AbXDMQ5l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 12:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbXDMQ5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 12:52:39 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49234 "EHLO mx1.suse.de"
+	Fri, 13 Apr 2007 12:57:41 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:42311 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754098AbXDMQwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 12:52:38 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [PATCH] cache_k8_northbridges() overflows beyond allocation (Was: 2.6.21-rc5-mm4 (SLUB))
-Date: Fri, 13 Apr 2007 18:52:33 +0200
-User-Agent: KMail/1.9.6
+	id S1754092AbXDMQ5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 12:57:41 -0400
+Date: Fri, 13 Apr 2007 09:57:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
 Cc: Badari Pulavarty <pbadari@gmail.com>, Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
        lkml <linux-kernel@vger.kernel.org>
-References: <20070402224745.71a25af7.akpm@linux-foundation.org> <200704131745.37795.ak@suse.de> <461FB303.2060303@redhat.com>
-In-Reply-To: <461FB303.2060303@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Subject: Re: [PATCH] cache_k8_northbridges() overflows beyond allocation
+ (Was: 2.6.21-rc5-mm4 (SLUB))
+Message-Id: <20070413095735.c50bc142.akpm@linux-foundation.org>
+In-Reply-To: <200704131745.37795.ak@suse.de>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704041103060.26866@schroedinger.engr.sgi.com>
+	<1176477222.8559.4.camel@dyn9047017100.beaverton.ibm.com>
+	<200704131745.37795.ak@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704131852.34192.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 April 2007 18:42:43 Chuck Ebbert wrote:
-> Andi Kleen wrote:
-> >> cache_k8_northbridges() is storing config values to incorrect locations
-> >> (in flush_words) and also its overflowing beyond the allocation, causing
-> >> slab verification failures.
-> > 
-> > Oops. Thanks for tracking that down, Badari.
-> > 
-> > Andrew, clear .21 candidate.
-> > 
+On Fri, 13 Apr 2007 17:45:37 +0200 Andi Kleen <ak@suse.de> wrote:
+
 > 
-> 2.6.20 as well. Do you want me to submit it?
+> > 
+> > cache_k8_northbridges() is storing config values to incorrect locations
+> > (in flush_words) and also its overflowing beyond the allocation, causing
+> > slab verification failures.
+> 
+> Oops. Thanks for tracking that down, Badari.
+> 
+> Andrew, clear .21 candidate.
 
-After it is in .21
-
--Andi
-
-
+OK.  And for 2.6.20.x, methinks.
