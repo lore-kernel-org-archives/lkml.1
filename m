@@ -1,98 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXDMSnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbXDMSru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbXDMSnX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 14:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXDMSnX
+	id S1754138AbXDMSru (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 14:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbXDMSru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 14:43:23 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:45656 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754131AbXDMSnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 14:43:19 -0400
-Date: Fri, 13 Apr 2007 11:42:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeffrey Layton <jlayton@redhat.com>
-Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] make iunique use a do/while loop rather than its
- obscure goto loop
-Message-Id: <20070413114214.cb9328f5.akpm@linux-foundation.org>
-In-Reply-To: <200704112158.l3BLwunk023090@dantu.rdu.redhat.com>
-References: <200704112158.l3BLwunk023090@dantu.rdu.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Apr 2007 14:47:50 -0400
+Received: from degraaf1.colo.troy.waveform.net ([204.11.33.9]:58654 "HELO
+	mahatma.gandhilinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754138AbXDMSru (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 14:47:50 -0400
+From: "Jeremy C. Andrus" <jeremy@jeremya.com>
+Organization: http://www.jeremya.com/
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb bulk transfer: 1024 byte packets
+Date: Fri, 13 Apr 2007 14:47:47 -0400
+User-Agent: KMail/1.9.5
+References: <200704131256.47570.jeremy@jeremya.com>
+In-Reply-To: <200704131256.47570.jeremy@jeremya.com>
+X-Rokken: Dokken
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_TB9HGA+GpEayrhB"
+Message-Id: <200704131447.47737.jeremy@jeremya.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Apr 2007 17:58:56 -0400
-Jeffrey Layton <jlayton@redhat.com> wrote:
+--Boundary-00=_TB9HGA+GpEayrhB
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> A while back, Christoph mentioned that he thought that iunique ought to be
-> cleaned up to use a more conventional loop construct. This patch does that,
-> turning the strange goto loop into a do/while.
+On Friday April 13 2007 12:56, I wrote:
+[snip]
+> I found this patch useful and un-obtrusive, so I figured that I would
+> post it here to see if anyone else thinks it interesting enough to
+> patch in.
 > 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> 
-> diff --git a/fs/inode.c b/fs/inode.c
-> index 23fc1fd..90e7587 100644
-> --- a/fs/inode.c
-> +++ b/fs/inode.c
-> @@ -689,21 +689,18 @@ ino_t iunique(struct super_block *sb, ino_t max_reserved)
->  	struct inode *inode;
->  	struct hlist_head * head;
->  	ino_t res;
-> +
->  	spin_lock(&inode_lock);
-> -retry:
-> -	if (counter > max_reserved) {
-> -		head = inode_hashtable + hash(sb,counter);
-> +	do {
-> +		if (counter <= max_reserved)
-> +			counter = max_reserved + 1;
->  		res = counter++;
-> +		head = inode_hashtable + hash(sb, res);
->  		inode = find_inode_fast(sb, head, res);
-> -		if (!inode) {
-> -			spin_unlock(&inode_lock);
-> -			return res;
-> -		}
-> -	} else {
-> -		counter = max_reserved + 1;
-> -	}
-> -	goto retry;
-> -	
-> +	} while (inode != NULL);
-> +	spin_unlock(&inode_lock);
-> +
-> +	return res;
->  }
->  
 
-hm.
+Sorry about this, but there was a small error in my patch...
 
-ino_t iunique(struct super_block *sb, ino_t max_reserved)
-{
-	static ino_t counter;
-	struct inode *inode;
-	struct hlist_head * head;
-	ino_t res;
+	-Jeremy
 
-	spin_lock(&inode_lock);
-	do {
-		if (counter <= max_reserved)
-			counter = max_reserved + 1;
-		res = counter++;
-		head = inode_hashtable + hash(sb, res);
-		inode = find_inode_fast(sb, head, res);
-	} while (inode != NULL);
-	spin_unlock(&inode_lock);
+-- 
+-----------------------
+Jeremy C. Andrus
+http://www.jeremya.com/
+-----------------------
 
-	return res;
-}
+--Boundary-00=_TB9HGA+GpEayrhB
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="linux-2.6.20.6-usb_1024byte_packets.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="linux-2.6.20.6-usb_1024byte_packets.patch"
 
-The counter-vs-max_reserved test can be moved outside the loop, can't it?
+diff -Naur linux-2.6.20.6/Documentation/usb/bulk_tx_hacks.txt linux-2.6.20.6_jca/Documentation/usb/bulk_tx_hacks.txt
+--- linux-2.6.20.6/Documentation/usb/bulk_tx_hacks.txt	1969-12-31 19:00:00.000000000 -0500
++++ linux-2.6.20.6_jca/Documentation/usb/bulk_tx_hacks.txt	2007-04-13 09:59:19.000000000 -0400
+@@ -0,0 +1,28 @@
++bulk_tx_hacks.txt
++Copyright (C) 2007 Jeremy C. Andrus <jeremy@jeremya.com>
++Started:   2007-April-13
++
++
++How to use a 1024-byte bulk transfer packet
++
++There are some devices/companies which have decided to use
++a bulk transfer packet size which is larger than the maximum
++specified in the USB spec. Because I was interested in using
++such a device, I found it necessary to devise a way to allow
++this functionality in the linux kernel. 
++
++It is reasonably simple to create a 1024-byte bulk transfer
++URB. Simply OR the 'URB_1024_BYTE_PKT' value into the URB's
++transfer_flags field before submitting it to the system:
++
++	urb = usb_alloc_urb(0, GFP_KERNEL);
++
++	usb_fill_bulk_urb( urb, ... );
++
++	/* this allows the URB's buffer to be 1024 bytes */
++	urb->transfer_flags |= URB_1024_BYTE_PKT;
++	
++	retval = usb_submit_urb( urb, GFP_KERNEL );
++	
++	usb_free_urb( urb );
++
+diff -Naur linux-2.6.20.6/drivers/usb/host/Kconfig linux-2.6.20.6_jca/drivers/usb/host/Kconfig
+--- linux-2.6.20.6/drivers/usb/host/Kconfig	2007-04-06 16:02:48.000000000 -0400
++++ linux-2.6.20.6_jca/drivers/usb/host/Kconfig	2007-04-13 10:00:36.000000000 -0400
+@@ -67,6 +67,20 @@
+ 
+ 	  If unsure, say N.
+ 
++config USB_EHCI_1024BYTE_BULK_PKTS
++	bool "Allow 1024-byte packets in Bulk Transfer mode"
++	depends on USB_EHCI_HCD && EXPERIMENTAL
++	---help---
++	  The USB specification allows a maximum bulk transfer packet size
++	  of 512 bytes. There are a few devices which have decided to break
++	  this specification and use 1024 byte packets. This option allows
++	  the use of the larger packet size with a very specific flag set 
++	  in the URB.
++	  
++	  See the Documentation/usb/bulk_tx_hacks.txt file for details.
++	  
++	  If unsure, say N.
++
+ config USB_ISP116X_HCD
+ 	tristate "ISP116X HCD support"
+ 	depends on USB
+diff -Naur linux-2.6.20.6/drivers/usb/host/ehci-q.c linux-2.6.20.6_jca/drivers/usb/host/ehci-q.c
+--- linux-2.6.20.6/drivers/usb/host/ehci-q.c	2007-04-06 16:02:48.000000000 -0400
++++ linux-2.6.20.6_jca/drivers/usb/host/ehci-q.c	2007-04-13 09:47:09.000000000 -0400
+@@ -751,7 +751,12 @@
+ 			info2 |= (EHCI_TUNE_MULT_HS << 30);
+ 		} else if (type == PIPE_BULK) {
+ 			info1 |= (EHCI_TUNE_RL_HS << 28);
+-			info1 |= 512 << 16;	/* usb2 fixed maxpacket */
++#ifdef CONFIG_USB_EHCI_1024BYTE_BULK_PKTS
++			if ( urb->transfer_flags & URB_1024_BYTE_PKT )
++				info1 |= 1024 << 16; /* HACK for Micron Dev Kits requiring 1024 byte packets... */
++			else
++#endif
++				info1 |= 512 << 16; /* usb2 fixed maxpacket */
+ 			info2 |= (EHCI_TUNE_MULT_HS << 30);
+ 		} else {		/* PIPE_INTERRUPT */
+ 			info1 |= max_packet (maxp) << 16;
+diff -Naur linux-2.6.20.6/include/linux/usb.h linux-2.6.20.6_jca/include/linux/usb.h
+--- linux-2.6.20.6/include/linux/usb.h	2007-04-06 16:02:48.000000000 -0400
++++ linux-2.6.20.6_jca/include/linux/usb.h	2007-04-13 09:47:09.000000000 -0400
+@@ -904,6 +904,9 @@
+ #define URB_ZERO_PACKET		0x0040	/* Finish bulk OUT with short packet */
+ #define URB_NO_INTERRUPT	0x0080	/* HINT: no non-error interrupt
+ 					 * needed */
++#ifdef CONFIG_USB_EHCI_1024BYTE_BULK_PKTS
++#define URB_1024_BYTE_PKT	0x8000 /* Use a max packet length of 1024 bytes instead of 512 */
++#endif
+ 
+ struct usb_iso_packet_descriptor {
+ 	unsigned int offset;
 
-Shouldn't counter be per-sb?
-
+--Boundary-00=_TB9HGA+GpEayrhB--
