@@ -1,111 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbXDMTIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXDMTIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbXDMTIr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 15:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbXDMTIr
+	id S932097AbXDMTIx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 15:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112AbXDMTIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 15:08:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38706 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754133AbXDMTIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 15:08:46 -0400
-Message-ID: <461FD536.80903@redhat.com>
-Date: Fri, 13 Apr 2007 15:08:38 -0400
-From: Jeff Layton <jlayton@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 13 Apr 2007 15:08:53 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34127 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932097AbXDMTIw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 15:08:52 -0400
+Message-ID: <461FD496.5080506@vmware.com>
+Date: Fri, 13 Apr 2007 12:05:58 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] make iunique use a do/while loop rather than its obscure
- goto loop
-References: <200704112158.l3BLwunk023090@dantu.rdu.redhat.com> <20070413114214.cb9328f5.akpm@linux-foundation.org>
-In-Reply-To: <20070413114214.cb9328f5.akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+CC: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
+References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com> <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 11 Apr 2007 17:58:56 -0400
-> Jeffrey Layton <jlayton@redhat.com> wrote:
-> 
->> A while back, Christoph mentioned that he thought that iunique ought to be
->> cleaned up to use a more conventional loop construct. This patch does that,
->> turning the strange goto loop into a do/while.
->>
->> Signed-off-by: Jeff Layton <jlayton@redhat.com>
->>
->> diff --git a/fs/inode.c b/fs/inode.c
->> index 23fc1fd..90e7587 100644
->> --- a/fs/inode.c
->> +++ b/fs/inode.c
->> @@ -689,21 +689,18 @@ ino_t iunique(struct super_block *sb, ino_t max_reserved)
->>  	struct inode *inode;
->>  	struct hlist_head * head;
->>  	ino_t res;
->> +
->>  	spin_lock(&inode_lock);
->> -retry:
->> -	if (counter > max_reserved) {
->> -		head = inode_hashtable + hash(sb,counter);
->> +	do {
->> +		if (counter <= max_reserved)
->> +			counter = max_reserved + 1;
->>  		res = counter++;
->> +		head = inode_hashtable + hash(sb, res);
->>  		inode = find_inode_fast(sb, head, res);
->> -		if (!inode) {
->> -			spin_unlock(&inode_lock);
->> -			return res;
->> -		}
->> -	} else {
->> -		counter = max_reserved + 1;
->> -	}
->> -	goto retry;
->> -	
->> +	} while (inode != NULL);
->> +	spin_unlock(&inode_lock);
->> +
->> +	return res;
->>  }
->>  
-> 
-> hm.
-> 
-> ino_t iunique(struct super_block *sb, ino_t max_reserved)
-> {
-> 	static ino_t counter;
-> 	struct inode *inode;
-> 	struct hlist_head * head;
-> 	ino_t res;
-> 
-> 	spin_lock(&inode_lock);
-> 	do {
-> 		if (counter <= max_reserved)
-> 			counter = max_reserved + 1;
-> 		res = counter++;
-> 		head = inode_hashtable + hash(sb, res);
-> 		inode = find_inode_fast(sb, head, res);
-> 	} while (inode != NULL);
-> 	spin_unlock(&inode_lock);
-> 
-> 	return res;
-> }
-> 
-> The counter-vs-max_reserved test can be moved outside the loop, can't it?
-> 
+Hugh Dickins wrote:
+> Zach, while looking at your recent patches, I ran across the comment
+> on pte_update_defer, and where it was being used, and now think that
+> David's patch is actually incorrect.  Previously pte_update_defer
+> was being used where a flush_tlb_page followed immediately after
+> within the same macro; with David's patch, mm's clear_refs_pte_range
+> is calling ptep_test_and_clear_young (including pte_update_defer) on
+> several ptes, then unlocking the page table, and later flushing TLB.
+> That's exactly wrong for pte_update_defer, isn't it?
+>   
 
-No. If the counter wraps while we're looping, then we'll need to skip 
-past the "reserved" inode numbers. So we need to check this on every 
-loop iteration. We could potentially put that in an "unlikely" if you 
-think that would be better.
+Yes, that is correct.  But in the context of kernel usage, it is not a 
+problem.  Note that ptep_test_and_clear_xxx are purely optimizing 
+definitions for specific architectures; they are never called outside of 
+asm-generic pgtable code, and when they are, they are called from 
+ptep_clear_flush_xxx.  So the requisite flush still dominates the lazy / 
+deferred / what have you pte update.  I think this is actually the major 
+reason I had done the hack to begin with - defining 
+__HAVE_ARCH_PTEP_TEST_AND_CLEAR_XXX without actually defining the 
+functions prevented any accidental usage of pte_update_defer where the 
+flush was omitted.
 
-> Shouldn't counter be per-sb?
+In correct uses which actually change PTE bits that matter to hardware, 
+a flush will (almost*) always be required for hardware correctness.  
+This property minimizes the potential damage that can be caused by 
+misusing the pte_update_defer or decoupling it from the flush.  It does 
+nothing to stop SMP races, however, as in cases where the flush happens 
+outside of the page table spinlock, an SMP race is possible on the 
+shadow page tables.  So it is better to keep the flush as close as 
+possible to the deferred update.
 
-I doubt it really matters too much, but it could potentially be more 
-efficient to do that, especially after a wraparound on the counter. It 
-might be reasonable to make new_inode use a per-sb counter as well. Do 
-you think it's worth respinning?
+(* RW -> RO,  OLD -> YOUNG, DIRTY -> CLEAN, USER -> SUPERVISOR, EXEC -> 
+NX, CACHEABLE -> PCD all require a TLB flush.  Linux never makes 
+transitions in the opposite direction by using live page table bit 
+manipulation - which might change the PTE without requiring a flush.  It 
+turns out, a flush is still a good idea, as transitions in the opposite 
+direction represent a permission upgrade, and leaving a more restrictive 
+TLB entry around could cause a spurious fault, which might be suppressed 
+depending on the architecture, but still good to avoid.)
 
--- Jeff
+> I do find the name confusing (pte_update_defer is for use only when
+> the TLB update is not deferred, right?): indeed, its distinction from
+> pte_update very prone to errors of this kind.  I'm all for deferring
+> work, but is there some way the right thing could be done automatically?
+> Or, how much would be lost if we just replaced all the pte_update_defers
+> by pte_updates?
+>   
+
+I agree the name is confusing; I struggled to find a better name (as 
+lazy is already overridden in several ways in mm code).  What would be a 
+good way to say pte update which is delayed until subsumed by an 
+immediate pte operation (explicit non-delayed update or flush)?
+
+In light of the property above (flush required for correctness), what 
+about a name like mark_tlb_pte_async - to indicate that the TLB and PTE 
+are now out of sync - and require a flush to be brought in sync.  Some 
+architectures simply don't need to care to implement them - and some 
+generic code can be written to verify that unsynchronized tlbs are 
+always flushed before returning from fault handlers or to userspace.
+
+> I'm not proposing any patch myself: just bringing to your attention.
+>   
+
+Thanks!  I'm pretty sure we're still correct, for now, but without care, 
+it is easy to diverge from that.  I'll keep a watchful eye on the 
+pagetable and mm code (as always) and try to come up with a more 
+comprehensive solution.
+
+Zach
