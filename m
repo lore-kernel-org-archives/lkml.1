@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964960AbXDMUIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932424AbXDMUK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964960AbXDMUIj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964873AbXDMUIj
+	id S932424AbXDMUK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 16:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXDMUK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:08:39 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39859 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964976AbXDMUIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:08:38 -0400
-Date: Fri, 13 Apr 2007 22:07:46 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Jean Delvare <khali@linux-fr.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Message-ID: <20070413200746.GD28264@elf.ucw.cz>
-References: <45D5EA88.7090300@redhat.com> <20070302114023.GD2163@elf.ucw.cz> <20070302150313.198b6053.khali@linux-fr.org> <200704131218.44045.bjorn.helgaas@hp.com>
+	Fri, 13 Apr 2007 16:10:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:38835 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964862AbXDMUK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 16:10:27 -0400
+Message-ID: <461FE38C.2060501@goop.org>
+Date: Fri, 13 Apr 2007 13:09:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704131218.44045.bjorn.helgaas@hp.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH RFC] i386: map enough initial memory to create lowmem mappings
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+head.S creates the very initial pagetable for the kernel.  It maps
+maps enough space for the kernel itself, and an allocation bitmap.
+The amount of mapped memory is rounded up to 4Mbytes, and so this
+typically ends up mapping 8Mbytes of memory.
 
-> > ... The primary issue is the concurrent access
-> > to resources, which cause lots of trouble which are hard to investigate.
-> > If ACPI reserves the ports, then the SMBus or hardware monitoring
-> > drivers (or any other conflicting driver) will cleanly fail to load,
-> > which would be a move in the right direction. ...
-> > 
-> > So, can ACPI actually reserve the ports it accesses?
-> 
-> Sorry to join this discussion so late.
-> 
-> ACPI tells us the resources used by devices.  Today, we don't
-> reserve
+When booting, pagetable_init() needs to create mappings for all
+lowmem, and the pagetables for these mappings are allocated from the
+free pages around the kernel in low memory.  If the number of
+pagetable pages + kernel size exceeds head.S's initial mapping, it
+will end up faulting on an unmapped page.  This will only happen with
+specific combinations of kernel size and memory size.
 
-Problem seems to be that ACPI does _not_ tell us which ports it
-accesses from AML code.
+This patch makes sure that head.S also maps enough space to fit the
+kernel pagetables as well as the kernel itself.  It ends up using an
+additional two pages of unreclaimable memory.
 
-But we already found a lock we can take; AFAICT we know how to solve
-this problem.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+[ What am I missing here?  Why doesn't this cause crashes all over the place? ]
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Chris Wright <chrisw@sous-sol.org>
+
+---
+ arch/i386/kernel/head.S |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+===================================================================
+--- a/arch/i386/kernel/head.S
++++ b/arch/i386/kernel/head.S
+@@ -34,16 +34,19 @@
+ 
+ /*
+  * This is how much memory *in addition to the memory covered up to
+- * and including _end* we need mapped initially.  We need one bit for
+- * each possible page, but only in low memory, which means
+- * 2^32/4096/8 = 128K worst case (4G/4G split.)
++ * and including _end* we need mapped initially.
++ * We need:
++ *  - one bit for each possible page, but only in low memory, which means
++ *     2^32/4096/8 = 128K worst case (4G/4G split.)
++ *  - enough space to map all low memory, which means
++ *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
+  *
+  * Modulo rounding, each megabyte assigned here requires a kilobyte of
+  * memory, which is currently unreclaimed.
+  *
+  * This should be a multiple of a page.
+  */
+-#define INIT_MAP_BEYOND_END	(128*1024)
++#define INIT_MAP_BEYOND_END	(128*1024 + (2048 + 4)*4096)
+ 
+ 
+ /*
+
+
