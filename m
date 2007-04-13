@@ -1,79 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbXDMNal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbXDMNcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbXDMNal (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 09:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXDMNal
+	id S1753982AbXDMNcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 09:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXDMNcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 09:30:41 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:65286 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbXDMNak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 09:30:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GW8+G66Jhi3K43MYd9sqBWngXMvjsTMOFctbBQtLBMlSlF8azE4geKxWPwFmWWE5zDDdzyouV4f04lnpBS5acK1+kSNeFv8GsPTuaWEBptgL/eLJU3z9a6I6+lcjLTGcxcsaY8moJIzNn5+QLdsPghGeGyTv3/ju7xdhECU8aik=
-Message-ID: <38b2ab8a0704130630v4c840bd1w19f2a239f86a93b@mail.gmail.com>
-Date: Fri, 13 Apr 2007 15:30:38 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Helge Hafting" <helge.hafting@aitel.hist.no>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <461F74F0.1070206@aitel.hist.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0704121239sd848440t6ed23d71dc68798c@mail.gmail.com>
-	 <461F74F0.1070206@aitel.hist.no>
+	Fri, 13 Apr 2007 09:32:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39671 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753982AbXDMNcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 09:32:17 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070413124303.GD966@wotan.suse.de> 
+References: <20070413124303.GD966@wotan.suse.de>  <20070413100416.GC31487@wotan.suse.de> <25821.1176466182@redhat.com> 
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] generic rwsems 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Fri, 13 Apr 2007 14:31:52 +0100
+Message-ID: <30644.1176471112@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Nick Piggin <npiggin@suse.de> wrote:
 
-On 4/13/07, Helge Hafting <helge.hafting@aitel.hist.no> wrote:
-> Francis Moreau wrote:
-> > So is this interpretation right ? If so wouldn't it be appropriate to
-> > introduce a mechanism to reserve this AES hardware for a special
-> > purpose (filesystem encryptions) and thus make it as fast as possible
-> > ?
-> >
-> Would this really help?
-> When reading/writing files, most of the time is i/o-wait, isn't it?
->
+> The other way happens to be better for everyone else, which is why I
+> think your suggestion to instead move everyone to the spinlock version
+> was weird.
 
-Well some systems, specially embedded ones, don't use hard drives for
-mass storage purposes but rather MTD like flashes...
+No, you misunderstand me.  My preferred solution is to leave it up to the arch
+and not to make it generic, though I'm not averse to providing some prepackaged
+solutions for an arch to pick from if it wants to.
 
-> Reserving the device exclusively seems excessive. How about
-> a quick test to see if someone else have been using it since
-> the last time your crypto-fs used it?  If nobody else used it, then
-> you don't need to reset they key and so on.
->
+> Finally: as I said, even for those 2 architectures, this may not be so
+> bad because it is using a different spinlock for the fastpath as it is
+> for the slowpath. So your uncontested, cache cold case will get a little
+> slower, but the contested case could improve a lot (eg. I saw an order of
+> magnitude improvement).
 
-You would spend the same time to make the test as loading the key...
+Agreed.  I can see why the spinlock implementation is bad on SMP.  By all means
+change those cases, and reduce the spinlock implementation to an interrupt
+disablement only version that may only be used on UP only.
 
-> If nobody else is using the AES controller, you get the same speed
-> as with a reservation.
+> 32-bit machines might indeed overflow, but if it hasn't been a problem
+> for i386 or (even 64-bit) powerpc yet, is it a real worry? 
 
-I don't think this is right. AES hardware can do a block encryption in
-a very few cycles. If you copy the key or test the key to see if it
-has changed as you proposed, then you basically increase the execution
-time by a factor 2 or 3...
+It has happened, I believe.  People have tried having >32766 threads on a
+32-bit box.  Mad it may be, but...
 
-> If something else is using AES then it won't be
-> as fast, but then the AES controller have been used for other useful
-> work as well.  Other parts of the kernel surely won't use it just for
-> fun. :-)
+> This is what spinlocks and mutexes do, and they're much more common than
+> rwsems. I'm just trying to make it consistent, and you can muck around
+> with it all you want after that. It is actually very easy to inline
+> things now, unlike before my patch.
 
-You said it: others parts of the kernel are unlikely to use it. So why
-not optimizing the common case ?
+My original stuff was very easy to inline until Ingo got hold of it.
 
-Crypto core already seems to implement a priority mechanism. But I
-don't think I'm able to say "I'd like to use this algo for encrypting
-filesystems. If another part of the kernel wants to use this algo then
-give it the generic one". This choice seems really to depend on the
-system the kernel is running.
--- 
-Francis
+> > Think about it.  This algorithm is only optimal where XADD is available.  If
+> > you don't have XADD, but you do have LL/SC or CMPXCHG, you can do better.
+> 
+> You keep saying this too, and I have thought about it but I couldn't think
+> of a much better way. I'm not saying you're wrong, but why don't you just
+> tell me what that better way is?
+
+Look at how the counter works in the spinlock case.  With the addition of an
+extra flag in the counter to indicate there's stuff waiting on the queue, you
+can manipulate the counter if it appears safe to do so, otherwise you have to
+fall back to the slow path and take a spin lock.
+
+Break the counter down like this:
+
+	0x00000000	- not locked; queue empty
+	0x40000000	- locked by writer; queue empty
+	0xc0000000	- locket by writer; queue occupied
+	0x0nnnnnnn	- n readers; queue empty
+	0x8nnnnnnn	- n readers; queue occupied
+
+Now here's a rough guide as to how the main operations would work:
+
+ (*) down_read of unlocked
+
+	cmpxchg(0 -> 1) -> 0 [okay - you've got the lock]
+
+ (*) down_read of readlocked.
+
+	cmpxchg(0 -> 1) -> n [failed to get the lock]
+	do
+	  n = cmpxchg(old_n -> old_n+1)
+        until n == old_n
+
+ (*) down_read of writelocked or contented readlocked.
+
+	cmpxchg(0 -> 1) -> 0x80000000|n  [lock contended]
+	goto slowpath
+	  spinlock
+	  try to get lock again
+	  if still contended
+	    mark counter contended
+	    add to queue
+            spinunlock
+	    sleep
+          spinunlock
+
+ (*) down_write of unlocked
+
+	cmpxchg(0 -> 0x40000000) -> 0 [okay - you've got the lock]
+
+ (*) down_write of locked, contended or otherwise
+
+	cmpxchg(0 -> 0x40000000) -> nz [failed]
+	goto slowpath
+	  spinlock
+	  try to get lock again
+	  if still unavailable
+	    mark counter contended
+	    add to queue
+            spinunlock
+	    sleep
+	  else
+            spinunlock
+
+ (*) up_read
+
+        x = cmpxchg(1 -> 0)
+        if x == 0
+	  done
+        else
+           do
+	     x = cmpxchg(old_x -> old_x-1)
+	   until x == old_x
+           if old_x == 0x80000000
+	     wake_up_writer
+
+ (*) up_write
+
+        x = cmpxchg(0x80000000 -> 0)
+        if x == 0
+	  done
+        else
+	  wake_up_readers
+
+You can actually do better with LL/SC here because for the initial attempt with
+CMPXCHG in each case you have to guess what the numbers will be.  Furthermore,
+you might actually be able to do an "atomic increment or set contention flag"
+operation.
+
+Note that the contention flag may only be set or cleared in the slow path
+whilst you are holding the spinlock.
+
+Doing down_read and up_read with CMPXCHG is a pain.  XADD or LL/SC would be
+better, and LOCK INC/ADD/DEC/SUB won't work.  You can't use XADD in down_*() as
+you may not change the bottom part of the counter if you're going to end up
+queuing.
+
+Actually, looking at it, it might be better to have the counter start off at
+0x80000000 for "unlocked, no contention" and clear the no-contention flag when
+you queue something.  That way you can check for the counter becoming 0 in the
+up_*() functions as a trigger to go and invoke the slowpath.  Then you could
+use LOCK DEC/SUB on i386 rather than XADD as you only need to check the Z flag.
+
+Note there is a slight window whereby a reader can jump a writer that's
+transiting between the fastpath part of down_write() and the slowpath part if
+there are outstanding readers on the rwsem but nothing yet queued.
+
+OTOH, there's a similar window in the current XADD-based rwsems as the spinlock
+doesn't implement FIFO semantics, so the first to modify the count and fail to
+the slowpath may not be the first to get themselves on the queue.
+
+> > similarly if you are using a UP-compiled kernel.
+> 
+> Then your UP-compiled kernel's atomic ops are suboptimal, not the rwsem
+> implementation.
+
+That's usually a function of the CPU designer.
+
+David
