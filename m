@@ -1,128 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030283AbXDMVGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXDMVIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030283AbXDMVGO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 17:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030284AbXDMVGN
+	id S1030284AbXDMVIY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030295AbXDMVIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 17:06:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:34457 "EHLO mail.goop.org"
+	Fri, 13 Apr 2007 17:08:24 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:51853 "EHLO smtp.osdl.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030283AbXDMVGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 17:06:13 -0400
-Message-ID: <461FF09D.4020902@goop.org>
-Date: Fri, 13 Apr 2007 14:05:33 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
-       Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Crash while mapping memory in pagetable_init() (Was: Re: .config)
-References: <20070413174913.GA25234@ezr.goop.org> <20070413183841.GP10574@sequoia.sous-sol.org> <20070413190552.GQ10574@sequoia.sous-sol.org> <461FD97B.1010203@goop.org> <461FE36D.1050205@vmware.com> <461FE77A.6020307@zytor.com> <461FE7C7.7050204@goop.org> <461FE8EC.3090304@zytor.com> <461FE9D1.1000803@goop.org> <461FEB46.3000702@zytor.com>
-In-Reply-To: <461FEB46.3000702@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1030284AbXDMVIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 17:08:23 -0400
+Date: Fri, 13 Apr 2007 14:08:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] change kernel threads to ignore signals instead of
+ blocking them
+Message-Id: <20070413140802.3798a6bc.akpm@linux-foundation.org>
+In-Reply-To: <m1bqhspdkj.fsf@ebiederm.dsl.xmission.com>
+References: <20070413073116.GA1540@tv-sign.ru>
+	<m1bqhspdkj.fsf@ebiederm.dsl.xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Even with PSE?
+On Fri, 13 Apr 2007 08:13:32 -0600
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-Perhaps not.
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+> > On top of Eric's
+> >
+> > 	kthread-dont-depend-on-work-queues-take-2.patch
+> >
+> > Currently kernel threads use sigprocmask(SIG_BLOCK) to protect against signals.
+> > This doesn't prevent the signal delivery, this only blocks signal_wake_up().
+> > Every "killall -33 kthreadd" means a "struct siginfo" leak.
+> >
+> > Change kthreadd_setup() to set all handlers to SIG_IGN instead of blocking them
+> > (make a new helper ignore_signals() for that). If the kernel thread needs some
+> > signal, it should use allow_signal() anyway, and in that case it should not use
+> > CLONE_SIGHAND.
+> >
+> > Note that we can't change daemonize() (should die!) in the same way, because
+> > it can be used along with CLONE_SIGHAND. This means that allow_signal() still
+> > should unblock the signal to work correctly with daemonize()ed threads.
+> >
+> > However, disallow_signal() doesn't block the signal any longer but ignores it.
+> >
+> > NOTE: with or without this patch the kernel threads are not protected from
+> > handle_stop_signal(), this seems harmless, but not good.
+> 
+> Hmm.  I like it all except for disallow_signal.
+> 
+> disallow_signal currently only has one user, jffs2.  While jffs2
+> currently doesn't care, given the way jffs2 is using disallow_signal I
+> would expect it would prefer to have the signal blocked.
+> 
+> Thinking about this some more if jffs2 or anyone else wants blocked
+> signal behavior they can go ahead and block the signal.  Keeping
+> disallow_signal in sync with allow_signal seems to make sense.
 
-> However, the main reason I wanted it done that way is to avoid cargo
-> cult programming; this makes it much clearer where the numbers
-> actually come from.
+jffs2 actually wants its head examined.  W. T. F. does it think it's
+doing in there?
 
-Well, how about this then?
-
-Subject: i386: map enough initial memory to create lowmem mappings
-
-head.S creates the very initial pagetable for the kernel.  This just
-maps enough space for the kernel itself, and an allocation bitmap.
-The amount of mapped memory is rounded up to 4Mbytes, and so this
-typically ends up mapping 8Mbytes of memory.
-
-When booting, pagetable_init() needs to create mappings for all
-lowmem, and the pagetables for these mappings are allocated from the
-free pages around the kernel in low memory.  If the number of
-pagetable pages + kernel size exceeds head.S's initial mapping, it
-will end up faulting on an unmapped page.  This will only happen with
-specific combinations of kernel size and memory size.
-
-This patch makes sure that head.S also maps enough space to fit the
-kernel pagetables as well as the kernel itself.  It ends up using an
-additional two pages of unreclaimable memory.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Zachary Amsden <zach@vmware.com>
-Cc: Chris Wright <chrisw@sous-sol.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@osdl.org>,
-
----
- arch/i386/kernel/asm-offsets.c |    5 +++++
- arch/i386/kernel/head.S        |   25 ++++++++++++++++++++-----
- 2 files changed, 25 insertions(+), 5 deletions(-)
-
-===================================================================
---- a/arch/i386/kernel/asm-offsets.c
-+++ b/arch/i386/kernel/asm-offsets.c
-@@ -96,6 +96,11 @@ void foo(void)
- 		 sizeof(struct tss_struct));
- 
- 	DEFINE(PAGE_SIZE_asm, PAGE_SIZE);
-+	DEFINE(PAGE_SHIFT_asm, PAGE_SHIFT);
-+	DEFINE(PTRS_PER_PTE, PTRS_PER_PTE);
-+	DEFINE(PTRS_PER_PMD, PTRS_PER_PMD);
-+	DEFINE(PTRS_PER_PGD, PTRS_PER_PGD);
-+
- 	DEFINE(VDSO_PRELINK_asm, VDSO_PRELINK);
- 
- 	OFFSET(crypto_tfm_ctx_offset, crypto_tfm, __crt_ctx);
-===================================================================
---- a/arch/i386/kernel/head.S
-+++ b/arch/i386/kernel/head.S
-@@ -34,17 +34,32 @@
- 
- /*
-  * This is how much memory *in addition to the memory covered up to
-- * and including _end* we need mapped initially.  We need one bit for
-- * each possible page, but only in low memory, which means
-- * 2^32/4096/8 = 128K worst case (4G/4G split.)
-+ * and including _end* we need mapped initially.
-+ * We need:
-+ *  - one bit for each possible page, but only in low memory, which means
-+ *     2^32/4096/8 = 128K worst case (4G/4G split.)
-+ *  - enough space to map all low memory, which means
-+ *     (2^32/4096) / 1024 pages (worst case, non PAE)
-+ *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
-+ *  - a few pages for allocator use before the kernel pagetable has
-+ *     been set up
-  *
-  * Modulo rounding, each megabyte assigned here requires a kilobyte of
-  * memory, which is currently unreclaimed.
-  *
-  * This should be a multiple of a page.
-  */
--#define INIT_MAP_BEYOND_END	(128*1024)
--
-+LOW_PAGES = 1<<(32-PAGE_SHIFT_asm)
-+
-+#if PTRS_PER_PMD > 1
-+PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
-+#else
-+PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
-+#endif
-+BOOTBITMAP_SIZE = LOW_PAGES / 8
-+ALLOCATOR_SLOP = 4
-+
-+INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE + ALLOCATOR_SLOP)*PAGE_SIZE_asm
- 
- /*
-  * 32-bit kernel entrypoint; only used by the boot CPU.  On entry,
-
+Sigh.
