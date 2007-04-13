@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXDMQTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbXDMQcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbXDMQTT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 12:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbXDMQTS
+	id S1754081AbXDMQcR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 12:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXDMQcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 12:19:18 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59863 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754078AbXDMQTR (ORCPT
+	Fri, 13 Apr 2007 12:32:16 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:15661 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754084AbXDMQcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 12:19:17 -0400
-X-AuditID: d80ac287-9beabbb000002c59-1a-461fad84d4bb 
-Date: Fri, 13 Apr 2007 17:19:14 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH mm] fix i386 get_gate_vma oops
-Message-ID: <Pine.LNX.4.64.0704131714160.3687@blonde.wat.veritas.com>
+	Fri, 13 Apr 2007 12:32:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=djL3fTn+wr72+pKwPryJ6EcDdMHCnwZ1ExR3z55TdXCR5MrUDbPrn/eBDnyxqcR70QN77CK9vpitHuX8pYGbnSUs+GBHvA4BBIfPjH3ORAglioQ/cdezrrA4oZddmzMmTVysdGuXjqbRXDXfUKlr6jM/7Wg7jJ0Hu9im9hcnqqc=
+Message-ID: <6bffcb0e0704130932q215a2deby91141c8d3c78bde7@mail.gmail.com>
+Date: Fri, 13 Apr 2007 18:32:14 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: [3/4] 2.6.21-rc5: known regressions (v2)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-pm@lists.osdl.org,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <20070330213220.GO14134@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 13 Apr 2007 16:19:16.0473 (UTC) FILETIME=[7B68C690:01C77DE7]
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0703251559560.6730@woody.linux-foundation.org>
+	 <20070330213220.GO14134@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix oops from i386-make-compat_vdso-runtime-selectable.patch.
+On 30/03/07, Adrian Bunk <bunk@stusta.de> wrote:
+> Subject    : suspend to disk hangs  (skge)
+> References : http://lkml.org/lkml/2007/3/27/212
+> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> Caused-By  : Stephen Hemminger <shemminger@linux-foundation.org>
+>              commit a504e64ab42bcc27074ea37405d06833ed6e0820
+> Status     : unknown
 
-Even mingetty at system startup finds it easy to trigger an oops
-while reading /proc/PID/maps: though it has a good hold on the mm
-itself, that cannot stop exit_mm() from resetting tsk->mm to NULL.
+This problem is fixed in 2.6.21-rc6-git5 (commit
+692412b31ffb5df00197ea591dd635fc07506c02).
 
-(It is usually show_map()'s call to get_gate_vma() which oopses,
-and I expect we could change that to check priv->tail_vma instead;
-but no matter, even m_start()'s call just after get_task_mm() is racy.)
+Huge thanks to Stephen.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Regards,
+Michal
 
---- 2.6.21-rc6-mm1/arch/i386/kernel/sysenter.c	2007-04-10 11:37:23.000000000 +0100
-+++ linux/arch/i386/kernel/sysenter.c	2007-04-13 16:43:45.000000000 +0100
-@@ -326,8 +326,10 @@ const char *arch_vma_name(struct vm_area
- 
- struct vm_area_struct *get_gate_vma(struct task_struct *tsk)
- {
-+	struct mm_struct *mm = tsk->mm;
-+
- 	/* Check to see if this task was created in compat vdso mode */
--	if (tsk->mm->context.vdso == (void *)VDSO_HIGH_BASE)
-+	if (mm && mm->context.vdso == (void *)VDSO_HIGH_BASE)
- 		return &gate_vma;
- 	return NULL;
- }
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
