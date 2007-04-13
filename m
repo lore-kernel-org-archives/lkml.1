@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964862AbXDMUMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964865AbXDMUNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964862AbXDMUMu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964932AbXDMUMu
+	id S964865AbXDMUNg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 16:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964988AbXDMUNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:12:50 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:54226 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964862AbXDMUMt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:12:49 -0400
-Message-Id: <20070413201107.872193239@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 13 Apr 2007 13:11:07 -0700
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [PATCH] seqlocks: trivial remove weird whitespace
+	Fri, 13 Apr 2007 16:13:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:33510 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964865AbXDMUNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 16:13:35 -0400
+Message-ID: <461FE448.70605@goop.org>
+Date: Fri, 13 Apr 2007 13:12:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Crash while mapping memory in pagetable_init() (Was: Re: .config)
+References: <20070413174913.GA25234@ezr.goop.org> <20070413183841.GP10574@sequoia.sous-sol.org> <20070413190552.GQ10574@sequoia.sous-sol.org> <461FD97B.1010203@goop.org> <461FE36D.1050205@vmware.com>
+In-Reply-To: <461FE36D.1050205@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+Zachary Amsden wrote:
+> Note you can always run out of space; to ensure safety, the init code
+> needs to not use a fixed mapping size, it needs to map
+> end_kernel_address + pae ? 1808k : 896k, assuming 128M vmalloc hole. 
+> This could cause problems like running into initrd, however, so might
+> require loader changes, or perhaps relocating the initrd.  Is the
+> solution to just cap the kernel size at some fixed maximum?  6.2M
+> appears to be the safe limit for all configurations.
+>
+> I'm pulling this back onto lkml; seems this is a serious bug which
+> needs attention.  I've also cc'd some parties that might have relevant
+> knowledge.  Why do I seem to recall head.S mapping 128M of mappings at
+> one point in time? 
 
----
- include/linux/seqlock.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+I just posted a patch.  Oops, forgot to Cc: Eric.
 
-Index: linux-2.6.20/include/linux/seqlock.h
-===================================================================
---- linux-2.6.20.orig/include/linux/seqlock.h
-+++ linux-2.6.20/include/linux/seqlock.h
-@@ -61,10 +61,10 @@ static inline void write_seqlock(seqlock
- {
- 	spin_lock(&sl->lock);
- 	++sl->sequence;
--	smp_wmb();			
--}	
-+	smp_wmb();
-+}
- 
--static inline void write_sequnlock(seqlock_t *sl) 
-+static inline void write_sequnlock(seqlock_t *sl)
- {
- 	smp_wmb();
- 	sl->sequence++;
-@@ -77,7 +77,7 @@ static inline int write_tryseqlock(seqlo
- 
- 	if (ret) {
- 		++sl->sequence;
--		smp_wmb();			
-+		smp_wmb();
- 	}
- 	return ret;
- }
--- 
-
--- 
+    J
