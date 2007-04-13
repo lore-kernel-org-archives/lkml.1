@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbXDMOZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbXDMO3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753554AbXDMOZE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 10:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbXDMOZE
+	id S1754013AbXDMO3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 10:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbXDMO3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 10:25:04 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:38610 "EHLO atlrel7.hp.com"
+	Fri, 13 Apr 2007 10:29:12 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:50711 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753554AbXDMOZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 10:25:00 -0400
-Date: Fri, 13 Apr 2007 09:23:12 -0500
-From: Stephen Cameron <steve.cameron@hp.com>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, mike.miller@hp.com,
-       james.bottomley@steeleye.com
-Subject: [PATCH 1/1] cciss: include scsi/scsi.h unconditionally
-Message-ID: <20070413142312.GA24021@quandary.cca.cpqcorp.net>
-Reply-To: steve.cameron@hp.com
+	id S1754013AbXDMO3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 10:29:11 -0400
+Date: Fri, 13 Apr 2007 16:29:09 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] generic rwsems
+Message-Id: <20070413162909.c436a732.dada1@cosmosbay.com>
+In-Reply-To: <30644.1176471112@redhat.com>
+References: <20070413124303.GD966@wotan.suse.de>
+	<20070413100416.GC31487@wotan.suse.de>
+	<25821.1176466182@redhat.com>
+	<30644.1176471112@redhat.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 13 Apr 2007 14:31:52 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-Make cciss unconditionally include scsi/scsi.h
 
-From: Stephen M. Cameron <steve.cameron@hp.com>
-Signed-off-by: Stephen M. Cameron <steve.cameron@hp.com>
+> Break the counter down like this:
+> 
+> 	0x00000000	- not locked; queue empty
+> 	0x40000000	- locked by writer; queue empty
+> 	0xc0000000	- locket by writer; queue occupied
+> 	0x0nnnnnnn	- n readers; queue empty
+> 	0x8nnnnnnn	- n readers; queue occupied
 
----
+If space considerations are that important, we could then reserve one bit for the 'wait_lock spinlock'
 
- drivers/block/cciss.c      |    1 +
- drivers/block/cciss_scsi.c |    1 -
- 2 files changed, 1 insertion(+), 1 deletion(-)
+0x20000000 : one cpu gained control of 'wait_list'
 
-diff -puN drivers/block/cciss.c~include_scsi_h_unconditionally drivers/block/cciss.c
---- linux-2.6.21-rc6/drivers/block/cciss.c~include_scsi_h_unconditionally	2007-04-13 08:23:07.000000000 -0500
-+++ linux-2.6.21-rc6-scameron/drivers/block/cciss.c	2007-04-13 08:25:05.000000000 -0500
-@@ -45,6 +45,7 @@
- #include <linux/blkdev.h>
- #include <linux/genhd.h>
- #include <linux/completion.h>
-+#include <scsi/scsi.h>
- #include <scsi/sg.h>
- #include <scsi/scsi_ioctl.h>
- #include <linux/cdrom.h>
-diff -puN drivers/block/cciss_scsi.c~include_scsi_h_unconditionally drivers/block/cciss_scsi.c
---- linux-2.6.21-rc6/drivers/block/cciss_scsi.c~include_scsi_h_unconditionally	2007-04-13 08:23:53.000000000 -0500
-+++ linux-2.6.21-rc6-scameron/drivers/block/cciss_scsi.c	2007-04-13 08:24:34.000000000 -0500
-@@ -35,7 +35,6 @@
- 
- #include <asm/atomic.h>
- 
--#include <scsi/scsi.h> 
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_device.h>
- #include <scsi/scsi_host.h> 
-_
+This would save 4 bytes on 32 bit platforms.
+
+64 bit platforms could have a limit of 2^60 threads, instead of the way too small 2^28 one ;)
+
+(we loose the debug version of spinlock of course)
+
+Another possibility to save space would be to move wait_lock/wait_list outside of rw_semaphore, in a hashed global array.
+This would save 12/16 bytes per rw_semaphore (inode structs are probably the most demanding)
