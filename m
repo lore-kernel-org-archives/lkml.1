@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbXDMOGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbXDMOGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbXDMOGB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 10:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbXDMOGB
+	id S1754016AbXDMOGk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 10:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXDMOGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 10:06:01 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:5834 "EHLO
-	outbound1-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754002AbXDMOGA (ORCPT
+	Fri, 13 Apr 2007 10:06:40 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:48144 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754006AbXDMOGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 10:06:00 -0400
-X-BigFish: VP
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Message-ID: <461F9076.4070209@amd.com>
-Date: Fri, 13 Apr 2007 16:15:18 +0200
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070304)
-MIME-Version: 1.0
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "USB development list" <linux-usb-devel@lists.sourceforge.net>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-Subject: Re: How should an exit routine wait for release() callbacks?
-References: <Pine.LNX.4.44L0.0704121706040.2472-100000@iolanthe.rowland.org>
- <20070413110313.352330ce@gondolin.boeblingen.de.ibm.com>
- <461F6C8C.1020901@amd.com>
- <20070413152453.571e887a@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070413152453.571e887a@gondolin.boeblingen.de.ibm.com>
-X-OriginalArrivalTime: 13 Apr 2007 14:05:37.0097 (UTC)
- FILETIME=[CF7D1B90:01C77DD4]
-X-WSS-ID: 6A0151B93284015275-01-01
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Apr 2007 10:06:38 -0400
+To: serue@us.ibm.com
+CC: linuxram@us.ibm.com, serue@us.ibm.com, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20070413132832.GA1483@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch 0/8] unprivileged mount syscall
+References: <20070406160238.f3178189.akpm@linux-foundation.org> <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu> <20070409143802.GB4891@sergelap.austin.ibm.com> <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu> <20070409170743.GF24415@sergelap.austin.ibm.com> <E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu> <1176194285.2903.67.camel@ram.us.ibm.com> <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu> <1176316116.2811.39.camel@ram.us.ibm.com> <E1HcKQd-0001yO-00@dorka.pomaz.szeredi.hu> <20070413132832.GA1483@sergelap.austin.ibm.com>
+Message-Id: <E1HcMOq-0002As-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 13 Apr 2007 16:05:16 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Fri, 13 Apr 2007 13:42:04 +0200,
-> "Markus Rechberger" <markus.rechberger@amd.com> wrote:
->
->   
->> seems like you have the same problem as the dvb framework has/had.
->>
->> http://mcentral.de/hg/~mrec/v4l-dvb-stable
->>
->> The last 3 changesets do the trick to not oops, it will delay the 
->> deinitialization of the device till the last user closed the device node.
->>     
->
-> Probably dumb question (since I'm not at all familiar with the dvb
-> code): Isn't that a different race you're solving there? I don't see
-> any driver core objects involved (except class devices created by
-> class_device_create, which obviously don't have the release function
-> problem). This looks more like a race of "we want an object to go
-> away, but a user still has a file open" (which would be similar to the
-> kobject<->sysfs lifetime rules issues, where work is currently ongoing).
->
->   
-most dvb usb drivers call the device node unregistration when a device 
-gets unplugged (when
-At this time the filehandle can still be open, the patch on that site 
-sets a flag that disallows
-any further access to the device node (in the DVB framework there are 4 
-of such nodes)
-This can happen any time, so while someone is reading or accessing the 
-device some structures
-might have gone away already and this could cause an oops.
-The problem of the DVB framework is file operation related, the last 
-user calls fops_put on the existing
-structure and sets the pointer to NULL before it wakes up the other 
-function which frees the file operation
-structure.
-In Alan's case isn't there any users flag available that shows that the 
-structure is still beeing accessed?
-If that would be the case he could set a flag when he enters my_exit 
-which would disable access to all other
-functions by returning an error value at the beginning of the other 
-functions, the only way out would be
-to call my_release for existing users and wake up my_exit when the last 
-reference to that structure is gone.
+> > Thinking a bit more about this, I'm quite sure most users wouldn't
+> > even want private namespaces.  It would be enough to
+> > 
+> >   chroot /share/$USER
+> > 
+> > and be done with it.
+> > 
+> > Private namespaces are only good for keeping a bunch of mounts
+> > referenced by a group of processes.  But my guess is, that the natural
+> > behavior for users is to see a persistent set of mounts.
+> > 
+> > If for example they mount something on a remote machine, then log out
+> > from the ssh session and later log back in, they would want to see
+> > their previous mount still there.
+> > 
+> > Miklos
+> 
+> Agreed on desired behavior, but not on chroot sufficing.  It actually
+> sounds like you want exactly what was outlined in the OLS paper.
+> 
+> Users still need to be in a different mounts namespace from the admin
+> user so long as we consider the deluser and backup problems
 
-Some more information about the whole driver/scenario would be helpful.
+I don't think it matters, because /share/$USER duplicates a part or
+the whole of the user's namespace.
 
-Markus
+So backup would have to be taught about /share anyway, and deluser
+operates on /home/$USER and not on /share/*, so there shouldn't be any
+problem.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+There's actually very little difference between rbind+chroot, and
+CLONE_NEWNS.  In a private namespace:
 
+  1) when no more processes reference the namespace, the tree will be
+    disbanded
 
+  2) the mount tree won't be accessible from outside the namespace
 
+Wanting a persistent namespace contradicts 1).
+
+Wanting a per-user (as opposed to per-session) namespace contradicts
+2).  The namespace _has_ to be accessible from outside, so that a new
+session can access/copy it.
+
+So both requirements point to the rbind/chroot solution.
+
+Miklos
