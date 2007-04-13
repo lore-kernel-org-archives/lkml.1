@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXDMXDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965180AbXDMXGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965287AbXDMXDz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXDMXDz
+	id S965180AbXDMXGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965673AbXDMXGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:03:55 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:58329 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965287AbXDMXDy (ORCPT
+	Fri, 13 Apr 2007 19:06:18 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49870 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965180AbXDMXGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:03:54 -0400
-Subject: Re: [RFD] swsusp problem: Drivers allocate much memory during
-	suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Jiri Slaby <jirislaby@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org
-In-Reply-To: <200704140057.35829.rjw@sisk.pl>
-References: <460B6E4B.3060004@gmail.com> <20070413224053.GT28264@elf.ucw.cz>
-	 <1176504306.7112.206.camel@nigel.suspend2.net>
-	 <200704140057.35829.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 14 Apr 2007 09:03:50 +1000
-Message-Id: <1176505430.7112.216.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Apr 2007 19:06:17 -0400
+Date: Sat, 14 Apr 2007 01:06:24 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.47
+Message-ID: <20070413230624.GD5907@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Security fixes since 2.6.16.46:
+- CVE-2007-1357: APPLETALK: Fix a remotely triggerable crash
 
-On Sat, 2007-04-14 at 00:57 +0200, Rafael J. Wysocki wrote:
-> > > > Well, I'm not sure.  First, we don't really know what the value of it should be
-> > > > and this alone is a good enough reason for making it tunable, IMHO.  Second, I
-> > > > think different systems may need different PAGES_FOR_IO and taking just the
-> > > > maximum (even if we learn how much that actually is) seems to be wasteful in
-> > > 
-> > > Well,  it is wasteful as in "we save slightly smaller image than we
-> > > could". That's okay with me.
-> > 
-> > No. If the driver can't allocate the memory, your call to device_suspend
-> > will fail. This isn't about image size but about success or failure to
-> > hibernate.
-> 
-> If we take PAGES_FOR_IO to be the maximum over all possible configurations
-> that can hibernate, the majority of systems will just create smaller images than
-> they could have created for smaller PAGES_FOR_IO, but all of them will be
-> able to hibernate. :-)
 
-You also use PAGES_FOR_IO in enough_free_mem. Say you set it to the 9000
-pages I mentioned before (35M). On a machine with 64 megabytes of
-memory, you'll never be able to suspend because you'll never satisfy
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
-free > nr_pages + PAGES_FOR_IO + meta
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-I'll freely admit that 64 megabytes is tiny nowadays, but it's not
-completely unknown. The point is really that you're effectively making
-swsusp unusable for machines with RAM < (PAGES_FOR_IO * (say) 3). But
-what do you set PAGES_FOR_IO to? There'll always be someone with
-$WHIZ_BANG_CONFIG who is pushing to have the value increased, and every
-increase knocks out more of your lowend users.
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
-Regards,
 
-Nigel
+Changes since 2.6.16.46:
 
+Adrian Bunk (2):
+      Linux 2.6.16.47-rc1
+      Linux 2.6.16.47
+
+Al Viro (1):
+      b44: src_desc->addr is little-endian
+
+Alan Cox (1):
+      ide-floppy: Fix unformatted media crash
+
+David Moore (1):
+      ieee1394: video1394: DMA fix
+
+David S. Miller (1):
+      [VIDEO] ffb: Fix two DAC handling bugs.
+
+Eric W. Biederman (1):
+      Fix reparenting to the same thread group. (take 2)
+
+Jean Delvare (1):
+      APPLETALK: Fix a remotely triggerable crash (CVE-2007-1357)
+
+Jeff Garzik (1):
+      [netdrvr] tulip, de2104x: fix typo: s/__sparc_/__sparc__/
+
+Patrick McHardy (1):
+      [IFB]: Fix crash on input device removal
+
+Sergei Shtylyov (1):
+      siimage: PIO1/2 taskfile transfer overclocking fix
+
+Stephen Hemminger (1):
+      tcp: fix cubic scaling error
+
+Thomas Gleixner (3):
+      prevent timespec/timeval to ktime_t overflow
+      fix MTIME_SEC_MAX on 32-bit
+      hrtimer: prevent overrun DoS in hrtimer_forward()
+
+
+ Makefile                       |    2 
+ drivers/ide/ide-floppy.c       |    3 -
+ drivers/ide/pci/siimage.c      |   59 +++++++++++------------
+ drivers/ieee1394/video1394.c   |    8 +++
+ drivers/net/b44.c              |    2 
+ drivers/net/ifb.c              |   35 +++++--------
+ drivers/net/tulip/de2104x.c    |    2 
+ drivers/net/tulip/tulip_core.c |    2 
+ drivers/video/ffb.c            |   84 +++++++++++++++++++++++----------
+ include/linux/ktime.h          |   11 +++-
+ include/linux/skbuff.h         |    5 +
+ include/net/pkt_cls.h          |    7 +-
+ kernel/exit.c                  |   29 +++++++----
+ kernel/hrtimer.c               |    6 ++
+ net/appletalk/ddp.c            |    7 +-
+ net/core/dev.c                 |    8 +--
+ net/core/skbuff.c              |    2 
+ net/ipv4/tcp_cubic.c           |    6 +-
+ net/sched/act_mirred.c         |    2 
+ 19 files changed, 172 insertions(+), 108 deletions(-)
