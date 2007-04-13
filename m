@@ -1,71 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965661AbXDMWx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965663AbXDMWy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965661AbXDMWx5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 18:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965662AbXDMWx5
+	id S965663AbXDMWy3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 18:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXDMWy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 18:53:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49054 "EHLO ogre.sisk.pl"
+	Fri, 13 Apr 2007 18:54:28 -0400
+Received: from holomorphy.com ([66.93.40.71]:51241 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965661AbXDMWx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 18:53:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFD] swsusp problem: Drivers allocate much memory during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
-Date: Sat, 14 Apr 2007 00:57:35 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Jiri Slaby <jirislaby@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org
-References: <460B6E4B.3060004@gmail.com> <20070413224053.GT28264@elf.ucw.cz> <1176504306.7112.206.camel@nigel.suspend2.net>
-In-Reply-To: <1176504306.7112.206.camel@nigel.suspend2.net>
+	id S965663AbXDMWy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 18:54:28 -0400
+Date: Fri, 13 Apr 2007 15:54:33 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Lunz <lunz@falooley.org>, Cameron Schaus <cam@schaus.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.20 OOM with 8Gb RAM
+Message-ID: <20070413225433.GV2986@holomorphy.com>
+References: <20070412173830.GA31323@schaus.ca> <20070412121553.c7fd3249.akpm@linux-foundation.org> <20070413223935.GA6783@metaxa.reflex> <20070413154653.21fdb914.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704140057.35829.rjw@sisk.pl>
+In-Reply-To: <20070413154653.21fdb914.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 14 April 2007 00:45, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Sat, 2007-04-14 at 00:40 +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > > > > Well, it looks like someone allocated about 6000 pages after we had freed
-> > > > > > > enough memory for suspending.
-> > > > > > 
-> > > > > > We have a tunable allowance in Suspend2 for this, because fglrx
-> > > > > > allocates a lot of pages in its suspend routine if DRI is enabled. I
-> > > > > > think some other drivers do too, but fglrx is the main one I know.
-> > > > > 
-> > > > > I wasn't aware of that, thanks for the information.
-> > > > > 
-> > > > > I think this means we'll probably need to add a tunable, similar to image_size,
-> > > > > that will allow the users to specify how much spare memory they want to reserve
-> > > > > for suspending (instead of the constant PAGES_FOR_IO).  IMO we can call it
-> > > > > 'spare_memory'.
-> > > > 
-> > > > Just increase PAGES_FOR_IO. This should not be tunable.
-> > > 
-> > > Well, I'm not sure.  First, we don't really know what the value of it should be
-> > > and this alone is a good enough reason for making it tunable, IMHO.  Second, I
-> > > think different systems may need different PAGES_FOR_IO and taking just the
-> > > maximum (even if we learn how much that actually is) seems to be wasteful in
-> > 
-> > Well,  it is wasteful as in "we save slightly smaller image than we
-> > could". That's okay with me.
-> 
-> No. If the driver can't allocate the memory, your call to device_suspend
-> will fail. This isn't about image size but about success or failure to
-> hibernate.
+On Fri, Apr 13, 2007 at 03:46:53PM -0700, Andrew Morton wrote:
+> It's just weird - it exploits internal knowledge of VFS behaviour, diddles
+> with pagecache within a fake disk strategy handler, etc.
+> Furthermore, because it pretends to be a block device, the VFS will not use
+> highmem pages when accessing the ramdisk.  So the 8GB machine will go splat
+> with only 800MB of ramdisk.
+> ramfs is much cleaner and does not have that limitation.
 
-If we take PAGES_FOR_IO to be the maximum over all possible configurations
-that can hibernate, the majority of systems will just create smaller images than
-they could have created for smaller PAGES_FOR_IO, but all of them will be
-able to hibernate. :-)
+After all this time, bdevs are still lowmem etc. Crying shame.
 
-Greetings,
-Rafael
+
+-- wli
