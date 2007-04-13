@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965650AbXDMWrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXDMWt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965650AbXDMWrn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 18:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965646AbXDMWrn
+	id S965654AbXDMWt1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 18:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXDMWt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 18:47:43 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:62464 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965650AbXDMWrm (ORCPT
+	Fri, 13 Apr 2007 18:49:27 -0400
+Received: from ccerelbas03.cce.hp.com ([161.114.21.106]:46856 "EHLO
+	ccerelbas03.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965654AbXDMWt0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 18:47:42 -0400
-Message-ID: <46200822.5060800@oracle.com>
-Date: Fri, 13 Apr 2007 18:45:54 -0400
-From: Chuck Lever <chuck.lever@oracle.com>
-Reply-To: chuck.lever@oracle.com
-Organization: Oracle Corporation
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 13 Apr 2007 18:49:26 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Mike Snitzer <snitzer@gmail.com>
-CC: Roland Dreier <rdreier@cisco.com>, NeilBrown <neilb@suse.de>,
-       Andrew Morton <akpm@osdl.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Merge plans for RPC/RDMA? (Was: Re: [NFS] [PATCH 000 of 14] knfsd:
- Preparation for IPv6 support in NFS server.)
-References: <170fa0d20704131347u4a28b5d1h1959227980449fbf@mail.gmail.com>
-In-Reply-To: <170fa0d20704131347u4a28b5d1h1959227980449fbf@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------060407010706070108020908"
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 1/1] cciss: include scsi/scsi.h unconditionally
+Date: Fri, 13 Apr 2007 23:48:28 +0100
+Message-ID: <558F4D473FD7FE419B019232BF2D37B40B247B@G3W0634.americas.hpqcorp.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] cciss: include scsi/scsi.h unconditionally
+Thread-Index: Acd+E34ZL4N1Fv4ZQf6Sw5lpGTquIwAA5KSm
+References: <20070413142312.GA24021@quandary.cca.cpqcorp.net> <20070413143413.6b9ac0e7.akpm@linux-foundation.org>
+From: "Cameron, Steve" <Steve.Cameron@hp.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       <jens.axboe@oracle.com>, "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       <james.bottomley@steeleye.com>
+X-OriginalArrivalTime: 13 Apr 2007 22:48:29.0232 (UTC) FILETIME=[DABD0300:01C77E1D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060407010706070108020908
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Mike Snitzer wrote:
-> On 2/2/07, Chuck Lever <chuck.lever@oracle.com> wrote:
->> Roland Dreier wrote:
->> >  > They are mostly from Chuck Level and make preparating for IPv6 
->> support
->> >  > in the NFS server.
->> >  > They are *not* for 2.6.20, but should be ok for .21.
->> >
->> > Out of curiousity, does this patch series reduce the delta between the
->> > NFS/RDMA tree and mainline Linux?  In other words does this bring
->> > NFS/RDMA closer to merging?
->>
->> Hi Roland-
->>
->> The client side support for an RPC/RDMA module is almost completely
->> integrated into mainline.  There is still a minimal set of patches
->> required to support alternate transports in loadable kernel modules
->> which Trond has indicated he will integrate when the RPC/RDMA transport
->> is ready to be integrated.
+Andrew Morton [mailto:akpm@linux-foundation.org] wrote:
+
+> On Fri, 13 Apr 2007 09:23:12 -0500
+> Stephen Cameron <steve.cameron@hp.com> wrote:
+>
+> > Make cciss unconditionally include scsi/scsi.h
 > 
-> Hi Chuck,
-> 
-> I must be missing something because I don't see _any_ trace of the
-> core RPC over RDMA support (xprtrdma et al), your RPC Transport
-> Switch, or any of the other supporting changes in mainline.  Could
-> you, or others, please clarify the plan for merging RPC/RDMA?
+> For what reason?
 
-The RPC transport switch patches are almost fully integrated into 
-mainline.  The xprtrdma piece is what is not there yet.
+Because the use of:
 
->> At this time I'm not aware of a plan to integrate server-side support
->> for NFS/RDMA.  Perhaps the NetApp RDMA developers could respond.
-> 
-> Do you mean the NFS/RDMA server code from Tom Tucker of Open Grid
-> Computing?  Why wouldn't this code be included?
-
-Tom's code hasn't been reviewed by the community.
-
---------------060407010706070108020908
-Content-Type: text/x-vcard; charset=utf-8;
- name="chuck.lever.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="chuck.lever.vcf"
-
-begin:vcard
-fn:Chuck Lever
-n:Lever;Chuck
-org:Oracle Corporation;Corporate Architecture: Linux Projects Group
-adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
-email;internet:chuck dot lever at nospam oracle dot com
-title:Principal Member of Staff
-tel;work:+1 248 614 5091
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
+        case SCSI_IOCTL_GET_IDLUN:
+        case SCSI_IOCTL_GET_BUS_NUMBER:
 
 
---------------060407010706070108020908--
+At first, I thought the solution should be make
+cciss dependent on CONFIG_SCSI.  Then James Bottomley
+convinced me otherwise, and my first instinct was just
+to comment out those cases above, since they fall through
+to a default case anyway.  Then Christoph Hellwig commented
+that with CONFIG_SCSI, we picked up scsi/scsi.h which made
+it compile, but only accidentally.  So then I thought to 
+include scsi/scsi.h unconditionally.  If it would be preferable
+to just comment out those cases and let the default case
+handle it, that's fine be me too.
+
+-- steve
