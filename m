@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030843AbXDMVl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030847AbXDMVoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030843AbXDMVl0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 17:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030845AbXDMVl0
+	id S1030847AbXDMVoU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030848AbXDMVoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 17:41:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59413 "EHLO mx1.redhat.com"
+	Fri, 13 Apr 2007 17:44:19 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52489 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030843AbXDMVlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 17:41:25 -0400
-Message-ID: <461FF8E5.7010202@redhat.com>
-Date: Fri, 13 Apr 2007 17:40:53 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1030847AbXDMVoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 17:44:17 -0400
+Date: Fri, 13 Apr 2007 16:44:15 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, linuxram@us.ibm.com, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/8] unprivileged mount syscall
+Message-ID: <20070413214415.GA28629@sergelap.austin.ibm.com>
+References: <20070409143802.GB4891@sergelap.austin.ibm.com> <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu> <20070409170743.GF24415@sergelap.austin.ibm.com> <E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu> <1176194285.2903.67.camel@ram.us.ibm.com> <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu> <1176316116.2811.39.camel@ram.us.ibm.com> <E1HcKQd-0001yO-00@dorka.pomaz.szeredi.hu> <20070413132832.GA1483@sergelap.austin.ibm.com> <E1HcMOq-0002As-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org
-Subject: Re: [RFD] swsusp problem: Drivers allocate much memory during suspend
-References: <460B6E4B.3060004@gmail.com> <200704131400.12021.rjw@sisk.pl> <1176466896.7112.159.camel@nigel.suspend2.net> <200704132241.52725.rjw@sisk.pl>
-In-Reply-To: <200704132241.52725.rjw@sisk.pl>
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HcMOq-0002As-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > Thinking a bit more about this, I'm quite sure most users wouldn't
+> > > even want private namespaces.  It would be enough to
+> > > 
+> > >   chroot /share/$USER
+> > > 
+> > > and be done with it.
+> > > 
+> > > Private namespaces are only good for keeping a bunch of mounts
+> > > referenced by a group of processes.  But my guess is, that the natural
+> > > behavior for users is to see a persistent set of mounts.
+> > > 
+> > > If for example they mount something on a remote machine, then log out
+> > > from the ssh session and later log back in, they would want to see
+> > > their previous mount still there.
+> > > 
+> > > Miklos
+> > 
+> > Agreed on desired behavior, but not on chroot sufficing.  It actually
+> > sounds like you want exactly what was outlined in the OLS paper.
+> > 
+> > Users still need to be in a different mounts namespace from the admin
+> > user so long as we consider the deluser and backup problems
 > 
-> IMO to really fix the problem, we should let the drivers that need much memory
-> for suspending allocate it _before_ the memory shrinker is called.  For this
-> purpose we can use notifiers that will be called before we start the shrinking
-> of memory.  Namely, if a driver needs to allocate substantial amount of memory
-> for suspending, it can register a notifier that will be called before we try to
-> shrink memory.  Then, the memory needed by the driver may be allocated in
-> this notifier (of course, in that case it will also have to be called if the
-> shrinking of memory fails, so that the memory allocated by the driver for
-> suspending can be freed) and used in the driver's .suspend() routine.
+> I don't think it matters, because /share/$USER duplicates a part or
+> the whole of the user's namespace.
 > 
+> So backup would have to be taught about /share anyway, and deluser
+> operates on /home/$USER and not on /share/*, so there shouldn't be any
+> problem.
 
-Can't you just put a "prepare to suspend" function pointer in the
-bus_type and device_driver structs?
+In what I was thinking of, /share/$USER is bind mounted to
+~$USER/share, so it would have to be done in a private namespace in
+order for deluser to not be tricked.
 
+> There's actually very little difference between rbind+chroot, and
+> CLONE_NEWNS.  In a private namespace:
+> 
+>   1) when no more processes reference the namespace, the tree will be
+>     disbanded
+> 
+>   2) the mount tree won't be accessible from outside the namespace
+
+But it *can* be, if properly set up.  That's part of the point of the
+example in the OLS paper.  When a user logs in, sshd clones a new
+namespace, then bind-mounts /share/$USER into ~$USER/share.  So assuming
+that /share/$USER was --make-shared'd, it and ~$USER are now in the
+same peer group, and any changes made by the user under ~$USER will
+be reflected back into /share/$USER.
+
+> Wanting a persistent namespace contradicts 1).
+
+Not necessarily, see above.
+
+> Wanting a per-user (as opposed to per-session) namespace contradicts
+> 2).  The namespace _has_ to be accessible from outside, so that a new
+> session can access/copy it.
+
+Again, I *think* you are wrong that private namespace contradicts this
+requirement.
+
+> So both requirements point to the rbind/chroot solution.
+
+It all points to a combination of the two  :-)
+
+-serge
