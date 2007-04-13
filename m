@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbXDMOXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753377AbXDMOYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754020AbXDMOXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 10:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbXDMOXq
+	id S1753377AbXDMOYh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 10:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbXDMOYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 10:23:46 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42169 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbXDMOXp (ORCPT
+	Fri, 13 Apr 2007 10:24:37 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:2759 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbXDMOYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 10:23:45 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, containers@lists.osdl.org,
-       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, linuxram@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-References: <20070412164541.580374744@szeredi.hu>
-	<20070412164620.588752236@szeredi.hu>
-	<20070412203208.GG27772@sergelap.austin.ibm.com>
-	<m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-	<E1HcFx1-0001Zr-00@dorka.pomaz.szeredi.hu>
-	<20070413134732.GB1483@sergelap.austin.ibm.com>
-Date: Fri, 13 Apr 2007 08:22:10 -0600
-In-Reply-To: <20070413134732.GB1483@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Fri, 13 Apr 2007 08:47:33 -0500")
-Message-ID: <m17isgpd65.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Apr 2007 10:24:35 -0400
+Date: Fri, 13 Apr 2007 16:27:01 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Markus Rechberger" <markus.rechberger@amd.com>
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "USB development list" <linux-usb-devel@lists.sourceforge.net>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>
+Subject: Re: How should an exit routine wait for release() callbacks?
+Message-ID: <20070413162701.4e7342a9@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <461F9076.4070209@amd.com>
+References: <Pine.LNX.4.44L0.0704121706040.2472-100000@iolanthe.rowland.org>
+	<20070413110313.352330ce@gondolin.boeblingen.de.ibm.com>
+	<461F6C8C.1020901@amd.com>
+	<20070413152453.571e887a@gondolin.boeblingen.de.ibm.com>
+	<461F9076.4070209@amd.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+On Fri, 13 Apr 2007 16:15:18 +0200,
+"Markus Rechberger" <markus.rechberger@amd.com> wrote:
 
-> Quoting Miklos Szeredi (miklos@szeredi.hu):
->> > Given the existence of shared subtrees allowing/denying this at the mount
->> > namespace level is silly and wrong.
->> > 
->> > If we need more than just the filesystem permission checks can we
->> > make it a mount flag settable with mount and remount that allows
->> > non-privileged users the ability to create mount points under it
->> > in directories they have full read/write access to.
->> 
->> OK, that makes sense.
->> 
->> > I don't like the use of clone flags for this purpose but in this
->> > case the shared subtress are a much more fundamental reasons for not
->> > doing this at the namespace level.
->> 
->> I'll drop the clone flag, and add a mount flag instead.
->> 
->> Thanks,
->> Miklos
->
-> Makes sense, so then on login pam has to spawn a new user namespace and
-> construct a root fs with no shared subtrees and with the
-> user-mounts-allowed flag specified?
+> most dvb usb drivers call the device node unregistration when a device 
+> gets unplugged (when
+> At this time the filehandle can still be open, the patch on that site 
+> sets a flag that disallows
+> any further access to the device node (in the DVB framework there are 4 
+> of such nodes)
+> This can happen any time, so while someone is reading or accessing the 
+> device some structures
+> might have gone away already and this could cause an oops.
+> The problem of the DVB framework is file operation related, the last 
+> user calls fops_put on the existing
+> structure and sets the pointer to NULL before it wakes up the other 
+> function which frees the file operation
+> structure.
 
-I was expecting the usage in the normal case to be the Al Viro style
-with shared subtrees setup for each user, with the shared subtree marked
-with user-mounts-allowed.  Then on login pam would unshare the namespace
-and restrict the user to their specific portion of the shared subtree.
+OK, thanks for the explanation.
 
-If you don't use multiple mount namespaces all of the users have to
-agree on what they want the non-privileged part of the namespace
-to look like.
+> In Alan's case isn't there any users flag available that shows that the 
+> structure is still beeing accessed?
+> If that would be the case he could set a flag when he enters my_exit 
+> which would disable access to all other
+> functions by returning an error value at the beginning of the other 
+> functions, the only way out would be
+> to call my_release for existing users and wake up my_exit when the last 
+> reference to that structure is gone.
+> 
+> Some more information about the whole driver/scenario would be helpful.
 
-If you don't use shared subtrees you have to deal with all of the
-joys of implementing enter, or else multiple logins from the same user
-have problems.
+In this case the race is not a user space vs. kernel object one (where
+you can track users). Basically the problem is as follows:
 
-Eric
+- A module registers a device. The device's release function is defined
+in the module.
+- Since the device can now be looked up in the device tree, someone can
+obtain a reference to it (e. g. by walking the tree).
+- The module is unloaded. In its exit function, it deregisters the
+device. The module has now given up any reference to the device it
+held, however the someone from above still holds a reference. While no
+new reference to the device can be obtained, the device still exists.
+- After the module is unloaded, the device's release function goes away.
+- The last reference to the device is given up. The driver core now
+tries to call the device's release function, which was in the deleted
+module. Oops.
+
+The completion approach unfortunately still leaves a race window, as
+Alan explained in his original mail.
