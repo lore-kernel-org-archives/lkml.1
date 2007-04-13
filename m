@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbXDMSIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbXDMSUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbXDMSIb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 14:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbXDMSIb
+	id S1754119AbXDMSUB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 14:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDMSUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 14:08:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50217 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754120AbXDMSIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 14:08:30 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/eGgx6YDveSsfkgXiDQ7nWdJcZ+S1on/IHPDX0Al
-	DZQKNWn/DkQ1a1
-Date: Fri, 13 Apr 2007 20:08:28 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] dma_declare_coherent_memory wrong allocation
-Message-ID: <Pine.LNX.4.60.0704132000030.5919@poirot.grange>
+	Fri, 13 Apr 2007 14:20:01 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:45727 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754119AbXDMSUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 14:20:00 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Date: Fri, 13 Apr 2007 12:18:43 -0600
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
+       Rudolf Marek <r.marek@assembler.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+References: <45D5EA88.7090300@redhat.com> <20070302114023.GD2163@elf.ucw.cz> <20070302150313.198b6053.khali@linux-fr.org>
+In-Reply-To: <20070302150313.198b6053.khali@linux-fr.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704131218.44045.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Friday 02 March 2007 07:03, Jean Delvare wrote:
+> ... The primary issue is the concurrent access
+> to resources, which cause lots of trouble which are hard to investigate.
+> If ACPI reserves the ports, then the SMBus or hardware monitoring
+> drivers (or any other conflicting driver) will cleanly fail to load,
+> which would be a move in the right direction. ...
+> 
+> So, can ACPI actually reserve the ports it accesses?
 
-Either I've finally gone blind on this Friday 13th or... Looks like this 
-almost 3 year old function has a bug. Patch below compile-tested... in a 
-way.
+Sorry to join this discussion so late.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+ACPI tells us the resources used by devices.  Today, we don't reserve
+ACPI resources until a driver claims a device.  PCI does some sort of
+reservation up front, before the driver claims devices.  Conceptually,
+I think ACPI should do the same thing, and I don't think it's that
+hard to do.
 
-dma_declare_coherent_memory() allocates a bitmap 1 bit per page, it 
-calculates the bitmap size based on size of long, but allocates bytes...
+But breaking things like lmsensors would make the transition painful.
 
-Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
-
-diff --git a/arch/i386/kernel/pci-dma.c b/arch/i386/kernel/pci-dma.c
-index 3ebcea0..3d55226 100644
---- a/arch/i386/kernel/pci-dma.c
-+++ b/arch/i386/kernel/pci-dma.c
-@@ -77,7 +77,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
- {
- 	void __iomem *mem_base = NULL;
- 	int pages = size >> PAGE_SHIFT;
--	int bitmap_size = (pages + 31)/32;
-+	int bitmap_size = DIV_ROUND_UP(pages, 8);
- 
- 	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
- 		goto out;
+Bjorn
