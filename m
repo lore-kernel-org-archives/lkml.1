@@ -1,184 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbXDMNcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbXDMNgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbXDMNcS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 09:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXDMNcS
+	id S1753981AbXDMNgL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 09:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXDMNgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 09:32:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39671 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753982AbXDMNcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 09:32:17 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070413124303.GD966@wotan.suse.de> 
-References: <20070413124303.GD966@wotan.suse.de>  <20070413100416.GC31487@wotan.suse.de> <25821.1176466182@redhat.com> 
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] generic rwsems 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 13 Apr 2007 14:31:52 +0100
-Message-ID: <30644.1176471112@redhat.com>
+	Fri, 13 Apr 2007 09:36:11 -0400
+Received: from vscan02.westnet.com.au ([203.10.1.132]:51054 "EHLO
+	vscan02.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbXDMNgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 09:36:10 -0400
+X-Greylist: delayed 2023 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Apr 2007 09:36:10 EDT
+Message-ID: <461F7F5F.1040206@snapgear.com>
+Date: Fri, 13 Apr 2007 23:02:23 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 68328serial & pm_register
+References: <20070413073720.GA14437@lst.de>
+In-Reply-To: <20070413073720.GA14437@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> wrote:
 
-> The other way happens to be better for everyone else, which is why I
-> think your suggestion to instead move everyone to the spinlock version
-> was weird.
+Hi Christoph,
 
-No, you misunderstand me.  My preferred solution is to leave it up to the arch
-and not to make it generic, though I'm not averse to providing some prepackaged
-solutions for an arch to pick from if it wants to.
+Christoph Hellwig wrote:
+> 68328serial is the last driver to call pm_register and thus using and
+> keeping alive the really old PM scheme.  Any chance to convert it over
+> to platform devices (which would also clean up a lot of the ifdef
+> mess in the driver), or simply rip out that rudimentary PM support?
 
-> Finally: as I said, even for those 2 architectures, this may not be so
-> bad because it is using a different spinlock for the fastpath as it is
-> for the slowpath. So your uncontested, cache cold case will get a little
-> slower, but the contested case could improve a lot (eg. I saw an order of
-> magnitude improvement).
+I don't have any hardware that uses this, I can only compile test it.
+The occassional patch I submit for it is just to keep it compiling.
+But I am happy to take out what PM support it has.
 
-Agreed.  I can see why the spinlock implementation is bad on SMP.  By all means
-change those cases, and reduce the spinlock implementation to an interrupt
-disablement only version that may only be used on UP only.
 
-> 32-bit machines might indeed overflow, but if it hasn't been a problem
-> for i386 or (even 64-bit) powerpc yet, is it a real worry? 
+> On a less urgent basis, is there any chance to convert the driver
+> to use serial_core, which it doesn't despite living in drivers/serial?
 
-It has happened, I believe.  People have tried having >32766 threads on a
-32-bit box.  Mad it may be, but...
+I'd have to leave that to someone with hardware.
 
-> This is what spinlocks and mutexes do, and they're much more common than
-> rwsems. I'm just trying to make it consistent, and you can muck around
-> with it all you want after that. It is actually very easy to inline
-> things now, unlike before my patch.
+Regards
+Greg
 
-My original stuff was very easy to inline until Ingo got hold of it.
 
-> > Think about it.  This algorithm is only optimal where XADD is available.  If
-> > you don't have XADD, but you do have LL/SC or CMPXCHG, you can do better.
-> 
-> You keep saying this too, and I have thought about it but I couldn't think
-> of a much better way. I'm not saying you're wrong, but why don't you just
-> tell me what that better way is?
 
-Look at how the counter works in the spinlock case.  With the addition of an
-extra flag in the counter to indicate there's stuff waiting on the queue, you
-can manipulate the counter if it appears safe to do so, otherwise you have to
-fall back to the slow path and take a spin lock.
-
-Break the counter down like this:
-
-	0x00000000	- not locked; queue empty
-	0x40000000	- locked by writer; queue empty
-	0xc0000000	- locket by writer; queue occupied
-	0x0nnnnnnn	- n readers; queue empty
-	0x8nnnnnnn	- n readers; queue occupied
-
-Now here's a rough guide as to how the main operations would work:
-
- (*) down_read of unlocked
-
-	cmpxchg(0 -> 1) -> 0 [okay - you've got the lock]
-
- (*) down_read of readlocked.
-
-	cmpxchg(0 -> 1) -> n [failed to get the lock]
-	do
-	  n = cmpxchg(old_n -> old_n+1)
-        until n == old_n
-
- (*) down_read of writelocked or contented readlocked.
-
-	cmpxchg(0 -> 1) -> 0x80000000|n  [lock contended]
-	goto slowpath
-	  spinlock
-	  try to get lock again
-	  if still contended
-	    mark counter contended
-	    add to queue
-            spinunlock
-	    sleep
-          spinunlock
-
- (*) down_write of unlocked
-
-	cmpxchg(0 -> 0x40000000) -> 0 [okay - you've got the lock]
-
- (*) down_write of locked, contended or otherwise
-
-	cmpxchg(0 -> 0x40000000) -> nz [failed]
-	goto slowpath
-	  spinlock
-	  try to get lock again
-	  if still unavailable
-	    mark counter contended
-	    add to queue
-            spinunlock
-	    sleep
-	  else
-            spinunlock
-
- (*) up_read
-
-        x = cmpxchg(1 -> 0)
-        if x == 0
-	  done
-        else
-           do
-	     x = cmpxchg(old_x -> old_x-1)
-	   until x == old_x
-           if old_x == 0x80000000
-	     wake_up_writer
-
- (*) up_write
-
-        x = cmpxchg(0x80000000 -> 0)
-        if x == 0
-	  done
-        else
-	  wake_up_readers
-
-You can actually do better with LL/SC here because for the initial attempt with
-CMPXCHG in each case you have to guess what the numbers will be.  Furthermore,
-you might actually be able to do an "atomic increment or set contention flag"
-operation.
-
-Note that the contention flag may only be set or cleared in the slow path
-whilst you are holding the spinlock.
-
-Doing down_read and up_read with CMPXCHG is a pain.  XADD or LL/SC would be
-better, and LOCK INC/ADD/DEC/SUB won't work.  You can't use XADD in down_*() as
-you may not change the bottom part of the counter if you're going to end up
-queuing.
-
-Actually, looking at it, it might be better to have the counter start off at
-0x80000000 for "unlocked, no contention" and clear the no-contention flag when
-you queue something.  That way you can check for the counter becoming 0 in the
-up_*() functions as a trigger to go and invoke the slowpath.  Then you could
-use LOCK DEC/SUB on i386 rather than XADD as you only need to check the Z flag.
-
-Note there is a slight window whereby a reader can jump a writer that's
-transiting between the fastpath part of down_write() and the slowpath part if
-there are outstanding readers on the rwsem but nothing yet queued.
-
-OTOH, there's a similar window in the current XADD-based rwsems as the spinlock
-doesn't implement FIFO semantics, so the first to modify the count and fail to
-the slowpath may not be the first to get themselves on the queue.
-
-> > similarly if you are using a UP-compiled kernel.
-> 
-> Then your UP-compiled kernel's atomic ops are suboptimal, not the rwsem
-> implementation.
-
-That's usually a function of the CPU designer.
-
-David
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
