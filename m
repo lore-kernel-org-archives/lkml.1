@@ -1,37 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbXDMPnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbXDMPpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbXDMPnf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 11:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXDMPnf
+	id S1754054AbXDMPpn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 11:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbXDMPpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 11:43:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45837 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754055AbXDMPne (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 11:43:34 -0400
-Date: Fri, 13 Apr 2007 17:43:31 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Christopher S. Aker" <caker@theshore.net>,
-       "Bill Rugolsky Jr." <brugolsky@telemetry-investments.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Feature Request?] Inline compression of process core dumps
-Message-ID: <20070413154331.GB23562@one.firstfloor.org>
-References: <461E55C6.1030905@theshore.net> <20070412172845.58bfeff5@the-village.bc.nu> <20070412164251.GC11736@ti88.telemetry-investments.com> <p73ps697agf.fsf@bingen.suse.de> <461EE95A.3090600@theshore.net> <20070412193838.ea98238b.randy.dunlap@oracle.com> <461EF1A1.3070102@theshore.net> <20070413115526.69e61016@the-village.bc.nu> <p73d528799k.fsf@bingen.suse.de> <461F9ABE.6060709@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Apr 2007 11:45:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45324 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754054AbXDMPpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 11:45:42 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Badari Pulavarty <pbadari@gmail.com>
+Subject: Re: [PATCH] cache_k8_northbridges() overflows beyond allocation (Was: 2.6.21-rc5-mm4 (SLUB))
+Date: Fri, 13 Apr 2007 17:45:37 +0200
+User-Agent: KMail/1.9.6
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <20070402224745.71a25af7.akpm@linux-foundation.org> <Pine.LNX.4.64.0704041103060.26866@schroedinger.engr.sgi.com> <1176477222.8559.4.camel@dyn9047017100.beaverton.ibm.com>
+In-Reply-To: <1176477222.8559.4.camel@dyn9047017100.beaverton.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <461F9ABE.6060709@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200704131745.37795.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> so either the comment just above lock_kernel() should be removed, or
-> it's correct and lock_kernel()/unlock_kernel() should stay.
 
-Ah somehow missed the comment. Ok so it's better to keep it, although
-there would be probably better ways to protect the pattern.
+> 
+> cache_k8_northbridges() is storing config values to incorrect locations
+> (in flush_words) and also its overflowing beyond the allocation, causing
+> slab verification failures.
 
--Andi
+Oops. Thanks for tracking that down, Badari.
+
+Andrew, clear .21 candidate.
+
+-ANdi
+
+> 
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> ---
+>  arch/x86_64/kernel/k8.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.21-rc6/arch/x86_64/kernel/k8.c
+> ===================================================================
+> --- linux-2.6.21-rc6.orig/arch/x86_64/kernel/k8.c	2007-04-05 19:36:56.000000000 -0700
+> +++ linux-2.6.21-rc6/arch/x86_64/kernel/k8.c	2007-04-13 07:51:57.000000000 -0700
+> @@ -61,8 +61,8 @@ int cache_k8_northbridges(void)
+>  	dev = NULL;
+>  	i = 0;
+>  	while ((dev = next_k8_northbridge(dev)) != NULL) {
+> -		k8_northbridges[i++] = dev;
+> -		pci_read_config_dword(dev, 0x9c, &flush_words[i]);
+> +		k8_northbridges[i] = dev;
+> +		pci_read_config_dword(dev, 0x9c, &flush_words[i++]);
+>  	}
+>  	k8_northbridges[i] = NULL;
+>  	return 0;
+> 
+> 
+> 
+
+
