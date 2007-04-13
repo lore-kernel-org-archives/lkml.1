@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030889AbXDMX0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161006AbXDMX0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030889AbXDMX0E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 19:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1160999AbXDMX0D
+	id S1161006AbXDMX0M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 19:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161020AbXDMX0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 19:26:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43687 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030889AbXDMX0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 19:26:01 -0400
-Date: Sat, 14 Apr 2007 01:25:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070413232550.GB15894@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <46200D47.70108@googlemail.com>
+	Fri, 13 Apr 2007 19:26:12 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:34760 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161006AbXDMX0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 19:26:10 -0400
+Date: Fri, 13 Apr 2007 16:28:20 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Andi Kleen <ak@suse.de>
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
+       john stultz <johnstul@us.ibm.com>, shai@scalex86.org,
+       benzi@scalex86.org, discuss@x86-64.org
+Subject: [patch 2.6.21-rc6] failsafe mechanism to HPET clock calibration
+Message-ID: <20070413232820.GA9496@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46200D47.70108@googlemail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.4.2.1i
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Provide a failsafe mechanism to avoid kernel spinning for ever at read_hpet_tsc
+during early kernel bootup.
 
-* Gabriel C <nix.or.die@googlemail.com> wrote:
+This failsafe mechanism was introduced in 21-rc,
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=2f7a2a79c3ebb44f8b1b7d9b4fd3a650eb69e544
 
-> > as usual, any sort of feedback, bugreports, fixes and suggestions 
-> > are more than welcome,
-> 
-> Compile error here.
+But looks like the hpet split from time.c lost the commit.
 
-ah, !CONFIG_SMP. Does the patch below do the trick for you? (I've also 
-updated the full patch at the cfs-scheduler URL)
+This patch reintroduces the failsafe mechanism
 
-	Ingo
+Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Signed-off-by: Shai Fultheim <shai@scalex86.org>
+Cc: Jack Steiner <steiner@sgi.com>
+Cc: john stultz <johnstul@us.ibm.com>
+Cc: Andi Kleen <ak@suse.de>
 
------------------------>
-From: Ingo Molnar <mingo@elte.hu>
-Subject: [cfs] fix !CONFIG_SMP build
-
-fix the !CONFIG_SMP build error reported by Gabriel C
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Index: linux/kernel/sched.c
+Index: linux-2.6.21-rc5/arch/x86_64/kernel/hpet.c
 ===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -257,16 +257,6 @@ static inline unsigned long long __rq_cl
- 	return rq->rq_clock;
- }
+--- linux-2.6.21-rc5.orig/arch/x86_64/kernel/hpet.c	2007-04-11 16:03:05.000000000 -0700
++++ linux-2.6.21-rc5/arch/x86_64/kernel/hpet.c	2007-04-11 18:49:36.000000000 -0700
+@@ -191,6 +191,7 @@ int hpet_reenable(void)
  
--static inline unsigned long long rq_clock(struct rq *rq)
--{
--	int this_cpu = smp_processor_id();
--
--	if (this_cpu == rq->cpu)
--		return __rq_clock(rq);
--
--	return rq->rq_clock;
--}
--
- static inline int cpu_of(struct rq *rq)
- {
- #ifdef CONFIG_SMP
-@@ -276,6 +266,16 @@ static inline int cpu_of(struct rq *rq)
- #endif
- }
+ #define TICK_COUNT 100000000
+ #define TICK_MIN   5000
++#define MAX_TRIES  5
  
-+static inline unsigned long long rq_clock(struct rq *rq)
-+{
-+	int this_cpu = smp_processor_id();
-+
-+	if (this_cpu == cpu_of(rq))
-+		return __rq_clock(rq);
-+
-+	return rq->rq_clock;
-+}
-+
  /*
-  * The domain tree (rq->sd) is protected by RCU's quiescent state transition.
-  * See detach_destroy_domains: synchronize_sched for details.
+  * Some platforms take periodic SMI interrupts with 5ms duration. Make sure none
+@@ -198,13 +199,15 @@ int hpet_reenable(void)
+  */
+ static void __init read_hpet_tsc(int *hpet, int *tsc)
+ {
+-	int tsc1, tsc2, hpet1;
++	int tsc1, tsc2, hpet1, i;
+ 
+-	do {
++	for (i = 0; i < MAX_TRIES; i++) {
+ 		tsc1 = get_cycles_sync();
+ 		hpet1 = hpet_readl(HPET_COUNTER);
+ 		tsc2 = get_cycles_sync();
+-	} while (tsc2 - tsc1 > TICK_MIN);
++		if (tsc2 - tsc1 > TICK_MIN)
++			break;
++	}
+ 	*hpet = hpet1;
+ 	*tsc = tsc2;
+ }
