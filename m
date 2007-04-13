@@ -1,83 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXDMINq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbXDMIPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbXDMINq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 04:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbXDMINq
+	id S1752404AbXDMIPg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 04:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXDMIPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 04:13:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53411 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752795AbXDMINo (ORCPT
+	Fri, 13 Apr 2007 04:15:36 -0400
+Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:4387 "EHLO
+	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbXDMIPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 04:13:44 -0400
-Date: Fri, 13 Apr 2007 09:13:38 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
-Message-ID: <20070413081338.GA27675@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	William Lee Irwin III <wli@holomorphy.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org
-References: <20070412182213.a18cc4a7.akpm@linux-foundation.org> <461EE005.6070605@yahoo.com.au> <20070412185723.5a5f0443.akpm@linux-foundation.org> <461EE890.2040601@yahoo.com.au> <20070412193255.62a0b8ed.akpm@linux-foundation.org> <461EEFEC.2010205@yahoo.com.au> <20070413065357.GP2986@holomorphy.com> <461F2BCB.2020200@yahoo.com.au> <20070413075142.GA23822@infradead.org> <461F3961.6030300@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <461F3961.6030300@yahoo.com.au>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 13 Apr 2007 04:15:33 -0400
+X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Apr 2007 04:15:33 EDT
+Message-ID: <7088.213.222.28.155.1176451483.squirrel@webmail.xs4all.nl>
+In-Reply-To: <20070412090809.917795000@suse.de>
+References: <20070412090809.917795000@suse.de>
+Date: Fri, 13 Apr 2007 10:04:43 +0200 (CEST)
+Subject: Re: [AppArmor 00/41] AppArmor security module overview
+From: "Rob Meijer" <capibara@xs4all.nl>
+To: jjohansen@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org
+Reply-To: capibara@xs4all.nl
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 06:03:45PM +1000, Nick Piggin wrote:
-> Yeah good point ;) I just meant the wider "we".
-> 
-> With all the problems kprobes has, something like poking deep into
-> kernel internals seems like a good thing to use it for instead of
-> hardcoding that stuff into the kernel. If not, then why did we even
-> merge it in the first place?
+I've posted on the subject before, and as noone seemed to truely relate
+to the concept I concequently dropped my effords, but as you seem to be half
+a step in the general right direction, this may be a good time to bring
+it up again.
 
-It's very nice to poke deep into the kernel for development purposes.
-For example for the spu scheduler work I'm doing currently I have
-a module using kprobes (note the systemtap crap because it's big, bloated,
-in and odd language, and does a lot of really wrong things in it's runtime).
+If instead of 'least privilege' and fat profiles, you would opt for 'least
+authority' and (potentialy) thin profiles, this would make the whole also
+usable for systems initialy designed with security in mind.
+To accomplish such a thing I proposed that the non 'at' family of calls
+for filesystems should be considdered to be priviledged operations (within
+a least authority context), and the 'at' family of operations should have
+invocations with uptree path tokens also be considdered priviledged
+(within a least authority context). The non uptree invocations of the 'at'
+family
+should be considdered unpriviledged, and should thus always be allowed
+seperately from any profile.
 
-This module allows me to put probes into various places in the scheduler
-and writes them into a ringbuffer with timestampts allowing me to
-trace what's going on there.  This is really neat.  Unfortunately it
-breaks as soon as I do some major reshuffling because then the points
-it hooks up to are not there anymore.  That's perfectly fine for my
-setup, because _I_ know what I have to change when it breaks, and can
-easily fix that.  Now imagine a similar module to trace pagecache activity
-used by a third-party monitoring tool.  We now get a major change to
-the pagecache (say to make it lockless), and the probes just break.  In
-the est case it just doesn't work anymore, in the worst case it crashes
-the kernel.  Now if the app vendor at least gave me their source I
-could at least fix it to not crash, but there's a fair enough chance
-they poke into bits that simply aren't there anymore.
+With this distinction implemented, you could than potentialy use thin
+profiles and dynamicly exchange authority by passing along directory
+file handles when needed.
 
-Now if we have a proper user interface with real code behing it we can
-have a defined interface.  If the interface is bad enough (or just too
-lowlevel) we might have the last problem of stastistic that were there
-once to go away aswell, but we can deal with that gracefully by declaring
-parts of the stats volatile and make sure people don't mess with them.
+Where with the 'least priviledge' approach the profile would need to grant
+the each priviledge the application might need, but when you would be able
+to use both file handles, socket handles and directory handles as tokens
+of authorization that can be comunicated seperately and freely, without
+being stopped from being used by least priviledge profiles, the profiles
+needed will start out much thiner, and will dynamicly expand to just a
+limited subset of the fat least priviledge profile.
 
-To summarize, I really love kprobes to ease my debugging work, but using
-it for any kind of production code is a total nightmare.
+I believe that being able to be able to distinguish between the
+the least authority (no uptree) usage of open file/dir/socket handles and
+other operations is essential. If a profile blocks a program from using
+these open file/dir/socket handles in a way not violating least authority
+(that is no uptree tokens in at family calls), this would be a major
+design flaw.
 
-> We could distribute some systemtap scripts, and even distribute some
-> basic useful ones like this sort of page info in the kernel source
-> tree.
+Rob
 
-We could not really distribute systemtap scripts with the kernel.
-systemtap is a bloody complicated piece of shit outside the kernel
-tree that breaks all the time we change kernel internals.  We could
-provide useful kprobes modules, a proper tracing system (ltt-ng-lite)
-and surrounding infrastucture.
+
+On Thu, April 12, 2007 11:08, jjohansen@suse.de wrote:
+
+> AppArmor's Overall Design
+> =========================
+>
+> AppArmor protects systems from vulnerable software by confining
+> processes, giving them "least privilege" access to the system's
+> resources: with least privilege, processes are allowed exactly what they
+> need, nothing more, and nothing less. Systems are thus protected from
+> bugs in applications that would lead to privilege escalation, such as
+> remote system access because of a buffer overflow in a web server, etc.
+>
+> AppArmor does this by defining application profiles which list allowed
+> accesses, and assigning those profiles to processes. AppArmor does *not*
+> require the user to confine all processes on the system.  Rather, you
+> need to provide AppArmor profiles for every process that is potentially
+> subject to manipulation by the attacker. For instance, to defend against
+> network attack, confine all process that access the network.
+>
+> The corollary to this is that attacks against AppArmor that start with
+> "assume some unconfined process does ..." are outside the AppArmor
+> threat model. Any process that might do something malicious to an
+> AppArmor system should be confined by an AppArmor profile.
+>
+> The kernel manages many different kinds of resources.  AppArmor
+> currently controls access to two key resources among them: files, and
+> POSIX Capabilities.  (Additional protection for things like rlimits,
+> interprocess communication, and network access are being worked on, and
+> are expected to become available in a future version.)
+>
+>
+> File Access Control
+> -------------------
+>
+> Application profiles control file access by pathname: each profile
+> contains a list of fully qualified pathnames (potentially containing
+> globbing) and associated access modes: read (r), write (w), different
+> kinds of execute (ix, Px, px, Ux, ux), create hard-link (l), and memory
+> map for execution (m).
+>
+> For example, the following two rules permit read access to any file
+> below /srv/www/htdocs/**.html, and memory map for execution (m), execute
+> inheriting the current profile (ix), and read (r) access to
+> /usr/sbin/suexec2:
+>
+>     /srv/www/htdocs/**.html r,
+>     /usr/sbin/suexec2 mixr,
+
 
