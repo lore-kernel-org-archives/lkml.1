@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbXDMIwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbXDMJAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbXDMIwg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 04:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbXDMIwg
+	id S1752966AbXDMJAx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 05:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbXDMJAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 04:52:36 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:32722 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753253AbXDMIwX (ORCPT
+	Fri, 13 Apr 2007 05:00:53 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:56935 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915AbXDMJAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 04:52:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=fDj5GNaVt6xKG066g/22sEXk0jVHcqC/uqJKrGU48ws18XCrrqAenrJeJBkcQOmoU4NU8fDHv/UXUNZKhMMamrxP67XGlXVEY4re54VUAO8ffkxCwjH79ZN9qY8YdCQc9pt2Mpji74EycWqGtdV3lIEcd+TzyCx9C+MsAZvHITY=  ;
-X-YMail-OSG: OF_feacVM1k1qU1Xw7UKpk7ecFAqIOq8kGNuqdF6PbASigw8c5SKHN429b4V.MiPWB8IreZnyQ--
-Message-ID: <461F44BF.9030803@yahoo.com.au>
-Date: Fri, 13 Apr 2007 18:52:15 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Andreas Gruenbacher <agruen@suse.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org
-Subject: Re: [AppArmor 37/41] AppArmor: Main Part
-References: <20070412090809.917795000@suse.de> <20070412090848.752885000@suse.de> <20070412113723.2ec7e4f0@the-village.bc.nu> <200704131048.17846.agruen@suse.de>
-In-Reply-To: <200704131048.17846.agruen@suse.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 13 Apr 2007 05:00:48 -0400
+Date: Fri, 13 Apr 2007 11:03:13 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: How should an exit routine wait for release() callbacks?
+Message-ID: <20070413110313.352330ce@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0704121706040.2472-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0704121706040.2472-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Gruenbacher wrote:
-> On Thursday 12 April 2007 12:37, Alan Cox wrote:
-> 
->>>+		if (PTR_ERR(sa->name) == -ENOENT && (check & AA_CHECK_FD))
->>>+			denied_mask = 0;
->>
->>Now there is an interesting question. Is PTR_ERR() safe for kernel
->>pointers on all platforms or just for user ones ?
-> 
-> 
-> It's used for kernel pointers all over the place and mmap also mixes user 
-> addresses with -Exxx, so it's definitely supposed to work. I'm not sure how 
-> exactly the topmost page is kept from getting mapped.
+On Thu, 12 Apr 2007 17:23:18 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-Yeah, the comments indicate it was first used for dentries.
+> Here's a not-so-theoretical question.
+> 
+> I've got a module which registers a struct device.  (It represents a
+> virtual device, not a real one, but that doesn't matter.)  Obviously the
+> module's exit routine has to wait until the release() routine for that
+> device has been invoked -- if it returned too early then the release()
+> call would oops.
+> 
+> How should it wait?
 
-I wonder if it shouldn't be using the NULL page instead? (ie 0-4095)
+Device lifetime vs. module lifetime - that's a fun one...
 
--- 
-SUSE Labs, Novell Inc.
+> 
+> The most straightforward approach is to use a struct completion, like 
+> this:
+> 
+> 	static struct {
+> 		struct device dev;
+> 		...
+> 	} my_dev;
+> 
+> 	static DECLARE_COMPLETION(my_completion);
+> 
+> 	static void my_release(struct device *dev)
+> 	{
+> 		complete(&my_completion);
+> 	}
+> 
+> 	static void __exit my_exit(void)
+> 	{
+> 		device_unregister(&my_dev.dev);
+> 		wait_for_completion(&my_completion);
+> 	}
+> 
+> The problem is that there is no guarantee a context switch won't take
+> place after my_release() has called complete() and before my_release()  
+> returns.  If that happens and my_exit() finishes running, then the module
+> will be unloaded and the next context switch back to finish off
+> my_release() will oops.
+> 
+> Other approaches have similar defects.  So how can this problem be solved?
+
+What I see that a device driver may do now is the following:
+- disallow module unloading (duh)
+- move the release function outside the module
+
+To make the completion approach work, the complete() would need to be
+after the release function. This would imply an upper layer, but this
+upper layer would need to access the completion structure in the
+module...
+
+One could think about a owner field (for getting/putting the module
+reference) for the object (with a final module_put() after the release
+function has been called). The problem there would be that it would
+preclude unloading of the module if there isn't a "self destruct" knob
+for the object.
