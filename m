@@ -1,94 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030237AbXDMUhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXDMUiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030237AbXDMUhj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 16:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030224AbXDMUhj
+	id S1030196AbXDMUiX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 16:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030202AbXDMUiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 16:37:39 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:59293 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030192AbXDMUhi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 16:37:38 -0400
-Message-ID: <461FEA0B.40700@zytor.com>
-Date: Fri, 13 Apr 2007 13:37:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 13 Apr 2007 16:38:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48493 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030196AbXDMUiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 16:38:22 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net, Pavel Machek <pavel@ucw.cz>
+Subject: [RFD] swsusp problem: Drivers allocate much memory during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
+Date: Fri, 13 Apr 2007 22:41:52 +0200
+User-Agent: KMail/1.9.5
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org
+References: <460B6E4B.3060004@gmail.com> <200704131400.12021.rjw@sisk.pl> <1176466896.7112.159.camel@nigel.suspend2.net>
+In-Reply-To: <1176466896.7112.159.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Crash while mapping memory in pagetable_init() (Was: Re: .config)
-References: <20070413174913.GA25234@ezr.goop.org> <20070413183841.GP10574@sequoia.sous-sol.org> <20070413190552.GQ10574@sequoia.sous-sol.org> <461FD97B.1010203@goop.org> <461FE36D.1050205@vmware.com> <461FE77A.6020307@zytor.com> <461FE7C7.7050204@goop.org> <461FE8EC.3090304@zytor.com>
-In-Reply-To: <461FE8EC.3090304@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704132241.52725.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->> H. Peter Anvin wrote:
->>> Really (pae ? 2M : 1M), in other words, plus the 128K for bootmem. 
->>> Note that this is creating page tables for, not erasing.  To map 2M,
->>> we will only use 2K of additional memory (meaning there is 50% chance
->>> we end up using an additional 4K page.)
->>>
->>> So the solution is simply to change INIT_MAP_BEYOND_END in head.S
->>> appropriately.
->> Like this?  Should we bother adding some slop pages for allocations
->> which happen before paging_init()?
+On Friday, 13 April 2007 14:21, Nigel Cunningham wrote:
+> Hi.
 > 
-> Yes, although it really should be sensitive to CONFIG_X86_PAE.
+> On Fri, 2007-04-13 at 14:00 +0200, Rafael J. Wysocki wrote:
+> > > 
+> > > Shrinking memory...  Pages needed: 128103 normal, 0 highmem
+> > > Pages needed: 125226 normal, 0 highmem
+> > > Pages needed: -5757 normal, 0 highmem
+> > > Pages needed: -5757 normal, 0 highmem
+> > > Pages needed: -5757 normal, 0 highmem
+> > > Pages needed: -5757
+> > > Pages needed: 127953 normal, 0 highmem
+> > > Pages needed: 125076 normal, 0 highmem
+> > > Pages needed: -6043 normal, 0 highmem
+> > > Pages needed: -6043 normal, 0 highmem
+> > > Pages needed: -6043 normal, 0 highmem
+> > > Pages needed: -6043
+> > > done (200 pages freed)
+> > > Freed 800 kbytes in 0.16 seconds (5.00 MB/s)
+> > > Suspending console(s)
+> > > ...
+> > > CPU1 is down
+> > > swsusp: critical section:
+> > > swsusp: Need to copy 131358 pages
+> > > swsusp: Normal pages needed: 131358
+> > > swsusp: Normal pages needed: 131358 + 1024 + 22, available pages: 130607
+> > 
+> > Well, it looks like someone allocated about 6000 pages after we had freed
+> > enough memory for suspending.
 > 
->>  
->>  /*
->>   * This is how much memory *in addition to the memory covered up to
->> - * and including _end* we need mapped initially.  We need one bit for
->> - * each possible page, but only in low memory, which means
->> - * 2^32/4096/8 = 128K worst case (4G/4G split.)
->> + * and including _end* we need mapped initially.
->> + * We need:
->> + *  - one bit for each possible page, but only in low memory, which 
->> means
->> + *     2^32/4096/8 = 128K worst case (4G/4G split.)
->> + *  - enough space to map all low memory, which means
->> + *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
->>   *
->>   * Modulo rounding, each megabyte assigned here requires a kilobyte of
->>   * memory, which is currently unreclaimed.
->>   *
->>   * This should be a multiple of a page.
->>   */
->> -#define INIT_MAP_BEYOND_END    (128*1024)
->> +#define INIT_MAP_BEYOND_END    (128*1024 + (2048 + 4)*4096)
-> 
-> I suggest, for clarity and to minimize bloat:
-> 
-> #ifdef CONFIG_X86_PAE
-> # define PAGE_TABLE_SIZE    ((2048+4)*4096)
-> #else
-> # define PAGE_TABLE_SIZE    ((1024+1)*4096)
-> #endif
-> 
-> #define BOOTMEM_SIZE        (128*1024)
-> 
-> #define INIT_MAP_BEYOND_END    (BOOTMEM_SIZE+PAGE_TABLE_SIZE)
-> 
+> We have a tunable allowance in Suspend2 for this, because fglrx
+> allocates a lot of pages in its suspend routine if DRI is enabled. I
+> think some other drivers do too, but fglrx is the main one I know.
 
-Actually, better yet; there is no reason for these to be macros:
+I wasn't aware of that, thanks for the information.
 
-#ifdef CONFIG_X86_PAE
-PAGE_TABLE_SIZE = (2048+4)*4096
-#else
-PAGE_TABLE_SIZE = (1024+1)*4096
-#endif
-BOOTMEM_SIZE = 128*1024
+I think this means we'll probably need to add a tunable, similar to image_size,
+that will allow the users to specify how much spare memory they want to reserve
+for suspending (instead of the constant PAGES_FOR_IO).  IMO we can call it
+'spare_memory'.
 
-INIT_MAP_BEYOND_END = BOOTMEM_SIZE + PAGE_TABLE_SIZE
+Still, this doesn't look like a real solution, because it would require the
+users affected by this problem to experiment with suspending in order to
+figure out how much spare memory they will need.
 
-	-hpa
+IMO to really fix the problem, we should let the drivers that need much memory
+for suspending allocate it _before_ the memory shrinker is called.  For this
+purpose we can use notifiers that will be called before we start the shrinking
+of memory.  Namely, if a driver needs to allocate substantial amount of memory
+for suspending, it can register a notifier that will be called before we try to
+shrink memory.  Then, the memory needed by the driver may be allocated in
+this notifier (of course, in that case it will also have to be called if the
+shrinking of memory fails, so that the memory allocated by the driver for
+suspending can be freed) and used in the driver's .suspend() routine.
 
+Comments welcome.
+
+Greetings,
+Rafael
