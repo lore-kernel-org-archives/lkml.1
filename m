@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbXDMM27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbXDMMdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbXDMM27 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 08:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXDMM27
+	id S1753959AbXDMMdL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 08:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbXDMMdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 08:28:59 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59145 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753952AbXDMM27 (ORCPT
+	Fri, 13 Apr 2007 08:33:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36342 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753959AbXDMMdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 08:28:59 -0400
-Date: Fri, 13 Apr 2007 13:28:43 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: greg@uclinux.org, michele.damico@fitre.it, linux-kernel@vger.kernel.org
-Subject: Re: [patch] dont force uclinux mtd map to be root dev
-Message-ID: <20070413122843.GA30232@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mike Frysinger <vapier@gentoo.org>, greg@uclinux.org,
-	michele.damico@fitre.it, linux-kernel@vger.kernel.org
-References: <200704130819.32657.vapier@gentoo.org>
+	Fri, 13 Apr 2007 08:33:11 -0400
+Date: Fri, 13 Apr 2007 13:36:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] apm: Fix incorrect comment
+Message-ID: <20070413133617.49b7f4bb@the-village.bc.nu>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704130819.32657.vapier@gentoo.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 08:19:31AM -0400, Mike Frysinger wrote:
-> the cheesy uclinux mtd maps can be used for more than just the root device, so 
-> i think we should drop the forcing.  also, i feel like this is a policy 
-> decision that shouldnt be in the kernel in the first place.  people who have 
-> been lazy and boot with uclinux mtd maps and dont put root= into their 
-> commandline can simply add the appropriate root= line either into their 
-> bootloader or into the compiled in bootargs
+HZ has not always been 100Hz for some time.
 
-Agreed.  I remember trying to get rid of this a while ago, but I can't
-remember what happened to it.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.21-rc6-mm1/arch/i386/kernel/apm.c linux-2.6.21-rc6-mm1/arch/i386/kernel/apm.c
+--- linux.vanilla-2.6.21-rc6-mm1/arch/i386/kernel/apm.c	2007-04-12 14:15:03.000000000 +0100
++++ linux-2.6.21-rc6-mm1/arch/i386/kernel/apm.c	2007-04-12 14:27:23.000000000 +0100
+@@ -1173,7 +1173,7 @@
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&i8253_lock, flags);
+-	/* set the clock to 100 Hz */
++	/* set the clock to HZ */
+ 	outb_p(0x34, PIT_MODE);		/* binary, mode 2, LSB/MSB, ch 0 */
+ 	udelay(10);
+ 	outb_p(LATCH & 0xff, PIT_CH0);	/* LSB */
