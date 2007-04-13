@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030847AbXDMVoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030735AbXDMVuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030847AbXDMVoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 17:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030848AbXDMVoT
+	id S1030735AbXDMVuG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030819AbXDMVuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 17:44:19 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:52489 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030847AbXDMVoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 17:44:17 -0400
-Date: Fri, 13 Apr 2007 16:44:15 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, linuxram@us.ibm.com, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/8] unprivileged mount syscall
-Message-ID: <20070413214415.GA28629@sergelap.austin.ibm.com>
-References: <20070409143802.GB4891@sergelap.austin.ibm.com> <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu> <20070409170743.GF24415@sergelap.austin.ibm.com> <E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu> <1176194285.2903.67.camel@ram.us.ibm.com> <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu> <1176316116.2811.39.camel@ram.us.ibm.com> <E1HcKQd-0001yO-00@dorka.pomaz.szeredi.hu> <20070413132832.GA1483@sergelap.austin.ibm.com> <E1HcMOq-0002As-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HcMOq-0002As-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 13 Apr 2007 17:50:06 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:58927 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030735AbXDMVuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 17:50:04 -0400
+Date: Fri, 13 Apr 2007 14:49:57 -0700
+Message-Id: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i386: For debugging, make the initial page table setup less forgiving.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > Thinking a bit more about this, I'm quite sure most users wouldn't
-> > > even want private namespaces.  It would be enough to
-> > > 
-> > >   chroot /share/$USER
-> > > 
-> > > and be done with it.
-> > > 
-> > > Private namespaces are only good for keeping a bunch of mounts
-> > > referenced by a group of processes.  But my guess is, that the natural
-> > > behavior for users is to see a persistent set of mounts.
-> > > 
-> > > If for example they mount something on a remote machine, then log out
-> > > from the ssh session and later log back in, they would want to see
-> > > their previous mount still there.
-> > > 
-> > > Miklos
-> > 
-> > Agreed on desired behavior, but not on chroot sufficing.  It actually
-> > sounds like you want exactly what was outlined in the OLS paper.
-> > 
-> > Users still need to be in a different mounts namespace from the admin
-> > user so long as we consider the deluser and backup problems
-> 
-> I don't think it matters, because /share/$USER duplicates a part or
-> the whole of the user's namespace.
-> 
-> So backup would have to be taught about /share anyway, and deluser
-> operates on /home/$USER and not on /share/*, so there shouldn't be any
-> problem.
+We just discovered that the accounting for initial memory usage
+(head.S: INIT_MAP_BEYOND_END) has been way, way off for a very long
+time.  This patch makes the initial page table not round up to the
+nearest 4M boundary, but instead stop dead (and zero the rest of the
+final page table) as soon as it hits the configured limit.
 
-In what I was thinking of, /share/$USER is bind mounted to
-~$USER/share, so it would have to be done in a private namespace in
-order for deluser to not be tricked.
+This patch is intended as a debugging aid.  If it goes into the
+kernel, it should go in at the very beginning of a review cycle, as it
+may very well expose real failures (without Jeremy's patch to fix the
+accounting, it *will* crash.)
 
-> There's actually very little difference between rbind+chroot, and
-> CLONE_NEWNS.  In a private namespace:
-> 
->   1) when no more processes reference the namespace, the tree will be
->     disbanded
-> 
->   2) the mount tree won't be accessible from outside the namespace
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
-But it *can* be, if properly set up.  That's part of the point of the
-example in the OLS paper.  When a user logs in, sshd clones a new
-namespace, then bind-mounts /share/$USER into ~$USER/share.  So assuming
-that /share/$USER was --make-shared'd, it and ~$USER are now in the
-same peer group, and any changes made by the user under ~$USER will
-be reflected back into /share/$USER.
-
-> Wanting a persistent namespace contradicts 1).
-
-Not necessarily, see above.
-
-> Wanting a per-user (as opposed to per-session) namespace contradicts
-> 2).  The namespace _has_ to be accessible from outside, so that a new
-> session can access/copy it.
-
-Again, I *think* you are wrong that private namespace contradicts this
-requirement.
-
-> So both requirements point to the rbind/chroot solution.
-
-It all points to a combination of the two  :-)
-
--serge
+diff --git a/arch/i386/kernel/head.S b/arch/i386/kernel/head.S
+index 3fa7f93..db6735a 100644
+--- a/arch/i386/kernel/head.S
++++ b/arch/i386/kernel/head.S
+@@ -131,15 +131,27 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
+ 	movl %ecx,page_pde_offset(%edx)		/* Store kernel PDE entry */
+ 	addl $4,%edx
+ 	movl $1024, %ecx
++	/*
++	 * End condition: we must map up to and including
++	 * INIT_MAP_BEYOND_END bytes beyond the end of our
++	 * own page tables; 0x1000 is the size of the page
++	 * table were about to write, and +0x007 is the
++	 * attribute bits.
++	 */
++	leal (INIT_MAP_BEYOND_END+0x1000+0x007)(%edi),%ebp
+ 11:
+ 	stosl
+ 	addl $0x1000,%eax
+-	loop 11b
+-	/* End condition: we must map up to and including INIT_MAP_BEYOND_END */
+-	/* bytes beyond the end of our own page tables; the +0x007 is the attribute bits */
+-	leal (INIT_MAP_BEYOND_END+0x007)(%edi),%ebp
+ 	cmpl %ebp,%eax
+-	jb 10b
++	jae 12f
++	loop 11b
++	jmp 10b
++12:
++	/* Clear the remainder of the last page table */
++	decl %ecx
++	xorl %eax,%eax
++	rep; stosl
++	
+ 	movl %edi,(init_pg_tables_end - __PAGE_OFFSET)
+ 
+ 	xorl %ebx,%ebx				/* This is the boot CPU (BSP) */
