@@ -1,40 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965663AbXDMWy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965662AbXDMW4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965663AbXDMWy3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 18:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXDMWy2
+	id S965662AbXDMW4o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 18:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965668AbXDMW4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 18:54:28 -0400
-Received: from holomorphy.com ([66.93.40.71]:51241 "EHLO holomorphy.com"
+	Fri, 13 Apr 2007 18:56:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51995 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965663AbXDMWy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 18:54:28 -0400
-Date: Fri, 13 Apr 2007 15:54:33 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jason Lunz <lunz@falooley.org>, Cameron Schaus <cam@schaus.ca>,
+	id S965662AbXDMW4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 18:56:43 -0400
+Subject: patch pci-add-debug-information-to-resource-collision-message.patch added to gregkh-2.6 tree
+To: cebbert@redhat.com, greg@kroah.com, gregkh@suse.de,
        linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20 OOM with 8Gb RAM
-Message-ID: <20070413225433.GV2986@holomorphy.com>
-References: <20070412173830.GA31323@schaus.ca> <20070412121553.c7fd3249.akpm@linux-foundation.org> <20070413223935.GA6783@metaxa.reflex> <20070413154653.21fdb914.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070413154653.21fdb914.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+From: <gregkh@suse.de>
+Date: Fri, 13 Apr 2007 15:54:18 -0700
+In-Reply-To: <461B9E68.6040008@redhat.com>
+Message-Id: <20070413225634.B0B90D3E31B@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 03:46:53PM -0700, Andrew Morton wrote:
-> It's just weird - it exploits internal knowledge of VFS behaviour, diddles
-> with pagecache within a fake disk strategy handler, etc.
-> Furthermore, because it pretends to be a block device, the VFS will not use
-> highmem pages when accessing the ramdisk.  So the 8GB machine will go splat
-> with only 800MB of ramdisk.
-> ramfs is much cleaner and does not have that limitation.
 
-After all this time, bdevs are still lowmem etc. Crying shame.
+This is a note to let you know that I've just added the patch titled
+
+     Subject: PCI: add debug information to resource collision message
+
+to my gregkh-2.6 tree.  Its filename is
+
+     pci-add-debug-information-to-resource-collision-message.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
--- wli
+>From cebbert@redhat.com Tue Apr 10 07:26:01 2007
+From: Chuck Ebbert <cebbert@redhat.com>
+Date: Tue, 10 Apr 2007 10:25:44 -0400
+Subject: PCI: add debug information to resource collision message
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@atrey.karlin.mff.cuni.cz
+Message-ID: <461B9E68.6040008@redhat.com>
+
+
+Add more information to PCI resource collision message
+to help with debugging.
+
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/i386/pci/i386.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/arch/i386/pci/i386.c
++++ b/arch/i386/pci/i386.c
+@@ -246,8 +246,8 @@ int pcibios_enable_resources(struct pci_
+ 			continue;
+ 		if (!r->start && r->end) {
+ 			printk(KERN_ERR "PCI: Device %s not available "
+-				"because of resource collisions\n",
+-				pci_name(dev));
++				"because of resource %d collisions\n",
++				pci_name(dev), idx);
+ 			return -EINVAL;
+ 		}
+ 		if (r->flags & IORESOURCE_IO)
+
+
+Patches currently in gregkh-2.6 which might be from cebbert@redhat.com are
+
+pci/pci-add-debug-information-to-resource-collision-message.patch
