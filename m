@@ -1,109 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030301AbXDMVBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030278AbXDMVCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030301AbXDMVBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 17:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030278AbXDMVBT
+	id S1030278AbXDMVCG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 17:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXDMVCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 17:01:19 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41138 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030283AbXDMVBS (ORCPT
+	Fri, 13 Apr 2007 17:02:06 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:45545 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030278AbXDMVCD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 17:01:18 -0400
-Date: Fri, 13 Apr 2007 14:03:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: make clean for DocBook
-Message-Id: <20070413140337.9ecba871.randy.dunlap@oracle.com>
-In-Reply-To: <20070413193250.GA15361@uranus.ravnborg.org>
-References: <20070413090658.b4c4bc8f.randy.dunlap@oracle.com>
-	<20070413164142.GA14706@uranus.ravnborg.org>
-	<20070413112316.44141d34.randy.dunlap@oracle.com>
-	<20070413193250.GA15361@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Apr 2007 17:02:03 -0400
+Message-ID: <461FEF1C.5010806@vmware.com>
+Date: Fri, 13 Apr 2007 13:59:08 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
+References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com> <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com> <461FD9BF.90609@vmware.com> <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007 21:32:50 +0200 Sam Ravnborg wrote:
+Hugh Dickins wrote:
+> David (clear_refs_pte_range) is only using ptep_test_and_clear_young,
+> though he did change the ptep_test_and_clear_dirty definition to be
+> consistent with it.  old/young is never so serious as clean/dirty, so
+> it may be that there's very little problem with what's in there now;
+> it just becomes a shame if the wrong decision gets made too often e.g.
+> if the misflushing is such that his clear_youngs never really take
+> effect.  I simply cannot tell whether or not that's the case myself.
+>   
 
-> > > 
-> > > 
-> > > And we will visit DocBook with mrproper - but not clean.
-> > > I have no stron opinion when to delete generated files in DocBook.
-> > 
-> > OK, that's fine, thanks for the info...
-> > but trying 'make mrproper' gives me:
-> > 
-> > make -f scripts/Makefile.clean obj=Documentation/DocBook
-> > make -f scripts/Makefile.clean obj=Documentation/DocBook/man/
-> > make[2]: execvp: /bin/sh: Argument list too long
-> > make[2]: *** [__clean] Error 127
-> > make[1]: *** [Documentation/DocBook/man/] Error 2
-> > make: *** [_mrproper_Documentation/DocBook] Error 2
-> > 
-> > DocBook/man/ contains about 2000 files.
-> > Is there some way to have scripts/Makefile.clean just do
-> > 	rm -rf Documentation/DocBook/man/
-> > ?  or some other solution?
-> 
-> Something like this should do it.
-> This deletes the man/ directory entirely so
-> I have to do that when I check in the patch.
-> 
-> Let me know if this works for you.
+If the logic is too difficult to reason about without entering ganda 
+bherundasana, then it is simpler to just drop the _defer suffix.  Old / 
+young actually is just as serious, not because A-bit is critical 
+(although misvirtualizing it will do strange things to the page 
+clocking), but because the entire PTE update is delayed - and thus an 
+intervening PTE update which remaps the physical page can come in before 
+the A-bit update is flushed.  The A-bit update carries the PPN of the 
+original physical page, destroying the remap.
 
-Yes, thanks.
+> But once the pte_update_defers get moved away from their flush_tlb_pages,
+> as is the case now, it feels like we're on thin ice.
+>   
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Yes, that is why I think I did the original hack of having #defines 
+without implementations - to ensure the flush stayed coupled with the 
+use of pte_update_defer.
 
+> Actually, I don't really get pte_update_defer at all: I can understand
+> wanting to defer a call down, but it appears to be a call down to say
+> we're deferring the shadow update?  Why not just do it with pte_update?
+> I'd be happier without it until this could be restructured more safely
+> (but my incomprehension is not necessarily the best guiding principle).
+>   
 
-> 	Sam
-> 
-> diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
-> index 867608a..960f402 100644
-> --- a/Documentation/DocBook/Makefile
-> +++ b/Documentation/DocBook/Makefile
-> @@ -152,6 +152,7 @@ quiet_cmd_db2man = MAN     $@
->  	@(which xmlto > /dev/null 2>&1) || \
->  	 (echo "*** You need to install xmlto ***"; \
->  	  exit 1)
-> +	$(Q)mkdir -p $(obj)/man
->  	$(call cmd,db2man)
->  	@touch $@
->  
-> @@ -212,11 +213,7 @@ clean-files := $(DOCBOOKS) \
->  	$(patsubst %.xml, %.9,    $(DOCBOOKS)) \
->  	$(C-procfs-example)
->  
-> -clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS))
-> -
-> -#man put files in man subdir - traverse down
-> -subdir- := man/
-> -
-> +clean-dirs := $(patsubst %.xml,%,$(DOCBOOKS)) man
->  
->  # Declare the contents of the .PHONY variable as phony.  We keep that
->  # information in a variable se we can use it in if_changed and friends.
-> diff --git a/Documentation/DocBook/man/Makefile b/Documentation/DocBook/man/Makefile
-> deleted file mode 100644
-> index 4fb7ea0..0000000
-> --- a/Documentation/DocBook/man/Makefile
-> +++ /dev/null
-> @@ -1,3 +0,0 @@
-> -# Rules are put in Documentation/DocBook
-> -
-> -clean-files := *.9.gz *.sgml manpage.links manpage.refs
-> 
-> -
+So pte_update does the update immediately; it is always safe.  For 
+select cases, where there is an immediate pte_update + flush 
+combination, it is beneficial to combine the two into one hypercall, 
+saving the several thousand cycle round trip into the hypervisor from 
+happening twice.  This is why pte_update_defer was used close to the 
+flushes.  I thought David was just defining the ptep_test_and_clear_xxx 
+functions properly; I didn't realize he was actually using them to 
+decouple the flush across a spinlock or logically complex code region.  
+If that is the case, I agree pte_update instead of defer is absolutely 
+the right thing to do.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+I'm a little worried about the TLB consistency here, on real hardware.  
+If you drop the spinlock, you could end up preempted.  If the preemption 
+runs a kernel thread, which accesses the same memory for which you just 
+modified the page table mappings, the TLB could still have a stale 
+entry.  So, a clear of a dirty bit might happen in a writeback thread, 
+but get preempted before the flush, then the hardware TLB still has a 
+dirty entry.  This means writes through the same virtual address will 
+skip the A/D bit update in the pte.  Now, for regular user memory 
+access, that might not be a problem, but if it is the kernel touching 
+user memory through kmap, the kernel virtual address might well ..  I'm 
+off in the weeds.  But still slightly concerned about leaving that TLB 
+entry stale across a possible preemption.
+
+As an aside, in the tree I'm looking at, I don't see any users of 
+ptep_clear_flush_dirty at all.. doesn't that mean writeback which 
+undirties pages will leave the PTEs with latent dirty bits, causing them 
+to get written back again when the process exits?  Or does rmap take 
+care of this.  Ahh, I just discovered page_mkclean_one.  Never mind.  
+But still no users of ptep_clear_flush_dirty.
+
+Zach
