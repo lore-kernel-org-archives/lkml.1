@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbXDMRyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbXDMR6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbXDMRyG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 13:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbXDMRyF
+	id S1754099AbXDMR6Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 13:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbXDMR6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 13:54:05 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:21044 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754111AbXDMRyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 13:54:04 -0400
-X-AuditID: d80ac287-9dcaebb000002c59-09-461fc3ba2ed1 
-Date: Fri, 13 Apr 2007 18:54:01 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Zachary Amsden <zach@vmware.com>
-cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
-In-Reply-To: <46082BE6.30402@vmware.com>
-Message-ID: <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com>
- <46082BE6.30402@vmware.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 13 Apr 2007 17:54:02.0132 (UTC) FILETIME=[B8537D40:01C77DF4]
-X-Brightmail-Tracker: AAAAAA==
+	Fri, 13 Apr 2007 13:58:15 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:44448 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754099AbXDMR6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 13:58:15 -0400
+Date: Fri, 13 Apr 2007 10:58:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
+Message-Id: <20070413105808.28bf39ae.akpm@linux-foundation.org>
+In-Reply-To: <20070413172450.GQ11115@waste.org>
+References: <1.486631555@selenic.com>
+	<20070412231050.GN2986@holomorphy.com>
+	<20070412163235.dd030637.akpm@linux-foundation.org>
+	<461ECB9C.8060000@yahoo.com.au>
+	<20070412174201.065068b2.akpm@linux-foundation.org>
+	<20070413162436.GO11115@waste.org>
+	<20070413100356.62c6d9c2.akpm@linux-foundation.org>
+	<20070413172450.GQ11115@waste.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Mar 2007, Zachary Amsden wrote:
-> David Rientjes wrote:
-> >  Date: Sun, 25 Mar 2007 23:07:43 -0800
-> >  From: Zachary Amsden <zach@vmware.com>
-> >
-> >  If you actually clear the bit, you need to:
-> >
-> >  +         pte_update_defer(vma->vm_mm, addr, ptep);
-> >
-> >  The reason is, when updating PTEs, the hypervisor must be notified.  Using
-> >  atomic operations to do this is fine for all hypervisors I am aware of.
-> >  However, for hypervisors which shadow page tables, if these PTE
-> >  modifications are not trapped, you need a post-modification call to fulfill
-> >  the update of the shadow page table.
-> >
-> > Cc: Zachary Amsden <zach@vmware.com>
-> > Cc: Hugh Dickins <hugh@veritas.com>
-> > Signed-off-by: David Rientjes <rientjes@google.com>
-> >   
+On Fri, 13 Apr 2007 12:24:51 -0500 Matt Mackall <mpm@selenic.com> wrote:
+
+> > > From /proc/kpagemap + /proc/*/pagemap, you can
+> > > basically synthesize any statistic you want, including all the
+> > > existing ones. For some data, /proc/pid/smaps (or /proc/meminfo) will
+> > > be considerably more efficient.
+> > 
+> > You'd need to poke clear_refs beforehand to make the referenced bits useful.
+> > 
+> > Actually, we also need to run around the ptes and collect the pte-referenced
+> > bits too.  I don't think your code copes with any of that?
 > 
-> Acked-by: Zachary Amsden <zach@vmware.com>
-> 
-> David, thanks for cleaning this up.
+> No, and it probably should. Perhaps dirty as well, though I've kindof
+> lost the plot on how that works lately.
 
-Zach, while looking at your recent patches, I ran across the comment
-on pte_update_defer, and where it was being used, and now think that
-David's patch is actually incorrect.  Previously pte_update_defer
-was being used where a flush_tlb_page followed immediately after
-within the same macro; with David's patch, mm's clear_refs_pte_range
-is calling ptep_test_and_clear_young (including pte_update_defer) on
-several ptes, then unlocking the page table, and later flushing TLB.
-That's exactly wrong for pte_update_defer, isn't it?
-
-I do find the name confusing (pte_update_defer is for use only when
-the TLB update is not deferred, right?): indeed, its distinction from
-pte_update very prone to errors of this kind.  I'm all for deferring
-work, but is there some way the right thing could be done automatically?
-Or, how much would be lost if we just replaced all the pte_update_defers
-by pte_updates?
-
-I'm not proposing any patch myself: just bringing to your attention.
-
-Hugh
+Dirty is OK: the VM keeps pte-dirtiness and page-dirtiness in sync now.
