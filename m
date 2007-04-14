@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXDNQKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674AbXDNQLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbXDNQKN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 12:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbXDNQKN
+	id S1753674AbXDNQLd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 12:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbXDNQLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 12:10:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40551 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753648AbXDNQKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 12:10:11 -0400
-Date: Sat, 14 Apr 2007 18:09:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070414160939.GB3099@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <200704141809.58737.caglar@pardus.org.tr>
+	Sat, 14 Apr 2007 12:11:33 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:10924 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674AbXDNQLc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 12:11:32 -0400
+Date: Sat, 14 Apr 2007 09:13:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bbpetkov@yahoo.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [KERNEL-DOC] kill warnings when building mandocs
+Message-Id: <20070414091341.7665d8b0.randy.dunlap@oracle.com>
+In-Reply-To: <20070413091422.GA15426@zmei.tnic>
+References: <20070413091422.GA15426@zmei.tnic>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200704141809.58737.caglar@pardus.org.tr>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 13 Apr 2007 11:14:22 +0200 Borislav Petkov wrote:
 
-* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
-
-> > i'm pleased to announce the first release of the "Modular Scheduler 
-> > Core and Completely Fair Scheduler [CFS]" patchset:
+> This patch shuts warnings of the sort:
 > 
-> Currently im using Linus's current git + your extra patches + CFS for 
-> a while. Kaffeine constantly freezes (and uses %80+ CPU time) [1] if i 
-> seek forward/backward while its playing a video with some workload 
-> (checking out SVN repositories, compiling something). Stopping other 
-> process didn't help kaffeine so it stays freezed stated until i kill 
-> it.
+> make -C /mnt/samsung_200/sam/kernel/trees/21-rc6/build \
+> 	KBUILD_SRC=/mnt/samsung_200/sam/kernel/trees/21-rc6 \
+> 	KBUILD_EXTMOD="" -f /mnt/samsung_200/sam/kernel/trees/21-rc6/Makefile mandocs
+> make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=scripts/basic
+> make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=Documentation/DocBook mandocs
+>   SRCTREE=/mnt/samsung_200/sam/kernel/trees/21-rc6/ /mnt/samsung_200/sam/kernel/trees/21-rc6/build/scripts/basic/docproc doc /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/wanbook.tmpl >Documentation/DocBook/wanbook.xml
+>   if grep -q refentry Documentation/DocBook/wanbook.xml; then xmlto man -m /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/stylesheet.xsl -o Documentation/DocBook/man Documentation/DocBook/wanbook.xml ; gzip -f Documentation/DocBook/man/*.9; fi
+> Note: meta version: No productnumber or alternative     sppp_close
+> Note: meta version: No refmiscinfo@class=version        sppp_close
+> Note: Writing sppp_close.9
+> Note: meta version: No productnumber or alternative     sppp_open
+> Note: meta version: No refmiscinfo@class=version        sppp_open
+> 
+> by adding a RefMiscInfo xml tag in the form of the current kernel version to 
+> the function, struct and enum definitions in files included by kernel-doc when 
+> building 'mandocs'.  However, the version string appears truncated on the manpage
+> due to some constraints in the xml DTD for the man header, I believe, for the
+> troff output is truncated too.
 
-hm, could you try to strace it and/or attach gdb to it and figure out 
-what's wrong? (perhaps involving the Kaffeine developers too?) As long 
-as it's not a kernel level crash i cannot see how the scheduler could 
-directly cause this - other than by accident creating a scheduling 
-pattern that triggers a user-space bug more often than with other 
-schedulers.
+Hi Borislav,
 
-> [1] http://cekirdek.pardus.org.tr/~caglar/psaux
+I cannot reproduce this error (either, a la the tex error).
+Any hints about how I could do so?
 
-looks quite weird!
-
-	Ingo
+Thanks,
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
