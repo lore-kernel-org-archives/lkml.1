@@ -1,100 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXDNHw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbXDNIJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161140AbXDNHw0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 03:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161158AbXDNHw0
+	id S1753055AbXDNIJb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 04:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161161AbXDNIJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 03:52:26 -0400
-Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:34722
-	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161140AbXDNHwZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 03:52:25 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 03:52:25 EDT
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Transfer-Encoding: 7bit
-Message-Id: <8925FF2E-4B6E-459A-A1BF-E0488F6EDC13@it-loops.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linux-kernel@vger.kernel.org
-From: Michael Guntsche <mike@it-loops.com>
-Subject: Marked based routing and redirecting problems with kernel v2.6
-Date: Sat, 14 Apr 2007 09:45:41 +0200
-X-Mailer: Apple Mail (2.752.3)
+	Sat, 14 Apr 2007 04:09:31 -0400
+Received: from 1wt.eu ([62.212.114.60]:1817 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753055AbXDNIJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 04:09:30 -0400
+Date: Sat, 14 Apr 2007 10:08:34 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070414080833.GL943@1wt.eu>
+References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070414064334.GA19463@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list,
+On Sat, Apr 14, 2007 at 08:43:34AM +0200, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Nick noticed that upon fork we change parent->wait_runtime but we do 
+> > not requeue it within the rbtree.
+> 
+> this fix is not complete - because the child runqueue is locked here, 
+> not the parent's. I've fixed this properly in my tree and have uploaded 
+> a new sched-modular+cfs.patch. (the effects of the original bug are 
+> mostly harmless, the rbtree position gets corrected the first time the 
+> parent reschedules. The fix might improve heavy forker handling.)
 
-I recently switched one of my older gateways from 2.4 to 2.6. I had a  
-transparent proxy set-up as explained
-here http://www.faqs.org/docs/Linux-mini/TransparentProxy.html#ss6.2
-I know that transparent proxying is generally being frowned on but in  
-this special case I have to use it.
-This setup worked fine with the v2.4 kernel on my gateway. After  
-switching to 2.6 it seems that the packets are no longer routed to my  
-squid box correctly.
-I see the first sync from the client and get the reply sync from the  
-squid box, but the ACK my client sends back never reaches the squid  
-box. So the squid box is sending out SYNC requests again and after a  
-very long time it sometimes "sees" the ACK from the client.
+It looks like it did not reach your public dir yet.
 
-This is an example of a successful connection with the 2.4 kernel  
-running on the gateway.
+BTW, I've given it a try. It seems pretty usable. I have also tried
+the usual meaningless "glxgears" test with 12 of them at the same time,
+and they rotate very smoothly, there is absolutely no pause in any of
+them. But they don't all run at same speed, and top reports their CPU
+load varying from 3.4 to 10.8%, with what looks like more CPU is
+assigned to the first processes, and less CPU for the last ones. But
+this is just a rough observation on a stupid test, I would not call
+that one scientific in any way (and X has its share in the test too).
 
+I'll perform other tests when I can rebuild with your fixed patch.
 
-Gateway/Router:
+Cheers,
+Willy
 
-09:31:11.718565 IP trillian.comsick.at.49282 > www.heise.de.www: S  
-1286769610:1286769610(0) win 65535 <mss 1460,nop,wscale  
-0,nop,nop,timestamp 988726717 0,sackOK,eol>
-09:31:11.718836 IP trillian.comsick.at.49282 > www.heise.de.www: S  
-1286769610:1286769610(0) win 65535 <mss 1460,nop,wscale  
-0,nop,nop,timestamp 988726717 0,sackOK,eol>
-09:31:11.719632 IP trillian.comsick.at.49282 > www.heise.de.www: .  
-ack 598485927 win 65535 <nop,nop,timestamp 988726717 10262916>
-09:31:11.719725 IP trillian.comsick.at.49282 > www.heise.de.www: .  
-ack 1 win 65535 <nop,nop,timestamp 988726717 10262916>
-
-Squid Box:
-
-09:31:10.795018 IP trillian.comsick.at.49282 > www.heise.de.www: S  
-1286769610:1286769610(0) win 65535 <mss 1460,nop,wscale  
-0,nop,nop,timestamp 988726717 0,sackOK,eol>
-09:31:10.797621 IP www.heise.de.www > trillian.comsick.at.49282: S  
-598485926:598485926(0) ack 1286769611 win 5792 <mss  
-1460,sackOK,timestamp 10262916 988726717,nop,wscale 2>
-09:31:10.795831 IP trillian.comsick.at.49282 > www.heise.de.www: .  
-ack 1 win 65535 <nop,nop,timestamp 988726717 10262916>
-
-Not working with V2.6 with no changes in the setup
-
-Gateway/Router:
-
-09:39:33.798241 IP trillian.comsick.at.49303 > www.heise.de.www: S  
-1751958343:1751958343(0) win 65535 <mss 1460,nop,wscale  
-0,nop,nop,timestamp 988727720 0,sackOK,eol>
-09:39:33.807231 IP trillian.comsick.at.49303 > www.heise.de.www: S  
-1751958343:1751958343(0) win 65535 <mss 1460,nop,wscale  
-0,nop,nop,timestamp 988727720 0,sackOK,eol>
-09:39:33.798996 IP trillian.comsick.at.49303 > www.heise.de.www: .  
-ack 1144270693 win 65535 <nop,nop,timestamp 988727720 10388336>
-
-Squid Box:
-
-09:39:32.480764 IP trillian.comsick.at.49303 > www.heise.de.www: S  
-1751958343:1751958343(0) win 65535 <mss 1460,nop,wscale  
-0,nop,nop,timestamp 988727720 0,sackOK,eol>
-09:39:32.482965 IP www.heise.de.www > trillian.comsick.at.49303: S  
-1144270692:1144270692(0) ack 1751958344 win 5792 <mss  
-1460,sackOK,timestamp 10388336 988727720,nop,wscale 2>
-... retries ...
-
-As you can see the ACK never reaches the SQUID box.
-
-Am I missing something or has the handling of this special packet  
-mangling changed in v2.6?
-This has been tested with 2.6.19 and 2.6.20.6
-Please put me on CC for any reply since I am not subscribed to the list.
-
-Kind regards,
-Michael
