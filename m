@@ -1,398 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030879AbXDNOfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030887AbXDNOh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030879AbXDNOfT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 10:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030887AbXDNOfT
+	id S1030887AbXDNOh0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 10:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030893AbXDNOh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 10:35:19 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:52199 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030879AbXDNOfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 10:35:18 -0400
-Date: Sat, 14 Apr 2007 16:34:18 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Jean Delvare <khali@linux-fr.org>, David Brownell <david-b@pacbell.net>,
-       Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <11765554074106-git-send-email-hskinnemoen@atmel.com>
-References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Sat, 14 Apr 2007 10:37:26 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:37519 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030887AbXDNOhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 10:37:25 -0400
+Date: Sat, 14 Apr 2007 16:37:19 +0200
+From: Jan Yenya Kasprzak <kas@fi.muni.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, osv@javad.com
+Subject: Re: [RFC 1/1] Char: mxser_new, fix recursive locking
+Message-ID: <20070414143719.GA5203@fi.muni.cz>
+References: <20070414042725.GT20376@fi.muni.cz> <462079ED.2000605@gmail.com> <462079ED.2000605@gmail.com> <3018694794025219@wsc.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3018694794025219@wsc.cz>
+User-Agent: Mutt/1.4.1i
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Muni-Envelope-From: kas@fi.muni.cz
+X-Muni-Envelope-To: linux-kernel@vger.kernel.org
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 14 Apr 2007 16:37:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Apr 2007 14:56:47 +0200
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+Jiri Slaby wrote:
+: I would rather incline to the second variant as it is the original approach
+: from moxa driver and I have no idea, what might happen if we drop the lock
+: before calling all involved mxser_ routines.
+: 
+: Could you both (if possible) test the attached patch and drop a message,
+: please?
 
->   o Default to a very low SCL frequency (6.6 kHz) if clock stretching
->     isn't supported
+	Works for me, altough it spits tons of (bogus, in this case)
+warnings about possibly uninitialized variable "flags".
 
-This would have been true if I had remembered to save before generating
-the patch...
+	Additionally, I think it is overzealous to wrap _all_
+spin_lock_irqsave/irqrestore() with if (!in_interrupt()). Some of them are
+never called from the interrupt context (mxser_block_till_ready(), for example
+- it can block, so if it is ever called from the interrupt context, we have
+a different, an order of magnitude worse problem here :-)
 
-Updated patch below. Sorry about the mess.
+	I have another problem with the driver - it probably sometimes
+drops DCD signal on the serial line or something like that:
+when the traffic on the serial console is heavy, it sometimes disconnects
+me from the remote shell, and cu(1) displays the login prompt from the new
+instance of mgetty of the remote machine. However, it does so both with
+mxser.o and mxser_new.o (in 2.6.21-rc6, I think it worked in 2.6.19,
+but I have to retest it). So this is another problem, different from
+the one we are trying to solve now.
 
-Haavard
+-Yenya
 
-===================[cut here]======================
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] Bitbanging i2c bus driver using the GPIO API
-
-This is a very simple bitbanging i2c bus driver utilizing the new
-arch-neutral GPIO API. Useful for chips that don't have a built-in
-i2c controller, additional i2c busses, or testing purposes.
-
-To use, include something similar to the following in the
-board-specific setup code:
-
-  #include <linux/i2c-gpio.h>
-
-  static struct i2c_gpio_platform_data i2c_gpio_data = {
-	.sda_pin	= GPIO_PIN_FOO,
-	.scl_pin	= GPIO_PIN_BAR,
-  };
-  static struct platform_device i2c_gpio_device = {
-	.name		= "i2c-gpio",
-	.id		= 0,
-	.dev		= {
-		.platform_data	= &i2c_gpio_data,
-	},
-  };
-
-Register this platform_device, set up the i2c pins as GPIO if
-required and you're ready to go. This will use default values for
-udelay and timeout, and will work with GPIO hardware that does not
-support open drain mode, but allows sensing of the SDA and SCL lines
-even when they are being driven.
-
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- MAINTAINERS                   |    5 +
- drivers/i2c/busses/Kconfig    |    8 ++
- drivers/i2c/busses/Makefile   |    1 +
- drivers/i2c/busses/i2c-gpio.c |  215 +++++++++++++++++++++++++++++++++++++++++
- include/linux/i2c-gpio.h      |   38 +++++++
- 5 files changed, 267 insertions(+), 0 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ef84419..fdecda4 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1429,6 +1429,11 @@ L:	linux-scsi@vger.kernel.org
- W:	http://www.icp-vortex.com/
- S:	Supported
- 
-+GENERIC GPIO I2C DRIVER
-+P:	Haavard Skinnemoen
-+M:	hskinnemoen@atmel.com
-+S:	Supported
-+
- GENERIC HDLC DRIVER, N2, C101, PCI200SYN and WANXL DRIVERS
- P:	Krzysztof Halasa
- M:	khc@pm.waw.pl
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index fb19dbb..52f79d1 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -102,6 +102,14 @@ config I2C_ELEKTOR
- 	  This support is also available as a module.  If so, the module 
- 	  will be called i2c-elektor.
- 
-+config I2C_GPIO
-+	tristate "GPIO-based bitbanging i2c driver"
-+	depends on I2C && GENERIC_GPIO
-+	select I2C_ALGOBIT
-+	help
-+	  This is a very simple bitbanging i2c driver utilizing the
-+	  arch-neutral GPIO API to control the SCL and SDA lines.
-+
- config I2C_HYDRA
- 	tristate "CHRP Apple Hydra Mac I/O I2C interface"
- 	depends on I2C && PCI && PPC_CHRP && EXPERIMENTAL
-diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
-index 290b540..68f2b05 100644
---- a/drivers/i2c/busses/Makefile
-+++ b/drivers/i2c/busses/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_I2C_AMD8111)	+= i2c-amd8111.o
- obj-$(CONFIG_I2C_AT91)		+= i2c-at91.o
- obj-$(CONFIG_I2C_AU1550)	+= i2c-au1550.o
- obj-$(CONFIG_I2C_ELEKTOR)	+= i2c-elektor.o
-+obj-$(CONFIG_I2C_GPIO)		+= i2c-gpio.o
- obj-$(CONFIG_I2C_HYDRA)		+= i2c-hydra.o
- obj-$(CONFIG_I2C_I801)		+= i2c-i801.o
- obj-$(CONFIG_I2C_I810)		+= i2c-i810.o
-diff --git a/drivers/i2c/busses/i2c-gpio.c b/drivers/i2c/busses/i2c-gpio.c
-new file mode 100644
-index 0000000..e427bfb
---- /dev/null
-+++ b/drivers/i2c/busses/i2c-gpio.c
-@@ -0,0 +1,215 @@
-+/*
-+ * Bitbanging i2c bus driver using the GPIO API
-+ *
-+ * Copyright (C) 2007 Atmel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#include <linux/i2c.h>
-+#include <linux/i2c-algo-bit.h>
-+#include <linux/i2c-gpio.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+
-+#include <asm/gpio.h>
-+
-+/* Toggle SDA by changing the direction of the pin */
-+static void i2c_gpio_setsda_dir(void *data, int state)
-+{
-+	struct i2c_gpio_platform_data *pdata = data;
-+
-+	if (state)
-+		gpio_direction_input(pdata->sda_pin);
-+	else
-+		gpio_direction_output(pdata->sda_pin, 0);
-+}
-+
-+/*
-+ * Toggle SDA by changing the output value of the pin. This is only
-+ * valid for pins configured as open drain (i.e. setting the value
-+ * high effectively turns off the output driver.)
-+ */
-+static void i2c_gpio_setsda_val(void *data, int state)
-+{
-+	struct i2c_gpio_platform_data *pdata = data;
-+
-+	gpio_set_value(pdata->sda_pin, state);
-+}
-+
-+/* Toggle SCL by changing the direction of the pin. */
-+static void i2c_gpio_setscl_dir(void *data, int state)
-+{
-+	struct i2c_gpio_platform_data *pdata = data;
-+
-+	if (state)
-+		gpio_direction_input(pdata->scl_pin);
-+	else
-+		gpio_direction_output(pdata->scl_pin, 0);
-+}
-+
-+/*
-+ * Toggle SCL by changing the output value of the pin. This is used
-+ * for pins that are configured as open drain and for output-only
-+ * pins. The latter case will break the i2c protocol, but it will
-+ * often work in practice.
-+ */
-+static void i2c_gpio_setscl_val(void *data, int state)
-+{
-+	struct i2c_gpio_platform_data *pdata = data;
-+
-+	gpio_set_value(pdata->scl_pin, state);
-+}
-+
-+int i2c_gpio_getsda(void *data)
-+{
-+	struct i2c_gpio_platform_data *pdata = data;
-+
-+	return gpio_get_value(pdata->sda_pin);
-+}
-+
-+int i2c_gpio_getscl(void *data)
-+{
-+	struct i2c_gpio_platform_data *pdata = data;
-+
-+	return gpio_get_value(pdata->scl_pin);
-+}
-+
-+static int __init i2c_gpio_probe(struct platform_device *pdev)
-+{
-+	struct i2c_gpio_platform_data *pdata;
-+	struct i2c_algo_bit_data *bit_data;
-+	struct i2c_adapter *adap;
-+	int ret;
-+
-+	pdata = pdev->dev.platform_data;
-+	if (!pdata)
-+		return -ENXIO;
-+
-+	ret = -ENOMEM;
-+	adap = kzalloc(sizeof(struct i2c_adapter), GFP_KERNEL);
-+	if (!adap)
-+		goto err_alloc_adap;
-+	bit_data = kzalloc(sizeof(struct i2c_algo_bit_data), GFP_KERNEL);
-+	if (!bit_data)
-+		goto err_alloc_bit_data;
-+
-+	ret = gpio_request(pdata->sda_pin, "sda");
-+	if (ret)
-+		goto err_request_sda;
-+	ret = gpio_request(pdata->scl_pin, "scl");
-+	if (ret)
-+		goto err_request_scl;
-+
-+	if (pdata->sda_is_open_drain) {
-+		gpio_direction_output(pdata->sda_pin, 1);
-+		bit_data->setsda = i2c_gpio_setsda_val;
-+	} else {
-+		gpio_direction_input(pdata->sda_pin);
-+		bit_data->setsda = i2c_gpio_setsda_dir;
-+	}
-+
-+	if (pdata->scl_is_open_drain || pdata->scl_is_output_only) {
-+		gpio_direction_output(pdata->scl_pin, 1);
-+		bit_data->setscl = i2c_gpio_setscl_val;
-+	} else {
-+		gpio_direction_input(pdata->scl_pin);
-+		bit_data->setscl = i2c_gpio_setscl_dir;
-+	}
-+
-+	if (!pdata->scl_is_output_only)
-+		bit_data->getscl = i2c_gpio_getscl;
-+	bit_data->getsda = i2c_gpio_getsda;
-+
-+	if (pdata->udelay)
-+		bit_data->udelay = pdata->udelay;
-+	else if (pdata->scl_is_output_only)
-+		bit_data->udelay = 50;			/* 6.6 kHz */
-+	else
-+		bit_data->udelay = 5;			/* 66 kHz */
-+
-+	if (pdata->timeout)
-+		bit_data->timeout = pdata->timeout;
-+	else
-+		bit_data->timeout = HZ / 10;		/* 100 ms */
-+
-+	bit_data->data = pdata;
-+
-+	adap->owner = THIS_MODULE;
-+	snprintf(adap->name, I2C_NAME_SIZE, "i2c-gpio%d", pdev->id);
-+	adap->algo_data = bit_data;
-+	adap->dev.parent = &pdev->dev;
-+
-+	ret = i2c_bit_add_bus(adap);
-+	if (ret)
-+		goto err_add_bus;
-+
-+	platform_set_drvdata(pdev, adap);
-+
-+	dev_info(&pdev->dev, "using pins %u (sda) and %u (scl%s)\n",
-+		 pdata->sda_pin, pdata->scl_pin,
-+		 pdata->scl_is_output_only
-+		 ? ", no clock stretching" : "");
-+
-+	return 0;
-+
-+err_add_bus:
-+	gpio_free(pdata->scl_pin);
-+err_request_scl:
-+	gpio_free(pdata->sda_pin);
-+err_request_sda:
-+	kfree(bit_data);
-+err_alloc_bit_data:
-+	kfree(adap);
-+err_alloc_adap:
-+	return ret;
-+}
-+
-+static int __exit i2c_gpio_remove(struct platform_device *pdev)
-+{
-+	struct i2c_gpio_platform_data *pdata;
-+	struct i2c_adapter *adap;
-+
-+	adap = platform_get_drvdata(pdev);
-+	pdata = pdev->dev.platform_data;
-+
-+	i2c_del_adapter(adap);
-+	gpio_free(pdata->scl_pin);
-+	gpio_free(pdata->sda_pin);
-+	kfree(adap->algo_data);
-+	kfree(adap);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver i2c_gpio_driver = {
-+	.driver		= {
-+		.name	= "i2c-gpio",
-+		.owner	= THIS_MODULE,
-+	},
-+	.remove		= __exit_p(i2c_gpio_remove),
-+};
-+
-+static int __init i2c_gpio_init(void)
-+{
-+	int ret;
-+
-+	ret = platform_driver_probe(&i2c_gpio_driver, i2c_gpio_probe);
-+	if (ret)
-+		printk(KERN_ERR "i2c-gpio: probe failed: %d\n", ret);
-+
-+	return ret;
-+}
-+module_init(i2c_gpio_init);
-+
-+static void __exit i2c_gpio_exit(void)
-+{
-+	platform_driver_unregister(&i2c_gpio_driver);
-+}
-+module_exit(i2c_gpio_exit);
-+
-+MODULE_AUTHOR("Haavard Skinnemoen <hskinnemoen@atmel.com>");
-+MODULE_DESCRIPTION("Platform-independent bitbanging i2c driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/i2c-gpio.h b/include/linux/i2c-gpio.h
-new file mode 100644
-index 0000000..7812407
---- /dev/null
-+++ b/include/linux/i2c-gpio.h
-@@ -0,0 +1,38 @@
-+/*
-+ * i2c-gpio interface to platform code
-+ *
-+ * Copyright (C) 2007 Atmel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#ifndef _LINUX_I2C_GPIO_H
-+#define _LINUX_I2C_GPIO_H
-+
-+/**
-+ * struct i2c_gpio_platform_data - Platform-dependent data for i2c-gpio
-+ * @sda_pin: GPIO pin ID to use for SDA
-+ * @scl_pin: GPIO pin ID to use for SCL
-+ * @udelay: signal toggle delay. SCL frequency is (333 / udelay) kHz
-+ * @timeout: clock stretching timeout in jiffies. If the slave keeps
-+ *	SCL low for longer than this, the transfer will time out.
-+ * @sda_is_open_drain: SDA is configured as open drain, i.e. the pin
-+ *	isn't actively driven high when setting the output value high.
-+ *	gpio_get_value() must return the actual pin state even if the
-+ *	pin is configured as an output.
-+ * @scl_is_open_drain: SCL is set up as open drain. Same requirements
-+ *	as for sda_is_open_drain apply.
-+ * @scl_is_output_only: SCL output drivers cannot be turned off.
-+ */
-+struct i2c_gpio_platform_data {
-+	unsigned int	sda_pin;
-+	unsigned int	scl_pin;
-+	int		udelay;
-+	int		timeout;
-+	unsigned int	sda_is_open_drain:1;
-+	unsigned int	scl_is_open_drain:1;
-+	unsigned int	scl_is_output_only:1;
-+};
-+
-+#endif /* _LINUX_I2C_GPIO_H */
 -- 
-1.4.4.4
-
+| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
+| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
+| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
+> I will never go to meetings again because I think  face to face meetings <
+> are the biggest waste of time you can ever have.        --Linus Torvalds <
