@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751661AbXDNXR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751610AbXDNX0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751661AbXDNXR3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 19:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXDNXR3
+	id S1751610AbXDNX0H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 19:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbXDNX0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 19:17:29 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:16866 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbXDNXR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 19:17:28 -0400
-X-IronPort-AV: i="4.14,411,1170662400"; 
-   d="scan'208"; a="51167782:sNHT46633412"
-Subject: NFS: Fix an Oops in nfs_setattr()
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Sat, 14 Apr 2007 19:07:28 -0400
-Message-Id: <1176592048.6089.23.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 14 Apr 2007 23:07:34.0367 (UTC) FILETIME=[AFB47EF0:01C77EE9]
+	Sat, 14 Apr 2007 19:26:07 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4682 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbXDNX0F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 19:26:05 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 14 Apr 2007 16:26:04 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+In-Reply-To: <Pine.LNX.4.64.0704140008001.10930@alien.or.mcafeemobile.com>
+Message-ID: <Pine.LNX.4.64.0704141623310.12147@alien.or.mcafeemobile.com>
+References: <20070413202100.GA9957@elte.hu> <20070413222151.GD8915@holomorphy.com>
+ <Pine.LNX.4.64.0704140008001.10930@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It looks like nfs_setattr() and nfs_rename() also need to test whether the
-target is a regular file before calling nfs_wb_all()...
+On Sat, 14 Apr 2007, Davide Libenzi wrote:
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+> Haven't looked at the scheduler code yet, but for a similar problem I use 
+> a time ring. The ring has Ns (2 power is better) slots (where tasks are 
+> queued - in my case they were som sort of timers), and it has a current 
+> base index (Ib), a current base time (Tb) and a time granularity (Tg). It 
+> also has a bitmap with bits telling you which slots contains queued tasks. 
+> An item (task) that has to be scheduled at time T, will be queued in the slot:
+> 
+> S = Ib + min((T - Tb) / Tg, Ns - 1);
 
- fs/nfs/dir.c   |    3 ++-
- fs/nfs/inode.c |    6 ++++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+... mod Ns, of course ;)
 
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 92d8ec8..cd34697 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1684,7 +1684,8 @@ go_ahead:
- 	 * ... prune child dentries and writebacks if needed.
- 	 */
- 	if (atomic_read(&old_dentry->d_count) > 1) {
--		nfs_wb_all(old_inode);
-+		if (S_ISREG(old_inode->i_mode))
-+			nfs_wb_all(old_inode);
- 		shrink_dcache_parent(old_dentry);
- 	}
- 	nfs_inode_return_delegation(old_inode);
-diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index 93d046c..44aa9b7 100644
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -341,8 +341,10 @@ nfs_setattr(struct dentry *dentry, struct iattr *attr)
- 	lock_kernel();
- 	nfs_begin_data_update(inode);
- 	/* Write all dirty data */
--	filemap_write_and_wait(inode->i_mapping);
--	nfs_wb_all(inode);
-+	if (S_ISREG(inode->i_mode)) {
-+		filemap_write_and_wait(inode->i_mapping);
-+		nfs_wb_all(inode);
-+	}
- 	/*
- 	 * Return any delegations if we're going to change ACLs
- 	 */
+
+- Davide
+
+
