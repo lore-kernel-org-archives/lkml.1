@@ -1,143 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750712AbXDNIMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXDNIPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750712AbXDNIMz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 04:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbXDNIMz
+	id S965407AbXDNIPF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 04:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbXDNIPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 04:12:55 -0400
-Received: from 23.mail-out.ovh.net ([213.186.41.17]:34227 "HELO
-	23.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750712AbXDNIMx (ORCPT
+	Sat, 14 Apr 2007 04:15:04 -0400
+Received: from smtp112.plus.mail.re2.yahoo.com ([206.190.53.37]:45225 "HELO
+	smtp112.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753248AbXDNIPB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 04:12:53 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 04:12:53 EDT
-Message-ID: <46208B40.1060809@boichat.ch>
-Date: Sat, 14 Apr 2007 16:05:20 +0800
-From: Nicolas Boichat <nicolas@boichat.ch>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070309)
+	Sat, 14 Apr 2007 04:15:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=USSEXKHYqAAZy+QSGSVfUYe3TJFDD2KcPIhamx43lA4z8OChQq5VcDcIxd9Aiaja8K5aKOdoKzSyOGDpRlA2t6Rwop0n/qO2BwUh7BDJaKY794GkYSloLGAfB6StnUYeOUdRN5F52XUB5P3RhcXmy9ZPb+e2zt4h2XCbi+EGqmo=  ;
+X-YMail-OSG: dIipKEAVM1lHcRa_dztf1GJ..qd6xckDoushob.3lnvBEn6nxwFdwBnKbIzJ3S1q7RyOQpTIPvzkQSo_SJ_iOL0RMFkmI8GSZ9NXahOu13lYMN5K1ZnG
+Date: Sat, 14 Apr 2007 10:14:50 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [KERNEL-DOC] fix tex error when building pdfdocs
+Message-ID: <20070414081450.GA4160@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070412203842.GA14245@zmei.tnic> <20070412164851.0c5d6e54.randy.dunlap@oracle.com> <20070413063459.GA4075@gollum.tnic> <20070413082049.adbc611d.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, rpurdie@rpsys.net
-CC: Bradley Hook <bdhook@gmail.com>, mactel-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] applesmc - fix crash when activating a led trigger on the
- keyboard backlight
-References: <45F7C083.7090504@boichat.ch>	<b6c5339f0703191443l5f8c5271pf43ea62e0c79a614@mail.gmail.com>	<45FF86F6.7050200@boichat.ch> <eb4a44160703200016i74786682n41f87f3d88f90409@mail.gmail.com>
-In-Reply-To: <eb4a44160703200016i74786682n41f87f3d88f90409@mail.gmail.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Ovh-Remote: 137.132.199.102 ()
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070413082049.adbc611d.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Apr 13, 2007 at 08:20:49AM -0700, Randy Dunlap wrote:
+> On Fri, 13 Apr 2007 08:35:00 +0200 Borislav Petkov wrote:
+> 
+> > On Thu, Apr 12, 2007 at 04:48:51PM -0700, Randy Dunlap wrote:
+> > > On Thu, 12 Apr 2007 22:38:42 +0200 Borislav Petkov wrote:
+> > > 
+> > > > When building pdfdocs, the db2pdf converter bails out because of an
+> > > > latex-reserved token  - '#' - in the intermediary .tex file which ends up in a
+> > > > conversion error with the following error message: 
+> > > > 
+> > > > <log>
+> > > > [15.0.32])
+> > > > ! Incomplete \iffalse; all text was ignored after line 8154.
+> > > > <inserted text>
+> > > >                 \fi
+> > > > <*> kernel-hacking.tex
+> > > > </log>
+> > > > 
+> > > > This is a rather arbitrary fix, so suggest away.
+> > > 
+> > > Hi,
+> > > 
+> > > I don't have a problem with the change, but I don't get that tex error either.
+> > > Here is an extract from the .tex file:
+> > > 
+> > > 
+> > > {\def\Element%
+> > > {451}\def\ProcessingMode%
+> > > {title-sosofo-mode}}\#if\endNode{}\endSeq{}\endLink{}\Seq%
+> > > {}\Leader%
+> > > {}.\endLeader{}\Link%
+> > >
+> > <snip>
+> > 
+> > Actually this is the TOC-piece of .tex code around line 1622. The offending line
+> > is way down (ca. 8152) at the actual chapter heading and it looks like this:
+> > 
+> > {\def\Element%
+> > {0:451}\def\ProcessingMode%
+> > {title-sosofo-mode}}\#if\endNode{}\def\HeadingText{%
+> > 10.7. \if}%
+> > \endHeadPar{}\endSeq{}\Node%
+> > 
+> > and I think it is the fourth line that causes the problem for the # sign is
+> > stripped and the title is converted to a tex conditional - \if - which isn't
+> > terminated, but I'm not so sure. The thing is, the docbook2tex converts the
+> > .tmpl file to .tex file ok but db2pdf chokes. What docbook-utils are you using?
+> > Mine are version 0.6.14-1 of debian unstable.
+> 
+> I'm using:  docbook-utils-0.6.14-79  (SLED 10)
+> 
+> and the corrected :) lines contain an additional '#':
+> 
+> {1}}10.7. \Node%
+> {\def\Element%
+> {451}\def\ProcessingMode%
+> {title-sosofo-mode}}\#if\endNode{}\def\HeadingText{%
+> 10.7. \#if}%
+> \endHeadPar{}\endSeq{}\Node%
+> {\def\Element%
+> {451}}\endNode{}\Node%
 
-I got this bug report a while ago:
+I got it, the problem is in that we use different DSSSL engines. Mine was
+openjade, therefore the different section numbers like {0:451} vs. jade's {451},
+i.e. without the leading zero. I switched to jade and kernel-hacking.tex converts fine.
+The thereby generated tex code looks also differently:
 
-Bradley Hook wrote:
-> Slightly off-topic, but I've been experiencing a minor bug in the
-> keyboard backlight feature.
->
-> I say it is "minor" only because the feature serves no real functional
-> purpose. You can activate a trigger called "heartbeat" that will cause
-> the keyboard light to pulse at a speed based on the CPU usage. On my
-> MBP17, after activating this trigger the machine will either lock-up
-> or core dump within about a minute (timing is not consistent).
->   
+{\def\Element%
+{451}\def\ProcessingMode%
+{title-sosofo-mode}}\#if\endNode{}\endPar{}\endSeq{}\Node%
+{\def\Element%
+{451}}\endNode{}\Node%
 
-This is caused by the fact applesmc_backlight_set locks a mutex (or more
-precisely sleeps while trying to lock a mutex) while being in a softirq
-context.
-
-This might be obvious for others, but it was not for me, and there is
-absolutely no mention in the documentation of the fact it is not always
-safe to sleep in the brightness_set handler of a led_class device (it is
-safe when it is called because someone wrote to the brightness sysfs file).
-
-So, with the patch below, in case the mutex is locked for another
-operation, the "brightness_set" called by the led trigger is simply
-ignored. I don't think it is the behaviour we want, and I think it would
-be a good idea to try again a little while afterwards. Richard, would
-you like me to provide a patch for this? It would imply adding a
-parameter to brightness_set indicating whether it's safe to sleep or
-not, make it return an int, and modify the triggers code to retry if the
-return value indicates an error.
-
-Also, the led-trigger code seems buggy when it comes to locking. Setting
-CONFIG_DEBUG_SPINLOCK_SLEEP causes a lot a warnings. The problem is that
-the list of triggers is locked using a rw spinlock, but the rest of the
-code seems to ignore that, and calls a lot of functions which can sleep
-(kzalloc with GFP_KERNEL, sysfs_add_file, mutex_lock, etc...). I think
-the list lock should be converted to a mutex (or maybe modified to use
-RCU). I'm not very experienced in that domain, but if you want I can
-provide a patch for this.
-
-Best regards,
-
-Nicolas
-
-Cannot sleep in led->brightness_set handler if it is called from a softirq.
-Reduce wait_status timetout from 100ms to 2ms, as wait_status either takes less
-than 1.5 ms, or fails.
-
-Signed-off-by: Nicolas Boichat <nicolas@boichat.ch>
----
-
- drivers/hwmon/applesmc.c |   25 ++++++++++++++++++++-----
- 1 files changed, 20 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
-index 4ec38ef..c93c290 100644
---- a/drivers/hwmon/applesmc.c
-+++ b/drivers/hwmon/applesmc.c
-@@ -142,7 +142,7 @@ static struct mutex applesmc_lock;
- static unsigned int key_at_index;
- 
- /*
-- * __wait_status - Wait up to 100ms for the status port to get a certain value
-+ * __wait_status - Wait up to 2ms for the status port to get a certain value
-  * (masked with 0x0f), returning zero if the value is obtained.  Callers must
-  * hold applesmc_lock.
-  */
-@@ -152,9 +152,14 @@ static int __wait_status(u8 val)
- 
- 	val = val & APPLESMC_STATUS_MASK;
- 
--	for (i = 0; i < 10000; i++) {
--		if ((inb(APPLESMC_CMD_PORT) & APPLESMC_STATUS_MASK) == val)
-+	for (i = 0; i < 200; i++) {
-+		if ((inb(APPLESMC_CMD_PORT) & APPLESMC_STATUS_MASK) == val) {
-+			if (debug)
-+				printk(KERN_DEBUG
-+						"Waited %d us for status %x\n",
-+						i*10, val);
- 			return 0;
-+		}
- 		udelay(10);
- 	}
- 
-@@ -725,8 +730,18 @@ static void applesmc_backlight_set(struct led_classdev *led_cdev,
- 						enum led_brightness value)
- {
- 	u8 buffer[2];
--	
--	mutex_lock(&applesmc_lock);
-+
-+	if (in_interrupt()) {
-+		/* Cannot sleep, as we are called from a timer. */
-+		if (!mutex_trylock(&applesmc_lock)) {
-+			printk(KERN_ERR "applesmc: Could not set the backlight,"
-+							" mutex is locked.\n");
-+			return;
-+		}
-+	} else {
-+		mutex_lock(&applesmc_lock);
-+	}
-+
- 	buffer[0] = value;
- 	buffer[1] = 0x00;
- 	applesmc_write_key(BACKLIGHT_KEY, buffer, 2);
-
-
+-- 
+Regards/Gruß,
+    Boris.
