@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbXDNRSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbXDNRTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbXDNRSQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbXDNRSQ
+	id S1754247AbXDNRTZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 13:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXDNRTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:18:16 -0400
-Received: from stinky.trash.net ([213.144.137.162]:64067 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754239AbXDNRSP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:18:15 -0400
-Message-ID: <46210C82.6060701@trash.net>
-Date: Sat, 14 Apr 2007 19:16:50 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: drraid@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Kernel 2.6.20.4 Unaligned address
-References: <1f8291090704101602q41e30a7doe79f3606643b628b@mail.gmail.com> <20070413.163521.45883605.davem@davemloft.net>
-In-Reply-To: <20070413.163521.45883605.davem@davemloft.net>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Apr 2007 13:19:25 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:35619 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754242AbXDNRTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 13:19:24 -0400
+Date: Sat, 14 Apr 2007 10:19:08 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Brian Gernhardt <benji@silverinsanity.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Rene Herman <rene.herman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       git@vger.kernel.org
+Subject: Re: GIT and the current -stable
+Message-ID: <20070414171908.GU10574@sequoia.sous-sol.org>
+References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org> <5A4D6434-3DF2-4CC7-B363-260E5F945F72@silverinsanity.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5A4D6434-3DF2-4CC7-B363-260E5F945F72@silverinsanity.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: "doctor raid" <drraid@gmail.com>
-> Date: Tue, 10 Apr 2007 16:02:01 -0700
+* Brian Gernhardt (benji@silverinsanity.com) wrote:
+> On Apr 14, 2007, at 4:34 AM, Chris Wright wrote:
+> >I've already put a tree like this up on kernel.org.  The master branch
+> >is Linus' tree, and there's branches for each of the stable releases
+> >called linux-2.6.[12-20].y (I didn't add 2.6.11.y).
+> >
+> >http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=summary
 > 
-> 
->>[1] kernel errors reporting unaligned access of memory
->>[2]  The following two lines iterate twice a piece, about once every 2 minutes:
->>
->>      Kernel unaligned access at TPC[79c344] arpt_do_table+0x3cc/0x640
->>       Kernel unaligned access at TPC[79c33c] arpt_do_table+0x3c4/0x640
-> 
-> 
-> This patch below should fix this problem.
-> 
-> Patrick I'm going to push this to Linus.  Even if it doesn't
-> fix this person's problem, either both the input device loop
-> and the output device loop should use the "long" casting
-> optimization or both should not :-)
+> Is HEAD for that repo the most recent stable branch, or (as gitweb  
+> makes it look) Linus's head.  I'd expect a "-stable" repo to point at  
+> the most recent stable commit, not the most recent development  
+> commit.  And I'd also expect gitweb's summary page to show the  
+> shortlog for HEAd.  One of my assumptions are being broken and I  
+> don't like it.  It leaves me all confused...
 
+As I mentioned.  The master branch (HEAD) is Linus' tree, and each
+stable tree is on its own branch.  You'll find shortlog summarizes the
+main branch, so yes, gitweb's summary is a bit confusing based on your
+assumptions.  This is a new tree and hasn't been publicized until now.
+It does make sense to have its head be the newest stable, I'll switch
+that around.
 
-Looks good, thanks Dave. On 64 bit both interfaces are unaligned
-within struct arpt_arp:
-
-char                       iniface[16];          /*    94    16 */
-char                       outiface[16];         /*   110    16 */
+thanks,
+-chris
