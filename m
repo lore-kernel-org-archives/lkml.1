@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbXDNULk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965537AbXDNUM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751306AbXDNULk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 16:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXDNULk
+	id S965537AbXDNUM6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 16:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964934AbXDNUM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 16:11:40 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:8405 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751306AbXDNULj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 16:11:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lvupglZ2EnjspJCjy0t5HrsZ7Mk9WSo8CPNhusUO+Bx8WzqVs9rMbLb0SIcsX8/P9dPuaN0mS1E1GTuxYNRoFChxVlAgX5EfqlA021bPURqXu6X0po0BTscZYiM3SkYoswxuyImHqwGM9KivaJW+AATjEiCYAp9z2U5TUmMbMac=
-Message-ID: <4af2d03a0704141311q61931b98wb613b4ee4c580b02@mail.gmail.com>
-Date: Sat, 14 Apr 2007 22:11:37 +0200
-From: "Jiri Slaby" <jirislaby@gmail.com>
-To: "Jan Yenya Kasprzak" <kas@fi.muni.cz>
-Subject: Re: [RFC 1/1] Char: mxser_new, fix recursive locking
-Cc: linux-kernel@vger.kernel.org, osv@javad.com
-In-Reply-To: <20070414195543.GE20376@fi.muni.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Apr 2007 16:12:58 -0400
+Received: from 1wt.eu ([62.212.114.60]:1916 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965537AbXDNUM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 16:12:57 -0400
+Date: Sat, 14 Apr 2007 22:12:27 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070414201227.GA4536@1wt.eu>
+References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414194855.GZ2986@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070414042725.GT20376@fi.muni.cz> <462079ED.2000605@gmail.com>
-	 <3018694794025219@wsc.cz> <20070414143719.GA5203@fi.muni.cz>
-	 <4af2d03a0704140952w6e2338c4g3037f4ba03e2fb1d@mail.gmail.com>
-	 <20070414195543.GE20376@fi.muni.cz>
+In-Reply-To: <20070414194855.GZ2986@holomorphy.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/14/07, Jan Yenya Kasprzak <kas@fi.muni.cz> wrote:
-> ~BUG: spinlock lockup on CPU#0, sshd/1671, ffffffff80557780
-[...]
-> the write(1, "/file/name/...", ...) call returned -EIO.
+On Sat, Apr 14, 2007 at 12:48:55PM -0700, William Lee Irwin III wrote:
+> On Sat, Apr 14, 2007 at 10:36:25AM +0200, Willy Tarreau wrote:
+> > Forking becomes very slow above a load of 100 it seems. Sometimes,
+> > the shell takes 2 or 3 seconds to return to prompt after I run
+> > "scheddos &"
+> > Those are very promising results, I nearly observe the same responsiveness
+> > as I had on a solaris 10 with 10k running processes on a bigger machine.
+> > I would be curious what a mysql test result would look like now.
+> 
+> Where is scheddos?
 
-Just a question: both with mxser_new, right?
+I will send it to you off-list. I've been avoiding to publish it for a long
+time because the stock scheduler was *very* sensible to trivial attacks
+(freezes larger than 30s, impossible to log in). It's very basic, and I
+have no problem sending it to anyone who requests it, it's just that as
+long as some distros ship early 2.6 kernels I do not want it to appear on
+mailing list archives for anyone to grab it and annoy their admins for free.
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Cheers,
+Willy
+
