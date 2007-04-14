@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbXDNRGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbXDNRMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbXDNRGF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDNRGE
+	id S1754221AbXDNRMF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 13:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbXDNRMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:06:04 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:58566 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbXDNRGD (ORCPT
+	Sat, 14 Apr 2007 13:12:05 -0400
+Received: from stinky.trash.net ([213.144.137.162]:63982 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754220AbXDNRME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:06:03 -0400
-Date: Sat, 14 Apr 2007 20:04:51 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dhowells@redhat.com, sfr@canb.auug.org.au
-Subject: Re: {Spam?} [PATCH] Remove all traces of legacy power management.
-Message-ID: <20070414180451.GA4525@linux-mips.org>
-References: <Pine.LNX.4.64.0704141125410.15722@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704141125410.15722@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+	Sat, 14 Apr 2007 13:12:04 -0400
+Message-ID: <46210B0E.2040209@trash.net>
+Date: Sat, 14 Apr 2007 19:10:38 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: paulus@samba.org, poemann@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+References: <461DC70B.4000500@trash.net>	<20070413.161635.26523891.davem@davemloft.net>	<17953.1560.855914.274514@cargo.ozlabs.ibm.com> <20070414.100441.15000708.davem@davemloft.net>
+In-Reply-To: <20070414.100441.15000708.davem@davemloft.net>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 14, 2007 at 12:49:54PM -0400, Robert P. J. Day wrote:
-> Date:	Sat, 14 Apr 2007 12:49:54 -0400 (EDT)
-> From:	"Robert P. J. Day" <rpjday@mindspring.com>
-> To:	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> cc:	dhowells@redhat.com, Ralf Baechle <ralf@linux-mips.org>,
-> 	sfr@canb.auug.org.au
-> Subject: {Spam?} [PATCH] Remove all traces of legacy power management.
-> Content-Type: TEXT/PLAIN; charset=US-ASCII
+David Miller wrote:
+> From: Paul Mackerras <paulus@samba.org>
+> Date: Sun, 15 Apr 2007 02:49:28 +1000
 > 
 > 
-> Remove everything related to legacy power management.
+>>I didn't see the patch (the message that this is a reply to is the
+>>first one that I have seen in this thread), so I can't comment on it.
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> Here is Patrick McHardy's patch:
+> 
+> [..]
 
-> diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
-> index 3901e8e..f3685d6 100644
-> --- a/arch/mips/au1000/common/power.c
-> +++ b/arch/mips/au1000/common/power.c
-> @@ -278,13 +278,11 @@ static int pm_do_sleep(ctl_table * ctl, int write, struct file *file,
->  		p = buf;
->  		sleep_ticks = simple_strtoul(p, &p, 0);
->  #endif
-> -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
-> 
->  		if (retval)
->  			return retval;
-> 
->  		au_sleep();
-> -		retval = pm_send_all(PM_RESUME, (void *) 0);
->  	}
->  	return retval;
->  }
-> @@ -297,12 +295,10 @@ static int pm_do_suspend(ctl_table * ctl, int write, struct file *file,
->  	if (!write) {
->  		*len = 0;
->  	} else {
-> -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
->  		if (retval)
->  			return retval;
->  		suspend_mode = 1;
-> 
-> -		retval = pm_send_all(PM_RESUME, (void *) 0);
->  	}
->  	return retval;
->  }
 
-Both segments leave the variable retval as zero initialized and only used
-for the return value ...  I'm not sure what these functions actually
-should do - but after your patches they have essentially become glorified
-nops.
+I haven't heard back from Bartek yet. In case the patch is correct,
+ppp_synctty seems to need the same fix.
 
-  Ralf
