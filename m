@@ -1,143 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965536AbXDNVVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbXDNVYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965536AbXDNVVr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 17:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXDNVUS
+	id S1752159AbXDNVYG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 17:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbXDNVVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 17:20:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:59517 "EHLO mail.goop.org"
+	Sat, 14 Apr 2007 17:21:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:59557 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753827AbXDNVUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 17:20:13 -0400
-Message-Id: <20070414204923.521637202@goop.org>
+	id S1753873AbXDNVUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 17:20:20 -0400
+Message-Id: <20070414204925.105615645@goop.org>
 References: <20070414204154.871250608@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 14 Apr 2007 13:41:56 -0700
+Date: Sat, 14 Apr 2007 13:42:17 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 02/28] Account for module percpu space separately from kernel percpu
-Content-Disposition: inline; filename=separate-module-percpu-space.patch
+       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>,
+       "Lenoard N. Zubkoff" <lnz@dandelion.com>,
+       Michael Clay <claym@osuosl.org>
+Subject: [PATCH 23/28] Fix BusLogic to stop using check_region
+Content-Disposition: inline; filename=buslogic-check-range-fixes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than using a single constant PERCPU_ENOUGH_ROOM, compute it as
-the sum of kernel_percpu + PERCPU_MODULE_RESERVE.  This is now common
-to all architectures; if an architecture wants to set
-PERCPU_ENOUGH_ROOM to something special, then it may do so (ia64 is
-the only one which does).
+I got so sick of seing the check_region warnings from BusLogic.c I actually
+fixed it properly.  Never use check region, reserve it before the probe
+with request region instead and check the error result; free region if
+setup fails.  Should be functionally identical to the original except for
+fixing the potential race.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Andi Kleen <ak@suse.de>
+From: Zachary Amsden <zach@vmware.com>
+Signed-off-by: Zachary Amsden <zach@vmware.com>
+CC: Lenoard N. Zubkoff <lnz@dandelion.com>
+CC: Michael Clay <claym@osuosl.org>
 
 ---
- include/asm-alpha/percpu.h   |   14 --------------
- include/asm-sparc64/percpu.h |   10 ----------
- include/asm-x86_64/percpu.h  |   10 ----------
- include/linux/percpu.h       |    9 ++++++++-
- kernel/module.c              |    2 +-
- 5 files changed, 9 insertions(+), 36 deletions(-)
+ drivers/scsi/BusLogic.c |   73 ++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 48 insertions(+), 25 deletions(-)
 
 ===================================================================
---- a/include/asm-alpha/percpu.h
-+++ b/include/asm-alpha/percpu.h
-@@ -1,19 +1,5 @@
- #ifndef __ALPHA_PERCPU_H
- #define __ALPHA_PERCPU_H
--
--/*
-- * Increase the per cpu area for Alpha so that
-- * modules using percpu area can load.
-- */
--#ifdef CONFIG_MODULES
--# define PERCPU_MODULE_RESERVE 8192
--#else
--# define PERCPU_MODULE_RESERVE 0
--#endif
--
--#define PERCPU_ENOUGH_ROOM \
--	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
--	 PERCPU_MODULE_RESERVE)
+--- a/drivers/scsi/BusLogic.c
++++ b/drivers/scsi/BusLogic.c
+@@ -579,17 +579,17 @@ static void __init BusLogic_InitializePr
+ 	/*
+ 	   Append the list of standard BusLogic MultiMaster ISA I/O Addresses.
+ 	 */
+-	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe330 : check_region(0x330, BusLogic_MultiMasterAddressCount) == 0)
++	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe330)
+ 		BusLogic_AppendProbeAddressISA(0x330);
+-	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe334 : check_region(0x334, BusLogic_MultiMasterAddressCount) == 0)
++	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe334)
+ 		BusLogic_AppendProbeAddressISA(0x334);
+-	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe230 : check_region(0x230, BusLogic_MultiMasterAddressCount) == 0)
++	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe230)
+ 		BusLogic_AppendProbeAddressISA(0x230);
+-	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe234 : check_region(0x234, BusLogic_MultiMasterAddressCount) == 0)
++	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe234)
+ 		BusLogic_AppendProbeAddressISA(0x234);
+-	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe130 : check_region(0x130, BusLogic_MultiMasterAddressCount) == 0)
++	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe130)
+ 		BusLogic_AppendProbeAddressISA(0x130);
+-	if (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe134 : check_region(0x134, BusLogic_MultiMasterAddressCount) == 0)
++	if (!BusLogic_ProbeOptions.LimitedProbeISA || BusLogic_ProbeOptions.Probe134)
+ 		BusLogic_AppendProbeAddressISA(0x134);
+ }
  
- #include <asm-generic/percpu.h>
- 
-===================================================================
---- a/include/asm-sparc64/percpu.h
-+++ b/include/asm-sparc64/percpu.h
-@@ -4,16 +4,6 @@
- #include <linux/compiler.h>
- 
- #ifdef CONFIG_SMP
--
--#ifdef CONFIG_MODULES
--# define PERCPU_MODULE_RESERVE 8192
--#else
--# define PERCPU_MODULE_RESERVE 0
--#endif
--
--#define PERCPU_ENOUGH_ROOM \
--	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
--	 PERCPU_MODULE_RESERVE)
- 
- extern void setup_per_cpu_areas(void);
- 
-===================================================================
---- a/include/asm-x86_64/percpu.h
-+++ b/include/asm-x86_64/percpu.h
-@@ -10,16 +10,6 @@
- #ifdef CONFIG_SMP
- 
- #include <asm/pda.h>
--
--#ifdef CONFIG_MODULES
--# define PERCPU_MODULE_RESERVE 8192
--#else
--# define PERCPU_MODULE_RESERVE 0
--#endif
--
--#define PERCPU_ENOUGH_ROOM \
--	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
--	 PERCPU_MODULE_RESERVE)
- 
- #define __per_cpu_offset(cpu) (cpu_pda(cpu)->data_offset)
- #define __my_cpu_offset() read_pda(data_offset)
-===================================================================
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -11,8 +11,15 @@
- 
- /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
- #ifndef PERCPU_ENOUGH_ROOM
--#define PERCPU_ENOUGH_ROOM 32768
-+#ifdef CONFIG_MODULES
-+#define PERCPU_MODULE_RESERVE	8192
-+#else
-+#define PERCPU_MODULE_RESERVE	0
- #endif
+@@ -795,7 +795,9 @@ static int __init BusLogic_InitializeMul
+ 	   host adapters are probed.
+ 	 */
+ 	if (!BusLogic_ProbeOptions.NoProbeISA)
+-		if (PrimaryProbeInfo->IO_Address == 0 && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe330 : check_region(0x330, BusLogic_MultiMasterAddressCount) == 0)) {
++		if (PrimaryProbeInfo->IO_Address == 0 &&
++				(!BusLogic_ProbeOptions.LimitedProbeISA ||
++				 BusLogic_ProbeOptions.Probe330)) {
+ 			PrimaryProbeInfo->HostAdapterType = BusLogic_MultiMaster;
+ 			PrimaryProbeInfo->HostAdapterBusType = BusLogic_ISA_Bus;
+ 			PrimaryProbeInfo->IO_Address = 0x330;
+@@ -805,15 +807,25 @@ static int __init BusLogic_InitializeMul
+ 	   omitting the Primary I/O Address which has already been handled.
+ 	 */
+ 	if (!BusLogic_ProbeOptions.NoProbeISA) {
+-		if (!StandardAddressSeen[1] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe334 : check_region(0x334, BusLogic_MultiMasterAddressCount) == 0))
++		if (!StandardAddressSeen[1] &&
++				(!BusLogic_ProbeOptions.LimitedProbeISA ||
++				 BusLogic_ProbeOptions.Probe334))
+ 			BusLogic_AppendProbeAddressISA(0x334);
+-		if (!StandardAddressSeen[2] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe230 : check_region(0x230, BusLogic_MultiMasterAddressCount) == 0))
++		if (!StandardAddressSeen[2] &&
++				(!BusLogic_ProbeOptions.LimitedProbeISA ||
++				 BusLogic_ProbeOptions.Probe230))
+ 			BusLogic_AppendProbeAddressISA(0x230);
+-		if (!StandardAddressSeen[3] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe234 : check_region(0x234, BusLogic_MultiMasterAddressCount) == 0))
++		if (!StandardAddressSeen[3] &&
++				(!BusLogic_ProbeOptions.LimitedProbeISA ||
++				 BusLogic_ProbeOptions.Probe234))
+ 			BusLogic_AppendProbeAddressISA(0x234);
+-		if (!StandardAddressSeen[4] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe130 : check_region(0x130, BusLogic_MultiMasterAddressCount) == 0))
++		if (!StandardAddressSeen[4] &&
++				(!BusLogic_ProbeOptions.LimitedProbeISA ||
++				 BusLogic_ProbeOptions.Probe130))
+ 			BusLogic_AppendProbeAddressISA(0x130);
+-		if (!StandardAddressSeen[5] && (BusLogic_ProbeOptions.LimitedProbeISA ? BusLogic_ProbeOptions.Probe134 : check_region(0x134, BusLogic_MultiMasterAddressCount) == 0))
++		if (!StandardAddressSeen[5] &&
++				(!BusLogic_ProbeOptions.LimitedProbeISA ||
++				 BusLogic_ProbeOptions.Probe134))
+ 			BusLogic_AppendProbeAddressISA(0x134);
+ 	}
+ 	/*
+@@ -2220,22 +2232,35 @@ static int __init BusLogic_init(void)
+ 		HostAdapter->PCI_Device = ProbeInfo->PCI_Device;
+ 		HostAdapter->IRQ_Channel = ProbeInfo->IRQ_Channel;
+ 		HostAdapter->AddressCount = BusLogic_HostAdapterAddressCount[HostAdapter->HostAdapterType];
 +
-+#define PERCPU_ENOUGH_ROOM						\
-+	(__per_cpu_end - __per_cpu_start + PERCPU_MODULE_RESERVE)
-+#endif	/* PERCPU_ENOUGH_ROOM */
++		/*
++		   Make sure region is free prior to probing.
++		 */
++		if (!request_region(HostAdapter->IO_Address, HostAdapter->AddressCount,
++					"BusLogic"))
++			continue;
+ 		/*
+ 		   Probe the Host Adapter.  If unsuccessful, abort further initialization.
+ 		 */
+-		if (!BusLogic_ProbeHostAdapter(HostAdapter))
++		if (!BusLogic_ProbeHostAdapter(HostAdapter)) {
++			release_region(HostAdapter->IO_Address, HostAdapter->AddressCount);
+ 			continue;
++		}
+ 		/*
+ 		   Hard Reset the Host Adapter.  If unsuccessful, abort further
+ 		   initialization.
+ 		 */
+-		if (!BusLogic_HardwareResetHostAdapter(HostAdapter, true))
++		if (!BusLogic_HardwareResetHostAdapter(HostAdapter, true)) {
++			release_region(HostAdapter->IO_Address, HostAdapter->AddressCount);
+ 			continue;
++		}
+ 		/*
+ 		   Check the Host Adapter.  If unsuccessful, abort further initialization.
+ 		 */
+-		if (!BusLogic_CheckHostAdapter(HostAdapter))
++		if (!BusLogic_CheckHostAdapter(HostAdapter)) {
++			release_region(HostAdapter->IO_Address, HostAdapter->AddressCount);
+ 			continue;
++		}
+ 		/*
+ 		   Initialize the Driver Options field if provided.
+ 		 */
+@@ -2247,16 +2272,6 @@ static int __init BusLogic_init(void)
+ 		 */
+ 		BusLogic_AnnounceDriver(HostAdapter);
+ 		/*
+-		   Register usage of the I/O Address range.  From this point onward, any
+-		   failure will be assumed to be due to a problem with the Host Adapter,
+-		   rather than due to having mistakenly identified this port as belonging
+-		   to a BusLogic Host Adapter.  The I/O Address range will not be
+-		   released, thereby preventing it from being incorrectly identified as
+-		   any other type of Host Adapter.
+-		 */
+-		if (!request_region(HostAdapter->IO_Address, HostAdapter->AddressCount, "BusLogic"))
+-			continue;
+-		/*
+ 		   Register the SCSI Host structure.
+ 		 */
  
- /*
-  * Must be an lvalue. Since @var must be a simple identifier,
-===================================================================
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -430,7 +430,7 @@ static int percpu_modinit(void)
- 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
- 			    GFP_KERNEL);
- 	/* Static in-kernel percpu data (used). */
--	pcpu_size[0] = -ALIGN(__per_cpu_end-__per_cpu_start, SMP_CACHE_BYTES);
-+	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
- 	/* Free room. */
- 	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
- 	if (pcpu_size[1] < 0) {
+@@ -2280,6 +2295,12 @@ static int __init BusLogic_init(void)
+ 		   Acquire the System Resources necessary to use the Host Adapter, then
+ 		   Create the Initial CCBs, Initialize the Host Adapter, and finally
+ 		   perform Target Device Inquiry.
++
++		   From this point onward, any failure will be assumed to be due to a
++		   problem with the Host Adapter, rather than due to having mistakenly
++		   identified this port as belonging to a BusLogic Host Adapter.  The
++		   I/O Address range will not be released, thereby preventing it from
++		   being incorrectly identified as any other type of Host Adapter.
+ 		 */
+ 		if (BusLogic_ReadHostAdapterConfiguration(HostAdapter) &&
+ 		    BusLogic_ReportHostAdapterConfiguration(HostAdapter) &&
+@@ -3598,6 +3619,7 @@ static void __exit BusLogic_exit(void)
+ 
+ __setup("BusLogic=", BusLogic_Setup);
+ 
++#ifdef MODULE
+ static struct pci_device_id BusLogic_pci_tbl[] __devinitdata = {
+ 	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+@@ -3607,6 +3629,7 @@ static struct pci_device_id BusLogic_pci
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{ }
+ };
++#endif
+ MODULE_DEVICE_TABLE(pci, BusLogic_pci_tbl);
+ 
+ module_init(BusLogic_init);
 
 -- 
 
