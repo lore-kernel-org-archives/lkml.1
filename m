@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbXDNPmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbXDNPmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753844AbXDNPmG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 11:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbXDNPmG
+	id S1753669AbXDNPmS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 11:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDNPmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 11:42:06 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:25007 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbXDNPmF (ORCPT
+	Sat, 14 Apr 2007 11:42:18 -0400
+Received: from vs072.rosehosting.com ([216.114.78.72]:40753 "EHLO
+	silverinsanity.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753669AbXDNPmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 11:42:05 -0400
-Date: Sat, 14 Apr 2007 09:39:28 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Machine Check Exception on Opteron 265
-In-reply-to: <fa.bATEBhtZlyN0K1NKutzIYJJSRC0@ifi.uio.no>
-To: "Drift@tihlde" <drift@tihlde.org>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <4620F5B0.6050704@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.bATEBhtZlyN0K1NKutzIYJJSRC0@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sat, 14 Apr 2007 11:42:18 -0400
+X-Greylist: delayed 1627 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 11:42:18 EDT
+In-Reply-To: <20070414083410.GU6602@sequoia.sous-sol.org>
+References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5A4D6434-3DF2-4CC7-B363-260E5F945F72@silverinsanity.com>
+Cc: Rene Herman <rene.herman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       git@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Brian Gernhardt <benji@silverinsanity.com>
+Subject: Re: GIT and the current -stable
+Date: Sat, 14 Apr 2007 11:15:00 -0400
+To: Chris Wright <chrisw@sous-sol.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Espen Fjellvær Olsen wrote:
-> Hi!
-> Today our Opteron 265, 2x2, paniced after many months uptime, giving
-> only this error message:
-> 
-> HARDWARE ERROR
-> CPU 2: Machine Check Exception:            4 Bank 4: b60a200100000813
-> TSC 6bb9fd0142921a ADDR a891e9b8
-> This is not a software problem!
-> 
-> mcelog --ascii gives this on the above error:
-> 
-> HARDWARE ERROR
-> CPU 2 4 northbridge TSC 6bb9fd0142921a
->   Northbridge ECC error
->   ECC syndrome = 14
->        bit32 = err cpu0
->        bit45 = uncorrected ecc error
->        bit57 = processor context corrupt
->        bit61 = error uncorrected
->   bus error 'local node origin, request didn't time out
->       generic read mem transaction
->       memory access, level generic'
-> STATUS b60a200100000813 MCGSTATUS 4
-> This is not a software problem!
-> 
-> 
-> As far as we know there wasnt any unuasal activity on the server at the
-> time.
-> We updated glibc yesterday, but that shouldnt really cause such a problem.
-> So now we wonder if this might be an MCE bug, or really a HW problem,
-> and if it is one of the CPUs, or the RAM thats faulty.
-> We are running 2.6.18.
 
-Sounds like some bad RAM..
+On Apr 14, 2007, at 4:34 AM, Chris Wright wrote:
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> I've already put a tree like this up on kernel.org.  The master branch
+> is Linus' tree, and there's branches for each of the stable releases
+> called linux-2.6.[12-20].y (I didn't add 2.6.11.y).
+>
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6- 
+> stable.git;a=summary
 
+Is HEAD for that repo the most recent stable branch, or (as gitweb  
+makes it look) Linus's head.  I'd expect a "-stable" repo to point at  
+the most recent stable commit, not the most recent development  
+commit.  And I'd also expect gitweb's summary page to show the  
+shortlog for HEAd.  One of my assumptions are being broken and I  
+don't like it.  It leaves me all confused...
+
+(I'd just clone your repo and look for myself, but I'm still pulling  
+Linus's tree for the first time and I don't have a fast connection.)
+
+~~ Brian
