@@ -1,65 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030887AbXDNOh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030890AbXDNOpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030887AbXDNOh0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 10:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030893AbXDNOh0
+	id S1030890AbXDNOpo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 10:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXDNOpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 10:37:26 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:37519 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030887AbXDNOhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 10:37:25 -0400
-Date: Sat, 14 Apr 2007 16:37:19 +0200
-From: Jan Yenya Kasprzak <kas@fi.muni.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, osv@javad.com
-Subject: Re: [RFC 1/1] Char: mxser_new, fix recursive locking
-Message-ID: <20070414143719.GA5203@fi.muni.cz>
-References: <20070414042725.GT20376@fi.muni.cz> <462079ED.2000605@gmail.com> <462079ED.2000605@gmail.com> <3018694794025219@wsc.cz>
+	Sat, 14 Apr 2007 10:45:43 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:53114 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030890AbXDNOpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 10:45:42 -0400
+Subject: Last SCSI bug fix for 2.6.21
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 14 Apr 2007 09:45:32 -0500
+Message-Id: <1176561932.3709.15.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3018694794025219@wsc.cz>
-User-Agent: Mutt/1.4.1i
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Muni-Envelope-From: kas@fi.muni.cz
-X-Muni-Envelope-To: linux-kernel@vger.kernel.org
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 14 Apr 2007 16:37:20 +0200 (CEST)
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-: I would rather incline to the second variant as it is the original approach
-: from moxa driver and I have no idea, what might happen if we drop the lock
-: before calling all involved mxser_ routines.
-: 
-: Could you both (if possible) test the attached patch and drop a message,
-: please?
+After some investigation, there turned out only to be one, so this is
+the final bug fix I have in SCSI.
 
-	Works for me, altough it spits tons of (bogus, in this case)
-warnings about possibly uninitialized variable "flags".
+It's in
 
-	Additionally, I think it is overzealous to wrap _all_
-spin_lock_irqsave/irqrestore() with if (!in_interrupt()). Some of them are
-never called from the interrupt context (mxser_block_till_ready(), for example
-- it can block, so if it is ever called from the interrupt context, we have
-a different, an order of magnitude worse problem here :-)
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-	I have another problem with the driver - it probably sometimes
-drops DCD signal on the serial line or something like that:
-when the traffic on the serial console is heavy, it sometimes disconnects
-me from the remote shell, and cu(1) displays the login prompt from the new
-instance of mgetty of the remote machine. However, it does so both with
-mxser.o and mxser_new.o (in 2.6.21-rc6, I think it worked in 2.6.19,
-but I have to retest it). So this is another problem, different from
-the one we are trying to solve now.
+but since there's only one, I also attach it below.
 
--Yenya
+James
 
+----
+>From 6e3b2bbb197eb12b2bef35bcf2ac3bd6a5facab2 Mon Sep 17 00:00:00 2001
+From: James Bottomley <James.Bottomley@steeleye.com>
+Date: Fri, 6 Apr 2007 11:14:56 -0500
+Subject: [SCSI] 3w-xxxx: fix oops caused by incorrect REQUEST_SENSE handling
+
+3w-xxxx emulates a REQUEST_SENSE response by simply returning nothing.
+Unfortunately, it's assuming that the REQUEST_SENSE command is
+implemented with use_sg == 0, which is no longer the case.  The oops
+occurs because it's clearing the scatterlist in request_buffer instead
+of the memory region.
+
+This is fixed by using tw_transfer_internal() to transfer correctly to
+the scatterlist.
+
+Acked-by: adam radford <aradford@gmail.com>
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+---
+ drivers/scsi/3w-xxxx.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
+index bf5d63e..656bdb1 100644
+--- a/drivers/scsi/3w-xxxx.c
++++ b/drivers/scsi/3w-xxxx.c
+@@ -1864,10 +1864,17 @@ static int tw_scsiop_read_write(TW_Device_Extension *tw_dev, int request_id)
+ /* This function will handle the request sense scsi command */
+ static int tw_scsiop_request_sense(TW_Device_Extension *tw_dev, int request_id)
+ {
++	char request_buffer[18];
++
+ 	dprintk(KERN_NOTICE "3w-xxxx: tw_scsiop_request_sense()\n");
+ 
+-	/* For now we just zero the request buffer */
+-	memset(tw_dev->srb[request_id]->request_buffer, 0, tw_dev->srb[request_id]->request_bufflen);
++	memset(request_buffer, 0, sizeof(request_buffer));
++	request_buffer[0] = 0x70; /* Immediate fixed format */
++	request_buffer[7] = 10;	/* minimum size per SPC: 18 bytes */
++	/* leave all other fields zero, giving effectively NO_SENSE return */
++	tw_transfer_internal(tw_dev, request_id, request_buffer,
++			     sizeof(request_buffer));
++
+ 	tw_dev->state[request_id] = TW_S_COMPLETED;
+ 	tw_state_request_finish(tw_dev, request_id);
+ 
 -- 
-| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
-| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
-| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
-> I will never go to meetings again because I think  face to face meetings <
-> are the biggest waste of time you can ever have.        --Linus Torvalds <
+1.5.0.6
+
+
+
