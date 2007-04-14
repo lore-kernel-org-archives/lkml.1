@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030528AbXDNGNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030727AbXDNGNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030528AbXDNGNA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 02:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965397AbXDNGNA
+	id S1030727AbXDNGNa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 02:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030694AbXDNGNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 02:13:00 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:34457
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965388AbXDNGM7 (ORCPT
+	Sat, 14 Apr 2007 02:13:30 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:17580 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030608AbXDNGN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 02:12:59 -0400
-Date: Sat, 14 Apr 2007 07:50:05 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] include KERN_* constant in printk() calls in arch/i386/mach-default/setup.c
-Message-ID: <20070411065005.GI24898@traven>
-MIME-Version: 1.0
+	Sat, 14 Apr 2007 02:13:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=jdfDaOfCBG9qvCIpQx1vVs9V5lAR5+7HjES24xXlTWFt2G1WPCLj2VmfDCqpQ5vQw4twnMcXpY+fub0UOarZtHFbPoYSJOuG5sNyX85uWcktFRi4Ot6slY63dryLo8mIhpo/nihVtgPgaA8JSwMB/knbyZ16dY6QAWAvHKvTGmk=
+Date: Sat, 14 Apr 2007 15:08:12 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] mod_sysfs_setup() doesn't return errno when kobject_add_dir() failure occurs
+Message-ID: <20070414060812.GA25130@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-include KERN_* constant in printk() calls in arch/i386/mach-default/setup.c
+mod_sysfs_setup() doesn't return an errno when kobject_add_dir()
+for module "holders" directory fails. So caller of mod_sysfs_setup()
+will keep going and get oops.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
- 
----
-diff --git a/arch/i386/mach-default/setup.c b/arch/i386/mach-default/setup.c
-index c788162..f1891b6 100644
---- a/arch/i386/mach-default/setup.c
-+++ b/arch/i386/mach-default/setup.c
-@@ -115,15 +115,15 @@ void mca_nmi_hook(void)
- 	 * at the moment.
- 	 */
- 
--	printk("NMI generated from unknown source!\n");
-+	printk(KERN_WARNING "NMI generated from unknown source!\n");
- }
- #endif
- 
- static __init int no_ipi_broadcast(char *str)
- {
- 	get_option(&str, &no_broadcast);
--	printk ("Using %s mode\n", no_broadcast ? "No IPI Broadcast" :
--											"IPI Broadcast");
-+	printk(KERN_INFO "Using %s mode\n",
-+	       no_broadcast ? "No IPI Broadcast" : "IPI Broadcast");
- 	return 1;
- }
- 
-@@ -131,8 +131,8 @@ __setup("no_ipi_broadcast", no_ipi_broadcast);
- 
- static int __init print_ipi_mode(void)
- {
--	printk ("Using IPI %s mode\n", no_broadcast ? "No-Shortcut" :
--											"Shortcut");
-+	printk(KERN_INFO "Using IPI %s mode\n",
-+	       no_broadcast ? "No-Shortcut" : "Shortcut");
- 	return 0;
- }
- 
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-              Comunicar bichos a <bug-coreutils@gnu.org>
-                     (LANG=es_ES uname --help)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Index: 2.6-mm/kernel/module.c
+===================================================================
+--- 2.6-mm.orig/kernel/module.c
++++ 2.6-mm/kernel/module.c
+@@ -1423,8 +1423,10 @@ int mod_sysfs_setup(struct module *mod,
+ 		goto out;
+ 
+ 	mod->holders_dir = kobject_add_dir(&mod->mkobj.kobj, "holders");
+-	if (!mod->holders_dir)
++	if (!mod->holders_dir) {
++		err = -ENOMEM;
+ 		goto out_unreg;
++	}
+ 
+ 	err = module_param_sysfs_setup(mod, kparam, num_params);
+ 	if (err)
