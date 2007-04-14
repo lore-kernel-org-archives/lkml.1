@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030801AbXDNGdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161010AbXDNGno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030801AbXDNGdK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 02:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXDNGdK
+	id S1161010AbXDNGno (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 02:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161113AbXDNGno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 02:33:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52544 "EHLO mx2.mail.elte.hu"
+	Sat, 14 Apr 2007 02:43:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46713 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965356AbXDNGdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 02:33:09 -0400
-Date: Sat, 14 Apr 2007 08:32:54 +0200
+	id S1161010AbXDNGno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 02:43:44 -0400
+Date: Sat, 14 Apr 2007 08:43:34 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Nick Piggin <npiggin@suse.de>
 Cc: linux-kernel@vger.kernel.org,
@@ -19,12 +19,12 @@ Cc: linux-kernel@vger.kernel.org,
        Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070414063254.GB14875@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de>
+Message-ID: <20070414064334.GA19463@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070414020424.GB14544@wotan.suse.de>
+In-Reply-To: <20070414063254.GB14875@elte.hu>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -38,44 +38,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Piggin <npiggin@suse.de> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> >    The CFS patch uses a completely different approach and implementation
-> >    from RSDL/SD. My goal was to make CFS's interactivity quality exceed
-> >    that of RSDL/SD, which is a high standard to meet :-) Testing
-> >    feedback is welcome to decide this one way or another. [ and, in any
-> >    case, all of SD's logic could be added via a kernel/sched_sd.c module
-> >    as well, if Con is interested in such an approach. ]
-> 
-> Comment about the code: shouldn't you be requeueing the task in the 
-> rbtree wherever you change wait_runtime? eg. task_new_fair? [...]
+> Nick noticed that upon fork we change parent->wait_runtime but we do 
+> not requeue it within the rbtree.
 
-yes: the task's position within the rbtree is updated every time 
-wherever wait_runtime is change. task_new_fair is the method during new 
-task creation, but indeed i forgot to requeue the parent. I've fixed 
-this in my tree (see the delta patch below) - thanks!
+this fix is not complete - because the child runqueue is locked here, 
+not the parent's. I've fixed this properly in my tree and have uploaded 
+a new sched-modular+cfs.patch. (the effects of the original bug are 
+mostly harmless, the rbtree position gets corrected the first time the 
+parent reschedules. The fix might improve heavy forker handling.)
 
 	Ingo
-
------------>
-From: Ingo Molnar <mingo@elte.hu>
-Subject: [cfs] fix parent's rbtree position
-
-Nick noticed that upon fork we change parent->wait_runtime but we do not 
-requeue it within the rbtree.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -524,6 +524,8 @@ static void task_new_fair(struct rq *rq,
- 
- 	p->wait_runtime = parent->wait_runtime/2;
- 	parent->wait_runtime /= 2;
-+	requeue_task_fair(rq, parent);
-+
- 	/*
- 	 * For the first timeslice we allow child threads
- 	 * to move their parent-inherited fairness back
