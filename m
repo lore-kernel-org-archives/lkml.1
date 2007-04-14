@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbXDNQgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbXDNQtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbXDNQgq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 12:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDNQgq
+	id S1751328AbXDNQtb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 12:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXDNQtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 12:36:46 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:16845 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbXDNQgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 12:36:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:organization:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=NkCGPVq9aLIX3iZc6wUYMZZ9t73RquF94ji5y6PA6YMtgUhbjoUdXFnC/Zw96y35tEbV2FKpleBrjimZc3RfHSi1AT0hcQnPvICvoPOrY4fzDUsME2nE0LDNXcD22jQ4SzwwSQap146dVkYpg3fcpPAcKacjKsRbzP3rB/+dS+w=
-Organization: Organization? Not detectable
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: What the heck?
-Date: Sat, 14 Apr 2007 12:36:41 -0400
-User-Agent: KMail/1.9.6
+	Sat, 14 Apr 2007 12:49:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:41024 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbXDNQta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 12:49:30 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704141236.41070.gene.heskett@verizon.net>
-From: Gene Heskett <gene.heskett@gmail.com>
+Message-ID: <17953.1560.855914.274514@cargo.ozlabs.ibm.com>
+Date: Sun, 15 Apr 2007 02:49:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: David Miller <davem@davemloft.net>
+Cc: kaber@trash.net, poemann@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+In-Reply-To: <20070413.161635.26523891.davem@davemloft.net>
+References: <9a8748490704100425t34ebafcdq866a923df80b9aca@mail.gmail.com>
+	<19061b0b0704112218j13688c16xc755d66147f8fe6a@mail.gmail.com>
+	<461DC70B.4000500@trash.net>
+	<20070413.161635.26523891.davem@davemloft.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been diligently putting the spam emitters into my .procmailrc file, so 
-that anything that comes from them goes to /dev/null.
+David Miller writes:
 
-This included mailbag1.bizmailsrvcs.net and mailbag2.bizmailsrvcs.net.
+> > It seems we fail to reserve enough headroom for the case
+> > buf[0] == PPP_ALLSTATIONS and buf[1] != PPP_UI.
+> > 
+> > Can you try this patch please?
+> 
+> Any confirmation of this fix yet?
 
-The linux kernel mailing list disappeared!  Turning on VERBOSE and watching 
-the procmail.log with tail disclosed that it was triggering on those 2 mail 
-servers, which I thought had nothing to do with vger.kernel.org
+Indeed, ppp_async doesn't handle that case correctly.
 
-I've removed them from by procmail recipes now, but I'd sure like to know 
-wtf's going on.  These 2 servers are a major source of incoming spam 
-according to the headers of the spams received.
+RFC 1662 says:
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-That's easy to fix, but I can't be bothered.
+      The Control field is a single octet, which contains the binary
+      sequence 00000011 (hexadecimal 0x03), the Unnumbered Information
+      (UI) command with the Poll/Final (P/F) bit set to zero.
+
+      The use of other Control field values may be defined at a later
+      time, or by prior agreement.  Frames with unrecognized Control
+      field values SHOULD be silently discarded.
+
+In what situation were we getting the frames that cause the problem?
+
+I didn't see the patch (the message that this is a reply to is the
+first one that I have seen in this thread), so I can't comment on it.
+
+Paul.
