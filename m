@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXDNNCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030274AbXDNNO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbXDNNCe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 09:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932192AbXDNNCd
+	id S1030274AbXDNNO1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 09:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030346AbXDNNO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 09:02:33 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:51710 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932167AbXDNNCd (ORCPT
+	Sat, 14 Apr 2007 09:14:27 -0400
+Received: from degraaf1.colo.troy.waveform.net ([204.11.33.9]:60910 "HELO
+	mahatma.gandhilinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1030274AbXDNNO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 09:02:33 -0400
-X-Originating-Ip: 24.6.145.253
-Date: Sat, 14 Apr 2007 09:01:06 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: {Spam?} Re: [PATCH][RFC] Kill off legacy power management stuff.
-In-Reply-To: <20070413183054.08ca0dff.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0704140855270.10740@localhost.localdomain>
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
- <20070413180942.b7cf0665.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0704130416250.15118@CPE00045a9c397f-CM001225dbafb6>
- <20070413183054.08ca0dff.sfr@canb.auug.org.au>
+	Sat, 14 Apr 2007 09:14:26 -0400
+Message-ID: <9457.24.247.238.75.1176556465.squirrel@secure.gandhilinux.org>
+In-Reply-To: <20070413191654.1abdbafc.zaitcev@redhat.com>
+References: <200704131256.47570.jeremy@jeremya.com>
+    <20070413191654.1abdbafc.zaitcev@redhat.com>
+Date: Sat, 14 Apr 2007 09:14:25 -0400 (EDT)
+Subject: Re: [PATCH] usb bulk transfer: 1024 byte packets
+From: "Jeremy C. Andrus" <jeremy@jeremya.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Pete Zaitcev" <zaitcev@redhat.com>
+Reply-To: jeremy@jeremya.com
+User-Agent: SquirrelMail/1.4.7
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: spam, SORBS-DUL,
-	SpamAssassin (not cached, score=-12.808, required 5,
-	ALL_TRUSTED -1.80, BAYES_00 -15.00, RCVD_IN_NJABL_DUL 1.95,
-	RCVD_IN_SORBS_DUL 2.05)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Apr 2007, Stephen Rothwell wrote:
-
-> On Fri, 13 Apr 2007 04:20:10 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
-> >
-> > On Fri, 13 Apr 2007, Stephen Rothwell wrote:
-> > >
-> > > One thing that comes to mind is that you will need some way to
-> > > make sure that only one of ACPI and APM get initialized ...
-> >
-> > i don't see how that has anything to do with removing legacy PM
-> > support.  you can select both ACPI and APM *now*.  if that's a bad
-> > thing, then fixing it is a completely independent issue.
+On Fri, April 13, 2007 22:16, Pete Zaitcev wrote:
 >
-> Except your patch removes this hunk:
->
-> @@ -2264,14 +2248,6 @@ static int __init apm_init(void)
->  		apm_info.disabled = 1;
->  		return -ENODEV;
->  	}
-> -	if (PM_IS_ACTIVE()) {
-> -		printk(KERN_NOTICE "apm: overridden by ACPI.\n");
-> -		apm_info.disabled = 1;
-> -		return -ENODEV;
-> -	}
-> -#ifdef CONFIG_PM_LEGACY
-> -	pm_active = 1;
-> -#endif
->
-> in apm.c and a similar piece of the ACPI initialisation that
-> prevented one initialising if the other had already initialised.
+> The transfer size in the URB is not limited by the maximum packet
+> size. The HC driver splits up the transfer as specified by URB into
+> the required number of packets.
 
-ah, just took a closer look at this.  from <linux/pm_legacy.h>:
-...
-#ifdef CONFIG_PM_LEGACY
-...
-#else
-#define PM_IS_ACTIVE() 0
-...
-#endif
+The problem was not in the transfer from PC -> Device, but from Device
+-> PC. If I remember correctly, the 512 limit (in the
+urb->transfer_flags) is used to setup the DMA. When the device sent
+packets which were 1024 bytes in size, the urb came back with a status
+set to -EOVERFLOW.
 
-so if you choose not to configure legacy PM, that macro equates to
-false and that "if" construct in arch/i386/kernel/apm.c doesn't come
-into play, anyway.
+The only place this could happen (in the EHCI) is in qtd_copy_status()
+where the hardware has reported a "can't proceed" error (via
+QTD_STS_HALT) and then the QTD_STS_BABBLE bit is set (which I interpret
+to mean that the device on the other end is "babbling").
 
-so i re-iterate what i posted in my earlier e-mail -- if APM and ACPI
-want to avoid clashing, they have to do it without invoking anything
-related to legacy PM.
+[snip]
+> I presume the devices didn't show up on your doorstep with baseball
+> bats to have a little chat.
 
-rday
+In a sense they did when there was no way for me to do BULK transfers
+without slamming me with 1024 byte packets :-).
 
-p.s.  if someone wants to take that previously-submitted patch
-proposal and tidy it up and submit it officially, feel free.
+        -Jeremy
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+-----------------------
+Jeremy C. Andrus
+http://www.jeremya.com/
+-----------------------
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
