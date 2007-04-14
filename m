@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbXDNRfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbXDNRmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752683AbXDNRfm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXDNRfm
+	id S1753225AbXDNRmI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 13:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXDNRmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:35:42 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:37923 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbXDNRfl (ORCPT
+	Sat, 14 Apr 2007 13:42:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:57083 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbXDNRmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:35:41 -0400
-X-Originating-Ip: 24.6.145.253
-Date: Sat, 14 Apr 2007 13:33:13 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Ralf Baechle <ralf@linux-mips.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dhowells@redhat.com, sfr@canb.auug.org.au
-Subject: {Spam?} Re: {Spam?} [PATCH] Remove all traces of legacy power management.
-In-Reply-To: <20070414180451.GA4525@linux-mips.org>
-Message-ID: <Pine.LNX.4.64.0704141332400.13774@localhost.localdomain>
-References: <Pine.LNX.4.64.0704141125410.15722@localhost.localdomain>
- <20070414180451.GA4525@linux-mips.org>
+	Sat, 14 Apr 2007 13:42:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=VJEl9h+fMthBHnNNNsFpK6itO13LdbHexH7LYszAbO60bMcshM3kj1Dj71yjdvhDDZCk9ajZiPKL5WMOkZyBTYEdRhNAGfDWQGG8RbEpplPrkkzA4vwzg9He/Mwi942z6pFzlZmE4FbHe+/MDDhQ5gAUiwJbCSX6D3XU6+MBXa4=
+Message-ID: <462111F8.1060700@gmail.com>
+Date: Sat, 14 Apr 2007 21:40:08 +0400
+From: Ignatich <ignatich@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: spam, SORBS-DUL,
-	SpamAssassin (not cached, score=-12.808, required 5,
-	ALL_TRUSTED -1.80, BAYES_00 -15.00, RCVD_IN_NJABL_DUL 1.95,
-	RCVD_IN_SORBS_DUL 2.05)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+Content-Type: text/plain; charset=windows-1251; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Apr 2007, Ralf Baechle wrote:
+You might want to look at this discussion:
+http://mail.opensolaris.org/pipermail/zfs-discuss/2007-April/027041.html
 
-> On Sat, Apr 14, 2007 at 12:49:54PM -0400, Robert P. J. Day wrote:
-> > Date:	Sat, 14 Apr 2007 12:49:54 -0400 (EDT)
-> > From:	"Robert P. J. Day" <rpjday@mindspring.com>
-> > To:	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> > cc:	dhowells@redhat.com, Ralf Baechle <ralf@linux-mips.org>,
-> > 	sfr@canb.auug.org.au
-> > Subject: {Spam?} [PATCH] Remove all traces of legacy power management.
-> > Content-Type: TEXT/PLAIN; charset=US-ASCII
-> >
-> >
-> > Remove everything related to legacy power management.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
->
-> > diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
-> > index 3901e8e..f3685d6 100644
-> > --- a/arch/mips/au1000/common/power.c
-> > +++ b/arch/mips/au1000/common/power.c
-> > @@ -278,13 +278,11 @@ static int pm_do_sleep(ctl_table * ctl, int write, struct file *file,
-> >  		p = buf;
-> >  		sleep_ticks = simple_strtoul(p, &p, 0);
-> >  #endif
-> > -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
-> >
-> >  		if (retval)
-> >  			return retval;
-> >
-> >  		au_sleep();
-> > -		retval = pm_send_all(PM_RESUME, (void *) 0);
-> >  	}
-> >  	return retval;
-> >  }
-> > @@ -297,12 +295,10 @@ static int pm_do_suspend(ctl_table * ctl, int write, struct file *file,
-> >  	if (!write) {
-> >  		*len = 0;
-> >  	} else {
-> > -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
-> >  		if (retval)
-> >  			return retval;
-> >  		suspend_mode = 1;
-> >
-> > -		retval = pm_send_all(PM_RESUME, (void *) 0);
-> >  	}
-> >  	return retval;
-> >  }
->
-> Both segments leave the variable retval as zero initialized and only used
-> for the return value ...  I'm not sure what these functions actually
-> should do - but after your patches they have essentially become glorified
-> nops.
+Let me quote my last letter:
+The problem is not with CDDL, GPL is the problem. ATI and nVidia do 
+provide binary modules with GPL "adapters", but I don't think legality 
+of this approach was proven in court. I see no parties interested in 
+proving that it is not legal (Intel perhaps?), but Sun is another story. 
+They are not interested in ZFS port for Linux, because Solaris and Linux 
+are real competitors, and if winds change may decide to take legal 
+action. Also, such port can never be included in mainline for obvious 
+reasons and I really want to see storage system such as ZFS as "default" 
+for Linux in future. To sum all of this I see a number of possible 
+solutions for this situation:
 
-ah, good point.  feel free to send me a MIPS-specific patch and i can
-incorporate it, if you want.
+1. Sun dual licenses ZFS as GPLv2 and thus gives green light for 
+ZFS-Linux port. Personally I doubt that this will happen.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+2. Linux changes it's license. The chance is near zero.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+3. US and EU courts clearly state that it is legal to use non-GPL kernel 
+modules in Linux.
+
+4. GPL ZFS reimplementation project is started. I prefer that way until 
+1), 2) or 3) happen.
+
+I know Sun opened most if not all ZFS related patents for OpenSolaris 
+community. So I repeat questions I asked in my first mail:
+
+1. Are those patents limited to CDDL/OpenSolaris code or can by used in 
+GPL/Linux too?
+
+2. If GPL code can't use those patented algorithms, will you please 
+provide list of ZFS-related patents? RAID-Z and LZJB are most obvious 
+technologies which may be patent protected.
+<end>
+
+So far I've got no response from Sun. According to Jeff Bonwick's blog 
+Sun issued 56 patents on ZFS, but I have no idea what they patented. 
+Sorry, binary compatible ZFS reimplementation with GPL license might not 
+be legal. If you know something about this or can help to get ZFS 
+related patent list please send me a mail.
+
+Sincerely yours, Max V. Yudin
