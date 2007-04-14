@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbXDNREv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbXDNRGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753105AbXDNREv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXDNREv
+	id S1753047AbXDNRGF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 13:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDNRGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:04:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57178
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753008AbXDNREu (ORCPT
+	Sat, 14 Apr 2007 13:06:04 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:58566 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbXDNRGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:04:50 -0400
-Date: Sat, 14 Apr 2007 10:04:41 -0700 (PDT)
-Message-Id: <20070414.100441.15000708.davem@davemloft.net>
-To: paulus@samba.org
-Cc: kaber@trash.net, poemann@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <17953.1560.855914.274514@cargo.ozlabs.ibm.com>
-References: <461DC70B.4000500@trash.net>
-	<20070413.161635.26523891.davem@davemloft.net>
-	<17953.1560.855914.274514@cargo.ozlabs.ibm.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sat, 14 Apr 2007 13:06:03 -0400
+Date: Sat, 14 Apr 2007 20:04:51 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dhowells@redhat.com, sfr@canb.auug.org.au
+Subject: Re: {Spam?} [PATCH] Remove all traces of legacy power management.
+Message-ID: <20070414180451.GA4525@linux-mips.org>
+References: <Pine.LNX.4.64.0704141125410.15722@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704141125410.15722@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Sun, 15 Apr 2007 02:49:28 +1000
+On Sat, Apr 14, 2007 at 12:49:54PM -0400, Robert P. J. Day wrote:
+> Date:	Sat, 14 Apr 2007 12:49:54 -0400 (EDT)
+> From:	"Robert P. J. Day" <rpjday@mindspring.com>
+> To:	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> cc:	dhowells@redhat.com, Ralf Baechle <ralf@linux-mips.org>,
+> 	sfr@canb.auug.org.au
+> Subject: {Spam?} [PATCH] Remove all traces of legacy power management.
+> Content-Type: TEXT/PLAIN; charset=US-ASCII
+> 
+> 
+> Remove everything related to legacy power management.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-> I didn't see the patch (the message that this is a reply to is the
-> first one that I have seen in this thread), so I can't comment on it.
+> diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
+> index 3901e8e..f3685d6 100644
+> --- a/arch/mips/au1000/common/power.c
+> +++ b/arch/mips/au1000/common/power.c
+> @@ -278,13 +278,11 @@ static int pm_do_sleep(ctl_table * ctl, int write, struct file *file,
+>  		p = buf;
+>  		sleep_ticks = simple_strtoul(p, &p, 0);
+>  #endif
+> -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
+> 
+>  		if (retval)
+>  			return retval;
+> 
+>  		au_sleep();
+> -		retval = pm_send_all(PM_RESUME, (void *) 0);
+>  	}
+>  	return retval;
+>  }
+> @@ -297,12 +295,10 @@ static int pm_do_suspend(ctl_table * ctl, int write, struct file *file,
+>  	if (!write) {
+>  		*len = 0;
+>  	} else {
+> -		retval = pm_send_all(PM_SUSPEND, (void *) 2);
+>  		if (retval)
+>  			return retval;
+>  		suspend_mode = 1;
+> 
+> -		retval = pm_send_all(PM_RESUME, (void *) 0);
+>  	}
+>  	return retval;
+>  }
 
-Here is Patrick McHardy's patch:
+Both segments leave the variable retval as zero initialized and only used
+for the return value ...  I'm not sure what these functions actually
+should do - but after your patches they have essentially become glorified
+nops.
 
-diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
-index 933e2f3..c68e37f 100644
---- a/drivers/net/ppp_async.c
-+++ b/drivers/net/ppp_async.c
-@@ -890,6 +890,8 @@ ppp_async_input(struct asyncppp *ap, const unsigned char *buf,
-  				ap->rpkt = skb;
-  			}
-  			if (skb->len == 0) {
-+				int headroom = 0;
-+
-  				/* Try to get the payload 4-byte aligned.
-  				 * This should match the
-  				 * PPP_ALLSTATIONS/PPP_UI/compressed tests in
-@@ -897,7 +899,10 @@ ppp_async_input(struct asyncppp *ap, const unsigned char *buf,
-  				 * enough chars here to test buf[1] and buf[2].
-  				 */
- 				if (buf[0] != PPP_ALLSTATIONS)
--					skb_reserve(skb, 2 + (buf[0] & 1));
-+					headroom += 2;
-+				if (buf[0] & 1)
-+					headroom += 1;
-+				skb_reserve(skb, headroom);
- 			}
- 			if (n > skb_tailroom(skb)) {
- 				/* packet overflowed MRU */
+  Ralf
