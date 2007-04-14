@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752996AbXDNRB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbXDNREv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752996AbXDNRB5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbXDNRB5
+	id S1753105AbXDNREv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 13:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXDNREv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:01:57 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:38312 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752140AbXDNRB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:01:56 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Date: Sat, 14 Apr 2007 19:59:47 +0300
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070413202100.GA9957@elte.hu> <200704141809.58737.caglar@pardus.org.tr> <20070414160939.GB3099@elte.hu>
-In-Reply-To: <20070414160939.GB3099@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1789212.inGmM7HUJd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sat, 14 Apr 2007 13:04:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57178
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753008AbXDNREu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 13:04:50 -0400
+Date: Sat, 14 Apr 2007 10:04:41 -0700 (PDT)
+Message-Id: <20070414.100441.15000708.davem@davemloft.net>
+To: paulus@samba.org
+Cc: kaber@trash.net, poemann@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <17953.1560.855914.274514@cargo.ozlabs.ibm.com>
+References: <461DC70B.4000500@trash.net>
+	<20070413.161635.26523891.davem@davemloft.net>
+	<17953.1560.855914.274514@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704141959.50076.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1789212.inGmM7HUJd
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+From: Paul Mackerras <paulus@samba.org>
+Date: Sun, 15 Apr 2007 02:49:28 +1000
 
-14 Nis 2007 Cts tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
-=C4=B1:=20
-> hm, could you try to strace it and/or attach gdb to it and figure out
-> what's wrong? (perhaps involving the Kaffeine developers too?) As long
-> as it's not a kernel level crash i cannot see how the scheduler could
-> directly cause this - other than by accident creating a scheduling
-> pattern that triggers a user-space bug more often than with other
-> schedulers.
+> I didn't see the patch (the message that this is a reply to is the
+> first one that I have seen in this thread), so I can't comment on it.
 
-=2E..
-futex(0x89ac218, FUTEX_WAIT, 2, NULL)   =3D 0
-futex(0x89ac218, FUTEX_WAIT, 2, NULL)   =3D 0
-futex(0x89ac218, FUTEX_WAIT, 2, NULL)   =3D 0
-futex(0x89ac218, FUTEX_WAIT, 2, NULL)   =3D 0
-futex(0x89ac218, FUTEX_WAIT, 2, NULL)   =3D 0
-futex(0x89ac218, FUTEX_WAIT, 2, NULL)   =3D -1 EINTR (Interrupted system ca=
-ll)
-=2D-- SIGINT (Interrupt) @ 0 (0) ---
-+++ killed by SIGINT +++
+Here is Patrick McHardy's patch:
 
-is where freeze occurs. Full log can be found at [1]
-
-> > [1] http://cekirdek.pardus.org.tr/~caglar/psaux
->
-> looks quite weird!
-
-:)
-
-[1] http://cekirdek.pardus.org.tr/~caglar/strace.kaffeine
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart1789212.inGmM7HUJd
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGIQiGy7E6i0LKo6YRAoMWAJ9hElBBw/GBfrGlPKNiXuR0D+c38wCggCBH
-Xke1iBVKHWTslTGXvzoqx5U=
-=a8RS
------END PGP SIGNATURE-----
-
---nextPart1789212.inGmM7HUJd--
+diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
+index 933e2f3..c68e37f 100644
+--- a/drivers/net/ppp_async.c
++++ b/drivers/net/ppp_async.c
+@@ -890,6 +890,8 @@ ppp_async_input(struct asyncppp *ap, const unsigned char *buf,
+  				ap->rpkt = skb;
+  			}
+  			if (skb->len == 0) {
++				int headroom = 0;
++
+  				/* Try to get the payload 4-byte aligned.
+  				 * This should match the
+  				 * PPP_ALLSTATIONS/PPP_UI/compressed tests in
+@@ -897,7 +899,10 @@ ppp_async_input(struct asyncppp *ap, const unsigned char *buf,
+  				 * enough chars here to test buf[1] and buf[2].
+  				 */
+ 				if (buf[0] != PPP_ALLSTATIONS)
+-					skb_reserve(skb, 2 + (buf[0] & 1));
++					headroom += 2;
++				if (buf[0] & 1)
++					headroom += 1;
++				skb_reserve(skb, headroom);
+ 			}
+ 			if (n > skb_tailroom(skb)) {
+ 				/* packet overflowed MRU */
