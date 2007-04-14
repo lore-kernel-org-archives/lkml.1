@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbXDNTeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbXDNTe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753661AbXDNTeZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 15:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXDNTeZ
+	id S1753196AbXDNTe2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 15:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXDNTe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 15:34:25 -0400
-Received: from mail.screens.ru ([213.234.233.54]:45353 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751932AbXDNTeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 15:34:24 -0400
-Date: Sat, 14 Apr 2007 23:34:06 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
-Message-ID: <20070414193406.GA631@tv-sign.ru>
-References: <20070413130236.GA173@tv-sign.ru> <m1zm5bmywm.fsf@ebiederm.dsl.xmission.com> <20070414183538.GB504@tv-sign.ru> <m1slb2lqv9.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1slb2lqv9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Sat, 14 Apr 2007 15:34:28 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4324 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753196AbXDNTe1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 15:34:27 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: francis.moro@gmail.com (Francis Moreau)
+Subject: Re: [CRYPTO] is it really optimized ?
+Cc: herbert@gondor.apana.org.au, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Organization: Core
+In-Reply-To: <38b2ab8a0704140615y2ba8145bmd3c2316a41d99265@mail.gmail.com>
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1Hco0p-0007np-00@gondolin.me.apana.org.au>
+Date: Sun, 15 Apr 2007 05:34:19 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/14, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> writes:
+Francis Moreau <francis.moro@gmail.com> wrote:
 > 
-> > On 04/13, Eric W. Biederman wrote:
-> >>
-> >> +static inline int __kthread_should_stop(struct task_struct *tsk)
-> >> +{
-> >> +	return test_tsk_thread_flag(tsk, TIF_KTHREAD_STOP);
-> >> +}
-> >
-> > Am I blind? Where does copy_process/dup_task_struct clears unwanted
-> > flags in thread_info->flags ?
-> 
-> Good question.  It is only a real problem if someone forks a kernel
-> thread after we ask it to die but, it does appear to be an issue.
-> With this usage and the same usage by the process freezer.
-> 
-> We do have these lines in copy_process...
-> 
-> 	clear_tsk_thread_flag(p, TIF_SIGPENDING);
-> 	init_sigpending(&p->pending);
-> 
-> I don't know what we want to do about TIF_KTHREAD_STOP and TIF_FREEZE.
+> hmm yes indeed it should do the job, but I don't see how you do that.
+> For example, let say I want to use "aes-foo" with eCryptfs. I can give
+> a higher priority to "aes-foo" than "aes" one. When eCryptfs asks for
+> a aes cipher it will pass "aes" name and since "aes-foo" has a higher
+> priority then the cypto core will return "aes-foo" cipher, right ? But
+> in this scheme, eCryptfs has not a higher priority than other kernel
+> users. How can I prevent others to use "aes-foo" ?
 
-Perhaps we need _TIF_CLEAR_ON_FORK_MASK. Probably doesn't matter right
-now, but still it is not imho safe in general.
+You would assign "aes-foo" a lower priority and then tell eCryptfs to
+use "aes-foo" instead of "aes".
 
-> Right now we will go allow our merry way until we hit:
-> 
-> 	recalc_sigpending();
-> 	if (signal_pending(current)) {
-> 		spin_unlock(&current->sighand->siglock);
-> 		write_unlock_irq(&tasklist_lock);
-> 		retval = -ERESTARTNOINTR;
-> 		goto bad_fork_cleanup_namespaces;
-> 	}
-> 
-> And copy_process will fail.  Since that is an expected failure point
-> that actually seems like reasonable behavior in this case if you
-> are being frozen or are being told to die you can't fork.
-> 
-> It does ensure that these additional kernel flags won't make it
-> onto new instances of struct task_struct.  Which is the important
-> thing from a correctness standpoint.
-
-Note that we set TIF_FREEZE and TIF_KTHREAD_STOP outside of ->siglock,
-so both flags can leak onto the child. Again, not a problem right now.
-TIF_KTHREAD_STOP doesn't matter unless process was created vi kthread_create(),
-but in that case it can't inherit TIF_KTHREAD_STOP.
-
-Oleg.
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
