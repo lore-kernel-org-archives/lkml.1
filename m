@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751183AbXDNT2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbXDNTeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751183AbXDNT2R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 15:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXDNT2Q
+	id S1753661AbXDNTeZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 15:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXDNTeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 15:28:16 -0400
-Received: from electron.quantumfyre.co.uk ([87.106.55.16]:59903 "EHLO
-	electron.quantumfyre.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751183AbXDNT2Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 15:28:16 -0400
-X-Greylist: delayed 1245 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 15:28:15 EDT
-Date: Sat, 14 Apr 2007 20:07:28 +0100 (BST)
-From: Julian Phillips <julian@quantumfyre.co.uk>
-X-X-Sender: jp3@beast.quantumfyre.co.uk
-To: Chris Wright <chrisw@sous-sol.org>
-cc: Brian Gernhardt <benji@silverinsanity.com>,
-       Rene Herman <rene.herman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       git@vger.kernel.org
-Subject: Re: GIT and the current -stable
-In-Reply-To: <20070414171908.GU10574@sequoia.sous-sol.org>
-Message-ID: <Pine.LNX.4.64.0704141917320.6461@beast.quantumfyre.co.uk>
-References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org>
- <5A4D6434-3DF2-4CC7-B363-260E5F945F72@silverinsanity.com>
- <20070414171908.GU10574@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 14 Apr 2007 15:34:25 -0400
+Received: from mail.screens.ru ([213.234.233.54]:45353 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbXDNTeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 15:34:24 -0400
+Date: Sat, 14 Apr 2007 23:34:06 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
+Message-ID: <20070414193406.GA631@tv-sign.ru>
+References: <20070413130236.GA173@tv-sign.ru> <m1zm5bmywm.fsf@ebiederm.dsl.xmission.com> <20070414183538.GB504@tv-sign.ru> <m1slb2lqv9.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1slb2lqv9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Apr 2007, Chris Wright wrote:
-
-> * Brian Gernhardt (benji@silverinsanity.com) wrote:
->> On Apr 14, 2007, at 4:34 AM, Chris Wright wrote:
->>> I've already put a tree like this up on kernel.org.  The master branch
->>> is Linus' tree, and there's branches for each of the stable releases
->>> called linux-2.6.[12-20].y (I didn't add 2.6.11.y).
->>>
->>> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=summary
->>
->> Is HEAD for that repo the most recent stable branch, or (as gitweb
->> makes it look) Linus's head.  I'd expect a "-stable" repo to point at
->> the most recent stable commit, not the most recent development
->> commit.  And I'd also expect gitweb's summary page to show the
->> shortlog for HEAd.  One of my assumptions are being broken and I
->> don't like it.  It leaves me all confused...
+On 04/14, Eric W. Biederman wrote:
 >
-> As I mentioned.  The master branch (HEAD) is Linus' tree, and each
-> stable tree is on its own branch.  You'll find shortlog summarizes the
-> main branch, so yes, gitweb's summary is a bit confusing based on your
-> assumptions.  This is a new tree and hasn't been publicized until now.
-> It does make sense to have its head be the newest stable, I'll switch
-> that around.
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
+> 
+> > On 04/13, Eric W. Biederman wrote:
+> >>
+> >> +static inline int __kthread_should_stop(struct task_struct *tsk)
+> >> +{
+> >> +	return test_tsk_thread_flag(tsk, TIF_KTHREAD_STOP);
+> >> +}
+> >
+> > Am I blind? Where does copy_process/dup_task_struct clears unwanted
+> > flags in thread_info->flags ?
+> 
+> Good question.  It is only a real problem if someone forks a kernel
+> thread after we ask it to die but, it does appear to be an issue.
+> With this usage and the same usage by the process freezer.
+> 
+> We do have these lines in copy_process...
+> 
+> 	clear_tsk_thread_flag(p, TIF_SIGPENDING);
+> 	init_sigpending(&p->pending);
+> 
+> I don't know what we want to do about TIF_KTHREAD_STOP and TIF_FREEZE.
 
-Would it not make more sense to point HEAD at the linux-2.6.20-y branch 
-and either let master be Linus' tree or simply not have a master branch? 
-Otherwise, what happens to master when the latest stable tree becomes 
-linux-2.6.21-y?
+Perhaps we need _TIF_CLEAR_ON_FORK_MASK. Probably doesn't matter right
+now, but still it is not imho safe in general.
 
--- 
-Julian
+> Right now we will go allow our merry way until we hit:
+> 
+> 	recalc_sigpending();
+> 	if (signal_pending(current)) {
+> 		spin_unlock(&current->sighand->siglock);
+> 		write_unlock_irq(&tasklist_lock);
+> 		retval = -ERESTARTNOINTR;
+> 		goto bad_fork_cleanup_namespaces;
+> 	}
+> 
+> And copy_process will fail.  Since that is an expected failure point
+> that actually seems like reasonable behavior in this case if you
+> are being frozen or are being told to die you can't fork.
+> 
+> It does ensure that these additional kernel flags won't make it
+> onto new instances of struct task_struct.  Which is the important
+> thing from a correctness standpoint.
 
-  ---
-Most people want either less corruption or more of a chance to
-participate in it.
+Note that we set TIF_FREEZE and TIF_KTHREAD_STOP outside of ->siglock,
+so both flags can leak onto the child. Again, not a problem right now.
+TIF_KTHREAD_STOP doesn't matter unless process was created vi kthread_create(),
+but in that case it can't inherit TIF_KTHREAD_STOP.
+
+Oleg.
+
