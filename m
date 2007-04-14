@@ -1,107 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbXDNU5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbXDNVKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbXDNU5m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 16:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbXDNU5m
+	id S1751975AbXDNVKL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 17:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbXDNVKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 16:57:42 -0400
-Received: from as4.cineca.com ([130.186.84.213]:52184 "EHLO as4.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753694AbXDNU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 16:57:41 -0400
-Message-ID: <46214044.7050205@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Thunderbird 1.5.0.9 (X11/20060911)
+	Sat, 14 Apr 2007 17:10:11 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:54546 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbXDNVKJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 17:10:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SGv64IaEDGptx5cuTaf597L3Gbu1mNkvVPv0tg1v6EVd/DGqa5/9jxKqDy7EDVUOCqJFP1rBlfMgBgld78ZMMsweCx4JepEMjcmjsapYPXNwwkvEROCX0dU4i5voEp9XDJzbIgIJy6B1PdGtlS+0OD4B0ei9LH0M+gZrnYuMklU=
+Message-ID: <38b2ab8a0704141410q65f55381w26527aeb10fb4988@mail.gmail.com>
+Date: Sat, 14 Apr 2007 23:10:08 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Subject: Re: [CRYPTO] is it really optimized ?
+Cc: helge.hafting@aitel.hist.no, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+In-Reply-To: <E1Hco0p-0007np-00@gondolin.me.apana.org.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: reiserfs-dev@namesys.com, LKML <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [2.6.20.4] BUG: dentry xattrs still in use in shrink_dcache_for_umount()
- with reiserfs
-References: <461F63BD.6000901@users.sourceforge.net>
-In-Reply-To: <461F63BD.6000901@users.sourceforge.net>
-X-Enigmail-Version: 0.94.1.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sat, 14 Apr 2007 22:57:30 +0200 (MEST)
+Content-Disposition: inline
+References: <38b2ab8a0704140615y2ba8145bmd3c2316a41d99265@mail.gmail.com>
+	 <E1Hco0p-0007np-00@gondolin.me.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FYI, this bug occurs also in 2.6.20.7 vanilla...
+On 4/14/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> Francis Moreau <francis.moro@gmail.com> wrote:
+> >
+> > hmm yes indeed it should do the job, but I don't see how you do that.
+> > For example, let say I want to use "aes-foo" with eCryptfs. I can give
+> > a higher priority to "aes-foo" than "aes" one. When eCryptfs asks for
+> > a aes cipher it will pass "aes" name and since "aes-foo" has a higher
+> > priority then the cypto core will return "aes-foo" cipher, right ? But
+> > in this scheme, eCryptfs has not a higher priority than other kernel
+> > users. How can I prevent others to use "aes-foo" ?
+>
+> You would assign "aes-foo" a lower priority and then tell eCryptfs to
+> use "aes-foo" instead of "aes".
+>
 
-Honestly I don't know if I'm doing nasty things there, but I tested the
-following patch and it seems to fix the problem (at least for my case).
+ok but do you think it's safe to assume that no others parts of the
+kernel will request "aes-foo" ? Remember that the main point is to
+optimize "aes-foo" ?
 
-It explicitly invalidates all the dentries in the reiserfs "private" dir
-and releases all the valid xattrs references before calling
-kill_block_super().
+I would say that it would be better if "aes-foo" could raise a flag
+for example indicating to the crypto core that this algo can be
+instatiate only one time...
 
-Signed-off-by: Andrea Righi <a.righi@cineca.it>
-
---- linux-2.6.20.7/include/linux/reiserfs_xattr.h.orig	2007-04-14 22:00:38.000000000 +0200
-+++ linux-2.6.20.7/include/linux/reiserfs_xattr.h	2007-04-14 22:12:43.000000000 +0200
-@@ -7,6 +7,9 @@
- /* Magic value in header */
- #define REISERFS_XATTR_MAGIC 0x52465841	/* "RFXA" */
- 
-+#define PRIVROOT_NAME ".reiserfs_priv"
-+#define XAROOT_NAME   "xattrs"
-+
- struct reiserfs_xattr_header {
- 	__le32 h_magic;		/* magic number for identification */
- 	__le32 h_hash;		/* hash of the value */
---- linux-2.6.20.7/fs/reiserfs/xattr.c.orig	2007-04-14 18:53:02.000000000 +0200
-+++ linux-2.6.20.7/fs/reiserfs/xattr.c	2007-04-14 22:12:43.000000000 +0200
-@@ -48,8 +48,6 @@
- 
- #define FL_READONLY 128
- #define FL_DIR_SEM_HELD 256
--#define PRIVROOT_NAME ".reiserfs_priv"
--#define XAROOT_NAME   "xattrs"
- 
- static struct reiserfs_xattr_handler *find_xattr_handler_prefix(const char
- 								*prefix);
---- linux-2.6.20.7/fs/reiserfs/super.c.orig	2007-04-14 18:53:06.000000000 +0200
-+++ linux-2.6.20.7/fs/reiserfs/super.c	2007-04-14 22:47:06.000000000 +0200
-@@ -432,17 +432,30 @@ int remove_save_link(struct inode *inode
- 
- static void reiserfs_kill_sb(struct super_block *s)
- {
-+	struct dentry *priv;
-+
- 	if (REISERFS_SB(s)) {
--		if (REISERFS_SB(s)->xattr_root) {
--			d_invalidate(REISERFS_SB(s)->xattr_root);
--			dput(REISERFS_SB(s)->xattr_root);
--			REISERFS_SB(s)->xattr_root = NULL;
--		}
-+		priv = REISERFS_SB(s)->priv_root;
-+		if (priv) {
-+			struct dentry *loop, *tmp;
- 
--		if (REISERFS_SB(s)->priv_root) {
--			d_invalidate(REISERFS_SB(s)->priv_root);
--			dput(REISERFS_SB(s)->priv_root);
- 			REISERFS_SB(s)->priv_root = NULL;
-+#ifdef CONFIG_REISERFS_FS_XATTR
-+			REISERFS_SB(s)->xattr_root = NULL;
-+
-+			list_for_each_entry_safe(loop, tmp,
-+						 &priv->d_subdirs,
-+						 d_u.d_child) {
-+				d_invalidate(loop);
-+				if (!strcmp(loop->d_name.name, XAROOT_NAME)) {
-+					if (loop->d_inode) {
-+						dput(loop);
-+					}
-+				}
-+			}
-+#endif
-+			d_invalidate(priv);
-+			dput(priv);
- 		}
- 	}
- 
+thanks
+-- 
+Francis
