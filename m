@@ -1,56 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161162AbXDNLuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXDNL4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161162AbXDNLuk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 07:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161187AbXDNLuk
+	id S964792AbXDNL4H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 07:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXDNL4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 07:50:40 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:63367 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161162AbXDNLuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 07:50:39 -0400
-From: Haavard Skinnemoen <hskinnemoe@atmel.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, roland@redhat.com,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] AVR32 utrace: Add missing includes
-Date: Sat, 14 Apr 2007 13:50:20 +0200
-Message-Id: <1176551420509-git-send-email-hskinnemoe@atmel.com>
-X-Mailer: git-send-email 1.4.4.4
+	Sat, 14 Apr 2007 07:56:07 -0400
+Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:48315 "EHLO
+	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964792AbXDNL4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 07:56:05 -0400
+Date: Sat, 14 Apr 2007 13:56:00 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<ukleinek@informatik.uni-freiburg.de>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       git@vger.kernel.org
+Subject: Re: GIT and the current -stable
+Message-ID: <20070414115600.GA10995@informatik.uni-freiburg.de>
+Mail-Followup-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@informatik.uni-freiburg.de>,
+	Rene Herman <rene.herman@gmail.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Greg KH <greg@kroah.com>, git@vger.kernel.org
+References: <46206842.80203@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="UugvWAfsgieZRqgk"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46206842.80203@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+Organization: Universitaet Freiburg, Institut f. Informatik
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Include linux/tracehook.h and linux/utrace.h
+--UugvWAfsgieZRqgk
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
-Don't know why I missed these initially, but this should fix utrace
-on avr32.
+Hello Rene,
 
-Andrew, I've rebased my avr32-arch branch so it should no longer
-conflict with mainline and you can drop git-avr32-fixup.patch. Thanks
-for cleaning up my mess :-)
+Rene Herman wrote:
+> each time that a new -stable is released. Rather though, I'd like a simple 
+> "git pull" to do this while on this branch while a "git pull" while back on 
+> the master branch pulls from the originally cloned Linus repo again.
+> 
+> Is this possible? Do I want it to be? Comments like "work like this 
+> instead" welcome as well; figuring out what the heck it is that I want from 
+> git seems to be one of the most difficult questions to answer...
+Chris' mail made that somehow superfluous but anyhow.  I have a Python
+script to update my Linux tree.  It's attached.
 
-Haavard
+It automatically adds
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.x.y as a
+remote as soon as v2.6.x is seen in Linus' repo and then fetches 2.6.16,
+2.6.(last - 1) and 2.6.last.  If you want to fetch all, change 
 
- arch/avr32/kernel/ptrace.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+	for stable in (16, last_stable - 1, last_stable):
 
-diff --git a/arch/avr32/kernel/ptrace.c b/arch/avr32/kernel/ptrace.c
-index e7078c5..a485117 100644
---- a/arch/avr32/kernel/ptrace.c
-+++ b/arch/avr32/kernel/ptrace.c
-@@ -14,6 +14,8 @@
- #include <linux/ptrace.h>
- #include <linux/user.h>
- #include <linux/kdebug.h>
-+#include <linux/tracehook.h>
-+#include <linux/utrace.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/ocd.h>
+in
+
+	for stable in xrange(16, last_stable + 1):
+
+The location of the repo is hardcoded to $HOME/gsrc/linux-2.6, but I
+think everyone with a bit of intuition should be able to change that ...
+
+So it's not a "git pull" for me, but "update-linux".
+
+Best regards
+Uwe
+
 -- 
-1.4.4.4
+Uwe Kleine-König
 
+main(){char*a="main(){char*a=%c%s%c;printf(a,34,a,34%c";printf(a,34,a,34
+,10);a=",10);a=%c%s%c;printf(a,34,a,34,10);}%c";printf(a,34,a,34,10);}
+
+--UugvWAfsgieZRqgk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=update-linux
+
+#! /usr/bin/env python
+
+import os, re, subprocess, sys
+
+silent = False
+
+git_dir = os.path.join(os.getenv('HOME'), 'gsrc', 'linux-2.6', '.git')
+os.putenv('GIT_DIR', git_dir)
+
+devnull = open('/dev/null', 'w', 0)
+if silent:
+  subprocess_stdout = devnull
+else:
+  subprocess_stdout = None
+
+if not silent:
+  print 'fetch origin'
+subprocess.call(['git-fetch', 'origin'], stdout=subprocess_stdout)
+
+sp_describe = subprocess.Popen(['git-describe', 'origin'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+sp_describe_stdin, sp_describe_stderr = sp_describe.communicate()
+
+re_linuxver = re.compile('v2\.6\.(?P<minor>\d+)(?P<stable>\.\d+)?(?P<rc>-rc\d+)?(?P<git>-g[0-9a-fA-F]+)?')
+mo = re_linuxver.match(sp_describe_stdin)
+
+if not mo:
+  print 'cannot parse version of origin\'s HEAD'
+  sys.exit(1)
+
+modict = mo.groupdict()
+
+if modict['rc'] and not modict['stable']:
+  last_stable = int(modict['minor']) - 1
+else:
+  last_stable = int(modict['minor'])
+
+for stable in (16, last_stable - 1, last_stable):
+  if subprocess.call(['git', 'repo-config', 'remote.v2.6.%d.y.url' % stable], stdout=devnull) != 0:
+    subprocess.call(['git', 'repo-config', 'remote.v2.6.%d.y.url' % stable, 'git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.%d.y.git' % stable])
+    subprocess.call(['git', 'repo-config', 'remote.v2.6.%d.y.fetch' % stable, 'refs/heads/master:refs/remotes/stable/v2.6.%d.y' % stable])
+    subprocess.call(['git', 'repo-config', 'branch.v2.6.%d.y.remote' % stable, 'v2.6.%d.y' % stable])
+    subprocess.call(['git', 'repo-config', 'branch.v2.6.%d.y.remote' % stable, 'v2.6.%d.y' % stable])
+    subprocess.call(['git', 'repo-config', 'branch.v2.6.%d.y.merge' % stable, 'refs/heads/master'])
+
+  if not silent:
+    print 'fetch v2.6.%d.y' % stable
+  subprocess.call(['git-fetch', 'v2.6.%d.y' % stable], stdout=subprocess_stdout)
+
+--UugvWAfsgieZRqgk--
