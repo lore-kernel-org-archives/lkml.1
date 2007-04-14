@@ -1,132 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXDNL4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXDNMC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964792AbXDNL4H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 07:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXDNL4H
+	id S965522AbXDNMC4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 08:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXDNMC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 07:56:07 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:48315 "EHLO
-	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964792AbXDNL4F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 07:56:05 -0400
-Date: Sat, 14 Apr 2007 13:56:00 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       git@vger.kernel.org
-Subject: Re: GIT and the current -stable
-Message-ID: <20070414115600.GA10995@informatik.uni-freiburg.de>
-Mail-Followup-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@informatik.uni-freiburg.de>,
-	Rene Herman <rene.herman@gmail.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Greg KH <greg@kroah.com>, git@vger.kernel.org
-References: <46206842.80203@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="UugvWAfsgieZRqgk"
+	Sat, 14 Apr 2007 08:02:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38989 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965522AbXDNMCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 08:02:55 -0400
+Date: Sat, 14 Apr 2007 14:02:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: surya.prabhakar@wipro.com
+Cc: kernel@kolivas.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       npiggin@suse.de, efault@gmx.de, arjan@infradead.org, tglx@linutronix.de,
+       wli@holomorphy.com
+Subject: Re: [TEST RESULT]massive_intr.c -- cfs/vanilla/sd-0.40
+Message-ID: <20070414120220.GA2346@elte.hu>
+References: <1176540546.2702.15.camel@bluegenie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46206842.80203@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-Organization: Universitaet Freiburg, Institut f. Informatik
+In-Reply-To: <1176540546.2702.15.camel@bluegenie>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+* surya.prabhakar@wipro.com <surya.prabhakar@wipro.com> wrote:
 
-Hello Rene,
+> Hi Ingo,
+>   Did a test with massive_intr.c on a standard linux desktop.
+> for vanilla, con's Sd-0.40 and cfs.
 
-Rene Herman wrote:
-> each time that a new -stable is released. Rather though, I'd like a simple 
-> "git pull" to do this while on this branch while a "git pull" while back on 
-> the master branch pulls from the originally cloned Linus repo again.
+thanks!
+
+> [surya@bluegenie tests]$ ./massive_intr 10 10
+> 002435  00000120
+> 002439  00000120
+> 002441  00000120
+> 002434  00000120
+> 002436  00000120
+> 002440  00000120
+> 002432  00000120
+> 002437  00000120
+> 002433  00000120
+> 002438  00000120
 > 
-> Is this possible? Do I want it to be? Comments like "work like this 
-> instead" welcome as well; figuring out what the heck it is that I want from 
-> git seems to be one of the most difficult questions to answer...
-Chris' mail made that somehow superfluous but anyhow.  I have a Python
-script to update my Linux tree.  It's attached.
+> Felt it is too much fair, will try another pass ;)
 
-It automatically adds
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.x.y as a
-remote as soon as v2.6.x is seen in Linus' repo and then fetches 2.6.16,
-2.6.(last - 1) and 2.6.last.  If you want to fetch all, change 
+hehe :)
 
-	for stable in (16, last_stable - 1, last_stable):
+> [surya@bluegenie tests]$ ./massive_intr 10 10
+> 002961  00000121
+> 002965  00000120
+> 002964  00000121
+> 002959  00000120
+> 002956  00000121
+> 002963  00000121
+> 002960  00000121
+> 002962  00000121
+> 002958  00000122
+> 002957  00000122
 
-in
+btw., other schedulers might work better with some more test-time: i'd 
+suggest to use 60 seconds (./massive_intr 10 60) [or maybe more, using 
+more threads] to see long-term fairness effects.
 
-	for stable in xrange(16, last_stable + 1):
+> [...] Will be trying out ringtest in the next round.
 
-The location of the repo is hardcoded to $HOME/gsrc/linux-2.6, but I
-think everyone with a bit of intuition should be able to change that ...
+cool. ringtest.c is intended to be used the following way: start it, it 
+will generate a 99% busy system (but it is using a ring of 100 tasks, 
+where each tasks runs for 100 msecs then sleeps for 1 msec, so every 
+task gets a turn every 10 seconds). If you add a pure CPU hog to the 
+system, for example an infinite shell loop:
 
-So it's not a "git pull" for me, but "update-linux".
+	while :; do :; done &
 
-Best regards
-Uwe
+then a 'fair' scheduler would give roughly 50% of CPU time to the CPU 
+hog (and the ringtest.c tasks take up the other 50%).
 
--- 
-Uwe Kleine-König
-
-main(){char*a="main(){char*a=%c%s%c;printf(a,34,a,34%c";printf(a,34,a,34
-,10);a=",10);a=%c%s%c;printf(a,34,a,34,10);}%c";printf(a,34,a,34,10);}
-
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=update-linux
-
-#! /usr/bin/env python
-
-import os, re, subprocess, sys
-
-silent = False
-
-git_dir = os.path.join(os.getenv('HOME'), 'gsrc', 'linux-2.6', '.git')
-os.putenv('GIT_DIR', git_dir)
-
-devnull = open('/dev/null', 'w', 0)
-if silent:
-  subprocess_stdout = devnull
-else:
-  subprocess_stdout = None
-
-if not silent:
-  print 'fetch origin'
-subprocess.call(['git-fetch', 'origin'], stdout=subprocess_stdout)
-
-sp_describe = subprocess.Popen(['git-describe', 'origin'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-sp_describe_stdin, sp_describe_stderr = sp_describe.communicate()
-
-re_linuxver = re.compile('v2\.6\.(?P<minor>\d+)(?P<stable>\.\d+)?(?P<rc>-rc\d+)?(?P<git>-g[0-9a-fA-F]+)?')
-mo = re_linuxver.match(sp_describe_stdin)
-
-if not mo:
-  print 'cannot parse version of origin\'s HEAD'
-  sys.exit(1)
-
-modict = mo.groupdict()
-
-if modict['rc'] and not modict['stable']:
-  last_stable = int(modict['minor']) - 1
-else:
-  last_stable = int(modict['minor'])
-
-for stable in (16, last_stable - 1, last_stable):
-  if subprocess.call(['git', 'repo-config', 'remote.v2.6.%d.y.url' % stable], stdout=devnull) != 0:
-    subprocess.call(['git', 'repo-config', 'remote.v2.6.%d.y.url' % stable, 'git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.%d.y.git' % stable])
-    subprocess.call(['git', 'repo-config', 'remote.v2.6.%d.y.fetch' % stable, 'refs/heads/master:refs/remotes/stable/v2.6.%d.y' % stable])
-    subprocess.call(['git', 'repo-config', 'branch.v2.6.%d.y.remote' % stable, 'v2.6.%d.y' % stable])
-    subprocess.call(['git', 'repo-config', 'branch.v2.6.%d.y.remote' % stable, 'v2.6.%d.y' % stable])
-    subprocess.call(['git', 'repo-config', 'branch.v2.6.%d.y.merge' % stable, 'refs/heads/master'])
-
-  if not silent:
-    print 'fetch v2.6.%d.y' % stable
-  subprocess.call(['git-fetch', 'v2.6.%d.y' % stable], stdout=subprocess_stdout)
-
---UugvWAfsgieZRqgk--
+	Ingo
