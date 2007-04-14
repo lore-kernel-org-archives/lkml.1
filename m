@@ -1,141 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbXDNVZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965536AbXDNVVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbXDNVZG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 17:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965539AbXDNVVr
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S965536AbXDNVVr (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 14 Apr 2007 17:21:47 -0400
-Received: from gw.goop.org ([64.81.55.164]:59550 "EHLO mail.goop.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXDNVUS
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 14 Apr 2007 17:20:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:59517 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753827AbXDNVUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 17:20:20 -0400
-Message-Id: <20070414204924.950847380@goop.org>
+	id S1753827AbXDNVUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 17:20:13 -0400
+Message-Id: <20070414204923.521637202@goop.org>
 References: <20070414204154.871250608@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 14 Apr 2007 13:42:15 -0700
+Date: Sat, 14 Apr 2007 13:41:56 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>
-Subject: [PATCH 21/28] Implement vmi_kmap_atomic_pte
-Content-Disposition: inline; filename=vmi-kmap_atomic_pte-fix.patch
+       lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH 02/28] Account for module percpu space separately from kernel percpu
+Content-Disposition: inline; filename=separate-module-percpu-space.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement vmi_kmap_atomic_pte in terms of the backend set_linear_mapping
-operation.  The conversion is rather straighforward; call kmap_atomic
-and then inform the hypervisor of the page mapping.
+Rather than using a single constant PERCPU_ENOUGH_ROOM, compute it as
+the sum of kernel_percpu + PERCPU_MODULE_RESERVE.  This is now common
+to all architectures; if an architecture wants to set
+PERCPU_ENOUGH_ROOM to something special, then it may do so (ia64 is
+the only one which does).
 
-The _flush_tlb damage is due to macros being pulled in from highmem.h.
-
-From: Zachary Amsden <zach@vmware.com>
-Signed-off-by: Zachary Amsden <zach@vmware.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/kernel/vmi.c |   38 ++++++++++++++++++++++++--------------
- 1 file changed, 24 insertions(+), 14 deletions(-)
+ include/asm-alpha/percpu.h   |   14 --------------
+ include/asm-sparc64/percpu.h |   10 ----------
+ include/asm-x86_64/percpu.h  |   10 ----------
+ include/linux/percpu.h       |    9 ++++++++-
+ kernel/module.c              |    2 +-
+ 5 files changed, 9 insertions(+), 36 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -26,6 +26,7 @@
- #include <linux/cpu.h>
- #include <linux/bootmem.h>
- #include <linux/mm.h>
-+#include <linux/highmem.h>
- #include <asm/vmi.h>
- #include <asm/io.h>
- #include <asm/fixmap.h>
-@@ -65,8 +66,8 @@ static struct {
- 	void (*release_page)(u32, u32);
- 	void (*set_pte)(pte_t, pte_t *, unsigned);
- 	void (*update_pte)(pte_t *, unsigned);
--	void (*set_linear_mapping)(int, u32, u32, u32);
--	void (*flush_tlb)(int);
-+	void (*set_linear_mapping)(int, void *, u32, u32);
-+	void (*_flush_tlb)(int);
- 	void (*set_initial_ap_state)(int, int);
- 	void (*halt)(void);
-   	void (*set_lazy_mode)(int mode);
-@@ -217,12 +218,12 @@ static void vmi_load_esp0(struct tss_str
+--- a/include/asm-alpha/percpu.h
++++ b/include/asm-alpha/percpu.h
+@@ -1,19 +1,5 @@
+ #ifndef __ALPHA_PERCPU_H
+ #define __ALPHA_PERCPU_H
+-
+-/*
+- * Increase the per cpu area for Alpha so that
+- * modules using percpu area can load.
+- */
+-#ifdef CONFIG_MODULES
+-# define PERCPU_MODULE_RESERVE 8192
+-#else
+-# define PERCPU_MODULE_RESERVE 0
+-#endif
+-
+-#define PERCPU_ENOUGH_ROOM \
+-	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
+-	 PERCPU_MODULE_RESERVE)
  
- static void vmi_flush_tlb_user(void)
- {
--	vmi_ops.flush_tlb(VMI_FLUSH_TLB);
-+	vmi_ops._flush_tlb(VMI_FLUSH_TLB);
- }
+ #include <asm-generic/percpu.h>
  
- static void vmi_flush_tlb_kernel(void)
- {
--	vmi_ops.flush_tlb(VMI_FLUSH_TLB | VMI_FLUSH_GLOBAL);
-+	vmi_ops._flush_tlb(VMI_FLUSH_TLB | VMI_FLUSH_GLOBAL);
- }
+===================================================================
+--- a/include/asm-sparc64/percpu.h
++++ b/include/asm-sparc64/percpu.h
+@@ -4,16 +4,6 @@
+ #include <linux/compiler.h>
  
- /* Stub to do nothing at all; used for delays and unimplemented calls */
-@@ -345,8 +346,11 @@ static void vmi_check_page_type(u32 pfn,
- #define vmi_check_page_type(p,t) do { } while (0)
+ #ifdef CONFIG_SMP
+-
+-#ifdef CONFIG_MODULES
+-# define PERCPU_MODULE_RESERVE 8192
+-#else
+-# define PERCPU_MODULE_RESERVE 0
+-#endif
+-
+-#define PERCPU_ENOUGH_ROOM \
+-	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
+-	 PERCPU_MODULE_RESERVE)
+ 
+ extern void setup_per_cpu_areas(void);
+ 
+===================================================================
+--- a/include/asm-x86_64/percpu.h
++++ b/include/asm-x86_64/percpu.h
+@@ -10,16 +10,6 @@
+ #ifdef CONFIG_SMP
+ 
+ #include <asm/pda.h>
+-
+-#ifdef CONFIG_MODULES
+-# define PERCPU_MODULE_RESERVE 8192
+-#else
+-# define PERCPU_MODULE_RESERVE 0
+-#endif
+-
+-#define PERCPU_ENOUGH_ROOM \
+-	(ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES) + \
+-	 PERCPU_MODULE_RESERVE)
+ 
+ #define __per_cpu_offset(cpu) (cpu_pda(cpu)->data_offset)
+ #define __my_cpu_offset() read_pda(data_offset)
+===================================================================
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -11,8 +11,15 @@
+ 
+ /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
+ #ifndef PERCPU_ENOUGH_ROOM
+-#define PERCPU_ENOUGH_ROOM 32768
++#ifdef CONFIG_MODULES
++#define PERCPU_MODULE_RESERVE	8192
++#else
++#define PERCPU_MODULE_RESERVE	0
  #endif
- 
--static void vmi_map_pt_hook(int type, pte_t *va, u32 pfn)
--{
-+#ifdef CONFIG_HIGHPTE
-+static void *vmi_kmap_atomic_pte(struct page *page, enum km_type type)
-+{
-+	void *va = kmap_atomic(page, type);
 +
- 	/*
- 	 * Internally, the VMI ROM must map virtual addresses to physical
- 	 * addresses for processing MMU updates.  By the time MMU updates
-@@ -360,8 +364,11 @@ static void vmi_map_pt_hook(int type, pt
- 	 *  args:                 SLOT                 VA    COUNT PFN
- 	 */
- 	BUG_ON(type != KM_PTE0 && type != KM_PTE1);
--	vmi_ops.set_linear_mapping((type - KM_PTE0)+1, (u32)va, 1, pfn);
--}
-+	vmi_ops.set_linear_mapping((type - KM_PTE0)+1, va, 1, page_to_pfn(page));
-+
-+	return va;
-+}
-+#endif
- 
- static void vmi_allocate_pt(u32 pfn)
- {
-@@ -656,7 +663,7 @@ void vmi_bringup(void)
- {
-  	/* We must establish the lowmem mapping for MMU ops to work */
- 	if (vmi_ops.set_linear_mapping)
--		vmi_ops.set_linear_mapping(0, __PAGE_OFFSET, max_low_pfn, 0);
-+		vmi_ops.set_linear_mapping(0, (void *)__PAGE_OFFSET, max_low_pfn, 0);
- }
++#define PERCPU_ENOUGH_ROOM						\
++	(__per_cpu_end - __per_cpu_start + PERCPU_MODULE_RESERVE)
++#endif	/* PERCPU_ENOUGH_ROOM */
  
  /*
-@@ -793,8 +800,8 @@ static inline int __init activate_vmi(vo
- 	para_wrap(set_lazy_mode, vmi_set_lazy_mode, set_lazy_mode, SetLazyMode);
- 
- 	/* user and kernel flush are just handled with different flags to FlushTLB */
--	para_wrap(flush_tlb_user, vmi_flush_tlb_user, flush_tlb, FlushTLB);
--	para_wrap(flush_tlb_kernel, vmi_flush_tlb_kernel, flush_tlb, FlushTLB);
-+	para_wrap(flush_tlb_user, vmi_flush_tlb_user, _flush_tlb, FlushTLB);
-+	para_wrap(flush_tlb_kernel, vmi_flush_tlb_kernel, _flush_tlb, FlushTLB);
- 	para_fill(flush_tlb_single, InvalPage);
- 
- 	/*
-@@ -840,9 +847,12 @@ static inline int __init activate_vmi(vo
- 		paravirt_ops.release_pt = vmi_release_pt;
- 		paravirt_ops.release_pd = vmi_release_pd;
- 	}
--#if 0
--	para_wrap(map_pt_hook, vmi_map_pt_hook, set_linear_mapping,
--		  SetLinearMapping);
-+
-+	/* Set linear is needed in all cases */
-+	vmi_ops.set_linear_mapping = vmi_get_function(VMI_CALL_SetLinearMapping);
-+#ifdef CONFIG_HIGHPTE
-+	if (vmi_ops.set_linear_mapping)
-+		paravirt_ops.kmap_atomic_pte = vmi_kmap_atomic_pte;
- #endif
- 
- 	/*
+  * Must be an lvalue. Since @var must be a simple identifier,
+===================================================================
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -430,7 +430,7 @@ static int percpu_modinit(void)
+ 	pcpu_size = kmalloc(sizeof(pcpu_size[0]) * pcpu_num_allocated,
+ 			    GFP_KERNEL);
+ 	/* Static in-kernel percpu data (used). */
+-	pcpu_size[0] = -ALIGN(__per_cpu_end-__per_cpu_start, SMP_CACHE_BYTES);
++	pcpu_size[0] = -(__per_cpu_end-__per_cpu_start);
+ 	/* Free room. */
+ 	pcpu_size[1] = PERCPU_ENOUGH_ROOM + pcpu_size[0];
+ 	if (pcpu_size[1] < 0) {
 
 -- 
 
