@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030890AbXDNOpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030892AbXDNOqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030890AbXDNOpo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 10:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXDNOpn
+	id S1030892AbXDNOqJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 10:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030893AbXDNOqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 10:45:43 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:53114 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030890AbXDNOpm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 10:45:42 -0400
-Subject: Last SCSI bug fix for 2.6.21
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 14 Apr 2007 09:45:32 -0500
-Message-Id: <1176561932.3709.15.camel@mulgrave.il.steeleye.com>
+	Sat, 14 Apr 2007 10:46:09 -0400
+Received: from 1wt.eu ([62.212.114.60]:1863 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030892AbXDNOqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 10:46:08 -0400
+Date: Sat, 14 Apr 2007 16:45:44 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070414144544.GO943@1wt.eu>
+References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070414132732.GA22103@1wt.eu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070414132732.GA22103@1wt.eu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After some investigation, there turned out only to be one, so this is
-the final bug fix I have in SCSI.
+On Sat, Apr 14, 2007 at 03:27:32PM +0200, Willy Tarreau wrote:
+> On Sat, Apr 14, 2007 at 03:01:01PM +0200, Willy Tarreau wrote:
+> > 
+> > Well, I'll stop heating the room for now as I get out of ideas about how
+> > to defeat it.
+> 
+> Ah, I found something nasty.
+> If I start large batches of processes like this :
+> 
+> $ for i in $(seq 1 1000); do ./scheddos2 4000 4000 & done
+> 
+> the ramp up slows down after 700-800 processes, but something very
+> strange happens. If I'm under X, I can switch the focus to all xterms
+> (the WM is still alive) but all xterms are frozen. On the console,
+> after one moment I simply cannot switch to another VT anymore while
+> I can still start commands locally. But "chvt 2" simply blocks.
+> SysRq-K killed everything and restored full control. Dmesg shows lots
+> of :
+> SAK: killed process xxxx (scheddos2): process_session(p)==tty->session.
+> 
+> I wonder if part of the problem would be too many processes bound to
+> the same tty :-/
 
-It's in
+Does not seem easy to reproduce, it looks like some resource pools are
+kept pre-allocated after a first run, because if I kill scheddos during
+the ramp up then start it again, it can go further. The problem happens
+when the parent is forking. Also, I modified scheddos to close(0,1,2)
+and to perform the forks itself and it does not cause any problem, even
+with 4000 processes running. So I really suspect that the problem I
+encountered above was tty-related.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+BTW, I've tried your fork patch. It definitely helps forking because it
+takes below one second to create 4000 processes, then the load slowly
+increases. As you said, the children have to earn their share, and I
+find that it makes it easier to conserve control of the whole system's
+stability.
 
-but since there's only one, I also attach it below.
-
-James
-
-----
->From 6e3b2bbb197eb12b2bef35bcf2ac3bd6a5facab2 Mon Sep 17 00:00:00 2001
-From: James Bottomley <James.Bottomley@steeleye.com>
-Date: Fri, 6 Apr 2007 11:14:56 -0500
-Subject: [SCSI] 3w-xxxx: fix oops caused by incorrect REQUEST_SENSE handling
-
-3w-xxxx emulates a REQUEST_SENSE response by simply returning nothing.
-Unfortunately, it's assuming that the REQUEST_SENSE command is
-implemented with use_sg == 0, which is no longer the case.  The oops
-occurs because it's clearing the scatterlist in request_buffer instead
-of the memory region.
-
-This is fixed by using tw_transfer_internal() to transfer correctly to
-the scatterlist.
-
-Acked-by: adam radford <aradford@gmail.com>
-Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
----
- drivers/scsi/3w-xxxx.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
-index bf5d63e..656bdb1 100644
---- a/drivers/scsi/3w-xxxx.c
-+++ b/drivers/scsi/3w-xxxx.c
-@@ -1864,10 +1864,17 @@ static int tw_scsiop_read_write(TW_Device_Extension *tw_dev, int request_id)
- /* This function will handle the request sense scsi command */
- static int tw_scsiop_request_sense(TW_Device_Extension *tw_dev, int request_id)
- {
-+	char request_buffer[18];
-+
- 	dprintk(KERN_NOTICE "3w-xxxx: tw_scsiop_request_sense()\n");
- 
--	/* For now we just zero the request buffer */
--	memset(tw_dev->srb[request_id]->request_buffer, 0, tw_dev->srb[request_id]->request_bufflen);
-+	memset(request_buffer, 0, sizeof(request_buffer));
-+	request_buffer[0] = 0x70; /* Immediate fixed format */
-+	request_buffer[7] = 10;	/* minimum size per SPC: 18 bytes */
-+	/* leave all other fields zero, giving effectively NO_SENSE return */
-+	tw_transfer_internal(tw_dev, request_id, request_buffer,
-+			     sizeof(request_buffer));
-+
- 	tw_dev->state[request_id] = TW_S_COMPLETED;
- 	tw_state_request_finish(tw_dev, request_id);
- 
--- 
-1.5.0.6
-
-
+Regards,
+Willy
 
