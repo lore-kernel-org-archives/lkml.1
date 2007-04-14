@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030346AbXDNN2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030417AbXDNNbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030346AbXDNN2B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 09:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXDNN2B
+	id S1030417AbXDNNbJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 09:31:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161196AbXDNNbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 09:28:01 -0400
-Received: from 1wt.eu ([62.212.114.60]:1844 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030346AbXDNN2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 09:28:00 -0400
-Date: Sat, 14 Apr 2007 15:27:32 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070414132732.GA22103@1wt.eu>
-References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu>
+	Sat, 14 Apr 2007 09:31:09 -0400
+Received: from 65-117-135-114.dia.static.qwest.net ([65.117.135.114]:46218
+	"EHLO postfix.timesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030403AbXDNNbI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 09:31:08 -0400
+X-Greylist: delayed 1471 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 09:31:07 EDT
+Subject: Re: [RFC] [Patch 0/4] timer_stats slimmed down
+From: Thomas Gleixner <tglx@timesys.com>
+Reply-To: tglx@timesys.com
+To: Martin Peschke <mp3@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-s390@vger.kernel.org, d.pensator@gmail.com, mingo@redhat.com
+In-Reply-To: <1176545387.5462.108.camel@dix>
+References: <1176545387.5462.108.camel@dix>
+Content-Type: text/plain
+Date: Sat, 14 Apr 2007 15:07:27 +0200
+Message-Id: <1176556047.3387.64.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070414130101.GA2538@1wt.eu>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 14, 2007 at 03:01:01PM +0200, Willy Tarreau wrote:
+Martin,
+
+On Sat, 2007-04-14 at 12:09 +0200, Martin Peschke wrote:
+> 2.6.21-rc* kernels come with a feature that adds timer statistics
+> to /proc/timer_stats (CONFIG_TIMER_STATS). This patch set makes it use
+> the proposed statistics infrastructure (-mm tree), and adds prequisite
+> functions to the statistics code.
 > 
-> Well, I'll stop heating the room for now as I get out of ideas about how
-> to defeat it.
+> The result are noticeable lines of code savings.
+> kernel/time/timer_stats.c which comes with several functions which can
+> be made redundant by using corresponding functions of lib/statistic.c,
+> that is:
+> 
+> - accounting
+> - printing output in sequential files
+> - user interface for switching accounting on/off, reset etc.
+> - measuring the accounting time
+> - per-cpu optimisations
+> 
+> Function that were missing in lib/statistics, and which are added by
+> this patch set, are:
+> 
+> - allow arbitrary keys for statistics entries (e.g. structures)
+> - allow client to label output of statistics entries (e.g. using keys)
+> 
+> A secondary effect of the patch set is that we won't add another entry
+> to good old /proc. The statistics infrastructure uses debugfs.
+> 
+> This patch set is a prototype that works for me, but which might allow
+> for optimisations. Suggestions are welcome.
 
-Ah, I found something nasty.
-If I start large batches of processes like this :
+I'm a bit short of time to take a closer look, but on the first glance
+it looks good to me. I give it a whirl, when I'm back from travelling.
 
-$ for i in $(seq 1 1000); do ./scheddos2 4000 4000 & done
-
-the ramp up slows down after 700-800 processes, but something very
-strange happens. If I'm under X, I can switch the focus to all xterms
-(the WM is still alive) but all xterms are frozen. On the console,
-after one moment I simply cannot switch to another VT anymore while
-I can still start commands locally. But "chvt 2" simply blocks.
-SysRq-K killed everything and restored full control. Dmesg shows lots
-of :
-SAK: killed process xxxx (scheddos2): process_session(p)==tty->session.
-
-I wonder if part of the problem would be too many processes bound to
-the same tty :-/
-
-I'll investigate a bit.
-
-Willy
+	tglx
 
 
 
