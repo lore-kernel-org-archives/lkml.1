@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161024AbXDNFh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161039AbXDNGAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161024AbXDNFh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 01:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161098AbXDNFh2
+	id S1161039AbXDNGAk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 02:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXDNGAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 01:37:28 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:51568 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161024AbXDNFh1 (ORCPT
+	Sat, 14 Apr 2007 02:00:40 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1495 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964974AbXDNGAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 01:37:27 -0400
-Message-ID: <46206842.80203@gmail.com>
-Date: Sat, 14 Apr 2007 07:36:02 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Greg KH <greg@kroah.com>, git@vger.kernel.org
-Subject: GIT and the current -stable
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Sat, 14 Apr 2007 02:00:39 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: davem@davemloft.net (David Miller)
+Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+Cc: kaber@trash.net, poemann@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, paulus@samba.org
+Organization: Core
+In-Reply-To: <20070413.161635.26523891.davem@davemloft.net>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1HcbIy-0006Pt-00@gondolin.me.apana.org.au>
+Date: Sat, 14 Apr 2007 16:00:12 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good day.
+David Miller <davem@davemloft.net> wrote:
+>
+>> It seems we fail to reserve enough headroom for the case
+>> buf[0] == PPP_ALLSTATIONS and buf[1] != PPP_UI.
+>> 
+>> Can you try this patch please?
+> 
+> Any confirmation of this fix yet?
 
-Stumbling around with git here. I'd like to use git to efficiently track the 
-  current -stable as well as -current. Say, my local tree is a clone of 
-Linus current:
+FWIW the fix definitely looks correct (the bug has been there for
+years at least) and it does match the crash dump.  In fact, there
+is only a single skb_push (the only thing that can generate an under
+panic) in ppp_async.c and this is the one that Patrick has fixed.
 
-git clone \ 
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git local
-
-I then branch off a 2.6.20 branch:
-
-cd local
-git checkout -b v2.6.20 v2.6.20
-
-to now update to the current -stable I could do:
-
-git pull \ 
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
-
-each time that a new -stable is released. Rather though, I'd like a simple 
-"git pull" to do this while on this branch while a "git pull" while back on 
-the master branch pulls from the originally cloned Linus repo again.
-
-Is this possible? Do I want it to be? Comments like "work like this instead" 
-welcome as well; figuring out what the heck it is that I want from git seems 
-to be one of the most difficult questions to answer...
-
-Currently using git 1.5.0.4.
-
-Rene.
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
