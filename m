@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbXDNAk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753732AbXDNArX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbXDNAk7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 20:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXDNAk6
+	id S1753732AbXDNArX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 20:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXDNArX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 20:40:58 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49972 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754154AbXDNAk6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 20:40:58 -0400
-Date: Sat, 14 Apr 2007 02:38:01 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Hans-Georg Rist <hg.rist@web.de>, perex@suse.cz,
-       alsa-devel@alsa-project.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andi Kleen <ak@suse.de>, Oliver Neukum <oneukum@suse.de>,
-       greg@kroah.com, linux-usb-devel@lists.sourceforge.net,
-       Tino Keitel <tino.keitel@gmx.de>, Marcelo Tosatti <marcelo@kvack.org>,
-       CIJOML <cijoml@volny.cz>, Markus Rechberger <markus.rechberger@amd.com>,
-       v4l-dvb-maintainer@linuxtv.org
-Subject: [2/3] 2.6.21-rc6: known regressions
-Message-ID: <20070414003801.GT5907@stusta.de>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
+	Fri, 13 Apr 2007 20:47:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47203 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753732AbXDNArX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Apr 2007 20:47:23 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Subject: Re: [patch 2.6.21-rc6] failsafe mechanism to HPET clock calibration
+Date: Sat, 14 Apr 2007 02:46:47 +0200
+User-Agent: KMail/1.9.6
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
+       john stultz <johnstul@us.ibm.com>, shai@scalex86.org,
+       benzi@scalex86.org, discuss@x86-64.org
+References: <20070413232820.GA9496@localhost.localdomain>
+In-Reply-To: <20070413232820.GA9496@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704140246.47937.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email lists some known regressions in Linus' tree compared to 2.6.20.
+On Saturday 14 April 2007 01:28:20 Ravikiran G Thirumalai wrote:
+> Provide a failsafe mechanism to avoid kernel spinning for ever at read_hpet_tsc
+> during early kernel bootup.
+> 
+> This failsafe mechanism was introduced in 21-rc,
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=2f7a2a79c3ebb44f8b1b7d9b4fd3a650eb69e544
+> 
+> But looks like the hpet split from time.c lost the commit.
+> 
+> This patch reintroduces the failsafe mechanism
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way
-possibly involved with one or more of these issues.
+Added thanks
 
-Due to the huge amount of recipients, please trim the Cc when answering.
-
-
-Subject    : snd_hda_intel doesn't work with ASUS M2V mainboard
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8273
-Submitter  : Hans-Georg Rist <hg.rist@web.de>
-Status     : unknown
-
-
-Subject    : snd_intel8x0: divide error: 0000
-References : http://lkml.org/lkml/2007/3/5/252
-Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Status     : unknown
-
-
-Subject    : hal daemon crashes after pulling a USB serial device
-References : http://www.opensubscriber.com/message/linux-usb-devel@lists.sourceforge.net/6369800.html
-Submitter  : Andi Kleen <ak@suse.de>
-Handled-By : Oliver Neukum <oneukum@suse.de>
-Status     : problem is being debugged
-
-
-Subject    : USB: iPod doesn't work  (CONFIG_USB_SUSPEND)
-References : http://lkml.org/lkml/2007/3/21/320
-Submitter  : Tino Keitel <tino.keitel@gmx.de>
-Caused-By  : Marcelo Tosatti <marcelo@kvack.org>
-             commit 1d619f128ba911cd3e6d6ad3475f146eb92f5c27
-Handled-By : Oliver Neukum <oneukum@suse.de>
-Status     : problem is being debuggged
-
-
-Subject    : USB: Oops when changing DVB-T adapter
-References : http://lkml.org/lkml/2007/3/9/212
-Submitter  : CIJOML <cijoml@volny.cz>
-Handled-By : Markus Rechberger <markus.rechberger@amd.com>
-Patch      : http://lkml.org/lkml/2007/4/5/154
-Status     : patches available
-
+-Andi
