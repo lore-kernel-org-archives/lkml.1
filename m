@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbXDNVKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbXDNVND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbXDNVKL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 17:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbXDNVKL
+	id S1753780AbXDNVND (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 17:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbXDNVND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 17:10:11 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:54546 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbXDNVKJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 17:10:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SGv64IaEDGptx5cuTaf597L3Gbu1mNkvVPv0tg1v6EVd/DGqa5/9jxKqDy7EDVUOCqJFP1rBlfMgBgld78ZMMsweCx4JepEMjcmjsapYPXNwwkvEROCX0dU4i5voEp9XDJzbIgIJy6B1PdGtlS+0OD4B0ei9LH0M+gZrnYuMklU=
-Message-ID: <38b2ab8a0704141410q65f55381w26527aeb10fb4988@mail.gmail.com>
-Date: Sat, 14 Apr 2007 23:10:08 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: helge.hafting@aitel.hist.no, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <E1Hco0p-0007np-00@gondolin.me.apana.org.au>
+	Sat, 14 Apr 2007 17:13:03 -0400
+Received: from gw.goop.org ([64.81.55.164]:45134 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753780AbXDNVNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 17:13:01 -0400
+Message-ID: <462143B9.6080907@goop.org>
+Date: Sat, 14 Apr 2007 14:12:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc6 + firstfloor patches: BUG: sleeping function called
+ from invalid context at kernel/sched,.c:3643
+References: <462072C2.4070605@goop.org> <200704141338.50058.ak@suse.de>
+In-Reply-To: <200704141338.50058.ak@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0704140615y2ba8145bmd3c2316a41d99265@mail.gmail.com>
-	 <E1Hco0p-0007np-00@gondolin.me.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/14/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> Francis Moreau <francis.moro@gmail.com> wrote:
-> >
-> > hmm yes indeed it should do the job, but I don't see how you do that.
-> > For example, let say I want to use "aes-foo" with eCryptfs. I can give
-> > a higher priority to "aes-foo" than "aes" one. When eCryptfs asks for
-> > a aes cipher it will pass "aes" name and since "aes-foo" has a higher
-> > priority then the cypto core will return "aes-foo" cipher, right ? But
-> > in this scheme, eCryptfs has not a higher priority than other kernel
-> > users. How can I prevent others to use "aes-foo" ?
->
-> You would assign "aes-foo" a lower priority and then tell eCryptfs to
-> use "aes-foo" instead of "aes".
->
+Andi Kleen wrote:
+> Fixed now. The latest sched-clock was leaking preempt counts during
+> cpu frequency changes.
+>   
 
-ok but do you think it's safe to assume that no others parts of the
-kernel will request "aes-foo" ? Remember that the main point is to
-optimize "aes-foo" ?
+No, that didn't help.  I think its cpufreq:
 
-I would say that it would be better if "aes-foo" could raise a flag
-for example indicating to the crypto core that this algo can be
-instatiate only one time...
+Apr 14 13:58:29 localhost kernel: BUG: scheduling while atomic: swapper/0x00000002/1
+Apr 14 13:58:29 localhost kernel: 2 locks held by swapper/1:
+Apr 14 13:58:29 localhost kernel:  #0:  (&per_cpu(cpu_policy_rwsem, cpu)){--..}, at: [<c02af1ec>] lock_policy_rwsem_write
++0x35/0x5f
+Apr 14 13:58:29 localhost kernel:  #1:  (userspace_mutex){--..}, at: [<c032046b>] mutex_lock+0x1f/0x23
+Apr 14 13:58:29 localhost kernel:  [<c0106f25>] show_trace_log_lvl+0x1a/0x30
+Apr 14 13:58:29 localhost kernel:  [<c0107588>] show_trace+0x12/0x14
+Apr 14 13:58:29 localhost kernel:  [<c0107650>] dump_stack+0x16/0x18
+Apr 14 13:58:29 localhost kernel:  [<c031e971>] __sched_text_start+0x79/0x86a
+Apr 14 13:58:29 localhost kernel:  [<c031f1ee>] wait_for_completion+0x74/0xaa
+Apr 14 13:58:29 localhost kernel:  [<c011bea3>] set_cpus_allowed+0x6e/0x8c
+Apr 14 13:58:29 localhost kernel:  [<c010f490>] acpi_cpufreq_target+0x18d/0x262
+Apr 14 13:58:29 localhost kernel:  [<c02ae6d5>] __cpufreq_driver_target+0x27/0x32
+Apr 14 13:58:29 localhost kernel:  [<c02aff0b>] cpufreq_governor_userspace+0x120/0x154
+Apr 14 13:58:29 localhost kernel:  [<c02ae888>] __cpufreq_governor+0x77/0xab
+Apr 14 13:58:29 localhost kernel:  [<c02aee6a>] __cpufreq_set_policy+0x109/0x11a
+Apr 14 13:58:29 localhost kernel:  [<c02af32d>] cpufreq_set_policy+0x32/0x6c
+Apr 14 13:58:29 localhost kernel:  [<c02afc11>] cpufreq_add_dev+0x347/0x3ea
+Apr 14 13:58:29 localhost kernel:  [<c024a15e>] sysdev_driver_register+0x62/0xaf
+Apr 14 13:58:29 localhost kernel:  [<c02af85a>] cpufreq_register_driver+0x82/0xf2
+Apr 14 13:58:29 localhost kernel:  [<c0454f24>] acpi_cpufreq_init+0x8d/0x93
+Apr 14 13:58:29 localhost kernel:  [<c04497c7>] init+0x14b/0x241
+Apr 14 13:58:29 localhost kernel:  [<c0106b07>] kernel_thread_helper+0x7/0x10
+Apr 14 13:58:29 localhost kernel:  =======================
+Apr 14 13:58:29 localhost kernel: initcall at 0xc0454e97: acpi_cpufreq_init+0x0/0x93(): returned with preemption imbalance
 
-thanks
--- 
-Francis
+
+    J
