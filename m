@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbXDNPmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXDNQKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669AbXDNPmS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 11:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDNPmS
+	id S1753648AbXDNQKN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 12:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbXDNQKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 11:42:18 -0400
-Received: from vs072.rosehosting.com ([216.114.78.72]:40753 "EHLO
-	silverinsanity.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbXDNPmS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 11:42:18 -0400
-X-Greylist: delayed 1627 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 11:42:18 EDT
-In-Reply-To: <20070414083410.GU6602@sequoia.sous-sol.org>
-References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5A4D6434-3DF2-4CC7-B363-260E5F945F72@silverinsanity.com>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       git@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Brian Gernhardt <benji@silverinsanity.com>
-Subject: Re: GIT and the current -stable
-Date: Sat, 14 Apr 2007 11:15:00 -0400
-To: Chris Wright <chrisw@sous-sol.org>
-X-Mailer: Apple Mail (2.752.3)
+	Sat, 14 Apr 2007 12:10:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40551 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753648AbXDNQKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 12:10:11 -0400
+Date: Sat, 14 Apr 2007 18:09:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070414160939.GB3099@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <200704141809.58737.caglar@pardus.org.tr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200704141809.58737.caglar@pardus.org.tr>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Apr 14, 2007, at 4:34 AM, Chris Wright wrote:
+* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
 
-> I've already put a tree like this up on kernel.org.  The master branch
-> is Linus' tree, and there's branches for each of the stable releases
-> called linux-2.6.[12-20].y (I didn't add 2.6.11.y).
->
-> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6- 
-> stable.git;a=summary
+> > i'm pleased to announce the first release of the "Modular Scheduler 
+> > Core and Completely Fair Scheduler [CFS]" patchset:
+> 
+> Currently im using Linus's current git + your extra patches + CFS for 
+> a while. Kaffeine constantly freezes (and uses %80+ CPU time) [1] if i 
+> seek forward/backward while its playing a video with some workload 
+> (checking out SVN repositories, compiling something). Stopping other 
+> process didn't help kaffeine so it stays freezed stated until i kill 
+> it.
 
-Is HEAD for that repo the most recent stable branch, or (as gitweb  
-makes it look) Linus's head.  I'd expect a "-stable" repo to point at  
-the most recent stable commit, not the most recent development  
-commit.  And I'd also expect gitweb's summary page to show the  
-shortlog for HEAd.  One of my assumptions are being broken and I  
-don't like it.  It leaves me all confused...
+hm, could you try to strace it and/or attach gdb to it and figure out 
+what's wrong? (perhaps involving the Kaffeine developers too?) As long 
+as it's not a kernel level crash i cannot see how the scheduler could 
+directly cause this - other than by accident creating a scheduling 
+pattern that triggers a user-space bug more often than with other 
+schedulers.
 
-(I'd just clone your repo and look for myself, but I'm still pulling  
-Linus's tree for the first time and I don't have a fast connection.)
+> [1] http://cekirdek.pardus.org.tr/~caglar/psaux
 
-~~ Brian
+looks quite weird!
+
+	Ingo
