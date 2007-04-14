@@ -1,119 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbXDNTQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751183AbXDNT2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbXDNTQt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 15:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbXDNTQt
+	id S1751183AbXDNT2R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 15:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXDNT2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 15:16:49 -0400
-Received: from 1wt.eu ([62.212.114.60]:1906 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753785AbXDNTQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 15:16:48 -0400
-Date: Sat, 14 Apr 2007 21:01:48 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070414190148.GA2844@1wt.eu>
-References: <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070414132732.GA22103@1wt.eu> <20070414161927.GD3099@elte.hu> <m1abxanahn.fsf@ebiederm.dsl.xmission.com> <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com> <20070414175433.GA17527@elte.hu> <20070414181854.GA5826@1wt.eu> <m1wt0elrzk.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1wt0elrzk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Sat, 14 Apr 2007 15:28:16 -0400
+Received: from electron.quantumfyre.co.uk ([87.106.55.16]:59903 "EHLO
+	electron.quantumfyre.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751183AbXDNT2Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 15:28:16 -0400
+X-Greylist: delayed 1245 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 15:28:15 EDT
+Date: Sat, 14 Apr 2007 20:07:28 +0100 (BST)
+From: Julian Phillips <julian@quantumfyre.co.uk>
+X-X-Sender: jp3@beast.quantumfyre.co.uk
+To: Chris Wright <chrisw@sous-sol.org>
+cc: Brian Gernhardt <benji@silverinsanity.com>,
+       Rene Herman <rene.herman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       git@vger.kernel.org
+Subject: Re: GIT and the current -stable
+In-Reply-To: <20070414171908.GU10574@sequoia.sous-sol.org>
+Message-ID: <Pine.LNX.4.64.0704141917320.6461@beast.quantumfyre.co.uk>
+References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org>
+ <5A4D6434-3DF2-4CC7-B363-260E5F945F72@silverinsanity.com>
+ <20070414171908.GU10574@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 14, 2007 at 12:40:15PM -0600, Eric W. Biederman wrote:
-> Willy Tarreau <w@1wt.eu> writes:
-> 
-> > On Sat, Apr 14, 2007 at 07:54:33PM +0200, Ingo Molnar wrote:
-> >> 
-> >> * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> >> 
-> >> > > Thinking about it, I don't know if there are calls to schedule() 
-> >> > > while switching from tty1 to tty2. Alt-F2 had no effect anymore, and 
-> >> > > "chvt 2" simply blocked. It would have been possible that a 
-> >> > > schedule() call somewhere got starved due to the load, I don't know.
-> >> > 
-> >> > It looks like there is a call to schedule_work.
-> >> 
-> >> so this goes over keventd, right?
-> >> 
-> >> > There are two pieces of the path. If you are switching in and out of a 
-> >> > tty controlled by something like X.  User space has to grant 
-> >> > permission before the operation happens.  Where there isn't a gate 
-> >> > keeper I know it is cheaper but I don't know by how much, I suspect 
-> >> > there is still a schedule happening in there.
-> >> 
-> >> Could keventd perhaps be starved? Willy, to exclude this possibility, 
-> >> could you perhaps chrt keventd to RT priority? If events/0 is PID 5 then 
-> >> the command to set it to SCHED_FIFO:50 would be:
-> >> 
-> >>   chrt -f -p 50 5
-> >> 
-> >> but ... events/0 is reniced to -5 by default, so it should definitely 
-> >> not be starved.
-> >
-> > Well, since I merged the fair-fork patch, I cannot reproduce (in fact,
-> > bash forks 1000 processes, then progressively execs scheddos, but it
-> > takes some time). So I'm rebuilding right now. But I think that Linus
-> > has an interesting clue about GPM and notification before switching
-> > the terminal. I think it was enabled in console mode. I don't know
-> > how that translates to frozen xterms, but let's attack the problems
-> > one at a time.
-> 
-> I think it is a good clue.  However the intention of the mechanism is
-> that only processes that change the video mode on a VT are supposed to
-> use it.  So I really don't think gpm is the culprit.  However it easily could
-> be something else that has similar characteristics.
-> 
-> I just realized we do have proof that schedule_work is actually working
-> because SAK works, and we can't sanely do SAK from interrupt context
-> so we call schedule work.
+On Sat, 14 Apr 2007, Chris Wright wrote:
 
-Eric,
+> * Brian Gernhardt (benji@silverinsanity.com) wrote:
+>> On Apr 14, 2007, at 4:34 AM, Chris Wright wrote:
+>>> I've already put a tree like this up on kernel.org.  The master branch
+>>> is Linus' tree, and there's branches for each of the stable releases
+>>> called linux-2.6.[12-20].y (I didn't add 2.6.11.y).
+>>>
+>>> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=summary
+>>
+>> Is HEAD for that repo the most recent stable branch, or (as gitweb
+>> makes it look) Linus's head.  I'd expect a "-stable" repo to point at
+>> the most recent stable commit, not the most recent development
+>> commit.  And I'd also expect gitweb's summary page to show the
+>> shortlog for HEAd.  One of my assumptions are being broken and I
+>> don't like it.  It leaves me all confused...
+>
+> As I mentioned.  The master branch (HEAD) is Linus' tree, and each
+> stable tree is on its own branch.  You'll find shortlog summarizes the
+> main branch, so yes, gitweb's summary is a bit confusing based on your
+> assumptions.  This is a new tree and hasn't been publicized until now.
+> It does make sense to have its head be the newest stable, I'll switch
+> that around.
 
-I can say that Linus, Ingo and you all got on the right track.
-I could reproduce, I got a hung tty around 1400 running processes.
-Fortunately, it was the one with the root shell which was reniced
-to -19.
+Would it not make more sense to point HEAD at the linux-2.6.20-y branch 
+and either let master be Linus' tree or simply not have a master branch? 
+Otherwise, what happens to master when the latest stable tree becomes 
+linux-2.6.21-y?
 
-I could strace chvt 2 :
+-- 
+Julian
 
-20:44:23.761117 open("/dev/tty", O_RDONLY) = 3 <0.004000>
-20:44:23.765117 ioctl(3, KDGKBTYPE, 0xbfa305a3) = 0 <0.024002>
-20:44:23.789119 ioctl(3, VIDIOC_G_COMP or VT_ACTIVATE, 0x3) = 0 <0.000000>
-20:44:23.789119 ioctl(3, VIDIOC_S_COMP or VT_WAITACTIVE <unfinished ...>
-
-Then I applied Ingo's suggestion about changing keventd prio :
-
-root@pcw:~# ps auxw|grep event
-root         8  0.0  0.0     0    0 ?        SW<  20:31   0:00 [events/0]
-root         9  0.0  0.0     0    0 ?        RW<  20:31   0:00 [events/1]
-
-root@pcw:~# rtprio -s 1 -p 50 8 9     (I don't have chrt but it does the same)
-
-My VT immediately switched as soon as I hit Enter. Everything's
-working fine again now. So the good news is that it's not a bug
-in the tty code, nor a deadlock.
-
-Now, maybe keventd should get a higher prio ? It seems worrying to
-me that it may starve when it seems so much sensible.
-
-Also, that may explain why I couldn't reproduce with the fork patch.
-Since all new processes got no runtime at first, their impact on
-existing ones must have been lower. But I think that if I had waited
-longer, I would have had the problem again (though I did not see it
-even under a load of 7800).
-
-Regards,
-Willy
-
+  ---
+Most people want either less corruption or more of a chance to
+participate in it.
