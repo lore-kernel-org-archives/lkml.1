@@ -1,92 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965522AbXDNMC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965525AbXDNMJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965522AbXDNMC4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 08:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXDNMC4
+	id S965525AbXDNMJF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 08:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161108AbXDNMJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 08:02:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38989 "EHLO mx2.mail.elte.hu"
+	Sat, 14 Apr 2007 08:09:05 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:4609 "EHLO yumi.tdiedrich.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965522AbXDNMCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 08:02:55 -0400
-Date: Sat, 14 Apr 2007 14:02:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: surya.prabhakar@wipro.com
-Cc: kernel@kolivas.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       npiggin@suse.de, efault@gmx.de, arjan@infradead.org, tglx@linutronix.de,
-       wli@holomorphy.com
-Subject: Re: [TEST RESULT]massive_intr.c -- cfs/vanilla/sd-0.40
-Message-ID: <20070414120220.GA2346@elte.hu>
-References: <1176540546.2702.15.camel@bluegenie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S965525AbXDNMJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 08:09:03 -0400
+Date: Sat, 14 Apr 2007 14:09:01 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org
+Subject: Re: Linux 2.6.21-rc6
+Message-ID: <20070414120900.GA3001@melchior.yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	Adrian Bunk <bunk@stusta.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	pavel@suse.cz, linux-pm@lists.osdl.org
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070413212954.GA2545@melchior.yamamaya.is-a-geek.org> <20070413235017.GR5907@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1176540546.2702.15.camel@bluegenie>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070413235017.GR5907@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* surya.prabhakar@wipro.com <surya.prabhakar@wipro.com> wrote:
-
-> Hi Ingo,
->   Did a test with massive_intr.c on a standard linux desktop.
-> for vanilla, con's Sd-0.40 and cfs.
-
-thanks!
-
-> [surya@bluegenie tests]$ ./massive_intr 10 10
-> 002435  00000120
-> 002439  00000120
-> 002441  00000120
-> 002434  00000120
-> 002436  00000120
-> 002440  00000120
-> 002432  00000120
-> 002437  00000120
-> 002433  00000120
-> 002438  00000120
+Adrian Bunk wrote:
+> On Fri, Apr 13, 2007 at 11:29:55PM +0200, Tobias Diedrich wrote:
+> > Linus Torvalds wrote:
+> > 
+> > > We should be getting close to a 2.6.21 release, so please update any 
+> > > regression reports you've done,
+> > 
+> > For me, suspend to disk works only once (has been the case for all
+> > .21-rcs IIRC, but I didn't get around to report it so far).
+> > There are some threads about an issue like this, which is supposed
+> > to be fixed by disabling CONFIG_PCI_MSI, but on my system the
+> > problem persists nonetheless.
+> > 
+> > On the second suspend attempt, the last message I see is
+> > "Suspending console(s)"
+> > 
+> > If I find the time, I'll try to bisect it this weekend.
+> >...
 > 
-> Felt it is too much fair, will try another pass ;)
+> Does CONFIG_HPET_TIMER=n make any difference?
+> Does the latest -git work?
 
-hehe :)
+bisect results:
 
-> [surya@bluegenie tests]$ ./massive_intr 10 10
-> 002961  00000121
-> 002965  00000120
-> 002964  00000121
-> 002959  00000120
-> 002956  00000121
-> 002963  00000121
-> 002960  00000121
-> 002962  00000121
-> 002958  00000122
-> 002957  00000122
+git-bisect start
+# good: [fa285a3d7924a0e3782926e51f16865c5129a2f7] Linux 2.6.20
+git-bisect good fa285a3d7924a0e3782926e51f16865c5129a2f7
+# bad: [2eb1ae149a28c1b8ade687c5fbab3c37da4c0fba] Linux 2.6.21-rc1
+git-bisect bad 2eb1ae149a28c1b8ade687c5fbab3c37da4c0fba
+# bad: [574009c1a895aeeb85eaab29c235d75852b09eb8] Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
+git-bisect bad 574009c1a895aeeb85eaab29c235d75852b09eb8
+# good: [43187902cbfafe73ede0144166b741fb0f7d04e1] Merge master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6
+git-bisect good 43187902cbfafe73ede0144166b741fb0f7d04e1
+# good: [beda9f3a13bbb22cde92a45f230a02ef2afef6a9] kbuild: more Makefile cleanups
+git-bisect good beda9f3a13bbb22cde92a45f230a02ef2afef6a9
+# bad: [7edc136ab688f751037a86e8a051151d7962d33f] Char: isicom, support higher rates
+git-bisect bad 7edc136ab688f751037a86e8a051151d7962d33f
+# good: [6267276f3fdda9ad0d5ca451bdcbdf42b802d64b] optional ZONE_DMA: deal with cases of ZONE_DMA meaning the first zone
+git-bisect good 6267276f3fdda9ad0d5ca451bdcbdf42b802d64b
+# bad: [b4ac91a0eac36f347a509afda07e4305e931de61] uml: chan_user.h formatting fixes
+git-bisect bad b4ac91a0eac36f347a509afda07e4305e931de61
+# bad: [bf0059b23fd2f0b304f647d87fad0aa626ecf0c0] M68KNOMMU: user ARRAY_SIZE macro when appropriate
+git-bisect bad bf0059b23fd2f0b304f647d87fad0aa626ecf0c0
+# good: [c1725f2af89f1eda3cb9007290971b55084569a4] ARM26: Use ARRAY_SIZE macro when appropriate
+git-bisect good c1725f2af89f1eda3cb9007290971b55084569a4
+# bad: [9b87ed790714bd3a8d492feb24f6c48f8bb59c3a] m32r: fix do_page_fault and update_mmu_cache
+git-bisect bad 9b87ed790714bd3a8d492feb24f6c48f8bb59c3a
+# bad: [d12c610e08022a1b84d6bd4412c189214d32e713] swsusp-change-code-ordering-in-userc-sanity
+git-bisect bad d12c610e08022a1b84d6bd4412c189214d32e713
+# bad: [ed746e3b18f4df18afa3763155972c5835f284c5] swsusp: Change code ordering in disk.c
+git-bisect bad ed746e3b18f4df18afa3763155972c5835f284c5
+# good: [e3c7db621bed4afb8e231cb005057f2feb5db557] PM: Change code ordering in main.c
+git-bisect good e3c7db621bed4afb8e231cb005057f2feb5db557
 
-btw., other schedulers might work better with some more test-time: i'd 
-suggest to use 60 seconds (./massive_intr 10 60) [or maybe more, using 
-more threads] to see long-term fairness effects.
 
-> [...] Will be trying out ringtest in the next round.
+ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
+commit ed746e3b18f4df18afa3763155972c5835f284c5
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Sat Feb 10 01:43:32 2007 -0800
 
-cool. ringtest.c is intended to be used the following way: start it, it 
-will generate a 99% busy system (but it is using a ring of 100 tasks, 
-where each tasks runs for 100 msecs then sleeps for 1 msec, so every 
-task gets a turn every 10 seconds). If you add a pure CPU hog to the 
-system, for example an infinite shell loop:
+    [PATCH] swsusp: Change code ordering in disk.c
+    
+    Change the ordering of code in kernel/power/disk.c so that device_suspend() is
+    called before disable_nonboot_cpus() and platform_finish() is called after
+    enable_nonboot_cpus() and before device_resume(), as indicated by the recent
+    discussion on Linux-PM (cf.
+    http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
+    
+    The changes here only affect the built-in swsusp.
+    
+    [alexey.y.starikovskiy@linux.intel.com: fix LED blinking during image load]
+    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+    Acked-by: Pavel Machek <pavel@ucw.cz>
+    Cc: Greg KH <greg@kroah.com>
+    Cc: Nigel Cunningham <nigel@suspend2.net>
+    Cc: Patrick Mochel <mochel@digitalimplant.org>
+    Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-	while :; do :; done &
+:040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 8313b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
 
-then a 'fair' scheduler would give roughly 50% of CPU time to the CPU 
-hog (and the ringtest.c tasks take up the other 50%).
 
-	Ingo
+Now, the remaining test is to try reverting this commit from -rc6. :)
+
+HTH,
+
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
