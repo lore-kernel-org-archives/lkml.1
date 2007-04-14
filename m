@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965109AbXDNTzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965164AbXDNT4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965109AbXDNTzt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 15:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965164AbXDNTzt
+	id S965164AbXDNT4g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 15:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965533AbXDNT4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 15:55:49 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:58970 "EHLO minas.ics.muni.cz"
+	Sat, 14 Apr 2007 15:56:36 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:2511 "EHLO yumi.tdiedrich.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965109AbXDNTzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 15:55:48 -0400
-Date: Sat, 14 Apr 2007 21:55:43 +0200
-From: Jan Yenya Kasprzak <kas@fi.muni.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, osv@javad.com
-Subject: Re: [RFC 1/1] Char: mxser_new, fix recursive locking
-Message-ID: <20070414195543.GE20376@fi.muni.cz>
-References: <20070414042725.GT20376@fi.muni.cz> <462079ED.2000605@gmail.com> <3018694794025219@wsc.cz> <20070414143719.GA5203@fi.muni.cz> <4af2d03a0704140952w6e2338c4g3037f4ba03e2fb1d@mail.gmail.com>
-Mime-Version: 1.0
+	id S965164AbXDNT4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 15:56:35 -0400
+Date: Sat, 14 Apr 2007 21:56:11 +0200
+From: Tobias Diedrich <ranma@tdiedrich.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Linux 2.6.21-rc6
+Message-ID: <20070414195611.GC806@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma@tdiedrich.de>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	pavel@suse.cz, linux-pm@lists.osdl.org,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070414123154.GA2863@melchior.yamamaya.is-a-geek.org> <20070414130045.GE3691@stusta.de> <200704142028.04694.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4af2d03a0704140952w6e2338c4g3037f4ba03e2fb1d@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Muni-Envelope-From: kas@fi.muni.cz
-X-Muni-Envelope-To: linux-kernel@vger.kernel.org
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 14 Apr 2007 21:55:45 +0200 (CEST)
+In-Reply-To: <200704142028.04694.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-: >        I have another problem with the driver - it probably sometimes
-: >drops DCD signal on the serial line or something like that:
-: >when the traffic on the serial console is heavy, it sometimes disconnects
-: >me from the remote shell, and cu(1) displays the login prompt from the new
-: >instance of mgetty of the remote machine. However, it does so both with
-: >mxser.o and mxser_new.o (in 2.6.21-rc6, I think it worked in 2.6.19,
-: >but I have to retest it). So this is another problem, different from
-: >the one we are trying to solve now.
-: 
-: There were some changes, however nothing significant in mxser.c, maybe
-: some of tty or ldisc layer changes (but there is only termios ->
-: ktermios switch + some other things), this would probably be hard to
-: find without bisecting if 2.6.19 is really OK for you.
+Rafael J. Wysocki wrote:
+> On Saturday, 14 April 2007 15:00, Adrian Bunk wrote:
+> > On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
+> > > Tobias Diedrich wrote:
+> > > > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
+> > > > > commit ed746e3b18f4df18afa3763155972c5835f284c5
+> > > > > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > Date:   Sat Feb 10 01:43:32 2007 -0800
+> > > > > 
+> > > > >     [PATCH] swsusp: Change code ordering in disk.c
+> > > > >     
+> > > > >     Change the ordering of code in kernel/power/disk.c so that device_suspend() is
+> > > > >     called before disable_nonboot_cpus() and platform_finish() is called after
+> > > > >     enable_nonboot_cpus() and before device_resume(), as indicated by the recent
+> > > > >     discussion on Linux-PM (cf.
+> > > > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
+> > > > >     
+> > > > >     The changes here only affect the built-in swsusp.
+> > > > >     
+> > > > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinking during image load]
+> > > > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > >     Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > > >     Cc: Greg KH <greg@kroah.com>
+> > > > >     Cc: Nigel Cunningham <nigel@suspend2.net>
+> > > > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
+> > > > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+> > > > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > > > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > > > > 
+> > > > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 8313b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
+> > > > > 
+> > > > > 
+> > > > > Now, the remaining test is to try reverting this commit from -rc6. :)
+> > > > 
+> > > > Doesn't apply cleanly against -rc6, but fixes the problem when
+> > > > reverted from -rc1.
+> > > 
+> > > Now, this was already reported in
+> > > http://lkml.org/lkml/2007/3/16/126
+> > > and I even flagged that message in my local folder, but apparently forgot
+> > > to follow up on it... *sigh*
+> > 
+> > Unless I misunderstood something, all of the problems Maxim described in 
+> > this email are fixed for him in -rc6.
+> > 
+> > But it's quite possible that you are running into a different issue 
+> > exposed by this commit.
+> 
+> Yes, it's likely.
+> 
+> Tobias, I'm unable to reproduce the problem with your .config, but my hardware
+> is certainly different.  Which suspend mode do you use?  If that's "platform",
+> can you try to use "shutdown" or "reboot" and see if that helps?
 
-	OK, I'll try to bisect in a few weeks.
-
-: The only idea I have right now is to nohup process, which will
-: int fd = open("/dev/ttyMIXX", O_RDONLY | O_NONBLOCK);
-: while (1) {
-:  ioctl(fd, TIOCMIWAIT, TIOCM_CD);
-:  ioctl(fd, TIOCMGET, &ret);
-:  printf("%ld: carrier has changed: %u\n", time(NULL), !!(ret & TIOCM_CD));
-: }
-
-	Hmm, I have tried to run this, and got a machine lockup, and after
-a minute or so the following has been printed to the console:
-
-~BUG: spinlock lockup on CPU#0, sshd/1671, ffffffff80557780
-
-(I was logged in using ssh, and ran the above code inside the ssh session).
-
-	I have tried to look at it from the remote side as well:
-stracing the "find / -print" revealed that after some time,
-the write(1, "/file/name/...", ...) call returned -EIO.
-And from this point on, all subsequent writes to fd #1 did return
--EIO as well.
-
--Yenya
+Sure.
+shutdown/reboot works fine, only platform is broken.
 
 -- 
-| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
-| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
-| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
-> I will never go to meetings again because I think  face to face meetings <
-> are the biggest waste of time you can ever have.        --Linus Torvalds <
+Tobias						PGP: http://9ac7e0bc.uguu.de
