@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbXDNJaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbXDNJlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886AbXDNJaJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 05:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXDNJaI
+	id S1753888AbXDNJlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 05:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbXDNJlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 05:30:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50367 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753886AbXDNJaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 05:30:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [RFD] swsusp problem: Drivers allocate much memory during suspend (was: Re: 2.6.21-rc5: swsusp: Not enough free memory)
-Date: Sat, 14 Apr 2007 11:33:32 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Jiri Slaby <jirislaby@gmail.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.osdl.org
-References: <460B6E4B.3060004@gmail.com> <200704140057.35829.rjw@sisk.pl> <1176505430.7112.216.camel@nigel.suspend2.net>
-In-Reply-To: <1176505430.7112.216.camel@nigel.suspend2.net>
+	Sat, 14 Apr 2007 05:41:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:14213 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753888AbXDNJlS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 05:41:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=e1PlOOFxdyKwAMomi1YrOaDGJ0Xs6Q9/urhFgDq5etNuKKJdtHURKhKhp1lfyXj5rcAUpezu+8QIcniYw0YrXWJy2vBY/1M4Cmz/Pj4CTrFhMiyHB4ICn1LzHSl1ulIINr/p+DkOP3R2BQc9buyMY0kTLKrvyiyu9XbJQ725Xnk=
+Date: Sat, 14 Apr 2007 13:42:15 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.13.4 kernel Oops - proc related
+Message-ID: <20070414094215.GA5840@martell.zuzino.mipt.ru>
+References: <9a8748490704120101o7ae2645ei12bb096971da6dfe@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704141133.33366.rjw@sisk.pl>
+In-Reply-To: <9a8748490704120101o7ae2645ei12bb096971da6dfe@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 14 April 2007 01:03, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Sat, 2007-04-14 at 00:57 +0200, Rafael J. Wysocki wrote:
-> > > > > Well, I'm not sure.  First, we don't really know what the value of it should be
-> > > > > and this alone is a good enough reason for making it tunable, IMHO.  Second, I
-> > > > > think different systems may need different PAGES_FOR_IO and taking just the
-> > > > > maximum (even if we learn how much that actually is) seems to be wasteful in
-> > > > 
-> > > > Well,  it is wasteful as in "we save slightly smaller image than we
-> > > > could". That's okay with me.
-> > > 
-> > > No. If the driver can't allocate the memory, your call to device_suspend
-> > > will fail. This isn't about image size but about success or failure to
-> > > hibernate.
-> > 
-> > If we take PAGES_FOR_IO to be the maximum over all possible configurations
-> > that can hibernate, the majority of systems will just create smaller images than
-> > they could have created for smaller PAGES_FOR_IO, but all of them will be
-> > able to hibernate. :-)
-> 
-> You also use PAGES_FOR_IO in enough_free_mem. Say you set it to the 9000
-> pages I mentioned before (35M). On a machine with 64 megabytes of
-> memory, you'll never be able to suspend because you'll never satisfy
-> 
-> free > nr_pages + PAGES_FOR_IO + meta
+On Thu, Apr 12, 2007 at 10:01:07AM +0200, Jesper Juhl wrote:
+> Yesterday one of my servers Oops'ed on me :-(
+> The server was running an old 2.6.13.4 kernel.
+> I got a screenshot of the Oops which is available here :
+> http://www.kernel.org/pub/linux/kernel/people/juhl/images/2.6.13.4-crash.png
+>
+> Even though this is a rather old kernel, I wanted to report the crash
+> just in case it's not a known bug. If it is already known and fixed,
+> then just ignore this mail.
 
-Well, in fact our tunable would need to be independent of PAGES_FOR_IO so that
-the memory shrinker could free some spare memory for the drivers.
+It seems task->signal->tty->driver pointer got borken. It's 0x03200005!
 
-> I'll freely admit that 64 megabytes is tiny nowadays, but it's not
-> completely unknown. The point is really that you're effectively making
-> swsusp unusable for machines with RAM < (PAGES_FOR_IO * (say) 3). But
-> what do you set PAGES_FOR_IO to? There'll always be someone with
-> $WHIZ_BANG_CONFIG who is pushing to have the value increased, and every
-> increase knocks out more of your lowend users.
+c0181920 <do_task_stat>:
 
-Yes, that's why I said I wasn't sure whether or not the additional tunable was
-needed.
+c0181ad8:	call   c011d440 <next_thread>
+c0181add:	cmp    %esi,%eax			# } while (t != task)
+c0181adf:	jne    c0181ab0 <do_task_stat+0x190>
+c0181ae1:	mov    0x460(%esi),%eax
+c0181ae7:	add    $0x504,%eax
+c0181aec:	call   c036f160 <_spin_unlock_irq>	# spin_unlock_irq(&task->sighand->siglock);
+c0181af1:	mov    0x45c(%esi),%ecx
+c0181af7:	test   %ecx,%ecx			# if (task->signal)
+c0181af9:	je     c0181bc3 <do_task_stat+0x2a3>
+c0181aff:	mov    0x88(%ecx),%ebx			# ebx = task->signal->tty
+c0181b05:	test   %ebx,%ebx			# if (task->signal->tty)
+c0181b07:	je     c0181b46 <do_task_stat+0x226>
+c0181b09:	mov    0xb4(%ebx),%eax
+c0181b0f:	mov    %eax,0x50(%esp,1)		# tty_pgrp = task->signal->tty->pgrp
+c0181b13:	mov    0x4(%ebx),%eax			# eax = task->signal->tty->driver
+c0181b16: ===>	mov    0x64(%eax),%edx			# task->signal->tty->driver->major
+c0181b19:	mov    0x68(%eax),%ebp			# task->signal->tty->driver->minor_start
+c0181b1c:	mov    0x8(%ebx),%eax			# task->signel->tty->index
 
-Still, with the notifiers we have a chance to handle the problem automatically
-and the tunable would require the user to set the right value.
-
-Greetings,
-Rafael
