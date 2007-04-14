@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030690AbXDNNPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030400AbXDNNS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030690AbXDNNPT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 09:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030417AbXDNNPS
+	id S1030400AbXDNNS0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 09:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030403AbXDNNS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 09:15:18 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:5793 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030403AbXDNNPO (ORCPT
+	Sat, 14 Apr 2007 09:18:26 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:61122 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030400AbXDNNSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 09:15:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RHFfFReTT2/yoC/tw0uQra07+5r0c9erN11WkIqjAAnRqGnZGj/p8tEHPAw3WIMDlbTDeiPCVWZvu9yKBsVx6mqIbkLY+LmF1DlE5KYhhiyToAx4U2+Wyl2+4JolIrprJY10fnw2Gbd2qmty7JlcdaOH2/ZjvTf1SUWO7NRy4SU=
-Message-ID: <38b2ab8a0704140615y2ba8145bmd3c2316a41d99265@mail.gmail.com>
-Date: Sat, 14 Apr 2007 15:15:13 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: helge.hafting@aitel.hist.no, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <E1HcZud-0006DB-00@gondolin.me.apana.org.au>
+	Sat, 14 Apr 2007 09:18:25 -0400
+Message-ID: <4620D325.8050903@student.ltu.se>
+Date: Sat, 14 Apr 2007 15:12:05 +0200
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: PCI: the overdue removal of pci_module_init()
+References: <20070406101948.GE29169@stusta.de>
+In-Reply-To: <20070406101948.GE29169@stusta.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0704130630v4c840bd1w19f2a239f86a93b@mail.gmail.com>
-	 <E1HcZud-0006DB-00@gondolin.me.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On 4/14/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> It should be easy to restrict a crypto device so that it's used
-> by one specific user.  That's why we have generic names ("aes") vs.
-> specific ones ("aes-foo").
+Adrian Bunk wrote:
+> Unless we finally completely remove it, people will always add new users.
 >
-> So if you let the priority user pick "aes-foo" instead of "aes",
-> and given that there is a higher priority variant of the generic
-> "aes" registered, the system will do exactly what you want.
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 >
+>   
+If this is really it, then ACK!
+> ---
+>  Documentation/feature-removal-schedule.txt |    7 -------
+>  Documentation/pci.txt                      |    2 --
+>  include/linux/pci.h                        |    6 ------
+>  3 files changed, 15 deletions(-)
+>
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -105,13 +105,6 @@ Who:   Adrian Bunk <bunk@stusta.de>
+>  
+>  ---------------------------
+>  
+> -What:	pci_module_init(driver)
+> -When:	January 2007
+> -Why:	Is replaced by pci_register_driver(pci_driver).
+> -Who:	Richard Knutsson <ricknu-0@student.ltu.se> and Greg Kroah-Hartman <gregkh@suse.de>
+> -
+> ----------------------------
+> -
+>  What:	Usage of invalid timevals in setitimer
+>  When:	March 2007
+>  Why:	POSIX requires to validate timevals in the setitimer call. This
+> --- a/Documentation/pci.txt
+> +++ b/Documentation/pci.txt
+> @@ -545,8 +545,6 @@ pci_find_slot()			Find pci_dev correspon
+>  pci_set_power_state()		Set PCI Power Management state (0=D0 ... 3=D3)
+>  pci_find_capability()		Find specified capability in device's capability
+>  				list.
+> -pci_module_init()		Inline helper function for ensuring correct
+> -				pci_driver initialization and error handling.
+>  pci_resource_start()		Returns bus start address for a given PCI region
+>  pci_resource_end()		Returns bus end address for a given PCI region
+>  pci_resource_len()		Returns the byte length of a PCI region
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -405,12 +405,6 @@ struct pci_driver {
+>  	.vendor = PCI_ANY_ID, .device = PCI_ANY_ID, \
+>  	.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID
+>  
+> -/*
+> - * pci_module_init is obsolete, this stays here till we fix up all usages of it
+> - * in the tree.
+> - */
+> -#define pci_module_init	pci_register_driver
+> -
+>  /**
+>   * PCI_VDEVICE - macro used to describe a specific pci device in short form
+>   * @vend: the vendor name
+>
+>
+> Patches currently in gregkh-2.6 which might be from bunk@stusta.de are
+>
+> bad/sysfs-crash-debugging.patch
+> driver/the-overdue-removal-of-the-mount-umount-uevents.patch
+> pci/pci-fix-multiple-definition-of-queue_pushbutton_work.patch
+> pci/pci-remove-the-broken-pci_multithread_probe-option.patch
+> pci/pci-define-pci_request-release_regions-for-config_pci-n.patch
+> pci/pci-the-overdue-removal-of-pci_module_init.patch
+> usb/usb-gtco.c-fix-a-use-before-check.patch
+> usb/usb-iowarrior.c-fix-null-dereference.patch
+>   
 
-hmm yes indeed it should do the job, but I don't see how you do that.
-For example, let say I want to use "aes-foo" with eCryptfs. I can give
-a higher priority to "aes-foo" than "aes" one. When eCryptfs asks for
-a aes cipher it will pass "aes" name and since "aes-foo" has a higher
-priority then the cypto core will return "aes-foo" cipher, right ? But
-in this scheme, eCryptfs has not a higher priority than other kernel
-users. How can I prevent others to use "aes-foo" ?
-
-Actually I'd like to say "'aes-foo' is a cipher used by one and only
-one user". That would allow aes-foo driver to no reload the same key
-for each block and to be more efficient for my common case.
-
-thanks
--- 
-Francis
