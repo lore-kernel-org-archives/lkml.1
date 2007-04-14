@@ -1,151 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbXDNXND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbXDNXOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbXDNXND (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 19:13:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXDNXND
+	id S1751649AbXDNXOe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 19:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXDNXOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 19:13:03 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:38347 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752759AbXDNXNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 19:13:00 -0400
-X-Greylist: delayed 329 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 19:13:00 EDT
-X-IronPort-AV: i="4.14,411,1170662400"; 
-   d="scan'208"; a="51169095:sNHT987973161"
-Subject: NFS: Ensure PG_writeback is cleared when writeback fails
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain
+	Sat, 14 Apr 2007 19:14:34 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:57871 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbXDNXOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 19:14:33 -0400
+Message-ID: <46216001.3000503@gmail.com>
+Date: Sun, 15 Apr 2007 01:13:05 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       git@vger.kernel.org
+Subject: Re: GIT and the current -stable
+References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org> <462096AA.3080003@gmail.com>
+In-Reply-To: <462096AA.3080003@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Sat, 14 Apr 2007 19:10:12 -0400
-Message-Id: <1176592212.6089.26.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 14 Apr 2007 23:11:57.0869 (UTC) FILETIME=[4CC3B5D0:01C77EEA]
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the writebacks are cancelled via nfs_cancel_dirty_list, or due to the
-memory allocation failing in nfs_flush_one/nfs_flush_multi, then we must
-ensure that the PG_writeback flag is cleared.
+On 04/14/2007 10:54 AM, Rene Herman wrote:
 
-Also ensure that we actually own the PG_writeback flag whenever we
-schedule a new writeback by making nfs_set_page_writeback() return the
-value of test_set_page_writeback().
-The PG_writeback page flag ends up replacing the functionality of the
-PG_FLUSHING nfs_page flag, so we rip that out too.
+> On 04/14/2007 10:34 AM, Chris Wright wrote:
+> 
+>> I've already put a tree like this up on kernel.org.  The master branch
+>> is Linus' tree, and there's branches for each of the stable releases
+>> called linux-2.6.[12-20].y (I didn't add 2.6.11.y).
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=summary 
+> 
+> I see, thank you; that sounds like a good "master" repo to clone then.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
+Okay, I just cloned this repo, like:
 
- fs/nfs/write.c           |   22 +++++++++++++++-------
- include/linux/nfs_page.h |    1 -
- 2 files changed, 15 insertions(+), 8 deletions(-)
+git clone -n \
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6-stable.git \
+stable
 
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 2867e6b..e5d7cac 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -218,9 +218,11 @@ int nfs_congestion_kb;
- #define NFS_CONGESTION_OFF_THRESH	\
- 	(NFS_CONGESTION_ON_THRESH - (NFS_CONGESTION_ON_THRESH >> 2))
- 
--static void nfs_set_page_writeback(struct page *page)
-+static int nfs_set_page_writeback(struct page *page)
- {
--	if (!test_set_page_writeback(page)) {
-+	int ret = test_set_page_writeback(page);
-+
-+	if (!ret) {
- 		struct inode *inode = page->mapping->host;
- 		struct nfs_server *nfss = NFS_SERVER(inode);
- 
-@@ -228,6 +230,7 @@ static void nfs_set_page_writeback(struct page *page)
- 				NFS_CONGESTION_ON_THRESH)
- 			set_bdi_congested(&nfss->backing_dev_info, WRITE);
- 	}
-+	return ret;
- }
- 
- static void nfs_end_page_writeback(struct page *page)
-@@ -277,10 +280,8 @@ static int nfs_page_mark_flush(struct page *page)
- 		spin_lock(req_lock);
- 	}
- 	spin_unlock(req_lock);
--	if (test_and_set_bit(PG_FLUSHING, &req->wb_flags) == 0) {
-+	if (nfs_set_page_writeback(page) == 0)
- 		nfs_mark_request_dirty(req);
--		nfs_set_page_writeback(page);
--	}
- 	ret = test_bit(PG_NEED_FLUSH, &req->wb_flags);
- 	nfs_unlock_request(req);
- 	return ret;
-@@ -424,7 +425,6 @@ nfs_mark_request_dirty(struct nfs_page *req)
- static void
- nfs_redirty_request(struct nfs_page *req)
- {
--	clear_bit(PG_FLUSHING, &req->wb_flags);
- 	__set_page_dirty_nobuffers(req->wb_page);
- }
- 
-@@ -434,7 +434,11 @@ nfs_redirty_request(struct nfs_page *req)
- static inline int
- nfs_dirty_request(struct nfs_page *req)
- {
--	return test_bit(PG_FLUSHING, &req->wb_flags) == 0;
-+	struct page *page = req->wb_page;
-+
-+	if (page == NULL)
-+		return 0;
-+	return !PageWriteback(req->wb_page);
- }
- 
- #if defined(CONFIG_NFS_V3) || defined(CONFIG_NFS_V4)
-@@ -500,6 +504,7 @@ static void nfs_cancel_dirty_list(struct list_head *head)
- 	while(!list_empty(head)) {
- 		req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
-+		nfs_end_page_writeback(req->wb_page);
- 		nfs_inode_remove_request(req);
- 		nfs_clear_page_writeback(req);
- 	}
-@@ -890,6 +895,7 @@ out_bad:
- 		list_del(&data->pages);
- 		nfs_writedata_release(data);
- 	}
-+	nfs_end_page_writeback(req->wb_page);
- 	nfs_redirty_request(req);
- 	nfs_clear_page_writeback(req);
- 	return -ENOMEM;
-@@ -935,6 +941,7 @@ static int nfs_flush_one(struct inode *inode, struct list_head *head, int how)
- 	while (!list_empty(head)) {
- 		struct nfs_page *req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
-+		nfs_end_page_writeback(req->wb_page);
- 		nfs_redirty_request(req);
- 		nfs_clear_page_writeback(req);
- 	}
-@@ -970,6 +977,7 @@ out_err:
- 	while (!list_empty(head)) {
- 		req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
-+		nfs_end_page_writeback(req->wb_page);
- 		nfs_redirty_request(req);
- 		nfs_clear_page_writeback(req);
- 	}
-diff --git a/include/linux/nfs_page.h b/include/linux/nfs_page.h
-index 2e555d4..d111be6 100644
---- a/include/linux/nfs_page.h
-+++ b/include/linux/nfs_page.h
-@@ -31,7 +31,6 @@
- #define PG_NEED_COMMIT		1
- #define PG_NEED_RESCHED		2
- #define PG_NEED_FLUSH		3
--#define PG_FLUSHING		4
- 
- struct nfs_inode;
- struct nfs_page {
+How do I now checkout for example 2.6.20.6, or get a diff between 2.6.20.6 
+and the (at the moment of writing latest -stable) 2.6.20.7?
+
+rene@7ixe4:~/src/linux$ cd stable
+rene@7ixe4:~/src/linux/stable$ git branch -a
+* master
+   origin/HEAD
+   origin/linux-2.6
+   origin/linux-2.6.12.y
+   origin/linux-2.6.13.y
+   origin/linux-2.6.14.y
+   origin/linux-2.6.15.y
+   origin/linux-2.6.16.y
+   origin/linux-2.6.17.y
+   origin/linux-2.6.18.y
+   origin/linux-2.6.19.y
+   origin/linux-2.6.20.y
+   origin/master
+
+and I can check them out like
+
+rene@7ixe4:~/src/linux/stable$ git checkout origin/linux-2.6.20.y
+
+or in this case, but only this case, like:
+
+rene@7ixe4:~/src/linux/stable$ git checkout v2.6.20.7
+
+"v2.6.20.7" seems to be the only tag from the stable branches that's present 
+  in this tree?
+
+rene@7ixe4:[...]$ git tag -l | grep "v2\.6\.[[:digit:]]\{1,2\}\."
+v2.6.20.7
+
+Rene.
+
