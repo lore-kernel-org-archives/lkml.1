@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161113AbXDNGu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161115AbXDNGv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161113AbXDNGu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 02:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161115AbXDNGu1
+	id S1161115AbXDNGv2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 02:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161121AbXDNGv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 02:50:27 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:4407 "EHLO yumi.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161113AbXDNGu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 02:50:26 -0400
-Date: Sat, 14 Apr 2007 08:50:24 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org
-Subject: Re: Linux 2.6.21-rc6
-Message-ID: <20070414065024.GA2690@melchior.yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Adrian Bunk <bunk@stusta.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	pavel@suse.cz, linux-pm@lists.osdl.org
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070413212954.GA2545@melchior.yamamaya.is-a-geek.org> <20070413235017.GR5907@stusta.de>
+	Sat, 14 Apr 2007 02:51:28 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:51035 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161115AbXDNGv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 02:51:27 -0400
+Message-ID: <462079ED.2000605@gmail.com>
+Date: Sat, 14 Apr 2007 08:51:25 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070413235017.GR5907@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jan Kasprzak <kas@fi.muni.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MOXA: mxser_new lockup
+References: <20070414042725.GT20376@fi.muni.cz>
+In-Reply-To: <20070414042725.GT20376@fi.muni.cz>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
+Jan Kasprzak napsal(a):
+> 	Hello,
 
-> Does CONFIG_HPET_TIMER=n make any difference?
+Hello.
 
-Unfortunately not.
+> I have a MOXA C168H card, and after the upgrade from 2.6.19 to 2.6.21-rc6
+> (and from moxa.c to mxser_new.c) I get a system lockup after few seconds
+> of communicating over the MOXA serial line. Noting is printed on the
+> serial console at all. The system is SMP x86_64 (Fedora 5). I may be
+> able to do a limited testing on request, but the system is in production
+> use most of the time. For now, I will probably move back to the older
+> driver.
+> 
+> 	Are you aware of any SMP or 64-bit issues in mxser_new.c?
 
-> Does the latest -git work?
+No :(. I went through the locking again just now, but I can't see anything
+wrong. Could you please enable CONFIG_PROVE_LOCKING and CONFIG_DEBUG_LOCKDEP and
+retest?
 
-Coming up next :)
+And also post stty -a -F /dev/ttyMIXX or a setup passed to
+tcsetattr/ioctl(TCSETA/S) if available. What do you use for communication?
 
+thanks,
 -- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
