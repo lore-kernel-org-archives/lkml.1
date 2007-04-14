@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161178AbXDNLjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161162AbXDNLuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161178AbXDNLjE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 07:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161187AbXDNLjE
+	id S1161162AbXDNLuk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 07:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161187AbXDNLuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 07:39:04 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53133 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161178AbXDNLjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 07:39:03 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: 2.6.21-rc6 + firstfloor patches: BUG: sleeping function called from invalid context at kernel/sched,.c:3643
-Date: Sat, 14 Apr 2007 13:38:49 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <462072C2.4070605@goop.org>
-In-Reply-To: <462072C2.4070605@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704141338.50058.ak@suse.de>
+	Sat, 14 Apr 2007 07:50:40 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:63367 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161162AbXDNLuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 07:50:39 -0400
+From: Haavard Skinnemoen <hskinnemoe@atmel.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, roland@redhat.com,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] AVR32 utrace: Add missing includes
+Date: Sat, 14 Apr 2007 13:50:20 +0200
+Message-Id: <1176551420509-git-send-email-hskinnemoe@atmel.com>
+X-Mailer: git-send-email 1.4.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 April 2007 08:20:50 Jeremy Fitzhardinge wrote:
-> I'm seeing this:
-> 
-> Apr 13 21:55:34 localhost kernel: BUG: sleeping function called from invalid context at kernel/sched.c:3643
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Fixed now. The latest sched-clock was leaking preempt counts during
-cpu frequency changes.
+Include linux/tracehook.h and linux/utrace.h
 
--Andi
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+Don't know why I missed these initially, but this should fix utrace
+on avr32.
+
+Andrew, I've rebased my avr32-arch branch so it should no longer
+conflict with mainline and you can drop git-avr32-fixup.patch. Thanks
+for cleaning up my mess :-)
+
+Haavard
+
+ arch/avr32/kernel/ptrace.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/avr32/kernel/ptrace.c b/arch/avr32/kernel/ptrace.c
+index e7078c5..a485117 100644
+--- a/arch/avr32/kernel/ptrace.c
++++ b/arch/avr32/kernel/ptrace.c
+@@ -14,6 +14,8 @@
+ #include <linux/ptrace.h>
+ #include <linux/user.h>
+ #include <linux/kdebug.h>
++#include <linux/tracehook.h>
++#include <linux/utrace.h>
+ 
+ #include <asm/mmu_context.h>
+ #include <asm/ocd.h>
+-- 
+1.4.4.4
+
