@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030838AbXDNGYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030801AbXDNGdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030838AbXDNGYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 02:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030817AbXDNGYW
+	id S1030801AbXDNGdK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 02:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXDNGdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 02:24:22 -0400
-Received: from fed1rmmtao103.cox.net ([68.230.241.43]:46523 "EHLO
-	fed1rmmtao103.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030746AbXDNGYV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 02:24:21 -0400
-From: Junio C Hamano <junkio@cox.net>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       git@vger.kernel.org
-Subject: Re: GIT and the current -stable
-References: <46206842.80203@gmail.com>
-Date: Fri, 13 Apr 2007 23:24:19 -0700
-In-Reply-To: <46206842.80203@gmail.com> (Rene Herman's message of "Sat, 14 Apr
-	2007 07:36:02 +0200")
-Message-ID: <7vfy73bhik.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sat, 14 Apr 2007 02:33:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52544 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965356AbXDNGdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 02:33:09 -0400
+Date: Sat, 14 Apr 2007 08:32:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070414063254.GB14875@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070414020424.GB14544@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@gmail.com> writes:
 
-> Stumbling around with git here. I'd like to use git to efficiently
-> track the current -stable as well as -current. Say, my local tree is a
-> clone of Linus current:
->
-> git clone \
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> local
->
-> I then branch off a 2.6.20 branch:
->
-> cd local
-> git checkout -b v2.6.20 v2.6.20
->
-> to now update to the current -stable I could do:
->
-> git pull \
-> git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+* Nick Piggin <npiggin@suse.de> wrote:
 
-I think adding these lines to .git/config would do the trick,
-after you have done the "checkout -b v2.6.20 v2.6.20" step:
+> >    The CFS patch uses a completely different approach and implementation
+> >    from RSDL/SD. My goal was to make CFS's interactivity quality exceed
+> >    that of RSDL/SD, which is a high standard to meet :-) Testing
+> >    feedback is welcome to decide this one way or another. [ and, in any
+> >    case, all of SD's logic could be added via a kernel/sched_sd.c module
+> >    as well, if Con is interested in such an approach. ]
+> 
+> Comment about the code: shouldn't you be requeueing the task in the 
+> rbtree wherever you change wait_runtime? eg. task_new_fair? [...]
 
-[branch "v2.6.20"]
-	remote = stable
-	merge = refs/heads/master
-[remote "stable"]
-	url = git://git.kernel.org/.../stable/linux-2.6.20.y.git
-	fetch = refs/heads/master
+yes: the task's position within the rbtree is updated every time 
+wherever wait_runtime is change. task_new_fair is the method during new 
+task creation, but indeed i forgot to requeue the parent. I've fixed 
+this in my tree (see the delta patch below) - thanks!
 
-provided if stable team forks v2.6.20.y history off of Linus's
-v2.6.20.
+	Ingo
 
-With the above configuration, anytime you say "git pull" while
-on your v2.6.20 branch will fetch from "stable" and merge their
-'master' branch in your current branch (i.e. v2.6.20 branch).
+----------->
+From: Ingo Molnar <mingo@elte.hu>
+Subject: [cfs] fix parent's rbtree position
 
+Nick noticed that upon fork we change parent->wait_runtime but we do not 
+requeue it within the rbtree.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -524,6 +524,8 @@ static void task_new_fair(struct rq *rq,
+ 
+ 	p->wait_runtime = parent->wait_runtime/2;
+ 	parent->wait_runtime /= 2;
++	requeue_task_fair(rq, parent);
++
+ 	/*
+ 	 * For the first timeslice we allow child threads
+ 	 * to move their parent-inherited fairness back
