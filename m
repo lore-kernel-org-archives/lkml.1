@@ -1,146 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030844AbXDNNbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161205AbXDNNcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030844AbXDNNbO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 09:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030846AbXDNNbO
+	id S1161205AbXDNNcU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 09:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030855AbXDNNcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 09:31:14 -0400
-Received: from 1wt.eu ([62.212.114.60]:1852 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030844AbXDNNbN convert rfc822-to-8bit (ORCPT
+	Sat, 14 Apr 2007 09:32:20 -0400
+Received: from smtp4.netcabo.pt ([212.113.174.31]:6998 "EHLO
+	exch01smtp12.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030842AbXDNNcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 09:31:13 -0400
-Date: Sat, 14 Apr 2007 15:01:01 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070414130101.GA2538@1wt.eu>
-References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu>
+	Sat, 14 Apr 2007 09:32:19 -0400
+X-Greylist: delayed 547 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 09:32:19 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAJByIEZThFhoUGdsb2JhbACPfgEBKg
+X-Antivirus-bastov-Mail-From: sergio@sergiomb.no-ip.org via bastov.localdomain
+X-Antivirus-bastov: 1.25-st-qms (Clear:RC:0(83.132.129.181):SA:0(-2.3/5.0):. Processed in 4.41894 secs Process 19647)
+Subject: Re: [PATCH] pci quirks: Sort out the VIA mess once and for
+	all	(hopefully)
+From: Sergio Monteiro Basto <sergio@sergiomb.no-ip.org>
+Reply-To: sergio@sergiomb.no-ip.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Daniel Drake <dsd@gentoo.org>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+In-Reply-To: <1163035093.13988.9.camel@monteirov>
+References: <1163003156.23956.40.camel@localhost.localdomain>
+	 <45523848.7010709@gentoo.org>
+	 <1163018356.23956.88.camel@localhost.localdomain>
+	 <1163035093.13988.9.camel@monteirov>
+Content-Type: multipart/signed; micalg=sha1; protocol="application/x-pkcs7-signature"; boundary="=-MS8Cmk5N6Dkh7qiJvZNm"
+Date: Sat, 14 Apr 2007 14:22:46 +0100
+Message-Id: <1176556966.16992.9.camel@monteirov>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20070414105338.GB19454@elte.hu>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 14 Apr 2007 13:23:09.0219 (UTC) FILETIME=[0B3F8730:01C77E98]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 14, 2007 at 12:53:39PM +0200, Ingo Molnar wrote:
-> 
-> * Willy Tarreau <w@1wt.eu> wrote:
-> 
-> > Forking becomes very slow above a load of 100 it seems. Sometimes, the 
-> > shell takes 2 or 3 seconds to return to prompt after I run "scheddos 
-> > &"
-> 
-> this might be changed/impacted by the parent-requeue fix that is in the 
-> updated (for real, promise! ;) patch. Right now on CFS a forking parent 
-> shares its own run stats with the child 50%/50%. This means that heavy 
-> forkers are indeed penalized. Another logical choice would be 100%/0%: a 
-> child has to earn its own right.
-> 
-> i kept the 50%/50% rule from the old scheduler, but maybe it's a more 
-> pristine (and smaller/faster) approach to just not give new children any 
-> stats history to begin with. I've implemented an add-on patch that 
-> implements this, you can find it at:
-> 
->     http://redhat.com/~mingo/cfs-scheduler/sched-fair-fork.patch
 
-Not tried yet, it already looks better with the update and sched-fair-hog.
-Now xterm open "instantly" even with 1000 running processes.
+--=-MS8Cmk5N6Dkh7qiJvZNm
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> > Those are very promising results, I nearly observe the same 
-> > responsiveness as I had on a solaris 10 with 10k running processes on 
-> > a bigger machine.
-> 
-> cool and thanks for the feedback! (Btw., as another test you could also 
-> try to renice "scheddos" to +19. While that does not push the scheduler 
-> nearly as hard as nice 0, it is perhaps more indicative of how a truly 
-> abusive many-tasks workload would be run in practice.)
+Hi,=20
+I don't have the original message just my reply,=20
+I had try a FC6-respin dvd.iso ( which have kernel 2.6.20) in my old
+laptop (http://sergiomb.no-ip.org/laptop/ ) which need "VIA IRQ quirk
+fixup"  and I had many problems with booting after dig a little I found
+that quirks aren't applied anymore .
+So the latest patch of Alan Cox on this subject which is already on
+kernel 2.6.20, hasn't been tested and doesn't work on my laptop and
+probably in all compaq pressario 700 , I think.
 
-Good idea. The machine I'm typing from now has 1000 scheddos running at +19,
-and 12 gears at nice 0. Top keeps reporting different cpu usages for all gears,
-but I'm pretty sure that it's a top artifact now because the cumulated times
-are roughly identical :
+Thanks,
+--=20
+S=E9rgio M.B.
 
- 14:33:13  up 13 min,  7 users,  load average: 900.30, 443.75, 177.70
-1088 processes: 80 sleeping, 1008 running, 0 zombie, 0 stopped
-CPU0 states:  56.0% user  43.0% system   23.0% nice   0.0% iowait   0.0% idle
-CPU1 states:  94.0% user   5.0% system    0.0% nice   0.0% iowait   0.0% idle
-Mem:  1034764k av,  223788k used,  810976k free,       0k shrd,    7192k buff
-       104400k active,              51904k inactive
-Swap:  497972k av,       0k used,  497972k free                   68020k cached
+--=-MS8Cmk5N6Dkh7qiJvZNm
+Content-Type: application/x-pkcs7-signature; name=smime.p7s
+Content-Disposition: attachment; filename=smime.p7s
+Content-Transfer-Encoding: base64
 
-  PID USER     PRI  NI  SIZE  RSS SHARE STAT %CPU %MEM   TIME CPU COMMAND
- 1325 root      20   0 69240 9400  3740 R    27.6  0.9   4:46   1 X
- 1412 willy     20   0  6284 2552  1740 R    14.2  0.2   1:09   1 glxgears
- 1419 willy     20   0  6256 2384  1612 R    10.7  0.2   1:09   1 glxgears
- 1409 willy     20   0  2824 1940   788 R     8.9  0.1   0:25   1 top
- 1414 willy     20   0  6280 2544  1728 S     8.9  0.2   1:08   0 glxgears
- 1415 willy     20   0  6256 2376  1600 R     8.9  0.2   1:07   1 glxgears
- 1417 willy     20   0  6256 2384  1612 S     8.9  0.2   1:05   1 glxgears
- 1420 willy     20   0  6284 2552  1740 R     8.9  0.2   1:07   1 glxgears
- 1410 willy     20   0  6256 2372  1600 S     7.1  0.2   1:11   1 glxgears
- 1413 willy     20   0  6260 2388  1612 S     7.1  0.2   1:08   0 glxgears
- 1416 willy     20   0  6284 2544  1728 S     6.2  0.2   1:06   0 glxgears
- 1418 willy     20   0  6252 2384  1612 S     6.2  0.2   1:09   0 glxgears
- 1411 willy     20   0  6280 2548  1740 S     5.3  0.2   1:15   1 glxgears
- 1421 willy     20   0  6280 2536  1728 R     5.3  0.2   1:05   1 glxgears
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIGVjCCAw8w
+ggJ4oAMCAQICEGne8YrzxxgYAeyxZxmiO+owDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
+JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQ
+ZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA2MTAxMTEwMjAzOVoXDTA3MTAxMTEwMjAz
+OVowSzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEoMCYGCSqGSIb3DQEJARYZc2Vy
+Z2lvQHNlcmdpb21iLm5vLWlwLm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAN9R
+ix9koyWSNQDmAHxcSeWXdFO1osqg2yeNgBBl+fz8FLYyROsDGpZMcnOd/Df6tWwMZpMSYDNIksiZ
+5VkCWaWIzIBccHX3wIkqrkcq3v1OcPGW9adXClXSbSZ0Hb4V4+bQ9LMAOjaMlH/dKLVkln6qmbko
+NOxgPotdVxCGcUy1Pqa4dT1zFo5+nIv1NAUNqKpq63X/+3nILNG4JGAvLIL8wcYs0cETGS6vISgd
+YFN/JlIqekWUGGUmc+SJcyyTWjXGN+2G0SDS8K3a9NFCo7a1Y0FyHQxikQRtB9sCcpQCoXiqaWsT
+npSrNJ0Od4w1sHZz09uEdhWKqXEmJsKKwi8CAwEAAaNZMFcwDgYDVR0PAQH/BAQDAgSQMBEGCWCG
+SAGG+EIBAQQEAwIFoDAkBgNVHREEHTAbgRlzZXJnaW9Ac2VyZ2lvbWIubm8taXAub3JnMAwGA1Ud
+EwEB/wQCMAAwDQYJKoZIhvcNAQEFBQADgYEAwVE8/kY82qYG7I2+gW0NhSyn+DR0uAWYbSxB2NgP
+16QOrzXt2HazlXkl2Bc+NKQEqEGKOu5fPPg2GoJ3zDO1Y8GUNGtJH0sX+63RGoUNOAv+bAK1Nxhb
+illDUUCjW3OqA/hRyBwjU9kHJPYhl1EbAUGpAhfENHjkS/S7b1REBLMwggM/MIICqKADAgECAgEN
+MA0GCSqGSIb3DQEBBQUAMIHRMQswCQYDVQQGEwJaQTEVMBMGA1UECBMMV2VzdGVybiBDYXBlMRIw
+EAYDVQQHEwlDYXBlIFRvd24xGjAYBgNVBAoTEVRoYXd0ZSBDb25zdWx0aW5nMSgwJgYDVQQLEx9D
+ZXJ0aWZpY2F0aW9uIFNlcnZpY2VzIERpdmlzaW9uMSQwIgYDVQQDExtUaGF3dGUgUGVyc29uYWwg
+RnJlZW1haWwgQ0ExKzApBgkqhkiG9w0BCQEWHHBlcnNvbmFsLWZyZWVtYWlsQHRoYXd0ZS5jb20w
+HhcNMDMwNzE3MDAwMDAwWhcNMTMwNzE2MjM1OTU5WjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMc
+VGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZy
+ZWVtYWlsIElzc3VpbmcgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMSmPFVzVftOucqZ
+Wh5owHUEcJ3f6f+jHuy9zfVb8hp2vX8MOmHyv1HOAdTlUAow1wJjWiyJFXCO3cnwK4Vaqj9xVsuv
+PAsH5/EfkTYkKhPPK9Xzgnc9A74r/rsYPge/QIACZNenprufZdHFKlSFD0gEf6e20TxhBEAeZBly
+YLf7AgMBAAGjgZQwgZEwEgYDVR0TAQH/BAgwBgEB/wIBADBDBgNVHR8EPDA6MDigNqA0hjJodHRw
+Oi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlUGVyc29uYWxGcmVlbWFpbENBLmNybDALBgNVHQ8EBAMC
+AQYwKQYDVR0RBCIwIKQeMBwxGjAYBgNVBAMTEVByaXZhdGVMYWJlbDItMTM4MA0GCSqGSIb3DQEB
+BQUAA4GBAEiM0VCD6gsuzA2jZqxnD3+vrL7CF6FDlpSdf0whuPg2H6otnzYvwPQcUCCTcDz9reFh
+YsPZOhl+hLGZGwDFGguCdJ4lUJRix9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo05RAaWzVN
+d+NWIXiC3CEZNd4ksdMdRv9dX2VPMYIB/DCCAfgCAQEwdjBiMQswCQYDVQQGEwJaQTElMCMGA1UE
+ChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFs
+IEZyZWVtYWlsIElzc3VpbmcgQ0ECEGne8YrzxxgYAeyxZxmiO+owCQYFKw4DAhoFAKBdMBgGCSqG
+SIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA3MDQxNDEzMjI0MlowIwYJKoZI
+hvcNAQkEMRYEFKdyqjV1OhRNq9L5+AcO2oSAIM+lMA0GCSqGSIb3DQEBAQUABIIBANFNTZoaD9ML
+xhw0Cv/ZWoI3tIvYiCYprppEOBhy7UmuVzFmvkiGUURSNAkdUyaKyIAsm0p4F/X9q0D1aYUdxrAu
+W1dZor0zMNjpEZG33EeQqzk2T17yq6MGgNl9UGBdV0Q5b4/ITWPgNtkFj3FI9+rgNonYA9PvSCca
+jrb3TDzjeQKd2AX1jHWvTbEc4Tz8xObTBsgHM+YPc1uGmFQ7ukFZQIPVhAJYS0gPtflvUd0fKZSa
+9gpVdNOpcfFMXfrycSK74gqF9+jGAOdKWzk1Oqgvh0zRAMblrvL8QF9n21PB+gHSOfA6nD3F4wu1
+pKPmKGueWKZuwYGJ1D7seJTleSEAAAAAAAA=
 
->From time to time, one of the 12 aligned gears will quickly perform a full
-quarter of round while others slowly turn by a few degrees. In fact, while
-I don't know this process's CPU usage pattern, there's something useful in
-it : it allows me to visually see when process accelerate/deceleraet. What
-would be best would be just a clock requiring low X ressources and eating
-vast amounts of CPU between movements. It will help visually monitor CPU
-distribution without being too much impacted by X.
 
-I've just added another 100 scheddos at nice 0, and the system is still
-amazingly usable. I just tried exchanging a 1-byte token between 188 "dd"
-processes which communicate through circular pipes. The context switch
-rate is rather high but this has no impact on the rest :
-
-willy@pcw:c$ dd if=/tmp/fifo bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | dd bs=1 | (echo -n a;dd bs=1) | dd bs=1 of=/tmp/fifo
-
-   procs                      memory      swap          io     system      cpu
- r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
-1105  0  1      0 781108   8364  68180    0    0     0    12    5 82187 59 41  0
-1114  0  1      0 781108   8364  68180    0    0     0     0    0 81528 58 42  0
-1112  0  1      0 781108   8364  68180    0    0     0     0    1 80899 58 42  0
-1113  0  1      0 781108   8364  68180    0    0     0     0   26 83466 58 42  0
-1106  0  2      0 781108   8376  68168    0    0     0     8   91 83193 58 42  0
-1107  0  1      0 781108   8376  68180    0    0     0     4    7 79951 58 42  0
-1106  0  1      0 781108   8376  68180    0    0     0     0   46 80939 57 43  0
-1114  0  1      0 781108   8376  68180    0    0     0     0   21 82019 56 44  0
-1116  0  1      0 781108   8376  68180    0    0     0     0   16 85134 56 44  0
-1114  0  3      0 781108   8388  68168    0    0     0    16   20 85871 56 44  0
-1112  0  1      0 781108   8388  68168    0    0     0     0   15 80412 57 43  0
-1112  0  1      0 781108   8388  68180    0    0     0     0  101 83002 58 42  0
-1113  0  1      0 781108   8388  68180    0    0     0     0   25 82230 56 44  0
-
-Playing with the sched_max_hog_history_ns does not seem to change anything.
-Maybe it's useful for other workloads. Anyway, I have nothing to complain
-about, because it's not common for me to be able to normally type a mail on
-a system with more than 1000 running processes ;-)
-
-Also, mixed with this load, I have started injecting HTTP requests between
-two local processes. The load is stable at 7700 req/s (11800 when alone),
-and what I was interested in is the response time. It's perfectly stable
-between 9.0 and 9.4 ms with a standard deviation of about 6.0 ms. Those were
-varying a lot under stock scheduler, with some sessions sometimes pausing
-for seconds. (RSDL fixed this though).
-
-Well, I'll stop heating the room for now as I get out of ideas about how
-to defeat it. I'm convinced. I'm impatient to read about Mike's feedback
-with his workload which behaves strangely on RSDL. If it works OK here,
-it will be the proof that heuristics should not be needed.
-
-Congrats !
-Willy
-
+--=-MS8Cmk5N6Dkh7qiJvZNm--
