@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751122AbXDNRbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbXDNRe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751122AbXDNRbV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbXDNRbV
+	id S1751739AbXDNRe0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 13:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXDNRe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:31:21 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:56041 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbXDNRbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:31:20 -0400
-Date: Sat, 14 Apr 2007 10:31:16 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Brian Gernhardt <benji@silverinsanity.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, Rene Herman <rene.herman@gmail.com>,
+	Sat, 14 Apr 2007 13:34:26 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:58267 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751635AbXDNReZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 13:34:25 -0400
+Date: Sat, 14 Apr 2007 10:34:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Junio C Hamano <junkio@cox.net>
+cc: Rene Herman <rene.herman@gmail.com>,
        Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
        git@vger.kernel.org
 Subject: Re: GIT and the current -stable
-Message-ID: <20070414173116.GV10574@sequoia.sous-sol.org>
-References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org> <5A4D6434-3DF2-4CC7-B363-260E5F945F72@silverinsanity.com> <20070414171908.GU10574@sequoia.sous-sol.org> <F45BE11E-B30B-43EB-AB7C-8C02EF69AF18@silverinsanity.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <F45BE11E-B30B-43EB-AB7C-8C02EF69AF18@silverinsanity.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <7vfy73bhik.fsf@assigned-by-dhcp.cox.net>
+Message-ID: <Pine.LNX.4.64.0704141028460.5473@woody.linux-foundation.org>
+References: <46206842.80203@gmail.com> <7vfy73bhik.fsf@assigned-by-dhcp.cox.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Brian Gernhardt (benji@silverinsanity.com) wrote:
-> Hm.  I should drink my coffee, then read the mailing list, not the  
-> other way around.  If you do update HEAD to be the most recent  
-> stable, my thanks.  Apologies for the noise.
 
-No problem, was a good suggestion (and it's done).
 
-thanks,
--chris
+On Fri, 13 Apr 2007, Junio C Hamano wrote:
+> 
+> I think adding these lines to .git/config would do the trick,
+> after you have done the "checkout -b v2.6.20 v2.6.20" step:
+> 
+> [branch "v2.6.20"]
+> 	remote = stable
+> 	merge = refs/heads/master
+
+Please don't do this. Using the same name for a branch as for a tag is 
+madness. Call it "v2.6.20-stable" or anything else, but don't re-use the 
+same naming as for tags.
+
+Sure, git will have some random well-defined order of parsing which one 
+"v2.6.20" actually means in any particular context (usually the tag-name 
+will take precedence, except for contexts where the branchname is 
+required!), and yeah, you can always make things unambiguous by specifying 
+the full name (ie say "[refs/]tags/v2.6.20" when you want to make sure 
+it's unambiguously the tag, not the branch) but it's still guaranteed to 
+cause confusion at *some* level, if only for the user.
+
+So just don't do it. 
+
+		Linus
