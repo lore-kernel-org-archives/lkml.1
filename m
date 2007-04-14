@@ -1,87 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965509AbXDNKcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXDNKhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965509AbXDNKcn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 06:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965522AbXDNKcn
+	id S932290AbXDNKhA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 06:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932310AbXDNKhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 06:32:43 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:3132 "EHLO yumi.tdiedrich.de"
+	Sat, 14 Apr 2007 06:37:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57099 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965509AbXDNKcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 06:32:42 -0400
-Date: Sat, 14 Apr 2007 12:32:40 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, pavel@suse.cz, linux-pm@lists.osdl.org
-Subject: Re: Linux 2.6.21-rc6
-Message-ID: <20070414103239.GA2806@melchior.yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Adrian Bunk <bunk@stusta.de>, pavel@suse.cz, linux-pm@lists.osdl.org
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070413235017.GR5907@stusta.de> <20070414081619.GA24909@melchior.yamamaya.is-a-geek.org> <200704141105.56265.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S932290AbXDNKg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 06:36:59 -0400
+Date: Sat, 14 Apr 2007 12:36:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070414103639.GA19454@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200704141105.56265.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070414080833.GL943@1wt.eu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Saturday, 14 April 2007 10:16, Tobias Diedrich wrote:
-> > Adrian Bunk wrote:
-> > > On Fri, Apr 13, 2007 at 11:29:55PM +0200, Tobias Diedrich wrote:
-> > > > Linus Torvalds wrote:
-> > > > 
-> > > > > We should be getting close to a 2.6.21 release, so please update any 
-> > > > > regression reports you've done,
-> > > > 
-> > > > For me, suspend to disk works only once (has been the case for all
-> > > > .21-rcs IIRC, but I didn't get around to report it so far).
-> > > > There are some threads about an issue like this, which is supposed
-> > > > to be fixed by disabling CONFIG_PCI_MSI, but on my system the
-> > > > problem persists nonetheless.
-> > > > 
-> > > > On the second suspend attempt, the last message I see is
-> > > > "Suspending console(s)"
-> > > > 
-> > > > If I find the time, I'll try to bisect it this weekend.
-> > > >...
-> > > 
-> > > Does the latest -git work?
-> > 
-> > Still no luck with
-> > Linux melchior 2.6.21-rc6-gd791d413-dirty #4 PREEMPT Sat Apr 14 09:34:21 CEST 2007 x86_64 GNU/Linux
+
+* Willy Tarreau <w@1wt.eu> wrote:
+
+> > this fix is not complete - because the child runqueue is locked 
+> > here, not the parent's. I've fixed this properly in my tree and have 
+> > uploaded a new sched-modular+cfs.patch. (the effects of the original 
+> > bug are mostly harmless, the rbtree position gets corrected the 
+> > first time the parent reschedules. The fix might improve heavy 
+> > forker handling.)
 > 
-> Can you boot with init=/bin/bash and see if the problem is present in this
-> configuration?
+> It looks like it did not reach your public dir yet.
 
-Doesn't help.
-Maybe interesting:
-In the init=/bin/bash run, the first suspend try was without swap
-and thus bailed out. After swapon, the second try already hung,
-despite not having 'really' suspended at all on the first try.
-I tried it once more, with swap on the first try and got the same
-'second try doesn't work' result.
+oops, forgot to do the last step - should be fixed now.
 
-git-bisect so far:
-git-bisect start
-# good: [fa285a3d7924a0e3782926e51f16865c5129a2f7] Linux 2.6.20
-git-bisect good fa285a3d7924a0e3782926e51f16865c5129a2f7
-# bad: [2eb1ae149a28c1b8ade687c5fbab3c37da4c0fba] Linux 2.6.21-rc1
-git-bisect bad 2eb1ae149a28c1b8ade687c5fbab3c37da4c0fba
-# bad: [574009c1a895aeeb85eaab29c235d75852b09eb8] Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
-git-bisect bad 574009c1a895aeeb85eaab29c235d75852b09eb8
-# good: [43187902cbfafe73ede0144166b741fb0f7d04e1] Merge master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6
-git-bisect good 43187902cbfafe73ede0144166b741fb0f7d04e1
-# good: [beda9f3a13bbb22cde92a45f230a02ef2afef6a9] kbuild: more Makefile cleanups
-git-bisect good beda9f3a13bbb22cde92a45f230a02ef2afef6a9
-# bad: [7edc136ab688f751037a86e8a051151d7962d33f] Char: isicom, support higher rates
-git-bisect bad 7edc136ab688f751037a86e8a051151d7962d33f
+> BTW, I've given it a try. It seems pretty usable. I have also tried 
+> the usual meaningless "glxgears" test with 12 of them at the same 
+> time, and they rotate very smoothly, there is absolutely no pause in 
+> any of them. But they don't all run at same speed, and top reports 
+> their CPU load varying from 3.4 to 10.8%, with what looks like more 
+> CPU is assigned to the first processes, and less CPU for the last 
+> ones. But this is just a rough observation on a stupid test, I would 
+> not call that one scientific in any way (and X has its share in the 
+> test too).
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+ok, i'll try that too - there should be nothing particularly special 
+about glxgears.
+
+there's another tweak you could try:
+
+	echo 500000 > /proc/sys/kernel/sched_granularity_ns
+
+note that this causes preemption to be done as fast as the scheduler can 
+do it. (in practice it will be mainly driven by CONFIG_HZ, so to get the 
+best results a CONFIG_HZ of 1000 is useful.)
+
+plus there's an add-on to CFS at:
+
+  http://redhat.com/~mingo/cfs-scheduler/sched-fair-hog.patch
+
+this makes the 'CPU usage history cutoff' configurable and sets it to a 
+default of 100 msecs. This means that CPU hogs (tasks which actively 
+kept other tasks from running) will be remembered, for up to 100 msecs 
+of their 'hogness'.
+
+Setting this limit back to 0 gives the 'vanilla' CFS scheduler's 
+behavior:
+
+     echo 0 > /proc/sys/kernel/sched_max_hog_history_ns
+
+(So when trying this you dont have to reboot with this patch 
+applied/unapplied, just set this value.)
+
+> I'll perform other tests when I can rebuild with your fixed patch.
+
+cool, thanks!
+
+	Ingo
