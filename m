@@ -1,133 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750925AbXDNUUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbXDNUU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750925AbXDNUUF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 16:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXDNUUE
+	id S1752057AbXDNUU4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 16:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXDNUU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 16:20:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51748 "EHLO ogre.sisk.pl"
+	Sat, 14 Apr 2007 16:20:56 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:54876 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750925AbXDNUUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 16:20:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tobias Diedrich <ranma@tdiedrich.de>
-Subject: Re: Linux 2.6.21-rc6
-Date: Sat, 14 Apr 2007 22:23:31 +0200
-User-Agent: KMail/1.9.5
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Maxim Levitsky <maximlevitsky@gmail.com>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704142028.04694.rjw@sisk.pl> <20070414195611.GC806@yamamaya.is-a-geek.org>
-In-Reply-To: <20070414195611.GC806@yamamaya.is-a-geek.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1752057AbXDNUUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 16:20:55 -0400
+Date: Sat, 14 Apr 2007 22:20:50 +0200
+From: Jan Yenya Kasprzak <kas@fi.muni.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, osv@javad.com
+Subject: Re: [RFC 1/1] Char: mxser_new, fix recursive locking
+Message-ID: <20070414202050.GG20376@fi.muni.cz>
+References: <20070414042725.GT20376@fi.muni.cz> <462079ED.2000605@gmail.com> <3018694794025219@wsc.cz> <20070414143719.GA5203@fi.muni.cz> <4af2d03a0704140952w6e2338c4g3037f4ba03e2fb1d@mail.gmail.com> <20070414195543.GE20376@fi.muni.cz> <4af2d03a0704141311q61931b98wb613b4ee4c580b02@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704142223.32410.rjw@sisk.pl>
+In-Reply-To: <4af2d03a0704141311q61931b98wb613b4ee4c580b02@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Muni-Envelope-From: kas@fi.muni.cz
+X-Muni-Envelope-To: linux-kernel@vger.kernel.org
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 14 Apr 2007 22:20:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 14 April 2007 21:56, Tobias Diedrich wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday, 14 April 2007 15:00, Adrian Bunk wrote:
-> > > On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
-> > > > Tobias Diedrich wrote:
-> > > > > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
-> > > > > > commit ed746e3b18f4df18afa3763155972c5835f284c5
-> > > > > > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > > Date:   Sat Feb 10 01:43:32 2007 -0800
-> > > > > > 
-> > > > > >     [PATCH] swsusp: Change code ordering in disk.c
-> > > > > >     
-> > > > > >     Change the ordering of code in kernel/power/disk.c so that device_suspend() is
-> > > > > >     called before disable_nonboot_cpus() and platform_finish() is called after
-> > > > > >     enable_nonboot_cpus() and before device_resume(), as indicated by the recent
-> > > > > >     discussion on Linux-PM (cf.
-> > > > > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
-> > > > > >     
-> > > > > >     The changes here only affect the built-in swsusp.
-> > > > > >     
-> > > > > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinking during image load]
-> > > > > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > >     Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > > > >     Cc: Greg KH <greg@kroah.com>
-> > > > > >     Cc: Nigel Cunningham <nigel@suspend2.net>
-> > > > > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
-> > > > > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-> > > > > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > > > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > > > > > 
-> > > > > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 8313b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
-> > > > > > 
-> > > > > > 
-> > > > > > Now, the remaining test is to try reverting this commit from -rc6. :)
-> > > > > 
-> > > > > Doesn't apply cleanly against -rc6, but fixes the problem when
-> > > > > reverted from -rc1.
-> > > > 
-> > > > Now, this was already reported in
-> > > > http://lkml.org/lkml/2007/3/16/126
-> > > > and I even flagged that message in my local folder, but apparently forgot
-> > > > to follow up on it... *sigh*
-> > > 
-> > > Unless I misunderstood something, all of the problems Maxim described in 
-> > > this email are fixed for him in -rc6.
-> > > 
-> > > But it's quite possible that you are running into a different issue 
-> > > exposed by this commit.
-> > 
-> > Yes, it's likely.
-> > 
-> > Tobias, I'm unable to reproduce the problem with your .config, but my hardware
-> > is certainly different.  Which suspend mode do you use?  If that's "platform",
-> > can you try to use "shutdown" or "reboot" and see if that helps?
-> 
-> Sure.
-> shutdown/reboot works fine, only platform is broken.
+Jiri Slaby wrote:
+: On 4/14/07, Jan Yenya Kasprzak <kas@fi.muni.cz> wrote:
+: >~BUG: spinlock lockup on CPU#0, sshd/1671, ffffffff80557780
+: [...]
+: >the write(1, "/file/name/...", ...) call returned -EIO.
+: 
+: Just a question: both with mxser_new, right?
 
-Thanks.
+	No. One side has a multiport C168H with mxser_new, and the other
+one (the one from which the above strace is) is an ordinary server with
+console on ttyS0. So the above write(1,...) has fd#1 on ttyS0.
 
-Now, I suspect the problem is somehow related to the hardware, so it would help
-a lot if we could identify the piece of hardware (or driver) involved.
+-Yenya
 
-AFAICT, your system is a non-SMP one, so we can rule out
-disable/enable_nonboot_cpus().  To confirm that the problem is related to
-platform_finish(), can you please apply the appended debug patch and
-see if the suspend in the 'platform' mode works with it?
-
-Also, would that be feasible for you to use 'shutdown' as a workaround in case
-the source of the problem is difficult to find and/or fix?
-
-Rafael
-
----
- kernel/power/disk.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.21-rc6/kernel/power/disk.c
-===================================================================
---- linux-2.6.21-rc6.orig/kernel/power/disk.c
-+++ linux-2.6.21-rc6/kernel/power/disk.c
-@@ -170,8 +170,8 @@ int pm_suspend_disk(void)
- 
- 	if (in_suspend) {
- 		enable_nonboot_cpus();
--		platform_finish();
- 		device_resume();
-+		platform_finish();
- 		resume_console();
- 		pr_debug("PM: writing image.\n");
- 		error = swsusp_write();
-@@ -189,8 +189,8 @@ int pm_suspend_disk(void)
-  Enable_cpus:
- 	enable_nonboot_cpus();
-  Resume_devices:
--	platform_finish();
- 	device_resume();
-+	platform_finish();
- 	resume_console();
-  Thaw:
- 	unprepare_processes();
-
-
+-- 
+| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
+| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
+| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
+> I will never go to meetings again because I think  face to face meetings <
+> are the biggest waste of time you can ever have.        --Linus Torvalds <
