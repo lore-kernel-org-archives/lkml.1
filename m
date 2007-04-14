@@ -1,147 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbXDNTFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbXDNTQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbXDNTFk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 15:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXDNTFj
+	id S1753821AbXDNTQt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 15:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbXDNTQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 15:05:39 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34375 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753785AbXDNTFi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 15:05:38 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+	Sat, 14 Apr 2007 15:16:49 -0400
+Received: from 1wt.eu ([62.212.114.60]:1906 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753785AbXDNTQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 15:16:48 -0400
+Date: Sat, 14 Apr 2007 21:01:48 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
-References: <20070413130236.GA173@tv-sign.ru>
-	<m1zm5bmywm.fsf@ebiederm.dsl.xmission.com>
-	<20070414183538.GB504@tv-sign.ru>
-Date: Sat, 14 Apr 2007 13:04:26 -0600
-In-Reply-To: <20070414183538.GB504@tv-sign.ru> (Oleg Nesterov's message of
-	"Sat, 14 Apr 2007 22:35:38 +0400")
-Message-ID: <m1slb2lqv9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070414190148.GA2844@1wt.eu>
+References: <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070414132732.GA22103@1wt.eu> <20070414161927.GD3099@elte.hu> <m1abxanahn.fsf@ebiederm.dsl.xmission.com> <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com> <20070414175433.GA17527@elte.hu> <20070414181854.GA5826@1wt.eu> <m1wt0elrzk.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1wt0elrzk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
+On Sat, Apr 14, 2007 at 12:40:15PM -0600, Eric W. Biederman wrote:
+> Willy Tarreau <w@1wt.eu> writes:
+> 
+> > On Sat, Apr 14, 2007 at 07:54:33PM +0200, Ingo Molnar wrote:
+> >> 
+> >> * Eric W. Biederman <ebiederm@xmission.com> wrote:
+> >> 
+> >> > > Thinking about it, I don't know if there are calls to schedule() 
+> >> > > while switching from tty1 to tty2. Alt-F2 had no effect anymore, and 
+> >> > > "chvt 2" simply blocked. It would have been possible that a 
+> >> > > schedule() call somewhere got starved due to the load, I don't know.
+> >> > 
+> >> > It looks like there is a call to schedule_work.
+> >> 
+> >> so this goes over keventd, right?
+> >> 
+> >> > There are two pieces of the path. If you are switching in and out of a 
+> >> > tty controlled by something like X.  User space has to grant 
+> >> > permission before the operation happens.  Where there isn't a gate 
+> >> > keeper I know it is cheaper but I don't know by how much, I suspect 
+> >> > there is still a schedule happening in there.
+> >> 
+> >> Could keventd perhaps be starved? Willy, to exclude this possibility, 
+> >> could you perhaps chrt keventd to RT priority? If events/0 is PID 5 then 
+> >> the command to set it to SCHED_FIFO:50 would be:
+> >> 
+> >>   chrt -f -p 50 5
+> >> 
+> >> but ... events/0 is reniced to -5 by default, so it should definitely 
+> >> not be starved.
+> >
+> > Well, since I merged the fair-fork patch, I cannot reproduce (in fact,
+> > bash forks 1000 processes, then progressively execs scheddos, but it
+> > takes some time). So I'm rebuilding right now. But I think that Linus
+> > has an interesting clue about GPM and notification before switching
+> > the terminal. I think it was enabled in console mode. I don't know
+> > how that translates to frozen xterms, but let's attack the problems
+> > one at a time.
+> 
+> I think it is a good clue.  However the intention of the mechanism is
+> that only processes that change the video mode on a VT are supposed to
+> use it.  So I really don't think gpm is the culprit.  However it easily could
+> be something else that has similar characteristics.
+> 
+> I just realized we do have proof that schedule_work is actually working
+> because SAK works, and we can't sanely do SAK from interrupt context
+> so we call schedule work.
 
-> On 04/13, Eric W. Biederman wrote:
->>
->> +static inline int __kthread_should_stop(struct task_struct *tsk)
->> +{
->> +	return test_tsk_thread_flag(tsk, TIF_KTHREAD_STOP);
->> +}
->
-> Am I blind? Where does copy_process/dup_task_struct clears unwanted
-> flags in thread_info->flags ?
+Eric,
 
-Good question.  It is only a real problem if someone forks a kernel
-thread after we ask it to die but, it does appear to be an issue.
-With this usage and the same usage by the process freezer.
+I can say that Linus, Ingo and you all got on the right track.
+I could reproduce, I got a hung tty around 1400 running processes.
+Fortunately, it was the one with the root shell which was reniced
+to -19.
 
-We do have these lines in copy_process...
+I could strace chvt 2 :
 
-	clear_tsk_thread_flag(p, TIF_SIGPENDING);
-	init_sigpending(&p->pending);
+20:44:23.761117 open("/dev/tty", O_RDONLY) = 3 <0.004000>
+20:44:23.765117 ioctl(3, KDGKBTYPE, 0xbfa305a3) = 0 <0.024002>
+20:44:23.789119 ioctl(3, VIDIOC_G_COMP or VT_ACTIVATE, 0x3) = 0 <0.000000>
+20:44:23.789119 ioctl(3, VIDIOC_S_COMP or VT_WAITACTIVE <unfinished ...>
 
-I don't know what we want to do about TIF_KTHREAD_STOP and TIF_FREEZE.
+Then I applied Ingo's suggestion about changing keventd prio :
 
-Right now we will go allow our merry way until we hit:
+root@pcw:~# ps auxw|grep event
+root         8  0.0  0.0     0    0 ?        SW<  20:31   0:00 [events/0]
+root         9  0.0  0.0     0    0 ?        RW<  20:31   0:00 [events/1]
 
-	recalc_sigpending();
-	if (signal_pending(current)) {
-		spin_unlock(&current->sighand->siglock);
-		write_unlock_irq(&tasklist_lock);
-		retval = -ERESTARTNOINTR;
-		goto bad_fork_cleanup_namespaces;
-	}
+root@pcw:~# rtprio -s 1 -p 50 8 9     (I don't have chrt but it does the same)
 
-And copy_process will fail.  Since that is an expected failure point
-that actually seems like reasonable behavior in this case if you
-are being frozen or are being told to die you can't fork.
+My VT immediately switched as soon as I hit Enter. Everything's
+working fine again now. So the good news is that it's not a bug
+in the tty code, nor a deadlock.
 
-It does ensure that these additional kernel flags won't make it
-onto new instances of struct task_struct.  Which is the important
-thing from a correctness standpoint.
+Now, maybe keventd should get a higher prio ? It seems worrying to
+me that it may starve when it seems so much sensible.
 
+Also, that may explain why I couldn't reproduce with the fork patch.
+Since all new processes got no runtime at first, their impact on
+existing ones must have been lower. But I think that if I had waited
+longer, I would have had the problem again (though I did not see it
+even under a load of 7800).
 
->> +int kthread_stop(struct task_struct *tsk)
->>  {
->>  	int ret;
->>  
->> -	mutex_lock(&kthread_stop_lock);
->> -
->> -	/* It could exit after stop_info.k set, but before wake_up_process. */
->> -	get_task_struct(k);
->> +	/* Ensure the task struct persists until I read the exit code. */
->> +	get_task_struct(tsk);
->>  
->> -	/* Must init completion *before* thread sees kthread_stop_info.k */
->> -	init_completion(&kthread_stop_info.done);
->> -	smp_wmb();
->> +	set_tsk_thread_flag(tsk, TIF_KTHREAD_STOP);
->> +	spin_lock_irq(&tsk->sighand->siglock);
->> +	signal_wake_up(tsk, 1);
->> +	spin_unlock_irq(&tsk->sighand->siglock);
->
-> Off-topic again, the comment above signal_wake_up() is very confusing...
-> I think the only reason for ->siglock is to prevent the case when
-> TIF_SIGPENDING may be cleared by recalc_sigpending(). Or something else?
-
-I'm really not certain.  I just looked and saw that every user of
-signal_pending had the siglock, so I didn't delve any deeper.
-
-> This changes the current API, kthread_stop() doesn't wake up UNINTERRUPTIBLE
-> tasks any longer. I'd say this is good, but may break things ... For example,
-> kthred_stop(kthread_create(...)) can't work now.
-
-Ugh. Good point.  I haven't picked up the UNINTERRUPTIBLE change yet.
-I hadn't realized this exceeded the wait for the completion.  Which
-it obviously does, ugh.  
-
-I don't know what to do about the theoretical freezer race, for now I
-am inclined to ignore it.  At least until someone audits all of the kernel
-threads to be certain an API change is ok.
-
-There is also Andrews general objection that we should use UNINTERRUPTIBLE
-sleeps very sparingly because it contributes to load average and such.
-
->> -	/* Now set kthread_should_stop() to true, and wake it up. */
->> -	kthread_stop_info.k = k;
->> -	wake_up_process(k);
->> -	put_task_struct(k);
->> +	wait_for_completion(tsk->vfork_done);
->> +	ret = tsk->exit_code;
->
-> This is really good. Now the kernel thread can exit() at any point without
-> fear to break kthread_stop().
-
-Yes.
-
->> @@ -218,7 +219,7 @@ static inline int has_pending_signals(sigset_t *signal,
-> sigset_t *blocked)
->>  fastcall void recalc_sigpending_tsk(struct task_struct *t)
->>  {
->>  	if (t->signal->group_stop_count > 0 ||
->> -	    (freezing(t)) ||
->> +	    (freezing(t)) || __kthread_should_stop(t) ||
->>  	    PENDING(&t->pending, &t->blocked) ||
->>  	    PENDING(&t->signal->shared_pending, &t->blocked))
->>  		set_tsk_thread_flag(t, TIF_SIGPENDING);
->
-> Aha, now I understand your point about interruptible sleeps (the previous
-> message). What is the reason for this change?
-
-This bit is so that TIF_SIGPENDING does not get cleared on us.
-
-Eric
+Regards,
+Willy
 
