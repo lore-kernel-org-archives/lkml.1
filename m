@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbXDOMxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXDOM6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752921AbXDOMxr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 08:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXDOMxr
+	id S1751672AbXDOM6O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 08:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXDOM6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 08:53:47 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48514 "EHLO mail.dvmed.net"
+	Sun, 15 Apr 2007 08:58:13 -0400
+Received: from khc.piap.pl ([195.187.100.11]:58939 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921AbXDOMxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 08:53:46 -0400
-Message-ID: <46222051.9010104@garzik.org>
-Date: Sun, 15 Apr 2007 08:53:37 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1751677AbXDOM6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 08:58:13 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+References: <op.tqqwdfzcftfxs2@localhost.localdomain>
+	<17952.5537.364603.419364@notabene.brown>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 14 Apr 2007 20:56:40 +0200
+In-Reply-To: <17952.5537.364603.419364@notabene.brown> (Neil Brown's message of "Sat, 14 Apr 2007 09:43:29 +1000")
+Message-ID: <m3odlqiy3b.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Ulrich Eckhardt <doomster@knuut.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch] use C99 initialisers for PCI_VDEVICE()
-References: <200704151234.37463.doomster@knuut.de>
-In-Reply-To: <200704151234.37463.doomster@knuut.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Eckhardt wrote:
-> (Note: CC me please, I'm not subscribed.)
-> 
-> Not much to say about the patch (it's against 2.6.20.6), it just converts a 
-> macro to generate C99-style initialisers.
-> 
-> --- include/linux/pci.h   (revision 17)
-> +++ include/linux/pci.h   (working copy)
-> @@ -407,9 +407,10 @@
->   * private data.
->   */
->  
-> -#define PCI_VDEVICE(vendor, device)            \
-> -       PCI_VENDOR_ID_##vendor, (device),       \
-> -       PCI_ANY_ID, PCI_ANY_ID, 0, 0
-> +#define PCI_VDEVICE(vend, dev)         \
-> +       .vendor=PCI_VENDOR_ID_##vend, .device=(dev),    \
-> +       .subvendor=PCI_ANY_ID, .subdevice=PCI_ANY_ID,   \
-> +       .class=0, .class_mask=0
+Neil Brown <neilb@suse.de> writes:
 
-NAK.  C99 initializers were intentionally avoided.  Look at the usage of 
-this macro.
+> What, specifically, is there in ZFS that you want to use in Linux?
+> There is lots of interesting stuff in there, but which bit has caught
+> your attention?  It is possible that that functionality can be
+> incorporated into Linux without trying to clone or copy ZFS.
 
-	Jeff
-
-
-
+Filesystem block hashes (checksums) and in-fs redundancy (using the
+hashes to determine which copy of data is correct in case of
+corruption). It would mean multi-device filesystem.
+-- 
+Krzysztof Halasa
