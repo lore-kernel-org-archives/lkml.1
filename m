@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXDNBIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030433AbXDNBOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965352AbXDNBIk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Apr 2007 21:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXDNBIk
+	id S1030433AbXDNBOz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Apr 2007 21:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXDNBOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Apr 2007 21:08:40 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:52116 "EHLO
+	Fri, 13 Apr 2007 21:14:54 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:53091 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbXDNBIj (ORCPT
+	with ESMTP id S1754153AbXDNBOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Apr 2007 21:08:39 -0400
-Message-ID: <46202956.3080305@oracle.com>
-Date: Fri, 13 Apr 2007 21:07:34 -0400
+	Fri, 13 Apr 2007 21:14:54 -0400
+Message-ID: <46202AEC.9050401@oracle.com>
+Date: Fri, 13 Apr 2007 21:14:20 -0400
 From: Chuck Lever <chuck.lever@oracle.com>
 Reply-To: chuck.lever@oracle.com
 Organization: Oracle Corporation
@@ -26,7 +26,7 @@ Subject: Re: Merge plans for RPC/RDMA? (Was: Re: [NFS] [PATCH 000 of 14] knfsd:
 References: <170fa0d20704131347u4a28b5d1h1959227980449fbf@mail.gmail.com>	 <46200822.5060800@oracle.com> <170fa0d20704131704y13151149n817cd698e22781c8@mail.gmail.com>
 In-Reply-To: <170fa0d20704131704y13151149n817cd698e22781c8@mail.gmail.com>
 Content-Type: multipart/mixed;
- boundary="------------020708090603060108030508"
+ boundary="------------080202050009060802050709"
 X-Whitelist: TRUE
 X-Whitelist: TRUE
 X-Brightmail-Tracker: AAAAAQAAAAI=
@@ -34,7 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------020708090603060108030508
+--------------080202050009060802050709
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -76,21 +76,18 @@ Mike Snitzer wrote:
 > anything, is preventing the code from being included in -mm for wider
 > testing?
 
-Some of the main NFS client developers (Trond, the CITI-UM developers, 
-myself) have reviewed previous versions of this code, and have 
-recommended a number of changes.  I haven't heard anything recently from 
-the NetApp engineers working on this.  We are waiting for them to 
-publish again, but I think they are waiting for the last of the 
-transport switch patches to trickle into mainline (which should be ready 
-with the release of 2.6.21).  I know they have been working with a 
-handful of test sites and have achieved good performance results.
+OK, there is something holding up the client-side piece of NFS/RDMA. 
+There is some hackery required for the NFS client to recognize that the 
+RDMA transport should be used instead of the standard socket transport.
 
-> Has xprtrdma inclusion/progress been discussed on some other mailing
-> list?
+We did discuss this a bit at Connectathon '07 six weeks ago, but my 
+impression is that more discussion is required.
 
-Not yet, but the place that is likely to occur is nfs@lists.sourceforge.net.
+I'm working on some changes to NFS mounting that would move NFS mount 
+option parsing into the kernel.  This would make it very simple to add 
+RDMA transport support, but it's rather a while in coming.
 
---------------020708090603060108030508
+--------------080202050009060802050709
 Content-Type: text/x-vcard; charset=utf-8;
  name="chuck.lever.vcf"
 Content-Transfer-Encoding: 7bit
@@ -110,4 +107,4 @@ version:2.1
 end:vcard
 
 
---------------020708090603060108030508--
+--------------080202050009060802050709--
