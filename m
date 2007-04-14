@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161151AbXDNHUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbXDNHYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161151AbXDNHUl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 03:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161143AbXDNHUl
+	id S1753316AbXDNHYX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 03:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXDNHYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 03:20:41 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:50936 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161139AbXDNHUk (ORCPT
+	Sat, 14 Apr 2007 03:24:23 -0400
+Received: from john.hrz.tu-chemnitz.de ([134.109.132.2]:39076 "EHLO
+	john.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbXDNHYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 03:20:40 -0400
-Date: Sat, 14 Apr 2007 00:21:06 -0700
-From: Greg KH <greg@kroah.com>
-To: Junio C Hamano <junkio@cox.net>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, git@vger.kernel.org
-Subject: Re: GIT and the current -stable
-Message-ID: <20070414072106.GA6344@kroah.com>
-References: <46206842.80203@gmail.com> <7vfy73bhik.fsf@assigned-by-dhcp.cox.net>
+	Sat, 14 Apr 2007 03:24:23 -0400
+From: Tobias Doerffel <tobias.doerffel@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [3/3] 2.6.21-rc6: known regressions
+Date: Sat, 14 Apr 2007 09:24:13 +0200
+User-Agent: KMail/1.9.6
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070414003808.GU5907@stusta.de>
+In-Reply-To: <20070414003808.GU5907@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7vfy73bhik.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: multipart/signed;
+  boundary="nextPart1793037.7vp4no9uff";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704140924.17365.tobias.doerffel@gmail.com>
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: --- Start der SpamAssassin 3.1.8 Textanalyse (-1.4 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: aa86db5e7f3e85aa9355d5c307b12c26
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 11:24:19PM -0700, Junio C Hamano wrote:
-> Rene Herman <rene.herman@gmail.com> writes:
-> 
-> > Stumbling around with git here. I'd like to use git to efficiently
-> > track the current -stable as well as -current. Say, my local tree is a
-> > clone of Linus current:
-> >
-> > git clone \
-> > git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> > local
-> >
-> > I then branch off a 2.6.20 branch:
-> >
-> > cd local
-> > git checkout -b v2.6.20 v2.6.20
-> >
-> > to now update to the current -stable I could do:
-> >
-> > git pull \
-> > git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
-> 
-> I think adding these lines to .git/config would do the trick,
-> after you have done the "checkout -b v2.6.20 v2.6.20" step:
-> 
-> [branch "v2.6.20"]
-> 	remote = stable
-> 	merge = refs/heads/master
-> [remote "stable"]
-> 	url = git://git.kernel.org/.../stable/linux-2.6.20.y.git
-> 	fetch = refs/heads/master
-> 
-> provided if stable team forks v2.6.20.y history off of Linus's
-> v2.6.20.
+--nextPart1793037.7vp4no9uff
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Yes, we do branch off Linus's tree for each of the different .y
-releases.
+On Saturday 14 April 2007 02:38:08 you wrote:
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
+>
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way
+> possibly involved with one or more of these issues.
+>
+> Due to the huge amount of recipients, please trim the Cc when answering.
+>
+> Subject    : Suspend to RAM doesn't work anymore  (ACPI?)
+> References : http://lkml.org/lkml/2007/3/19/128
+>              http://bugzilla.kernel.org/show_bug.cgi?id=8247
+> Submitter  : Tobias Doerffel <tobias.doerffel@gmail.com>
+> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+>              Len Brown <len.brown@intel.com>
+> Status     : problem is being debugged
+Already fixed in rc5-git9, see http://bugzilla.kernel.org/show_bug.cgi?id=8247
 
-Some people have asked us to keep all of the different .y branches in
-the same git tree, but for now we have been using different repositories
-on kernel.org to keep things simpler for the majority of people who do
-not fully understand how to use the branching features of git (myself
-included in that category at times, I've messed up merging to different
-branches too many times...)
+Tobias
 
-> With the above configuration, anytime you say "git pull" while
-> on your v2.6.20 branch will fetch from "stable" and merge their
-> 'master' branch in your current branch (i.e. v2.6.20 branch).
+--nextPart1793037.7vp4no9uff
+Content-Type: application/pgp-signature
 
-That's really cool, thanks for pointing out how to do it.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-thanks,
+iD8DBQBGIIGhHsjdpw2OaacRAusOAJ0VWPzhDVHWoxKraAc32My6+xXANQCfdc80
+etqVN/ZPaiD18FNWMf2spwY=
+=FQ/O
+-----END PGP SIGNATURE-----
 
-greg k-h
+--nextPart1793037.7vp4no9uff--
