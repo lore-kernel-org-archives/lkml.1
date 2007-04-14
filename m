@@ -1,87 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161135AbXDNNAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXDNNCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161135AbXDNNAj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 09:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965526AbXDNNAj
+	id S932167AbXDNNCe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 09:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932192AbXDNNCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 09:00:39 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:50392 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965524AbXDNNAi (ORCPT
+	Sat, 14 Apr 2007 09:02:33 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:51710 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932167AbXDNNCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 09:00:38 -0400
-Date: Sat, 14 Apr 2007 15:00:45 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Linux 2.6.21-rc6
-Message-ID: <20070414130045.GE3691@stusta.de>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <20070413212954.GA2545@melchior.yamamaya.is-a-geek.org> <20070413235017.GR5907@stusta.de> <20070414120900.GA3001@melchior.yamamaya.is-a-geek.org> <20070414122447.GA2827@melchior.yamamaya.is-a-geek.org> <20070414123154.GA2863@melchior.yamamaya.is-a-geek.org>
+	Sat, 14 Apr 2007 09:02:33 -0400
+X-Originating-Ip: 24.6.145.253
+Date: Sat, 14 Apr 2007 09:01:06 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: {Spam?} Re: [PATCH][RFC] Kill off legacy power management stuff.
+In-Reply-To: <20070413183054.08ca0dff.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0704140855270.10740@localhost.localdomain>
+References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6>
+ <20070413180942.b7cf0665.sfr@canb.auug.org.au>
+ <Pine.LNX.4.64.0704130416250.15118@CPE00045a9c397f-CM001225dbafb6>
+ <20070413183054.08ca0dff.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070414123154.GA2863@melchior.yamamaya.is-a-geek.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: spam, SORBS-DUL,
+	SpamAssassin (not cached, score=-12.808, required 5,
+	ALL_TRUSTED -1.80, BAYES_00 -15.00, RCVD_IN_NJABL_DUL 1.95,
+	RCVD_IN_SORBS_DUL 2.05)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
-> Tobias Diedrich wrote:
-> > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
-> > > commit ed746e3b18f4df18afa3763155972c5835f284c5
-> > > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Date:   Sat Feb 10 01:43:32 2007 -0800
-> > > 
-> > >     [PATCH] swsusp: Change code ordering in disk.c
-> > >     
-> > >     Change the ordering of code in kernel/power/disk.c so that device_suspend() is
-> > >     called before disable_nonboot_cpus() and platform_finish() is called after
-> > >     enable_nonboot_cpus() and before device_resume(), as indicated by the recent
-> > >     discussion on Linux-PM (cf.
-> > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
-> > >     
-> > >     The changes here only affect the built-in swsusp.
-> > >     
-> > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinking during image load]
-> > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > >     Acked-by: Pavel Machek <pavel@ucw.cz>
-> > >     Cc: Greg KH <greg@kroah.com>
-> > >     Cc: Nigel Cunningham <nigel@suspend2.net>
-> > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
-> > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-> > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > > 
-> > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 8313b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
-> > > 
-> > > 
-> > > Now, the remaining test is to try reverting this commit from -rc6. :)
-> > 
-> > Doesn't apply cleanly against -rc6, but fixes the problem when
-> > reverted from -rc1.
-> 
-> Now, this was already reported in
-> http://lkml.org/lkml/2007/3/16/126
-> and I even flagged that message in my local folder, but apparently forgot
-> to follow up on it... *sigh*
+On Fri, 13 Apr 2007, Stephen Rothwell wrote:
 
-Unless I misunderstood something, all of the problems Maxim described in 
-this email are fixed for him in -rc6.
+> On Fri, 13 Apr 2007 04:20:10 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+> >
+> > On Fri, 13 Apr 2007, Stephen Rothwell wrote:
+> > >
+> > > One thing that comes to mind is that you will need some way to
+> > > make sure that only one of ACPI and APM get initialized ...
+> >
+> > i don't see how that has anything to do with removing legacy PM
+> > support.  you can select both ACPI and APM *now*.  if that's a bad
+> > thing, then fixing it is a completely independent issue.
+>
+> Except your patch removes this hunk:
+>
+> @@ -2264,14 +2248,6 @@ static int __init apm_init(void)
+>  		apm_info.disabled = 1;
+>  		return -ENODEV;
+>  	}
+> -	if (PM_IS_ACTIVE()) {
+> -		printk(KERN_NOTICE "apm: overridden by ACPI.\n");
+> -		apm_info.disabled = 1;
+> -		return -ENODEV;
+> -	}
+> -#ifdef CONFIG_PM_LEGACY
+> -	pm_active = 1;
+> -#endif
+>
+> in apm.c and a similar piece of the ACPI initialisation that
+> prevented one initialising if the other had already initialised.
 
-But it's quite possible that you are running into a different issue 
-exposed by this commit.
+ah, just took a closer look at this.  from <linux/pm_legacy.h>:
+...
+#ifdef CONFIG_PM_LEGACY
+...
+#else
+#define PM_IS_ACTIVE() 0
+...
+#endif
 
-> Tobias
+so if you choose not to configure legacy PM, that macro equates to
+false and that "if" construct in arch/i386/kernel/apm.c doesn't come
+into play, anyway.
 
-cu
-Adrian
+so i re-iterate what i posted in my earlier e-mail -- if APM and ACPI
+want to avoid clashing, they have to do it without invoking anything
+related to legacy PM.
+
+rday
+
+p.s.  if someone wants to take that previously-submitted patch
+proposal and tidy it up and submit it officially, feel free.
 
 -- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
