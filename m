@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbXDNRys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbXDNSDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbXDNRys (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDNRys
+	id S1754174AbXDNSDp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 14:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXDNSDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:54:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60184 "EHLO mx3.mail.elte.hu"
+	Sat, 14 Apr 2007 14:03:45 -0400
+Received: from mail.screens.ru ([213.234.233.54]:42002 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753878AbXDNRyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:54:47 -0400
-Date: Sat, 14 Apr 2007 19:54:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	id S1754174AbXDNSDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 14:03:44 -0400
+Date: Sat, 14 Apr 2007 22:02:47 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Willy Tarreau <w@1wt.eu>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070414175433.GA17527@elte.hu>
-References: <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070414132732.GA22103@1wt.eu> <20070414161927.GD3099@elte.hu> <m1abxanahn.fsf@ebiederm.dsl.xmission.com> <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com>
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] make kthread_stop() scalable
+Message-ID: <20070414180247.GA504@tv-sign.ru>
+References: <20070413130236.GA173@tv-sign.ru> <m14pnjon4m.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1647yn956.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <m14pnjon4m.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
-
-> > Thinking about it, I don't know if there are calls to schedule() 
-> > while switching from tty1 to tty2. Alt-F2 had no effect anymore, and 
-> > "chvt 2" simply blocked. It would have been possible that a 
-> > schedule() call somewhere got starved due to the load, I don't know.
+On 04/13, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> writes:
 > 
-> It looks like there is a call to schedule_work.
+> > It's a shame kthread_stop() (may take a while!) runs with a global semaphore
+> > held. With this patch kthread() allocates all neccesary data (struct kthread)
+> > on its own stack, globals kthread_stop_xxx are deleted.
+> 
+> Oleg so fare you patches  have been inspiring.  However..
+> 
+> > HACKS:
+> >
+> > 	- re-use task_struct->set_child_tid to point to "struct kthread"
+> 
+> 	 task_struct->vfork_done is a better cannidate.
+> 
+> > 	- use do_exit() directly to preserve "struct kthread" on stack
+> 
+> Calling do_exit directly like that is not a hack, as it appears the preferred
+> way to exit is to call do_exit, or complete_and_exit.
+> 
+> While this does improve the scalability and remove a global variable.  It
+> also introduces a complex special case in the form of struct kthread.
 
-so this goes over keventd, right?
+I can't say I agree. I thought it is good to have a struct which represents
+a kernel thread. Actually, I thought we can have __kthread_create() which
+returns "struct kthread". May be I am wrong, because yes, ->set_child_tid can
+point right to completion, and we can use some TIF flag instead of ->should_stop.
+This needs to update a lot of include/asm/ files.
 
-> There are two pieces of the path. If you are switching in and out of a 
-> tty controlled by something like X.  User space has to grant 
-> permission before the operation happens.  Where there isn't a gate 
-> keeper I know it is cheaper but I don't know by how much, I suspect 
-> there is still a schedule happening in there.
+> It also doesn't solve the biggest problem with the current kthread interface
+> in that calling kthread_stop does not cause the code to break out of
+> interruptible sleeps.
 
-Could keventd perhaps be starved? Willy, to exclude this possibility, 
-could you perhaps chrt keventd to RT priority? If events/0 is PID 5 then 
-the command to set it to SCHED_FIFO:50 would be:
+Hm? kthread_stop() does wake_up_process(), it wakes up TASK_INTERRUPTIBLE tasks.
 
-  chrt -f -p 50 5
+> > @@ -91,7 +105,7 @@ static void create_kthread(struct kthrea
+> >
+> >  	/* We want our own signal handler (we take no signals by default). */
+> >  	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
+> > -	create->result = pid;
+> > +	create->result = ERR_PTR(pid);
+> 
+> Ouch.    You have a nasty race here.
+> 
+> If kthread runs before kernel_thread returns then setting
+> "create->result = ERR_PTR(pid);" could easily stomp 
+> "create->result = &self".
 
-but ... events/0 is reniced to -5 by default, so it should definitely 
-not be starved.
+Yes, thanks... Can't understand how I was soooo stupid!!! thanks...
 
-	Ingo
+Damn. We don't need 2 completions! just one.
+
+	create_kthread:
+
+		pid = kernel_thread(...);
+		if (pid < 0) {
+			create->result = ERR_PTR(pid);
+			complete(create->started);
+		}
+		// else: kthread() will do complete()
+
+		return;
+
+Oleg.
+
