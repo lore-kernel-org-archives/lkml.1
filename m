@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbXDNPSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbXDNPgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753132AbXDNPSA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 11:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbXDNPSA
+	id S1753569AbXDNPgd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 11:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbXDNPgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 11:18:00 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:3598 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbXDNPSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 11:18:00 -0400
-Message-ID: <4620F0A5.9060707@rtr.ca>
-Date: Sat, 14 Apr 2007 11:17:57 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Sat, 14 Apr 2007 11:36:33 -0400
+Received: from colargol.tihlde.org ([158.38.48.10]:54416 "EHLO
+	colargol.tihlde.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753569AbXDNPgc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 11:36:32 -0400
+X-Greylist: delayed 2245 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 11:36:32 EDT
+Message-ID: <4620EC23.4010404@mrfjo.org>
+Date: Sat, 14 Apr 2007 16:58:43 +0200
+From: =?ISO-8859-1?Q?Espen_Fjellv=E6r_Olsen?= <espen@oxygen.tihlde.org>
+Reply-To: "Drift@tihlde" <drift@tihlde.org>
+User-Agent: Thunderbird 2.0.0.0pre (Windows/20070408)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Willy Tarreau <w@1wt.eu>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu>
-In-Reply-To: <20070414105338.GB19454@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+CC: "Drift@tihlde" <drift@tihlde.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 129.241.123.213
+X-SA-Exim-Mail-From: espen@mrfjo.org
+Subject: Machine Check Exception on Opteron 265
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on oxygen.tihlde.org)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> i kept the 50%/50% rule from the old scheduler, but maybe it's a more 
-> pristine (and smaller/faster) approach to just not give new children any 
-> stats history to begin with. I've implemented an add-on patch that 
-> implements this, you can find it at:
-> 
->     http://redhat.com/~mingo/cfs-scheduler/sched-fair-fork.patch
+Hi!
+Today our Opteron 265, 2x2, paniced after many months uptime, giving
+only this error message:
 
-I've been running my desktop (single-core Pentium-M w/2GB RAM, Kubuntu Dapper)
-with the new CFS for much of this morning now, with the odd switch back to
-the stock scheduler for comparison.
+HARDWARE ERROR
+CPU 2: Machine Check Exception:            4 Bank 4: b60a200100000813
+TSC 6bb9fd0142921a ADDR a891e9b8
+This is not a software problem!
 
-Here, CFS really works and feels better than the stock scheduler.
+mcelog --ascii gives this on the above error:
 
-Even with a "make -j2" kernel rebuild happening (no manual renice, either!)
-things "just work" about as smoothly as ever.  That's something which RSDL
-never achieved for me, though I have not retested RSDL beyond v0.34 or so.
+HARDWARE ERROR
+CPU 2 4 northbridge TSC 6bb9fd0142921a
+  Northbridge ECC error
+  ECC syndrome = 14
+       bit32 = err cpu0
+       bit45 = uncorrected ecc error
+       bit57 = processor context corrupt
+       bit61 = error uncorrected
+  bus error 'local node origin, request didn't time out
+      generic read mem transaction
+      memory access, level generic'
+STATUS b60a200100000813 MCGSTATUS 4
+This is not a software problem!
 
-Well done, Ingo!  I *want* this as my default scheduler.
 
-Things seemed slightly less smooth when I had the CPU hogs
-and fair-fork extension patches both applied.
+As far as we know there wasnt any unuasal activity on the server at the
+time.
+We updated glibc yesterday, but that shouldnt really cause such a problem.
+So now we wonder if this might be an MCE bug, or really a HW problem,
+and if it is one of the CPUs, or the RAM thats faulty.
+We are running 2.6.18.
 
-I'm going to try again now with just the fair-fork added on.
-
-Cheers
-
-Mark
+--
+Mvh
+Espen Fjellvær Olsen
+Drift@Tihlde
+espen@mrfjo.org
