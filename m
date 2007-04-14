@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXDNIqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbXDNIqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932458AbXDNIqJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 04:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932431AbXDNIqI
+	id S932451AbXDNIqW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 04:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932431AbXDNIqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 04:46:08 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:59736 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932451AbXDNIqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 04:46:05 -0400
-Subject: Re: [PATCH] applesmc - fix crash when activating a led trigger on
-	the keyboard backlight
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Nicolas Boichat <nicolas@boichat.ch>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Bradley Hook <bdhook@gmail.com>,
-       mactel-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <46208B40.1060809@boichat.ch>
-References: <45F7C083.7090504@boichat.ch>
-	 <b6c5339f0703191443l5f8c5271pf43ea62e0c79a614@mail.gmail.com>
-	 <45FF86F6.7050200@boichat.ch>
-	 <eb4a44160703200016i74786682n41f87f3d88f90409@mail.gmail.com>
-	 <46208B40.1060809@boichat.ch>
-Content-Type: text/plain
-Date: Sat, 14 Apr 2007 09:45:11 +0100
-Message-Id: <1176540311.6818.9.camel@localhost.localdomain>
+	Sat, 14 Apr 2007 04:46:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:40189 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932451AbXDNIqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 04:46:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=oEKK4cAOqNktIWPqkD07aHFquOwO5TY+B9mch1X7FYnSMFzUp9NsCK+6wUF3sjj8zCqTCcIfrsiDQCg7hGRlLBE18Q7khPMyD12e5fiWVxJWVBmjGA0i5Z55zFuTnOVZjtg2GQb8ZV7ORq0oka0jEyvWt7gzC8JzKFlde2/Al7k=
+Date: Sat, 14 Apr 2007 14:18:19 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: kernel-janitors@lists.osdl.org, ocfs2-devel@oss.oracle.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mark.fasheh@oracle.com, kurt.hackel@oracle.com
+Subject: [KJ][PATCH 02/04]use set_current_state in fs
+Message-ID: <20070414084819.GC14084@arun.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Sat, 2007-04-14 at 16:05 +0800, Nicolas Boichat wrote:
-> Bradley Hook wrote:
-> > Slightly off-topic, but I've been experiencing a minor bug in the
-> > keyboard backlight feature.
-> >
-> > I say it is "minor" only because the feature serves no real functional
-> > purpose. You can activate a trigger called "heartbeat" that will cause
-> > the keyboard light to pulse at a speed based on the CPU usage. On my
-> > MBP17, after activating this trigger the machine will either lock-up
-> > or core dump within about a minute (timing is not consistent).
-> >   
-> 
-> This is caused by the fact applesmc_backlight_set locks a mutex (or more
-> precisely sleeps while trying to lock a mutex) while being in a softirq
-> context.
-> 
-> This might be obvious for others, but it was not for me, and there is
-> absolutely no mention in the documentation of the fact it is not always
-> safe to sleep in the brightness_set handler of a led_class device (it is
-> safe when it is called because someone wrote to the brightness sysfs file).
+use set_current_state(TASK_*) instead of current->state = TASK_*, in fs/ocfs2
 
-Its never safe for a brightness_set handler to sleep. They're designed
-to be called from interrupt context and as you've noted, several
-triggers do that.
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-The solution if you have locks like your case is to offload the work to
-a workqueue, there is simply no other way to do it.
-
-I'll have a look to see if I can improve the documentation (patches
-welcome).
-
-> Also, the led-trigger code seems buggy when it comes to locking. Setting
-> CONFIG_DEBUG_SPINLOCK_SLEEP causes a lot a warnings. The problem is that
-> the list of triggers is locked using a rw spinlock, but the rest of the
-> code seems to ignore that, and calls a lot of functions which can sleep
-> (kzalloc with GFP_KERNEL, sysfs_add_file, mutex_lock, etc...). I think
-> the list lock should be converted to a mutex (or maybe modified to use
-> RCU). I'm not very experienced in that domain, but if you want I can
-> provide a patch for this.
-
-Someone else has mentioned this within the past few days and there is a
-problem with the trigger->activate and ->deactivate calls occurring
-within a spinlock. Its not a simple problem to solve unfortunately and
-you can't just convert to a mutex but I'm looking at it. Again, patches
-welcome but its going to need careful thought.
-
-Cheers,
-
-Richard
+---
+ dlmthread.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
 
+diff --git a/fs/ocfs2/dlm/dlmthread.c b/fs/ocfs2/dlm/dlmthread.c
+index 2b264c6..26f4474 100644
+--- a/fs/ocfs2/dlm/dlmthread.c
++++ b/fs/ocfs2/dlm/dlmthread.c
+@@ -76,7 +76,7 @@ repeat:
+ 		goto repeat;
+ 	}
+ 	remove_wait_queue(&res->wq, &wait);
+-	current->state = TASK_RUNNING;
++	set_current_state(TASK_RUNNING);
+ }
+ 
+ int __dlm_lockres_has_locks(struct dlm_lock_resource *res)
+-- 
+Milind Arun Choudhary
