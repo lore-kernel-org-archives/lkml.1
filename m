@@ -1,72 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbXDNRmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751861AbXDNRpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbXDNRmI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 13:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbXDNRmI
+	id S1751861AbXDNRpq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 13:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbXDNRpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 13:42:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:57083 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbXDNRmG (ORCPT
+	Sat, 14 Apr 2007 13:45:46 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52705 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbXDNRpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 13:42:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=VJEl9h+fMthBHnNNNsFpK6itO13LdbHexH7LYszAbO60bMcshM3kj1Dj71yjdvhDDZCk9ajZiPKL5WMOkZyBTYEdRhNAGfDWQGG8RbEpplPrkkzA4vwzg9He/Mwi942z6pFzlZmE4FbHe+/MDDhQ5gAUiwJbCSX6D3XU6+MBXa4=
-Message-ID: <462111F8.1060700@gmail.com>
-Date: Sat, 14 Apr 2007 21:40:08 +0400
-From: Ignatich <ignatich@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sat, 14 Apr 2007 13:45:45 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Willy Tarreau <w@1wt.eu>
+Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+References: <20070414020424.GB14544@wotan.suse.de>
+	<20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu>
+	<20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu>
+	<20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu>
+	<20070414132732.GA22103@1wt.eu> <20070414161927.GD3099@elte.hu>
+	<m1abxanahn.fsf@ebiederm.dsl.xmission.com>
+	<20070414172920.GA2433@1wt.eu>
+Date: Sat, 14 Apr 2007 11:44:21 -0600
+In-Reply-To: <20070414172920.GA2433@1wt.eu> (Willy Tarreau's message of "Sat,
+	14 Apr 2007 19:29:20 +0200")
+Message-ID: <m1647yn956.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-Content-Type: text/plain; charset=windows-1251; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You might want to look at this discussion:
-http://mail.opensolaris.org/pipermail/zfs-discuss/2007-April/027041.html
+Willy Tarreau <w@1wt.eu> writes:
 
-Let me quote my last letter:
-The problem is not with CDDL, GPL is the problem. ATI and nVidia do 
-provide binary modules with GPL "adapters", but I don't think legality 
-of this approach was proven in court. I see no parties interested in 
-proving that it is not legal (Intel perhaps?), but Sun is another story. 
-They are not interested in ZFS port for Linux, because Solaris and Linux 
-are real competitors, and if winds change may decide to take legal 
-action. Also, such port can never be included in mainline for obvious 
-reasons and I really want to see storage system such as ZFS as "default" 
-for Linux in future. To sum all of this I see a number of possible 
-solutions for this situation:
+> Hi Eric,
+>
+> [...]
+>> >> the ramp up slows down after 700-800 processes, but something very 
+>> >> strange happens. If I'm under X, I can switch the focus to all xterms 
+>> >> (the WM is still alive) but all xterms are frozen. On the console, 
+>> >> after one moment I simply cannot switch to another VT anymore while I 
+>> >> can still start commands locally. But "chvt 2" simply blocks. SysRq-K 
+>> >> killed everything and restored full control. Dmesg shows lots of :
+>> >
+>> >> SAK: killed process xxxx (scheddos2): process_session(p)==tty->session.
+>> 
+>> This.  Yes. SAK is noisy and tells you everything it kills.
+>
+> OK, that's what I suspected, but I did not know if the fact that it talked
+> about the session was systematic or related to any particular state when it
+> killed the task.
+>
+>> >> I wonder if part of the problem would be too many processes bound to 
+>> >> the same tty :-/
+>> >
+>> > hm, that's really weird. I've Cc:-ed the tty experts (Erik, Jiri, Alan), 
+>> > maybe this description rings a bell with them?
+>> 
+>> Is there any swapping going on?
+>
+> Not at all.
+>
+>> I'm inclined to suspect that it is a problem that has more to do with the
+>> number of processes and has nothing to do with ttys.
+>
+> It is clearly possible. What I found strange is that I could still fork
+> processes (eg: ls, dmesg|tail), ... but not switch to another VT anymore.
+> It first happened under X with frozen xterms but a perfectly usable WM,
+> then I reproduced it on pure console to rule out any potential X problem.
+>
+>> Anyway you can easily rule out ttys by having your startup program
+>> detach from a controlling tty before you start everything.
+>> 
+>> I'm more inclined to guess something is reading /proc a lot, or doing
+>> something that holds the tasklist lock, a lot or something like that,
+>> if the problem isn't that you are being kicked into swap.
+>
+> Oh I'm sorry you were invited into the discussion without a first description
+> of the context. I was giving a try to Ingo's new scheduler, and trying to
+> reach corner cases with lots of processes competing for CPU.
+>
+> I simply used a "for" loop in bash to fork 1000 processes, and this problem
+> happened between 700-800 children. The program only uses a busy loop and a
+> pause. I then changed my program to close 0,1,2 and perform the fork itself,
+> and the problem vanished. So there are two differences here :
+>
+>   - bash not forking anymore
+>   - far less FDs on /dev/tty1
 
-1. Sun dual licenses ZFS as GPLv2 and thus gives green light for 
-ZFS-Linux port. Personally I doubt that this will happen.
+Yes.  But with /dev/tty1 being the controlling terminal in both cases,
+as you haven't dropped your session, or disassociated your tty.
 
-2. Linux changes it's license. The chance is near zero.
+The bash problem may have something to setpgid or scheduling effects.
+Hmm.  I just looked and setpgid does grab the tasklist lock for
+writing so we may possibly have some contention there.
 
-3. US and EU courts clearly state that it is legal to use non-GPL kernel 
-modules in Linux.
+> At first, I had around 2200 fds on /dev/tty1, reason why I suspected something
+> in this area.
+>
+> I agree that this is not normal usage at all, I'm just trying to attack
+> Ingo's scheduler to ensure it is more robust than the stock one. But
+> sometimes brute force methods can make other sleeping problems pop up.
 
-4. GPL ZFS reimplementation project is started. I prefer that way until 
-1), 2) or 3) happen.
+Yep.  If we can narrow it down to one that would be interesting.  Of course
+that also means when we start finding other possibly sleeping problems people
+are working in areas of code the don't normally touch, so we must investigate.
 
-I know Sun opened most if not all ZFS related patents for OpenSolaris 
-community. So I repeat questions I asked in my first mail:
+> Thinking about it, I don't know if there are calls to schedule() while
+> switching from tty1 to tty2. Alt-F2 had no effect anymore, and "chvt 2"
+> simply blocked. It would have been possible that a schedule() call
+> somewhere got starved due to the load, I don't know.
 
-1. Are those patents limited to CDDL/OpenSolaris code or can by used in 
-GPL/Linux too?
+It looks like there is a call to schedule_work.
 
-2. If GPL code can't use those patented algorithms, will you please 
-provide list of ZFS-related patents? RAID-Z and LZJB are most obvious 
-technologies which may be patent protected.
-<end>
+There are two pieces of the path. If you are switching in and out of a tty
+controlled by something like X.  User space has to grant permission before
+the operation happens.  Where there isn't a gate keeper I know it is cheaper
+but I don't know by how much, I suspect there is still a schedule happening
+in there.
 
-So far I've got no response from Sun. According to Jeff Bonwick's blog 
-Sun issued 56 patents on ZFS, but I have no idea what they patented. 
-Sorry, binary compatible ZFS reimplementation with GPL license might not 
-be legal. If you know something about this or can help to get ZFS 
-related patent list please send me a mail.
-
-Sincerely yours, Max V. Yudin
+Eric
