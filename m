@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbXDNEbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbXDNEmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbXDNEbJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 00:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDNEbJ
+	id S1754181AbXDNEmY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 00:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXDNEmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 00:31:09 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1351 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754177AbXDNEbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 00:31:08 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: francis.moro@gmail.com (Francis Moreau)
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: helge.hafting@aitel.hist.no, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-Organization: Core
-In-Reply-To: <38b2ab8a0704130630v4c840bd1w19f2a239f86a93b@mail.gmail.com>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1HcZud-0006DB-00@gondolin.me.apana.org.au>
-Date: Sat, 14 Apr 2007 14:30:59 +1000
+	Sat, 14 Apr 2007 00:42:24 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:47054 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754181AbXDNEmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 00:42:23 -0400
+X-Greylist: delayed 894 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Apr 2007 00:42:23 EDT
+Date: Sat, 14 Apr 2007 06:27:25 +0200
+From: Jan Kasprzak <kas@fi.muni.cz>
+To: jirislaby@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: MOXA: mxser_new lockup
+Message-ID: <20070414042725.GT20376@fi.muni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Muni-Envelope-From: kas@fi.muni.cz
+X-Muni-Envelope-To: linux-kernel@vger.kernel.org
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 14 Apr 2007 06:27:27 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francis Moreau <francis.moro@gmail.com> wrote:
-> 
-> Crypto core already seems to implement a priority mechanism. But I
-> don't think I'm able to say "I'd like to use this algo for encrypting
-> filesystems. If another part of the kernel wants to use this algo then
-> give it the generic one". This choice seems really to depend on the
-> system the kernel is running.
+	Hello,
 
-It should be easy to restrict a crypto device so that it's used
-by one specific user.  That's why we have generic names ("aes") vs.
-specific ones ("aes-foo").
+I have a MOXA C168H card, and after the upgrade from 2.6.19 to 2.6.21-rc6
+(and from moxa.c to mxser_new.c) I get a system lockup after few seconds
+of communicating over the MOXA serial line. Noting is printed on the
+serial console at all. The system is SMP x86_64 (Fedora 5). I may be
+able to do a limited testing on request, but the system is in production
+use most of the time. For now, I will probably move back to the older
+driver.
 
-So if you let the priority user pick "aes-foo" instead of "aes",
-and given that there is a higher priority variant of the generic
-"aes" registered, the system will do exactly what you want.
+	Are you aware of any SMP or 64-bit issues in mxser_new.c?
+Thanks,
 
-The only part missing right now is the ability to change the priority
-of an algorithm so that for example you can let "aes-generic" take
-priority over "aes-padlock", but that should be fairly easy to add.
+-Yenya
 
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
+| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
+| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
+> I will never go to meetings again because I think  face to face meetings <
+> are the biggest waste of time you can ever have.        --Linus Torvalds <
