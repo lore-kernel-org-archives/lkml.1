@@ -1,122 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXDNVVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXDNVVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932231AbXDNVVq (ORCPT <rfc822;w@1wt.eu>);
+	id S932117AbXDNVVq (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 14 Apr 2007 17:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbXDNVUV
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXDNVUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 17:20:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:59549 "EHLO mail.goop.org"
+	Sat, 14 Apr 2007 17:20:19 -0400
+Received: from gw.goop.org ([64.81.55.164]:59540 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753847AbXDNVUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 17:20:15 -0400
-Message-Id: <20070414204924.051019372@goop.org>
+	id S1753703AbXDNVUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 17:20:14 -0400
+Message-Id: <20070414204923.746654129@goop.org>
 References: <20070414204154.871250608@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 14 Apr 2007 13:42:03 -0700
+Date: Sat, 14 Apr 2007 13:41:59 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       lkml <linux-kernel@vger.kernel.org>,
        Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH 09/28] Fix UP gdt bugs
-Content-Disposition: inline; filename=fix-uniproc-gdt-bugs.patch
+Subject: [PATCH 05/28] Page-align the GDT
+Content-Disposition: inline; filename=i386-gdt-cleanups-page-align-the-gdt.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes two problems with the GDT when compiling for uniprocessor:
- - There's no percpu segment, so trying to load its selector into %fs fails.
-   Use a null selector instead.
- - The real gdt needs to be loaded at some point.  Do it in cpu_init().
+Xen wants a dedicated page for the GDT.  I believe VMI likes it too.
+lguest, KVM and native don't care.
 
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
+Simple transformation to page-aligned "struct gdt_page".
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
 ---
- arch/i386/kernel/cpu/common.c |   13 +++++++++++++
- arch/i386/kernel/smpboot.c    |   12 ------------
- include/asm-i386/processor.h  |    1 +
- include/asm-i386/segment.h    |    4 ++++
- 4 files changed, 18 insertions(+), 12 deletions(-)
+ arch/i386/kernel/cpu/common.c |    6 +++---
+ arch/i386/kernel/entry.S      |    2 +-
+ arch/i386/kernel/head.S       |    2 +-
+ arch/i386/kernel/traps.c      |    2 +-
+ include/asm-i386/desc.h       |    9 +++++++--
+ 5 files changed, 13 insertions(+), 8 deletions(-)
 
 ===================================================================
 --- a/arch/i386/kernel/cpu/common.c
 +++ b/arch/i386/kernel/cpu/common.c
-@@ -644,6 +644,18 @@ struct pt_regs * __devinit idle_regs(str
- 	return regs;
- }
+@@ -22,7 +22,7 @@
  
-+/* Current gdt points %fs at the "master" per-cpu area: after this,
-+ * it's on the real one. */
-+void switch_to_new_gdt(void)
-+{
-+	struct Xgt_desc_struct gdt_descr;
-+
-+	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
-+	gdt_descr.size = GDT_SIZE - 1;
-+	load_gdt(&gdt_descr);
-+	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
-+}
-+
+ #include "cpu.h"
+ 
+-DEFINE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]) = {
++DEFINE_PER_CPU(struct gdt_page, gdt_page) = { .gdt = {
+ 	[GDT_ENTRY_KERNEL_CS] = { 0x0000ffff, 0x00cf9a00 },
+ 	[GDT_ENTRY_KERNEL_DS] = { 0x0000ffff, 0x00cf9200 },
+ 	[GDT_ENTRY_DEFAULT_USER_CS] = { 0x0000ffff, 0x00cffa00 },
+@@ -48,8 +48,8 @@ DEFINE_PER_CPU(struct desc_struct, cpu_g
+ 
+ 	[GDT_ENTRY_ESPFIX_SS] = { 0x00000000, 0x00c09200 },
+ 	[GDT_ENTRY_PDA] = { 0x00000000, 0x00c09200 }, /* set in setup_pda */
+-};
+-EXPORT_PER_CPU_SYMBOL_GPL(cpu_gdt);
++} };
++EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
+ 
+ DEFINE_PER_CPU(struct i386_pda, _cpu_pda) = {
+ 	._pda = &per_cpu___cpu_pda,
+===================================================================
+--- a/arch/i386/kernel/entry.S
++++ b/arch/i386/kernel/entry.S
+@@ -558,7 +558,7 @@ END(syscall_badsys)
+ #define FIXUP_ESPFIX_STACK \
+ 	/* since we are on a wrong stack, we cant make it a C code :( */ \
+ 	movl %fs:PDA_cpu, %ebx; \
+-	PER_CPU(cpu_gdt, %ebx); \
++	PER_CPU(gdt_page, %ebx); \
+ 	GET_DESC_BASE(GDT_ENTRY_ESPFIX_SS, %ebx, %eax, %ax, %al, %ah); \
+ 	addl %esp, %eax; \
+ 	pushl $__KERNEL_DS; \
+===================================================================
+--- a/arch/i386/kernel/head.S
++++ b/arch/i386/kernel/head.S
+@@ -599,7 +599,7 @@ idt_descr:
+ 	.word 0				# 32 bit align gdt_desc.address
+ ENTRY(early_gdt_descr)
+ 	.word GDT_ENTRIES*8-1
+-	.long per_cpu__cpu_gdt		/* Overwritten for secondary CPUs */
++	.long per_cpu__gdt_page		/* Overwritten for secondary CPUs */
+ 
  /*
-  * cpu_init() initializes state that is per-CPU. Some data is already
-  * initialized (naturally) in the bootstrap process, such as the GDT
-@@ -674,6 +688,7 @@ void __cpuinit cpu_init(void)
- 	}
- 
- 	load_idt(&idt_descr);
-+	switch_to_new_gdt();
- 
- 	/*
- 	 * Set up and load the per-CPU TSS and LDT
+  * The boot_gdt_table must mirror the equivalent in setup.S and is
 ===================================================================
---- a/arch/i386/kernel/smpboot.c
-+++ b/arch/i386/kernel/smpboot.c
-@@ -1176,18 +1176,6 @@ void __init native_smp_prepare_cpus(unsi
- 	smp_boot_cpus(max_cpus);
+--- a/arch/i386/kernel/traps.c
++++ b/arch/i386/kernel/traps.c
+@@ -1037,7 +1037,7 @@ fastcall unsigned long patch_espfix_desc
+ fastcall unsigned long patch_espfix_desc(unsigned long uesp,
+ 					  unsigned long kesp)
+ {
+-	struct desc_struct *gdt = __get_cpu_var(cpu_gdt);
++	struct desc_struct *gdt = __get_cpu_var(gdt_page).gdt;
+ 	unsigned long base = (kesp - uesp) & -THREAD_SIZE;
+ 	unsigned long new_kesp = kesp - base;
+ 	unsigned long lim_pages = (new_kesp | (THREAD_SIZE - 1)) >> PAGE_SHIFT;
+===================================================================
+--- a/include/asm-i386/desc.h
++++ b/include/asm-i386/desc.h
+@@ -18,10 +18,15 @@ struct Xgt_desc_struct {
+ 	unsigned short pad;
+ } __attribute__ ((packed));
+ 
+-DECLARE_PER_CPU(struct desc_struct, cpu_gdt[GDT_ENTRIES]);
++struct gdt_page
++{
++	struct desc_struct gdt[GDT_ENTRIES];
++} __attribute__((aligned(PAGE_SIZE)));
++DECLARE_PER_CPU(struct gdt_page, gdt_page);
++
+ static inline struct desc_struct *get_cpu_gdt_table(unsigned int cpu)
+ {
+-	return per_cpu(cpu_gdt, cpu);
++	return per_cpu(gdt_page, cpu).gdt;
  }
  
--/* Current gdt points %fs at the "master" per-cpu area: after this,
-- * it's on the real one. */
--static inline void switch_to_new_gdt(void)
--{
--	struct Xgt_desc_struct gdt_descr;
--
--	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
--	gdt_descr.size = GDT_SIZE - 1;
--	load_gdt(&gdt_descr);
--	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
--}
--
- void __init native_smp_prepare_boot_cpu(void)
- {
- 	unsigned int cpu = smp_processor_id();
-===================================================================
---- a/include/asm-i386/processor.h
-+++ b/include/asm-i386/processor.h
-@@ -777,6 +777,7 @@ extern int sysenter_setup(void);
- extern int sysenter_setup(void);
- 
- extern void cpu_set_gdt(int);
-+extern void switch_to_new_gdt(void);
- extern void cpu_init(void);
- 
- #endif /* __ASM_I386_PROCESSOR_H */
-===================================================================
---- a/include/asm-i386/segment.h
-+++ b/include/asm-i386/segment.h
-@@ -75,7 +75,11 @@
- #define __ESPFIX_SS (GDT_ENTRY_ESPFIX_SS * 8)
- 
- #define GDT_ENTRY_PERCPU			(GDT_ENTRY_KERNEL_BASE + 15)
-+#ifdef CONFIG_SMP
- #define __KERNEL_PERCPU (GDT_ENTRY_PERCPU * 8)
-+#else
-+#define __KERNEL_PERCPU 0
-+#endif
- 
- #define GDT_ENTRY_DOUBLEFAULT_TSS	31
- 
+ extern struct Xgt_desc_struct idt_descr;
 
 -- 
 
