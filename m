@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbXDNXOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751661AbXDNXR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751649AbXDNXOe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 19:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXDNXOe
+	id S1751661AbXDNXR3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 19:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbXDNXR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 19:14:34 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:57871 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbXDNXOd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 19:14:33 -0400
-Message-ID: <46216001.3000503@gmail.com>
-Date: Sun, 15 Apr 2007 01:13:05 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       git@vger.kernel.org
-Subject: Re: GIT and the current -stable
-References: <46206842.80203@gmail.com> <20070414083410.GU6602@sequoia.sous-sol.org> <462096AA.3080003@gmail.com>
-In-Reply-To: <462096AA.3080003@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sat, 14 Apr 2007 19:17:29 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:16866 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751661AbXDNXR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 19:17:28 -0400
+X-IronPort-AV: i="4.14,411,1170662400"; 
+   d="scan'208"; a="51167782:sNHT46633412"
+Subject: NFS: Fix an Oops in nfs_setattr()
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Organization: Network Appliance Inc
+Date: Sat, 14 Apr 2007 19:07:28 -0400
+Message-Id: <1176592048.6089.23.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 14 Apr 2007 23:07:34.0367 (UTC) FILETIME=[AFB47EF0:01C77EE9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/14/2007 10:54 AM, Rene Herman wrote:
+It looks like nfs_setattr() and nfs_rename() also need to test whether the
+target is a regular file before calling nfs_wb_all()...
 
-> On 04/14/2007 10:34 AM, Chris Wright wrote:
-> 
->> I've already put a tree like this up on kernel.org.  The master branch
->> is Linus' tree, and there's branches for each of the stable releases
->> called linux-2.6.[12-20].y (I didn't add 2.6.11.y).
->>
->> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=summary 
-> 
-> I see, thank you; that sounds like a good "master" repo to clone then.
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-Okay, I just cloned this repo, like:
+ fs/nfs/dir.c   |    3 ++-
+ fs/nfs/inode.c |    6 ++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-git clone -n \
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6-stable.git \
-stable
-
-How do I now checkout for example 2.6.20.6, or get a diff between 2.6.20.6 
-and the (at the moment of writing latest -stable) 2.6.20.7?
-
-rene@7ixe4:~/src/linux$ cd stable
-rene@7ixe4:~/src/linux/stable$ git branch -a
-* master
-   origin/HEAD
-   origin/linux-2.6
-   origin/linux-2.6.12.y
-   origin/linux-2.6.13.y
-   origin/linux-2.6.14.y
-   origin/linux-2.6.15.y
-   origin/linux-2.6.16.y
-   origin/linux-2.6.17.y
-   origin/linux-2.6.18.y
-   origin/linux-2.6.19.y
-   origin/linux-2.6.20.y
-   origin/master
-
-and I can check them out like
-
-rene@7ixe4:~/src/linux/stable$ git checkout origin/linux-2.6.20.y
-
-or in this case, but only this case, like:
-
-rene@7ixe4:~/src/linux/stable$ git checkout v2.6.20.7
-
-"v2.6.20.7" seems to be the only tag from the stable branches that's present 
-  in this tree?
-
-rene@7ixe4:[...]$ git tag -l | grep "v2\.6\.[[:digit:]]\{1,2\}\."
-v2.6.20.7
-
-Rene.
-
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index 92d8ec8..cd34697 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1684,7 +1684,8 @@ go_ahead:
+ 	 * ... prune child dentries and writebacks if needed.
+ 	 */
+ 	if (atomic_read(&old_dentry->d_count) > 1) {
+-		nfs_wb_all(old_inode);
++		if (S_ISREG(old_inode->i_mode))
++			nfs_wb_all(old_inode);
+ 		shrink_dcache_parent(old_dentry);
+ 	}
+ 	nfs_inode_return_delegation(old_inode);
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index 93d046c..44aa9b7 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -341,8 +341,10 @@ nfs_setattr(struct dentry *dentry, struct iattr *attr)
+ 	lock_kernel();
+ 	nfs_begin_data_update(inode);
+ 	/* Write all dirty data */
+-	filemap_write_and_wait(inode->i_mapping);
+-	nfs_wb_all(inode);
++	if (S_ISREG(inode->i_mode)) {
++		filemap_write_and_wait(inode->i_mapping);
++		nfs_wb_all(inode);
++	}
+ 	/*
+ 	 * Return any delegations if we're going to change ACLs
+ 	 */
