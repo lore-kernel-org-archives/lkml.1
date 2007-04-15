@@ -1,103 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbXDOWBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbXDOWLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbXDOWBD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 18:01:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbXDOWBD
+	id S1754012AbXDOWLG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 18:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbXDOWLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 18:01:03 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:60350 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754003AbXDOWBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 18:01:01 -0400
-Message-ID: <4622A098.4010305@volny.cz>
-Date: Mon, 16 Apr 2007 00:00:56 +0200
-From: Jiri Slaby <jirislaby@volny.cz>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Sun, 15 Apr 2007 18:11:05 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:51537 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754012AbXDOWLE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 18:11:04 -0400
+Date: Mon, 16 Apr 2007 00:11:12 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.48
+Message-ID: <20070415221112.GI3691@stusta.de>
 MIME-Version: 1.0
-To: Richard A Nelson <cowboy@cavein.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org
-Subject: Re: 2.6.21-rc6, ASUS M2V 1.01G, ALSA detection/non-support
-References: <alpine.DEB.0.98.0704151341250.12045@hygvzn-guhyr.pnirva.bet>
-In-Reply-To: <alpine.DEB.0.98.0704151341250.12045@hygvzn-guhyr.pnirva.bet>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Really Cc: alsa-devel@alsa-project.org
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
-Richard A Nelson napsal(a):
-> My son has an earlier version of the M2V & BIOS (0901) and his gets full
-> 6ch
-> sound.
-> 
-> The 1.01G, and related BIOS (1304 or 1701) do not properly handle the
-> onboard sound:
-> hda_codec: Unknown model for ALC660VD/ALC861VD, trying auto-probe from
-> BIOS...
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-What does your /proc/asound/version say?
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
-> it seems to truely be a BIOS issue, as I don't see a difference in lspci
-> -vvxxx between our systems:
-> 
-> 80:01.0 Audio device: VIA Technologies, Inc. VIA High Definition Audio
-> Controller (rev 10)
->         Subsystem: ASUSTeK Computer Inc. Unknown device 81e7
->         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-> ParErr- Step ping- SERR- FastB2B-
->         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR-
->         Latency: 0, Cache Line Size: 64 bytes
->         Interrupt: pin A routed to IRQ 17
->         Region 0: Memory at fbffc000 (64-bit, non-prefetchable) [size=16K]
->         Capabilities: [50] Power Management version 2
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=55mA
-> PME(D0+,D1-,D2-,D3ho t+,D3cold+)
->                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
->         Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+
-> Queue=0/0 Enable-
->                 Address: 0000000000000000  Data: 0000
->         Capabilities: [70] Express Unknown type IRQ 0
->                 Device: Supported: MaxPayload 128 bytes, PhantFunc 0,
-> ExtTag-
->                 Device: Latency L0s <64ns, L1 <1us
->                 Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
->                 Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->                 Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
->                 Link: Supported Speed unknown, Width x0, ASPM unknown,
-> Port 0
->                 Link: Latency L0s <64ns, L1 <1us
->                 Link: ASPM Disabled CommClk- ExtSynch-
->                 Link: Speed unknown, Width x0
-> 00: 06 11 88 32 06 00 10 00 10 00 03 04 10 00 00 00
-> 10: 04 c0 ff fb 00 00 00 00 00 00 00 00 00 00 00 00
-> 20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 e7 81
-> 30: 00 00 00 00 50 00 00 00 00 00 00 00 0a 01 00 00
-> 40: 00 30 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 50: 01 60 42 c8 00 00 00 00 00 00 00 00 00 00 00 00
-> 60: 05 70 80 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 70: 10 00 91 00 00 00 00 00 00 00 30 00 00 00 00 00
-> 80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 
-> ALSA, instead of seeing ALC660, on my box sees ALC660-VD, with very
-> little in the way of devices (only front output) - which does not work
-> either :(
-> 
-> Stumped on where to go from here...
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Changes since 2.6.16.47:
 
+Adrian Bunk (2):
+      Linux 2.6.16.48-rc1
+      Linux 2.6.16.48
+
+Andreas Oberritter (1):
+      V4L/DVB: Pluto2: fix incorrect TSCR register setting
+
+David Brownell (1):
+      USB: usbnet driver bugfix
+
+Francois Romieu (3):
+      r8169: fix a race between PCI probe and dev_open
+      r8169: fix suspend/resume for down interface
+      r8169: issue request_irq after the private data are completely initialized
+
+Herbert Xu (1):
+      [IPSEC]: Reject packets within replay window but outside the bit mask
+
+John Heffner (1):
+      [TCP]: Do receiver-side SWS avoidance for rcvbuf < MSS.
+
+Michael Krufky (1):
+      V4L: tveeprom: autodetect LG TAPC G701D as tuner type 37
+
+Oliver Endriss (1):
+      V4L: saa7146: Fix allocation of clipping memory
+
+Patrick McHardy (2):
+      [NET_SCHED]: cls_basic: fix memory leak in basic_destroy
+      [NET_SCHED]: cls_tcindex: fix compatibility breakage
+
+Stephen Hemminger (3):
+      skge: turn carrier off when down
+      sky2: turn carrier off when down
+      sky2: turn on clocks when doing resume
+
+Thomas Gleixner (1):
+      i386: fix file_read_actor() and pipe_read() for original i386 systems
+
+Trent Piepho (1):
+      V4L: radio: Fix error in Kbuild file
+
+YOSHIFUJI Hideaki (1):
+      [IPv6]: Fix incorrect length check in rawv6_sendmsg()
+
+
+ Makefile                          |    2 -
+ arch/i386/lib/usercopy.c          |    9 ++++
+ drivers/media/dvb/pluto2/pluto2.c |   22 +++++++----
+ drivers/media/radio/Kconfig       |    2 -
+ drivers/media/video/tveeprom.c    |    2 -
+ drivers/net/r8169.c               |   56 ++++++++++++++++--------------
+ drivers/net/skge.c                |    1 
+ drivers/net/sky2.c                |    8 ++++
+ drivers/usb/net/usbnet.c          |    7 ++-
+ include/media/saa7146_vv.h        |    3 +
+ net/ipv4/tcp_output.c             |    3 +
+ net/ipv6/raw.c                    |    4 +-
+ net/ipv6/udp.c                    |    2 -
+ net/sched/cls_basic.c             |    1 
+ net/sched/cls_tcindex.c           |    4 +-
+ net/xfrm/xfrm_state.c             |    3 +
+ 16 files changed, 83 insertions(+), 46 deletions(-)
 
