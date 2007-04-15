@@ -1,185 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbXDOUPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbXDOUTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662AbXDOUPW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 16:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXDOUPW
+	id S1753686AbXDOUTT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 16:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbXDOUTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 16:15:22 -0400
-Received: from smtp-4.hut.fi ([130.233.228.94]:41137 "EHLO smtp-4.hut.fi"
+	Sun, 15 Apr 2007 16:19:19 -0400
+Received: from waste.org ([66.93.16.53]:52077 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753653AbXDOUPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 16:15:21 -0400
-Date: Sun, 15 Apr 2007 23:14:55 +0300 (EEST)
-From: Mikko Tiihonen <mikko.tiihonen@iki.fi>
-To: clemens@ladisch.de, bob.picco@hp.com
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] hpet: Enable hidden HPET on NVidia motherboards
-Message-ID: <Pine.OSF.4.64.0704152218330.487506@kosh.hut.fi>
+	id S1753681AbXDOUTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 16:19:18 -0400
+Date: Sun, 15 Apr 2007 15:05:35 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Con Kolivas <kernel@kolivas.org>, Peter Williams <pwil3058@bigpond.net.au>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070415200535.GC11166@waste.org>
+References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-TKK-Virus-Scanned: by amavisd-new-2.1.2-hutcc at putosiko.hut.fi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070415150536.GA6623@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 15, 2007 at 05:05:36PM +0200, Ingo Molnar wrote:
+> so the rejection was on these grounds, and i still very much stand by 
+> that position here and today: i didnt want to see the Linux scheduler 
+> landscape balkanized and i saw no technological reasons for the 
+> complication that external modularization brings.
 
-Enables HPET for NVidia motherboards with broken BIOS. The patch reads the 
-HPET address from the pci config space. The patch should also work if ACPI is 
-disabled.
+But "balkanization" is a good thing. "Monoculture" is a bad thing.
 
-The HPET search is done in early-quirks because even DECLARE_PCI_FIXUP_EARLY 
-was too late. If the new quirk causes problems it can be disabled with the
-nohpet boot option.
+Look at what happened with I/O scheduling. Opening things up to some
+new ideas by making it possible to select your I/O scheduler took us
+from 10 years of stagnation to healthy, competitive development, which
+gave us a substantially better I/O scheduler.
 
-The patch assumes that the BIOS has done the basic setup of HPET, but has not 
-published the result in ACPI tables. This is at least true for some Asus and 
-Gigabyte motherboards.
+Look at what's happening right now with TCP congestion algorithms.
+We've had decades of tweaking Reno slightly now turned into a vibrant
+research area with lots of radical alternatives. A winner will
+eventually emerge and it will probably look quite a bit different than
+Reno.
 
-Patch is against 2.6.21-rc6-git7 but should apply cleanly to most kernels.
+Similar things have gone on since the beginning with filesystems on
+Linux. Being able to easily compare filesystems head to head has been
+immensely valuable in improving our 'core' Linux filesystems.
 
-Signed-off-by: Mikko Tiihonen <mikko.tiihonen@iki.fi>
+And what we've had up to now is a scheduler monoculture. Until Andrew
+put RSDL in -mm, if people wanted to experiment with other schedulers,
+they had to go well off the beaten path to do it. So all the people
+who've been hopelessy frustrated with the mainline scheduler go off to
+the -ck ghetto, or worse, stick with 2.4.
 
----
+Whether your motivations have been protectionist or merely
+shortsighted, you've stomped pretty heavily on alternative scheduler
+development by completely rejecting the whole plugsched concept. If
+we'd opened up mainline to a variety of schedulers _3 years ago_, we'd
+probably have gotten to where we are today much sooner.
 
-It looks probable that most NVidia chipsets have the HPET address at 0x44. It 
-might be possible to enable the HPET even if BIOS did not initialize it 
-properly by writing the wanted address there. Some other pci config space bits 
-might need to be fiddled around too, most likely candidates are 0x74 bit 2 and 
-0xA3 bit ?. One or both of them have been identified to change in some 
-motherboards when HPET is enabled/disabled in BIOS.
+Hopefully, the next time Rik suggests pluggable page replacement
+algorithms, folks will actually seriously consider it.
 
---- arch/x86_64/kernel/early-quirks.c.orig	2007-04-16 01:30:33.000000000 +0300
-+++ arch/x86_64/kernel/early-quirks.c	2007-04-16 01:27:23.000000000 +0300
-@@ -15,6 +15,7 @@
-  #include <asm/pci-direct.h>
-  #include <asm/proto.h>
-  #include <asm/dma.h>
-+#include <linux/bootmem.h>
-
-  static void __init via_bugs(void)
-  {
-@@ -36,6 +37,104 @@ static int __init nvidia_hpet_check(stru
-  }
-  #endif
-
-+#ifdef CONFIG_HPET
-+
-+static u32 nvidia_hpet_chips[] __initdata = {
-+	/* ISA Bridge */
-+	PCI_VENDOR_ID_NVIDIA | (0x0050 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0051 << 16),
-+	/* LPC Bridge */
-+	PCI_VENDOR_ID_NVIDIA | (0x0360 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0361 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0362 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0363 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0364 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0365 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0366 << 16),
-+	PCI_VENDOR_ID_NVIDIA | (0x0367 << 16),
-+	0,
-+};
-+
-+static int __init force_enable_nvidia_hpet(void)
-+{
-+	int num, slot, func;
-+	u32 addr;
-+	struct resource *hpet_res;
-+
-+	if (hpet_address || nohpet)
-+		return 0;
-+
-+	/* Poor man's PCI discovery */
-+	for (num = 0; num < 32; num++) {
-+		for (slot = 0; slot < 32; slot++) {
-+			for (func = 0; func < 8; func++) {
-+				u32 class;
-+				u32 vendor;
-+				u8 type;
-+				int i;
-+				class = read_pci_config(num,slot,func,
-+							PCI_CLASS_REVISION);
-+				if (class == 0xffffffff)
-+					break;
-+				vendor = read_pci_config(num, slot, func,
-+							 PCI_VENDOR_ID);
-+
-+				for (i = 0; nvidia_hpet_chips[i]; i++)
-+					if (nvidia_hpet_chips[i] == vendor) {
-+						goto found;
-+					}
-+
-+				type = read_pci_config_byte(num, slot, func,
-+							    PCI_HEADER_TYPE);
-+				if (!(type & 0x80))
-+					break;
-+			}
-+		}
-+	}
-+	return 0;
-+
-+ found:
-+	addr = read_pci_config(num, slot, func, 0x44);
-+	if (!addr) {
-+		return 0;
-+	}
-+
-+#define HPET_RESOURCE_NAME_SIZE 12
-+	hpet_res = alloc_bootmem(sizeof(*hpet_res) + HPET_RESOURCE_NAME_SIZE);
-+	if (!hpet_res) {
-+		/* We could try writing to the 0x44 and see if that is enough
-+		 * to enable HPET even if BIOS did not initialize it.
-+		 */
-+		printk(KERN_INFO "HPET not set up by BIOS.\n");
-+		return 0;
-+	}
-+
-+	memset(hpet_res, 0, sizeof(*hpet_res));
-+	hpet_res->name = (void *)&hpet_res[1];
-+	hpet_res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-+	strncpy((char *)hpet_res->name, "NVidia HPET", 
-+		HPET_RESOURCE_NAME_SIZE);
-+	hpet_res->start = addr;
-+	hpet_res->end = hpet_res->start + HPET_MMAP_SIZE - 1;
-+
-+	if (request_resource(&iomem_resource, hpet_res)) {
-+		printk(KERN_INFO "NVidia quirk failed. Could not "
-+		       "reserve resources for HPET at base: %#x\n", addr);
-+		return 0;
-+	}
-+
-+	hpet_address = addr;
-+	printk(KERN_INFO "NVidia quirk. Enabled hidden HPET that BIOS had "
-+	       "configured at base: %#x\n", addr);
-+	return 1;
-+}
-+#else
-+static int __init force_enable_nvidia_hpet(void)
-+{
-+	return 0;
-+}
-+#endif
-+
-  static void __init nvidia_bugs(void)
-  {
-  #ifdef CONFIG_ACPI
-@@ -50,6 +149,10 @@ static void __init nvidia_bugs(void)
-  		return;
-
-  	if (acpi_table_parse(ACPI_SIG_HPET, nvidia_hpet_check)) {
-+		if (force_enable_nvidia_hpet()) {
-+			return;
-+		}
-+
-  		acpi_skip_timer_override = 1;
-  		printk(KERN_INFO "Nvidia board "
-  		       "detected. Ignoring ACPI "
-@@ -57,6 +160,8 @@ static void __init nvidia_bugs(void)
-  		printk(KERN_INFO "If you got timer trouble "
-  			"try acpi_use_timer_override\n");
-  	}
-+#else
-+	force_enable_nvidia_hpet();
-  #endif
-  	/* RED-PEN skip them on mptables too? */
-
-
+-- 
+Mathematics is the supreme nostalgia of our time.
