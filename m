@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbXDOBjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbXDOCHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751999AbXDOBjB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 21:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXDOBjA
+	id S1753153AbXDOCHS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 22:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXDOCHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 21:39:00 -0400
-Received: from cobalt0.barnhard.net ([216.181.81.129]:37976 "EHLO
-	cobalt0.barnhard.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbXDOBjA (ORCPT
+	Sat, 14 Apr 2007 22:07:18 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:5792 "EHLO
+	asav13.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153AbXDOCHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 21:39:00 -0400
-Date: Sun, 15 Apr 2007 02:38:49 +0100
-From: Dale Amon <amon@vnl.com>
-To: linux-kernel@vger.kernel.org
-Subject: Problem with ufs nextstep in 2.6.18 (debian)
-Message-ID: <20070415013848.GG4770@vnl.com>
-Mail-Followup-To: Dale Amon <amon@vnl.com>, linux-kernel@vger.kernel.org
+	Sat, 14 Apr 2007 22:07:17 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aj0KAKAlIUZKhRO4UGdsb2JhbACPfQEBKlQ
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] Hardware monitoring subsystem =?iso-8859-1?q?maintainer=09positionis?= open
+Date: Sat, 14 Apr 2007 22:07:15 -0400
+User-Agent: KMail/1.9.3
+Cc: Hans de Goede <j.w.r.degoede@hhs.nl>, Krzysztof Helt <krzysztof.h1@wp.pl>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20070410150227.1bac05b5@hyperion.delvare> <461dca480d7ec@wp.pl> <461DDF7D.1060101@hhs.nl>
+In-Reply-To: <461DDF7D.1060101@hhs.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Operating-System: Linux, the choice of a GNU generation
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704142207.16800.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recently noticed that I can no longer read my 
-images of NeXTstep floppies on certain machines.
-All are running an up to date etch distribution
-but the difference between where I can read or not
-read seems to be the linux version. On a 2.6.18
-machine:
+Hi,
 
-# mount -t ufs -o ro,ufstype=nextstep,loop nextfloppy-fd0a.ufs /floppy
-# ls /floppy
-ls: reading directory /floppy: Input/output error
+On Thursday 12 April 2007 03:27, Hans de Goede wrote:
+> Krzysztof Helt wrote:
+> 
+> >> * Must follow kernel coding style guidelines
+> > 
+> > Is there any tool to check this? If there is one, a basic
+> > instruction how to use it would be great.
+> > 
+> 
+> No tool.
 
-On a 2.6.13 machine it still works fine:
+Passing new drivres through scripts/Lindent and analyzing the
+dirrerences can highlight differences between kernel style and
+author's (note that I do not advocate mechanically passing
+everything though Lindent).
 
-# mount -t ufs -o ro,ufstype=nextstep,loop nextfloppy-fd0a.ufs /floppy
-# ls /floppy/
-private
-# ls /floppy/private
-Drivers
-
-Have there been any recent changes that would cause a 
-breakage in this area?
-
+-- 
+Dmitry
