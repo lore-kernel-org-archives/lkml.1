@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbXDOT6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXDOUKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbXDOT6p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 15:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXDOT6M
+	id S1753650AbXDOUKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 16:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbXDOUKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 15:58:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50105 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753554AbXDOT6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 15:58:08 -0400
-Date: Sun, 15 Apr 2007 21:57:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	Sun, 15 Apr 2007 16:10:38 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4346 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753643AbXDOUKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 16:10:38 -0400
+Date: Sun, 15 Apr 2007 20:10:24 +0000
+From: Pavel Machek <pavel@ucw.cz>
 To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Willy Tarreau <w@1wt.eu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070415195748.GA16004@elte.hu>
-References: <20070414161927.GD3099@elte.hu> <m1abxanahn.fsf@ebiederm.dsl.xmission.com> <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com> <20070414175433.GA17527@elte.hu> <20070414181854.GA5826@1wt.eu> <20070415175555.GA28524@elte.hu> <20070415180604.GA550@1wt.eu> <20070415192046.GA7504@elte.hu> <20070415193531.GD2986@holomorphy.com>
+Cc: Maxim Uvarov <muvarov@ru.mvista.com>, linux-kernel@vger.kernel.org,
+       davidsen@tmr.com, randy.dunlap@oracle.com, dada1@cosmosbay.com,
+       Valdis.Kletnieks@vt.edu, jesper.juhl@gmail.com
+Subject: Re: Performance Stats: Kernel patch
+Message-ID: <20070415201024.GB12012@ucw.cz>
+References: <461A4C1E.3070309@ru.mvista.com> <20070415094706.GB10097@ucw.cz> <20070415102157.GB2986@holomorphy.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070415193531.GD2986@holomorphy.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070415102157.GB2986@holomorphy.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* William Lee Irwin III <wli@holomorphy.com> wrote:
+On Sun 2007-04-15 03:21:57, William Lee Irwin III wrote:
+> At some point in the past, someone's attribution was stripped from:
 
-> On Sun, Apr 15, 2007 at 09:20:46PM +0200, Ingo Molnar wrote:
-> > so Linus was right: this was caused by scheduler starvation. I can 
-> > see one immediate problem already: the 'nice offset' is not divided 
-> > by nr_running as it should. The patch below should fix this but i 
-> > have yet to test it accurately, this change might as well render 
-> > nice levels unacceptably ineffective under high loads.
+Maxim's.
+
+> >> +       return buffer + sprintf(buffer, "Nvcsw:\t%lu\n"
+> >> +                           "Nivcsw:\t%lu\n",
+> >> +                           p->nvcsw,
+> >> +                           p->nivcsw);
 > 
-> I've been suggesting testing CPU bandwidth allocation as influenced by 
-> nice numbers for a while now for a reason.
+> On Sun, Apr 15, 2007 at 09:47:07AM +0000, Pavel Machek wrote:
+> > We don't encrypt variable names like this.
+> 
+> nvcsw and nivcsw are conventional variable names for these quantities.
 
-Oh I was very much testing "CPU bandwidth allocation as influenced by 
-nice numbers" - it's one of the basic things i do when modifying the 
-scheduler. An automated tool, while nice (all automation is nice) 
-wouldnt necessarily show such bugs though, because here too it needed 
-thousands of running tasks to trigger in practice. Any volunteers? ;)
+I can't decipher them and would not want users see them in /proc.
 
-	Ingo
+
+Would nonvoluntary_ctxt_switch be that much worse?
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
