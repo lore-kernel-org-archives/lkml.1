@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXDOVqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXDOVuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbXDOVqU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 17:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXDOVqU
+	id S1753996AbXDOVuG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 17:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXDOVuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 17:46:20 -0400
-Received: from smtp.bulldogdsl.com ([212.158.248.8]:4592 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753989AbXDOVps (ORCPT
+	Sun, 15 Apr 2007 17:50:06 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:3512 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753996AbXDOVuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 17:45:48 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Mikko Tiihonen <mikko.tiihonen@iki.fi>
-Subject: Re: [PATCH] hpet: Enable hidden HPET on NVidia motherboards
-Date: Sun, 15 Apr 2007 22:45:41 +0100
-User-Agent: KMail/1.9.5
-Cc: clemens@ladisch.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.OSF.4.64.0704152218330.487506@kosh.hut.fi>
-In-Reply-To: <Pine.OSF.4.64.0704152218330.487506@kosh.hut.fi>
+	Sun, 15 Apr 2007 17:50:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JOy8Tz3AIegRqYqM9b7v935Wd+bWTcm0xrhwoaQPmRqhA6haesArZMC2q8g2CZV4bJ3wmgwXWic8Ozz0wPBAoQCje32inQ2Kb2C8hpaqCsGOgfrwaLDHGCXHRDEZr6AYSVgjxhgxngHGHenKxUdSQcxwlHXo0g6Iy8wPH3LejuE=
+Message-ID: <9a8748490704151450i251b8b1av8439bc275e982866@mail.gmail.com>
+Date: Sun, 15 Apr 2007 23:50:03 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: so what *is* obsolete and removable?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Adrian Bunk" <bunk@stusta.de>
+In-Reply-To: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704152245.42026.s0348365@sms.ed.ac.uk>
+References: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 April 2007 21:14, Mikko Tiihonen wrote:
-> Enables HPET for NVidia motherboards with broken BIOS. The patch reads the
-> HPET address from the pci config space. The patch should also work if ACPI
-> is disabled.
+On 15/04/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
 >
-> The HPET search is done in early-quirks because even
-> DECLARE_PCI_FIXUP_EARLY was too late. If the new quirk causes problems it
-> can be disabled with the nohpet boot option.
+>   in a recent posting, ian anderson suggested that, before kernel
+> features are removed, they should spend a reasonable amount of time in
+> the feature removal file to give everyone fair warning.  if that's the
+> case, then there are a *bunch* of things that should perhaps be added
+> to that file real soon now just to start the clock ticking.
 >
-> The patch assumes that the BIOS has done the basic setup of HPET, but has
-> not published the result in ACPI tables. This is at least true for some
-> Asus and Gigabyte motherboards.
-
-This works fine on my DFI Lanparty UT nForce4 CK804 mainboard:
-
-alistair@damocles:~$ dmesg | grep hpet
-[   25.677099] hpet0: at MMIO 0xfefff000, IRQs 2, 8, 31
-[   25.677102] hpet0: 3 32-bit timers, 25000000 Hz
-[   25.678799] Time: hpet clocksource has been installed.
-
-I've been wanting hpets for a while, this patch is extremely useful to me.
-
-Unfortunately your patch does not seem to apply with standard tools, perhaps 
-your mailer corrupted it (I just hand applied it).
-
-Thanks Mikko.
+[snip]
+> ./sound/oss/Kconfig:    bool "Obsolete OSS drivers"
+> ./sound/oss/Kconfig:      This option enables support for obsolete OSS drivers that
+>
+>   clearly, that was a fairly brainless search, but it still reveals a
+> pile of stuff that's "obsolete" (whatever that means in the context in
+> which it's used).  so what's really obsolete?
+>
+IIRC Adrian Bunk is handling the removal of obsolete OSS drivers and
+doing a nice job at it. Dunno about the rest of the stuff.
 
 -- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
