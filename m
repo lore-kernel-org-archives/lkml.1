@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbXDOAug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbXDOBGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751856AbXDOAug (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 20:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXDOAuf
+	id S1751905AbXDOBGF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 21:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbXDOBGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 20:50:35 -0400
-Received: from ozlabs.org ([203.10.76.45]:50331 "EHLO ozlabs.org"
+	Sat, 14 Apr 2007 21:06:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:46174 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751856AbXDOAuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 20:50:35 -0400
+	id S1751905AbXDOBGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 21:06:02 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <17953.30429.220756.818283@cargo.ozlabs.ibm.com>
-Date: Sun, 15 Apr 2007 10:50:37 +1000
+Message-ID: <17953.31345.138748.170210@cargo.ozlabs.ibm.com>
+Date: Sun, 15 Apr 2007 11:05:53 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: David Miller <davem@davemloft.net>
-Cc: kaber@trash.net, poemann@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
+To: David Miller <davem@davemloft.net>, kaber@trash.net, poemann@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
-In-Reply-To: <20070414.100441.15000708.davem@davemloft.net>
+In-Reply-To: <17953.30429.220756.818283@cargo.ozlabs.ibm.com>
 References: <461DC70B.4000500@trash.net>
 	<20070413.161635.26523891.davem@davemloft.net>
 	<17953.1560.855914.274514@cargo.ozlabs.ibm.com>
 	<20070414.100441.15000708.davem@davemloft.net>
+	<17953.30429.220756.818283@cargo.ozlabs.ibm.com>
 X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller writes:
+I wrote:
 
-> Here is Patrick McHardy's patch:
+> So this doesn't change process_input_packet(), which treats the case
+> where the first byte is 0xff (PPP_ALLSTATIONS) but the second byte is
+> 0x03 (PPP_UI) as indicating a packet with a PPP protocol number of
 
-So this doesn't change process_input_packet(), which treats the case
-where the first byte is 0xff (PPP_ALLSTATIONS) but the second byte is
-0x03 (PPP_UI) as indicating a packet with a PPP protocol number of
-0xff.  Arguably that's wrong since PPP protocol 0xff is reserved, and
-the RFC does envision the possibility of receiving frames where the
-control field has values other than 0x03.
-
-Therefore I think this patch is probably better.  Could people try it
-out and let me know if it fixes the problem?
+I meant "the second byte is NOT 0x03", of course.
 
 Paul.
-
-diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
-index 933e2f3..caabbc4 100644
---- a/drivers/net/ppp_async.c
-+++ b/drivers/net/ppp_async.c
-@@ -802,9 +802,9 @@ process_input_packet(struct asyncppp *ap)
- 
- 	/* check for address/control and protocol compression */
- 	p = skb->data;
--	if (p[0] == PPP_ALLSTATIONS && p[1] == PPP_UI) {
-+	if (p[0] == PPP_ALLSTATIONS) {
- 		/* chop off address/control */
--		if (skb->len < 3)
-+		if (p[1] != PPP_UI || skb->len < 3)
- 			goto err;
- 		p = skb_pull(skb, 2);
- 	}
