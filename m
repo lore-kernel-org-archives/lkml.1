@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbXDOKja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbXDOKpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbXDOKja (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 06:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXDOKja
+	id S1751956AbXDOKpJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 06:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbXDOKpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 06:39:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:19300 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbXDOKj3 (ORCPT
+	Sun, 15 Apr 2007 06:45:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:19324 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbXDOKpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 06:39:29 -0400
+	Sun, 15 Apr 2007 06:45:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iXr87lbSSWcfMHwpivtXajAiF2X404xJB4etKI9OqEC6PbEWj0RNgeMNlpuR3Vxty1aoheHzc2go9oXMXGsZLZvUddUyGT40nMunG7jPyTIXwNdqcrw6ySpVjcMxvJfhPAZgoHoI1e6h8fJPw3cjlhWXq1Fc5KmUFoW4zE6g7pY=
-Message-ID: <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com>
-Date: Sun, 15 Apr 2007 13:39:27 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "hui Bill Huey" <billh@gnuppy.monkey.org>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Con Kolivas" <kernel@kolivas.org>,
-       "ck list" <ck@vds.kolivas.org>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>, "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20070415095146.GA30327@gnuppy.monkey.org>
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TOphF7lCqtF77XzjbK48KXF9sUnl/rVuARvf/MTr9/pvYYhgvEEJC3H0dT9gL72okHdQx64auhHSnjfTpEZViGll76LHzzJGjNWJMPPWKh16w99GZYbo483YNj0s9Ge5No2kj8egraAq3FC8YtdI+ISIGvGVriSs1FakBsgGb6M=
+Message-ID: <19061b0b0704150345h2bf6ad7el16d20a36c96f0ae9@mail.gmail.com>
+Date: Sun, 15 Apr 2007 11:45:06 +0100
+From: Bartek <poemann@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+In-Reply-To: <20070413.161635.26523891.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070413202100.GA9957@elte.hu>
-	 <200704151327.13589.kernel@kolivas.org>
-	 <20070415051645.GA28438@gnuppy.monkey.org>
-	 <20070415084447.GC24886@elte.hu>
-	 <20070415095146.GA30327@gnuppy.monkey.org>
-X-Google-Sender-Auth: e81f7d72a0e210e4
+References: <9a8748490704100425t34ebafcdq866a923df80b9aca@mail.gmail.com>
+	 <19061b0b0704112218j13688c16xc755d66147f8fe6a@mail.gmail.com>
+	 <461DC70B.4000500@trash.net>
+	 <20070413.161635.26523891.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/15/07, hui Bill Huey <billh@gnuppy.monkey.org> wrote:
-> The perception here is that there is that there is this expectation that
-> sections of the Linux kernel are intentionally "churn squated" to prevent
-> any other ideas from creeping in other than of the owner of that subsytem
+2007/4/14, David Miller <davem@davemloft.net>:
+> From: Patrick McHardy <kaber@trash.net>
+> Date: Thu, 12 Apr 2007 07:43:39 +0200
+>
+> > It seems we fail to reserve enough headroom for the case
+> > buf[0] == PPP_ALLSTATIONS and buf[1] != PPP_UI.
+> >
+> > Can you try this patch please?
+>
+> Any confirmation of this fix yet?
 
-Strangely enough, my perception is that Ingo is simply trying to
-address the issues Mike's testing discovered in RDSL and SD. It's not
-surprising Ingo made it a separate patch set as Con has repeatedly
-stated that the "problems" are in fact by design and won't be fixed.
+I'm testing that patch, till now everything seems ok.
+
+Regards
+Bartek
