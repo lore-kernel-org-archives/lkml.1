@@ -1,157 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbXDOWN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbXDOWRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbXDOWN6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 18:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXDOWN6
+	id S1754018AbXDOWRI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 18:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbXDOWRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 18:13:58 -0400
-Received: from mx6.mail.ru ([194.67.23.26]:29839 "EHLO mx6.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754013AbXDOWN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 18:13:57 -0400
-Date: Mon, 16 Apr 2007 02:10:05 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org
-Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
-Message-ID: <20070415221005.GA26320@zarina>
-Reply-To: cbou@mail.ru
-References: <20070411232503.GC20095@zarina> <20070415195655.GG10097@ucw.cz>
+	Sun, 15 Apr 2007 18:17:08 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:57462 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754018AbXDOWRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 18:17:07 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: "Christoph Pfister" <christophpfister@gmail.com>
+Subject: Re: Kaffeine problem with CFS
+Date: Mon, 16 Apr 2007 01:14:54 +0300
+User-Agent: KMail/1.9.6
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Michael Lothian" <mike@fireburn.co.uk>,
+       "Christophe Thommeret" <hftom@free.fr>,
+       "Jurgen Kofler" <kaffeine@gmx.net>
+References: <20070413202100.GA9957@elte.hu> <20070415162508.GA4526@elte.hu> <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com>
+In-Reply-To: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070415195655.GG10097@ucw.cz>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: multipart/signed;
+  boundary="nextPart1180539.9zokvfEFcb";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704160114.58317.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Pavel,
+--nextPart1180539.9zokvfEFcb
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Sun, Apr 15, 2007 at 07:56:56PM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > * It insists on reusing its predefined attributes *and* their units.
-> >   So, userspace getting expected values for any battery.
-> >   
-> >   Also common units is required for APM/ACPI emulation.
-> >   
-> >   Though our battery class insisting on re-usage, but not forces it. If some
-> >   battery driver can't convert its own raw values (can't imagine why), then
-> >   driver is free to implement its own attributes *and* additional _units
-> >   attribute. Though, this scheme is discouraged.
-> > 
-> > * LEDs support. Each battery register its trigger, and gadgets with LEDs
-> >   can quickly bind to battery-charging / battery-full triggers.
-> > 
-> > Here how it looks like from user space:
-> > 
-> > # ls /sys/class/battery/main-battery/
-> > capacity  max_capacity  max_voltage   min_current  power   subsystem  uevent
-> > current   max_current   min_capacity  min_voltage  status  temp       voltage
-> > # cat /sys/class/battery/main-battery/status
-> > Full
-> > # cat /sys/class/leds/h5400\:green-right/trigger
-> > none h5400-radio timer hwtimer main-battery-charging [main-battery-full]
-> > # cat /sys/class/leds/h5400\:green-right/brightness
-> > 255
-> 
-> Can we get few lines in Documentation?
+15 Nis 2007 Paz tarihinde, Christoph Pfister =C5=9Funlar=C4=B1 yazm=C4=B1=
+=C5=9Ft=C4=B1:=20
+> Could you try xine-ui or gxine? Because I suspect rather xine-lib for
+> freezing issues. In any way I think a gdb backtrace would be much
+> nicer - but if you can't reproduce the freeze issue with other xine
+> based players and want to run kaffeine in gdb, you need to execute
+> "gdb --args kaffeine --nofork".
 
-Yes, sure.
-
-> I guess min_capacity is
-> shutdown capacity at current temperature, but its surely non-obvious.
-> 
-> Will min_capacity increase as batery gets old? Or will max_capacity
-> decrease? 
-
-min_capacity and max_capacity depend on temperature. But some drivers
-can/want to interpolate, others can't/don't want. It's driver's matter.
-
-ds2760_battery just remembers last capacity when current was < 10 mA
-(i.e. battery charged full at given temperature) as max_capacity, and
-takes this as reference for calculations.
-
-> (Should we introduce design_capacity for ACPI systems that
-> know the difference?)
-
-Yup, I've introduced it in [take2] (it's in this thread, thus it's hard
-to find). Will resend it as separate thread soon, along with few other
+I just tested xine-ui and i can easily reproduce exact same problem with=20
+xine-ui also so you are right, it seems a xine-lib problem trigger by CFS=20
 changes.
 
-> What is min_current? Granularity of amper meter?
-> 
-> And min_voltage is shutdown voltage?
+> > > thanks. This does has the appearance of a userspace race condition of
+> > > some sorts. Can you trigger this hang with the patch below applied to
+> > > the vanilla tree as well? (with no CFS patch applied)
+> >
+> > oops, please use the patch below instead.
 
-Yes, should be. But, for example, ds2760 battery can't remember this
-value in its eeprom (iirc), thus this value passed by platform code,
-i.e. in our case (iPaqs) it's machine dependent value. Probably we
-should not even export this attribute in ds2760_battery driver, as it
-does not take any part in calculations. Plus this attribute highly
-depend on battery chemistry and temperature. Thus it's hardly anyhow
-useful, except if hardware itself reports it (not ds2760 case).
+Tomorrow i'll test that patch and also try to get a backtrace.
 
-> Otherwise it looks good to me. Something like this is really needed.
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-Thanks!
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
 
-> > + * All voltages, currents, capacities and temperatures in mV, mA, mAh and
-> > + * tenths of a degree unless otherwise stated. It's driver's job to convert
-> 
-> tenths of degree Celsius?
+--nextPart1180539.9zokvfEFcb
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Yup, fixed in [take2].
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-> > +#define BATTERY_STATUS_UNKNOWN      0
-> > +#define BATTERY_STATUS_CHARGING     1
-> > +#define BATTERY_STATUS_DISCHARGING  2
-> > +#define BATTERY_STATUS_NOT_CHARGING 3
-> > +#define BATTERY_STATUS_FULL         4
-> 
-> Perhaps we need STATUS_ERROR? At least on some machines it is
-> different from STATUS_NOT_CHARGING.
+iD8DBQBGIqPiy7E6i0LKo6YRAojdAJ9oCfbrN0BydEajTVtVwRrOKlLDjwCfTHYs
+PabhglRSIYvEUmo2LXmqU6A=
+=IJI+
+-----END PGP SIGNATURE-----
 
-I'm unsure about this. BATTERY_STATUS_* is mostly about charging process
-status (should I rename it to more verbose BATTERY_CHARGING_STATUS_, or just
-mention it in Documentation?).
-
-For errors things it might be better to create "health" attribute.
-
-> > +	/* private */
-> > +	struct power_supplicant pst;
-> > +
-> > +	#ifdef CONFIG_LEDS_TRIGGERS
-> > +	struct led_trigger *charging_trig;
-> > +	char *charging_trig_name;
-> > +	struct led_trigger *full_trig;
-> > +	char *full_trig_name;
-> > +	#endif
-> > +};
-> 
-> #ifdefs need to be at column 0?
-
-Yup, fixed in [take2].
-
-> > +/* 
-> > + * This is recommended structure to specify static battery parameters.
-> > + * Generic one, parametrizable for different batteries. Battery device
-> > + * itself does bot use it, but that's what implementing most drivers,
-> 
-> 'does not'?
-
-Thanks, will fix!
-
-> 							Pavel
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+--nextPart1180539.9zokvfEFcb--
