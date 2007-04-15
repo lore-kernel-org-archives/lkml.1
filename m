@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbXDOPuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbXDOPyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbXDOPuX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 11:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbXDOPuX
+	id S1752986AbXDOPyE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 11:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbXDOPyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 11:50:23 -0400
-Received: from ellpspace.math.ualberta.ca ([129.128.207.67]:54011 "EHLO
-	ellpspace.math.ualberta.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752979AbXDOPuX (ORCPT
+	Sun, 15 Apr 2007 11:54:03 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:44625 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752986AbXDOPyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 11:50:23 -0400
-Date: Sun, 15 Apr 2007 09:50:16 -0600
-From: Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-To: Denis Kirjanov <kirjanov@gmail.com>
-Cc: Marat Buharov <marat.buharov@gmail.com>,
-       Marc Donner <Marc.Donner@dbd-breitband.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20.6 vanilla does't boot
-Message-ID: <20070415155016.GA14489@ellpspace.math.ualberta.ca>
-References: <a872555b0704122234m6f26405l293dd39f8af672b6@mail.gmail.com> <C244E4A2.1CF94%Marc.Donner@dbd-breitband.de> <a872555b0704122246n7be574e7mc53920d6e446f86@mail.gmail.com> <698310e10704122335t7cc42546pe1468d4d25fdd9d4@mail.gmail.com> <a872555b0704130438p602b8acbg520871d692266309@mail.gmail.com>
-Mime-Version: 1.0
+	Sun, 15 Apr 2007 11:54:01 -0400
+X-Sasl-enc: mUjF8S24ECgnYBxNbgB/BSikaBzG9tYun3uBkjfZu//w 1176652440
+Date: Sun, 15 Apr 2007 12:53:43 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: Loud "pop" coming from hard drive on reboot
+Message-ID: <20070415155343.GA12069@khazad-dum.debian.net>
+References: <461D4E2C.6000704@redhat.com> <20070414105255.GB9157@ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a872555b0704130438p602b8acbg520871d692266309@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070414105255.GB9157@ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 03:38:18PM +0400, Denis Kirjanov wrote:
-> I updated the BIOS to the latest version, but the problem persists.
-> Boots option pci = noacpi not solved the problem. Reporting bios bug
-> disappears when setting pci = nommconf, But the kernel is still not
-> loaded (
+On Sat, 14 Apr 2007, Pavel Machek wrote:
+> How common are notebooks that cut power to disks during reboot?
 
-On x86_64 hardware using ata_piix I was unable to boot kernels
-based on the current 2.6.20.x either.  Regardless of extra kernel
-parameters used I was getting consistently 'hdc: lost interrupt',
-and/or similar and after something like that the whole machine
-was dead.  The only differences were if I could still reboot
-from a keyboard or if I really have to pull a plug.
+Not common at all.  Given that it wears the electronics a lot, it must be
+either a defect (of the kinds Brazilian law forces the manufacturer to
+either fix or give you your money back).
 
-A kernel derived from 2.6.21-rc6-git1 (2.6.20-1.3053.fc7.x86_64 from
-Fedora "rawhide" to be more precise) did boot on the hardware in
-question, though; but only when I gave it 'acpi=off'.  Without that
-parameter it was getting stuck apparently when starting hotplug.
-In that kernel case disks were accessed using pata_atiixp driver.
+Assuming it also does this when running Windows, I'd report it as a grave
+bug to the vendor and demand it to be fixed, or the machine to be exchanged
+with another model that doesn't have this defect.
 
-   Michal
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
