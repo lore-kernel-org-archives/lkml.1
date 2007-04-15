@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbXDOPQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXDOPYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752381AbXDOPQh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 11:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbXDOPQh
+	id S1752573AbXDOPYE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 11:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXDOPYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 11:16:37 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:36113 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381AbXDOPQg (ORCPT
+	Sun, 15 Apr 2007 11:24:04 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:5680 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbXDOPYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 11:16:36 -0400
-Date: Sun, 15 Apr 2007 11:16:19 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-reply-to: <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "hui Bill Huey" <billh@gnuppy.monkey.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>, "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Message-id: <200704151116.20530.gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070413202100.GA9957@elte.hu>
- <20070415095146.GA30327@gnuppy.monkey.org>
- <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com>
-User-Agent: KMail/1.9.6
+	Sun, 15 Apr 2007 11:24:03 -0400
+X-Greylist: delayed 965 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Apr 2007 11:24:02 EDT
+Date: Sun, 15 Apr 2007 11:03:20 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Hans de Goede <j.w.r.degoede@hhs.nl>,
+       David Hubbard <david.c.hubbard@gmail.com>,
+       Rudolf Marek <r.marek@assembler.cz>, Juerg Haefliger <juergh@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [lm-sensors] Hardware monitoring subsystem maintainer position is open
+Message-ID: <20070415150320.GA3158@jupiter.solarsys.private>
+References: <20070410150227.1bac05b5@hyperion.delvare>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070410150227.1bac05b5@hyperion.delvare>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 April 2007, Pekka Enberg wrote:
->On 4/15/07, hui Bill Huey <billh@gnuppy.monkey.org> wrote:
->> The perception here is that there is that there is this expectation that
->> sections of the Linux kernel are intentionally "churn squated" to prevent
->> any other ideas from creeping in other than of the owner of that subsytem
->
->Strangely enough, my perception is that Ingo is simply trying to
->address the issues Mike's testing discovered in RDSL and SD. It's not
->surprising Ingo made it a separate patch set as Con has repeatedly
->stated that the "problems" are in fact by design and won't be fixed.
+Hi Jean, et al:
 
-I won't get into the middle of this just yet, not having decided which dog I 
-should bet on yet.  I've been running 2.6.21-rc6 + Con's 0.40 patch for about 
-24 hours, its been generally usable, but gzip still causes lots of 5 to 10+ 
-second lags when its running.  I'm coming to the conclusion that gzip simply 
-doesn't play well with others...  
+* Jean Delvare <khali@linux-fr.org> [2007-04-10 15:02:27 +0200]:
+> I am resigning from my role as hardware monitoring subsystem
+> (drivers/hwmon) maintainer. This is too much work for me, I do not have
+> the necessary bandwidth to review all the incoming patches, in
+> particular new drivers, in a timely manner. Patch authors have been
+> complaining about this repeatedly. This is no fun for them, and even
+> less for me, so I'd rather let someone else with more spare time take
+> care of it. If there are volunteers, this is the right time to speak up.
+> 
+> I will still be maintaining the individual hardware monitoring drivers
+> I am listed for in file MAINTAINERS (adm1025, f71805f, lm83 and lm90)
+> as well as the I2C subsystem. No change here.
+> 
+> I will continue to feed -mm with pending hwmon patches until 2.6.21
+> final is released, then I'll send everything I have to Linus for
+> 2.6.22-rc1, the last of which will be:
+>  (...)
 
-Amazing to me, the cpu its using stays generally below 80%, and often below 
-60%, even while the kmail composer has a full sentence in its buffer that it 
-still hasn't shown me when I switch to the htop screen to check, and back to 
-the kmail screen to see if its updated yet.  The screen switch doesn't seem 
-to lag so I don't think renicing x would be helpfull.  Those are the obvious 
-lags, and I'll build & reboot to the CFS patch at some point this morning 
-(whats left of it that is :).  And report in due time of course
+/me throws hat in
+
+I volunteer to become the new MAINTAINER, but in a much more limited sense
+of the term than Jean is/was.  I can take care of a couple git trees, and do
+some detailed reviews when I have time.  For the most part, I will have to
+rely on others to do reviews as well.
+
+I would not be volunteering for this role, if Juerg and others had not also
+volunteered to be more active reviewers.
+
+As for the discussions later in this thread about process... IMHO that's a
+little premature.  I intend to get brand new stuff into -mm perhaps a little
+earlier than Jean did... but it still ain't going to Linus before it's ready.
+Other than that, I would rather just see what works for me and for you (other
+hwmon authors).
+
+Assuming no one else wants the job (ruik?) I'll start working with Jean to
+get things set up as soon as I can.
+
+Thanks & regards,
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-knot in cables caused data stream to become twisted and kinked
+Mark M. Hoffman
+mhoffman@lightlink.com
+
