@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbXDOSA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbXDOSGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbXDOSA4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 14:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbXDOSA4
+	id S1753219AbXDOSGg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 14:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbXDOSGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 14:00:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42305 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753255AbXDOSAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 14:00:55 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX193G+py+Fd38602CM0qREPGkP33dJy9cjfeU/oehX
-	fDtnuHfO278D95
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Mike Galbraith <efault@gmx.de>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Con Kolivas <kernel@kolivas.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       hui Bill Huey <billh@gnuppy.monkey.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Peter Williams <pwil3058@bigpond.net.au>,
+	Sun, 15 Apr 2007 14:06:36 -0400
+Received: from 1wt.eu ([62.212.114.60]:1940 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753219AbXDOSGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 14:06:35 -0400
+Date: Sun, 15 Apr 2007 20:06:04 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Nick Piggin <npiggin@suse.de>,
        linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <200704151258.48857.gene.heskett@verizon.net>
-References: <20070413202100.GA9957@elte.hu>
-	 <200704151116.20530.gene.heskett@verizon.net>
-	 <200704160243.01395.kernel@kolivas.org>
-	 <200704151258.48857.gene.heskett@verizon.net>
-Content-Type: text/plain
-Date: Sun, 15 Apr 2007 20:00:32 +0200
-Message-Id: <1176660032.6364.32.camel@Homer.simpson.net>
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070415180604.GA550@1wt.eu>
+References: <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070414132732.GA22103@1wt.eu> <20070414161927.GD3099@elte.hu> <m1abxanahn.fsf@ebiederm.dsl.xmission.com> <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com> <20070414175433.GA17527@elte.hu> <20070414181854.GA5826@1wt.eu> <20070415175555.GA28524@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070415175555.GA28524@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-15 at 12:58 -0400, Gene Heskett wrote:
+Hi Ingo,
 
-> Chuckle, possibly but then I'm not anything even remotely close to an expert 
-> here Con, just reporting what I get.  And I just rebooted to 2.6.21-rc6 + 
-> sched-mike-5.patch for grins and giggles, or frowns and profanity as the case 
-> may call for.
+On Sun, Apr 15, 2007 at 07:55:55PM +0200, Ingo Molnar wrote:
+> 
+> * Willy Tarreau <w@1wt.eu> wrote:
+> 
+> > Well, since I merged the fair-fork patch, I cannot reproduce (in fact, 
+> > bash forks 1000 processes, then progressively execs scheddos, but it 
+> > takes some time). So I'm rebuilding right now. But I think that Linus 
+> > has an interesting clue about GPM and notification before switching 
+> > the terminal. I think it was enabled in console mode. I don't know how 
+> > that translates to frozen xterms, but let's attack the problems one at 
+> > a time.
+> 
+> to debug this, could you try to apply this add-on as well:
+> 
+>   http://redhat.com/~mingo/cfs-scheduler/sched-fair-print.patch
+> 
+> with this patch applied you should have a /proc/sched_debug file that 
+> prints all runnable tasks and other interesting info from the runqueue. 
 
-Erm, that patch is embarrassingly buggy, so profanity should dominate.
+I don't know if you have seen my mail from yesterday evening (here). I
+found that changing keventd prio fixed the problem. You may be interested
+in the description. I sent it at 21:01 (+200).
 
-	-Mike
+> [ i've refreshed all the patches on the CFS webpage, so if this doesnt 
+>   apply cleanly to your current tree then you'll probably have to 
+>   refresh one of the patches.]
+
+Fine, I'll have a look. I already had to rediff the sched-fair-fork
+patch last time.
+
+> The output should look like this:
+> 
+>  Sched Debug Version: v0.01
+>  now at 226761724575 nsecs
+> 
+>  cpu: 0
+>    .nr_running            : 3
+>    .raw_weighted_load     : 384
+>    .nr_switches           : 13666
+>    .nr_uninterruptible    : 0
+>    .next_balance          : 4294947416
+>    .curr->pid             : 2179
+>    .rq_clock              : 241337421233
+>    .fair_clock            : 7503791206
+>    .wait_runtime          : 2269918379
+> 
+>  runnable tasks:
+>             task | PID | tree-key |   -delta |  waiting | switches
+>  -----------------------------------------------------------------
+>  +            cat  2179 7501930066   -1861140    1861140         2
+>       loop_silent  2149 7503010354    -780852          0       911
+>       loop_silent  2148 7503510048    -281158     280753       918
+
+Nice.
+
+> now for your workload the list should be considerably larger. If there's 
+> starvation going on then the 'switches' field (number of context 
+> switches) of one of the tasks would never increase while you have this 
+> 'cannot switch consoles' problem.
+> 
+> maybe you'll have to unapply the fair-fork patch to make it trigger 
+> again. (fair-fork does not fix anything, so it probably just hides a 
+> real bug.)
+> 
+> (i'm meanwhile busy running your scheddos utilities to reproduce it 
+> locally as well :)
+
+I discovered I had the frame-buffer enabled (I did not notice it first
+because I do not have the logo and the resolution is the same as text).
+It's matroxfb with a G400, if that can help. It may be possible that
+it needs some CPU that it cannot get to clear the display before
+switching, I don't know.
+
+However I won't try this right now, I'm deep in userland at the moment.
+
+Regards,
+Willy
 
