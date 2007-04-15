@@ -1,141 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbXDOQZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbXDOQ02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbXDOQZW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 12:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbXDOQZW
+	id S1753080AbXDOQ02 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 12:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXDOQ02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 12:25:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37508 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753075AbXDOQZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 12:25:22 -0400
-Date: Sun, 15 Apr 2007 18:25:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
-       Christophe Thommeret <hftom@free.fr>,
-       Christoph Pfister <christophpfister@gmail.com>,
-       Jurgen Kofler <kaffeine@gmx.net>
-Subject: Re: Kaffeine problem with CFS
-Message-ID: <20070415162508.GA4526@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <200704141809.58737.caglar@pardus.org.tr> <20070414160939.GB3099@elte.hu> <200704141959.50076.caglar@pardus.org.tr> <20070415161348.GA30625@elte.hu>
+	Sun, 15 Apr 2007 12:26:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36228 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753078AbXDOQ01 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 12:26:27 -0400
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+	Scheduler [CFS]
+From: Arjan van de Ven <arjan@infradead.org>
+To: Bill Huey <billh@gnuppy.monkey.org>
+Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070415083616.GA29878@gnuppy.monkey.org>
+References: <20070413202100.GA9957@elte.hu>
+	 <200704151327.13589.kernel@kolivas.org>
+	 <1176619384.6222.70.camel@Homer.simpson.net>
+	 <20070415083616.GA29878@gnuppy.monkey.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 15 Apr 2007 09:25:07 -0700
+Message-Id: <1176654307.3945.50.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070415161348.GA30625@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> It outlines the problems with Linux kernel development and questionable
+> elistism regarding ownership of certain sections of the kernel code.
 
-> > [1] http://cekirdek.pardus.org.tr/~caglar/strace.kaffeine
-> 
-> thanks. This does has the appearance of a userspace race condition of 
-> some sorts. Can you trigger this hang with the patch below applied to 
-> the vanilla tree as well? (with no CFS patch applied)
+I have to step in and disagree here....
 
-oops, please use the patch below instead.
+Linux is not about who writes the code.
 
-	Ingo
+Linux is about getting the best solution for a problem. Who wrote which
+line of the code is irrelevant in the big picture.
 
----
- kernel/sched.c |   69 ++++-----------------------------------------------------
- 1 file changed, 5 insertions(+), 64 deletions(-)
+that often means that multiple implementations happen, and that the a
+darwinistic process decides that the best solution wins.
 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -1653,77 +1653,18 @@ void fastcall sched_fork(struct task_str
-  */
- void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- {
--	struct rq *rq, *this_rq;
- 	unsigned long flags;
--	int this_cpu, cpu;
-+	struct rq *rq;
- 
- 	rq = task_rq_lock(p, &flags);
- 	BUG_ON(p->state != TASK_RUNNING);
--	this_cpu = smp_processor_id();
--	cpu = task_cpu(p);
--
--	/*
--	 * We decrease the sleep average of forking parents
--	 * and children as well, to keep max-interactive tasks
--	 * from forking tasks that are max-interactive. The parent
--	 * (current) is done further down, under its lock.
--	 */
--	p->sleep_avg = JIFFIES_TO_NS(CURRENT_BONUS(p) *
--		CHILD_PENALTY / 100 * MAX_SLEEP_AVG / MAX_BONUS);
- 
- 	p->prio = effective_prio(p);
-+	__activate_task(p, rq);
-+	if (TASK_PREEMPTS_CURR(p, rq))
-+		resched_task(rq->curr);
- 
--	if (likely(cpu == this_cpu)) {
--		if (!(clone_flags & CLONE_VM)) {
--			/*
--			 * The VM isn't cloned, so we're in a good position to
--			 * do child-runs-first in anticipation of an exec. This
--			 * usually avoids a lot of COW overhead.
--			 */
--			if (unlikely(!current->array))
--				__activate_task(p, rq);
--			else {
--				p->prio = current->prio;
--				p->normal_prio = current->normal_prio;
--				list_add_tail(&p->run_list, &current->run_list);
--				p->array = current->array;
--				p->array->nr_active++;
--				inc_nr_running(p, rq);
--			}
--			set_need_resched();
--		} else
--			/* Run child last */
--			__activate_task(p, rq);
--		/*
--		 * We skip the following code due to cpu == this_cpu
--	 	 *
--		 *   task_rq_unlock(rq, &flags);
--		 *   this_rq = task_rq_lock(current, &flags);
--		 */
--		this_rq = rq;
--	} else {
--		this_rq = cpu_rq(this_cpu);
--
--		/*
--		 * Not the local CPU - must adjust timestamp. This should
--		 * get optimised away in the !CONFIG_SMP case.
--		 */
--		p->timestamp = (p->timestamp - this_rq->most_recent_timestamp)
--					+ rq->most_recent_timestamp;
--		__activate_task(p, rq);
--		if (TASK_PREEMPTS_CURR(p, rq))
--			resched_task(rq->curr);
--
--		/*
--		 * Parent and child are on different CPUs, now get the
--		 * parent runqueue to update the parent's ->sleep_avg:
--		 */
--		task_rq_unlock(rq, &flags);
--		this_rq = task_rq_lock(current, &flags);
--	}
--	current->sleep_avg = JIFFIES_TO_NS(CURRENT_BONUS(current) *
--		PARENT_PENALTY / 100 * MAX_SLEEP_AVG / MAX_BONUS);
--	task_rq_unlock(this_rq, &flags);
-+	task_rq_unlock(rq, &flags);
- }
- 
- /*
+This darwinistic process often happens in the form of discussion, and
+that discussion can happen with words or with code. In this case it
+happened with a code proposal.
+
+To make this specific: it has happened many times to me that when I
+solved an issue with code, someone else stepped in and wrote a different
+solution (although that was usually for smaller pieces). Was I upset
+about that? No! I was happy because my *problem got solved* in the best
+possible way.
+
+Now this doesn't mean that people shouldn't be nice to each other, not
+cooperate or steal credits, but I don't get the impression that that is
+happening here. Ingo is taking part in the discussion with a counter
+proposal for discussion *on the mailing list*. What more do you want??
+If you or anyone else can improve it or do better, take part of this
+discussion and show what you mean either in words or in code.
+
+Your qualification of the discussion as a elitist takeover... I disagree
+with that. It's a *discussion*. Now if you agree that Ingo's patch is
+better technically, you and others should be happy about that because
+your problem is getting solved better. If you don't agree that his patch
+is better technically, take part in the technical discussion.
+
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
