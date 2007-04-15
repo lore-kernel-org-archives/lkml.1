@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbXDOUTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbXDOUWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbXDOUTT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 16:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbXDOUTT
+	id S1753699AbXDOUWZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 16:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbXDOUWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 16:19:19 -0400
-Received: from waste.org ([66.93.16.53]:52077 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753681AbXDOUTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 16:19:18 -0400
-Date: Sun, 15 Apr 2007 15:05:35 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Con Kolivas <kernel@kolivas.org>, Peter Williams <pwil3058@bigpond.net.au>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070415200535.GC11166@waste.org>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070415150536.GA6623@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 15 Apr 2007 16:22:25 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:49697 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753698AbXDOUWY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 16:22:24 -0400
+To: kzak@redhat.com
+CC: linuxram@us.ibm.com, serue@us.ibm.com, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20070413200720.GS31445@petra.dvoda.cz> (message from Karel Zak
+	on Fri, 13 Apr 2007 22:07:20 +0200)
+Subject: Re: [patch 0/8] unprivileged mount syscall
+References: <20070406160238.f3178189.akpm@linux-foundation.org> <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu> <20070409143802.GB4891@sergelap.austin.ibm.com> <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu> <20070409170743.GF24415@sergelap.austin.ibm.com> <E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu> <1176194285.2903.67.camel@ram.us.ibm.com> <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu> <1176316116.2811.39.camel@ram.us.ibm.com> <E1HcKQd-0001yO-00@dorka.pomaz.szeredi.hu> <20070413200720.GS31445@petra.dvoda.cz>
+Message-Id: <E1HdBDd-0005nb-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 15 Apr 2007 22:21:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 15, 2007 at 05:05:36PM +0200, Ingo Molnar wrote:
-> so the rejection was on these grounds, and i still very much stand by 
-> that position here and today: i didnt want to see the Linux scheduler 
-> landscape balkanized and i saw no technological reasons for the 
-> complication that external modularization brings.
+> > Thinking a bit more about this, I'm quite sure most users wouldn't
+> > even want private namespaces.  It would be enough to
+> > 
+> >   chroot /share/$USER
+> > 
+> > and be done with it.
+> 
+>  I don't think so. How to you want to implement non-shared /tmp
+>  directories?
 
-But "balkanization" is a good thing. "Monoculture" is a bad thing.
+  mount --bind /.tmp/$USER /share/$USER/tmp
 
-Look at what happened with I/O scheduling. Opening things up to some
-new ideas by making it possible to select your I/O scheduler took us
-from 10 years of stagnation to healthy, competitive development, which
-gave us a substantially better I/O scheduler.
+or whatever else this polyunsaturated thingy does within the cloned
+namespace.
 
-Look at what's happening right now with TCP congestion algorithms.
-We've had decades of tweaking Reno slightly now turned into a vibrant
-research area with lots of radical alternatives. A winner will
-eventually emerge and it will probably look quite a bit different than
-Reno.
+> The chroot is overkill in this case.
 
-Similar things have gone on since the beginning with filesystems on
-Linux. Being able to easily compare filesystems head to head has been
-immensely valuable in improving our 'core' Linux filesystems.
+What do you mean it's an overkill?  clone(CLONE_NS) duplicates all the
+mounts, just as mount --rbind does.
 
-And what we've had up to now is a scheduler monoculture. Until Andrew
-put RSDL in -mm, if people wanted to experiment with other schedulers,
-they had to go well off the beaten path to do it. So all the people
-who've been hopelessy frustrated with the mainline scheduler go off to
-the -ck ghetto, or worse, stick with 2.4.
+> > Private namespaces are only good for keeping a bunch of mounts
+> > referenced by a group of processes.  But my guess is, that the natural
+> > behavior for users is to see a persistent set of mounts.
+> > 
+> > If for example they mount something on a remote machine, then log out
+> > from the ssh session and later log back in, they would want to see
+> > their previous mount still there.
+> 
+>  They can mount to /mnt where the directory is shared ("mount
+>  --make-shared /mnt") and visible and all namespaces.
+> 
+>  I think /share/$USER is an extreme example. You can found more
+>  situations when private namespaces are nice solution.
 
-Whether your motivations have been protectionist or merely
-shortsighted, you've stomped pretty heavily on alternative scheduler
-development by completely rejecting the whole plugsched concept. If
-we'd opened up mainline to a variety of schedulers _3 years ago_, we'd
-probably have gotten to where we are today much sooner.
+Private to a single login session?  I'd like to hear examples.
 
-Hopefully, the next time Rik suggests pluggable page replacement
-algorithms, folks will actually seriously consider it.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+Thanks,
+Miklos
