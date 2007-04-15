@@ -1,82 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbXDOQHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbXDOQH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbXDOQHI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 12:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXDOQHH
+	id S1753024AbXDOQH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 12:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXDOQH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 12:07:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:6851 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753023AbXDOQHF (ORCPT
+	Sun, 15 Apr 2007 12:07:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48541 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbXDOQH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 12:07:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FRw3VgUEu5JOkha9d3YUWRZykgIHocZpb/+vF8rxyE485GlllxFVx2GhY2Mc2sbEqlXal8UfT9euus5w0ruE+kfhbt+ONVJEH0kqvEDnY12kC59GzpTX9lbBY6t1YfgM1Le1MlrRh2Q1qomcVkmcr5DRcmQTEfh8D47iqHweyCg=
-Message-ID: <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com>
-Date: Sun, 15 Apr 2007 18:07:04 +0200
-From: emisca <emisca.ml@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-In-Reply-To: <461D54AF.3060706@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 15 Apr 2007 12:07:28 -0400
+Date: Sun, 15 Apr 2007 12:31:37 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB updates
+Message-Id: <1176653207.10849.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <461D4E2C.6000704@redhat.com>
-	 <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>
-	 <461D54AF.3060706@redhat.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can confirm this, I have a Seagate Momentus 5400.3 sata disk, and it
-spins off, respin up and again off when I halt my notebook.
-I had before this disk an IBM/Hitachi one, and it doesn't have this behaviour.
+Linus,
 
-Take a look at this bug report:
-https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.17/+bug/67810
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
 
-There are some references and some patches against 2.6.20 kernel. This
-bug is confirmed there.
+For the following:
 
-Bye
+   - Fix Kernel Bugzilla #8301: spinlock fix for flexcop-pci
+   - Fix 1/3 for bug 7819: fixed frontend hotplug issue
+   - Fix 2/3 for bug 7819: demux and dvr
+   - Fix 3/3 for bug 7819: fixed hotplugging for dvbnet
+   - Usbvision: fix TDA9887 detection
+   - Bt878: prevent probing wrong card entry
 
-2007/4/11, Chuck Ebbert <cebbert@redhat.com>:
-> Jan Engelhardt wrote:
-> > On Apr 11 2007 17:07, Chuck Ebbert wrote:
-> >> When I reboot my notebook, it powers off and powers back on.
-> >> On poweroff a loud snapping noise seems to be coming from the
-> >> hard drive. Today I noticed there is no "shutdown: hda" on
-> >> the console when I reboot. Whne I do a normal poweroff the
-> >> message is displayed and there is no noise. Should the IDE
-> >> code be changed so it always shuts down the drive?
-> >
-> > What sort of notebook? What sort of harddisk?
->
-> Compaq Presario V2000 series, with a new Seagate ST9120821A
-> 120GB 5400RPM drive.
->
-> > Is it as loud as `hdparm -y /dev/hdX"?
->
-> That makes no noise at all except normal drive seek noises.
->
-> > Try `smartctl -d ata -a /dev/hdX | grep -i unload` too.
->
-> Hmm.
->
-> Power_Cycle_Count ... 108
-> Power-Off_Retract_Count ... 90
->
-> I did a normal poweroff and the retract count went to 91.
-> There is an almost-unnoticeable click when I do it that way.
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+The fix for Bugzilla #7819 is bigger, since the current lock approach 
+doesn't allow hotunplugging an USB DVB device. The other patches are 
+trivial fixes.
+
+Cheers,
+Mauro.
+
+---
+
+ Documentation/logo.gif                             |  Bin
+ drivers/media/dvb/b2c2/flexcop-pci.c               |    9 ++--
+ drivers/media/dvb/bt8xx/bt878.c                    |    4 +-
+ drivers/media/dvb/dvb-core/dmxdev.c                |   56 +++++++++++++++++++-
+ drivers/media/dvb/dvb-core/dmxdev.h                |    2 +
+ drivers/media/dvb/dvb-core/dvb_frontend.c          |   20 ++++++-
+ drivers/media/dvb/dvb-core/dvb_net.c               |   32 +++++++++++-
+ drivers/media/dvb/dvb-core/dvb_net.h               |    1 +
+ drivers/media/dvb/dvb-core/dvbdev.c                |    1 +
+ drivers/media/dvb/dvb-core/dvbdev.h                |    1 +
+ drivers/media/video/usbvision/usbvision-i2c.c      |    1 +
+ 11 files changed, 115 insertions(+), 12 deletions(-)
+
+Akinobu Mita (1):
+      V4L/DVB (5513): Bt878: prevent probing wrong card entry
+
+Hendrik Borghorst (1):
+      V4L/DVB (5505): Fix Kernel Bugzilla #8301: spinlock fix for flexcop-pci
+
+Markus Rechberger (3):
+      V4L/DVB (5510): Fix 1/3 for bug 7819: fixed frontend hotplug issue
+      V4L/DVB (5511): Fix 2/3 for bug 7819: demux and dvr
+      V4L/DVB (5512): Fix 3/3 for bug 7819: fixed hotplugging for dvbnet
+
+Thierry MERLE (1):
+      V4L/DVB (5524): Usbvision: fix TDA9887 detection
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
+
