@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbXDORTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbXDORc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbXDORTQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 13:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXDORTQ
+	id S1753198AbXDORc2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 13:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbXDORc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 13:19:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:24284 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753182AbXDORTP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 13:19:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=S7IdfOoPK5vyuOd5vQBu6d47icL+nigOeE1CuoJboF+w0rx151XPKAHblkeL2yqExjYqXm0OYLeDk6DGZcb+gRjUh79epJV/d8Mq7gopXY3PcwspqRUTStfCB5BCC59g6jpqBi+OC478wLttwNwDveAa3ysKQGPy2nf9kYXkec8=
-Date: Sun, 15 Apr 2007 22:51:23 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: Kernel Janitors <kernel-janitors@lists.osdl.org>,
-       IA64 <linux-ia64@vger.kernel.org>
-Cc: Andrw Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Tony Luck <tony.luck@intel.com>
-Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED macro cleanup in arch/ia64
-Message-ID: <20070415172123.GA9296@arun.site>
+	Sun, 15 Apr 2007 13:32:28 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36664 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753198AbXDORcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 13:32:19 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+iSIIetGqiqPvHonByeoyOCYMU5KD08yLY2QEJ66
+	jVgbyYqCVpfoER
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+	Scheduler [CFS]
+From: Mike Galbraith <efault@gmx.de>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Willy Tarreau <w@1wt.eu>, hui Bill Huey <billh@gnuppy.monkey.org>,
+       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       ck list <ck@vds.kolivas.org>, Peter Williams <pwil3058@bigpond.net.au>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <Pine.LNX.4.64.0704151604520.7215@sbz-30.cs.Helsinki.FI>
+References: <20070413202100.GA9957@elte.hu>
+	 <200704151327.13589.kernel@kolivas.org>
+	 <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu>
+	 <20070415095146.GA30327@gnuppy.monkey.org>
+	 <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com>
+	 <20070415124527.GP943@1wt.eu>
+	 <Pine.LNX.4.64.0704151604520.7215@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Sun, 15 Apr 2007 19:32:15 +0200
+Message-Id: <1176658335.6364.11.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SPIN_LOCK_UNLOCKED macro cleanup, use __SPIN_LOCK_UNLOCKED instead.
+On Sun, 2007-04-15 at 16:08 +0300, Pekka J Enberg wrote:
+> On Sun, 15 Apr 2007, Willy Tarreau wrote:
+> > Ingo could have publicly spoken with them about his ideas of killing
+> > the O(1) scheduler and replacing it with an rbtree-based one, and using
+> > part of Bill's work to speed up development.
+> 
+> He did exactly that and he did it with a patch. Nothing new here. This is 
+> how development on LKML proceeds when you have two or more competing 
+> designs. There's absolutely no need to get upset or hurt your feelings 
+> over it. It's not malicious, it's how we do Linux development.
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Yes.  Exactly.  This is what it's all about, this is what makes it work.
 
----
- kernel/traps.c  |    6 +++---
- kernel/unwind.c |    2 +-
- mm/tlb.c        |    6 +++---
- 3 files changed, 7 insertions(+), 7 deletions(-)
+	-Mike
 
-diff --git a/arch/ia64/kernel/traps.c b/arch/ia64/kernel/traps.c
-index 765cbe5..cd5189f 100644
---- a/arch/ia64/kernel/traps.c
-+++ b/arch/ia64/kernel/traps.c
-@@ -59,9 +59,9 @@ die (const char *str, struct pt_regs *regs, long err)
- 		u32 lock_owner;
- 		int lock_owner_depth;
- 	} die = {
--		.lock =			SPIN_LOCK_UNLOCKED,
--		.lock_owner =		-1,
--		.lock_owner_depth =	0
-+		.lock =	__SPIN_LOCK_UNLOCKED(die.lock),
-+		.lock_owner = -1,
-+		.lock_owner_depth = 0
- 	};
- 	static int die_counter;
- 	int cpu = get_cpu();
-diff --git a/arch/ia64/kernel/unwind.c b/arch/ia64/kernel/unwind.c
-index 93d5a3b..e3be21c 100644
---- a/arch/ia64/kernel/unwind.c
-+++ b/arch/ia64/kernel/unwind.c
-@@ -145,7 +145,7 @@ static struct {
- # endif
- } unw = {
- 	.tables = &unw.kernel_table,
--	.lock = SPIN_LOCK_UNLOCKED,
-+	.lock = __SPIN_LOCK_UNLOCKED(unw.lock),
- 	.save_order = {
- 		UNW_REG_RP, UNW_REG_PFS, UNW_REG_PSP, UNW_REG_PR,
- 		UNW_REG_UNAT, UNW_REG_LC, UNW_REG_FPSR, UNW_REG_PRI_UNAT_GR
-diff --git a/arch/ia64/mm/tlb.c b/arch/ia64/mm/tlb.c
-index ffad762..fa4e6d4 100644
---- a/arch/ia64/mm/tlb.c
-+++ b/arch/ia64/mm/tlb.c
-@@ -32,9 +32,9 @@ static struct {
- } purge;
- 
- struct ia64_ctx ia64_ctx = {
--	.lock =		SPIN_LOCK_UNLOCKED,
--	.next =		1,
--	.max_ctx =	~0U
-+	.lock =	__SPIN_LOCK_UNLOCKED(ia64_ctx.lock),
-+	.next =	1,
-+	.max_ctx = ~0U
- };
- 
- DEFINE_PER_CPU(u8, ia64_need_tlb_flush);
--- 
-Milind Arun Choudhary
