@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXDOTug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbXDOT5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbXDOTug (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 15:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXDOTuf
+	id S1753528AbXDOT5f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 15:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbXDOT5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 15:50:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54271 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbXDOTuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 15:50:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Subject: Re: [linux-pm] Linux 2.6.21-rc6
-Date: Sun, 15 Apr 2007 21:54:07 +0200
-User-Agent: KMail/1.9.5
-Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.linux-foundation.org,
-       pavel@suse.cz, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-pm@lists.osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704151837.40756.rjw@sisk.pl> <20070415194023.GA2538@melchior.yamamaya.is-a-geek.org>
-In-Reply-To: <20070415194023.GA2538@melchior.yamamaya.is-a-geek.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Apr 2007 15:57:35 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3839 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753528AbXDOT5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 15:57:34 -0400
+Date: Sun, 15 Apr 2007 19:40:01 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Anton Vorontsov <cbou@mail.ru>
+Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       dwmw2@infradead.org
+Subject: Re: [PATCH 6/7] [RFC] ds2760 battery driver
+Message-ID: <20070415194001.GF10097@ucw.cz>
+References: <20070411232522.GF20095@zarina>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704152154.09212.rjw@sisk.pl>
+In-Reply-To: <20070411232522.GF20095@zarina>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 15 April 2007 21:40, Tobias Diedrich wrote:
-> Rafael J. Wysocki wrote:
-> > On Sunday, 15 April 2007 17:14, David Brownell wrote:
-> > > On Sunday 15 April 2007 4:16 am, Rafael J. Wysocki wrote:
-> > > > On Sunday, 15 April 2007 10:02, Tobias Diedrich wrote:
-> > > 
-> > > > > > > > Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64 3200+
-> > > > > > > > single core CPU.
-> > > 
-> > > And NVidia southbridge, so OHCI not UHCI (plus EHCI) ... one experiment
-> > > would be to disable the EHCI (high speed USB) support in BIOS, to make
-> > > for a simpler hardware configuration, and see if that makes BIOS happier.
-> > > (Or better, just take EHCI out of your Linux config.)  Likewise, taking
-> > > the 8042 drivers out of Linux.
-> > > 
-> > > I wouldn't be surprised if those factors didn't matter, but it'd be good
-> > > to rule them out.
-> > 
-> > I think the disabling of i8042 support might help.
-> 
-> Still hangs with "# CONFIG_SERIO_I8042 is not set".
-> 
-> > > > Dmitry, could you please have a look?
-> > > > 
-> > > > > And I can now confirm that unpatched 2.6.21-rc6 works fine as long
-> > > > > as USB legacy support is disabled (however without legacy support I
-> > > > > can't use the USB keyboard to control grub).
-> > > > 
-> > > > I think using the 'shutdown' mode of suspend would be better.  There's a little
-> > > > point in using 'platform' on desktop systems anyway.
-> > > > 
-> > > > Frankly, I don't know what to do about it.  If we move platform_finish() after
-> > > > device_resume(), some systems may be broken ...
-> > > 
-> > > What I'm curious about is exactly why the patch matters.  What ACPI
-> > > magic is being invoked to confuse, or unconfuse, those controllers?
-> > 
-> > I think the patch helps, because it makes the ACPI magic be done while the
-> > i8042's .resume() is being executed.
-> > 
-> > Which makes me think the following patch might help:
-> 
-> Unfortunately not, I tried this before disabling CONFIG_SERIO_I8042.
+Hi!
 
-Well, this means i8042 can be ruled out, so the problem probably is related
-to the ACPI resume which makes it _much_ more difficult to debug.
+> This is driver for batteries with ds2760 chip inside. Such batteries
+> used in almost every HP iPaq and HTC PDAs/phones.
 
-Can you compile the ACPI drivers: processor, thermal, fan, battery, etc. as
-modules, boot the kernel with init=/bin/bash and see if the problem is still
-present (please keep CONFIG_SERIO_I8042 unset just in case)?
+Looks nice to me. It even knows about dependency between temperature
+and remaining power :-).
 
-Rafael
+
+> +	di->update_time = jiffies;
+> +
+> +	/* DS2760 reports voltage in units of 4.88mV, but the battery class
+> +	 * reports in units of mV, so convert by multiplying by 4.875.
+> +	 * We approximate because integer math is cheap, and close enough. */
+> +	di->voltage_raw = (di->raw[DS2760_VOLTAGE_MSB] << 3) |
+> +	                  (di->raw[DS2760_VOLTAGE_LSB] >> 5);
+> +	di->voltage_mV = (di->voltage_raw * 5) - (di->voltage_raw / 8);
+
+Hmm, not sure if such tricks re really worth it... should not compiler
+be doing this?
+
+
+> +	/* Calculate the empty level at the present temperature. */
+> +	scale[4] = di->raw[DS2760_ACTIVE_EMPTY + 4];
+> +	for (i = 3; i >= 0; i--)
+> +		scale[i] = scale[i + 1] + di->raw[DS2760_ACTIVE_EMPTY + i];
+> +
+> +	di->empty_mAh = battery_interpolate(scale, di->temp_C / 10);
+
+Wow.
+
+> +static struct platform_driver ds2760_battery_driver = {
+> +	.driver = {
+> +		.name = "ds2760-battery",
+> +	},
+> +	.probe	  = ds2760_battery_probe,
+> +	.remove   = ds2760_battery_remove,
+> +	#ifdef CONFIG_PM
+> +	.suspend  = ds2760_battery_suspend,
+> +	.resume	  = ds2760_battery_resume,
+> +	#endif
+
+I thought ifdefs need to be at column 0?
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
