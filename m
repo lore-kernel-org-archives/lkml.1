@@ -1,197 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbXDOXm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbXDOXxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbXDOXm4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 19:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbXDOXm4
+	id S1754093AbXDOXxm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 19:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXDOXxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 19:42:56 -0400
-Received: from relay.felk.cvut.cz ([147.32.80.7]:49422 "EHLO
-	relay.felk.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090AbXDOXmz (ORCPT
+	Sun, 15 Apr 2007 19:53:42 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:51593 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754093AbXDOXxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 19:42:55 -0400
-X-Greylist: delayed 1914 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Apr 2007 19:42:54 EDT
-From: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Date: Mon, 16 Apr 2007 01:09:29 +0200
-User-Agent: KMail/1.9.4
-Cc: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070413202100.GA9957@elte.hu> <20070413222151.GD8915@holomorphy.com> <Pine.LNX.4.64.0704140008001.10930@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0704140008001.10930@alien.or.mcafeemobile.com>
+	Sun, 15 Apr 2007 19:53:40 -0400
+Date: Mon, 16 Apr 2007 01:53:48 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Brad Campbell <brad@wasp.net.au>
+Cc: lkml <linux-kernel@vger.kernel.org>, axboe@kernel.dk, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+Message-ID: <20070415235348.GJ3691@stusta.de>
+References: <4621FAF0.7000705@wasp.net.au> <46220339.9080205@wasp.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200704160109.31310.pisa@cmp.felk.cvut.cz>
-X-FELK-MailScanner-Information: 
-X-FELK-MailScanner: Found to be clean
-X-FELK-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-1.799, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_50 0.00)
-X-FELK-MailScanner-From: pisa@cmp.felk.cvut.cz
+In-Reply-To: <46220339.9080205@wasp.net.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 April 2007 00:38, Davide Libenzi wrote:
-> Haven't looked at the scheduler code yet, but for a similar problem I use
-> a time ring. The ring has Ns (2 power is better) slots (where tasks are
-> queued - in my case they were som sort of timers), and it has a current
-> base index (Ib), a current base time (Tb) and a time granularity (Tg). It
-> also has a bitmap with bits telling you which slots contains queued tasks.
-> An item (task) that has to be scheduled at time T, will be queued in the
-> slot:
->
-> S = Ib + min((T - Tb) / Tg, Ns - 1);
->
-> Items with T longer than Ns*Tg will be scheduled in the relative last slot
-> (chosing a proper Ns and Tg can minimize this).
-> Queueing is O(1) and de-queueing is O(Ns). You can play with Ns and Tg to
-> suite to your needs.
-> This is a simple bench between time-ring (TR) and CFS queueing:
->
-> http://www.xmailserver.org/smart-queue.c
->
-> In my box (Dual Opteron 252):
->
-> davide@alien:~$ ./smart-queue -n 8
-> CFS = 142.21 cycles/loop
-> TR  = 72.33 cycles/loop
-> davide@alien:~$ ./smart-queue -n 16
-> CFS = 188.74 cycles/loop
-> TR  = 83.79 cycles/loop
-> davide@alien:~$ ./smart-queue -n 32
-> CFS = 221.36 cycles/loop
-> TR  = 75.93 cycles/loop
-> davide@alien:~$ ./smart-queue -n 64
-> CFS = 242.89 cycles/loop
-> TR  = 81.29 cycles/loop
+[ Cc's added, additional information is in http://lkml.org/lkml/2007/4/15/32 ]
 
-Hello all,
+On Sun, Apr 15, 2007 at 02:49:29PM +0400, Brad Campbell wrote:
+> Brad Campbell wrote:
+> >G'day all,
+> >
+> >All I have is a digital photo of this oops. (It's 3.5mb). I have serial 
+> >console configured, but Murphy is watching me carefully and I just can't 
+> >seem to reproduce it while logging the console output.
+> >
+> 
+> And as usual, after trying to capture one for 4 days, I get one 10 mins 
+> after I've sent the E-mail :)
+> 
+> I think I've just found a way to make this easier to reproduce as /dev/sdd 
+> was not even mounted this
+> time. I just cold booted and started an md5sum -c run on a directory of 
+> about 180GB.
 
-I cannot help myself to not report results with GAVL
-tree algorithm there as an another race competitor.
-I believe, that it is better solution for large priority
-queues than RB-tree and even heap trees. It could be
-disputable if the scheduler needs such scalability on
-the other hand. The AVL heritage guarantees lower height
-which results in shorter search times which could
-be profitable for other uses in kernel.
 
-GAVL algorithm is AVL tree based, so it does not suffer from
-"infinite" priorities granularity there as TR does. It allows
-use for generalized case where tree is not fully balanced.
-This allows to cut the first item withour rebalancing.
-This leads to the degradation of the tree by one more level
-(than non degraded AVL gives) in maximum, which is still
-considerably better than RB-trees maximum.
+Is this also present with kernel 2.6.20 or is it a regression?
 
-http://cmp.felk.cvut.cz/~pisa/linux/smart-queue-v-gavl.c
 
-The description behind the code is there
+> [ 2566.192665] BUG: unable to handle kernel NULL pointer dereference at 
+> virtual address 0000005c
+> [ 2566.218242]  printing eip:
+> [ 2566.226362] c0203169
+> [ 2566.232906] *pde = 00000000
+> [ 2566.241274] Oops: 0000 [#1]
+> [ 2566.249637] Modules linked in:
+> [ 2566.258832] CPU:    0
+> [ 2566.258833] EIP:    0060:[<c0203169>]    Not tainted VLI
+> [ 2566.258834] EFLAGS: 00010082   (2.6.21-rc6-git5 #1)
+> [ 2566.296146] EIP is at cfq_dispatch_insert+0x19/0x70
+> [ 2566.310761] eax: f7a0eae0   ebx: f7a0cb28   ecx: e2f869e8   edx: 00000000
+> [ 2566.331076] esi: f79fea7c   edi: f7d04ac0   ebp: 00000000   esp: f6945de0
+> [ 2566.351388] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [ 2566.368843] Process md5sum (pid: 2875, ti=f6944000 task=f68f4ad0 
+> task.ti=f6944000)
+> [ 2566.390975] Stack: 00000000 f79fea7c f7d04ac0 00000000 c02032d9 f6ae5ef0 
+> c0133411 00001000
+> [ 2566.416414]        00000008 00000000 00000004 0b582fd4 f79fea7c f7d04ac0 
+> f79fea7c 00000000
+> [ 2566.441870]        c0203519 f7a0cb28 f7a0cb28 f79e0000 00000282 c01fb7a9 
+> 00000000 c016ea4d
+> [ 2566.467326] Call Trace:
+> [ 2566.475236]  [<c02032d9>] __cfq_dispatch_requests+0x79/0x170
+> [ 2566.492224]  [<c0133411>] do_generic_mapping_read+0x281/0x470
+> [ 2566.509473]  [<c0203519>] cfq_dispatch_requests+0x69/0x90
+> [ 2566.525681]  [<c01fb7a9>] elv_next_request+0x39/0x130
+> [ 2566.540850]  [<c016ea4d>] bio_endio+0x5d/0x90
+> [ 2566.553942]  [<c0268635>] scsi_request_fn+0x45/0x280
+> [ 2566.568851]  [<c01fdde2>] blk_run_queue+0x32/0x70
+> [ 2566.582982]  [<c0267ba0>] scsi_next_command+0x30/0x50
+> [ 2566.598154]  [<c0267c8b>] scsi_end_request+0x9b/0xc0
+> [ 2566.613063]  [<c0267df1>] scsi_io_completion+0x81/0x330
+> [ 2566.628751]  [<c0265dab>] scsi_delete_timer+0xb/0x20
+> [ 2566.643661]  [<c02770f5>] ata_scsi_qc_complete+0x65/0xd0
+> [ 2566.659613]  [<c026d47b>] sd_rw_intr+0x8b/0x220
+> [ 2566.673222]  [<c0278ecc>] ata_altstatus+0x1c/0x20
+> [ 2566.687352]  [<c027394d>] ata_hsm_move+0x14d/0x3f0
+> [ 2566.701744]  [<c0263f80>] scsi_finish_command+0x40/0x60
+> [ 2566.717434]  [<c026857f>] scsi_softirq_done+0x6f/0xe0
+> [ 2566.732604]  [<c027d521>] sil_interrupt+0x81/0x90
+> [ 2566.746733]  [<c01ff9b8>] blk_done_softirq+0x58/0x70
+> [ 2566.761644]  [<c011721f>] __do_softirq+0x6f/0x80
+> [ 2566.775516]  [<c0117257>] do_softirq+0x27/0x30
+> [ 2566.788866]  [<c0104cee>] do_IRQ+0x3e/0x80
+> [ 2566.801177]  [<c010322f>] common_interrupt+0x23/0x28
+> [ 2566.816090]  =======================
+> [ 2566.826793] Code: 3e 05 f0 ff e9 47 ff ff ff 89 f6 8d bc 27 00 00 00 00 
+> 83 ec 10 89 1c 24 89 6c
+> 24 0c 89 74 24 04 89 7c 24 08 89 c3 89 d5 8b 40 0c <8b> 72 5c 8b 78 04 89 
+> d0 e8 4a fa ff ff 8b 45 14
+> 89 ea 25 01 80
+> [ 2566.886586] EIP: [<c0203169>] cfq_dispatch_insert+0x19/0x70 SS:ESP 
+> 0068:f6945de0
+> [ 2566.909179] Kernel panic - not syncing: Fatal exception in interrupt
 
-http://cmp.felk.cvut.cz/~pisa/ulan/gavl.pdf
+cu
+Adrian
 
-The code is part of much more covering uLUt library
+-- 
 
-http://cmp.felk.cvut.cz/~pisa/ulan/ulut.pdf
-http://sourceforge.net/project/showfiles.php?group_id=118937&package_id=130840
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-I have included all required GAVL code directly into smart-queue-v-gavl.c
-to provide it for easy testing.
-
-There are tests run on my little dated computer - Duron 600 MHz.
-Test are run twice to suppress run order influence.
-
-./smart-queue-v-gavl -n 1 -l 2000000
-gavl_cfs = 55.66 cycles/loop
-CFS = 88.33 cycles/loop
-TR  = 141.78 cycles/loop
-CFS = 90.45 cycles/loop
-gavl_cfs = 55.38 cycles/loop
-
-./smart-queue-v-gavl -n 2 -l 2000000
-gavl_cfs = 82.85 cycles/loop
-CFS = 104.18 cycles/loop
-TR  = 145.21 cycles/loop
-CFS = 102.74 cycles/loop
-gavl_cfs = 82.05 cycles/loop
-
-./smart-queue-v-gavl -n 4 -l 2000000
-gavl_cfs = 137.45 cycles/loop
-CFS = 156.47 cycles/loop
-TR  = 142.00 cycles/loop
-CFS = 152.65 cycles/loop
-gavl_cfs = 139.38 cycles/loop
-
-./smart-queue-v-gavl -n 10 -l 2000000
-gavl_cfs = 229.22 cycles/loop           (WORSE)
-CFS = 206.26 cycles/loop
-TR  = 140.81 cycles/loop
-CFS = 208.29 cycles/loop
-gavl_cfs = 223.62 cycles/loop           (WORSE)
-
-./smart-queue-v-gavl -n 100 -l 2000000
-gavl_cfs = 257.66 cycles/loop
-CFS = 329.68 cycles/loop
-TR  = 142.20 cycles/loop
-CFS = 319.34 cycles/loop
-gavl_cfs = 260.02 cycles/loop
-
-./smart-queue-v-gavl -n 1000 -l 2000000
-gavl_cfs = 258.41 cycles/loop
-CFS = 393.04 cycles/loop
-TR  = 134.76 cycles/loop
-CFS = 392.20 cycles/loop
-gavl_cfs = 260.93 cycles/loop
-
-./smart-queue-v-gavl -n 10000 -l 2000000
-gavl_cfs = 259.45 cycles/loop
-CFS = 605.89 cycles/loop
-TR  = 196.69 cycles/loop
-CFS = 622.60 cycles/loop
-gavl_cfs = 262.72 cycles/loop
-
-./smart-queue-v-gavl -n 100000 -l 2000000
-gavl_cfs = 258.21 cycles/loop
-CFS = 845.62 cycles/loop
-TR  = 315.37 cycles/loop
-CFS = 860.21 cycles/loop
-gavl_cfs = 258.94 cycles/loop
-
-The GAVL code has not been tuned by any "likely"/"unlikely"
-constructs. It brings even some other overhead from it generic
-design which is not necessary for this use - it keeps
-permanently even pointer to the last element, ensures,
-that the insertion order is preserved for same key values
-etc. But it still proves much better scalability then
-kernel used RB-tree code. On the other hand, it does not
-encode color/height in one of the pointers and requires
-additional field for height.
-
-May it be, that difference is due some bug in my testing,
-then I would be interrested in correction. The test case
-is oversimplified probably. I have already run more different
-tests against GAVL code in the past to compare it with
-different tree and queues implementations and I have not found
-case with real performance degradation. On the other hand, there
-are cases for small items counts where GAVL is sometimes
-a little worse than others (array based heap-tree for example).
-
-The GAVL code itself is used in more opensource and commercial
-projects and we have noticed no problems after one small fix
-at the time of the first release in 2004.
-
-Best wishes
-
-                Pavel Pisa
-        e-mail: pisa@cmp.felk.cvut.cz
-        www:    http://cmp.felk.cvut.cz/~pisa
-        work:   http://www.pikron.com
