@@ -1,107 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbXDOT6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbXDOT6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbXDOT6L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 15:58:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXDOT6E
+	id S1753573AbXDOT6p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 15:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXDOT6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 15:58:04 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3849 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753537AbXDOT5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 15:57:41 -0400
-Date: Sun, 15 Apr 2007 19:56:56 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Anton Vorontsov <cbou@mail.ru>
-Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       dwmw2@infradead.org
-Subject: Re: [PATCH 3/7] [RFC] Battery monitoring class
-Message-ID: <20070415195655.GG10097@ucw.cz>
-References: <20070411232503.GC20095@zarina>
+	Sun, 15 Apr 2007 15:58:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50105 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753554AbXDOT6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 15:58:08 -0400
+Date: Sun, 15 Apr 2007 21:57:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Willy Tarreau <w@1wt.eu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070415195748.GA16004@elte.hu>
+References: <20070414161927.GD3099@elte.hu> <m1abxanahn.fsf@ebiederm.dsl.xmission.com> <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com> <20070414175433.GA17527@elte.hu> <20070414181854.GA5826@1wt.eu> <20070415175555.GA28524@elte.hu> <20070415180604.GA550@1wt.eu> <20070415192046.GA7504@elte.hu> <20070415193531.GD2986@holomorphy.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070411232503.GC20095@zarina>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070415193531.GD2986@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> * It insists on reusing its predefined attributes *and* their units.
->   So, userspace getting expected values for any battery.
->   
->   Also common units is required for APM/ACPI emulation.
->   
->   Though our battery class insisting on re-usage, but not forces it. If some
->   battery driver can't convert its own raw values (can't imagine why), then
->   driver is free to implement its own attributes *and* additional _units
->   attribute. Though, this scheme is discouraged.
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+
+> On Sun, Apr 15, 2007 at 09:20:46PM +0200, Ingo Molnar wrote:
+> > so Linus was right: this was caused by scheduler starvation. I can 
+> > see one immediate problem already: the 'nice offset' is not divided 
+> > by nr_running as it should. The patch below should fix this but i 
+> > have yet to test it accurately, this change might as well render 
+> > nice levels unacceptably ineffective under high loads.
 > 
-> * LEDs support. Each battery register its trigger, and gadgets with LEDs
->   can quickly bind to battery-charging / battery-full triggers.
-> 
-> Here how it looks like from user space:
-> 
-> # ls /sys/class/battery/main-battery/
-> capacity  max_capacity  max_voltage   min_current  power   subsystem  uevent
-> current   max_current   min_capacity  min_voltage  status  temp       voltage
-> # cat /sys/class/battery/main-battery/status
-> Full
-> # cat /sys/class/leds/h5400\:green-right/trigger
-> none h5400-radio timer hwtimer main-battery-charging [main-battery-full]
-> # cat /sys/class/leds/h5400\:green-right/brightness
-> 255
+> I've been suggesting testing CPU bandwidth allocation as influenced by 
+> nice numbers for a while now for a reason.
 
-Can we get few lines in Documentation? I guess min_capacity is
-shutdown capacity at current temperature, but its surely non-obvious.
+Oh I was very much testing "CPU bandwidth allocation as influenced by 
+nice numbers" - it's one of the basic things i do when modifying the 
+scheduler. An automated tool, while nice (all automation is nice) 
+wouldnt necessarily show such bugs though, because here too it needed 
+thousands of running tasks to trigger in practice. Any volunteers? ;)
 
-Will min_capacity increase as batery gets old? Or will max_capacity
-decrease? (Should we introduce design_capacity for ACPI systems that
-know the difference?)
-
-What is min_current? Granularity of amper meter?
-
-And min_voltage is shutdown voltage?
-
-Otherwise it looks good to me. Something like this is really needed.
-
-> + * All voltages, currents, capacities and temperatures in mV, mA, mAh and
-> + * tenths of a degree unless otherwise stated. It's driver's job to convert
-
-tenths of degree Celsius?
-
-							Pavel
-
-> +#define BATTERY_STATUS_UNKNOWN      0
-> +#define BATTERY_STATUS_CHARGING     1
-> +#define BATTERY_STATUS_DISCHARGING  2
-> +#define BATTERY_STATUS_NOT_CHARGING 3
-> +#define BATTERY_STATUS_FULL         4
-
-Perhaps we need STATUS_ERROR? At least on some machines it is
-different from STATUS_NOT_CHARGING.
-
-> +	/* private */
-> +	struct power_supplicant pst;
-> +
-> +	#ifdef CONFIG_LEDS_TRIGGERS
-> +	struct led_trigger *charging_trig;
-> +	char *charging_trig_name;
-> +	struct led_trigger *full_trig;
-> +	char *full_trig_name;
-> +	#endif
-> +};
-
-#ifdefs need to be at column 0?
-
-> +/* 
-> + * This is recommended structure to specify static battery parameters.
-> + * Generic one, parametrizable for different batteries. Battery device
-> + * itself does bot use it, but that's what implementing most drivers,
-
-'does not'?
-
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Ingo
