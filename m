@@ -1,172 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbXDOIpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbXDOIyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbXDOIpt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 04:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXDOIpt
+	id S1751769AbXDOIyk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 04:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbXDOIyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 04:45:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37267 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbXDOIpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 04:45:35 -0400
-Date: Sun, 15 Apr 2007 10:44:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bill Huey <billh@gnuppy.monkey.org>
-Cc: Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070415084447.GC24886@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070415051645.GA28438@gnuppy.monkey.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 15 Apr 2007 04:54:40 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:3693 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbXDOIyj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 04:54:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:subject:from:content-type:mime-version:content-transfer-encoding:date:message-id:user-agent;
+        b=Ny7X5efUQl2etUtq1oQe9783rH5Nj4uATgbCTkAWfzo+19sChB+dB2gpp84rJgNr6bMH1WpuAq0DlBUGnK+t2ezJOPyy7z2LwZvhxSIVwQEVdvIVb6tXcUJ6V+Ab6QlduWATcpD1Ta9o9IvkL6vrVJPuT/S7wEcWMQRssyN2Srw=
+To: linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+From: "David R. Litwin" <presently42@gmail.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Date: Sun, 15 Apr 2007 04:54:13 -0400
+Message-ID: <op.tqthonq5ftfxs2@localhost.localdomain>
+User-Agent: Opera Mail/9.20 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 14/04/07, Neil Brown <neilb@suse.de> wrote:
 
-* Bill Huey <billh@gnuppy.monkey.org> wrote:
+It is generally expected that email conversations started on-list will
+remain on-list, unless there is a special reason to take it off
+list... though maybe it was an accident on your part.
 
-> Hello folks,
-> 
-> I think the main failure I see here is that Con wasn't included in 
-> this design or privately in review process. There could have been 
-> better co-ownership of the code. This could also have been done openly 
-> on lkml [...]
+It very much was. I'm not used to not being subscribed to a mailing list.
 
-Bill, you come from a BSD background and you are still relatively new to 
-Linux development, so i dont at all fault you for misunderstanding this 
-situation, and fortunately i have a really easy resolution for your 
-worries: i did exactly that! :)
+Example of odd commands?
+    mkfs -j /dev/whatever
+usually does me.  Admittedly it might be nice to avoid the -j, but
+that doesn't seem like a bit issue.
 
-i wrote the first line of code of the CFS patch this week, 8am Wednesday 
-morning, and released it to lkml 62 hours later, 22pm on Friday. (I've 
-listed the file timestamps of my backup patches further below, for all 
-the fine details.)
+Fair enough.
 
-I prefer such early releases to lkml _alot_ more than any private review 
-process. I released the CFS code about 6 hours after i thought "okay, 
-this looks pretty good" and i spent those final 6 hours on testing it 
-(making sure it doesnt blow up on your box, etc.), in the final 2 hours 
-i showed it to two folks i could reach on IRC (Arjan and Thomas) and on 
-various finishing touches. It doesnt get much faster than that and i 
-definitely didnt want to sit on it even one day longer because i very 
-much thought that Con and others should definitely see this work!
+> 2: ZFS provides near-platter speeds. A hard-drive should not be
+> hampered performance-wise by it's file system.
 
-And i very much credited (and still credit) Con for the whole fairness 
-angle:
+That is claimed of XFS too.
 
-||  i'd like to give credit to Con Kolivas for the general approach here:
-||  he has proven via RSDL/SD that 'fair scheduling' is possible and that
-||  it results in better desktop scheduling. Kudos Con!
+Really? I must have missed that one.... Any way, I use XFS so this news  
+makes me like it even more.
 
-the 'design consultation' phase you are talking about is _NOW_! :)
+Immediate backups to tape?  seems unlikely.
+Or are you talking about online snapshots.  I believe LVM supports
+those.  Maybe the commands there are odd...
 
-I got the v1 code out to Con, to Mike and to many others ASAP. That's 
-how you are able to comment on this thread and be part of the 
-development process to begin with, in a 'private consultation' setup 
-you'd not have had any opportunity to see _any_ of this.
+O fine, be that way with your commands. :-) As I said, though, I'm not an  
+expert. Merely a Linux-user. You know far more about this sort of thing  
+than I ever shall.
 
-In the BSD space there seem to be more 'political' mechanisms for 
-development, but Linux is truly about doing things out in the open, and 
-doing it immediately.
+> 4: ZFS has a HUGE capacity. I don't have 30 exobytes, but I might some
+> day....
 
-Okay? ;-)
+ext4 will probably cope with that.  XFS definitely has very high
+limits though I admit I don't know what they are.
 
-Here's the timestamps of all my backups of the patch, from its humble 4K 
-beginnings to the 100K first-cut v1 result:
+XFS is also a few exobytes.
 
--rw-rw-r-- 1 mingo mingo 4230 Apr 11 08:47 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 7653 Apr 11 09:12 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 7728 Apr 11 09:26 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 14416 Apr 11 10:08 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 24211 Apr 11 10:41 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 27878 Apr 11 10:45 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 33807 Apr 11 11:05 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 34524 Apr 11 11:09 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 39650 Apr 11 11:19 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 40231 Apr 11 11:34 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 40627 Apr 11 11:48 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 40638 Apr 11 11:54 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 42733 Apr 11 12:19 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 42817 Apr 11 12:31 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 43270 Apr 11 12:41 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 43531 Apr 11 12:48 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 44331 Apr 11 12:51 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45173 Apr 11 12:56 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45288 Apr 11 12:59 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45368 Apr 11 13:06 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45370 Apr 11 13:06 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45815 Apr 11 13:14 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45887 Apr 11 13:19 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45914 Apr 11 13:25 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 45850 Apr 11 13:29 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 49196 Apr 11 13:39 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 64317 Apr 11 13:45 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 64403 Apr 11 13:52 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 65199 Apr 11 14:03 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 65199 Apr 11 14:07 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 68995 Apr 11 14:50 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 69919 Apr 11 15:23 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 71065 Apr 11 16:26 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 70642 Apr 11 16:28 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 72334 Apr 11 16:49 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 71624 Apr 11 17:01 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 71854 Apr 11 17:20 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 73571 Apr 11 17:42 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 74708 Apr 11 17:49 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 74708 Apr 11 17:51 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 75144 Apr 11 17:57 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 80722 Apr 11 18:19 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 80727 Apr 11 18:41 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 80727 Apr 11 18:59 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 89356 Apr 11 21:32 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 95278 Apr 12 08:36 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 97749 Apr 12 10:49 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 97687 Apr 12 10:58 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 97722 Apr 12 11:06 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 97933 Apr 12 11:22 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 98167 Apr 12 12:04 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 98167 Apr 12 12:09 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 100405 Apr 12 12:29 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 100380 Apr 12 12:50 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 101631 Apr 12 13:32 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 102293 Apr 12 14:12 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 102431 Apr 12 14:28 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 102502 Apr 12 14:53 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 102128 Apr 13 11:13 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 102473 Apr 13 12:12 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 102536 Apr 13 12:24 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 102481 Apr 13 12:30 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 103408 Apr 13 13:08 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 103441 Apr 13 13:31 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 104759 Apr 13 14:19 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 104815 Apr 13 14:39 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 104762 Apr 13 15:04 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 105978 Apr 13 16:18 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 105977 Apr 13 16:26 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 106761 Apr 13 17:08 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 106358 Apr 13 17:40 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 107802 Apr 13 19:04 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 104427 Apr 13 19:35 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 103927 Apr 13 19:40 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 101867 Apr 13 20:30 patches/sched-fair.patch
--rw-rw-r-- 1 mingo mingo 101011 Apr 13 21:05 patches/sched-fair.patch
+> 5: ZFS has little over-head. I don't want my file system to take up
+> space; that's for the data to do.
 
-i hope this helps :)
+I doubt space-overhead is a substantial differentiator between
+filesystems.  All filesystems need to use space for metadata.  They
+might report it in different ways.
 
-	Ingo
+Again, I'm simply reporting what I've heard. Well, read.
+
+>
+>   It is possible that that functionality can be
+> > incorporated into Linux without trying to clone or copy ZFS.
+>
+>
+> I don't deny this in the least. But, there's good code sitting,waiting  
+> to be used. Why bother starting from scratch or trying to
+> re-do what is already done?
+
+Imagine someone wanting some cheap furniture and going to a 'garage
+sale' at a light-house.  All this nice second-hand furniture, but you
+can tell it won't fit in your house as it all has rounded edges...
+
+It is a bit like that with software.  It might have great features and
+functionality, but that doesn't mean it will fit.
+
+XFS is a prime example.  It was ported to Linux by creating a fairly
+substantial comparability interface so that code written for IRIX
+would work in Linux.  That layer makes it a lot harder for other
+people to maintain the software (I know, I've tried to understand it
+and never got very far).
+
+I've heard of the horrors of XFS's code. But, is there really that much  
+work to be done to port ZFS to Linux? This is one area for which I have no  
+information, as no one has tried (save the FUSEy folk) due to Lisences. To  
+inform me!
+- Hide quoted text -
+
+-- 
+—A watched bread-crumb never boils.
+—My hover-craft is full of eels.
+—[...]and that's the he and the she of it.
