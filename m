@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbXDOSyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbXDOSyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbXDOSyo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 14:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbXDOSyo
+	id S1753329AbXDOSyq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 14:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbXDOSyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 14:54:44 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:33920 "EHLO mailer.gwdg.de"
+	Sun, 15 Apr 2007 14:54:46 -0400
+Received: from baros.cubic.ch ([213.239.213.98]:57417 "EHLO baros.cubic.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753309AbXDOSyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 14:54:44 -0400
-Date: Sun, 15 Apr 2007 20:50:48 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-cc: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: Loud "pop" coming from hard drive on reboot
-In-Reply-To: <20070415155343.GA12069@khazad-dum.debian.net>
-Message-ID: <Pine.LNX.4.61.0704152050150.27018@yvahk01.tjqt.qr>
-References: <461D4E2C.6000704@redhat.com> <20070414105255.GB9157@ucw.cz>
- <20070415155343.GA12069@khazad-dum.debian.net>
+	id S1753329AbXDOSyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 14:54:46 -0400
+X-Greylist: delayed 439 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Apr 2007 14:54:45 EDT
+Message-ID: <46227334.3000002@cubic.ch>
+Date: Sun, 15 Apr 2007 20:47:16 +0200
+From: Tim Tassonis <timtas@cubic.ch>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: linux-kernel@vger.kernel.org
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +	printk("Fair Scheduler: Copyright (c) 2007 Red Hat, Inc., Ingo Molnar\n");
 
-On Apr 15 2007 12:53, Henrique de Moraes Holschuh wrote:
->On Sat, 14 Apr 2007, Pavel Machek wrote:
->> How common are notebooks that cut power to disks during reboot?
->
->Assuming it also does this when running Windows, I'd report it as a grave
->bug to the vendor and demand it to be fixed, or the machine to be exchanged
->with another model that doesn't have this defect.
-
-Given that it does not happen on Windows (IIRC Chuck's post),
-then just what is Windows [not] doing that Linux does?
+So that's what all the fuss about the staircase scheduler is all about 
+then! At last, I see your point.
 
 
-Jan
--- 
+>    i'd like to give credit to Con Kolivas for the general approach here:
+>    he has proven via RSDL/SD that 'fair scheduling' is possible and that
+>    it results in better desktop scheduling. Kudos Con!
+> 
+
+How pathetic can you get?
+
+Tim, really looking forward to the CL final where Liverpool will beat 
+the shit out of Scum (and there's a lot to be beaten out).
+
