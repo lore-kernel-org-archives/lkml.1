@@ -1,151 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbXDOTIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXDOTIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbXDOTIZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 15:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbXDOTIZ
+	id S1753381AbXDOTIn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 15:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXDOTIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 15:08:25 -0400
-Received: from fallback.mail.ru ([194.67.57.14]:29928 "EHLO mx4.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753368AbXDOTIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 15:08:24 -0400
-Date: Sun, 15 Apr 2007 23:08:11 +0400
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org
-Subject: [PATCH]: ufs proper handling of zero link case
-Message-ID: <20070415190811.GA5495@rain>
-Mail-Followup-To: akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+	Sun, 15 Apr 2007 15:08:43 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:37831 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbXDOTIl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 15:08:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=B4IlUZsvxbet2/aOeuleN+iIrenhG55Sys286XSBy7oJDsoePJ3W/Eh3rs7F5PVAHOVxa2l5Rw4xrmKFXKIg0VwVdj2RHaBuQ/WUXyQORxcLWqDnZ9kmNyYZ5UbMsQMzeA/ruESvsuxPSGp/8kRTI7D1eYgbCJ4DK+fJ6ubWKwI=
+From: auxsvr@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: Re: Loud "pop" coming from hard drive on reboot
+Date: Sun, 15 Apr 2007 22:06:25 +0300
+User-Agent: KMail/1.9.5
+References: <461D4E2C.6000704@redhat.com> <461D54AF.3060706@redhat.com> <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com>
+In-Reply-To: <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704152206.26430.auxsvr@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch should fix or partly fix this bug:
-http://bugzilla.kernel.org/show_bug.cgi?id=8276
+On Sunday 15 April 2007 19:07, emisca wrote:
+> I can confirm this, I have a Seagate Momentus 5400.3 sata disk, and it
+> spins off, respin up and again off when I halt my notebook.
+> I had before this disk an IBM/Hitachi one, and it doesn't have this
+> behaviour.
+>
+> Take a look at this bug report:
+> https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.17/+bug/67810
+>
+> There are some references and some patches against 2.6.20 kernel. This
+> bug is confirmed there.
+>
+> Bye
+>
 
-The problem is:
-- if we see "zero link case" during reading inode operation,
-we call ufs_error(which remount fs readonly), but not "mark" inode as
-bad (1)
-- in readonly case we do not fill some data structures, which are used
-in read and write case (2)
-- VFS call ufs_delete_inode if link count is zero (3)
+I had the same problem with 2 WD disks on a desktop machine for 2 years, until 
+I activated ACPI S3 (suspend to RAM) in the BIOS. According to this bug 
+report (https://bugzilla.novell.com/show_bug.cgi?id=229210) the problem may 
+be due to bad interaction between libata and the shutdown command. Tejun Heo, 
+whom I thank for his support, has already proposed a patch to fix this. From 
+the description there, it looks like it may also fix the reboot problem this 
+thread is about.
 
-so (1)->(3)->(2) cause oops, this patch should fix such scenario
-
-Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
-Cc: Jim Paris <jim@jtan.com>
-
----
-
-Index: linux-2.6.21-rc6/fs/ufs/inode.c
-===================================================================
---- linux-2.6.21-rc6.orig/fs/ufs/inode.c
-+++ linux-2.6.21-rc6/fs/ufs/inode.c
-@@ -601,7 +601,7 @@ static void ufs_set_inode_ops(struct ino
- 				   ufs_get_inode_dev(inode->i_sb, UFS_I(inode)));
- }
- 
--static void ufs1_read_inode(struct inode *inode, struct ufs_inode *ufs_inode)
-+static int ufs1_read_inode(struct inode *inode, struct ufs_inode *ufs_inode)
- {
- 	struct ufs_inode_info *ufsi = UFS_I(inode);
- 	struct super_block *sb = inode->i_sb;
-@@ -613,8 +613,10 @@ static void ufs1_read_inode(struct inode
- 	 */
- 	inode->i_mode = mode = fs16_to_cpu(sb, ufs_inode->ui_mode);
- 	inode->i_nlink = fs16_to_cpu(sb, ufs_inode->ui_nlink);
--	if (inode->i_nlink == 0)
-+	if (inode->i_nlink == 0) {
- 		ufs_error (sb, "ufs_read_inode", "inode %lu has zero nlink\n", inode->i_ino);
-+		return -1;
-+	}
- 	
- 	/*
- 	 * Linux now has 32-bit uid and gid, so we can support EFT.
-@@ -643,9 +645,10 @@ static void ufs1_read_inode(struct inode
- 		for (i = 0; i < (UFS_NDADDR + UFS_NINDIR) * 4; i++)
- 			ufsi->i_u1.i_symlink[i] = ufs_inode->ui_u2.ui_symlink[i];
- 	}
-+	return 0;
- }
- 
--static void ufs2_read_inode(struct inode *inode, struct ufs2_inode *ufs2_inode)
-+static int ufs2_read_inode(struct inode *inode, struct ufs2_inode *ufs2_inode)
- {
- 	struct ufs_inode_info *ufsi = UFS_I(inode);
- 	struct super_block *sb = inode->i_sb;
-@@ -658,8 +661,10 @@ static void ufs2_read_inode(struct inode
- 	 */
- 	inode->i_mode = mode = fs16_to_cpu(sb, ufs2_inode->ui_mode);
- 	inode->i_nlink = fs16_to_cpu(sb, ufs2_inode->ui_nlink);
--	if (inode->i_nlink == 0)
-+	if (inode->i_nlink == 0) {
- 		ufs_error (sb, "ufs_read_inode", "inode %lu has zero nlink\n", inode->i_ino);
-+		return -1;
-+	}
- 
-         /*
-          * Linux now has 32-bit uid and gid, so we can support EFT.
-@@ -690,6 +695,7 @@ static void ufs2_read_inode(struct inode
- 		for (i = 0; i < (UFS_NDADDR + UFS_NINDIR) * 4; i++)
- 			ufsi->i_u1.i_symlink[i] = ufs2_inode->ui_u2.ui_symlink[i];
- 	}
-+	return 0;
- }
- 
- void ufs_read_inode(struct inode * inode)
-@@ -698,6 +704,7 @@ void ufs_read_inode(struct inode * inode
- 	struct super_block * sb;
- 	struct ufs_sb_private_info * uspi;
- 	struct buffer_head * bh;
-+	int err;
- 
- 	UFSD("ENTER, ino %lu\n", inode->i_ino);
- 
-@@ -720,14 +727,17 @@ void ufs_read_inode(struct inode * inode
- 	if ((UFS_SB(sb)->s_flags & UFS_TYPE_MASK) == UFS_TYPE_UFS2) {
- 		struct ufs2_inode *ufs2_inode = (struct ufs2_inode *)bh->b_data;
- 
--		ufs2_read_inode(inode,
--				ufs2_inode + ufs_inotofsbo(inode->i_ino));
-+		err = ufs2_read_inode(inode,
-+				      ufs2_inode + ufs_inotofsbo(inode->i_ino));
- 	} else {
- 		struct ufs_inode *ufs_inode = (struct ufs_inode *)bh->b_data;
- 
--		ufs1_read_inode(inode, ufs_inode + ufs_inotofsbo(inode->i_ino));
-+		err = ufs1_read_inode(inode,
-+				      ufs_inode + ufs_inotofsbo(inode->i_ino));
- 	}
- 
-+	if (err)
-+		goto bad_inode;
- 	inode->i_version++;
- 	ufsi->i_lastfrag =
- 		(inode->i_size + uspi->s_fsize - 1) >> uspi->s_fshift;
-@@ -888,6 +898,8 @@ void ufs_delete_inode (struct inode * in
- 	loff_t old_i_size;
- 
- 	truncate_inode_pages(&inode->i_data, 0);
-+	if (is_bad_inode(inode))
-+		goto no_delete;
- 	/*UFS_I(inode)->i_dtime = CURRENT_TIME;*/
- 	lock_kernel();
- 	mark_inode_dirty(inode);
-@@ -898,4 +910,7 @@ void ufs_delete_inode (struct inode * in
- 		ufs_warning(inode->i_sb, __FUNCTION__, "ufs_truncate failed\n");
- 	ufs_free_inode (inode);
- 	unlock_kernel();
-+	return;
-+no_delete:
-+	clear_inode(inode);	/* We must guarantee clearing of inode... */
- }
-
--- 
-/Evgeniy
-
+Regards
