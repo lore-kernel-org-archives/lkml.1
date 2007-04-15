@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbXDOUsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXDOUzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753724AbXDOUsq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 16:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXDOUsq
+	id S1753927AbXDOUzZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 16:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXDOUzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 16:48:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32788 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753724AbXDOUsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 16:48:45 -0400
-Date: Sun, 15 Apr 2007 22:48:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Con Kolivas <kernel@kolivas.org>, Peter Williams <pwil3058@bigpond.net.au>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070415204824.GA25813@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070415200535.GC11166@waste.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 15 Apr 2007 16:55:25 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:34183 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbXDOUzY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 16:55:24 -0400
+X-Originating-Ip: 24.6.145.253
+Date: Sun, 15 Apr 2007 16:55:40 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: so what *is* obsolete and removable?
+Message-ID: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-14.854, required 5, ALL_TRUSTED -1.80, BAYES_00 -15.00,
+	INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_NJABL_DUL 1.95,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Matt Mackall <mpm@selenic.com> wrote:
+  in a recent posting, ian anderson suggested that, before kernel
+features are removed, they should spend a reasonable amount of time in
+the feature removal file to give everyone fair warning.  if that's the
+case, then there are a *bunch* of things that should perhaps be added
+to that file real soon now just to start the clock ticking.
 
-> Look at what happened with I/O scheduling. Opening things up to some 
-> new ideas by making it possible to select your I/O scheduler took us 
-> from 10 years of stagnation to healthy, competitive development, which 
-> gave us a substantially better I/O scheduler.
+  as a trivial first observation, there are a load of options
+described as "obsolete" in one way or another in the various Kconfig
+files:
 
-actually, 2-3 years ago we already had IO schedulers, and my opinion 
-against plugsched back then (also shared by Nick and Linus) was very 
-much considering them. There are at least 4 reasons why I/O schedulers 
-are different from CPU schedulers:
+$ grep -iw obsolete $(find . -name Kconfig\*)
+./net/sched/Kconfig:    bool "Traffic Policing (obsolete)"
+./net/netfilter/Kconfig:        bool "Layer 3 Dependent Connection tracking (OBSOLETE)"
+./net/netfilter/Kconfig:          This target replaced the old obsolete QUEUE target.
+./net/ipv6/netfilter/Kconfig:   tristate "IP6 Userspace queueing via NETLINK (OBSOLETE)"
+./net/ipv4/netfilter/Kconfig:   tristate "IP Userspace queueing via NETLINK (OBSOLETE)"
+./net/ipv4/Kconfig:       This code is experimental and also obsolete. If you want to use it,
+./net/bridge/netfilter/Kconfig: tristate "ebt: ulog support (OBSOLETE)"
+./drivers/pcmcia/Kconfig:       bool "PCMCIA control ioctl (obsolete)"
+./drivers/net/wireless/Kconfig:# Note : the cards are obsolete (can't buy them anymore), but the drivers
+./drivers/net/wireless/Kconfig:comment "Obsolete Wireless cards support (pre-802.11)"
+./drivers/net/Kconfig:    new card, since the 3c501 is slow, broken, and obsolete: you will
+./drivers/net/Kconfig:  tristate "Traffic Shaper (OBSOLETE)"
+./drivers/block/paride/Kconfig:   This option enables support for the (obsolete) EPIA parallel port
+./drivers/block/paride/Kconfig:   This option enables support for the (obsolete) 90c20 parallel port
+./drivers/block/Kconfig:          obsolete. For details, read <file:Documentation/ramdisk.txt>.
+./drivers/sbus/char/Kconfig:    tristate "Bidirectional parallel port support (OBSOLETE)"
+./drivers/sbus/char/Kconfig:      Say Y here to support Sun's obsolete variant of IEEE1284
+./drivers/message/i2o/Kconfig:  bool "Enable ioctls (OBSOLETE)"
+./drivers/char/Kconfig: tristate "Moxa SmartIO support (OBSOLETE)"
+./drivers/char/Kconfig: tristate "RAW driver (/dev/raw/rawN) (OBSOLETE)"
+./drivers/mtd/chips/Kconfig:      select some other chip drivers which are now considered obsolete,
+./drivers/isdn/Kconfig: tristate "Old ISDN4Linux (obsolete)"
+./drivers/isdn/Kconfig:   Therefore the old ISDN4Linux layer is becoming obsolete. It is
+./lib/Kconfig.debug:    bool "Enable unused/obsolete exported symbols"
+./arch/i386/Kconfig:      1995 when it was made obsolete by the PCI bus.
+./arch/arm/Kconfig:       1995 when it was made obsolete by the PCI bus.
+./arch/sparc64/Kconfig:   1995 when it was made obsolete by the PCI bus.
+./arch/m68k/Kconfig:      1995 when it was made obsolete by the PCI bus.
+./arch/um/Kconfig.char:        tristate "RAW driver (/dev/raw/rawN) (OBSOLETE)"
+./arch/um/Kconfig:      into UML. This option is largely obsolete, given that skas0 provides
+./arch/mips/Kconfig:      1995 when it was made obsolete by the PCI bus.
+./arch/powerpc/platforms/iseries/Kconfig:       tristate "iSeries Virtual Console Support (Obsolete)"
+./arch/sh/Kconfig:        1995 when it was made obsolete by the PCI bus.
+./sound/core/Kconfig:     Say Y here to support the obsolete ALSA PCM API (ver.0.9.0 rc3
+./sound/oss/Kconfig:    bool "Obsolete OSS drivers"
+./sound/oss/Kconfig:      This option enables support for obsolete OSS drivers that
 
-1) CPUs are a non-persistent resource shared by _all_ tasks and 
-   workloads in the system. Disks are _persistent_ resources very much 
-   attached to specific workloads. (If tasks had to be 'persistent' to
-   the CPU they were started on we'd have much different scheduling
-   technology, and there would be much less complexity.) More analogous 
-   to CPU schedulers would perhaps be VM/MM schedulers, and those tend 
-   to be hard to modularize in a technologically sane way too. (and 
-   unlike disks there's no good generic way to attach VM/MM schedulers 
-   to particular workloads.) So it's apples to oranges.
+  clearly, that was a fairly brainless search, but it still reveals a
+pile of stuff that's "obsolete" (whatever that means in the context in
+which it's used).  so what's really obsolete?
 
-   in practice it comes down to having one good scheduler that runs all 
-   workloads on a system reasonably well. And given that a very large 
-   portion of system runs mixed workloads, the demand for one good 
-   scheduler is pretty high. While i can run with mixed IO schedulers 
-   just fine.
+  as i recall, the isdn4linux was *un*obsoleted, wasn't it?  and raw
+drivers are going to be kept around for a while longer.  so what's
+legitimately dead?  or what should be added to the feature removal
+schedule?  or, if it's not really "obsolete," perhaps it shouldn't be
+described that way.
 
-2) plugsched did not allow on the fly selection of schedulers, nor did
-   it allow a per CPU selection of schedulers. IO schedulers you can 
-   change per disk, on the fly, making them much more useful in
-   practice. Also, IO schedulers (while definitely not being slow!) are 
-   alot less performance sensitive than CPU schedulers.
+  just my $0.02 (Cdn).
 
-3) I/O schedulers are pretty damn clean code, and plugsched, at least
-   the last version i saw of it, didnt come even close.
+rday
 
-4) the good thing that happened to I/O, after years of stagnation isnt
-   I/O schedulers. The good thing that happened to I/O is called Jens
-   Axboe. If you care about the I/O subystem then print that name out 
-   and hang it on the wall. That and only that is what mattered.
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-all in one, while there are definitely uses (embedded would like to have 
-a smaller/different scheduler, etc.), the technical case for 
-modularization for the sake of selectability is alot lower for CPU 
-schedulers than it is for I/O schedulers.
-
-nor was the non-modularity of some piece of code ever an impediment to 
-competition. May i remind you of the pretty competitive SLAB allocator 
-landscape, resulting in things like the SLOB allocator, written by 
-yourself? ;-)
-
-	Ingo
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
