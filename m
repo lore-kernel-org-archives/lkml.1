@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbXDOU7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXDOVDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948AbXDOU7F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 16:59:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbXDOU7F
+	id S1753957AbXDOVDc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 17:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXDOVDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 16:59:05 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:49384 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753948AbXDOU7D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 16:59:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Fi3lvm7x9R+Efht5lQX3PGcPHVr0M8cV/D6dGp1huU8nWfck53OrZscVEksmmpBMQ76veTYDw6zD3r2oUdPFvWSKuY/e3ceU5gKo+VJ6nf8ZBU7iM+iImT+h5R3+ED2OLghuKtr/lWAorPVimNbdB+Z0Nsu1YSJsyBKp8BRS73I=
-Message-ID: <68676e00704151359g18bf6935wcb2144bcbcf4edd2@mail.gmail.com>
-Date: Sun, 15 Apr 2007 22:59:00 +0200
-From: "Luca Tettamanti" <kronos.it@gmail.com>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Cc: "Jean Delvare" <khali@linux-fr.org>, "Pavel Machek" <pavel@ucw.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
-       linux-acpi@vger.kernel.org, "Chuck Ebbert" <cebbert@redhat.com>
-In-Reply-To: <200704151431.41503.bjorn.helgaas@hp.com>
+	Sun, 15 Apr 2007 17:03:32 -0400
+Received: from mail.cavein.org ([66.245.249.51]:43667 "EHLO mail.cavein.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753957AbXDOVDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 17:03:31 -0400
+X-Greylist: delayed 521 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Apr 2007 17:03:31 EDT
+Date: Sun, 15 Apr 2007 13:54:49 -0700 (PDT)
+From: Richard A Nelson <cowboy@cavein.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.21-rc6, ASUS M2V 1.01G, ALSA detection/non-support
+Message-ID: <alpine.DEB.0.98.0704151341250.12045@hygvzn-guhyr.pnirva.bet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <45D5EA88.7090300@redhat.com>
-	 <200704131459.45867.bjorn.helgaas@hp.com>
-	 <20070415114159.05026483@hyperion.delvare>
-	 <200704151431.41503.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/15/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> On Sunday 15 April 2007 03:41, Jean Delvare wrote:
-> > On Fri, 13 Apr 2007 14:59:45 -0600, Bjorn Helgaas wrote:
-> > > Of course, there are always BIOS defects.  But if we could make a
-> > > case that a BIOS that doesn't declare the resources used by the AML
-> > > is defective, we could add quirks to reserve the undeclared resources.
-> >
-> > Only realistic if the list of systems needing a quirk is small. Do you
-> > think that would be the case?
->
-> I don't know.  I confess that I don't clearly understand the problem
-> yet.  It sounds like the sensor drivers want to talk to hardware that
-> ACPI methods might also use.
 
-Exactly.
+My son has an earlier version of the M2V & BIOS (0901) and his gets full 6ch
+sound.
 
-> But I missed the details, such as the specific devices in question,
-> which ports they use, how they are described in ACPI, which AML
-> methods use those ports, and which non-ACPI drivers also use them.
+The 1.01G, and related BIOS (1304 or 1701) do not properly handle the
+onboard sound:
+hda_codec: Unknown model for ALC660VD/ALC861VD, trying auto-probe from BIOS...
 
-The original report was about the temperature sensors of K8 cpus. It
-happens that ACPI reads the sensors while the linux driver is using it
-and gets garbage (and shut down the system). The problem is more
-generic though, and applies to all hardware monitoring chips for which
-a driver exists.
+it seems to truely be a BIOS issue, as I don't see a difference in lspci
+-vvxxx between our systems:
 
-> It also sounds like the non-ACPI drivers provide much more
-> functionality than ACPI exposes.  I'd like to understand this,
-> too, because an  obvious way to solve the problem would be to
-> drop the non-ACPI drivers.
+80:01.0 Audio device: VIA Technologies, Inc. VIA High Definition Audio
+Controller (rev 10)
+         Subsystem: ASUSTeK Computer Inc. Unknown device 81e7
+         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Step ping- SERR- FastB2B-
+         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+         Latency: 0, Cache Line Size: 64 bytes
+         Interrupt: pin A routed to IRQ 17
+         Region 0: Memory at fbffc000 (64-bit, non-prefetchable) [size=16K]
+         Capabilities: [50] Power Management version 2
+                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=55mA PME(D0+,D1-,D2-,D3ho t+,D3cold+)
+                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+         Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+                 Address: 0000000000000000  Data: 0000
+         Capabilities: [70] Express Unknown type IRQ 0
+                 Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+                 Device: Latency L0s <64ns, L1 <1us
+                 Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                 Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                 Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+                 Link: Supported Speed unknown, Width x0, ASPM unknown, Port 0
+                 Link: Latency L0s <64ns, L1 <1us
+                 Link: ASPM Disabled CommClk- ExtSynch-
+                 Link: Speed unknown, Width x0
+00: 06 11 88 32 06 00 10 00 10 00 03 04 10 00 00 00
+10: 04 c0 ff fb 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 e7 81
+30: 00 00 00 00 50 00 00 00 00 00 00 00 0a 01 00 00
+40: 00 30 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 01 60 42 c8 00 00 00 00 00 00 00 00 00 00 00 00
+60: 05 70 80 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 10 00 91 00 00 00 00 00 00 00 30 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 
-Problem is that ACPI may access the sensors anyway (e.g. via SMM).
+ALSA, instead of seeing ALC660, on my box sees ALC660-VD, with very
+little in the way of devices (only front output) - which does not work
+either :(
 
-> Is this extra functionality available
-> on Windows?  If so, do we know whether Windows uses non-ACPI drivers
-> or whether they have some smarter way to use ACPI?
-
-Usually ACPI exposes 1 or 2 temperature readings (CPU and
-motherboard), while the hw driver can also provide fans and voltages
-measurements.
-
-Vendors usually provides a monitoring utility for Win that also
-exposes these information. It's not known whether there's a way to
-avoid conflicting accesses between ACPI and the raw driver; it's
-possible that it's vendor-specific and not documented.
-
-Luca
+Stumped on where to go from here...
+-- 
+Rick Nelson
+Life'll kill ya                         -- Warren Zevon
+Then you'll be dead                     -- Life'll kill ya
