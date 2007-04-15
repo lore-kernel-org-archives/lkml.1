@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbXDOWhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbXDOWsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbXDOWhO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 18:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbXDOWhO
+	id S1754032AbXDOWsw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 18:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbXDOWsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 18:37:14 -0400
-Received: from gateway.crfreenet.org ([81.92.146.254]:48501 "EHLO
-	mail.crfreenet.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754026AbXDOWhN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 18:37:13 -0400
-X-Greylist: delayed 1688 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Apr 2007 18:37:13 EDT
-Date: Mon, 16 Apr 2007 00:08:54 +0200
-From: Ondrej Zajicek <santiago@crfreenet.org>
-To: Anton Vorontsov <cbou@mail.ru>
-Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       dwmw2@infradead.org
-Subject: Re: [PATCH 3/7] [RFC] Battery monitoring class
-Message-ID: <20070415220854.GA20373@localhost.localdomain>
-References: <20070411232503.GC20095@zarina>
+	Sun, 15 Apr 2007 18:48:52 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:55312 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754032AbXDOWsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 18:48:51 -0400
+From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Date: Mon, 16 Apr 2007 01:49:35 +0300
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20070413202100.GA9957@elte.hu>
+In-Reply-To: <20070413202100.GA9957@elte.hu>
+X-Face: 9Va_@~iRiB"*X1O@K#(=?utf-8?q?thBxy=236XXkD87I=3DG=7E=23=26tFA=26=24mM+4oHIQZGdgCx9=23IZ=7ByL-?=
+ =?utf-8?q?rk8CY=0A=09u=3B=7DX=7D?=,+R%vB]|/kKH:-<%Mym?njPCL%'gcIX.J$I}9+{Q|vvl0&c+>WFNbuN,>)
+ =?utf-8?q?Of=3AUJq0=0A=09=7DL9+?="}tE:hB<t]y=^%m/R6z.OA8}$@VZ6N?m?h4^,GBNW&xS]9'I?;1OEohho"yF>
+ =?utf-8?q?s36=7EN=0A=09=5CE0=60?=@O~`!C>JQkL|pqY{]A7Ow0PD$;BJ9^%!$[hV?(lrTA\rJk\rxnz>oW&W,
+ =?utf-8?q?=3DE3obyZfC=0A=09=5EC=7BbqWCY?=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20070411232503.GC20095@zarina>
-X-Operating-System: Debian GNU/Linux 3.1 (Sarge)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart1608857.Gt8iZK2SVB";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704160149.42914.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 03:25:03AM +0400, Anton Vorontsov wrote:
-> Here is battery monitor class. According to first copyright string, we're
-> maintaining it since 2003. I've took few days and cleaned it up to be
-> more suitable for mainline inclusion.
+--nextPart1608857.Gt8iZK2SVB
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Just some ideas:
+Hi,
+On Friday 13 April 2007 23:21:00 Ingo Molnar wrote:
+> [announce] [patch] Modular Scheduler Core and Completely Fair Scheduler
+> [CFS]
+>
+> i'm pleased to announce the first release of the "Modular Scheduler Core
+> and Completely Fair Scheduler [CFS]" patchset:
+>
+>    http://redhat.com/~mingo/cfs-scheduler/sched-modular+cfs.patch
 
-- what about using exponents in values?
-For example file "voltage" could contain "123 -3" to represent 123 mV.
-Exponents could be hardcoded in drivers according to device's range
-(so there is no complication in it), but interface is usable in great
-range of values. And it is pretty easy to use from userspace.
+Tested this on top of Linus' GIT tree but the system gets very unresponsive=
+=20
+during high disk i/o using ext3 as filesystem but even writing a 300mb file=
+=20
+to a usb disk (iPod actually) has the same affect.
 
-- interface should allow to present values which are some monotonic
-functions of common physical properties. For example when we know
-where are some raw data from sensor, but we don't know where are
-calibration tables to be able to compute value in some standard unit
-(as V for voltage) - in this case it is better to show raw data 
-(or raw data after some transformation which makes them monotonic)
-and specify that this is raw data than show nothing. 
+Regards,
+ismail
 
-- it would be nice to know whether presented value is from some
-measurement or it is (inaccurate) estimation.
+--nextPart1608857.Gt8iZK2SVB
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
--- 
-Elen sila lumenn' omentielvo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+iD8DBQBGIqwGGp0leluI9UwRAngbAJ44gEQKpBBj8/pMmgVs+I3FODSiVACfS9ad
+cko3YXznLNQ84EPiac1YGuk=
+=+5lG
+-----END PGP SIGNATURE-----
+
+--nextPart1608857.Gt8iZK2SVB--
