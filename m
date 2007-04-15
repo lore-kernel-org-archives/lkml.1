@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXDOAri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbXDOAug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbXDOAri (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 20:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXDOAri
+	id S1751856AbXDOAug (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Apr 2007 20:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXDOAuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 20:47:38 -0400
-Received: from mx27.mail.ru ([194.67.23.64]:15407 "EHLO mx27.mail.ru"
+	Sat, 14 Apr 2007 20:50:35 -0400
+Received: from ozlabs.org ([203.10.76.45]:50331 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbXDOArh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 20:47:37 -0400
-Date: Sun, 15 Apr 2007 04:43:54 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: linux-kernel@vger.kernel.org
-Cc: kernel-discuss@handhelds.org, dwmw2@infradead.org,
-       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Shem Multinymous <multinymous@gmail.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 3/7] [RFC] Battery monitoring class
-Message-ID: <20070415004354.GA23559@zarina>
-Reply-To: cbou@mail.ru
-References: <20070411232503.GC20095@zarina> <20070413134939.GA20618@zarina>
+	id S1751856AbXDOAuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Apr 2007 20:50:35 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070413134939.GA20618@zarina>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17953.30429.220756.818283@cargo.ozlabs.ibm.com>
+Date: Sun, 15 Apr 2007 10:50:37 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: David Miller <davem@davemloft.net>
+Cc: kaber@trash.net, poemann@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+In-Reply-To: <20070414.100441.15000708.davem@davemloft.net>
+References: <461DC70B.4000500@trash.net>
+	<20070413.161635.26523891.davem@davemloft.net>
+	<17953.1560.855914.274514@cargo.ozlabs.ibm.com>
+	<20070414.100441.15000708.davem@davemloft.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 13, 2007 at 05:49:39PM +0400, Anton Vorontsov wrote:
-> I'll convert mXh to uXh a bit later, if there will no further objections
-> against uXh. Also I'd like to hear if there any objections on
-> mA/mV -> uA/uV conversion. I think we'd better keep all units at the
-> same order/precision.
+David Miller writes:
 
-Okay, would it make sense to use "long" instead of "int" after "milli" to
-"micro" conversion? On 32 bit machines int gives +-2147483648 limit. So
-2147 volts/amperes/...
+> Here is Patrick McHardy's patch:
 
-Though 2147 amperes is unrealistic for batteries, but if used in
-calculations it could be dangerous.
+So this doesn't change process_input_packet(), which treats the case
+where the first byte is 0xff (PPP_ALLSTATIONS) but the second byte is
+0x03 (PPP_UI) as indicating a packet with a PPP protocol number of
+0xff.  Arguably that's wrong since PPP protocol 0xff is reserved, and
+the RFC does envision the possibility of receiving frames where the
+control field has values other than 0x03.
 
-For example:
-di->life_sec = -((di->accum_current_uAh - di->empty_uAh) *
-                 3600) / di->current_uA;
+Therefore I think this patch is probably better.  Could people try it
+out and let me know if it fixes the problem?
 
-It can be also solved (and I voting for it) by typecasting to long
-in the driver itself.
+Paul.
 
-Would it also make sense to use int64_t instead of long? And how should
-it passed to printk in portable way? I guess printk (vsprintf) does not
-support PRIx notation as defined in /usr/include/inttypes.h ?
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
+index 933e2f3..caabbc4 100644
+--- a/drivers/net/ppp_async.c
++++ b/drivers/net/ppp_async.c
+@@ -802,9 +802,9 @@ process_input_packet(struct asyncppp *ap)
+ 
+ 	/* check for address/control and protocol compression */
+ 	p = skb->data;
+-	if (p[0] == PPP_ALLSTATIONS && p[1] == PPP_UI) {
++	if (p[0] == PPP_ALLSTATIONS) {
+ 		/* chop off address/control */
+-		if (skb->len < 3)
++		if (p[1] != PPP_UI || skb->len < 3)
+ 			goto err;
+ 		p = skb_pull(skb, 2);
+ 	}
