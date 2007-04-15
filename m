@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750719AbXDODk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXDOEBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750719AbXDODk1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Apr 2007 23:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbXDODk1
+	id S1750893AbXDOEBM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 00:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbXDOEBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Apr 2007 23:40:27 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:24816 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750719AbXDODk0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Apr 2007 23:40:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=P8QAqV627tDnc+sYpqGxqpNhGasl8GRKGRxp8Qoahe8NxlJYjjfa1GUx/CKmK3+kwQebp8FdckVtkj7cKDt8ZsbrNVV8xwDiwLe8z5sgp4M90MOVsvF/1fKH4rwTycq1GNxQfdRypV9n5jX1ptSl1ipzVGw/pg6L8qZ2f9r3RiI=
-Message-ID: <170fa0d20704142040w204a715bgf5ce772e67126bbd@mail.gmail.com>
-Date: Sat, 14 Apr 2007 23:40:24 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Subject: Re: [NFS] Merge plans for RPC/RDMA? (Was: Re: [PATCH 000 of 14] knfsd: Preparation for IPv6 support in NFS server.)
-Cc: chuck.lever@oracle.com, NeilBrown <neilb@suse.de>,
-       "Andrew Morton" <akpm@osdl.org>, "Roland Dreier" <rdreier@cisco.com>,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       jlentini@netapp.com, Thomas.Talpey@netapp.com, ogerlitz@voltaire.com
-In-Reply-To: <1176502465.6394.26.camel@heimdal.trondhjem.org>
+	Sun, 15 Apr 2007 00:01:12 -0400
+Received: from holomorphy.com ([66.93.40.71]:45246 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750888AbXDOEBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 00:01:12 -0400
+Date: Sat, 14 Apr 2007 21:01:26 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070415040126.GF8915@holomorphy.com>
+References: <20070413202100.GA9957@elte.hu> <20070413222151.GD8915@holomorphy.com> <Pine.LNX.4.64.0704140008001.10930@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <170fa0d20704131347u4a28b5d1h1959227980449fbf@mail.gmail.com>
-	 <1176502465.6394.26.camel@heimdal.trondhjem.org>
+In-Reply-To: <Pine.LNX.4.64.0704140008001.10930@alien.or.mcafeemobile.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/13/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> On Fri, 2007-04-13 at 16:47 -0400, Mike Snitzer wrote:
-> > I must be missing something because I don't see _any_ trace of the
-> > core RPC over RDMA support (xprtrdma et al), your RPC Transport
-> > Switch, or any of the other supporting changes in mainline.  Could
-> > you, or others, please clarify the plan for merging RPC/RDMA?
->
-> That would be a question for the actual RPC/RDMA developers (i.e. James
-> Lentini and Tom Talpey). They haven't submitted any code for review yet.
+On Fri, 13 Apr 2007, William Lee Irwin III wrote:
+>> A binomial heap would likely serve your purposes better than rbtrees.
+[...]
 
-The reason I asked is there seems to be a catch-22 going on here if
-(as Chuck indicated) the NetApp engineers are waiting for the
-remaining rpc transport switch patches to be merged.  My naive
-understanding is that those remaining transport switch patches aren't
-_really_ needed without the RPC/RDMA patches.
+On Sat, Apr 14, 2007 at 03:38:04PM -0700, Davide Libenzi wrote:
+> Haven't looked at the scheduler code yet, but for a similar problem I use 
+> a time ring. The ring has Ns (2 power is better) slots (where tasks are 
+> queued - in my case they were som sort of timers), and it has a current 
+> base index (Ib), a current base time (Tb) and a time granularity (Tg). It 
+> also has a bitmap with bits telling you which slots contains queued tasks. 
+> An item (task) that has to be scheduled at time T, will be queued in the slot:
+> S = Ib + min((T - Tb) / Tg, Ns - 1);
+> Items with T longer than Ns*Tg will be scheduled in the relative last slot 
+> (chosing a proper Ns and Tg can minimize this).
+> Queueing is O(1) and de-queueing is O(Ns). You can play with Ns and Tg to 
+> suite to your needs.
 
-Essentially I'm echoing Or Gerlitz's post to openib-general back in December:
-http://lists.openfabrics.org/pipermail/general/2006-December/029721.html
+I used a similar sort of queue in the virtual deadline scheduler I
+wrote in 2003 or thereabouts. CFS uses queue priorities with too high
+a precision to map directly to this (queue priorities are marked as
+"key" in the cfs code and should not be confused with task priorities).
+The elder virtual deadline scheduler used millisecond resolution and a
+rather different calculation for its equivalent of ->key, which
+explains how it coped with a limited priority space.
 
-If so, it begs the question: why the hold up from the NetApp
-engineers?  In the hopes of getting some insight I've cc'd James
-Lentini and Tom Talpey.
+The two basic attacks on such large priority spaces are the near future
+vs.  far future subdivisions and subdividing the priority space into
+(most often regular) intervals. Subdividing the priority space into
+intervals is the most obvious; you simply use some O(lg(n)) priority
+queue as the bucket discipline in the "time ring," queue by the upper
+bits of the queue priority in the time ring, and by the lower bits in
+the O(lg(n)) bucket discipline. The near future vs. far future
+subdivision is maintaining the first N tasks in a low-constant-overhead
+structure like a sorted list and the remainder in some other sort of
+queue structure intended to handle large numbers of elements gracefully.
+The distribution of queue priorities strongly influences which of the
+methods is most potent, though it should be clear the methods can be
+used in combination.
 
-I'm assuming that all of you obviously want your code merged mainline.
- The thing that is puzzling is the non-traditional release management
-of this RPC/RDMA and NFS/RDMA code.  Aside from the periodic
-announcements of the tarball updates to the sf.net nfs-rdma project;
-I've not found any posting/discussion of associated patches to the
-various mailing lists (nfs, nfsv4, ofa's general, lkml, etc).
 
-I'm interested in understanding why the reluctance to push for a merge
-now (let alone some months ago) given the various successes that have
-been seen with the NFS/RDMA effort (Sandia, SC '06, as Chuck noted:
-good performance at various test sites).  If the code is holding up
-well why the delay in review and merging?  And rather than wait for
-the remaining transport switch patches; why not look to merge all of
-NFS/RDMA (client) work at the same time?
-
-regards,
-Mike
+-- wli
