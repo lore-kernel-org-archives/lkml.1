@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbXDOM3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbXDOMaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbXDOM3e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 08:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbXDOM3e
+	id S1752927AbXDOMaV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 08:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbXDOMaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 08:29:34 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39729 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbXDOM3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 08:29:33 -0400
-Date: Sun, 15 Apr 2007 14:30:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ALPHA: support graphics on non-zero PCI domains (take 2)
-Message-ID: <20070415123020.GA19688@uranus.ravnborg.org>
-References: <20070415111937.A12310@jurassic.park.msu.ru> <20070415090115.GA18103@uranus.ravnborg.org> <20070415152222.A12703@jurassic.park.msu.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070415152222.A12703@jurassic.park.msu.ru>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 15 Apr 2007 08:30:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:36381 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752964AbXDOMaR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 08:30:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
+        b=BQvAeN2YLiGslyb8lmNkRy+3161IIIHYUQ+qWjYCRGKencYVu3WaYh2DH7N4hBC4Z3ImTJ64KOs7W4Rhn9/qN97ytwBxsolzLar13LRqTDYFBJMZzNrdlktpCsei3mk9AUMsbVLdPGfHXegVY/sABD5Yocn1ni0XkYhyqbF1lks=
+Date: Sun, 15 Apr 2007 14:29:53 +0200 (CEST)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+X-X-Sender: simlo@frodo.shire
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+In-Reply-To: <20070413202100.GA9957@elte.hu>
+Message-ID: <Pine.LNX.4.64.0704151419140.11750@frodo.shire>
+References: <20070413202100.GA9957@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> > > +#ifndef CONFIG_ALPHA_GENERIC
-> > > +EXPORT_SYMBOL(tsunami_ioportmap);
-> > > +EXPORT_SYMBOL(tsunami_ioremap);
-> > > +#endif
-> > 
-> > It looks strange that the function is always defined but conditionally exported.
-> > Also usual style is to place EXPORT right after closing brace of function -
-> > (with no empty lines in-between).
-> 
-> In a generic kernel the IO functions are never addressed directly,
-> only via machine vector, so there is no point in exporting them.
-> What about something like EXPORT_SYMBOL_NONGENERIC() macro?
-As I wrote it looked strange. Unconditionally exporting them should not harm
-and then we are one pair of ifdef/endif shorter?
+On Fri, 13 Apr 2007, Ingo Molnar wrote:
 
-Nitty gritty detail so do what you think match best.
+> [announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+>
+> i'm pleased to announce the first release of the "Modular Scheduler Core
+> and Completely Fair Scheduler [CFS]" patchset:
+>
+>   http://redhat.com/~mingo/cfs-scheduler/sched-modular+cfs.patch
+>
+> This project is a complete rewrite of the Linux task scheduler. My goal
+> is to address various feature requests and to fix deficiencies in the
+> vanilla scheduler that were suggested/found in the past few years, both
+> for desktop scheduling and for server scheduling workloads.
+>
+> [...]
 
-	Sam
+I took a brief look at it. Have you tested priority inheritance?
+As far as  I can see rt_mutex_setprio doesn't have much effect on 
+SCHED_FAIR/SCHED_BATCH. I am looking for a place where such a task change 
+scheduler class when boosted in rt_mutex_setprio().
+
+Esben
+
