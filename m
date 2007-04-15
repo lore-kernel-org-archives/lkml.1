@@ -1,80 +1,608 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbXDOHK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbXDOHTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751698AbXDOHK5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 03:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXDOHK5
+	id S1751441AbXDOHTi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 03:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXDOHTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 03:10:57 -0400
-Received: from smtp106.plus.mail.re2.yahoo.com ([206.190.53.31]:40971 "HELO
-	smtp106.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751143AbXDOHK4 (ORCPT
+	Sun, 15 Apr 2007 03:19:38 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:4402 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbXDOHTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 03:10:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=Jk+MZcYzwnkGSFPm79DuRP1YLaO3zKxS6I2/KsnfyrMK8azsJncbyvOmwacHAneoBAVv721xN8J7hwtGopXi5r0qiNnbfFIIZHc3LU904Zz+m4Kv8/m0RQ2FaIl0Z5fzT+gA0v/sqIfADYzmcmsG6SyQYexvAq2uxuLLYonSwNg=  ;
-X-YMail-OSG: ppe2HnYVM1lXQn.4.lV8iP.YSPjEAWnAioeZVLeWUWWYAF0R3bXj0U3T1UQ9.sJVMBSam_uv.NM5CdGVVWGlDdQK03MblUWVLIbNVFtklafMnogywVo-
-Date: Sun, 15 Apr 2007 09:10:50 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [KERNEL-DOC] kill warnings when building mandocs
-Message-ID: <20070415071050.GA4002@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070413091422.GA15426@zmei.tnic> <20070414091341.7665d8b0.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 15 Apr 2007 03:19:37 -0400
+Date: Sun, 15 Apr 2007 11:19:37 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Richard Henderson <rth@twiddle.net>, Jay Estabrook <jay.estabrook@hp.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] ALPHA: support graphics on non-zero PCI domains (take 2)
+Message-ID: <20070415111937.A12310@jurassic.park.msu.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070414091341.7665d8b0.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.2.5i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 14, 2007 at 09:13:41AM -0700, Randy Dunlap wrote:
-> On Fri, 13 Apr 2007 11:14:22 +0200 Borislav Petkov wrote:
-> 
-> > This patch shuts warnings of the sort:
-> > 
-> > make -C /mnt/samsung_200/sam/kernel/trees/21-rc6/build \
-> > 	KBUILD_SRC=/mnt/samsung_200/sam/kernel/trees/21-rc6 \
-> > 	KBUILD_EXTMOD="" -f /mnt/samsung_200/sam/kernel/trees/21-rc6/Makefile mandocs
-> > make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=scripts/basic
-> > make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=Documentation/DocBook mandocs
-> >   SRCTREE=/mnt/samsung_200/sam/kernel/trees/21-rc6/ /mnt/samsung_200/sam/kernel/trees/21-rc6/build/scripts/basic/docproc doc /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/wanbook.tmpl >Documentation/DocBook/wanbook.xml
-> >   if grep -q refentry Documentation/DocBook/wanbook.xml; then xmlto man -m /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/stylesheet.xsl -o Documentation/DocBook/man Documentation/DocBook/wanbook.xml ; gzip -f Documentation/DocBook/man/*.9; fi
-> > Note: meta version: No productnumber or alternative     sppp_close
-> > Note: meta version: No refmiscinfo@class=version        sppp_close
-> > Note: Writing sppp_close.9
-> > Note: meta version: No productnumber or alternative     sppp_open
-> > Note: meta version: No refmiscinfo@class=version        sppp_open
-> > 
-> > by adding a RefMiscInfo xml tag in the form of the current kernel version to 
-> > the function, struct and enum definitions in files included by kernel-doc when 
-> > building 'mandocs'.  However, the version string appears truncated on the manpage
-> > due to some constraints in the xml DTD for the man header, I believe, for the
-> > troff output is truncated too.
-> 
-> Hi Borislav,
-> 
-> I cannot reproduce this error (either, a la the tex error).
-> Any hints about how I could do so?
+The VGA IO resource change that I proposed a few days ago was ACKed by Jay,
+so here's an updated patch.
 
-Hm, this is strange. IIRC, the refmiscinfo version tag is imposed by the docbook
-xsl stylesheets for manpages, see
-http://www.oasis-open.org/archives/docbook-apps/200508/msg00111.html and
-especially the 'man'-section, subsection 'extra2 field.' According to it, 
-the stylesheets check several different locations for version info to be put in
-the left footer position in the manpage, and if none is found, they simply state
-that there's no version info, so this is not an error message but simply a
-notification which, if nothing else, annoys while building the mandocs.
+Files:
 
-The URL cites the changelog of docbook-xsl 1.69.1 and this is also the
-version in SLED 10 you're using so you should be getting this, too. I'll
-try to dig deeper into this. The relevant packs I use are docbook-xsl:
-1.72.0.dfsg.1-1, xmlto: 0.0.18-5.1 on debian unstable. 
+arch/alpha/Kconfig
+arch/alpha/kernel/console.c
+arch/alpha/kernel/core_marvel.c
+arch/alpha/kernel/core_titan.c
+arch/alpha/kernel/core_tsunami.c
+arch/alpha/kernel/proto.h
+arch/alpha/kernel/sys_dp264.c
+include/asm-alpha/core_titan.h
+include/asm-alpha/core_tsunami.h
+include/asm-alpha/vga.h
 
--- 
-Regards/Gruﬂ, 
-Boris.
+This code replaces earlier and incomplete handling of graphics on non-zero
+PCI domains (aka hoses or peer PCI buses).
+
+An option (CONFIG_VGA_HOSE) is available if configuring a GENERIC kernel,
+or a kernel for MARVEL, TITAN, or TSUNAMI machines, as these are the machines
+whose SRM consoles are capable of configuring and handling graphics options
+on non-zero hoses.
+
+A routine, "locate_and_init_vga()", is used to find the graphics device and
+set a global (pci_vga_hose) for later use in managing access to the device.
+
+Various adjustments are made to the ioremap and ioportmap routines for
+detecting and translating "legacy" VGA register and memory references to
+the real PCI domain.
+
+
+Signed-off-by: Jay Estabrook <jay.estabrook@hp.com>
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+
+
+--- orig/arch/alpha/kernel/console.c	Sun Apr 15 01:24:49 2007
++++ linux/arch/alpha/kernel/console.c	Sun Apr 15 01:25:26 2007
+@@ -9,16 +9,20 @@
+ #include <linux/init.h>
+ #include <linux/tty.h>
+ #include <linux/console.h>
++#include <linux/vt.h>
+ #include <asm/vga.h>
+ #include <asm/machvec.h>
+ 
++#include "pci_impl.h"
++
+ #ifdef CONFIG_VGA_HOSE
+ 
+-/*
+- * Externally-visible vga hose bases
+- */
+-unsigned long __vga_hose_io_base = 0;	/* base for default hose */
+-unsigned long __vga_hose_mem_base = 0;	/* base for default hose */
++struct pci_controller *pci_vga_hose = NULL;
++static struct resource alpha_vga = {
++	.name	= "alpha-vga+",
++	.start	= 0x3C0,
++	.end	= 0x3DF
++};
+ 
+ static struct pci_controller * __init 
+ default_vga_hose_select(struct pci_controller *h1, struct pci_controller *h2)
+@@ -30,35 +34,33 @@ default_vga_hose_select(struct pci_contr
+ }
+ 
+ void __init 
+-set_vga_hose(struct pci_controller *hose)
+-{
+-	if (hose) {
+-		__vga_hose_io_base = hose->io_space->start;
+-		__vga_hose_mem_base = hose->mem_space->start;
+-	}
+-}
+-
+-void __init 
+ locate_and_init_vga(void *(*sel_func)(void *, void *))
+ {
+ 	struct pci_controller *hose = NULL;
+ 	struct pci_dev *dev = NULL;
+ 
++	/* Default the select function */
+ 	if (!sel_func) sel_func = (void *)default_vga_hose_select;
+ 
++	/* Find the console VGA device */
+ 	for(dev=NULL; (dev=pci_get_class(PCI_CLASS_DISPLAY_VGA << 8, dev));) {
+-		if (!hose) hose = dev->sysdata;
+-		else hose = sel_func(hose, dev->sysdata);
++		if (!hose)
++			hose = dev->sysdata;
++		else
++			hose = sel_func(hose, dev->sysdata);
+ 	}
+ 
+-	/* Did we already inititialize the correct one? */
+-	if (conswitchp == &vga_con &&
+-	    __vga_hose_io_base == hose->io_space->start &&
+-	    __vga_hose_mem_base == hose->mem_space->start)
++	/* Did we already initialize the correct one? Is there one? */
++	if (!hose || (conswitchp == &vga_con && pci_vga_hose == hose))
+ 		return;
+ 
+-	/* Set the VGA hose and init the new console */
+-	set_vga_hose(hose);
++	/* Create a new VGA ioport resource WRT the hose it is on. */
++	alpha_vga.start += hose->io_space->start;
++	alpha_vga.end += hose->io_space->start;
++	request_resource(hose->io_space, &alpha_vga);
++
++	/* Set the VGA hose and init the new console. */
++	pci_vga_hose = hose;
+ 	take_over_console(&vga_con, 0, MAX_NR_CONSOLES-1, 1);
+ }
+ 
+--- orig/arch/alpha/kernel/core_marvel.c	Sun Apr 15 01:24:49 2007
++++ linux/arch/alpha/kernel/core_marvel.c	Sun Apr 15 01:25:12 2007
+@@ -25,6 +25,7 @@
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+ #include <asm/rtc.h>
++#include <asm/vga.h>
+ 
+ #include "proto.h"
+ #include "pci_impl.h"
+@@ -684,9 +685,6 @@ __marvel_rtc_io(u8 b, unsigned long addr
+ /*
+  * IO map support.
+  */
+-
+-#define __marvel_is_mem_vga(a)	(((a) >= 0xa0000) && ((a) <= 0xc0000))
+-
+ void __iomem *
+ marvel_ioremap(unsigned long addr, unsigned long size)
+ {
+@@ -698,13 +696,9 @@ marvel_ioremap(unsigned long addr, unsig
+ 	unsigned long pfn;
+ 
+ 	/*
+-	 * Adjust the addr.
++	 * Adjust the address.
+ 	 */ 
+-#ifdef CONFIG_VGA_HOSE
+-	if (pci_vga_hose && __marvel_is_mem_vga(addr)) {
+-		addr += pci_vga_hose->mem_space->start;
+-	}
+-#endif
++	FIXUP_MEMADDR_VGA(addr);
+ 
+ 	/*
+ 	 * Find the hose.
+@@ -781,7 +775,9 @@ marvel_ioremap(unsigned long addr, unsig
+ 		return (void __iomem *) vaddr;
+ 	}
+ 
+-	return NULL;
++	/* Assume it was already a reasonable address */
++	vaddr = baddr + hose->mem_space->start;
++	return (void __iomem *) vaddr;
+ }
+ 
+ void
+@@ -803,21 +799,15 @@ marvel_is_mmio(const volatile void __iom
+ 		return (addr & 0xFF000000UL) == 0;
+ }
+ 
+-#define __marvel_is_port_vga(a)	\
+-  (((a) >= 0x3b0) && ((a) < 0x3e0) && ((a) != 0x3b3) && ((a) != 0x3d3))
+ #define __marvel_is_port_kbd(a)	(((a) == 0x60) || ((a) == 0x64))
+ #define __marvel_is_port_rtc(a)	(((a) == 0x70) || ((a) == 0x71))
+ 
+ void __iomem *marvel_ioportmap (unsigned long addr)
+ {
+-	if (__marvel_is_port_rtc (addr) || __marvel_is_port_kbd(addr))
+-		;
+ #ifdef CONFIG_VGA_HOSE
+-	else if (__marvel_is_port_vga (addr) && pci_vga_hose)
++	if (pci_vga_hose && __is_port_vga(addr))
+ 		addr += pci_vga_hose->io_space->start;
+ #endif
+-	else
+-		return NULL;
+ 	return (void __iomem *)addr;
+ }
+ 
+@@ -829,8 +819,14 @@ marvel_ioread8(void __iomem *xaddr)
+ 		return 0;
+ 	else if (__marvel_is_port_rtc(addr))
+ 		return __marvel_rtc_io(0, addr, 0);
+-	else
++	else if (marvel_is_ioaddr(addr))
+ 		return __kernel_ldbu(*(vucp)addr);
++	else
++		/* this should catch other legacy addresses
++		   that would normally fail on MARVEL,
++		   because there really is nothing there...
++		*/
++		return ~0;
+ }
+ 
+ void
+@@ -841,7 +837,7 @@ marvel_iowrite8(u8 b, void __iomem *xadd
+ 		return;
+ 	else if (__marvel_is_port_rtc(addr)) 
+ 		__marvel_rtc_io(b, addr, 1);
+-	else
++	else if (marvel_is_ioaddr(addr))
+ 		__kernel_stb(b, *(vucp)addr);
+ }
+ 
+--- orig/arch/alpha/kernel/core_titan.c	Sun Apr 15 01:24:49 2007
++++ linux/arch/alpha/kernel/core_titan.c	Sun Apr 15 01:25:12 2007
+@@ -21,6 +21,7 @@
+ #include <asm/smp.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
++#include <asm/vga.h>
+ 
+ #include "proto.h"
+ #include "pci_impl.h"
+@@ -35,6 +36,11 @@ struct
+ } saved_config[4] __attribute__((common));
+ 
+ /*
++ * Is PChip 1 present? No need to query it more than once.
++ */
++static int titan_pchip1_present;
++
++/*
+  * BIOS32-style PCI interface:
+  */
+ 
+@@ -344,14 +350,14 @@ titan_init_one_pachip_port(titan_pachip_
+ static void __init
+ titan_init_pachips(titan_pachip *pachip0, titan_pachip *pachip1)
+ {
+-	int pchip1_present = TITAN_cchip->csc.csr & 1L<<14;
++	titan_pchip1_present = TITAN_cchip->csc.csr & 1L<<14;
+ 
+ 	/* Init the ports in hose order... */
+ 	titan_init_one_pachip_port(&pachip0->g_port, 0);	/* hose 0 */
+-	if (pchip1_present)
++	if (titan_pchip1_present)
+ 		titan_init_one_pachip_port(&pachip1->g_port, 1);/* hose 1 */
+ 	titan_init_one_pachip_port(&pachip0->a_port, 2);	/* hose 2 */
+-	if (pchip1_present)
++	if (titan_pchip1_present)
+ 		titan_init_one_pachip_port(&pachip1->a_port, 3);/* hose 3 */
+ }
+ 
+@@ -406,6 +412,7 @@ titan_init_arch(void)
+ 
+ 	/* With multiple PCI busses, we play with I/O as physical addrs.  */
+ 	ioport_resource.end = ~0UL;
++	iomem_resource.end = ~0UL;
+ 
+ 	/* PCI DMA Direct Mapping is 1GB at 2GB.  */
+ 	__direct_map_base = 0x80000000;
+@@ -441,9 +448,7 @@ titan_kill_one_pachip_port(titan_pachip_
+ static void
+ titan_kill_pachips(titan_pachip *pachip0, titan_pachip *pachip1)
+ {
+-	int pchip1_present = TITAN_cchip->csc.csr & 1L<<14;
+-
+-	if (pchip1_present) {
++	if (titan_pchip1_present) {
+ 		titan_kill_one_pachip_port(&pachip1->g_port, 1);
+ 		titan_kill_one_pachip_port(&pachip1->a_port, 3);
+ 	}
+@@ -463,6 +468,14 @@ titan_kill_arch(int mode)
+  */
+ 
+ void __iomem *
++titan_ioportmap(unsigned long addr)
++{
++	FIXUP_IOADDR_VGA(addr);
++	return (void __iomem *)(addr + TITAN_IO_BIAS);
++}
++
++
++void __iomem *
+ titan_ioremap(unsigned long addr, unsigned long size)
+ {
+ 	int h = (addr & TITAN_HOSE_MASK) >> TITAN_HOSE_SHIFT;
+@@ -474,11 +487,11 @@ titan_ioremap(unsigned long addr, unsign
+ 	unsigned long *ptes;
+ 	unsigned long pfn;
+ 
++#ifdef CONFIG_VGA_HOSE
+ 	/*
+-	 * Adjust the addr.
++	 * Adjust the address and hose, if necessary.
+ 	 */ 
+-#ifdef CONFIG_VGA_HOSE
+-	if (pci_vga_hose && __titan_is_mem_vga(addr)) {
++	if (pci_vga_hose && __is_mem_vga(addr)) {
+ 		h = pci_vga_hose->index;
+ 		addr += pci_vga_hose->mem_space->start;
+ 	}
+@@ -521,8 +534,10 @@ titan_ioremap(unsigned long addr, unsign
+ 		 * Map it
+ 		 */
+ 		area = get_vm_area(size, VM_IOREMAP);
+-		if (!area)
++		if (!area) {
++			printk("ioremap failed... no vm_area...\n");
+ 			return NULL;
++		}
+ 
+ 		ptes = hose->sg_pci->ptes;
+ 		for (vaddr = (unsigned long)area->addr; 
+@@ -539,7 +554,7 @@ titan_ioremap(unsigned long addr, unsign
+ 			if (__alpha_remap_area_pages(vaddr,
+ 						     pfn << PAGE_SHIFT, 
+ 						     PAGE_SIZE, 0)) {
+-				printk("FAILED to map...\n");
++				printk("FAILED to remap_area_pages...\n");
+ 				vfree(area->addr);
+ 				return NULL;
+ 			}
+@@ -551,7 +566,8 @@ titan_ioremap(unsigned long addr, unsign
+ 		return (void __iomem *) vaddr;
+ 	}
+ 
+-	return NULL;
++	/* Assume a legacy (read: VGA) address, and return appropriately. */
++	return (void __iomem *)(addr + TITAN_MEM_BIAS);
+ }
+ 
+ void
+@@ -574,6 +590,7 @@ titan_is_mmio(const volatile void __iome
+ }
+ 
+ #ifndef CONFIG_ALPHA_GENERIC
++EXPORT_SYMBOL(titan_ioportmap);
+ EXPORT_SYMBOL(titan_ioremap);
+ EXPORT_SYMBOL(titan_iounmap);
+ EXPORT_SYMBOL(titan_is_mmio);
+@@ -750,6 +767,7 @@ titan_agp_info(void)
+ 	if (titan_query_agp(port))
+ 		hosenum = 2;
+ 	if (hosenum < 0 && 
++	    titan_pchip1_present &&
+ 	    titan_query_agp(port = &TITAN_pachip1->a_port)) 
+ 		hosenum = 3;
+ 	
+--- orig/arch/alpha/kernel/core_tsunami.c	Sun Apr 15 01:24:49 2007
++++ linux/arch/alpha/kernel/core_tsunami.c	Sun Apr 15 01:25:12 2007
+@@ -19,6 +19,7 @@
+ 
+ #include <asm/ptrace.h>
+ #include <asm/smp.h>
++#include <asm/vga.h>
+ 
+ #include "proto.h"
+ #include "pci_impl.h"
+@@ -349,6 +350,52 @@ tsunami_init_one_pchip(tsunami_pchip *pc
+ 	tsunami_pci_tbi(hose, 0, -1);
+ }
+ 
++
++void __iomem *
++tsunami_ioportmap(unsigned long addr)
++{
++	FIXUP_IOADDR_VGA(addr);
++	return (void __iomem *)(addr + TSUNAMI_IO_BIAS);
++}
++
++void __iomem *
++tsunami_ioremap(unsigned long addr, unsigned long size)
++{
++	FIXUP_MEMADDR_VGA(addr);
++	return (void __iomem *)(addr + TSUNAMI_MEM_BIAS);
++}
++
++#ifndef CONFIG_ALPHA_GENERIC
++EXPORT_SYMBOL(tsunami_ioportmap);
++EXPORT_SYMBOL(tsunami_ioremap);
++#endif
++
++static void __init
++tsunami_init_vga_hose(void)
++{
++#ifdef CONFIG_VGA_HOSE
++	u64 *pu64 = (u64 *)((u64)hwrpb + hwrpb->ctbt_offset);
++
++	if (pu64[7] == 3) {	/* TERM_TYPE == graphics */
++		struct pci_controller *hose;
++		int h = (pu64[30] >> 24) & 0xff;	/* console hose # */
++
++		/*
++		 * Our hose numbering does NOT match the console's, so find
++		 * the right one...
++		 */
++		for (hose = hose_head; hose; hose = hose->next) {
++			if (hose->index == h) break;
++		}
++
++		if (hose) {
++			printk("Console graphics on hose %d\n", h);
++			pci_vga_hose = hose;
++		}
++	}
++#endif /* CONFIG_VGA_HOSE */
++}
++
+ void __init
+ tsunami_init_arch(void)
+ {
+@@ -393,6 +440,9 @@ tsunami_init_arch(void)
+ 	tsunami_init_one_pchip(TSUNAMI_pchip0, 0);
+ 	if (TSUNAMI_cchip->csc.csr & 1L<<14)
+ 		tsunami_init_one_pchip(TSUNAMI_pchip1, 1);
++
++	/* Check for graphic console location (if any).  */
++	tsunami_init_vga_hose();
+ }
+ 
+ static void
+--- orig/arch/alpha/kernel/proto.h	Sun Apr 15 01:24:49 2007
++++ linux/arch/alpha/kernel/proto.h	Sun Apr 15 01:25:12 2007
+@@ -108,6 +108,13 @@ extern int wildfire_cpuid_to_nid(int);
+ extern unsigned long wildfire_node_mem_start(int);
+ extern unsigned long wildfire_node_mem_size(int);
+ 
++/* console.c */
++#ifdef CONFIG_VGA_HOSE
++extern void locate_and_init_vga(void *(*)(void *, void *));
++#else
++#define locate_and_init_vga()	do { } while (0)
++#endif
++
+ /* setup.c */
+ extern unsigned long srm_hae;
+ extern int boot_cpuid;
+--- orig/arch/alpha/kernel/sys_dp264.c	Sun Apr 15 01:24:49 2007
++++ linux/arch/alpha/kernel/sys_dp264.c	Sun Apr 15 01:25:12 2007
+@@ -543,6 +543,7 @@ dp264_init_pci(void)
+ {
+ 	common_init_pci();
+ 	SMC669_Init(0);
++	locate_and_init_vga(NULL);
+ }
+ 
+ static void __init
+@@ -551,6 +552,14 @@ monet_init_pci(void)
+ 	common_init_pci();
+ 	SMC669_Init(1);
+ 	es1888_init();
++	locate_and_init_vga(NULL);
++}
++
++static void __init
++clipper_init_pci(void)
++{
++	common_init_pci();
++	locate_and_init_vga(NULL);
+ }
+ 
+ static void __init
+@@ -655,7 +664,7 @@ struct alpha_machine_vector clipper_mv _
+ 	.init_arch		= tsunami_init_arch,
+ 	.init_irq		= clipper_init_irq,
+ 	.init_rtc		= common_init_rtc,
+-	.init_pci		= common_init_pci,
++	.init_pci		= clipper_init_pci,
+ 	.kill_arch		= tsunami_kill_arch,
+ 	.pci_map_irq		= clipper_map_irq,
+ 	.pci_swizzle		= common_swizzle,
+--- orig/arch/alpha/Kconfig	Sun Apr 15 01:24:49 2007
++++ linux/arch/alpha/Kconfig	Sun Apr 15 01:25:12 2007
+@@ -481,6 +481,11 @@ config ALPHA_BROKEN_IRQ_MASK
+ 	depends on ALPHA_GENERIC || ALPHA_PC164
+ 	default y
+ 
++config VGA_HOSE
++	bool "VGA on arbitrary hose"
++	depends on ALPHA_GENERIC || ALPHA_TITAN || ALPHA_MARVEL || ALPHA_TSUNAMI
++	default y
++
+ config ALPHA_SRM
+ 	bool "Use SRM as bootloader" if ALPHA_CABRIOLET || ALPHA_AVANTI_CH || ALPHA_EB64P || ALPHA_PC164 || ALPHA_TAKARA || ALPHA_EB164 || ALPHA_ALCOR || ALPHA_MIATA || ALPHA_LX164 || ALPHA_SX164 || ALPHA_NAUTILUS || ALPHA_NONAME
+ 	default y if ALPHA_JENSEN || ALPHA_MIKASA || ALPHA_SABLE || ALPHA_LYNX || ALPHA_NORITAKE || ALPHA_DP264 || ALPHA_RAWHIDE || ALPHA_EIGER || ALPHA_WILDFIRE || ALPHA_TITAN || ALPHA_SHARK || ALPHA_MARVEL
+@@ -643,6 +648,13 @@ source "fs/Kconfig"
+ source "arch/alpha/oprofile/Kconfig"
+ 
+ source "arch/alpha/Kconfig.debug"
++
++# DUMMY_CONSOLE may be defined in drivers/video/console/Kconfig
++# but we also need it if VGA_HOSE is set
++config DUMMY_CONSOLE
++	bool
++	depends on VGA_HOSE
++	default y
+ 
+ source "security/Kconfig"
+ 
+--- orig/include/asm-alpha/core_titan.h	Sun Apr 15 01:24:49 2007
++++ linux/include/asm-alpha/core_titan.h	Sun Apr 15 01:25:12 2007
+@@ -380,12 +380,7 @@ struct el_PRIVATEER_envdata_mcheck {
+ /*
+  * Memory functions.  all accesses are done through linear space.
+  */
+-
+-__EXTERN_INLINE void __iomem *titan_ioportmap(unsigned long addr)
+-{
+-	return (void __iomem *)(addr + TITAN_IO_BIAS);
+-}
+-
++extern void __iomem *titan_ioportmap(unsigned long addr);
+ extern void __iomem *titan_ioremap(unsigned long addr, unsigned long size);
+ extern void titan_iounmap(volatile void __iomem *addr);
+ 
+--- orig/include/asm-alpha/core_tsunami.h	Sun Apr 15 01:24:49 2007
++++ linux/include/asm-alpha/core_tsunami.h	Sun Apr 15 01:25:12 2007
+@@ -2,6 +2,7 @@
+ #define __ALPHA_TSUNAMI__H__
+ 
+ #include <linux/types.h>
++#include <linux/pci.h>
+ #include <asm/compiler.h>
+ 
+ /*
+@@ -302,18 +303,8 @@ struct el_TSUNAMI_sysdata_mcheck {
+ /*
+  * Memory functions.  all accesses are done through linear space.
+  */
+-
+-__EXTERN_INLINE void __iomem *tsunami_ioportmap(unsigned long addr)
+-{
+-	return (void __iomem *)(addr + TSUNAMI_IO_BIAS);
+-}
+-
+-__EXTERN_INLINE void __iomem *tsunami_ioremap(unsigned long addr, 
+-					      unsigned long size)
+-{
+-	return (void __iomem *)(addr + TSUNAMI_MEM_BIAS);
+-}
+-
++extern void __iomem *tsunami_ioportmap(unsigned long addr);
++extern void __iomem *tsunami_ioremap(unsigned long addr, unsigned long size);
+ __EXTERN_INLINE int tsunami_is_ioaddr(unsigned long addr)
+ {
+ 	return addr >= TSUNAMI_BASE;
+--- orig/include/asm-alpha/vga.h	Sun Apr 15 01:24:49 2007
++++ linux/include/asm-alpha/vga.h	Sun Apr 15 01:25:26 2007
+@@ -46,6 +46,35 @@ extern void scr_memcpyw(u16 *d, const u1
+ #define vga_readb(a)	readb((u8 __iomem *)(a))
+ #define vga_writeb(v,a)	writeb(v, (u8 __iomem *)(a))
+ 
++#ifdef CONFIG_VGA_HOSE
++#include <linux/ioport.h>
++#include <linux/pci.h>
++
++extern struct pci_controller *pci_vga_hose;
++ 
++# define __is_port_vga(a)       \
++	(((a) >= 0x3b0) && ((a) < 0x3e0) && \
++	 ((a) != 0x3b3) && ((a) != 0x3d3))
++
++# define __is_mem_vga(a) \
++	(((a) >= 0xa0000) && ((a) <= 0xc0000))
++
++# define FIXUP_IOADDR_VGA(a) do {                       \
++	if (pci_vga_hose && __is_port_vga(a))     \
++		a += pci_vga_hose->io_space->start;     \
++ } while(0)
++
++# define FIXUP_MEMADDR_VGA(a) do {                       \
++	if (pci_vga_hose && __is_mem_vga(a))     \
++		(a) += pci_vga_hose->mem_space->start; \
++ } while(0)
++
++#else /* CONFIG_VGA_HOSE */
++# define pci_vga_hose 0
++# define FIXUP_IOADDR_VGA(a)
++# define FIXUP_MEMADDR_VGA(a)
++#endif /* CONFIG_VGA_HOSE */
++
+ #define VGA_MAP_MEM(x,s)	((unsigned long) ioremap(x, s))
+ 
+ #endif
