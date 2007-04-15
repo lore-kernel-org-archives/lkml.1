@@ -1,100 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbXDOWLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbXDOWN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbXDOWLG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 18:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbXDOWLF
+	id S1754013AbXDOWN6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 18:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXDOWN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 18:11:05 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:51537 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754012AbXDOWLE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 18:11:04 -0400
-Date: Mon, 16 Apr 2007 00:11:12 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.48
-Message-ID: <20070415221112.GI3691@stusta.de>
+	Sun, 15 Apr 2007 18:13:58 -0400
+Received: from mx6.mail.ru ([194.67.23.26]:29839 "EHLO mx6.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754013AbXDOWN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 18:13:57 -0400
+Date: Mon, 16 Apr 2007 02:10:05 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
+Message-ID: <20070415221005.GA26320@zarina>
+Reply-To: cbou@mail.ru
+References: <20070411232503.GC20095@zarina> <20070415195655.GG10097@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070415195655.GG10097@ucw.cz>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+Hello Pavel,
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+On Sun, Apr 15, 2007 at 07:56:56PM +0000, Pavel Machek wrote:
+> Hi!
+> 
+> > * It insists on reusing its predefined attributes *and* their units.
+> >   So, userspace getting expected values for any battery.
+> >   
+> >   Also common units is required for APM/ACPI emulation.
+> >   
+> >   Though our battery class insisting on re-usage, but not forces it. If some
+> >   battery driver can't convert its own raw values (can't imagine why), then
+> >   driver is free to implement its own attributes *and* additional _units
+> >   attribute. Though, this scheme is discouraged.
+> > 
+> > * LEDs support. Each battery register its trigger, and gadgets with LEDs
+> >   can quickly bind to battery-charging / battery-full triggers.
+> > 
+> > Here how it looks like from user space:
+> > 
+> > # ls /sys/class/battery/main-battery/
+> > capacity  max_capacity  max_voltage   min_current  power   subsystem  uevent
+> > current   max_current   min_capacity  min_voltage  status  temp       voltage
+> > # cat /sys/class/battery/main-battery/status
+> > Full
+> > # cat /sys/class/leds/h5400\:green-right/trigger
+> > none h5400-radio timer hwtimer main-battery-charging [main-battery-full]
+> > # cat /sys/class/leds/h5400\:green-right/brightness
+> > 255
+> 
+> Can we get few lines in Documentation?
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+Yes, sure.
+
+> I guess min_capacity is
+> shutdown capacity at current temperature, but its surely non-obvious.
+> 
+> Will min_capacity increase as batery gets old? Or will max_capacity
+> decrease? 
+
+min_capacity and max_capacity depend on temperature. But some drivers
+can/want to interpolate, others can't/don't want. It's driver's matter.
+
+ds2760_battery just remembers last capacity when current was < 10 mA
+(i.e. battery charged full at given temperature) as max_capacity, and
+takes this as reference for calculations.
+
+> (Should we introduce design_capacity for ACPI systems that
+> know the difference?)
+
+Yup, I've introduced it in [take2] (it's in this thread, thus it's hard
+to find). Will resend it as separate thread soon, along with few other
+changes.
+
+> What is min_current? Granularity of amper meter?
+> 
+> And min_voltage is shutdown voltage?
+
+Yes, should be. But, for example, ds2760 battery can't remember this
+value in its eeprom (iirc), thus this value passed by platform code,
+i.e. in our case (iPaqs) it's machine dependent value. Probably we
+should not even export this attribute in ds2760_battery driver, as it
+does not take any part in calculations. Plus this attribute highly
+depend on battery chemistry and temperature. Thus it's hardly anyhow
+useful, except if hardware itself reports it (not ds2760 case).
+
+> Otherwise it looks good to me. Something like this is really needed.
+
+Thanks!
+
+> > + * All voltages, currents, capacities and temperatures in mV, mA, mAh and
+> > + * tenths of a degree unless otherwise stated. It's driver's job to convert
+> 
+> tenths of degree Celsius?
+
+Yup, fixed in [take2].
+
+> > +#define BATTERY_STATUS_UNKNOWN      0
+> > +#define BATTERY_STATUS_CHARGING     1
+> > +#define BATTERY_STATUS_DISCHARGING  2
+> > +#define BATTERY_STATUS_NOT_CHARGING 3
+> > +#define BATTERY_STATUS_FULL         4
+> 
+> Perhaps we need STATUS_ERROR? At least on some machines it is
+> different from STATUS_NOT_CHARGING.
+
+I'm unsure about this. BATTERY_STATUS_* is mostly about charging process
+status (should I rename it to more verbose BATTERY_CHARGING_STATUS_, or just
+mention it in Documentation?).
+
+For errors things it might be better to create "health" attribute.
+
+> > +	/* private */
+> > +	struct power_supplicant pst;
+> > +
+> > +	#ifdef CONFIG_LEDS_TRIGGERS
+> > +	struct led_trigger *charging_trig;
+> > +	char *charging_trig_name;
+> > +	struct led_trigger *full_trig;
+> > +	char *full_trig_name;
+> > +	#endif
+> > +};
+> 
+> #ifdefs need to be at column 0?
+
+Yup, fixed in [take2].
+
+> > +/* 
+> > + * This is recommended structure to specify static battery parameters.
+> > + * Generic one, parametrizable for different batteries. Battery device
+> > + * itself does bot use it, but that's what implementing most drivers,
+> 
+> 'does not'?
+
+Thanks, will fix!
+
+> 							Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
 
-Changes since 2.6.16.47:
+Thanks,
 
-Adrian Bunk (2):
-      Linux 2.6.16.48-rc1
-      Linux 2.6.16.48
-
-Andreas Oberritter (1):
-      V4L/DVB: Pluto2: fix incorrect TSCR register setting
-
-David Brownell (1):
-      USB: usbnet driver bugfix
-
-Francois Romieu (3):
-      r8169: fix a race between PCI probe and dev_open
-      r8169: fix suspend/resume for down interface
-      r8169: issue request_irq after the private data are completely initialized
-
-Herbert Xu (1):
-      [IPSEC]: Reject packets within replay window but outside the bit mask
-
-John Heffner (1):
-      [TCP]: Do receiver-side SWS avoidance for rcvbuf < MSS.
-
-Michael Krufky (1):
-      V4L: tveeprom: autodetect LG TAPC G701D as tuner type 37
-
-Oliver Endriss (1):
-      V4L: saa7146: Fix allocation of clipping memory
-
-Patrick McHardy (2):
-      [NET_SCHED]: cls_basic: fix memory leak in basic_destroy
-      [NET_SCHED]: cls_tcindex: fix compatibility breakage
-
-Stephen Hemminger (3):
-      skge: turn carrier off when down
-      sky2: turn carrier off when down
-      sky2: turn on clocks when doing resume
-
-Thomas Gleixner (1):
-      i386: fix file_read_actor() and pipe_read() for original i386 systems
-
-Trent Piepho (1):
-      V4L: radio: Fix error in Kbuild file
-
-YOSHIFUJI Hideaki (1):
-      [IPv6]: Fix incorrect length check in rawv6_sendmsg()
-
-
- Makefile                          |    2 -
- arch/i386/lib/usercopy.c          |    9 ++++
- drivers/media/dvb/pluto2/pluto2.c |   22 +++++++----
- drivers/media/radio/Kconfig       |    2 -
- drivers/media/video/tveeprom.c    |    2 -
- drivers/net/r8169.c               |   56 ++++++++++++++++--------------
- drivers/net/skge.c                |    1 
- drivers/net/sky2.c                |    8 ++++
- drivers/usb/net/usbnet.c          |    7 ++-
- include/media/saa7146_vv.h        |    3 +
- net/ipv4/tcp_output.c             |    3 +
- net/ipv6/raw.c                    |    4 +-
- net/ipv6/udp.c                    |    2 -
- net/sched/cls_basic.c             |    1 
- net/sched/cls_tcindex.c           |    4 +-
- net/xfrm/xfrm_state.c             |    3 +
- 16 files changed, 83 insertions(+), 46 deletions(-)
-
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
