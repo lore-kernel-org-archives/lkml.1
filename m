@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbXDOUzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXDOUzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbXDOUzx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 16:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbXDOUz2
+	id S1753931AbXDOUzy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 16:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbXDOUzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 16:55:28 -0400
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:26721 "HELO
+	Sun, 15 Apr 2007 16:55:54 -0400
+Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:26742 "HELO
 	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753932AbXDOUz0 (ORCPT
+	by vger.kernel.org with SMTP id S1753931AbXDOUz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 16:55:26 -0400
+	Sun, 15 Apr 2007 16:55:28 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=wU+Y7q1JM3L3o2IWsyRW/S84YxSXZF1bMKHIcRoICT0D4XlGzXrz6UQ/TT8/N3/1cdwY1L+5eWhpj2U2RAJGinqJDqZuYG0OkGV0EOrfueVsXyXav1bc4T9Dti6LfwjKzqMytpI6v3/u2dixCkKdegKqxH9kBGfAalp/tkXv+K4=  ;
-X-YMail-OSG: hDcOHTsVM1njFq9oj4nB2Gp3L6GYlF2WNOnsvaK7.yEbRbHdcgddxO7T0yoNDqMcO_apXquIBw--
+  b=q4nhwftZ86rPNW8CMBL/dwktErQsXFniEZbwbzeFjPDkDMl6G4zuicL+N7kt5Hm90FU7GSw8OfMJeVdZ59l6skkWrFTStR7bMT2REXdWvw/qc5UxFBLyksGHbNq9DdgQatjSGgM3zytTOvOZtCV7xuqiBgaoEKnz4OqZDbk8dAU=  ;
+X-YMail-OSG: TE29SPQVM1k.NNXepBs83bLdQUeyFIFeJdYIqEuq8_9mFxYYnbUll2XtMZlZHszwVZcMqHXhhvvtX5wm6LsZHuoV0qIIvQmFHvKlfEFdSL0v4EPq.fSASKkTy0NXBA--
 From: David Brownell <david-b@pacbell.net>
 To: Paul Sokolovsky <pmiscml@gmail.com>
 Subject: Re: is there any generic GPIO chip framework like IRQ chips?
-Date: Sun, 15 Apr 2007 12:53:36 -0700
+Date: Sun, 15 Apr 2007 13:03:27 -0700
 User-Agent: KMail/1.7.1
 Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
 References: <f17812d70704090309l8dd764cxc06fbd7b765c55d8@mail.gmail.com> <200704102152.21287.david-b@pacbell.net> <1686019041.20070412165702@gmail.com>
@@ -28,547 +28,589 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704151253.37244.david-b@pacbell.net>
+Message-Id: <200704151303.27867.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch shows some almost-mergeable code matching $SUBJECT.
+To merge, this would be split apart ... what's interesting here is
+the way the new leds-gpio driver can be made to talk to leds that
+sit across an I2C link.
 
-========	CUT HERE
-Provide some implementation infrastructure that platforms may choose
-to use when implementing the GPIO programming interface.
 
-As previously discussed on LKML, this can be very desirable on some
-platforms -- with GPIOs provided by non-SOC controllers -- but such
-implementation choices are transparent to the driver interface.
+==========	CUT HERE
+This presumes various patches updating:
 
-When debugfs is available this provides an /sys/debug/gpio file showing
-what GPIOs are available, and how the ones in use are configured.
+ - LED framework to support generic GPIOs (in MM and LED queue)
 
-Note that both OMAP and AVR32 implementations of the gpio_request() and
-gpio_free() calls have additional features, which may be worth stealing.
+ - LED framework's generic GPIO support to understand that some GPIOs
+   can't be directly accessed in timer callbacks (patch submitted)
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+ - I2C to support "new style" drivers (driver model conformance, in MM
+   and i2c queues);
+
+ - Kernel.org to match current OMAP trees (in the works, huge)
+
+ - OMAP to use the "struct gpio_chip" infrastructure for its GPIOs (a
+   previous patch in this series)
+
+ - TPS65010 to be such a "new style" I2C driver (blocked waiting for OMAP
+   and I2C patches to merge);
+
+Given those prerequisites, this patch:
+
+ * Exposes tps65010 GPIOs and LEDs through the GPIO framework (gaining an
+   activity light for CF access)
+ 
+ * Converts the OSK board to use that framework (not quite everywhere; at
+   least the ads7846 driver and serial line wakeup still need updating)
+
+ * Removes "old style" OSK led support, except with the Mistral board
+   whose red-or-green LED isn't really supported by the new framework
+
+Note that this is the first example of the "I2C GPIO expander" case,
+where the GPIOs can't be accessed in non-sleeping contexts.
+
 ---
- Documentation/gpio.txt     |    4 
- include/asm-generic/gpio.h |   96 +++++++++++
- lib/Kconfig                |    6 
- lib/Makefile               |    2 
- lib/gpiolib.c              |  364 +++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 472 insertions(+), 2 deletions(-)
+ arch/arm/mach-omap1/board-osk.c       |   66 +++++++++++++++++-------
+ arch/arm/mach-omap1/leds-osk.c        |   92 ----------------------------------
+ arch/arm/mach-omap1/leds.c            |   15 ++---
+ drivers/i2c/chips/tps65010.c          |   59 +++++++++++++++++++++
+ include/asm-arm/arch-omap/board-osk.h |   11 ++++
+ include/asm-arm/arch-omap/tps65010.h  |   17 ++++++
+ 6 files changed, 141 insertions(+), 119 deletions(-)
 
---- g26.orig/Documentation/gpio.txt	2007-04-14 19:51:00.000000000 -0700
-+++ g26/Documentation/gpio.txt	2007-04-14 19:51:12.000000000 -0700
-@@ -63,7 +63,9 @@ and that can be critical for glue logic.
- Plus, this doesn't define an implementation framework, just an interface.
- One platform might implement it as simple inline functions accessing chip
- registers; another might implement it by delegating through abstractions
--used for several very different kinds of GPIO controller.
-+used for several very different kinds of GPIO controller.  (There is some
-+library code supporting such an implementation strategy, but drivers using
-+the interface should not care if that's how the interface is implemented.)
+--- osk2.orig/include/asm-arm/arch-omap/tps65010.h	2007-04-15 11:09:12.000000000 -0700
++++ osk2/include/asm-arm/arch-omap/tps65010.h	2007-04-15 11:09:15.000000000 -0700
+@@ -152,5 +152,22 @@ extern int tps65010_config_vregs1(unsign
+  */
+ extern int tps65013_set_low_pwr(unsigned mode);
  
- That said, if the convention is supported on their platform, drivers should
- use it when possible:
---- g26.orig/lib/Kconfig	2007-04-14 19:51:00.000000000 -0700
-+++ g26/lib/Kconfig	2007-04-14 19:51:12.000000000 -0700
-@@ -111,4 +111,10 @@ config HAS_IOPORT
- 	depends on HAS_IOMEM && !NO_IOPORT
- 	default y
- 
-+#
-+# gpiolib is selected if needed
-+#
-+config GPIO_LIB
-+	boolean
-+
- endmenu
---- g26.orig/include/asm-generic/gpio.h	2007-04-14 19:51:00.000000000 -0700
-+++ g26/include/asm-generic/gpio.h	2007-04-15 10:58:19.000000000 -0700
-@@ -1,6 +1,101 @@
- #ifndef _ASM_GENERIC_GPIO_H
- #define _ASM_GENERIC_GPIO_H
- 
-+#ifdef CONFIG_GPIO_LIB
-+
-+/* Platforms may implement their GPIO interface with library code,
-+ * at the cost of performance for non-inlined operations.
-+ */
-+
-+#ifndef ARCH_GPIOS_PER_CHIP
-+#define ARCH_GPIOS_PER_CHIP	BITS_PER_LONG
-+#endif
 +
 +/**
-+ * struct gpio_chip - abstract a GPIO controller
-+ * @get: retrieves value for a given gpio signal
-+ * @set: assigns value for a given gpio signal
-+ * @direction_input: assigns signal as input, or returns error code
-+ * @direction_output: assigns assigns signal as output, or returns error code
-+ * @base: identifies the first GPIO number handled by this chip
-+ * @name: for use in diagnostics
-+ * @irqs: to report optional coupling to the IRQ framework
-+ * @irq_base: identifies the first IRQ handled by this chip
-+ * @ngpio: the number of GPIOs handled by this controller; the value must
-+ *	be at most ARCH_GPIOS_PER_CHIP, so the last GPIO handled is
-+ *	(base + ngpio - 1).
-+ * @can_sleep: flag must be set iff get()/set() methods sleep, as they
-+ *	must while accessing GPIO expander chips over I2C or SPI
++ * struct tps65010_board - packages GPIO and LED lines
++ * @base: the GPIO number to assign to GPIO-1
++ * @outmask: bit (N-1) is set to allow GPIO-N to be used
++ *	as an (open drain) output
 + *
-+ * A gpio_chip can help platforms abstract various sources of GPIOs so
-+ * they can all be accessed through a common programing interface.
-+ * Example sources would be SOC controllers, FPGAs, multifunction
-+ * chips, dedicated GPIO expanders, and so on.
++ * Board data may be used to package the GPIO (and LED) lines
++ * for use in by the generic GPIO and LED frameworks.  The first
++ * four GPIOs starting at gpio_base are GPIO1..GPIO4; the next
++ * two are LED1..LED2.
 + */
-+struct gpio_chip {
-+	int			(*get)(struct gpio_chip *chip,
-+						unsigned offset);
-+	void			(*set)(struct gpio_chip *chip,
-+						unsigned offset, int value);
-+	int			(*direction_input)(struct gpio_chip *chip,
-+						unsigned offset);
-+	int			(*direction_output)(struct gpio_chip *chip,
-+						unsigned offset, int value);
-+	unsigned		base;
-+	const char		*name;
-+	struct irq_desc		*irqs;
-+	unsigned		irq_base;
-+	u16			ngpio;
-+	unsigned		can_sleep:1;
-+
-+	/* other fields are for the gpio library only */
-+	struct list_head	chips;
-+	unsigned long		is_out[DIV_ROUND_UP(ARCH_GPIOS_PER_CHIP,
-+					BITS_PER_LONG)];
-+#ifdef CONFIG_DEBUG_FS
-+	/* fat bits */
-+	const char		*requested[ARCH_GPIOS_PER_CHIP];
-+#else
-+	/* thin bits */
-+	unsigned long		requested[DIV_ROUND_UP(ARCH_GPIOS_PER_CHIP,
-+					BITS_PER_LONG)];
-+#endif
++struct tps65010_board {
++	int			base;
++	unsigned		outmask;
 +};
 +
-+/* Platform init code must declare each gpio chip. */
-+extern int gpio_chip_declare(struct gpio_chip *chip);
-+
-+/* Platform may assign gpio_to_chip() hook to get something faster
-+ * than the default (e.g. matching IRQ assignments).
+ #endif /*  __ASM_ARCH_TPS65010_H */
+ 
+--- osk2.orig/drivers/i2c/chips/tps65010.c	2007-04-15 11:09:12.000000000 -0700
++++ osk2/drivers/i2c/chips/tps65010.c	2007-04-15 11:09:15.000000000 -0700
+@@ -34,9 +34,9 @@
+ #include <linux/mutex.h>
+ 
+ #include <asm/irq.h>
++#include <asm/gpio.h>
+ #include <asm/mach-types.h>
+ 
+-#include <asm/arch/gpio.h>
+ #include <asm/arch/mux.h>
+ #include <asm/arch/tps65010.h>
+ 
+@@ -91,7 +91,8 @@ struct tps65010 {
+ 	u8			chgstatus, regstatus, chgconf;
+ 	u8			nmask1, nmask2;
+ 
+-	/* not currently tracking GPIO state */
++	u8			outmask;
++	struct gpio_chip	chip;
+ };
+ 
+ #define	POWER_POLL_DELAY	msecs_to_jiffies(5000)
+@@ -454,6 +455,38 @@ static irqreturn_t tps65010_irq(int irq,
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++/* offsets 0..3 == GPIO1..GPIO4
++ * offsets 4..5 == LED1..LED2 (we set one of the non-BLINK modes)
 + */
-+extern struct gpio_chip *(*gpio_to_chip)(unsigned gpio);
++static void
++tps65010_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
++{
++	if (offset < 4)
++		tps65010_set_gpio_out_value(offset + 1, value);
++	else
++		tps65010_set_led(offset - 3, value ? ON : OFF);
++}
++
++static int
++tps65010_output(struct gpio_chip *chip, unsigned offset, int value)
++{
++	/* GPIOs may be input-only */
++	if (offset < 4) {
++		struct tps65010		*tps;
++
++		tps = container_of(chip, struct tps65010, chip);
++		if (!(tps->outmask & (1 << offset)))
++			return -EINVAL;
++		tps65010_set_gpio_out_value(offset + 1, value);
++	} else
++		tps65010_set_led(offset - 3, value ? ON : OFF);
++
++	return 0;
++}
 +
 +
-+/* Always use the library code for GPIO management calls,
-+ * or when sleeping may be involved.
++/*-------------------------------------------------------------------------*/
++
+ static struct tps65010 *the_tps;
+ 
+ static int __exit tps65010_remove(struct i2c_client *client)
+@@ -475,6 +508,7 @@ static int tps65010_probe(struct i2c_cli
+ 	struct tps65010		*tps;
+ 	int			status;
+ 	unsigned long		irqflags;
++	struct tps65010_board	*board = client->dev.platform_data;
+ 
+ 	if (the_tps) {
+ 		dev_dbg(&client->dev, "only one %s for now\n", DRIVER_NAME);
+@@ -585,6 +619,27 @@ static int tps65010_probe(struct i2c_cli
+ 
+ 	tps->file = debugfs_create_file(DRIVER_NAME, S_IRUGO, NULL,
+ 				tps, DEBUG_FOPS);
++
++	/* optionally register GPIOs (and leds) */
++	if (board && board->base > 0) {
++		tps->outmask = board->outmask;
++
++		/* tps->chip.get = tps65010_gpio_get; */
++		tps->chip.set = tps65010_gpio_set;
++		/* tps->chip.direction_input = tps65010_input; */
++		tps->chip.direction_output = tps65010_output;
++		tps->chip.base = board->base;
++		tps->chip.name = client->name;
++		/* we don't handle GPIO input irqs (yet?) ... */
++		tps->chip.ngpio = 6;
++		tps->chip.can_sleep = 1;
++
++		status = gpio_chip_declare(&tps->chip);
++		if (status < 0)
++			dev_dbg(&client->dev, "can't declare GPIOs, err %d\n",
++					status);
++	}
++
+ 	return 0;
+ fail1:
+ 	kfree(tps);
+--- osk2.orig/include/asm-arm/arch-omap/board-osk.h	2007-04-15 11:09:12.000000000 -0700
++++ osk2/include/asm-arm/arch-omap/board-osk.h	2007-04-15 11:09:15.000000000 -0700
+@@ -32,5 +32,16 @@
+ /* At OMAP5912 OSK the Ethernet is directly connected to CS1 */
+ #define OMAP_OSK_ETHR_START		0x04800300
+ 
++/* TPS65010 has four GPIOs.  nPG and LED2 can be treated like GPIOs with
++ * alternate pin configurations for hardware-controlled blinking.
 + */
-+extern int gpio_request(unsigned gpio, const char *label);
-+extern void gpio_free(unsigned gpio);
++#define OSK_TPS_GPIO_BASE		(OMAP_MAX_GPIO_LINES + 16 /* MPUIO */)
++#	define OSK_TPS_GPIO_USB_PWR_EN	(OSK_TPS_GPIO_BASE + 0)
++#	define OSK_TPS_GPIO_LED_D3	(OSK_TPS_GPIO_BASE + 1)
++#	define OSK_TPS_GPIO_LAN_RESET	(OSK_TPS_GPIO_BASE + 2)
++#	define OSK_TPS_GPIO_DSP_PWR_EN	(OSK_TPS_GPIO_BASE + 3)
++#	define OSK_TPS_GPIO_LED_D9	(OSK_TPS_GPIO_BASE + 4)
++#	define OSK_TPS_GPIO_LED_D2	(OSK_TPS_GPIO_BASE + 5)
 +
-+extern int gpio_direction_input(unsigned gpio);
-+extern int gpio_direction_output(unsigned gpio, int value);
+ #endif /*  __ASM_ARCH_OMAP_OSK_H */
+ 
+--- osk2.orig/arch/arm/mach-omap1/board-osk.c	2007-04-15 11:09:12.000000000 -0700
++++ osk2/arch/arm/mach-omap1/board-osk.c	2007-04-15 11:09:15.000000000 -0700
+@@ -33,6 +33,7 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/i2c.h>
++#include <linux/leds.h>
+ 
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+@@ -182,11 +183,17 @@ static struct platform_device *osk5912_d
+ 	&osk5912_mcbsp1_device,
+ };
+ 
++static struct tps65010_board tps_board = {
++	.base		= OSK_TPS_GPIO_BASE,
++	.outmask	= 0x0f,
++};
 +
-+extern int gpio_get_value_cansleep(unsigned gpio);
-+extern void gpio_set_value_cansleep(unsigned gpio, int value);
-+
-+
-+/* A platform's <asm/gpio.h> code may want to inline the I/O calls when
-+ * the GPIO is constant and refers to some always-present controller,
-+ * giving direct access to chip registers and tight bitbanging loops.
-+ */
-+extern int __gpio_get_value(unsigned gpio);
-+extern void __gpio_set_value(unsigned gpio, int value);
-+
-+extern int __gpio_cansleep(unsigned gpio);
-+
-+
-+#else
-+
- /* platforms that don't directly support access to GPIOs through I2C, SPI,
-  * or other blocking infrastructure can use these wrappers.
-  */
-@@ -22,4 +117,6 @@ static inline void gpio_set_value_cansle
- 	gpio_set_value(gpio, value);
+ static struct i2c_board_info __initdata osk_i2c_board_info[] = {
+ {
+ 	I2C_BOARD_INFO("tps65010", 0x48),
+ 	.type		= "tps65010",
+ 	.irq		= OMAP_GPIO_IRQ(OMAP_MPUIO(1)),
++	.platform_data	= &tps_board,
+ },
+ #ifdef	CONFIG_OMAP_OSK_MISTRAL
+ {
+@@ -202,7 +209,7 @@ static struct i2c_board_info __initdata 
+ 
+ static void __init osk_init_smc91x(void)
+ {
+-	if ((omap_request_gpio(0)) < 0) {
++	if ((gpio_request(0, "smc_irq")) < 0) {
+ 		printk("Error requesting gpio 0 for smc91x irq\n");
+ 		return;
+ 	}
+@@ -214,7 +221,7 @@ static void __init osk_init_smc91x(void)
+ static void __init osk_init_cf(void)
+ {
+ 	omap_cfg_reg(M7_1610_GPIO62);
+-	if ((omap_request_gpio(62)) < 0) {
++	if ((gpio_request(62, "cf_irq")) < 0) {
+ 		printk("Error requesting gpio 62 for CF irq\n");
+ 		return;
+ 	}
+@@ -338,7 +345,7 @@ static struct platform_device *mistral_d
+ 
+ static int mistral_get_pendown_state(void)
+ {
+-	return !omap_get_gpio_datain(4);
++	return !gpio_get_value(4);
  }
  
-+#endif
-+
- #endif /* _ASM_GENERIC_GPIO_H */
---- g26.orig/lib/Makefile	2007-04-14 19:51:00.000000000 -0700
-+++ g26/lib/Makefile	2007-04-14 19:51:12.000000000 -0700
-@@ -60,6 +60,8 @@ obj-$(CONFIG_FAULT_INJECTION) += fault-i
+ static const struct ads7846_platform_data mistral_ts_info = {
+@@ -400,10 +407,9 @@ static void __init osk_mistral_init(void
+ 	omap_cfg_reg(W14_1610_CCP_DATAP);
  
- lib-$(CONFIG_GENERIC_BUG) += bug.o
+ 	/* CAM_PWDN */
+-	if (omap_request_gpio(11) == 0) {
++	if (gpio_request(11, "cam_pwdn") == 0) {
+ 		omap_cfg_reg(N20_1610_GPIO11);
+-		omap_set_gpio_direction(11, 0 /* out */);
+-		omap_set_gpio_dataout(11, 0 /* off */);
++		gpio_direction_output(11, 0 /* off */);
+ 	} else
+ 		pr_debug("OSK+Mistral: CAM_PWDN is awol\n");
  
-+lib-$(CONFIG_GPIO_LIB) += gpiolib.o
-+
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
+@@ -416,9 +422,9 @@ static void __init osk_mistral_init(void
  
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ g26/lib/gpiolib.c	2007-04-15 10:58:57.000000000 -0700
-@@ -0,0 +1,364 @@
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/irq.h>
+ 	/* the sideways button (SW1) is for use as a "wakeup" button */
+ 	omap_cfg_reg(N15_1610_MPUIO2);
+-	if (omap_request_gpio(OMAP_MPUIO(2)) == 0) {
++	if (gpio_request(OMAP_MPUIO(2), "wakeup") == 0) {
+ 		int ret = 0;
+-		omap_set_gpio_direction(OMAP_MPUIO(2), 1);
++		gpio_direction_input(OMAP_MPUIO(2));
+ 		set_irq_type(OMAP_GPIO_IRQ(OMAP_MPUIO(2)), IRQT_RISING);
+ #ifdef	CONFIG_PM
+ 		/* share the IRQ in case someone wants to use the
+@@ -429,7 +435,7 @@ static void __init osk_mistral_init(void
+ 				IRQF_SHARED, "mistral_wakeup",
+ 				&osk_mistral_wake_interrupt);
+ 		if (ret != 0) {
+-			omap_free_gpio(OMAP_MPUIO(2));
++			gpio_free(OMAP_MPUIO(2));
+ 			printk(KERN_ERR "OSK+Mistral: no wakeup irq, %d?\n",
+ 				ret);
+ 		} else
+@@ -442,10 +448,8 @@ static void __init osk_mistral_init(void
+ 	 * board, like the touchscreen, EEPROM, and wakeup (!) switch.
+ 	 */
+ 	omap_cfg_reg(PWL);
+-	if (omap_request_gpio(2) == 0) {
+-		omap_set_gpio_direction(2, 0 /* out */);
+-		omap_set_gpio_dataout(2, 1 /* on */);
+-	}
++	if (gpio_request(2, "lcd_pwdn") == 0)
++		gpio_direction_output(2, 1 /* on */);
+ 
+ 	platform_add_devices(mistral_devices, ARRAY_SIZE(mistral_devices));
+ }
+@@ -474,8 +478,8 @@ static void __init osk_init(void)
+ 
+ 	/* irq for tps65010 chip */
+ 	// omap_cfg_reg(U19_1610_MPUIO1);
+-	omap_request_gpio(OMAP_MPUIO(1));
+-	omap_set_gpio_direction(OMAP_MPUIO(1), 1);
++	if (gpio_request(OMAP_MPUIO(1), "tps65010"))
++		gpio_direction_input(OMAP_MPUIO(1));
+ 
+ 	i2c_register_board_info(1, osk_i2c_board_info,
+ 			ARRAY_SIZE(osk_i2c_board_info));
+@@ -490,6 +494,26 @@ static void __init osk_map_io(void)
+ }
+ 
+ #ifdef CONFIG_TPS65010
 +
-+#include <asm-generic/gpio.h>
-+
-+
-+/*
-+ * Platform code calls __gpio_*() routines when it can't inline a given
-+ * GPIO call, and is using the gpio library infrastructure.  It must declare
-+ * each gpio_chip during platform initialization, and may also choose to
-+ * provide an optimized gpio_to_chip hook (e.g. the same linear mapping used
-+ * to hook GPIOs into the IRQ framework)
-+ */
-+
-+static DEFINE_SPINLOCK(chip_list_lock);
-+static LIST_HEAD(chip_list);
-+
-+static struct gpio_chip *simple_to_chip(unsigned gpio)
-+{
-+	struct gpio_chip	*chip;
-+
-+	list_for_each_entry(chip, &chip_list, chips) {
-+		if (gpio < chip->base || gpio >= (chip->base + chip->ngpio))
-+			continue;
-+		return chip;
-+	}
-+	return NULL;
-+}
-+
-+static struct gpio_chip *default_to_chip(unsigned gpio)
-+{
-+	struct gpio_chip	*chip;
-+	unsigned long		flags;
-+
-+	spin_lock_irqsave(&chip_list_lock, flags);
-+	chip = simple_to_chip(gpio);
-+	spin_unlock_irqrestore(&chip_list_lock, flags);
-+	return chip;
-+}
-+
-+struct gpio_chip *(*gpio_to_chip)(unsigned gpio) = default_to_chip;
-+
-+
-+/**
-+ * gpio_chip_declare - publish a gpio_chip to the infrastructure
-+ * @chip: the chip
-+ *
-+ * Each GPIO controller needs to be published.  If it supports input
-+ * pins, get() and direction_input() methods must be provided.  If it
-+ * supports output pins, set() and direction_output() must be provided.
-+ *
-+ * Once declared, gpio chips are always available.
-+ */
-+int gpio_chip_declare(struct gpio_chip *chip)
-+{
-+	unsigned long		flags;
-+
-+	if (!chip || !(chip->set || chip->get) || !chip->ngpio)
-+		return -EINVAL;
-+	if (chip->set && !chip->direction_output)
-+		return -EINVAL;
-+	if (chip->get && !chip->direction_input)
-+		return -EINVAL;
-+	if (!chip->name)
-+		chip->name = "generic";
-+
-+	spin_lock_irqsave(&chip_list_lock, flags);
-+	if (simple_to_chip(chip->base + chip->ngpio - 1)
-+			|| simple_to_chip(chip->base)) {
-+		printk(KERN_ERR "GPIO: collision for '%s', %u..%u\n",
-+				chip->name, chip->base,
-+				chip->base + chip->ngpio - 1);
-+		chip = NULL;
-+	} else
-+		list_add_tail(&chip->chips, &chip_list);
-+	spin_unlock_irqrestore(&chip_list_lock, flags);
-+
-+	if (!chip)
-+		return -EBUSY;
-+
-+	pr_debug("GPIO: added '%s' for %u..%u\n", chip->name,
-+			chip->base, chip->base + chip->ngpio - 1);
-+	return 0;
-+}
-+
-+
-+/* These "optional" allocation calls help prevent drivers from stomping
-+ * on each other, and help provide better diagnostics in debugfs.
-+ */
-+int gpio_request(unsigned gpio, const char *label)
-+{
-+	struct gpio_chip	*chip = gpio_to_chip(gpio);
-+	unsigned long		flags;
-+	int			status = 0;
-+
-+	if (!chip || gpio < chip->base)
-+		return -EINVAL;
-+
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		return -EINVAL;
-+
-+	if (!label)
-+		label = "?";
-+
-+	spin_lock_irqsave(&chip_list_lock, flags);
-+#ifdef CONFIG_DEBUG_FS
-+	if (chip->requested[gpio])
-+		status = -EBUSY;
-+	else
-+		chip->requested[gpio] = label;
-+#else
-+	if (test_and_set_bit(gpio, chip->requested))
-+		status = -EBUSY;
-+#endif
-+	spin_unlock_irqrestore(&chip_list_lock, flags);
-+	return status;
-+}
-+EXPORT_SYMBOL(gpio_request);
-+
-+void gpio_free(unsigned gpio)
-+{
-+	struct gpio_chip	*chip = gpio_to_chip(gpio);
-+	unsigned long		flags;
-+
-+	if (!chip || gpio < chip->base)
-+		return;
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		return;
-+
-+	spin_lock_irqsave(&chip_list_lock, flags);
-+#ifdef CONFIG_DEBUG_FS
-+	if (!chip->requested[gpio])
-+		chip = NULL;
-+	else
-+		chip->requested[gpio] = NULL;
-+#else
-+	if (!test_and_clear_bit(gpio, chip->requested))
-+		chip = NULL;
-+#endif
-+	spin_unlock_irqrestore(&chip_list_lock, flags);
-+	WARN_ON(chip == NULL);
-+}
-+EXPORT_SYMBOL(gpio_free);
-+
-+
-+/* Drivers MUST make configuration calls before get/set calls */
-+
-+int gpio_direction_input(unsigned gpio)
-+{
-+	struct gpio_chip	*chip = gpio_to_chip(gpio);
-+	int			status;
-+
-+	might_sleep();
-+	if (!chip || !chip->direction_input || !chip->get || gpio < chip->base)
-+		return -EINVAL;
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		return -EINVAL;
-+
-+	status = chip->direction_input(chip, gpio);
-+	if (status == 0)
-+		clear_bit(gpio, chip->is_out);
-+	return status;
-+}
-+EXPORT_SYMBOL(gpio_direction_input);
-+
-+int gpio_direction_output(unsigned gpio, int value)
-+{
-+	struct gpio_chip	*chip = gpio_to_chip(gpio);
-+	int			status;
-+
-+	might_sleep();
-+	if (!chip || !chip->direction_output || !chip->set || gpio < chip->base)
-+		return -EINVAL;
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		return -EINVAL;
-+
-+	status = chip->direction_output(chip, gpio, value);
-+	if (status == 0)
-+		set_bit(gpio, chip->is_out);
-+	return status;
-+}
-+EXPORT_SYMBOL(gpio_direction_output);
-+
-+
-+/* I/O calls are only valid after configuration completed;
-+ * the relevant error checks have already been done.
-+ *
-+ * "Get" operations are often inlinable as reading a pin value register,
-+ * and masking the relevant bit in that register.
-+ *
-+ * When "set" operations are inlinable, they involve writing that mask to
-+ * one register to set a low value, or a different register to set it high.
-+ * Otherwise a spinlock is needed, and there's little value to inlining.
-+ */
-+int __gpio_get_value(unsigned gpio)
-+{
-+	struct gpio_chip *chip = gpio_to_chip(gpio);
-+
-+	WARN_ON(chip->can_sleep != 0);
-+	return chip->get(chip, gpio - chip->base);
-+}
-+EXPORT_SYMBOL(__gpio_get_value);
-+
-+void __gpio_set_value(unsigned gpio, int value)
-+{
-+	struct gpio_chip *chip = gpio_to_chip(gpio);
-+
-+	WARN_ON(chip->can_sleep != 0);
-+	return chip->set(chip, gpio - chip->base, value);
-+}
-+EXPORT_SYMBOL(__gpio_set_value);
-+
-+int __gpio_cansleep(unsigned gpio)
-+{
-+	struct gpio_chip *chip = gpio_to_chip(gpio);
-+
-+	return chip->can_sleep;
-+}
-+EXPORT_SYMBOL(__gpio_cansleep);
-+
-+
-+/* There's no value in inlining GPIO calls that may sleep */
-+
-+int gpio_get_value_cansleep(unsigned gpio)
-+{
-+	struct gpio_chip *chip = gpio_to_chip(gpio);
-+
-+	might_sleep();
-+	return chip->get(chip, gpio - chip->base);
-+}
-+EXPORT_SYMBOL(gpio_get_value_cansleep);
-+
-+void gpio_set_value_cansleep(unsigned gpio, int value)
-+{
-+	struct gpio_chip *chip = gpio_to_chip(gpio);
-+
-+	might_sleep();
-+	return chip->set(chip, gpio - chip->base, value);
-+}
-+EXPORT_SYMBOL(gpio_set_value_cansleep);
-+
-+
-+#ifdef CONFIG_DEBUG_FS
-+
-+/*
-+ * When debugfs is available, use it to dump a summary of the
-+ * GPIO signals currently used, and their status.
-+ */
-+
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+
-+static int dbg_gpio_show(struct seq_file *s, void *unused)
-+{
-+	struct gpio_chip	*chip;
-+
-+	list_for_each_entry(chip, &chip_list, chips) {
-+		unsigned	offset;
-+		const char	*name = NULL;
-+
-+		for (offset = 0; offset < chip->ngpio; offset++) {
-+			unsigned	gpio;
-+			unsigned	value, is_out;
-+
-+			if (!chip->requested[offset])
-+				continue;
-+
-+			/* Show each irq bank separately */
-+			if (!name) {
-+				name = chip->name;
-+				seq_printf(s,
-+					"Controller: %s, %u..%d%s%s\n",
-+					name, chip->base,
-+					chip->base + chip->ngpio - 1,
-+					chip->irqs ? ", irqs" : "",
-+					chip->can_sleep ? ", can sleep" : "");
-+			}
-+
-+			/* Dump basic per-GPIO status */
-+			gpio = chip->base + offset;
-+			is_out = test_bit(offset, chip->is_out);
-+			value = chip->get ? chip->get(chip, offset) : 0;
-+			seq_printf(s, "  GPIO %3u (%2u): %s %s (%10s)",
-+					gpio, offset,
-+					is_out ? "out" : "in ",
-+					value  ? "hi"  : "lo",
-+					chip->requested[offset]);
-+
-+			/* For GPIOs used as IRQs, dump more status.  Wakeup
-+			 * is often set only between suspend() and resume().
-+			 */
-+			if (!is_out && chip->irqs) {
-+				struct irq_desc	*irq = chip->irqs + offset;
-+
-+				if (irq->action) {
-+					char		*trigger;
-+					unsigned	stat;
-+
-+					stat = irq->status;
-+					switch (stat & IRQ_TYPE_SENSE_MASK) {
-+					case IRQ_TYPE_EDGE_FALLING:
-+						trigger = "falling";
-+						break;
-+					case IRQ_TYPE_EDGE_RISING:
-+						trigger = "rising";
-+						break;
-+					case IRQ_TYPE_EDGE_BOTH:
-+						trigger = "bothedge";
-+						break;
-+					case IRQ_TYPE_LEVEL_LOW:
-+						trigger = "low";
-+						break;
-+					case IRQ_TYPE_LEVEL_HIGH:
-+						trigger = "high";
-+						break;
-+					default:
-+						trigger = "?";
-+						break;
-+					}
-+					seq_printf(s,
-+						", IRQ %3d/%s%s",
-+						chip->irq_base + offset,
-+						trigger,
-+						(stat & IRQ_WAKEUP)
-+							? " wakeup"
-+							: "");
-+				}
-+			}
-+
-+			seq_printf(s, "\n");
-+		}
-+
-+		if (name)
-+			seq_printf(s, "\n");
-+	}
-+	return 0;
-+}
-+
-+static int dbg_gpio_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, dbg_gpio_show, &inode->i_private);
-+}
-+
-+static const struct file_operations debug_fops = {
-+	.open		= dbg_gpio_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
++static struct gpio_led tps_leds[] = {
++	{ .gpio = OSK_TPS_GPIO_LED_D9, .name = "d9:green",
++			.default_trigger = "ide-disk", /* CF */ },
++	{ .gpio = OSK_TPS_GPIO_LED_D2, .name = "d2:green", },
++	{ .gpio = OSK_TPS_GPIO_LED_D3, .name = "d3:green", .active_low = 1,
++			.default_trigger = "heartbeat", },
 +};
 +
-+static int __init gpiolib_debuginit(void)
-+{
-+	(void) debugfs_create_file("gpio", S_IRUGO, NULL, NULL, &debug_fops);
-+	return 0;
-+}
-+subsys_initcall(gpiolib_debuginit);
++static struct gpio_led_platform_data tps_led_data = {
++	.num_leds	= ARRAY_SIZE(tps_leds),
++	.leds		= tps_leds,
++};
 +
++static struct platform_device tps_led_dev = {
++	.name			= "leds-gpio",
++	.id			= -1,
++	.dev.platform_data	= &tps_led_data,
++};
++
+ static int __init osk_tps_init(void)
+ {
+ 	if (!machine_is_omap_osk())
+@@ -504,16 +528,20 @@ static int __init osk_tps_init(void)
+ 	/* Set GPIO 1 HIGH to disable VBUS power supply;
+ 	 * OHCI driver powers it up/down as needed.
+ 	 */
+-	tps65010_set_gpio_out_value(GPIO1, HIGH);
++	if (gpio_request(OSK_TPS_GPIO_USB_PWR_EN, "vbus_dis") == 0)
++		gpio_direction_output(OSK_TPS_GPIO_USB_PWR_EN, 1);
+ 
+ 	/* Set GPIO 2 low to turn on LED D3 */
+ 	tps65010_set_gpio_out_value(GPIO2, HIGH);
+ 
+ 	/* Set GPIO 3 low to take ethernet out of reset */
+-	tps65010_set_gpio_out_value(GPIO3, LOW);
++	if (gpio_request(OSK_TPS_GPIO_LAN_RESET, "lan_reset") == 0)
++		gpio_direction_output(OSK_TPS_GPIO_LAN_RESET, 0);
+ 
+ 	/* gpio4 for VDD_DSP */
+-	// FIXME power DSP iff it's configured
++	/* FIXME power DSP iff it's configured */
++	if (gpio_request(OSK_TPS_GPIO_DSP_PWR_EN, "dsp_pwr_en") == 0)
++		gpio_direction_output(OSK_TPS_GPIO_DSP_PWR_EN, 1);
+ 
+ 	/* Enable LOW_PWR */
+ 	tps65010_set_low_pwr(ON);
+@@ -522,7 +550,7 @@ static int __init osk_tps_init(void)
+ 	tps65010_config_vregs1(TPS_LDO2_ENABLE | TPS_VLDO2_3_0V
+ 			| TPS_LDO1_ENABLE);
+ 
+-	return 0;
++	return platform_device_register(&tps_led_dev);
+ }
+ fs_initcall(osk_tps_init);
+ #endif
+--- osk2.orig/arch/arm/mach-omap1/leds-osk.c	2007-04-15 11:09:12.000000000 -0700
++++ osk2/arch/arm/mach-omap1/leds-osk.c	2007-04-15 11:09:15.000000000 -0700
+@@ -1,7 +1,7 @@
+ /*
+  * linux/arch/arm/mach-omap1/leds-osk.c
+  *
+- * LED driver for OSK, and optionally Mistral QVGA, boards
++ * LED driver for OSK's optional Mistral QVGA board
+  */
+ #include <linux/init.h>
+ #include <linux/workqueue.h>
+@@ -11,7 +11,6 @@
+ #include <asm/system.h>
+ 
+ #include <asm/arch/gpio.h>
+-#include <asm/arch/tps65010.h>
+ 
+ #include "leds.h"
+ 
+@@ -20,51 +19,11 @@
+ #define LED_STATE_CLAIMED	(1 << 1)
+ static u8 led_state;
+ 
+-#define	GREEN_LED		(1 << 0)	/* TPS65010 LED1 */
+-#define	AMBER_LED		(1 << 1)	/* TPS65010 LED2 */
+-#define	RED_LED			(1 << 2)	/* TPS65010 GPIO2 */
+ #define	TIMER_LED		(1 << 3)	/* Mistral board */
+ #define	IDLE_LED		(1 << 4)	/* Mistral board */
+ static u8 hw_led_state;
+ 
+ 
+-/* TPS65010 leds are changed using i2c -- from a task context.
+- * Using one of these for the "idle" LED would be impractical...
+- */
+-#define	TPS_LEDS	(GREEN_LED | RED_LED | AMBER_LED)
+-
+-static u8 tps_leds_change;
+-
+-static void tps_work(struct work_struct *unused)
+-{
+-	for (;;) {
+-		u8	leds;
+-
+-		local_irq_disable();
+-		leds = tps_leds_change;
+-		tps_leds_change = 0;
+-		local_irq_enable();
+-
+-		if (!leds)
+-			break;
+-
+-		/* careful:  the set_led() value is on/off/blink */
+-		if (leds & GREEN_LED)
+-			tps65010_set_led(LED1, !!(hw_led_state & GREEN_LED));
+-		if (leds & AMBER_LED)
+-			tps65010_set_led(LED2, !!(hw_led_state & AMBER_LED));
+-
+-		/* the gpio led doesn't have that issue */
+-		if (leds & RED_LED)
+-			tps65010_set_gpio_out_value(GPIO2,
+-					!(hw_led_state & RED_LED));
+-	}
+-}
+-
+-static DECLARE_WORK(work, tps_work);
+-
+-#ifdef	CONFIG_OMAP_OSK_MISTRAL
+-
+ /* For now, all system indicators require the Mistral board, since that
+  * LED can be manipulated without a task context.  This LED is either red,
+  * or green, but not both; it can't give the full "disco led" effect.
+@@ -88,24 +47,19 @@ static void mistral_setled(void)
+ 	omap_set_gpio_dataout(GPIO_LED_RED, red);
+ }
+ 
+-#endif
+-
+ void osk_leds_event(led_event_t evt)
+ {
+ 	unsigned long	flags;
+-	u16		leds;
+ 
+ 	local_irq_save(flags);
+ 
+ 	if (!(led_state & LED_STATE_ENABLED) && evt != led_start)
+ 		goto done;
+ 
+-	leds = hw_led_state;
+ 	switch (evt) {
+ 	case led_start:
+ 		led_state |= LED_STATE_ENABLED;
+ 		hw_led_state = 0;
+-		leds = ~0;
+ 		break;
+ 
+ 	case led_halted:
+@@ -118,7 +72,6 @@ void osk_leds_event(led_event_t evt)
+ 	case led_claim:
+ 		led_state |= LED_STATE_CLAIMED;
+ 		hw_led_state = 0;
+-		leds = ~0;
+ 		break;
+ 
+ 	case led_release:
+@@ -126,8 +79,6 @@ void osk_leds_event(led_event_t evt)
+ 		hw_led_state = 0;
+ 		break;
+ 
+-#ifdef	CONFIG_OMAP_OSK_MISTRAL
+-
+ 	case led_timer:
+ 		hw_led_state ^= TIMER_LED;
+ 		mistral_setled();
+@@ -143,51 +94,10 @@ void osk_leds_event(led_event_t evt)
+ 		mistral_setled();
+ 		break;
+ 
+-#endif	/* CONFIG_OMAP_OSK_MISTRAL */
+-
+-	/* "green" == tps LED1 (leftmost, normally power-good)
+-	 * works only with DC adapter, not on battery power!
+-	 */
+-	case led_green_on:
+-		if (led_state & LED_STATE_CLAIMED)
+-			hw_led_state |= GREEN_LED;
+-		break;
+-	case led_green_off:
+-		if (led_state & LED_STATE_CLAIMED)
+-			hw_led_state &= ~GREEN_LED;
+-		break;
+-
+-	/* "amber" == tps LED2 (middle) */
+-	case led_amber_on:
+-		if (led_state & LED_STATE_CLAIMED)
+-			hw_led_state |= AMBER_LED;
+-		break;
+-	case led_amber_off:
+-		if (led_state & LED_STATE_CLAIMED)
+-			hw_led_state &= ~AMBER_LED;
+-		break;
+-
+-	/* "red" == LED on tps gpio3 (rightmost) */
+-	case led_red_on:
+-		if (led_state & LED_STATE_CLAIMED)
+-			hw_led_state |= RED_LED;
+-		break;
+-	case led_red_off:
+-		if (led_state & LED_STATE_CLAIMED)
+-			hw_led_state &= ~RED_LED;
+-		break;
+-
+ 	default:
+ 		break;
+ 	}
+ 
+-	leds ^= hw_led_state;
+-	leds &= TPS_LEDS;
+-	if (leds && (led_state & LED_STATE_CLAIMED)) {
+-		tps_leds_change |= leds;
+-		schedule_work(&work);
+-	}
+-
+ done:
+ 	local_irq_restore(flags);
+ }
+--- osk2.orig/arch/arm/mach-omap1/leds.c	2007-04-15 11:09:12.000000000 -0700
++++ osk2/arch/arm/mach-omap1/leds.c	2007-04-15 11:09:15.000000000 -0700
+@@ -5,11 +5,12 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <linux/list.h>
+ 
+ #include <asm/leds.h>
++#include <asm/gpio.h>
+ #include <asm/mach-types.h>
+ 
+-#include <asm/arch/gpio.h>
+ #include <asm/arch/mux.h>
+ 
+ #include "leds.h"
+@@ -25,17 +26,17 @@ omap_leds_init(void)
+ 			|| machine_is_omap_perseus2())
+ 		leds_event = h2p2_dbg_leds_event;
+ 
++#ifdef	CONFIG_OMAP_OSK_MISTRAL
+ 	else if (machine_is_omap_osk())
+ 		leds_event = osk_leds_event;
 +#endif
-+
+ 
+ 	else
+ 		return -1;
+ 
+ 	if (machine_is_omap_h2()
+ 			|| machine_is_omap_h3()
+-#ifdef	CONFIG_OMAP_OSK_MISTRAL
+ 			|| machine_is_omap_osk()
+-#endif
+ 			) {
+ 
+ 		/* LED1/LED2 pins can be used as GPIO (as done here), or by
+@@ -47,14 +48,14 @@ omap_leds_init(void)
+ 		 * that's a different kind of LED (just one color at a time).
+ 		 */
+ 		omap_cfg_reg(P18_1610_GPIO3);
+-		if (omap_request_gpio(3) == 0)
+-			omap_set_gpio_direction(3, 0);
++		if (gpio_request(3, "timer_led") == 0)
++			gpio_direction_output(3, 0);
+ 		else
+ 			printk(KERN_WARNING "LED: can't get GPIO3/red?\n");
+ 
+ 		omap_cfg_reg(MPUIO4);
+-		if (omap_request_gpio(OMAP_MPUIO(4)) == 0)
+-			omap_set_gpio_direction(OMAP_MPUIO(4), 0);
++		if (gpio_request(OMAP_MPUIO(4), "idle_led") == 0)
++			gpio_direction_output(OMAP_MPUIO(4), 0);
+ 		else
+ 			printk(KERN_WARNING "LED: can't get MPUIO4/green?\n");
+ 	}
