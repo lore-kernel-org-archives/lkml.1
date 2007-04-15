@@ -1,106 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750740AbXDONku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXDON5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750740AbXDONku (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 09:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXDONku
+	id S1752342AbXDON5u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 09:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbXDON5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 09:40:50 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:48240 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbXDONks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 09:40:48 -0400
-X-Originating-Ip: 24.6.145.253
-Date: Sun, 15 Apr 2007 09:37:42 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Ian McDonald <ian.mcdonald@jandi.co.nz>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Adrian Bunk <bunk@stusta.de>
-Subject: {Spam?} Re: {Spam?} Re: {Spam?} [PATCH] NET: Remove obsolete traffic shaper
- code.
-In-Reply-To: <5640c7e00704141948n5f82cd8fl64092c720954175f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0704150921410.24386@localhost.localdomain>
-References: <Pine.LNX.4.64.0704141925310.22138@localhost.localdomain> 
- <5640c7e00704141646k44334de9g99dc509bf96bac5f@mail.gmail.com> 
- <Pine.LNX.4.64.0704141959190.22316@localhost.localdomain>
- <5640c7e00704141948n5f82cd8fl64092c720954175f@mail.gmail.com>
+	Sun, 15 Apr 2007 09:57:50 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:55806 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752310AbXDON5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 09:57:50 -0400
+Message-ID: <46222F5A.4000002@simon.arlott.org.uk>
+Date: Sun, 15 Apr 2007 14:57:46 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: spam, SORBS-DUL,
-	SpamAssassin (not cached, score=-32.808, required 5,
-	autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -15.00,
-	INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_NJABL_DUL 1.95,
-	RCVD_IN_SORBS_DUL 2.05)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Duncan Sands <duncan.sands@math.u-psud.fr>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH] cxacru: ADSL state management
+References: <462172E3.7030408@simon.arlott.org.uk> <200704151208.59719.duncan.sands@math.u-psud.fr>
+In-Reply-To: <200704151208.59719.duncan.sands@math.u-psud.fr>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Apr 2007, Ian McDonald wrote:
+On 15/04/07 11:08, Duncan Sands wrote:
+> Hi Simon,
+> 
+>> +static ssize_t cxacru_sysfs_show_adsl_state(struct device *dev,
+>> +	struct device_attribute *attr, char *buf)
+>> +{
+>> +	struct usb_interface *intf = to_usb_interface(dev);
+>> +	struct usbatm_data *usbatm_instance = usb_get_intfdata(intf);
+>> +	struct cxacru_data *instance = usbatm_instance->driver_data;
+> 
+> instance could be NULL if cxacru_sysfs_show_adsl_state is called after
+> the device has been unbound.  What prevents this?
 
-> On 4/15/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > in fact, according to this:
-> >
-> > http://lkml.org/lkml/2006/1/13/139
-> >
-> > that notice was put in the feature removal file well over a year ago,
-> > during 2.6.15.  so that would seem to be more than adequate time for
-> > everyone to prepare for it.  but it must have been deleted from that
-> > file since then as well.
->
-> Yes and that was never merged and so was resent on January 19th, 2006:
-> http://www.nabble.com/-2.6-patch--schedule-SHAPER-for-removal-t949871.html
->
-> At that point people debated about it being too short notice and the
-> patch never went in.
->
-> I therefore think we can't just remove with NO notice.
+When read() or write() is used after sysfs_remove_file(), it doesn't call 
+the function and returns -ENODEV. I would assume that it will wait for a 
+running show() or store() before leaving sysfs_remove_file() too - if it 
+doesn't then it should...
 
-  i have no dog in this fight one way or the other.  i was just in a
-housecleaning mood and the shaper stuff looked old and relatively
-dead, that's all.  if there's a good reason to keep it, fine.
+>> +static ssize_t cxacru_sysfs_store_adsl_state(struct device *dev,
+>> +	struct device_attribute *attr, const char *buf, size_t count)
+> 
+> This is not serialized by a lock, so if two or more processes call it
+> simultaneously then the commands to the modem can be interleaved, which
+> could (a) leave it in a funky state, and (b) means that the value of poll
 
-  but it seems fairly clear that this *is* a dead feature:
+a) The commands sent to the modem are serialised so there's no problem 
+there.
 
-===================================================
-$ git show 3b6a792f6ace33584897d1af08630c9acc0ce221
-commit 3b6a792f6ace33584897d1af08630c9acc0ce221
-Author: Jiri Slaby <jirislaby@gmail.com>
-Date:   Mon Nov 6 14:34:48 2006 -0800
+> could be wrong when you write it to instance->poll_state, eg because the
+> processes could reach the poll_state writing step in reverse order to the
+> order in which they reached the sending-commands-to-the-modem step.
 
-    [NET]: kconfig, correct traffic shaper
+b) You're right here, I'll need to add a mutex for that whole function.
 
-    As Patrick McHardy <kaber@trash.net> suggested, Traffic Shaper is now
-    obsolete and alternative to it is no longer CBQ, since its problems with
-    virtual devices, alter Kconfig text to reflect this -- put a link to the
-    traffic schedulers as a whole.
+>> @@ -503,6 +622,7 @@ static int cxacru_atm_start(struct usbatm_data *usbatm_instance,
+>>  	struct atm_dev *atm_dev = usbatm_instance->atm_dev;
+>>  	*/
+>>  	int ret;
+>> +	int start_polling = 1;
+>>  
+>>  	dbg("cxacru_atm_start");
+>>  
+>> @@ -522,7 +642,25 @@ static int cxacru_atm_start(struct usbatm_data *usbatm_instance,
+>>  	}
+>>  
+>>  	/* Start status polling */
+>> -	cxacru_poll_status(&instance->poll_work.work);
+>> +	mutex_lock(&instance->poll_state_serialize);
+>> +	switch (instance->poll_state) {
+> 
+> Can poll_state really have anything else than its initial
+> value here?
 
-    Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-    Acked-by: Patrick McHardy <kaber@trash.net>
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-==================================================
+Yes, the sysfs attributes are set up in bind so the user can change the polling before 
+atm_start is called. Also the device could be removed while usbatm is still preparing 
+to call atm_start.
 
-  so given that the discussion of getting rid of this feature started
-well over a year ago, coupled with the fact that its own Kconfig entry
-has listed it as "OBSOLETE" for over five months now, plus that it has
-very few references left in the tree, well, maybe it's not outrageous
-to think that it really can be tossed.
+>> +	mutex_unlock(&instance->poll_state_serialize);
+>> +
+>> +	if (start_polling)
+>> +		cxacru_poll_status(&instance->poll_work.work);
+> 
+> Between releasing the lock and calling cxacru_poll_status, another
+> process could have called cxacru_sysfs_store_adsl_state and changed
+> whether you want to poll or not.  I don't know if it matters.
 
-  but, like i said, i have no vested interest in this one way or the
-other, except for a fondness for getting rid of dead stuff.
+Yes, this could happen and I designed it so that whichever process sets it to POLLING 
+MUST then start polling - if something else wants it to stop it will stop at the end 
+of the poll function. The only way to allow something other than the poll function to 
+stop it would be to reschedule with the mutex held which I'd rather avoid doing.
+ 
+>> +	mutex_unlock(&instance->poll_state_serialize);
+>> +
+>> +	if (keep_polling)
+>> +		schedule_delayed_work(&instance->poll_work,
+>> +				round_jiffies_relative(POLL_INTERVAL*HZ));
+> 
+> Likewise.
 
-rday
+Again, it will be stopped at the next poll - it's safer than trying to cancel work 
+that may not be scheduled.
+ 
+>> @@ -917,8 +1102,20 @@ static void cxacru_unbind(struct usbatm_data *usbatm_instance,
+>>  		return;
+>>  	}
+>>  
+>> -	while (!cancel_delayed_work(&instance->poll_work))
+>> -	       flush_scheduled_work();
+>> +	mutex_lock(&instance->poll_state_serialize);
+>> +	BUG_ON(instance->poll_state == CXPOLL_SHUTDOWN);
+>> +
+>> +	/* ensure that status polling continues unless
+>> +	 * it has already stopped */
+> 
+> Your device has been removed.  Why would you want to go on
+> polling?  Especially as your device structures are about to
+> be freed...  By the way, where do you remove the sysfs files?
 
-p.s.  if it shouldn't be removed, maybe someone would like to add an
-entry to the feature removal file for it.
+They are removed further down in unbind. Polling is safe to continue because 
+it is stopped below, and it must continue because:
+
+>> +	mutex_unlock(&instance->poll_state_serialize);
+>> +
+>> +	if (is_polling)
+>> +		cancel_rearming_delayed_work(&instance->poll_work);
+> 
+> This looks unreliable, again due to race conditions.  Better to always
+> shoot it down.
+
+Cancelling the work causes an infinite loop if the polling is never rescheduled, 
+I've written it so that the polling is always either enabled/disabled at this 
+point. The SHUTDOWN state prevents anything else changing it.
+
+If it's scheduled to run then it will be cancelled, and if it's running it will 
+be cancelled as soon as it gets rescheduled.
+
+I could repeatedly acquire the mutex and check if it's shutdown itself, but 
+there would be no point since it won't be any faster.
+
+> Ciao,
+> 
+> Duncan.
+
+
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Simon Arlott
