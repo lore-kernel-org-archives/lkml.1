@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbXDORPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbXDORTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169AbXDORPq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 13:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXDORPq
+	id S1753182AbXDORTQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 13:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXDORTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 13:15:46 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:31757 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753179AbXDORPo (ORCPT
+	Sun, 15 Apr 2007 13:19:16 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:24284 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbXDORTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 13:15:44 -0400
+	Sun, 15 Apr 2007 13:19:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pqIn9HC2XZap6Uny8vvVwObvY/P0FO2wX2pUw2yyHQWppaS+z6k32/0NChTQceokYspUaMIKxGqQqULQNHMHgQ4waqajv/mTXunkdN4ExVgXPkfsv0OB7KfUmqXYT4U9LCBpSjWa73ccGrTQl+9qJEnbqNNX/eEV21gYUUcGiEA=
-Message-ID: <b6a2187b0704151015x350b2d76gbde63d8351cc6812@mail.gmail.com>
-Date: Mon, 16 Apr 2007 01:15:39 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [3/3] 2.6.21-rc6: known regressions
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Tobias Diedrich" <ranma+kernel@tdiedrich.de>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, "Dave Jones" <davej@redhat.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       "Tobias Doerffel" <tobias.doerffel@gmail.com>,
-       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       "Marcus Better" <marcus@better.se>, adaplas@gmail.com,
-       "James Simmons" <jsimmons@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20070414003808.GU5907@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=S7IdfOoPK5vyuOd5vQBu6d47icL+nigOeE1CuoJboF+w0rx151XPKAHblkeL2yqExjYqXm0OYLeDk6DGZcb+gRjUh79epJV/d8Mq7gopXY3PcwspqRUTStfCB5BCC59g6jpqBi+OC478wLttwNwDveAa3ysKQGPy2nf9kYXkec8=
+Date: Sun, 15 Apr 2007 22:51:23 +0530
+From: Milind Arun Choudhary <milindchoudhary@gmail.com>
+To: Kernel Janitors <kernel-janitors@lists.osdl.org>,
+       IA64 <linux-ia64@vger.kernel.org>
+Cc: Andrw Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tony Luck <tony.luck@intel.com>
+Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED macro cleanup in arch/ia64
+Message-ID: <20070415172123.GA9296@arun.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org>
-	 <20070414003808.GU5907@stusta.de>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/14/07, Adrian Bunk <bunk@stusta.de> wrote:
+SPIN_LOCK_UNLOCKED macro cleanup, use __SPIN_LOCK_UNLOCKED instead.
 
-> Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
-> References : http://lkml.org/lkml/2007/3/25/217
-> Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
-> Status     : unknown
+Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
 
-Still hangs on -rc6.
+---
+ kernel/traps.c  |    6 +++---
+ kernel/unwind.c |    2 +-
+ mm/tlb.c        |    6 +++---
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-Thanks,
-Jeff.
+diff --git a/arch/ia64/kernel/traps.c b/arch/ia64/kernel/traps.c
+index 765cbe5..cd5189f 100644
+--- a/arch/ia64/kernel/traps.c
++++ b/arch/ia64/kernel/traps.c
+@@ -59,9 +59,9 @@ die (const char *str, struct pt_regs *regs, long err)
+ 		u32 lock_owner;
+ 		int lock_owner_depth;
+ 	} die = {
+-		.lock =			SPIN_LOCK_UNLOCKED,
+-		.lock_owner =		-1,
+-		.lock_owner_depth =	0
++		.lock =	__SPIN_LOCK_UNLOCKED(die.lock),
++		.lock_owner = -1,
++		.lock_owner_depth = 0
+ 	};
+ 	static int die_counter;
+ 	int cpu = get_cpu();
+diff --git a/arch/ia64/kernel/unwind.c b/arch/ia64/kernel/unwind.c
+index 93d5a3b..e3be21c 100644
+--- a/arch/ia64/kernel/unwind.c
++++ b/arch/ia64/kernel/unwind.c
+@@ -145,7 +145,7 @@ static struct {
+ # endif
+ } unw = {
+ 	.tables = &unw.kernel_table,
+-	.lock = SPIN_LOCK_UNLOCKED,
++	.lock = __SPIN_LOCK_UNLOCKED(unw.lock),
+ 	.save_order = {
+ 		UNW_REG_RP, UNW_REG_PFS, UNW_REG_PSP, UNW_REG_PR,
+ 		UNW_REG_UNAT, UNW_REG_LC, UNW_REG_FPSR, UNW_REG_PRI_UNAT_GR
+diff --git a/arch/ia64/mm/tlb.c b/arch/ia64/mm/tlb.c
+index ffad762..fa4e6d4 100644
+--- a/arch/ia64/mm/tlb.c
++++ b/arch/ia64/mm/tlb.c
+@@ -32,9 +32,9 @@ static struct {
+ } purge;
+ 
+ struct ia64_ctx ia64_ctx = {
+-	.lock =		SPIN_LOCK_UNLOCKED,
+-	.next =		1,
+-	.max_ctx =	~0U
++	.lock =	__SPIN_LOCK_UNLOCKED(ia64_ctx.lock),
++	.next =	1,
++	.max_ctx = ~0U
+ };
+ 
+ DEFINE_PER_CPU(u8, ia64_need_tlb_flush);
+-- 
+Milind Arun Choudhary
