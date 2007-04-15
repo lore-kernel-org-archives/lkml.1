@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbXDOKxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbXDOKzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752237AbXDOKxN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 06:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXDOKxN
+	id S1752336AbXDOKzm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 06:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXDOKzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 06:53:13 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34095 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752204AbXDOKxM (ORCPT
+	Sun, 15 Apr 2007 06:55:42 -0400
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:2692 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752336AbXDOKzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 06:53:12 -0400
-Subject: Re: [PATCH 7/17] jffs2: convert jffs2_gc_fetch_page to
-	read_cache_page
-From: David Woodhouse <dwmw2@infradead.org>
-To: Nate Diller <nate.diller@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       Anton Altaparmakov <aia21@cantab.net>,
-       Evgeniy Dushistov <dushistov@mail.ru>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, reiserfs-dev@namesys.com
-In-Reply-To: <20070412024938.27380.13619.patchbomb.py@localhost>
-References: <20070412024938.27380.13619.patchbomb.py@localhost>
-Content-Type: text/plain
-Date: Sun, 15 Apr 2007 11:52:47 +0100
-Message-Id: <1176634367.7929.63.camel@pmac.infradead.org>
+	Sun, 15 Apr 2007 06:55:42 -0400
+Date: Sun, 15 Apr 2007 12:54:44 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Clean up mutex_trylock noise
+Message-ID: <20070415125444.4f06f233@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-11 at 19:49 -0700, Nate Diller wrote:
-> Replace jffs2_gc_fetch_page() and jffs2_gc_release_page() using the
-> read_cache_page() and put_kmapped_page() calls, and update the call site
-> accordingly.  Explicit calls to kmap()/kunmap() make the code more clear.
-> 
-> Signed-off-by: Nate Diller <nate.diller@gmail.com> 
+Ingo Molnar's semaphore to mutex conversions left some noise on a few
+trylock calls. Clean it up.
 
-Please don't remove the jffs2_gc_{fetch,release}_page functions. The
-reason they're in a separate file is because that file (fs.c) is built
-on Linux only, while the file you're moving the code into (gc.c) is
-OS-agnostic; it's used on other sytems (eCos) too.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/media/video/zoran_driver.c |    2 +-
+ drivers/mtd/mtd_blkdevs.c          |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Rather than forcing eCos and any other systems which have a JFFS2 port
-to implement a crappy Linux 'emulation' layer, I try to keep the
-Linuxisms localised to certain files which can be completely
-reimplemented for a non-Linux port.
+--- linux-2.6.21-rc6.orig/drivers/media/video/zoran_driver.c	2007-04-14 16:00:12.000000000 +0200
++++ linux-2.6.21-rc6/drivers/media/video/zoran_driver.c	2007-04-15 12:47:37.000000000 +0200
+@@ -2034,7 +2034,7 @@ zoran_do_ioctl (struct inode *inode,
+ 	 * but moving the free code outside the munmap() handler fixes
+ 	 * all this... If someone knows why, please explain me (Ronald)
+ 	 */
+-	if (!!mutex_trylock(&zr->resource_lock)) {
++	if (mutex_trylock(&zr->resource_lock)) {
+ 		/* we obtained it! Let's try to free some things */
+ 		if (fh->jpg_buffers.ready_to_be_freed)
+ 			jpg_fbuffer_free(file);
+--- linux-2.6.21-rc6.orig/drivers/mtd/mtd_blkdevs.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.21-rc6/drivers/mtd/mtd_blkdevs.c	2007-04-15 12:47:26.000000000 +0200
+@@ -236,7 +236,7 @@ int add_mtd_blktrans_dev(struct mtd_blkt
+ 	int last_devnum = -1;
+ 	struct gendisk *gd;
+ 
+-	if (!!mutex_trylock(&mtd_table_mutex)) {
++	if (mutex_trylock(&mtd_table_mutex)) {
+ 		mutex_unlock(&mtd_table_mutex);
+ 		BUG();
+ 	}
+@@ -314,7 +314,7 @@ int add_mtd_blktrans_dev(struct mtd_blkt
+ 
+ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ {
+-	if (!!mutex_trylock(&mtd_table_mutex)) {
++	if (mutex_trylock(&mtd_table_mutex)) {
+ 		mutex_unlock(&mtd_table_mutex);
+ 		BUG();
+ 	}
+
 
 -- 
-dwmw2
-
+Jean Delvare
