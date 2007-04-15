@@ -1,138 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbXDOHiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXDOHwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752205AbXDOHiY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 03:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXDOHiY
+	id S1752314AbXDOHwL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 03:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXDOHwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 03:38:24 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:2530 "EHLO yumi.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752216AbXDOHiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 03:38:23 -0400
-Date: Sun, 15 Apr 2007 09:38:20 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Linux 2.6.21-rc6
-Message-ID: <20070415073820.GA2589@melchior.yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	pavel@suse.cz, linux-pm@lists.osdl.org,
-	Maxim Levitsky <maximlevitsky@gmail.com>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704142223.32410.rjw@sisk.pl> <20070414213526.GA2401@melchior.yamamaya.is-a-geek.org> <200704142358.31758.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 15 Apr 2007 03:52:11 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2360 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752216AbXDOHwK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 03:52:10 -0400
+Date: Sun, 15 Apr 2007 17:52:01 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: helge.hafting@aitel.hist.no, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [CRYPTO] is it really optimized ?
+Message-ID: <20070415075201.GA1644@gondor.apana.org.au>
+References: <38b2ab8a0704140615y2ba8145bmd3c2316a41d99265@mail.gmail.com> <E1Hco0p-0007np-00@gondolin.me.apana.org.au> <38b2ab8a0704141410q65f55381w26527aeb10fb4988@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200704142358.31758.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <38b2ab8a0704141410q65f55381w26527aeb10fb4988@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Saturday, 14 April 2007 23:35, Tobias Diedrich wrote:
-> > Rafael J. Wysocki wrote:
-> > > On Saturday, 14 April 2007 21:56, Tobias Diedrich wrote:
-> > > > Rafael J. Wysocki wrote:
-> > > > > On Saturday, 14 April 2007 15:00, Adrian Bunk wrote:
-> > > > > > On Sat, Apr 14, 2007 at 02:31:54PM +0200, Tobias Diedrich wrote:
-> > > > > > > Tobias Diedrich wrote:
-> > > > > > > > > ed746e3b18f4df18afa3763155972c5835f284c5 is first bad commit
-> > > > > > > > > commit ed746e3b18f4df18afa3763155972c5835f284c5
-> > > > > > > > > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > > > > > Date:   Sat Feb 10 01:43:32 2007 -0800
-> > > > > > > > > 
-> > > > > > > > >     [PATCH] swsusp: Change code ordering in disk.c
-> > > > > > > > >     
-> > > > > > > > >     Change the ordering of code in kernel/power/disk.c so that device_suspend() is
-> > > > > > > > >     called before disable_nonboot_cpus() and platform_finish() is called after
-> > > > > > > > >     enable_nonboot_cpus() and before device_resume(), as indicated by the recent
-> > > > > > > > >     discussion on Linux-PM (cf.
-> > > > > > > > >     http://lists.osdl.org/pipermail/linux-pm/2006-November/004164.html).
-> > > > > > > > >     
-> > > > > > > > >     The changes here only affect the built-in swsusp.
-> > > > > > > > >     
-> > > > > > > > >     [alexey.y.starikovskiy@linux.intel.com: fix LED blinking during image load]
-> > > > > > > > >     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > > > > >     Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > > > > > > >     Cc: Greg KH <greg@kroah.com>
-> > > > > > > > >     Cc: Nigel Cunningham <nigel@suspend2.net>
-> > > > > > > > >     Cc: Patrick Mochel <mochel@digitalimplant.org>
-> > > > > > > > >     Cc: Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
-> > > > > > > > >     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > > > > > > > >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > > > > > > > > 
-> > > > > > > > > :040000 040000 7eca5b3a8f9606bc4f2ff41192ec8c9d4ca90d18 8313b674e1d1bdf6849350af06d28a89b3bb3054 M      kernel
-> > > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > > Now, the remaining test is to try reverting this commit from -rc6. :)
-> > > > > > > > 
-> > > > > > > > Doesn't apply cleanly against -rc6, but fixes the problem when
-> > > > > > > > reverted from -rc1.
-> > > > > > > 
-> > > > > > > Now, this was already reported in
-> > > > > > > http://lkml.org/lkml/2007/3/16/126
-> > > > > > > and I even flagged that message in my local folder, but apparently forgot
-> > > > > > > to follow up on it... *sigh*
-> > > > > > 
-> > > > > > Unless I misunderstood something, all of the problems Maxim described in 
-> > > > > > this email are fixed for him in -rc6.
-> > > > > > 
-> > > > > > But it's quite possible that you are running into a different issue 
-> > > > > > exposed by this commit.
-> > > > > 
-> > > > > Yes, it's likely.
-> > > > > 
-> > > > > Tobias, I'm unable to reproduce the problem with your .config, but my hardware
-> > > > > is certainly different.  Which suspend mode do you use?  If that's "platform",
-> > > > > can you try to use "shutdown" or "reboot" and see if that helps?
-> > > > 
-> > > > Sure.
-> > > > shutdown/reboot works fine, only platform is broken.
-> > > 
-> > > Thanks.
-> > > 
-> > > Now, I suspect the problem is somehow related to the hardware, so it would help
-> > > a lot if we could identify the piece of hardware (or driver) involved.
-> > > 
-> > > AFAICT, your system is a non-SMP one, so we can rule out
-> > > disable/enable_nonboot_cpus().  To confirm that the problem is related to
-> > > platform_finish(), can you please apply the appended debug patch and
-> > > see if the suspend in the 'platform' mode works with it?
-> > 
-> > Yes, it's a Asus M2N-SLI-Deluxe Mainboard with a Athlon64 3200+
-> > single core CPU.
-> > 
-> > > Also, would that be feasible for you to use 'shutdown' as a workaround in case
-> > > the source of the problem is difficult to find and/or fix?
-> > 
-> > I guess so, but the below patch fixes the problem. :)
+On Sat, Apr 14, 2007 at 11:10:08PM +0200, Francis Moreau wrote:
 > 
-> Well, I thought it would, but it also would break some other people's systems.
-> That's the _real_ problem.  Let's see if we can learn more.
-> 
-> Can you please revert it for now, apply the appended one and try to
-> suspend/resume twice in the 'platform' mode (it may or may not work)?
+> ok but do you think it's safe to assume that no others parts of the
+> kernel will request "aes-foo" ? Remember that the main point is to
+> optimize "aes-foo" ?
 
-Ok. The patch doesn't apply cleanly to 2.6.21-rc6:
-|patching file kernel/power/disk.c
-|Hunk #1 FAILED at 267.
-|Hunk #2 succeeded at 265 (offset -23 lines).
-|1 out of 2 hunks FAILED -- saving rejects to file
-|kernel/power/disk.c.rej
+What they request is up to the administrator.
 
-wiggle helps, seems the first part of Hunk #1 is already applied in
-2.6.21-rc6.
-With CONFIG_PM_DEBUG=y and CONFIG_DISABLE_CONSOLE_SUSPEND=y I see
-that the second suspend hangs at "i8042 i8042: EARLY resume".
-This is kinda interesting because I'm normally using a USB keyboard
-and sure enough, if I hook up a normal keyboard and disable USB
-legacy support in the BIOS, then suspend to disk works multiple
-times. I'd still rather like to use my USB keyboard though. ;)
-
+Cheers,
 -- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
