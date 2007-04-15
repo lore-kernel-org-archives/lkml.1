@@ -1,71 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXDOI6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbXDOJAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbXDOI6g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 04:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbXDOI6g
+	id S1752424AbXDOJAc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 05:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXDOJAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 04:58:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47630 "EHLO mx3.mail.elte.hu"
+	Sun, 15 Apr 2007 05:00:32 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:58284 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbXDOI6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 04:58:35 -0400
-Date: Sun, 15 Apr 2007 10:58:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Willy Tarreau <w@1wt.eu>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070415085825.GE24886@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <1176623688.30350.23.camel@Homer.simpson.net>
+	id S1752424AbXDOJAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 05:00:31 -0400
+Date: Sun, 15 Apr 2007 11:01:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ALPHA: support graphics on non-zero PCI domains (take 2)
+Message-ID: <20070415090115.GA18103@uranus.ravnborg.org>
+References: <20070415111937.A12310@jurassic.park.msu.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1176623688.30350.23.camel@Homer.simpson.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070415111937.A12310@jurassic.park.msu.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +#ifdef CONFIG_VGA_HOSE
+>  	/*
+> -	 * Adjust the addr.
+> +	 * Adjust the address and hose, if necessary.
+>  	 */ 
+> -#ifdef CONFIG_VGA_HOSE
+> -	if (pci_vga_hose && __titan_is_mem_vga(addr)) {
+> +	if (pci_vga_hose && __is_mem_vga(addr)) {
+>  		h = pci_vga_hose->index;
 
-* Mike Galbraith <efault@gmx.de> wrote:
+This code snippet is used in two places.
+A better approach would be to define a small inline function
+that is empty in the NON HOSe case to avod the ifdefs in the
+code logic.
 
-> On Sat, 2007-04-14 at 15:01 +0200, Willy Tarreau wrote:
-> 
-> > Well, I'll stop heating the room for now as I get out of ideas about 
-> > how to defeat it. I'm convinced. I'm impatient to read about Mike's 
-> > feedback with his workload which behaves strangely on RSDL. If it 
-> > works OK here, it will be the proof that heuristics should not be 
-> > needed.
-> 
-> You mean the X + mp3 player + audio visualization test?  X+Gforce 
-> visualization have problems getting half of my box in the presence of 
-> two other heavy cpu using tasks.  Behavior is _much_ better than 
-> RSDL/SD, but the synchronous nature of X/client seems to be a problem.
-> 
-> With this scheduler, renicing X/client does cure it, whereas with SD 
-> it did not help one bit. [...]
 
-thanks for testing it! I was quite worried about your setup - two tasks 
-using up 50%/50% of CPU time, pitted against a kernel rebuild workload 
-seems to be a hard workload to get right.
+> +tsunami_ioremap(unsigned long addr, unsigned long size)
+> +{
+> +	FIXUP_MEMADDR_VGA(addr);
+> +	return (void __iomem *)(addr + TSUNAMI_MEM_BIAS);
+> +}
+> +
+> +#ifndef CONFIG_ALPHA_GENERIC
+> +EXPORT_SYMBOL(tsunami_ioportmap);
+> +EXPORT_SYMBOL(tsunami_ioremap);
+> +#endif
 
-> [...] (I know a trivial way to cure that, and this framework makes 
-> that possible without dorking up fairness as a general policy.)
+It looks strange that the function is always defined but conditionally exported.
+Also usual style is to place EXPORT right after closing brace of function -
+(with no empty lines in-between).
 
-great! Please send patches so i can add them (once you are happy with 
-the solution) - i think your workload isnt special in any way and could 
-hit other people too.
+> +
+> +static void __init
+> +tsunami_init_vga_hose(void)
+> +{
+> +#ifdef CONFIG_VGA_HOSE
+> +	u64 *pu64 = (u64 *)((u64)hwrpb + hwrpb->ctbt_offset);
+> +
+> +	if (pu64[7] == 3) {	/* TERM_TYPE == graphics */
+> +		struct pci_controller *hose;
+> +		int h = (pu64[30] >> 24) & 0xff;	/* console hose # */
+> +
+> +		/*
+> +		 * Our hose numbering does NOT match the console's, so find
+> +		 * the right one...
+> +		 */
+> +		for (hose = hose_head; hose; hose = hose->next) {
+> +			if (hose->index == h) break;
+> +		}
+> +
+> +		if (hose) {
+> +			printk("Console graphics on hose %d\n", h);
+> +			pci_vga_hose = hose;
+> +		}
+> +	}
+> +#endif /* CONFIG_VGA_HOSE */
+> +}
 
-	Ingo
+Again - avoid ifdef in code.
+Surround whole function with ifdef and then provide an empty inline for the NON hose case.
+
+> +/* console.c */
+> +#ifdef CONFIG_VGA_HOSE
+> +extern void locate_and_init_vga(void *(*)(void *, void *));
+> +#else
+> +#define locate_and_init_vga()	do { } while (0)
+> +#endif
+static inline would give you a limited type check of arguments.
+
+>  
+> +config VGA_HOSE
+> +	bool "VGA on arbitrary hose"
+> +	depends on ALPHA_GENERIC || ALPHA_TITAN || ALPHA_MARVEL || ALPHA_TSUNAMI
+> +	default y
+
+Please always include help entry for visible symbols.
+You have it mostly written up in the changelog so it should be trivial to add.
+
+	Sam
