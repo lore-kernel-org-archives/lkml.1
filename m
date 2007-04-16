@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030843AbXDPXZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031029AbXDPX25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030843AbXDPXZY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 19:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031025AbXDPXZY
+	id S1031029AbXDPX25 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 19:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031028AbXDPX25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 19:25:24 -0400
-Received: from ns1.suse.de ([195.135.220.2]:48854 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030843AbXDPXZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 19:25:23 -0400
-From: Neil Brown <neilb@suse.de>
-To: Theodore Tso <tytso@mit.edu>
-Date: Tue, 17 Apr 2007 09:24:47 +1000
+	Mon, 16 Apr 2007 19:28:57 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:54750 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031023AbXDPX24 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 19:28:56 -0400
+Date: Mon, 16 Apr 2007 16:28:51 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com, ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+Message-ID: <20070416232851.GA15840@dmccrory-d810.qlogic.org>
+References: <20070416211049.GC13590@andrew-vasquezs-computer.local> <20070416.150846.45744461.davem@davemloft.net> <20070416222517.GD14351@andrew-vasquezs-computer.local> <20070416.152910.107940079.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17956.1471.150238.216776@notabene.brown>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-In-Reply-To: message from Theodore Tso on Monday April 16
-References: <20070408184129.GA20871@lazybastard.org>
-	<17947.65165.569482.976343@notabene.brown>
-	<20070411144252.GB17778@thunk.org>
-	<17949.25061.739035.688232@notabene.brown>
-	<20070411232224.GF17778@thunk.org>
-	<17949.36737.701327.104172@notabene.brown>
-	<20070412023712.GA8175@lazybastard.org>
-	<17949.51797.386833.917451@notabene.brown>
-	<20070412122116.GD28148@thunk.org>
-	<17955.5453.164637.970405@notabene.brown>
-	<20070416110702.GF27533@thunk.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <20070416.152910.107940079.davem@davemloft.net>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 16 Apr 2007 23:28:40.0301 (UTC) FILETIME=[F71631D0:01C7807E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday April 16, tytso@mit.edu wrote:
+On Mon, 16 Apr 2007, David Miller wrote:
+
+> From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> Date: Mon, 16 Apr 2007 15:25:17 -0700
 > 
-> The challenge is making it be stable across inserts/deletes, never
-> mind reboots.  And it's not a "little bit of cacheing"; in order to be
-> correct we would have to cache *forever*, since at least in theory an
-> NFS client could hold on to a cookie for an arbitrarily long period of
-> time (weeks, months, years, decades), yes?
-
-Yes.  But I think we've already establish that the on-disk structure
-chosen by ext3/htree is not able to perfectly support NFS (which is a
-pity given that it was written for Linux and Linux is thought to
-support NFS).  Our goal is to find the best mapping possible and,
-where caching can improve stability for real-world uses, use caching
-to help stabilise that mapping.
-
+> > Fine, I'll agree that wacking-users (and
+> > I'll wager the outliers) with a 2x4 was a bit extreme,
 > 
-> You're welcome to try, but I suspect it won't take long before you'll
-> see why I'm asserting that a directory fd cache in nfsd is *way* less
-> work.  :-)
+> And that, right there, is basically the end of the conversation.
+> 
+> You don't do this to users, ever.
+> Put a big loud kernel log message in there when this situation
+> presents itself, use as many capital letters and scary language that
+> you wish.  Let them know that if things explode they get to keep the
+> pieces.
+> 
+> But at least try to give them something that works when you know that
+> you can.
+>
+> You don't need to make someone's system unbootable in order to make
+> them aware of a potential problem.  It's very anti-social to approach
 
-You have provided some very helpful insights into how ext3/htree
-currently works - thanks for that.
-I will definitely make a closer inspection of the code and so how
-possible it is to realise by ideas.  I'll let you know how I go.
+Sorry, but let's be realistic, this type of warning would have *NEVER*
+been addressed if we kept the status quo -- your modifications to read
+the wwpn/wwnn would have never been submitted, everybody would have
+kept going on blistfully ignorant of the issue.  Changes such as these
+are a common Linux upstream idiom...
 
-NeilBrown
+So, meeting in the middle, with the NVRAM bits restored along with
+some ability for the user to *knowingly* recognize the problem, I take
+it, is not going to work for you?
