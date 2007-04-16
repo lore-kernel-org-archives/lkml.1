@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbXDPCnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbXDPCxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbXDPCnt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 22:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXDPCnt
+	id S1754326AbXDPCxl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 22:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXDPCxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 22:43:49 -0400
-Received: from mga01.intel.com ([192.55.52.88]:20810 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754198AbXDPCns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 22:43:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,413,1170662400"; 
-   d="scan'208"; a="230778266:sNHT15994160"
-Subject: Re: CPU_IDLE prevents resuming from STR [was: Re: 2.6.21-rc6-mm1]
-From: Shaohua Li <shaohua.li@intel.com>
-To: Mattia Dongili <malattia@linux.it>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20070413234513.GA2940@inferi.kami.home>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
-	 <20070413234513.GA2940@inferi.kami.home>
+	Sun, 15 Apr 2007 22:53:41 -0400
+Received: from outmail1.freedom2surf.net ([194.106.33.237]:53368 "EHLO
+	outmail1.freedom2surf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754326AbXDPCxl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 22:53:41 -0400
+X-Greylist: delayed 1220 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Apr 2007 22:53:40 EDT
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
+From: ian <spyro@f2s.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Anton Vorontsov <cbou@mail.ru>, Ondrej Zajicek <santiago@crfreenet.org>,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org
+In-Reply-To: <20070416005722.GA6296@khazad-dum.debian.net>
+References: <20070411232503.GC20095@zarina>
+	 <20070415220854.GA20373@localhost.localdomain>
+	 <20070415225049.GA27680@zarina>
+	 <20070416005722.GA6296@khazad-dum.debian.net>
 Content-Type: text/plain
-Date: Mon, 16 Apr 2007 10:40:27 +0800
-Message-Id: <1176691227.6993.1.camel@sli10-conroe.sh.intel.com>
+Date: Mon, 16 Apr 2007 03:32:54 +0100
+Message-Id: <1176690774.29389.175.camel@wirenth>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-14 at 01:45 +0200, Mattia Dongili wrote:
-> On Sun, Apr 08, 2007 at 02:35:59PM -0700, Andrew Morton wrote:
-> ...
-> >  git-acpi.patch
+On Sun, 2007-04-15 at 21:57 -0300, Henrique de Moraes Holschuh wrote:
 > 
-> after bisecting I can finally say what breaks resume from STR here:
-> 
-> tadaaaaa: CPU_IDLE.
-> I first spotted the git-acpi.patch then reapplied it and disabled
-> CPU_IDLE, now my laptop resumes.
-> 
-> Any useful information I should add?
-> 
-> $ cat /sys/devices/system/cpu/cpuidle/*
-> acpi_idle 
-> no governors
-> acpi_idle
-> no governor
-please check if the patch at
-http://marc.info/?l=linux-acpi&m=117523651630038&w=2 fixed the issue
+> No, that won't help much.  IMO, we want the sanest set of standard
+> attributes we can get, and weird as it might be, average reporting are
+> common properties of battery control firmware on laptops (maybe
+> because of SBS, but still...).
 
-Thanks,
-Shaohua
+We need to think very carefully here.
+
+charge, current, capacity, etc. are properties all batteries have, and
+the current values can all be sampled instantaneously.
+
+funky values processed by 'black box' firmware are not universal
+properties of all batteries.
+
+IOW, battery class should be for 'simple' battery types only.
+
+perhaps rename it to simple battery class to make it distinct?
+
+Userspace is the place to put the complications, in any case, and I see
+nothing wrong with having both a simple battery class AND other
+proprietary battery class an SBS battery class. (or a
+toshiba_proprietary_bios battery class or whatever).
+
+Perhaps we need a 'libbattery.so' so that userspace can have a nice
+consistent interface?
+
