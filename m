@@ -1,64 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751349AbXDPJUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030258AbXDPJYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751349AbXDPJUT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 05:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXDPJUT
+	id S1030258AbXDPJYG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 05:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030250AbXDPJYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 05:20:19 -0400
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:44825 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbXDPJUS (ORCPT
+	Mon, 16 Apr 2007 05:24:06 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:29784 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030258AbXDPJYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 05:20:18 -0400
-Subject: Re: NFS livelock / starvation ?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Zhou Yingchao <yingchao.zhou@gmail.com>
-Cc: akpm@zip.com.au, trond.myklebust@fys.uio.no, neilb@cse.unsw.edu.au,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <67029b170704160124y7bfcb535h8dfbeb1530446469@mail.gmail.com>
-References: <67029b170704160124y7bfcb535h8dfbeb1530446469@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 16 Apr 2007 11:20:13 +0200
-Message-Id: <1176715213.3035.27.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 16 Apr 2007 05:24:05 -0400
+Message-ID: <462340B4.2000300@ru.mvista.com>
+Date: Mon, 16 Apr 2007 13:24:04 +0400
+From: Maxim Uvarov <muvarov@ru.mvista.com>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       davidsen@tmr.com, randy.dunlap@oracle.com, dada1@cosmosbay.com,
+       Valdis.Kletnieks@vt.edu, jesper.juhl@gmail.com
+Subject: Re: Performance Stats: Kernel patch
+References: <461A4C1E.3070309@ru.mvista.com> <20070415094706.GB10097@ucw.cz> <20070415102157.GB2986@holomorphy.com> <20070415201024.GB12012@ucw.cz> <20070416010424.GG2986@holomorphy.com>
+In-Reply-To: <20070416010424.GG2986@holomorphy.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 16:24 +0800, Zhou Yingchao wrote:
-> When we run a two nfs client and a nfs server in the following way, we
-> met a livelock / starvation condition.
-> 
-> MachineA        MachineB
->  Client1             Client2
->  Server
-> 
-> As shown in the figure, we run a client and server on one machine, and
-> run another client on another machine. When Client1 and Client2 make
-> many writes at the same time, the Client1's request is blocked until
-> Client2's writes finished.
-> 
-> We check the code, Client1 is blocked in generic_file_write-> ...
-> >balance_dirty_pages, balance_dirty_pages call writeback_inodes to
-> (only) flush data of the related fs.
-> 
-> In nfs, we found that the Server has enhanced its dirty_thresh. So in
-> the loop of writeback_inodes, Client1 has no data to write out, and
-> the condition "ns_reclaimable+wbs.nr_writeback<=dirty_thresh" will not
-> be true until Client2 finishes its write request to Server. So the
-> loop will only end after Client2 finished its write job.
-> 
-> The problem in this path is: why we write only pages of the related fs
-> in writeback_inodes but check the dirty thresh for total pages?
+William Lee Irwin III wrote:
 
-I am working on patches to fix this.
+>On Sun 2007-04-15 03:21:57, William Lee Irwin III wrote:
+>  
+>
+>>>nvcsw and nivcsw are conventional variable names for these quantities.
+>>>      
+>>>
+>
+>On Sun, Apr 15, 2007 at 08:10:24PM +0000, Pavel Machek wrote:
+>  
+>
+>>I can't decipher them and would not want users see them in /proc.
+>>Would nonvoluntary_ctxt_switch be that much worse?
+>>    
+>>
+>
+>I'm not too attached to a particular name. I just think that the
+>traditional counter names should pass readability/etc. criteria on
+>account of the very strong historical precedent. I'd consider more
+>verbose affairs for the sake of putative legibility as equivalent
+>in quality. Maybe that means others voting for the more verbose
+>names should result in an aggregate decision in favor of verbosity.
+>
+>
+>-- wli
+>  
+>
+The standard /proc output is:
+root@192.168.3.2:~# cat /proc/$$/status
+Name:   bash
+State:  S (sleeping)
+SleepAVG:       88%
+Tgid:   836
+Pid:    836
+PPid:   1
+TracerPid:      0
+Uid:    0       0       0       0
+Gid:    0       0       0       0
+FDSize: 256
+Groups: 0 1 2 4
+VmPeak:     2360 kB
+VmSize:     2360 kB
+VmLck:         0 kB
+VmHWM:      1400 kB
+VmRSS:      1400 kB
+VmData:      196 kB
+VmStk:        88 kB
+VmExe:       564 kB
+VmLib:      1412 kB
+VmPTE:        12 kB
+Threads:        1
+SigQ:   0/1024
+SigPnd: 0000000000000000
+ShdPnd: 0000000000000000
+SigBlk: 0000000000010000
+SigIgn: 0000000000384004
+SigCgt: 000000004b813efb
+CapInh: 0000000000000000
+CapPrm: 00000000fffffeff
+CapEff: 00000000fffffeff
 
-Current version at (against -mm):
-  http://programming.kicks-ass.net/kernel-patches/balance_dirty_pages/
+I can't say that "Nvcsw" and "Nivcsw" is something less verbose as 
+output above.
+It is more usual  so it is more clear for you. But if you need this counters
+you should know what are they and how to use them.
 
-However, after a rewrite of the BDI statistics work there are some
-funnies, which I haven't had time to analyse yet :-/
+As for me "nonvoluntary_ctxt_switch" and "voluntary_ctxt_switch" is more 
+verbose,
+and it is not big deal to change names. But I think that information about
+this counters and verbose name should be in user space tools, like ps.
 
-I hope to post a new version soonish...
 
