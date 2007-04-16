@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbXDPTDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbXDPTDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbXDPTDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXDPTDS
+	id S1753276AbXDPTDY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXDPTDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:03:18 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:59839 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753272AbXDPTDR (ORCPT
+	Mon, 16 Apr 2007 15:03:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:23528 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276AbXDPTDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:03:17 -0400
+	Mon, 16 Apr 2007 15:03:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sauGW6Djn1ir/Q6HUPYIrhBbUJrgXHRvXC6/+MnhokdalvUCPpYdp0oAewF9r74qi4+x5IRZ4+IRTck6KGaB0YBOpRjq5a71Ttqx7uX6BcC3JbKh5BK6qWbz8TLoyZ+kDdKm9d7Ih/3tGH9ByqiZ2kQvM4d4FBSmvqWO3UFEU/4=
-Message-ID: <d120d5000704161203j7c476bb8m1c96d09adb819b6f@mail.gmail.com>
-Date: Mon, 16 Apr 2007 15:03:16 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [Patch -mm 0/3] RFC: module unloading vs. release function
-Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Tejun Heo" <htejun@gmail.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <20070416184716.GA6262@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>
-	 <d120d5000704161130j7ae89a1eyef89e015f0a3e97f@mail.gmail.com>
-	 <20070416184716.GA6262@kroah.com>
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=dbCa2HFr04kTbdZcHOq0tDQuylLgDxzddMt/p0bpeeucqFzGPZdDCwSqJrBXmtOOS20vPdBSsXxlsuRZfgXiSfjBt3igda0C8OghdXH7SjJsXC3+N0TcyVHOF+otefIi/AkYI8ayllefJmAhRx9HCbDFgrHIcxQCpKfeeWtQuAg=
+Date: Mon, 16 Apr 2007 21:02:54 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Tomasz =?UTF-8?B?S8WCb2N6a28=?= <kloczek@rudy.mif.pg.gda.pl>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Mike Snitzer <snitzer@gmail.com>, Neil Brown <neilb@suse.de>,
+       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+Message-Id: <20070416210254.d619933c.diegocg@gmail.com>
+In-Reply-To: <Pine.BSO.4.63.0704161734370.11088@rudy.mif.pg.gda.pl>
+References: <op.tqqwdfzcftfxs2@localhost.localdomain>
+	<17952.5537.364603.419364@notabene.brown>
+	<170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com>
+	<Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr>
+	<Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
+	<46238204.9060907@s5r6.in-berlin.de>
+	<Pine.BSO.4.63.0704161606280.11088@rudy.mif.pg.gda.pl>
+	<20070416145527.GA26863@infradead.org>
+	<Pine.BSO.4.63.0704161734370.11088@rudy.mif.pg.gda.pl>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/07, Greg KH <greg@kroah.com> wrote:
-> On Mon, Apr 16, 2007 at 02:30:17PM -0400, Dmitry Torokhov wrote:
-> > On 4/16/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> > >Hi,
-> > >
-> > >based on the discussion in "How should an exit routine wait for
-> > >release() callbacks?", I've cooked up some patches that make module
-> > >unload wait until the last reference for a kobject has been dropped.
-> > >This should plug the "release function in already deleted module" race;
-> > >however, if the last kobject_put() from the module containing the
-> > >release function is not in the module's exit function, there's still a
-> > >small window (not sure if and how to plug this).
-> >
-> > Unfortunately all this "wait for refcount in module's exit" schemas
-> > lead to the following deadlock:
-> >
-> >        rmmod my_module < /path/to/some/file/incrementing/my/refcount
->
-> No, it should just return "module in use" as the reference count it
-> grabbed before rmmod is called.
->
+El Mon, 16 Apr 2007 17:46:50 +0200 (CEST), Tomasz Kłoczko <kloczek@rudy.mif.pg.gda.pl> escribió:
 
-No, because it it were module's refcount we woudl not have problem
-with ->release() to begin with. It is object's refcount.
+> also some other interestig numbers can be founnd on:
+> http://milek.blogspot.com/2006/08/hw-raid-vs-zfs-software-raid-part-ii.html
 
-> But either way, that's just foolish to try to prevent that from failing
-> :)
-
-Why? It works now for most of teh subsystems.
-
--- 
-Dmitry
+So software raid can be faster than HW raid. News at 11.
