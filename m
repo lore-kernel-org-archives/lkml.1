@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbXDPDHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754383AbXDPDQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754372AbXDPDHS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 23:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXDPDHS
+	id S1754383AbXDPDQw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 23:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXDPDQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 23:07:18 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36473 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754372AbXDPDHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 23:07:16 -0400
-Date: Mon, 16 Apr 2007 13:07:05 +1000
-From: David Chinner <dgc@sgi.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-Message-ID: <20070416030705.GY32602149@melbourne.sgi.com>
-References: <op.tqthonq5ftfxs2@localhost.localdomain> <4622C851.2030509@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 15 Apr 2007 23:16:52 -0400
+Received: from mx34.mail.ru ([194.67.23.200]:4858 "EHLO mx27.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754383AbXDPDQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 23:16:51 -0400
+Date: Mon, 16 Apr 2007 07:12:56 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: ian <spyro@f2s.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Ondrej Zajicek <santiago@crfreenet.org>, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/7] [RFC] Battery monitoring class
+Message-ID: <20070416031256.GA30153@zarina>
+Reply-To: cbou@mail.ru
+References: <20070411232503.GC20095@zarina> <20070415220854.GA20373@localhost.localdomain> <20070415225049.GA27680@zarina> <20070416005722.GA6296@khazad-dum.debian.net> <1176690774.29389.175.camel@wirenth>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <4622C851.2030509@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1176690774.29389.175.camel@wirenth>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 15, 2007 at 08:50:25PM -0400, Rik van Riel wrote:
-> David R. Litwin wrote:
+On Mon, Apr 16, 2007 at 03:32:54AM +0100, ian wrote:
+> On Sun, 2007-04-15 at 21:57 -0300, Henrique de Moraes Holschuh wrote:
+> > 
+> > No, that won't help much.  IMO, we want the sanest set of standard
+> > attributes we can get, and weird as it might be, average reporting are
+> > common properties of battery control firmware on laptops (maybe
+> > because of SBS, but still...).
 > 
-> >>4: ZFS has a HUGE capacity. I don't have 30 exobytes, but I might some
-> >>day....
-> >
-> >ext4 will probably cope with that.  XFS definitely has very high
-> >limits though I admit I don't know what they are.
-> >
-> >XFS is also a few exobytes.
+> We need to think very carefully here.
 > 
-> The fsck for none of these filesystems will be able to deal with
-> a filesystem that big.  Unless, of course, you have a few weeks
-> to wait for fsck to complete.
-
-Which is why I want to be able to partially offline a chunk of
-a filesystem and repair it while the rest is still online.....
-
-> Backup and restore are similar problems.  When part of the filesystem
-> is lost, you don't want to have to wait for a full restore.
+> charge, current, capacity, etc. are properties all batteries have, and
+> the current values can all be sampled instantaneously.
 > 
-> Sounds simple?  Well, the hard part is figuring out exactly which
-> part of the filesystem you need to restore...
+> funky values processed by 'black box' firmware are not universal
+> properties of all batteries.
 > 
-> I don't see ZFS, ext4 or XFS addressing these issues.
+> IOW, battery class should be for 'simple' battery types only.
+> 
+> perhaps rename it to simple battery class to make it distinct?
+> 
+> Userspace is the place to put the complications, in any case, and I see
+> nothing wrong with having both a simple battery class AND other
+> proprietary battery class an SBS battery class. (or a
+> toshiba_proprietary_bios battery class or whatever).
+> 
+> Perhaps we need a 'libbattery.so' so that userspace can have a nice
+> consistent interface?
 
-XFS has these sorts of issues directly in our cross-hairs.
+Why? With current battery class we can do whatever everyone needs. No
+need for wrappers.
 
-The major scaling problem XFS has right now is to do with
-how long repair/backup/restore take when you have hundreds
-of terabytes of storage.
+Adding new properties is cheap and easy. Simple batteries using only
+"simple" properties/attributes, and complicated batteries using
+complicated attributes.
 
-> IMHO chunkfs could provide a much more promising approach.
+Because of your original design, simple batteries are stay simple, and
+no noticing that there is some "complicated" attributes exists at all.
+That's indeed great characteristic of that *universal* battery class.
 
-Agreed, that's one method of compartmentalising the problem.....
+For example, ds2760 is not really "simple" monitoring chip. ADC battery
+is (it's in -hh tree so far). So, ds2760 is somewhere in between SBS
+design, and dumb ADC batteries.
 
-Cheers,
+So, my another purposal, which I very like now:
+Let's do self-documented properties. current_now, current_avg, e.t.c.
+No more just "current", lets remove any ambiguousness!
 
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
