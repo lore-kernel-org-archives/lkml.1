@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXDPTOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbXDPTSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbXDPTOb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXDPTOb
+	id S1754243AbXDPTSd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbXDPTSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:14:31 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:2602 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbXDPTOa (ORCPT
+	Mon, 16 Apr 2007 15:18:32 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51784 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754234AbXDPTSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:14:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PJmgY/eofx7Pgb3dtV+2PQDcgSpAtmVVGlRODdXx0F/soGU79QPtwcCuJ2OpGOhT1BrgYuBt2JaBTGIT5SAkbgZExstQvlQs8Qnl4BcZ/zVpQ5E5GgBUkDfPxOmW1+3PkaKg3zpw9/U8kQ6yZ3d//KGM4V+uu5nrzkelX9qAyBc=
-Message-ID: <f383264b0704161214x168b36f4tdd9a074d604b36cb@mail.gmail.com>
-Date: Mon, 16 Apr 2007 12:14:27 -0700
-From: "Matt Reimer" <mattjreimer@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: [PATCH 6/7] [RFC] ds2760 battery driver
-Cc: "Anton Vorontsov" <cbou@mail.ru>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, dwmw2@infradead.org
-In-Reply-To: <20070415194001.GF10097@ucw.cz>
+	Mon, 16 Apr 2007 15:18:31 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
+References: <20070412164541.580374744@szeredi.hu>
+	<20070412164620.588752236@szeredi.hu>
+	<20070412203208.GG27772@sergelap.austin.ibm.com>
+	<m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
+	<1176713221.9488.17.camel@ram.us.ibm.com>
+	<E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
+	<1176716941.9488.57.camel@ram.us.ibm.com>
+	<E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
+	<m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
+	<E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu>
+Date: Mon, 16 Apr 2007 13:16:48 -0600
+In-Reply-To: <E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
+	message of "Mon, 16 Apr 2007 17:58:06 +0200")
+Message-ID: <m1zm58jfj3.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070411232522.GF20095@zarina> <20070415194001.GF10097@ucw.cz>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/15/07, Pavel Machek <pavel@ucw.cz> wrote:
-> > +     di->update_time = jiffies;
-> > +
-> > +     /* DS2760 reports voltage in units of 4.88mV, but the battery class
-> > +      * reports in units of mV, so convert by multiplying by 4.875.
-> > +      * We approximate because integer math is cheap, and close enough. */
-> > +     di->voltage_raw = (di->raw[DS2760_VOLTAGE_MSB] << 3) |
-> > +                       (di->raw[DS2760_VOLTAGE_LSB] >> 5);
-> > +     di->voltage_mV = (di->voltage_raw * 5) - (di->voltage_raw / 8);
+Miklos Szeredi <miklos@szeredi.hu> writes:
+
+>> > That depends.  Current patches check the "unprivileged submounts
+>> > allowed under this mount" flag only on the requested mount and not on
+>> > the propagated mounts.  Do you see a problem with this?
+>> 
+>> I think privileges of this sort should propagate.  If I read what you
+>> just said correctly if I have a private mount namespace I won't be able
+>> to mount anything unless when it was setup the unprivileged submount
+>> command was explicitly set.
 >
-> Hmm, not sure if such tricks re really worth it... should not compiler
-> be doing this?
+> By design yes.  Why is that a problem?
 
-The shifts (<< 3 and >> 5) are just to get the bits reassembled in the
-right positions. The multiplication by 5 and subtracting 1/8 is
-because (AFAIK) we can't do floating point multiplication in the
-kernel. I'm open to suggestions.
+It certainly doesn't match my intuition.
 
-> > +     /* Calculate the empty level at the present temperature. */
-> > +     scale[4] = di->raw[DS2760_ACTIVE_EMPTY + 4];
-> > +     for (i = 3; i >= 0; i--)
-> > +             scale[i] = scale[i + 1] + di->raw[DS2760_ACTIVE_EMPTY + i];
-> > +
-> > +     di->empty_mAh = battery_interpolate(scale, di->temp_C / 10);
->
-> Wow.
+Why are directory permissions not sufficient to allow/deny non-priveleged mounts?
+I don't understand that contention yet.
 
-Yeah, mea culpa. I don't like its obtuseness either, and haven't
-revisited it since I got it working. Basically the battery has an
-array stored in its EEPROM that represents the empty level at various
-temperature thresholds. What makes this complicated is that the array
-does not contain all absolute values; just the first is absolute, and
-the others are relative to it, in reverse order. The above code
-converts it to an array of absolute values from low to high. I'm open
-to suggestions about this one too.
+I should probably go back and look and see how plan9 handles mount/unmount
+permissions.  Plan9 gets away with a lot more because it doesn't have
+a suid bit and mount namespaces were always present, so they don't have
+backwards compatibility problems.
 
-Matt
+My best guess at the moment is that plan9 treated mount/unmount as
+completely unprivileged and used the mount namespaces to limit the
+scope of what would be affected by a mount/unmount operation.  I think
+that may be reasonable in linux as well but it will require the
+presence of a mount namespace to limit the affects of what a user can
+do.
+
+So short of a more thorough audit I believe the final semantics should
+be: 
+- mount/unmount for non-priveleged processes should only be limited
+  by the mount namespace and directory permissions.
+- CLONE_NEWNS should not be a privileged operation. 
+
+What prevents us from allowing these things?
+
+- Unprivileged CLONE_NEWNS and unprivileged mounts needs resource
+  accounting so we don't have a denial of service attack.
+
+- Unprivileged mounts must be limited to directories that we have
+  permission to modify in a way that we could get the same effect
+  as the mount or unmount operation in terms of what files are visible
+  otherwise we can mess up SUID executables.
+
+- Anything else?
+
+There are user space issues such as a reasonable pam module and how
+to do backups.  However those are user space issues.
+
+What am I missing that requires us to add MNT_USER and MNT_USERMNT?
+
+Eric
