@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXDPIsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXDPIuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965352AbXDPIsu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 04:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXDPIsu
+	id S1030190AbXDPIuu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 04:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030192AbXDPIuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 04:48:50 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:60952 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965352AbXDPIss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 04:48:48 -0400
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
-	namespace" clone flag
-From: Ram Pai <linuxram@us.ibm.com>
-To: devel@openvz.org
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-References: <20070412164541.580374744@szeredi.hu>
-	 <20070412164620.588752236@szeredi.hu>
-	 <20070412203208.GG27772@sergelap.austin.ibm.com>
-	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Mon, 16 Apr 2007 01:47:00 -0700
-Message-Id: <1176713221.9488.17.camel@ram.us.ibm.com>
+	Mon, 16 Apr 2007 04:50:50 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:15014 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030190AbXDPIut (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 04:50:49 -0400
+Date: Mon, 16 Apr 2007 10:53:16 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Markus Rechberger <markus.rechberger@amd.com>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: How should an exit routine wait for release() callbacks?
+Message-ID: <20070416105316.0b91c2fd@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0704131049380.3407-100000@iolanthe.rowland.org>
+References: <20070413162701.4e7342a9@gondolin.boeblingen.de.ibm.com>
+	<Pine.LNX.4.44L0.0704131049380.3407-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 13 Apr 2007 11:24:58 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> 
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> 
-> > Quoting Miklos Szeredi (miklos@szeredi.hu):
-> >> From: Miklos Szeredi <mszeredi@suse.cz>
-> >> 
-> >> If CLONE_NEWNS and CLONE_NEWNS_USERMNT are given to clone(2) or
-> >> unshare(2), then allow user mounts within the new namespace.
-> >> 
-> >> This is not flexible enough, because user mounts can't be enabled
-> for
-> >> the initial namespace.
-> >> 
-> >> The remaining clone bits also getting dangerously few...
-> >> 
-> >> Alternatives are:
-> >> 
-> >>   - prctl() flag
-> >>   - setting through the containers filesystem
-> >
-> > Sorry, I know I had mentioned it, but this is definately my least
-> > favorite approach.
-> >
-> > Curious whether are any other suggestions/opinions from the
-> containers
-> > list?
-> 
-> Given the existence of shared subtrees allowing/denying this at the
-> mount
-> namespace level is silly and wrong.
-> 
-> If we need more than just the filesystem permission checks can we
-> make it a mount flag settable with mount and remount that allows
-> non-privileged users the ability to create mount points under it
-> in directories they have full read/write access to.
+> I have to admit, this is a puzzler.  I'm beginning to think there should 
+> be two types of module references: Those which (like module dependency) 
+> will prevent rmmod from running, and those which (like the one here) would 
+> automatically be dropped by deregistration.  Then every kobject could have 
+> an owner and could hold a reference of the second type to its owner until 
+> its release routine returns.
 
-Also for bind-mount and remount operations the flag has to be propagated
-down its propagation tree.  Otherwise a unpriviledged mount in a shared
-mount wont get reflected in its peers and slaves, leading to unidentical
-shared-subtrees.
+This sounds like the most promising idea yet.
 
-RP
+We could make kobject_add() bump up this second-type refcount (since
+from now on it may be looked up). kobject_get()/kobject_put() wouldn't
+need to grab an extra reference (we already have refcounting for this
+object in place). kobject_cleanup() could do something like:
 
+struct module * kobject_owner = kobj->owner;
+...
+call_release();
+put_second_module_refcount(kobject_owner);
 
-> 
-> I don't like the use of clone flags for this purpose but in this
-> case the shared subtress are a much more fundamental reasons for not
-> doing this at the namespace level.
-> 
-> Eric
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers 
+combined with the module unloading code waiting after calling the exit
+function until the second type refcount dropped to 0. This would make
+sure that the module is not deleted until the last release function has
+been called.
 
+The module would stay in memory (not be unloaded) until the last
+kobject created by the module is deleted, but I think that is just what
+we want. At least this doesn't mean that the module blocks its own
+unloading.
