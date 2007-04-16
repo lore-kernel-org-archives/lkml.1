@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030632AbXDPOP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030651AbXDPORy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030632AbXDPOP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 10:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030651AbXDPOP2
+	id S1030651AbXDPORy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 10:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030653AbXDPORy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 10:15:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52118 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030632AbXDPOP2 (ORCPT
+	Mon, 16 Apr 2007 10:17:54 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:59996 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030651AbXDPORx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 10:15:28 -0400
-Date: Mon, 16 Apr 2007 16:15:35 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org,
-       Andrew Morton <akpm@linux-foundation.org>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, CIJOML <cijoml@volny.cz>
-Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates
-Message-ID: <20070416141535.GB10338@stusta.de>
-References: <1176653207.10849.5.camel@localhost> <4622C462.8020505@linuxtv.org>
+	Mon, 16 Apr 2007 10:17:53 -0400
+Message-ID: <46238572.5050203@s5r6.in-berlin.de>
+Date: Mon, 16 Apr 2007 16:17:22 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4622C462.8020505@linuxtv.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 4GB Physical. Less than 3GB in Linux.
+References: <b6a2187b0704160028x3f979dc3s1c9e18995f229782@mail.gmail.com>
+In-Reply-To: <b6a2187b0704160028x3f979dc3s1c9e18995f229782@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 15, 2007 at 08:33:38PM -0400, Michael Krufky wrote:
-> Mauro,
+Jeff Chua wrote:
+> I've noticed that with 4GB physical ram, I'm only see 3098000 MB on
+> the Dell 745, and 3107056MB on the IBM X60s.
 > 
-> I've been out of town for the past few days... I just got home and saw this:
+> I've tested with CONFIG_HIGHMEM4G=y, CONFIG_HIGHMEM64G=y,
+> CONFIG_X86_PAE=y, but nothing makes any difference.
 > 
-> 
-> Mauro Carvalho Chehab wrote:
-> >    - Fix 1/3 for bug 7819: fixed frontend hotplug issue
-> >    - Fix 2/3 for bug 7819: demux and dvr
-> >    - Fix 3/3 for bug 7819: fixed hotplugging for dvbnet
-> I don't think that this is 2.6.21 material.  These patches have not yet
-> received
-> enough testing to be sent to mainline.
-> 
-> I have tested them, and they seem to work for my cxusb device, but we have
-> yet to hear test results from users of usb dvb devices that do not use the
-> dvb-usb framework.  (ttusb, flexcop-usb, cinergyT2, for example)
-> 
-> The bug that these patches fix has been around throughout the entire kernel
-> history of the dvb subsystem.  The bug is not a regression -- it has
-> always been
-> there.  In my opinion, it is too late in 2.6.21 development to apply
-> this change.
-> Because these fixes are not obvious, I think we should let them get some
-> more testing, and have them queued for 2.6.22 .
+> Tested on Linux 2.6.20, Linux 2.6.21-rc7.
 
-Unless I misunderstand anything, this should fix [1].
-
-And this is a bug that was reported to be present in 2.6.21-rc but not 
-in 2.6.20 (and it's therefore a regression, no matter whether the 
-underlying problem was older and only exposed by some other change).
-
-> Regards,
-> 
-> Michael
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/3/9/212
-
+The X60 most certainly contains a chipset which severely limits the
+amount of accessible RAM due to issues with remapping of PCIe addresses.
+ Intel explains it somewhere on their web presence.  A quick & lazy web
+search turned this Intel paper up:
+http://www.polywell.com/us/support/faq/4GB_Rev1.pdf
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Stefan Richter
+-=====-=-=== -=-- -==-=
+http://arcgraph.de/sr/
