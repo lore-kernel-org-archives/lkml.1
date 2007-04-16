@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030904AbXDPRlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbXDPRqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030904AbXDPRlg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 13:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbXDPRlg
+	id S1753081AbXDPRqJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 13:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXDPRqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 13:41:36 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35559 "EHLO e6.ny.us.ibm.com"
+	Mon, 16 Apr 2007 13:46:09 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:34048 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753423AbXDPRle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 13:41:34 -0400
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
-	namespace" clone flag
-From: Ram Pai <linuxram@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: devel@openvz.org, serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, viro@ftp.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
-References: <20070412164541.580374744@szeredi.hu>
-	 <20070412164620.588752236@szeredi.hu>
-	 <20070412203208.GG27772@sergelap.austin.ibm.com>
-	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-	 <1176713221.9488.17.camel@ram.us.ibm.com>
-	 <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
-	 <1176716941.9488.57.camel@ram.us.ibm.com>
-	 <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Mon, 16 Apr 2007 10:14:29 -0700
-Message-Id: <1176743669.9488.62.camel@ram.us.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	id S1753084AbXDPRqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 13:46:08 -0400
+Subject: [BUG] aic7xxx/aicasm build failure w/gcc-3.4.6
+To: linux-kernel@vger.kernel.org
+Date: Mon, 16 Apr 2007 12:46:05 -0500 (CDT)
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070416174605.98260DBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 11:56 +0200, Miklos Szeredi wrote:
-> > > > Also for bind-mount and remount operations the flag has to be propagated
-> > > > down its propagation tree.  Otherwise a unpriviledged mount in a shared
-> > > > mount wont get reflected in its peers and slaves, leading to unidentical
-> > > > shared-subtrees.
-> > > 
-> > > That's an interesting question.  Do we want shared mounts to be
-> > > totally identical, including mnt_flags?  It doesn't look as if
-> > > do_remount() guarantees that currently.
-> > 
-> > Depends on the semantics of each of the flags. Some flags like of the
-> > read/write flag, would not interfere with the propagation semantics
-> > AFAICT.  But this one certainly seems to interfere.
-> 
-> That depends.  Current patches check the "unprivileged submounts
-> allowed under this mount" flag only on the requested mount and not on
-> the propagated mounts.  Do you see a problem with this?
+This showed up during a 2.6.21-rc7 build after I upgraded gcc from 3.3
+to 3.4 on a Slackware system:
 
-Don't see a problem if the flag is propagated to all peers and slave
-mounts. 
+make -C drivers/scsi/aic7xxx/aicasm
+(...)
+gcc -I/usr/include -I. aicasm.c aicasm_symbol.c aicasm_gram.c aicasm_macro_gram.c aicasm_scan.c aicasm_macro_scan.c -o aicasm -ldb
+aicasm_gram.y:1948: error: conflicting types for 'yyerror'
+aicasm_gram.tab.c:3004: error: previous implicit declaration of 'yyerror' was here
+aicasm_macro_gram.y:162: error: conflicting types for 'mmerror'
+aicasm_macro_gram.tab.c:1196: error: previous implicit declaration of 'mmerror' was here
 
-If not, I see a problem. What if the propagated mount has its flag set
-to not do un-priviledged mounts, whereas the requested mount has it
-allowed?
+As a workaround, deleting the "void" declarations for yyerror() and
+mmerror() in the respective ".y" files fixes the problem.
 
-RP
+Here's the "gcc -v" output:
 
+Reading specs from /usr/lib/gcc/i486-slackware-linux/3.4.6/specs
+Configured with: ../gcc-3.4.6/configure --prefix=/usr --enable-shared --enable-threads=posix --enable-__cxa_atexit --disable-checking --with-gnu-ld --verbose --target=i486-slackware-linux --host=i486-slackware-linux
+Thread model: posix
+gcc version 3.4.6
 
-
-> 
-> Miklos
-
+-- 
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
