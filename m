@@ -1,79 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXDPWgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbXDPWjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbXDPWgz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXDPWgz
+	id S1753980AbXDPWjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXDPWjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:36:55 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:57050 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753958AbXDPWgy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:36:54 -0400
-X-Sasl-enc: McEWkkYA1F7BEMSMJpWHBvgbJQBkXKa0Iz/XEeWaDEVu 1176763014
-Message-ID: <4623FB0E.4080602@imap.cc>
-Date: Tue, 17 Apr 2007 00:39:10 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Mon, 16 Apr 2007 18:39:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39389 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753980AbXDPWjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 18:39:48 -0400
+Message-ID: <4623FB29.1000603@redhat.com>
+Date: Mon, 16 Apr 2007 18:39:37 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: i4ldeveloper@listserv.isdn4linux.de, Karsten Keil <kkeil@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: so what *is* obsolete and removable?
-References: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCDC12AD418B320CFCEDFF0A2"
+To: Brad Campbell <brad@wasp.net.au>, Jens Axboe <jens.axboe@oracle.com>,
+       Neil Brown <neilb@suse.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+References: <4621FAF0.7000705@wasp.net.au> <46220339.9080205@wasp.net.au>
+In-Reply-To: <46220339.9080205@wasp.net.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCDC12AD418B320CFCEDFF0A2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Brad Campbell wrote:
+> Brad Campbell wrote:
+>> G'day all,
+>>
+>> All I have is a digital photo of this oops. (It's 3.5mb). I have
+>> serial console configured, but Murphy is watching me carefully and I
+>> just can't seem to reproduce it while logging the console output.
+>>
+> 
+> And as usual, after trying to capture one for 4 days, I get one 10 mins
+> after I've sent the E-mail :)
+> 
+> I think I've just found a way to make this easier to reproduce as
+> /dev/sdd was not even mounted this
+> time. I just cold booted and started an md5sum -c run on a directory of
+> about 180GB.
+> 
+> [ 2566.192665] BUG: unable to handle kernel NULL pointer dereference at
+> virtual address 0000005c
+> [ 2566.218242]  printing eip:
+> [ 2566.226362] c0203169
+> [ 2566.232906] *pde = 00000000
+> [ 2566.241274] Oops: 0000 [#1]
+> [ 2566.249637] Modules linked in:
+> [ 2566.258832] CPU:    0
+> [ 2566.258833] EIP:    0060:[<c0203169>]    Not tainted VLI
+> [ 2566.258834] EFLAGS: 00010082   (2.6.21-rc6-git5 #1)
+> [ 2566.296146] EIP is at cfq_dispatch_insert+0x19/0x70
+> [ 2566.310761] eax: f7a0eae0   ebx: f7a0cb28   ecx: e2f869e8   edx:
+> 00000000
+> [ 2566.331076] esi: f79fea7c   edi: f7d04ac0   ebp: 00000000   esp:
+> f6945de0
+> [ 2566.351388] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [ 2566.368843] Process md5sum (pid: 2875, ti=f6944000 task=f68f4ad0
+> task.ti=f6944000)
+> [ 2566.390975] Stack: 00000000 f79fea7c f7d04ac0 00000000 c02032d9
+> f6ae5ef0 c0133411 00001000
+> [ 2566.416414]        00000008 00000000 00000004 0b582fd4 f79fea7c
+> f7d04ac0 f79fea7c 00000000
+> [ 2566.441870]        c0203519 f7a0cb28 f7a0cb28 f79e0000 00000282
+> c01fb7a9 00000000 c016ea4d
+> [ 2566.467326] Call Trace:
+> [ 2566.475236]  [<c02032d9>] __cfq_dispatch_requests+0x79/0x170
+> [ 2566.492224]  [<c0133411>] do_generic_mapping_read+0x281/0x470
+> [ 2566.509473]  [<c0203519>] cfq_dispatch_requests+0x69/0x90
+> [ 2566.525681]  [<c01fb7a9>] elv_next_request+0x39/0x130
+> [ 2566.540850]  [<c016ea4d>] bio_endio+0x5d/0x90
+> [ 2566.553942]  [<c0268635>] scsi_request_fn+0x45/0x280
+> [ 2566.568851]  [<c01fdde2>] blk_run_queue+0x32/0x70
+> [ 2566.582982]  [<c0267ba0>] scsi_next_command+0x30/0x50
+> [ 2566.598154]  [<c0267c8b>] scsi_end_request+0x9b/0xc0
+> [ 2566.613063]  [<c0267df1>] scsi_io_completion+0x81/0x330
+> [ 2566.628751]  [<c0265dab>] scsi_delete_timer+0xb/0x20
+> [ 2566.643661]  [<c02770f5>] ata_scsi_qc_complete+0x65/0xd0
+> [ 2566.659613]  [<c026d47b>] sd_rw_intr+0x8b/0x220
+> [ 2566.673222]  [<c0278ecc>] ata_altstatus+0x1c/0x20
+> [ 2566.687352]  [<c027394d>] ata_hsm_move+0x14d/0x3f0
+> [ 2566.701744]  [<c0263f80>] scsi_finish_command+0x40/0x60
+> [ 2566.717434]  [<c026857f>] scsi_softirq_done+0x6f/0xe0
+> [ 2566.732604]  [<c027d521>] sil_interrupt+0x81/0x90
+> [ 2566.746733]  [<c01ff9b8>] blk_done_softirq+0x58/0x70
+> [ 2566.761644]  [<c011721f>] __do_softirq+0x6f/0x80
+> [ 2566.775516]  [<c0117257>] do_softirq+0x27/0x30
+> [ 2566.788866]  [<c0104cee>] do_IRQ+0x3e/0x80
+> [ 2566.801177]  [<c010322f>] common_interrupt+0x23/0x28
+> [ 2566.816090]  =======================
+> [ 2566.826793] Code: 3e 05 f0 ff e9 47 ff ff ff 89 f6 8d bc 27 00 00 00
+> 00 83 ec 10 89 1c 24 89 6c
+> 24 0c 89 74 24 04 89 7c 24 08 89 c3 89 d5 8b 40 0c <8b> 72 5c 8b 78 04
+> 89 d0 e8 4a fa ff ff 8b 45 14
+> 89 ea 25 01 80
+> [ 2566.886586] EIP: [<c0203169>] cfq_dispatch_insert+0x19/0x70 SS:ESP
+> 0068:f6945de0
+> [ 2566.909179] Kernel panic - not syncing: Fatal exception in interrupt
 
-Am 15.04.2007 22:55 schrieb Robert P. J. Day:
->   as i recall, the isdn4linux was *un*obsoleted, wasn't it?
+cfq_dispatch_insert() was called with rq == 0. This one is getting really
+annoying... and md is involved again (RAID0 this time.)
 
-Actually, it wasn't.
-
-We *did* reach a consensus that isdn4linux is not obsolete in the
-accepted sense of the word, because there is no replacement for it
-so far.
-
-OTOH I have since submitted (twice, in fact) a patch that would remove
-the "(obsolete)" label from the Kconfig entry, but somehow nothing
-ever became of it. My submissions just linger in LKML, uncommented and
-unmerged.
-
-To sum it up, we agree that the "(obsolete)" label is wrong, but we
-won't remove it. I have no idea how to resolve that situation.
-
-What I do know is that it would be very wrong to remove isdn4linux,
-because it has an existing userbase with nowhere else to go.
-
---=20
-Tilman Schmidt                                  E-Mail: tilman@imap.cc
-Wehrhausweg 66                                  Fax: +49 228 4299019
-53227 Bonn
-Germany
-
-
---------------enigCDC12AD418B320CFCEDFF0A2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGI/sWMdB4Whm86/kRAtt3AJ9JxxGz/H4LFKXDwIc9gD/k1re/SQCdHU0R
-FL5Vf5BrUWItWDfd0RfqZ6c=
-=S6cd
------END PGP SIGNATURE-----
-
---------------enigCDC12AD418B320CFCEDFF0A2--
