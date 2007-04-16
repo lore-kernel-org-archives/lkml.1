@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbXDPDXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbXDPDfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754392AbXDPDXz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 23:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbXDPDXz
+	id S1754413AbXDPDfg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 23:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbXDPDff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 23:23:55 -0400
-Received: from wasp.net.au ([203.190.192.17]:55639 "EHLO wasp.net.au"
+	Sun, 15 Apr 2007 23:35:35 -0400
+Received: from mx1.suse.de ([195.135.220.2]:38303 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754392AbXDPDXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 23:23:55 -0400
-Message-ID: <4622EC41.40701@wasp.net.au>
-Date: Mon, 16 Apr 2007 07:23:45 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: lkml <linux-kernel@vger.kernel.org>, axboe@kernel.dk, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-References: <4621FAF0.7000705@wasp.net.au> <46220339.9080205@wasp.net.au> <20070415235348.GJ3691@stusta.de>
-In-Reply-To: <20070415235348.GJ3691@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754412AbXDPDff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 23:35:35 -0400
+Date: Mon, 16 Apr 2007 05:34:53 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Jonathan Lundell <linux@lundell-bros.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Willy Tarreau <w@1wt.eu>, hui Bill Huey <billh@gnuppy.monkey.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070416033453.GA2659@wotan.suse.de>
+References: <20070413202100.GA9957@elte.hu> <200704160852.34241.kernel@kolivas.org> <20070416022838.GA13626@wotan.suse.de> <200704161315.28440.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704161315.28440.kernel@kolivas.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> [ Cc's added, additional information is in http://lkml.org/lkml/2007/4/15/32 ]
+On Mon, Apr 16, 2007 at 01:15:27PM +1000, Con Kolivas wrote:
+> On Monday 16 April 2007 12:28, Nick Piggin wrote:
+> > So, on to something productive, we have 3 candidates for a new scheduler so
+> > far. How do we decide which way to go? (and yes, I still think switchable
+> > schedulers is wrong and a copout) This is one area where it is virtually
+> > impossible to discount any decent design on correctness/performance/etc.
+> > and even testing in -mm isn't really enough.
 > 
-> On Sun, Apr 15, 2007 at 02:49:29PM +0400, Brad Campbell wrote:
->> Brad Campbell wrote:
->>> G'day all,
->>>
->>> All I have is a digital photo of this oops. (It's 3.5mb). I have serial 
->>> console configured, but Murphy is watching me carefully and I just can't 
->>> seem to reproduce it while logging the console output.
->>>
->> And as usual, after trying to capture one for 4 days, I get one 10 mins 
->> after I've sent the E-mail :)
->>
->> I think I've just found a way to make this easier to reproduce as /dev/sdd 
->> was not even mounted this
->> time. I just cold booted and started an md5sum -c run on a directory of 
->> about 180GB.
+> We're in agreement! YAY!
 > 
+> Actually this is simpler than that. I'm taking SD out of the picture. It has 
+> served it's purpose of proving that we need to seriously address all the 
+> scheduling issues and did more than a half decent job at it. Unfortunately I 
+> also cannot sit around supporting it forever by myself. My own life is more 
+> important, so consider SD not even running the race any more.
 > 
-> Is this also present with kernel 2.6.20 or is it a regression?
-> 
+> I'm off to continue maintaining permanent-out-of-tree leisurely code at my own 
+> pace. What's more is, I think I'll just stick to staircase Gen I version blah 
+> and shelve SD and try to have fond memories of SD as an intellectual 
+> prompting exercise only.
 
-Yes, I reproduced it with 2.6.20 but appear to be unable to do so with 2.6.19.
+Well I would hope that _if_ we decide to switch schedulers, then you
+get a chance to field something (and I hope you will decide to and have
+time to), and I hope we don't rush into the decision.
 
+We've had the current scheduler for so many years now that it is much
+more important to make sure we take the time to do the right thing
+rather than absolutely have to merge a new scheduler right now ;)
 
-
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
