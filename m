@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXDPNPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbXDPNU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030599AbXDPNPb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 09:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030603AbXDPNPa
+	id S1752433AbXDPNU3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 09:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXDPNU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 09:15:30 -0400
-Received: from styx.suse.cz ([82.119.242.94]:52721 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030599AbXDPNPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 09:15:30 -0400
-Date: Mon, 16 Apr 2007 15:22:25 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Li Yu <raise.sail@gmail.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?UTF-8?B?5p2o57qi?= <yanghong@ccoss.com.cn>,
-       =?iso-2022-jp?Q?=1B$B9=3F=3BV5#=1B=28J?= <hongzhiyi@ccoss.com.cn>
-Subject: Re: [PATCH] hid: hid bus prototype 20070416
-In-Reply-To: <46230EDE.5020300@gmail.com>
-Message-ID: <alpine.LSU.0.98.0704161504280.18903@jikos.suse.cz>
-References: <46230EDE.5020300@gmail.com>
+	Mon, 16 Apr 2007 09:20:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:52994 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbXDPNU2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 09:20:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Kh2nFgsql7WK3Z+AS76uruR45KHlInPHADqOG+qcIwx2/v/8+9lnKw4jWYBihFIXFefITI4KhQDQizmgwTFCzD2ET8Skt1eoUIJzpT1ekVQRtSg2yu6fU58NMjbVdwcCRvxiYwadeHj/PorW0qD/JN+OzxiFo6q0sIF4aaStHaA=
+Message-ID: <cc5198fe0704160620x4f109537mea8146b4743d06d2@mail.gmail.com>
+Date: Mon, 16 Apr 2007 16:20:27 +0300
+From: "Alex Landau" <landau.alex@gmail.com>
+To: sam@ravnborg.org
+Subject: [PATCH] kbuild: Handle compressed cpio initramfs-es
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007, Li Yu wrote:
+Make kbuild handle compressed cpio initramfs-es. An already
+compressed cpio is copied directly to usr/, while a non-compressed cpio
+is filtered through gzip (no changes here) on its way to usr/.
 
-> HID bus prototype 20070416
+Signed-off-by: Alex Landau <landau.alex@gmail.com>
+---
+If the user has created a compressed cpio by other means, this saves
+him from uncompressing it, just to be compressed again by kbuild.
+--- a/scripts/gen_initramfs_list.sh
++++ b/scripts/gen_initramfs_list.sh
+@@ -190,9 +190,10 @@
+ 	source="$1"
+ 	if [ -f "$1" ]; then
+ 		${dep_list}header "$1"
+-		is_cpio="$(echo "$1" | sed 's/^.*\.cpio/cpio/')"
++		is_cpio="$(echo "$1" | sed 's/^.*\.cpio\(\..*\)\?/cpio/')"
+ 		if [ $2 -eq 0 -a ${is_cpio} == "cpio" ]; then
+ 			cpio_file=$1
++			echo "$1" | grep -q '^.*\.cpio\..*' && is_cpio_compressed="compressed"
+ 			[ ! -z ${dep_list} ] && echo "$1"
+ 			return 0
+ 		fi
+@@ -222,6 +223,7 @@
+ cpio_list=
+ output="/dev/stdout"
+ output_file=""
++is_cpio_compressed=
 
-Hi Li,
-
-thanks for taking care. Well, the patch is quite huge, do you think you 
-could split it into separate independent parts (use quilt or something 
-similar for patch management) which could be reviewed independently?
-
-As the code changes are often quite non-trivial, layering is changed, 
-lots of files are touched, etc. it would help a lot.
-
-Notes from a quick skim through the patch:
-
-- it seems that you accidentaly deleted the newly added quirk for
-   mightymouse in the bluetooth hid code?
-- what is the point behind HID_QUIRK_SKIP? Why doesn't HID_QUIRK_IGNORE
-   suffice? And why is it defined in so strange way:
-
-@@ -270,6 +271,7 @@ struct hid_item {
-  #define HID_QUIRK_LOGITECH_DESCRIPTOR          0x00100000
-  #define HID_QUIRK_DUPLICATE_USAGES             0x00200000
-  #define HID_QUIRK_RESET_LEDS                   0x00400000
-+#define HID_QUIRK_SKIP                         0x80000000
-
-- there are bunches of some easy codingstyle issues (spaces around '=',
-   etc)
-
-But doing really thorough review is quite hard, as the patch contains lots 
-of unrelated changes. I'll look at it a little bit more, but when you send 
-a broken-out version with separate changes, that'd be great.
-
-Thanks,
-
--- 
-Jiri Kosina
+ arg="$1"
+ case "$arg" in
+@@ -281,7 +283,11 @@
+ 		cpio_tfile=${cpio_file}
+ 	fi
+ 	rm ${cpio_list}
+-	cat ${cpio_tfile} | gzip -f -9 - > ${output_file}
++	if [ "${is_cpio_compressed}" = "compressed" ]; then
++		cat ${cpio_tfile} > ${output_file}
++	else
++		cat ${cpio_tfile} | gzip -f -9 - > ${output_file}
++	fi
+ 	[ -z ${cpio_file} ] && rm ${cpio_tfile}
+ fi
+ exit 0
