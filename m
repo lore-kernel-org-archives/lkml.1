@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030417AbXDPLJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbXDPLKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030417AbXDPLJy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 07:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030400AbXDPLJx
+	id S1754064AbXDPLKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 07:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030420AbXDPLKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 07:09:53 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:34532 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754094AbXDPLHG (ORCPT
+	Mon, 16 Apr 2007 07:10:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36933 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030367AbXDPLKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 07:07:06 -0400
-Message-Id: <20070416110414.591968270@szeredi.hu>
-References: <20070416110308.739051445@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Mon, 16 Apr 2007 13:03:13 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       linuxram@us.ibm.com, ebiederm@xmission.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: [patch 05/10] Add "permit user submounts" flag to vfsmount
-Content-Disposition: inline; filename=permit_user_mounts_flag.patch
+	Mon, 16 Apr 2007 07:10:35 -0400
+Date: Mon, 16 Apr 2007 12:10:26 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Christoph Hellwig <hch@infradead.org>, sct@redhat.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: Re: [PATCH] Check for error returned by kthread_create on creating journal thread
+Message-ID: <20070416111026.GA22116@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Pavel Emelianov <xemul@sw.ru>, sct@redhat.com,
+	akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	devel@openvz.org
+References: <4623289A.1000101@sw.ru> <20070416102107.GA12818@infradead.org> <462359B2.7070706@sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462359B2.7070706@sw.ru>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Mon, Apr 16, 2007 at 03:10:42PM +0400, Pavel Emelianov wrote:
+> Christoph Hellwig wrote:
+> > On Mon, Apr 16, 2007 at 11:41:14AM +0400, Pavel Emelianov wrote:
+> >> If the thread failed to create the subsequent wait_event
+> >> will hang forever.
+> >>
+> >> This is likely to happen if kernel hits max_threads limit.
+> >>
+> >> Will be critical for virtualization systems that limit the
+> >> number of tasks and kernel memory usage within the container.
+> > 
+> >> --- ./fs/jbd/journal.c.jbdthreads	2007-04-16 11:17:36.000000000 +0400
+> >> +++ ./fs/jbd/journal.c	2007-04-16 11:30:09.000000000 +0400
+> >> @@ -211,10 +211,16 @@ end_loop:
+> >>  	return 0;
+> >>  }
+> >>  
+> >> -static void journal_start_thread(journal_t *journal)
+> >> +static int journal_start_thread(journal_t *journal)
+> >>  {
+> >> -	kthread_run(kjournald, journal, "kjournald");
+> >> +	struct task_struct *t;
+> >> +
+> >> +	t = kthread_run(kjournald, journal, "kjournald");
+> >> +	if (IS_ERR(t))
+> >> +		return PTR_ERR(t);
+> >> +
+> >>  	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
+> > 
+> > Note that this wait_event should exist at all, and the return
+> 
+> Should NOT you mean?
 
-If MNT_USERMNT flag is not set in the target vfsmount, then
-unprivileged mounts will be denied.
+Umm, yes - of course :)
 
-By default this flag is cleared, and can be set on new mounts, on
-remounts or with the MS_SETFLAGS option.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
-
-Index: linux/fs/namespace.c
-===================================================================
---- linux.orig/fs/namespace.c	2007-04-13 13:20:12.000000000 +0200
-+++ linux/fs/namespace.c	2007-04-13 13:35:40.000000000 +0200
-@@ -411,6 +411,7 @@ static int show_vfsmnt(struct seq_file *
- 		{ MNT_NOATIME, ",noatime" },
- 		{ MNT_NODIRATIME, ",nodiratime" },
- 		{ MNT_RELATIME, ",relatime" },
-+		{ MNT_USERMNT, ",usermnt" },
- 		{ 0, NULL }
- 	};
- 	struct proc_fs_info *fs_infop;
-@@ -1505,9 +1506,11 @@ long do_mount(char *dev_name, char *dir_
- 		mnt_flags |= MNT_NODIRATIME;
- 	if (flags & MS_RELATIME)
- 		mnt_flags |= MNT_RELATIME;
-+	if (flags & MS_USERMNT)
-+		mnt_flags |= MNT_USERMNT;
- 
- 	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
--		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME);
-+		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME | MS_USERMNT);
- 
- 	/* ... and get the mountpoint */
- 	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
-Index: linux/include/linux/mount.h
-===================================================================
---- linux.orig/include/linux/mount.h	2007-04-13 13:17:08.000000000 +0200
-+++ linux/include/linux/mount.h	2007-04-13 13:22:17.000000000 +0200
-@@ -28,6 +28,7 @@ struct mnt_namespace;
- #define MNT_NOATIME	0x08
- #define MNT_NODIRATIME	0x10
- #define MNT_RELATIME	0x20
-+#define MNT_USERMNT	0x40
- 
- #define MNT_SHRINKABLE	0x100
- #define MNT_USER	0x200
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h	2007-04-13 13:23:05.000000000 +0200
-+++ linux/include/linux/fs.h	2007-04-13 13:35:34.000000000 +0200
-@@ -130,6 +130,7 @@ extern int dir_notify_enable;
- #define MS_SETFLAGS	(1<<23) /* set specified mount flags */
- #define MS_CLEARFLAGS	(1<<24) /* clear specified mount flags */
- /* MS_SETFLAGS | MS_CLEARFLAGS: change mount flags to specified */
-+#define MS_USERMNT	(1<<25) /* permit unpriv. submounts under this mount */
- #define MS_ACTIVE	(1<<30)
- #define MS_NOUSER	(1<<31)
- 
-
---
+> > value of kthread_run should be assigned to journal->j_task.  Also
+> > the code doesn't use the kthread primitives in other places leading
+> > to crufty code.
+> 
+> Well, this could be done with a separate patch, I think.
