@@ -1,103 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030258AbXDPJYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030250AbXDPJZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030258AbXDPJYG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 05:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030250AbXDPJYG
+	id S1030250AbXDPJZL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 05:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030259AbXDPJZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 05:24:06 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:29784 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030258AbXDPJYF (ORCPT
+	Mon, 16 Apr 2007 05:25:10 -0400
+Received: from qsrv01sl.mx.bigpond.com ([144.140.92.181]:16975 "EHLO
+	qsrv01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030250AbXDPJZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 05:24:05 -0400
-Message-ID: <462340B4.2000300@ru.mvista.com>
-Date: Mon, 16 Apr 2007 13:24:04 +0400
-From: Maxim Uvarov <muvarov@ru.mvista.com>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
+	Mon, 16 Apr 2007 05:25:08 -0400
+X-Greylist: delayed 6167 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 05:25:07 EDT
+Message-ID: <462339C0.3070603@bigpond.net.au>
+Date: Mon, 16 Apr 2007 18:54:24 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       davidsen@tmr.com, randy.dunlap@oracle.com, dada1@cosmosbay.com,
-       Valdis.Kletnieks@vt.edu, jesper.juhl@gmail.com
-Subject: Re: Performance Stats: Kernel patch
-References: <461A4C1E.3070309@ru.mvista.com> <20070415094706.GB10097@ucw.cz> <20070415102157.GB2986@holomorphy.com> <20070415201024.GB12012@ucw.cz> <20070416010424.GG2986@holomorphy.com>
-In-Reply-To: <20070416010424.GG2986@holomorphy.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Willy Tarreau <w@1wt.eu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+References: <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu> <20070415095146.GA30327@gnuppy.monkey.org> <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com> <20070415124527.GP943@1wt.eu> <20070415153933.GB6623@elte.hu> <46230950.8000005@bigpond.net.au> <4623166A.3080500@bigpond.net.au> <46231A77.8030600@bigpond.net.au> <20070416073258.GB17444@elte.hu>
+In-Reply-To: <20070416073258.GB17444@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Mon, 16 Apr 2007 08:54:29 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
+Ingo Molnar wrote:
+> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+> 
+>> One more quick comment.  The claim that there is no concept of time 
+>> slice in the new scheduler is only true in the sense of the rather 
+>> arcane implementation of time slices extant in the O(1) scheduler.
+> 
+> yeah. AFAIK most other mainstream OSs also still often use similarly 
+> 'arcane' concepts (i'm here ignoring literature, you can find everything 
+> and its opposite suggested in literature) so i felt the need to point 
+> out the difference ;) After all Linux is about doing a better mainstream 
+> OS, it is not about beating the OS literature at lunacy ;-)
+> 
+> The precise statement would be: "there's no concept of giving out a 
+> time-slice to a task and sticking to it unless a higher-prio task comes 
+> along,
 
->On Sun 2007-04-15 03:21:57, William Lee Irwin III wrote:
->  
->
->>>nvcsw and nivcsw are conventional variable names for these quantities.
->>>      
->>>
->
->On Sun, Apr 15, 2007 at 08:10:24PM +0000, Pavel Machek wrote:
->  
->
->>I can't decipher them and would not want users see them in /proc.
->>Would nonvoluntary_ctxt_switch be that much worse?
->>    
->>
->
->I'm not too attached to a particular name. I just think that the
->traditional counter names should pass readability/etc. criteria on
->account of the very strong historical precedent. I'd consider more
->verbose affairs for the sake of putative legibility as equivalent
->in quality. Maybe that means others voting for the more verbose
->names should result in an aggregate decision in favor of verbosity.
->
->
->-- wli
->  
->
-The standard /proc output is:
-root@192.168.3.2:~# cat /proc/$$/status
-Name:   bash
-State:  S (sleeping)
-SleepAVG:       88%
-Tgid:   836
-Pid:    836
-PPid:   1
-TracerPid:      0
-Uid:    0       0       0       0
-Gid:    0       0       0       0
-FDSize: 256
-Groups: 0 1 2 4
-VmPeak:     2360 kB
-VmSize:     2360 kB
-VmLck:         0 kB
-VmHWM:      1400 kB
-VmRSS:      1400 kB
-VmData:      196 kB
-VmStk:        88 kB
-VmExe:       564 kB
-VmLib:      1412 kB
-VmPTE:        12 kB
-Threads:        1
-SigQ:   0/1024
-SigPnd: 0000000000000000
-ShdPnd: 0000000000000000
-SigBlk: 0000000000010000
-SigIgn: 0000000000384004
-SigCgt: 000000004b813efb
-CapInh: 0000000000000000
-CapPrm: 00000000fffffeff
-CapEff: 00000000fffffeff
+I would have said "no concept of using tile slices to implement nice" 
+which always seemed strange to me.
 
-I can't say that "Nvcsw" and "Nivcsw" is something less verbose as 
-output above.
-It is more usual  so it is more clear for you. But if you need this counters
-you should know what are they and how to use them.
+If it really does what you just said then a (malicious or otherwise) CPU 
+intensive task that never sleeps, once it got the CPU, would completely 
+hog the CPU.
 
-As for me "nonvoluntary_ctxt_switch" and "voluntary_ctxt_switch" is more 
-verbose,
-and it is not big deal to change names. But I think that information about
-this counters and verbose name should be in user space tools, like ps.
+> nor is there a concept of having a low-res granularity 
+> ->time_slice thing. There is accurate accounting of how much CPU time a 
+> task used up, and there is a granularity setting that together gives the 
+> current task a fairness advantage of a given amount of nanoseconds - 
+> which has similar [but not equivalent] effects to traditional timeslices 
+> that most mainstream OSs use".
 
+Most traditional OSes have more or less fixed time slices and do the 
+scheduling by fiddling the dynamic priority.
 
+Using total CPU used will also come to grief when used for long running 
+tasks.  Eventually, even very low bandwidth tasks will accumulate enough 
+total CPU to look busy.  The CPU bandwidth the task is using is what 
+needs to be controlled.
+
+Or have I not looked closely enough at what sched_granularity_ns does? 
+Is it really a control for the decay rate of a CPU usage bandwidth metric?
+
+> 
+>> Your new parameter sched_granularity_ns is equivalent to the concept 
+>> of time slice in most other kernels that I've peeked inside and 
+>> computing literature in general (going back over several decades e.g. 
+>> the magic garden).
+> 
+> note that you can set it to 0 and the box still functions - so 
+> sched_granularity_ns, while useful for performance/bandwidth workloads, 
+> isnt truly inherent to the design.
+
+Just like my SPA schedulers.  But if you set it to zero you'll get a 
+fairly high context switch rate with associated overhead, won't you?
+
+> 
+> So in the announcement i just opted for a short sentence: "there's no 
+> concept of timeslices", albeit like most short stentences it's not a 
+> technically 100% accurate statement - but still it conveyed the intended 
+> information more effectively to the interested lkml reader than the 
+> longer version could ever have =B-)
+
+I hope that I implied that I was being picky :-) (I meant to -- imply I 
+was being picky, that is).
+
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
