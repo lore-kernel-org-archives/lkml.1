@@ -1,115 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030319AbXDPKBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXDPKCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030319AbXDPKBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 06:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030316AbXDPKBP
+	id S1752076AbXDPKCO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 06:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXDPKCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 06:01:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39684 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030319AbXDPKBO (ORCPT
+	Mon, 16 Apr 2007 06:02:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:10865 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbXDPKCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 06:01:14 -0400
-Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Manu Abraham <abraham.manu@gmail.com>,
-       Michael Krufky <mkrufky@linuxtv.org>, linux-dvb-maintainer@linuxtv.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <d9def9db0704160117te51f4daxc4e92407ed87fddf@mail.gmail.com>
-References: <1176653207.10849.5.camel@localhost>
-	 <4622C462.8020505@linuxtv.org> <46230806.7060908@gmail.com>
-	 <d9def9db0704160117te51f4daxc4e92407ed87fddf@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 16 Apr 2007 07:00:36 -0300
-Message-Id: <1176717636.4310.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 16 Apr 2007 06:02:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SPfeQ2+KTY9+xU8IAXH7Jes3sQ8+TJ8+Tz2/4ecsSMjyuF6OMe0lcGN5nIkklUSuPt0QacHO1kcn3MLptph+75G2Woc4kjPXQxVcOy+aS+W12+7F1hgL0VAwDvPifgfq1LwL5hJiet5Zp389oLeFkZVzuJFTglX6sdf7jrADTmY=
+Message-ID: <6d6a94c50704160302n14f8bf14l3c9f2a380f74dd3f@mail.gmail.com>
+Date: Mon, 16 Apr 2007 18:02:09 +0800
+From: "Aubrey Li" <aubreylee@gmail.com>
+To: "Stephen Hemminger" <shemminger@linux-foundation.org>
+Subject: Re: udp checksum issue in netpoll mode.
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>,
+       "Matt Mackall" <mpm@selenic.com>, netdev@vger.kernel.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <461E470B.5060907@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6d6a94c50704120331m36957148iae111ab7324c88c2@mail.gmail.com>
+	 <461E470B.5060907@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Seg, 2007-04-16 às 10:17 +0200, Markus Rechberger escreveu:
-> On 4/16/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> > Michael Krufky wrote:
-> > > Mauro,
-> > >
-> > > I've been out of town for the past few days... I just got home and saw
-> > this:
-> > >
-> > >
-> > > Mauro Carvalho Chehab wrote:
-> > >>    - Fix 1/3 for bug 7819: fixed frontend hotplug issue
-> > >>    - Fix 2/3 for bug 7819: demux and dvr
-> > >>    - Fix 3/3 for bug 7819: fixed hotplugging for dvbnet
-> > > I don't think that this is 2.6.21 material.  These patches have not yet
-> > > received
-> > > enough testing to be sent to mainline.
-> > >
-> > > I have tested them, and they seem to work for my cxusb device, but we have
-> > > yet to hear test results from users of usb dvb devices that do not use the
-> > > dvb-usb framework.  (ttusb, flexcop-usb, cinergyT2, for example)
-> > >
-> > > The bug that these patches fix has been around throughout the entire
-> > kernel
-> > > history of the dvb subsystem.  The bug is not a regression -- it has
-> > > always been
-> > > there.  In my opinion, it is too late in 2.6.21 development to apply
-> > > this change.
-> > > Because these fixes are not obvious, I think we should let them get some
-> > > more testing, and have them queued for 2.6.22 .
+On 4/12/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+> Aubrey Li wrote:
+> > I think we discussed this issue before.
 > >
+> > The current checksum function doesn't consider the kind of packet
+> > which is padded to reach a specific minimum length. I believe that's
+> > the problem caused my test case failed. Is this issue fixed? Or is it
+> > acceptable if I make a patch not calculating this kind of packet?
 > >
-> > I am not arguing about the veracity of the patches, but how things are
-> > handled.
-> >
-> > Agreed to all the mentioned above. There is one more aspect. The
-> > mentioned patches, do not have any ACK/SOB from any DVB
-> > developer/maintainer for the same.
-> >
-> > Huge regressions are created this way. One more time the regression
-> > creator is caught.
-> >
-> 
-> The patch has been around on the dvb mailinglist ([PATCH][RFC] DVB
-> Hotplug Fix, 5. April 2007), Michael looked at it when I told him
-> about it again separatly (12. April 2007)
-> Between that there was enough time to respond on it or review it.
-> 
-> Mauro told me at the beginning if noone responds he'll go forward
-> somehow because it fixes hotplugging, and after 2 weeks I wouldn't
-> expect anyone commenting that thread anymore.
-> 
-> It would be better to look and respond to that patch first before
-> responding about that you don't like how it's handled, Mauro also
-> wrote in his announcement that people should look at the recent
-> mercurial tree and he'll revert it if something doesn't work by
-> accident before submitting it to his git tree... still noone
-> complained about the hotplugging patch in there.
-Ditto.
+> > Thanks,
+> > -Aubrey
+> The caller should be trimming the packet and updating the hardware checksum
+> value (like the normal UDP path).
+>
+OK, the following patch fixed the problem.
 
-It is really bad to have an OOPS that can be generated by simply
-removing a device at the usb port. This can open a door for DoS attacks.
-IMO, this kind of bug should be fixed as soon as possible. 
+Signed-off-by: Aubrey.Li <aubreylee@gmail.com>
+---
+ net/core/netpoll.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-If you take a look at the history of this bug, it were reported back on
-Jan, 14. Also, Adrian sent several regression reports c/c to
-v4l-dvb-mailing list (so copying all V4L/DVB maintainers, including you,
-me, Markus and the others), warning about the bug, and pointing that a
-patch from Markus were already available.
+diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+index 823215d..522e441 100644
+--- a/net/core/netpoll.c
++++ b/net/core/netpoll.c
+@@ -471,6 +471,13 @@ int __netpoll_rx(struct sk_buff *skb)
+ 	if (skb->len < len || len < iph->ihl*4)
+ 		goto out;
 
-I also explicitly warned at DVB ML that I were about to send this patch,
-together with other fixes, asking the community for more tests. After
-that, I received two positive answers on my mailbox from people that
-tested and noticed that this really fixed the issue.
++	/*
++	 * Our transport medium may have padded the buffer out.
++	 * Now We trim to the true length of the frame.
++	 */
++	if (pskb_trim_rcsum(skb, len))
++		goto out;
++
+ 	if (iph->protocol != IPPROTO_UDP)
+ 		goto out;
 
-I don't think that 3 months is a short period of time for us to work on
-a solution for the bug and have it done to be included on Kernel.
-
-Cheers,
-Mauro
-
+-- 
+1.5.1
