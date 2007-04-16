@@ -1,109 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbXDPHg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbXDPHkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbXDPHg6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 03:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbXDPHg6
+	id S932344AbXDPHkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 03:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbXDPHkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 03:36:58 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:11417 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753072AbXDPHg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 03:36:57 -0400
-Message-ID: <4623289A.1000101@sw.ru>
-Date: Mon, 16 Apr 2007 11:41:14 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Mon, 16 Apr 2007 03:40:00 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50341 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932290AbXDPHj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 03:39:59 -0400
+Date: Mon, 16 Apr 2007 09:39:40 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org
+Subject: Re: [AppArmor 39/41] AppArmor: Profile loading and manipulation, pathname matching
+Message-ID: <20070416073940.GA2146@elf.ucw.cz>
+References: <20070412090809.917795000@suse.de> <20070412090849.465428000@suse.de> <p733b35903l.fsf@bingen.suse.de> <200704151621.52906.agruen@suse.de>
 MIME-Version: 1.0
-To: sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: [PATCH] Check for error returned by kthread_create on creating journal
- thread
-Content-Type: multipart/mixed;
- boundary="------------020900000406050409030808"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704151621.52906.agruen@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020900000406050409030808
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi!
 
-If the thread failed to create the subsequent wait_event
-will hang forever.
+> > > +
+> > > +	/* get optional subprofiles */
+> > > +	if (aa_is_nameX(e, AA_LIST, "hats")) {
+> > > +		while (!aa_is_nameX(e, AA_LISTEND, NULL)) {
+> > > +			struct aa_profile *subprofile;
+> > > +			subprofile = aa_unpack_profile(e);
+> > 
+> > Is there any check that would guard the recursion from stack
+> > overflow on malicious input?  
+> 
+> It's nice to check for consistency though, so we're adding that. Profile 
+> loading is a trusted operation, at least so far, and so security wise we 
+> don't actually have to care --- if loading an invalid profile can bring down 
+> the system, then that's no worse than an arbitrary module that crashes the 
+> machine. Not sure if there will ever be user loadable profiles; at least at 
+> that point we had to care.
 
-This is likely to happen if kernel hits max_threads limit.
+It is not a _security_ problem, but face it, mount("/very weird
+filename") is not expected to crash the kernel, either. It is
+quality-of-impelmentation problem.
 
-Will be critical for virtualization systems that limit the
-number of tasks and kernel memory usage within the container.
-
---------------020900000406050409030808
-Content-Type: text/plain;
- name="diff-jbd-check-start-journal-thread-return-value"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff-jbd-check-start-journal-thread-return-value"
-
---- ./fs/jbd/journal.c.jbdthreads	2007-04-16 11:17:36.000000000 +0400
-+++ ./fs/jbd/journal.c	2007-04-16 11:30:09.000000000 +0400
-@@ -211,10 +211,16 @@ end_loop:
- 	return 0;
- }
- 
--static void journal_start_thread(journal_t *journal)
-+static int journal_start_thread(journal_t *journal)
- {
--	kthread_run(kjournald, journal, "kjournald");
-+	struct task_struct *t;
-+
-+	t = kthread_run(kjournald, journal, "kjournald");
-+	if (IS_ERR(t))
-+		return PTR_ERR(t);
-+
- 	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
-+	return 0;
- }
- 
- static void journal_kill_thread(journal_t *journal)
-@@ -840,8 +846,7 @@ static int journal_reset(journal_t *jour
- 
- 	/* Add the dynamic fields and write it to disk. */
- 	journal_update_superblock(journal, 1);
--	journal_start_thread(journal);
--	return 0;
-+	return journal_start_thread(journal);
- }
- 
- /**
---- ./fs/jbd2/journal.c.jbdthreads	2007-04-16 11:17:36.000000000 +0400
-+++ ./fs/jbd2/journal.c	2007-04-16 11:27:45.000000000 +0400
-@@ -211,10 +211,16 @@ end_loop:
- 	return 0;
- }
- 
--static void jbd2_journal_start_thread(journal_t *journal)
-+static int jbd2_journal_start_thread(journal_t *journal)
- {
--	kthread_run(kjournald2, journal, "kjournald2");
-+	struct task_struct *t;
-+
-+	t = kthread_run(kjournald2, journal, "kjournald2");
-+	if (IS_ERR(t))
-+		return PTR_ERR(t);
-+
- 	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
-+	return 0;
- }
- 
- static void journal_kill_thread(journal_t *journal)
-@@ -840,8 +846,7 @@ static int journal_reset(journal_t *jour
- 
- 	/* Add the dynamic fields and write it to disk. */
- 	jbd2_journal_update_superblock(journal, 1);
--	jbd2_journal_start_thread(journal);
--	return 0;
-+	return jbd2_journal_start_thread(journal);
- }
- 
- /**
-
---------------020900000406050409030808--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
