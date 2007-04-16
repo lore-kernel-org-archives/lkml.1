@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbXDPPFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030686AbXDPPM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbXDPPFw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 11:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXDPPFv
+	id S1030686AbXDPPM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 11:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030736AbXDPPM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 11:05:51 -0400
-Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:46354
-	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920AbXDPPFu (ORCPT
+	Mon, 16 Apr 2007 11:12:28 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:34086 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030686AbXDPPM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 11:05:50 -0400
-Message-ID: <46239138.4040408@roinet.com>
-Date: Mon, 16 Apr 2007 11:07:36 -0400
-From: David Acker <dacker@roinet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Mon, 16 Apr 2007 11:12:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=RJpC1DPKq04YZ4256SKDUN03fGYj0Iy3U0qRqubvSRfpajiwWWmEDrK+mheKJhOKRbDxMr5csZ8x6KpK410buEb9tVt+FUFe6hZtbVLaolphoCwVV/72AShXkGKeOXhdPL3jOpxb7zEe0G50OIltMz0j16Qs9CbLIfvIMGaL5ng=
+Message-ID: <75b66ecd0704160812k79fc5b18j499ec7b91333df95@mail.gmail.com>
+Date: Mon, 16 Apr 2007 11:12:26 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: John <linux.kernel@free.fr>
+Subject: Re: Disabling x86 System Management Mode
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46235EA9.8060100@free.fr>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Lennert Buytenhek <buytenh@wantstofly.org>,
-       Jeff Garzik <jeff@garzik.org>, Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFT] e100 driver on ARM
-References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca>
-In-Reply-To: <20070329141041.GA3510@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46235447.3080000@free.fr> <46235EA9.8060100@free.fr>
+X-Google-Sender-Auth: d2a1e822e3695184
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> Which PCI host controller are you using with the PXA255?  We tried using
-> a PXA255 based system with a PCI controller a couple of years ago and
-> have to change to a different cpu in the end due to the PCI controller
-> simply not being valid PCI.  The PXA255 wasn't designed for PCI, and I
-> get the impression that non of the PCI companion chips for it do a good
-> enough job to actually add it correctly.
-> 
+On 4/16/07, John <linux.kernel@free.fr> wrote:
+> Chipset: VIA Pro133T
+> http://www.via.com.tw/en/products/chipsets/legacy/pro133/
+> VT82C694T north bridge + VT82C686B south bridge
+>
+> AFAIU, the south bridge can be a source of SMIs.
+> Can the north bridge also be a source of SMIs?
+>
+> What I/O ports do I need to write to, and what values should I write to
+> these ports, in order to prevent the VT82C686B from sending SMIs?
+>
 
-Sorry for the delay in responding...my wife and I just had twins!
+Check out some of the links in this thread:
 
-We are using the IT8152G RISC-to-PCI companion chip.
--Ack
+http://www.embeddedrelated.com/usenet/embedded/show/50333-1.php
+
+Lee
