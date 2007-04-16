@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030339AbXDPKXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030316AbXDPK3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030339AbXDPKXk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 06:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030325AbXDPKXk
+	id S1030316AbXDPK3c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 06:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030342AbXDPK3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 06:23:40 -0400
-Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:32387 "EHLO
-	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030339AbXDPKXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 06:23:39 -0400
-Date: Mon, 16 Apr 2007 11:40:07 +0200 (CEST)
-From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: Mike Snitzer <snitzer@gmail.com>, Neil Brown <neilb@suse.de>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: <Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr>
-Message-ID: <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
-References: <op.tqqwdfzcftfxs2@localhost.localdomain> 
- <17952.5537.364603.419364@notabene.brown> <170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com>
- <Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr>
+	Mon, 16 Apr 2007 06:29:31 -0400
+Received: from smtp1.yandex.ru ([213.180.223.87]:5592 "EHLO smtp1.yandex.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030316AbXDPK3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 06:29:31 -0400
+X-Comment: RFC 2476 MSA function at smtp1.yandex.ru logged sender identity as: yantux
+From: yantux <yantux@yandex.ru>
+Organization: office
+To: Linux List <linux-kernel@vger.kernel.org>
+Subject: [Question about "interactive" clone and waitpid syscalls.]
+Date: Sun, 15 Apr 2007 23:30:59 -0600
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-1378868780-1176716407=:11088"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704152330.59426.yantux@yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Help my please.
 
---0-1378868780-1176716407=:11088
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
+Question about "interactive" clone and waitpid syscalls.
 
-On Sat, 14 Apr 2007, Jan Engelhardt wrote:
+Describe.
+Process was create five a process using clone syscall.
+Two clone calling with CLONE_THREAD, other three without CLONE_THREAD.
 
->
-> On Apr 14 2007 10:04, Mike Snitzer wrote:
->>
->> ZFS does have some powerful features but much of it depends on their
->> broken layering of volume management.  Embedding the equivalent of LVM
->> into a filesystem _feels_ quite wrong.
->>
->> [...]
->>
->> Unfortunately in order for Linux to incorporate such a feature I'd
->> imagine a new filesystem would need to be developed with redirect on
->> write at its core.  Can't really see ext4 or any other existing Linux
->> filesystem grafting such a feature into it.  But even though I can't
->> see it; do others?
->
-> FUSE-based filesystems. (That said, might wanna try through
-> "ZFS-on-fuse" fs).
+After then process was calling waitpid(getpid, &status, __WNOTHREAD),
+then it must not checkout process, that was created by clone with 
+CLONE_THREAD, is not it?
 
-FUSE implemtation uses too many context switches on each I/O so on the 
-same hardware it will never will be so fast as on Linux, BSD and MOX (yes 
-ZFS is now avalaible on all this OSes .. and few people says Windows 
-implemtation is very close). Current FUSE implemntation can't be 
-comparable in aspects of speed and probably never will be on using threads 
-(very simmilar case to ALSA and mixing in user space .. in both cases it 
-is broken by design). Also ZFS on Solaris uses few other system abilities 
-for example it interract with PSH.
+Questions.
+Where define thread_info struct?
+Where define list_head struct?
 
-So FUSE ZFS is IMO only kind of academic demo implemtation only but never 
-will be usefull/ready for production (plain waste of time). If Linux 
-licensing will not be relaxed probaly we can forget about ZFS on Linux 
-(licensing problems in this case are obly on Linux side .. <ironically>in 
-this case ZFS licensing is more oppened than Linux licensing 
-</ironically>).
+I right understand, that in kernel/fork.c, copy_process() function add process 
+to thread group?
+//1171 string number
+list_add_tail_rcu(&p->thread_group, &p->group_leader->thread_group);
 
-kloczek
-PS. IIRC implemting ZFS on FUSE was some kind of workaround for licensing 
-issue but FUSE fill uses vfs layer and probaly still thinking about
-licensing is actual.
--- 
------------------------------------------------------------
-*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
------------------------------------------------------------
-Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
---0-1378868780-1176716407=:11088--
+And do_wait contain next_thread too, but waitpid(getpid(), &status, __WALL) it 
+is good, but really waitpid syscall not return info about thread, because 
+return error "no child process".
+I sure that is not right, or I delusion? I waiting from waitpid info about 
+thread, but not error.
+
+Best regards,
+yantux.
