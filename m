@@ -1,82 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030455AbXDPLZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030367AbXDPLcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030455AbXDPLZI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 07:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030449AbXDPLZI
+	id S1030367AbXDPLcX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 07:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030459AbXDPLcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 07:25:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48007 "EHLO mx2.mail.elte.hu"
+	Mon, 16 Apr 2007 07:32:23 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:55510 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030455AbXDPLZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 07:25:06 -0400
-Date: Mon, 16 Apr 2007 13:24:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Willy Tarreau <w@1wt.eu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070416112440.GA20014@elte.hu>
-References: <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com> <20070414175433.GA17527@elte.hu> <20070414181854.GA5826@1wt.eu> <20070415175555.GA28524@elte.hu> <20070415180604.GA550@1wt.eu> <20070415192046.GA7504@elte.hu> <20070415193531.GD2986@holomorphy.com> <20070415195748.GA16004@elte.hu> <20070415235421.GF2986@holomorphy.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070415235421.GF2986@holomorphy.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1030367AbXDPLcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 07:32:22 -0400
+Message-ID: <46235EA9.8060100@free.fr>
+Date: Mon, 16 Apr 2007 13:31:53 +0200
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: linux.kernel@free.fr
+Subject: Re: Disabling x86 System Management Mode
+References: <46235447.3080000@free.fr>
+In-Reply-To: <46235447.3080000@free.fr>
+Content-Type: multipart/mixed;
+ boundary="------------050309080205000005060400"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050309080205000005060400
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* William Lee Irwin III <wli@holomorphy.com> wrote:
+John wrote:
 
-> On Sun, Apr 15, 2007 at 09:57:48PM +0200, Ingo Molnar wrote:
-> > Oh I was very much testing "CPU bandwidth allocation as influenced by 
-> > nice numbers" - it's one of the basic things i do when modifying the 
-> > scheduler. An automated tool, while nice (all automation is nice) 
-> > wouldnt necessarily show such bugs though, because here too it needed 
-> > thousands of running tasks to trigger in practice. Any volunteers? ;)
-> 
-> Worse comes to worse I might actually get around to doing it myself. 
-> Any more detailed descriptions of the test for a rainy day?
+> On the systems I have to work with [...]
 
-the main complication here is that the handling of nice levels is still 
-typically a 2nd or 3rd degree design factor when writing schedulers. The 
-reason isnt carelessness, the reason is simply that users typically only 
-care about a single nice level: the one that all tasks run under by 
-default.
+I didn't specify what they were.
 
-Also, often there's just one or two good ways to attack the problem 
-within a given scheduler approach and the quality of nice levels often 
-suffers under other, more important design factors like performance.
+CPU: Intel Pentium 3
 
-This means that for example for the vanilla scheduler the distribution 
-of CPU power depends on HZ, on the number of tasks and on the scheduling 
-pattern. The distribution of CPU power amongst nice levels is basically 
-a function of _everything_. That makes any automated test pretty 
-challenging. Both with SD and with CFS there's a good chance to actually 
-formalize the meaning of nice levels, but i'd not go as far as to 
-mandate any particular behavior by rigidly saying "pass this automated 
-tool, else ...", other than "make nice levels resonable". All the other 
-more formal CPU resource limitation techniques are then a matter of 
-CKRM-alike patches, which offer much more finegrained mechanisms than 
-pure nice levels anyway.
+# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 11
+model name      : Intel(R) Pentium(R) III CPU - S         1266MHz
+stepping        : 4
+cpu MHz         : 1266.700
+cache size      : 512 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca 
+cmov pat pse36 mmx fxsr sse
+bogomips        : 2533.40
+clflush size    : 32
 
-so to answer your question: it's pretty much freely defined. Make up 
-your mind about it and figure out the ways how people use nice levels 
-and think about which aspects of that experience are worth testing for 
-intelligently.
+Motherboard: Adlink EBC-2000T
+http://www.adlinktech.com/PD/web/PD_detail.php?pid=213
 
-	Ingo
+Chipset: VIA Pro133T
+http://www.via.com.tw/en/products/chipsets/legacy/pro133/
+VT82C694T north bridge + VT82C686B south bridge
+
+AFAIU, the south bridge can be a source of SMIs.
+Can the north bridge also be a source of SMIs?
+
+What I/O ports do I need to write to, and what values should I write to 
+these ports, in order to prevent the VT82C686B from sending SMIs?
+
+Regards.
+
+--------------050309080205000005060400
+Content-Type: text/plain;
+ name="adlink.lspci"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="adlink.lspci"
+
+00:00.0 Host bridge: VIA Technologies, Inc. VT82C693A/694x [Apollo PRO133x] (rev c4)
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
+        Latency: 8
+        Region 0: Memory at e0000000 (32-bit, prefetchable) [size=64M]
+        Capabilities: [a0] AGP version 2.0
+                Status: RQ=32 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2
+                Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- Rate=<none>
+        Capabilities: [c0] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:01.0 PCI bridge: VIA Technologies, Inc. VT82C598/694x [Apollo MVP3/Pro133x AGP] (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
+        Latency: 0
+        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+        I/O behind bridge: 0000f000-00000fff
+        Memory behind bridge: fff00000-000fffff
+        Prefetchable memory behind bridge: fff00000-000fffff
+        BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:07.0 ISA bridge: VIA Technologies, Inc. VT82C686 [Apollo Super South] (rev 40)
+        Subsystem: VIA Technologies, Inc. VT82C686/A PCI to ISA Bridge
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Capabilities: [c0] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:07.1 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06) (prog-if 8a [Master SecP PriP])
+        Subsystem: VIA Technologies, Inc. VT82C586/B/VT82C686/A/B/VT8233/A/C/VT8235 PIPC Bus Master IDE
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32
+        Region 0: [virtual] I/O ports at 01f0 [size=8]
+        Region 1: [virtual] I/O ports at 03f4
+        Region 2: [virtual] I/O ports at 0170 [size=8]
+        Region 3: [virtual] I/O ports at 0374
+        Region 4: I/O ports at e400 [size=16]
+        Capabilities: [c0] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:07.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller (rev 1a) (prog-if 00 [UHCI])
+        Subsystem: VIA Technologies, Inc. (Wrong ID) USB Controller
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32, cache line size 08
+        Interrupt: pin D routed to IRQ 5
+        Region 4: I/O ports at d000 [size=32]
+        Capabilities: [80] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:07.4 Bridge: VIA Technologies, Inc. VT82C686 [Apollo Super ACPI] (rev 40)
+        Subsystem: VIA Technologies, Inc. VT82C686 [Apollo Super ACPI]
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Interrupt: pin ? routed to IRQ 9
+        Capabilities: [68] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:08.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] (rev 08)
+        Subsystem: Intel Corporation EtherExpress PRO/100B (TX)
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (2000ns min, 14000ns max), cache line size 08
+        Interrupt: pin A routed to IRQ 10
+        Region 0: Memory at e6401000 (32-bit, non-prefetchable) [size=4K]
+        Region 1: I/O ports at d400 [size=64]
+        Region 2: Memory at e6200000 (32-bit, non-prefetchable) [size=1M]
+        Expansion ROM at 20000000 [disabled] [size=1M]
+        Capabilities: [dc] Power Management version 2
+                Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+
+00:09.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] (rev 08)
+        Subsystem: Intel Corporation EtherExpress PRO/100B (TX)
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (2000ns min, 14000ns max), cache line size 08
+        Interrupt: pin A routed to IRQ 11
+        Region 0: Memory at e6400000 (32-bit, non-prefetchable) [size=4K]
+        Region 1: I/O ports at d800 [size=64]
+        Region 2: Memory at e6000000 (32-bit, non-prefetchable) [size=1M]
+        Capabilities: [dc] Power Management version 2
+                Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+
+00:0a.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] (rev 08)
+        Subsystem: Intel Corporation EtherExpress PRO/100B (TX)
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (2000ns min, 14000ns max), cache line size 08
+        Interrupt: pin A routed to IRQ 12
+        Region 0: Memory at e6403000 (32-bit, non-prefetchable) [size=4K]
+        Region 1: I/O ports at dc00 [size=64]
+        Region 2: Memory at e6100000 (32-bit, non-prefetchable) [size=1M]
+        Capabilities: [dc] Power Management version 2
+                Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+
+00:0b.0 VGA compatible controller: ATI Technologies Inc Rage XL (rev 27) (prog-if 00 [VGA])
+        Subsystem: ATI Technologies Inc Rage XL
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (2000ns min), cache line size 08
+        Interrupt: pin A routed to IRQ 5
+        Region 0: Memory at e5000000 (32-bit, non-prefetchable) [size=16M]
+        Region 1: I/O ports at e000 [size=256]
+        Region 2: Memory at e6402000 (32-bit, non-prefetchable) [size=4K]
+        Expansion ROM at 20100000 [disabled] [size=128K]
+        Capabilities: [5c] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+00:0d.0 PCI bridge: Intel Corporation 21152 PCI-to-PCI Bridge (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32, cache line size 08
+        Bus: primary=00, secondary=02, subordinate=02, sec-latency=32
+        I/O behind bridge: 0000c000-0000cfff
+        Memory behind bridge: e6300000-e63fffff
+        Prefetchable memory behind bridge: 00000000fff00000-0000000000000000
+        BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
+        Capabilities: [dc] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+                Bridge: PM- B3+
+
+02:0f.0 Multimedia controller: PLX Technology, Inc. 9056 PCI I/O Accelerator
+        Subsystem: PHILIPS Business Electronics B.V.: Unknown device d128
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (4000ns min, 6500ns max), cache line size 08
+        Interrupt: pin A routed to IRQ 5
+        Region 0: Memory at e6300000 (32-bit, non-prefetchable) [size=512]
+        Region 1: I/O ports at c000 [size=256]
+        Region 2: Memory at e6301000 (32-bit, non-prefetchable) [size=512]
+        Capabilities: [40] Power Management version 1
+                Flags: PMEClk- DSI- D1- D2+ AuxCurrent=0mA PME(D0-,D1+,D2-,D3hot+,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [48] #06 [0000]
+        Capabilities: [4c] Vital Product Data
+
+--------------050309080205000005060400--
