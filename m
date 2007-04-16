@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbXDPEIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbXDPEVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753008AbXDPEIJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 00:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbXDPEIJ
+	id S1754459AbXDPEVa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 00:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbXDPEVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 00:08:09 -0400
-Received: from stinky.trash.net ([213.144.137.162]:63190 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753008AbXDPEII (ORCPT
+	Mon, 16 Apr 2007 00:21:30 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:40816 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754459AbXDPEVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 00:08:08 -0400
-Message-ID: <4622F630.9000905@trash.net>
-Date: Mon, 16 Apr 2007 06:06:08 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Mon, 16 Apr 2007 00:21:30 -0400
+Date: Mon, 16 Apr 2007 00:19:33 -0400
+From: Kyle McMartin <kyle@parisc-linux.org>
+To: davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] sparc64: modalias support for of_device
+Message-ID: <20070416041933.GE23783@athena.road.mcmartin.ca>
 MIME-Version: 1.0
-To: Bartek <poemann@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
-References: <9a8748490704100425t34ebafcdq866a923df80b9aca@mail.gmail.com>	 <19061b0b0704112218j13688c16xc755d66147f8fe6a@mail.gmail.com>	 <461DC70B.4000500@trash.net>	 <20070413.161635.26523891.davem@davemloft.net> <19061b0b0704150345h2bf6ad7el16d20a36c96f0ae9@mail.gmail.com>
-In-Reply-To: <19061b0b0704150345h2bf6ad7el16d20a36c96f0ae9@mail.gmail.com>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartek wrote:
-> 2007/4/14, David Miller <davem@davemloft.net>:
-> 
->> From: Patrick McHardy <kaber@trash.net>
->> Date: Thu, 12 Apr 2007 07:43:39 +0200
->>
->> > It seems we fail to reserve enough headroom for the case
->> > buf[0] == PPP_ALLSTATIONS and buf[1] != PPP_UI.
->> >
->> > Can you try this patch please?
->>
->> Any confirmation of this fix yet?
-> 
-> 
-> I'm testing that patch, till now everything seems ok.
+Hi Dave,
 
+Quick patch to add modalias support for of_device to arch/sparc64 so
+sbus drivers can be automatically loaded (I hope :)
 
-Please test Paul's patch instead and keep everyone CCed.
+Untested, as I'm sparc-less at the moment.
+
+Cheers,
+	Kyle
+
+diff --git a/arch/sparc64/kernel/of_device.c b/arch/sparc64/kernel/of_device.c
+index fb9bf1e..d00ed90 100644
+--- a/arch/sparc64/kernel/of_device.c
++++ b/arch/sparc64/kernel/of_device.c
+@@ -173,6 +173,19 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
+ }
+ EXPORT_SYMBOL(of_find_device_by_node);
+ 
++static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	ssize_t len;
++	struct of_device *d = to_of_device(dev);
++	struct device_node *node = d->node;
++
++	len = sprintf(buf, "of:N%sT%sC%s\n",
++		      node->name, node->type, "*");
++
++	return len;
++}
++
+ #ifdef CONFIG_PCI
+ struct bus_type isa_bus_type = {
+        .name	= "isa",
+@@ -207,9 +220,15 @@ struct bus_type sbus_bus_type = {
+ EXPORT_SYMBOL(sbus_bus_type);
+ #endif
+ 
++static struct device_attribute of_dev_attrs[] = {
++	__ATTR_RO(modalias),
++	__ATTR_NULL
++};
++
+ struct bus_type of_bus_type = {
+        .name	= "of",
+        .match	= of_platform_bus_match,
++       .dev_attrs	= of_dev_attrs,
+        .probe	= of_device_probe,
+        .remove	= of_device_remove,
+        .suspend	= of_device_suspend,
