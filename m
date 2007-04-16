@@ -1,57 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXDPKBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030319AbXDPKBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030297AbXDPKBF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 06:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030316AbXDPKBF
+	id S1030319AbXDPKBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 06:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030316AbXDPKBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 06:01:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41260 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030297AbXDPKBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 06:01:04 -0400
-Date: Mon, 16 Apr 2007 12:00:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bill Huey <billh@gnuppy.monkey.org>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Peter Williams <pwil3058@bigpond.net.au>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 16 Apr 2007 06:01:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39684 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030319AbXDPKBO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 06:01:14 -0400
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Manu Abraham <abraham.manu@gmail.com>,
+       Michael Krufky <mkrufky@linuxtv.org>, linux-dvb-maintainer@linuxtv.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Williams <pwil3058@bigpond.net.au>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070416100018.GA30100@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <20070415083616.GA29878@gnuppy.monkey.org> <20070415090616.GF24886@elte.hu>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <d9def9db0704160117te51f4daxc4e92407ed87fddf@mail.gmail.com>
+References: <1176653207.10849.5.camel@localhost>
+	 <4622C462.8020505@linuxtv.org> <46230806.7060908@gmail.com>
+	 <d9def9db0704160117te51f4daxc4e92407ed87fddf@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 16 Apr 2007 07:00:36 -0300
+Message-Id: <1176717636.4310.15.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070415090616.GF24886@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Seg, 2007-04-16 às 10:17 +0200, Markus Rechberger escreveu:
+> On 4/16/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> > Michael Krufky wrote:
+> > > Mauro,
+> > >
+> > > I've been out of town for the past few days... I just got home and saw
+> > this:
+> > >
+> > >
+> > > Mauro Carvalho Chehab wrote:
+> > >>    - Fix 1/3 for bug 7819: fixed frontend hotplug issue
+> > >>    - Fix 2/3 for bug 7819: demux and dvr
+> > >>    - Fix 3/3 for bug 7819: fixed hotplugging for dvbnet
+> > > I don't think that this is 2.6.21 material.  These patches have not yet
+> > > received
+> > > enough testing to be sent to mainline.
+> > >
+> > > I have tested them, and they seem to work for my cxusb device, but we have
+> > > yet to hear test results from users of usb dvb devices that do not use the
+> > > dvb-usb framework.  (ttusb, flexcop-usb, cinergyT2, for example)
+> > >
+> > > The bug that these patches fix has been around throughout the entire
+> > kernel
+> > > history of the dvb subsystem.  The bug is not a regression -- it has
+> > > always been
+> > > there.  In my opinion, it is too late in 2.6.21 development to apply
+> > > this change.
+> > > Because these fixes are not obvious, I think we should let them get some
+> > > more testing, and have them queued for 2.6.22 .
+> >
+> >
+> > I am not arguing about the veracity of the patches, but how things are
+> > handled.
+> >
+> > Agreed to all the mentioned above. There is one more aspect. The
+> > mentioned patches, do not have any ACK/SOB from any DVB
+> > developer/maintainer for the same.
+> >
+> > Huge regressions are created this way. One more time the regression
+> > creator is caught.
+> >
+> 
+> The patch has been around on the dvb mailinglist ([PATCH][RFC] DVB
+> Hotplug Fix, 5. April 2007), Michael looked at it when I told him
+> about it again separatly (12. April 2007)
+> Between that there was enough time to respond on it or review it.
+> 
+> Mauro told me at the beginning if noone responds he'll go forward
+> somehow because it fixes hotplugging, and after 2 weeks I wouldn't
+> expect anyone commenting that thread anymore.
+> 
+> It would be better to look and respond to that patch first before
+> responding about that you don't like how it's handled, Mauro also
+> wrote in his announcement that people should look at the recent
+> mercurial tree and he'll revert it if something doesn't work by
+> accident before submitting it to his git tree... still noone
+> complained about the hotplugging patch in there.
+Ditto.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+It is really bad to have an OOPS that can be generated by simply
+removing a device at the usb port. This can open a door for DoS attacks.
+IMO, this kind of bug should be fixed as soon as possible. 
 
-> guys, please calm down. Judging by the number of contributions to 
-> sched.c the main folks who are not 'observers' here and who thus have 
-> an unalienable right to be involved in a nasty flamewar about 
-> scheduler interactivity are Con, Mike, Nick and me ;-) Everyone else 
-> is just a happy bystander, ok? ;-)
+If you take a look at the history of this bug, it were reported back on
+Jan, 14. Also, Adrian sent several regression reports c/c to
+v4l-dvb-mailing list (so copying all V4L/DVB maintainers, including you,
+me, Markus and the others), warning about the bug, and pointing that a
+patch from Markus were already available.
 
-just to make sure: this is a short (and incomplete) list of contributors 
-related to scheduler interactivity code. The full list of contributors 
-to sched.c includes many other people as well: Peter, Suresh, Christoph, 
-Kenneth and many others. Even the git logs, which only span 2 years out 
-of 15, already list 79 individual contributors to kernel/sched.c.
+I also explicitly warned at DVB ML that I were about to send this patch,
+together with other fixes, asking the community for more tests. After
+that, I received two positive answers on my mailbox from people that
+tested and noticed that this really fixed the issue.
 
-	Ingo
+I don't think that 3 months is a short period of time for us to work on
+a solution for the bug and have it done to be included on Kernel.
+
+Cheers,
+Mauro
+
