@@ -1,83 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbXDPHFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbXDPHQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbXDPHFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 03:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbXDPHFz
+	id S1754034AbXDPHQc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 03:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbXDPHQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 03:05:55 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42087 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753640AbXDPHFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 03:05:54 -0400
-Date: Mon, 16 Apr 2007 09:05:31 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+	Mon, 16 Apr 2007 03:16:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:42533 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754034AbXDPHQb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 03:16:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
+        b=VSTNOHoyITDBPUCCkTeyqkl5iGKIJ7gZMyGqdcE0QuKQN8OMqHT4CzfEQkks+zgNfLqICYpISaWHYoHT8vB0HZFqCWQbuRlER/BIn1kfNf975X0sDIbGxQlf9Sz34BQMxSpdMeqWq7Qw9xsaaoW/imFFyWw/WiuRr2dg5cEsan0=
+Date: Mon, 16 Apr 2007 09:16:18 +0200 (CEST)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+X-X-Sender: simlo@frodo.shire
+To: Ingo Molnar <mingo@elte.hu>
+cc: Esben Nielsen <nielsen.esben@googlemail.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH][EXPERIMENTAL] CPU hotplug with frozen tasks
-Message-ID: <20070416070531.GC1783@elf.ucw.cz>
-References: <200704061732.32712.rjw@sisk.pl> <200704160027.58425.rjw@sisk.pl>
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+In-Reply-To: <20070415130416.GA4312@elte.hu>
+Message-ID: <Pine.LNX.4.64.0704151553340.11750@frodo.shire>
+References: <20070413202100.GA9957@elte.hu> <Pine.LNX.4.64.0704151419140.11750@frodo.shire>
+ <20070415130416.GA4312@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704160027.58425.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, 15 Apr 2007, Ingo Molnar wrote:
 
-> As I said before, we have a problem with using the CPU hotplug for suspending
-> because of the notifiers that are called from within cpu_up()/cpu_down() and
-> (sometimes) assume that the system is fully functional.
-> 
-> One obvious solution of this problem would be to make the notifiers behave
-> differently if tasks are frozen, but for this purpose we'd need to tell them
-> that this is the case.  In principle, we could do it in many different ways
-> (eg. by using a global variable, with the help of suspend notifiers etc.), but
-> IMO one of the cleanest methods woud be to use some special values for the
-> notifications occuring while tasks are frozen (eg. CPU_DEAD_FROZEN instead of
-> CPU_DEAD etc.).  In that case the notifiers could react in some special ways
-> to the "FROZEN" notfifications and that would allow us to simplify some code
-> paths (eg. in the microcode driver).
-> 
-> The appended patch introduces such "FROZEN" notfifications, modifies the CPU
-> hotplug core to use them and updates all of the users of CPU hotplug notifiers
-> to recognize them.  For now, they are treated in the same way as the
-> corresponding "normal" notifications, but I'm going to modify the microcode
-> driver to really use them and I believe that some other subsystems can benefit
-> from using them as well.
-> 
-> The patch is totally experimental and untested, although it's been successfully
-> compiled on x86_64 and it's main purpose is to show what exactly I
-> mean. :-)
+>
+> * Esben Nielsen <nielsen.esben@googlemail.com> wrote:
+>
+>> I took a brief look at it. Have you tested priority inheritance?
+>
+> yeah, you are right, it's broken at the moment, i'll fix it. But the
+> good news is that i think PI could become cleaner via scheduling
+> classes.
+>
+>> As far as I can see rt_mutex_setprio doesn't have much effect on
+>> SCHED_FAIR/SCHED_BATCH. I am looking for a place where such a task
+>> change scheduler class when boosted in rt_mutex_setprio().
+>
+> i think via scheduling classes we dont have to do the p->policy and
+> p->prio based gymnastics anymore, we can just have a clean look at
+> p->sched_class and stack the original scheduling class into
+> p->real_sched_class. It would probably also make sense to 'privatize'
+> p->prio into the scheduling class. That way PI would be a pure property
+> of sched_rt, and the PI scheduler would be driven purely by
+> p->rt_priority, not by p->prio. That way all the normal_prio() kind of
+> complications and interactions with SCHED_OTHER/SCHED_FAIR would be
+> eliminated as well. What do you think?
+>
 
-Looks sane to me.
+Now I have not read your patch into detail. But agree it would be nice to 
+have it more "OO" and remove cross references between schedulers. But 
+first one should consider wether PI between SCHED_FAIR tasks or not is 
+usefull or not. Does PI among dynamic priorities make sense at all? I think it
+does: On heavy loaded systems where a nice 19 might not get the CPU for 
+very long, a nice -20 task can be priority inverted for a very long 
+time.
+But I see no need it taking the dynamic part of the effective priorities 
+into account. The current/old solution of mapping the static nice values 
+into a global priority index which can incorporate the two scheduler 
+classes is probably good enough - it just has to be "switched on" a again 
+:-)
 
-> Index: linux-2.6.21-rc6/kernel/cpu.c
-> ===================================================================
-> --- linux-2.6.21-rc6.orig/kernel/cpu.c	2007-04-16 00:24:56.000000000 +0200
-> +++ linux-2.6.21-rc6/kernel/cpu.c	2007-04-16 00:25:14.000000000 +0200
-> @@ -120,11 +120,12 @@ static int take_cpu_down(void *unused)
->  }
->  
->  /* Requires cpu_add_remove_lock to be held */
-> -static int _cpu_down(unsigned int cpu)
-> +static int _cpu_down(unsigned int cpu, int tasks_frozen)
->  {
->  	int err;
->  	struct task_struct *p;
->  	cpumask_t old_allowed, tmp;
-> +	unsigned long mod = tasks_frozen ? 0x0008 : 0;
->  
+But what about other scheduler classes which some people want to add in
+the future? What about having a "cleaner design"?
 
-Can we get constant instead of 0x0008 here?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+My thought was to generalize the concept of 'priority' to be an
+object (a struct prio) to be interpreted with help from a scheduler class 
+instead of globally interpreted integer.
+
+int compare_prio(struct prio *a, struct prio *b)
+{
+ 	if (a->sched_class->class_prio < b->sched_class->class_prio)
+ 		return -1;
+
+ 	if (a->sched_class->class_prio < b->sched_class->class_prio)
+ 		return +1;
+
+
+ 	return a->sched_class->compare_prio(a, b);
+
+}
+
+Problem 1: Performance.
+
+Problem 2: Operations on a plist with these generalized priorities are not 
+bounded because the number of different priorites are not bounded.
+
+Problem 2 could be solved by using a combined plist (for rt priorities) 
+and rbtree (for fair priorities) - making operations logarithmic just as 
+the fair scheduler itself. But that would take more memory for every 
+rtmutex.
+
+I conclude that is too complicated and go on to the obvious idea:
+Use a global priority index where each scheduler class get's it own 
+range (rt: 0-99, fair 100-139 :-). Let the scheduler class have a 
+function returning it instead of reading it directly from task_struct such
+that new scheduler classes can return their own numbers.
+
+Esben
+
+
+> 	Ingo
+>
