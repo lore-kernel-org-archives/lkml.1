@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXDPW27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbXDPW3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbXDPW27 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbXDPW27
+	id S1753949AbXDPW3K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbXDPW3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:28:59 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:39692 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753705AbXDPW25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:28:57 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
-Date: Mon, 16 Apr 2007 16:28:47 -0600
-User-Agent: KMail/1.9.5
-Cc: Jean Delvare <khali@linux-fr.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
-       linux-acpi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>
-References: <45D5EA88.7090300@redhat.com> <200704151857.03115.bjorn.helgaas@hp.com> <20070416211411.GA16150@dreamland.darkstar.lan>
-In-Reply-To: <20070416211411.GA16150@dreamland.darkstar.lan>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 16 Apr 2007 18:29:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51710
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753932AbXDPW3I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 18:29:08 -0400
+Date: Mon, 16 Apr 2007 15:29:10 -0700 (PDT)
+Message-Id: <20070416.152910.107940079.davem@davemloft.net>
+To: andrew.vasquez@qlogic.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com, ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070416222517.GD14351@andrew-vasquezs-computer.local>
+References: <20070416211049.GC13590@andrew-vasquezs-computer.local>
+	<20070416.150846.45744461.davem@davemloft.net>
+	<20070416222517.GD14351@andrew-vasquezs-computer.local>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704161628.47707.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 April 2007 15:14, Luca Tettamanti wrote:
-> It seems that Asus exposes monitorining data using "ATK0110" (enumerated
-> in DSDT); I see it both on my P5B-E motherboard and on my notebook (L3D)
-> (they have different methods though). Another motherboard with the same
-> device may actually call it "FOOBAR123" or "WTFISTHIS".
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Date: Mon, 16 Apr 2007 15:25:17 -0700
 
-Yup, we have the same problem with other devices.  See the long list
-of PNP IDs in 8250_pnp.c :-)
+> Fine, I'll agree that wacking-users (and
+> I'll wager the outliers) with a 2x4 was a bit extreme,
 
-> Problem is that ACPI methods are not documented at all (how am I
-> supposed to know that "G6T6" is the reading of the 12V rail?) while the
-> datasheet of hw monitoring chips (w83627ehf in my case) are public (more
-> or less).
+And that, right there, is basically the end of the conversation.
 
-Yes, I see that it's attractive to use a single w83627ehf.c driver.
-For an ACPI driver, we'd have to build a list of PNP IDs, and possibly
-information about which methods read which information.  That's
-certainly more work.
+You don't do this to users, ever.
 
-On the other hand, the ACPI driver would avoid the synchronization
-issues that started this whole thread.  That's a pretty compelling
-advantage.
+Put a big loud kernel log message in there when this situation
+presents itself, use as many capital letters and scary language that
+you wish.  Let them know that if things explode they get to keep the
+pieces.
 
-> Furthermore, sensor driver exposes all the reading of the chip
-> (e.g. in the DSDT I can't find the VSB or battery voltage).
+But at least try to give them something that works when you know that
+you can.
 
-Maybe Asus didn't hook up those readings on the board.  I would
-guess that PC Probe doesn't expose the VSB or battery voltage either.
-
-I'm sure you've seen these:
-  http://lists.lm-sensors.org/pipermail/lm-sensors/2005-October/014050.html
-  http://www.lm-sensors.org/wiki/AsusFormulaHacking
-
-Looks like nobody took up the challenge, though :-)  It looks fun
-to play with, if only I had the time and hardware.
-
-Bjorn
+You don't need to make someone's system unbootable in order to make
+them aware of a potential problem.  It's very anti-social to approach
+things in this way.
