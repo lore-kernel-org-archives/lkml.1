@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030668AbXDPOft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030673AbXDPOgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030668AbXDPOft (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 10:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030672AbXDPOft
+	id S1030673AbXDPOgI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 10:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030680AbXDPOgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 10:35:49 -0400
-Received: from [212.12.190.15] ([212.12.190.15]:33002 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030668AbXDPOfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 10:35:48 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-Date: Mon, 16 Apr 2007 17:38:47 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200704150931.42268.a1426z@gawab.com> <200704161342.34498.a1426z@gawab.com> <46237483.6010801@bigpond.net.au>
-In-Reply-To: <46237483.6010801@bigpond.net.au>
+	Mon, 16 Apr 2007 10:36:07 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52141 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030673AbXDPOgF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 10:36:05 -0400
+Date: Mon, 16 Apr 2007 16:36:13 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Mike Mattie <codermattie@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org
+Subject: Re: [BUG] 2.6.21-rc7 hpt366 driver broken
+Message-ID: <20070416143613.GD10338@stusta.de>
+References: <20070415224846.52a465b6@reforged> <20070416043822.0ea2490e@reforged>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200704161738.47956.a1426z@gawab.com>
+In-Reply-To: <20070416043822.0ea2490e@reforged>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
-> Al Boldi wrote:
-> > Reducing the prio-level granularity may also be helpful;
->
-> Because of some of the bit operations code makes it a bad idea to have
-> more than 160 priority levels, you're more or less limited to 60
-> priority levels for SCHED_OTHER tasks (as 100 are used for real time)
-> and you need 40 of these to pay some attention to niceness leaving you
-> about 20 priority levels to use for fiddling.  Is that enough?
->
-> With spa_ebs (now that CPU rate caps have been removed), you have all 60
-> priorities available for fiddling with as niceness is taken care of when
-> calculating each task's entitlement.
+[ Cc's added, full bug report was in http://lkml.org/lkml/2007/4/16/18 ]
 
-Ok, increasing the number of prio-levels is one thing, but I was more 
-thinking of reducing the effective difference between each prio-level. For 
-example, this would allow max_tpt_bonus=18, while the effective range would 
-be 3, thus reducing granularity.  Would this be easily introduceable?
+On Mon, Apr 16, 2007 at 04:38:22AM -0700, Mike Mattie wrote:
+> On Sun, 15 Apr 2007 22:48:46 -0700
+> Mike Mattie <codermattie@gmail.com> wrote:
+> 
+> > Hello,
+> > 
+> > I am testing the 2.6.21-rc7 kernel release. The IDE hpt366 driver is
+> > crashing hanging the boot. I have basically the same config as
+> > 2.6.20.7 which works fine (except for netconsole mentioned in a
+> > previous mail).
+> > 
+> > here is the hand-copied info:
+> > 
+> > * "unable to handle paging request" , null deref
+> > * EIP @ init_chipset_hpt366
+> > 
+> 
+> > I am running a git-bisect to see if I can resolve it to a commit.
+> 
+> This was identified as the first broken commit:
+> 
+> commit 7b73ee05d0acb926923d43d78b61add776ea4bb1
+> Author: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Date:   Wed Feb 7 18:18:16 2007 +0100
+> 
+>     hpt366: init code rewrite
+> 
+> Reverting is conflicted so it will be a bit longer before I pin-point any other build-breaks.
 
+Thanks for your report.
 
-Thanks!
+Can you use a digital camera for taking a photograph of the crash?
+
+cu
+Adrian
 
 --
-Al
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
