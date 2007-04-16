@@ -1,34 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbXDPAhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751717AbXDPAra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbXDPAhS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 20:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbXDPAhS
+	id S1751717AbXDPAra (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 20:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXDPAra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 20:37:18 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:51645 "EHLO
+	Sun, 15 Apr 2007 20:47:30 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:51661 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754223AbXDPAhQ (ORCPT
+	with ESMTP id S1750837AbXDPAra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 20:37:16 -0400
-Date: Mon, 16 Apr 2007 02:37:23 +0200
+	Sun, 15 Apr 2007 20:47:30 -0400
+Date: Mon, 16 Apr 2007 02:37:14 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Dmitry Torokhov <dtor@insightbb.com>,
-       David Brownell <david-b@pacbell.net>, Marcus Better <marcus@better.se>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       James Simmons <jsimmons@infradead.org>
-Subject: [2/2] 2.6.21-rc7: known regressions
-Message-ID: <20070416003723.GM3691@stusta.de>
+Cc: Hans-Georg Rist <hg.rist@web.de>, perex@suse.cz,
+       alsa-devel@alsa-project.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Stephen Clark <Stephen.Clark@seclark.us>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org,
+       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
+       Dave Jones <davej@redhat.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       e1000-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, David Miller <davem@davemloft.net>,
+       Andi Kleen <ak@suse.de>, Oliver Neukum <oneukum@suse.de>,
+       greg@kroah.com, linux-usb-devel@lists.sourceforge.net,
+       CIJOML <cijoml@volny.cz>, Markus Rechberger <markus.rechberger@amd.com>,
+       v4l-dvb-maintainer@linuxtv.org
+Subject: [1/2] 2.6.21-rc7: known regressions
+Message-ID: <20070416003714.GL3691@stusta.de>
 References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -48,40 +50,66 @@ possibly involved with one or more of these issues.
 Due to the huge amount of recipients, please trim the Cc when answering.
 
 
-Subject    : suspend to disk hangs  (CONFIG_NO_HZ)
-References : http://lkml.org/lkml/2007/3/25/217
-Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+Subject    : snd_hda_intel doesn't work with ASUS M2V mainboard
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8273
+Submitter  : Hans-Georg Rist <hg.rist@web.de>
 Status     : unknown
 
 
-Subject    : ThinkPad X60: resume no longer works  (PCI related?)
-             workaround: booting with "hpet=disable"
-References : http://lkml.org/lkml/2007/3/13/3
+Subject    : snd_intel8x0: divide error: 0000
+References : http://lkml.org/lkml/2007/3/5/252
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Status     : unknown
+
+
+Subject    : ali_pata: boot from CD fails
+References : http://lkml.org/lkml/2007/3/31/160
+Submitter  : Stephen Clark <Stephen.Clark@seclark.us>
+Status     : unknown
+
+
+Subject    : kernels fail to boot with drives on ATIIXP controller
+             (ACPI/IRQ related)
+References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229621
+             http://lkml.org/lkml/2007/3/4/257
+Submitter  : Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
+Status     : unknown
+
+
+Subject    : boot failure: rtl8139: exception in interrupt routine
+References : http://lkml.org/lkml/2007/3/31/160
+Submitter  : Stephen Clark <Stephen.Clark@seclark.us>
+Status     : unknown
+
+
+Subject    : laptops with e1000: lockups
+References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229603
 Submitter  : Dave Jones <davej@redhat.com>
-             Jeremy Fitzhardinge <jeremy@goop.org>
-Caused-By  : PCI merge
-             commit 78149df6d565c36675463352d0bfe0000b02b7a7
-Handled-By : Eric W. Biederman <ebiederm@xmission.com>
-             Rafael J. Wysocki <rjw@sisk.pl>
-Status     : unknown
-
-
-Subject    : suspend to disk works only once
-References : http://lkml.org/lkml/2007/4/13/240
-Submitter  : Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
-             commit ed746e3b18f4df18afa3763155972c5835f284c5
-Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-             Dmitry Torokhov <dtor@insightbb.com>
-             David Brownell <david-b@pacbell.net>
+Handled-By : Jesse Brandeburg <jesse.brandeburg@intel.com>
 Status     : problem is being debugged
 
 
-Subject    : resume from RAM corrupts vesafb console
-References : http://lkml.org/lkml/2007/3/26/76
-             http://lkml.org/lkml/2007/4/13/313
-Submitter  : Marcus Better <marcus@better.se>
-Handled-By : Pavel Machek <pavel@ucw.cz>
-             Antonino A. Daplas <adaplas@gmail.com>
+Subject    : forcedeth: interface hangs under load
+References : http://lkml.org/lkml/2007/4/3/39
+             http://www.spinics.net/lists/netdev/msg28981.html
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Handled-By : Ingo Molnar <mingo@elte.hu>
+             Ayaz Abdulla <aabdulla@nvidia.com>
+             David Miller <davem@davemloft.net>
 Status     : problem is being debugged
+
+
+Subject    : hal daemon crashes after pulling a USB serial device
+References : http://www.opensubscriber.com/message/linux-usb-devel@lists.sourceforge.net/6369800.html
+Submitter  : Andi Kleen <ak@suse.de>
+Handled-By : Oliver Neukum <oneukum@suse.de>
+Status     : problem is being debugged
+
+
+Subject    : Oops when changing USB DVB-T adapter
+References : http://lkml.org/lkml/2007/3/9/212
+             http://lkml.org/lkml/2007/4/5/154
+Submitter  : CIJOML <cijoml@volny.cz>
+Handled-By : Markus Rechberger <markus.rechberger@amd.com>
+Status     : patches available
 
