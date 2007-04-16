@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030907AbXDPT0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030901AbXDPThm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030907AbXDPT0U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030901AbXDPT0U
+	id S1030901AbXDPThm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030909AbXDPThm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:26:20 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:55856 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030907AbXDPT0T (ORCPT
+	Mon, 16 Apr 2007 15:37:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52847
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1030901AbXDPThl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:26:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Q6V6QVu1R5kvBhZoF17IHr6rPGocXQDTHBEEcgvv/82vv+ScVf4RiXZVDO334HTHif/IvwG7qNM0MgzjY24rJCQvJ6HRXxIXOi430he+vwcPjvqP6rivjRN+mV5d/HV6xpwQcdUV4yBrX5JlCcl/PQYx+jp03yLAGsV7BZOIXJY=
-Message-ID: <75b66ecd0704161226t40fdb322xfc174dbf3d097bb0@mail.gmail.com>
-Date: Mon, 16 Apr 2007 15:26:17 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Bernd Eckenfels" <ecki@lina.inka.de>
-Subject: Re: ZFS with Linux: An Open Plea
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <E1HdWld-0003oC-00@calista.eckenfels.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 16 Apr 2007 15:37:41 -0400
+Date: Mon, 16 Apr 2007 12:37:43 -0700 (PDT)
+Message-Id: <20070416.123743.07452378.davem@davemloft.net>
+To: andrew.vasquez@qlogic.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com, ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070416163712.GA10822@andrew-vasquezs-computer.local>
+References: <20070416.010218.130850966.davem@davemloft.net>
+	<20070416163712.GA10822@andrew-vasquezs-computer.local>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4623BE2E.2020800@s5r6.in-berlin.de>
-	 <E1HdWld-0003oC-00@calista.eckenfels.net>
-X-Google-Sender-Auth: 9ffd1d5081cc4fd2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/07, Bernd Eckenfels <ecki@lina.inka.de> wrote:
-> In article <4623BE2E.2020800@s5r6.in-berlin.de> you wrote:
-> > I meant that the central requirement on the design and implementation of
-> > audio subsystems is an (ideally guaranteed) bounded maximum of
-> > latencies; and that's exactly the major point where I heard that there
-> > are problems with ALSA driver components in userspace.  You were talking
-> > about throughput of storage systems, for which latencies of the software
-> > part of the stack do not play such a central role.  Therefore your
-> > comparison appeared off the mark to me.
->
-> Unfortunatelle Latency is critical for a number of critical applications
-> like databases or file based transaction systems (mail, news) - mainly the
-> users of fsync().
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Date: Mon, 16 Apr 2007 09:37:12 -0700
 
-Whether you mix audio in userspace or kernel does not impact latency -
-you still need to schedule the application playing audio every N
-milliseconds or there will be dropouts.  I don't see where audio
-mixing issue has any relevance to this thread.
+> On Mon, 16 Apr 2007, David Miller wrote:
+> 
+> > But even if that fails, I think the fallback code should be put back,
+> > since it obviously was used by at least one system and it's probable
+> > that there are some other applications of using this qla2xxx chip that
+> > will have an empty NVRAM too.
+> 
+> Then they should really get their NVRAM corrected, if in fact their
+> NVRAMs are cleared.
+> 
+> > I can understand the apprehension in using a fixed port_name[] value,
+> > since it could conflict with other FC controllers on the mesh, but if
+> > that is so important just choose some random value that is a valid FC
+> > ID or use some characteristic ID that can be used to compose part of
+> > the port WWN in order to give it at least some uniqueness.
+> 
+> Look, there's a fine balance here that we must strike -- the solution
+> that you're proposing implies that there's some 'random' bit-space
+> within the IEEE NAA with which one can safely encode without stomping
+> on any valid OUI.
 
-Lee
+The fact is that your driver was significantly more robust
+previously, and now it's so less robust that it now fails for
+people.
+
+That's totally unacceptable.
+
+Just like the sparc64 systsems, others depending upon this fallback
+behavior the qla2xxx driver had are going to break and they are not
+going to be able to just go and fix their hardware and re-flash the
+NVRAM.
+
+Every user on the planet is going to be 1,000 times more happy with a
+big fat warning in their kernel log saying that things might not go
+right, but the driver is going to try anyways, rather than a complete
+non-attempt to make things work.
+
+You replaced a possible failure with a guarenteed one.
+
+%99.9999999 of people are never going to run into a FC ID collision.
+They have an onboard FC controller and a disk or two.  They DON'T
+CARE, they want their systems to work and if you don't give them that
+you're not being a good driver maintainer.
+
+You BROKE things, therefore you must FIX it.
+
+Now I'm happy to code up the sparc OFW property bits but your attitude
+and perspective on this absolutely has to change and the old fallback
+code still has to go back in there, possible FC ID collisions or not.
