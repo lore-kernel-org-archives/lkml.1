@@ -1,151 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030874AbXDPQhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXDPQj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030874AbXDPQhS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 12:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030880AbXDPQhS
+	id S1753025AbXDPQj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 12:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbXDPQj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 12:37:18 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:35904 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030874AbXDPQhQ (ORCPT
+	Mon, 16 Apr 2007 12:39:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57697 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752985AbXDPQj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 12:37:16 -0400
-Date: Mon, 16 Apr 2007 09:37:12 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@SteelEye.com, ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-Message-ID: <20070416163712.GA10822@andrew-vasquezs-computer.local>
-References: <20070416.010218.130850966.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="J2SCkAp4GZ/dPZZf"
+	Mon, 16 Apr 2007 12:39:57 -0400
+Date: Mon, 16 Apr 2007 17:39:56 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+       Tony Jones <tonyj@suse.de>
+Subject: Re: [nameidata 2/2] Pass no useless nameidata to the create, lookup, and permission IOPs
+Message-ID: <20070416163956.GA11001@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
+	linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+	Tony Jones <tonyj@suse.de>
+References: <20070412090809.917795000@suse.de> <20070412090836.207973000@suse.de> <20070412100628.GA25078@infradead.org> <200704161829.20669.agruen@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070416.010218.130850966.davem@davemloft.net>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 16 Apr 2007 16:37:00.0021 (UTC) FILETIME=[74929250:01C78045]
+In-Reply-To: <200704161829.20669.agruen@suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 16, 2007 at 06:29:20PM +0200, Andreas Gruenbacher wrote:
+>  enum { MAX_NESTED_LINKS = 8 };
+>  
+> +/**
+> + * Fields shared between nameidata and nameidata2 -- nameidata2 could
+> + * be embedded in nameidata, but then the vfs code would become
+> + * cluttered with dereferences.
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+you could use an anonymous struct embedeed in both.
 
-On Mon, 16 Apr 2007, David Miller wrote:
+> + */
+> +#define __NAMEIDATA2				\
+> +	struct dentry	*dentry;		\
+> +	struct vfsmount *mnt;			\
+> +	unsigned int	flags;			\
+> +						\
+> +	union {					\
+> +		struct open_intent open;	\
+> +	} intent;
 
-> Sparc64 systems which have an on-board qla2xxx chip (such as
-> SunBlade-1000 and SunBlade-2000, there are probably some other systems
-> like this too) do not have any NVRAM information present, in fact the
-> NVRAM is basically all 0's from what I can tell.
-> 
-> This always worked just fine since the code would previously just use
-> a bunch of defaults when an inconsistent NVRAM was detected.
-> 
-> But the changeset below at the end of this email broke this and now
-> I'm seeing bug reports from sparc64 users and I was just able to
-> reproduce the problem myself just today as well.  I verified that
-> reverting the patch below gets things working again.
-> 
-> Emanuele, you can feed the patch below to "patch -p1 -R" to get that
-> working again so we can move on to the other sparc64 bug we're looking
-> into :-)
+Or better just pass argument directly.  We really
+should only pass down the the dentry and the
+intent to the filesystem.  The filesystem has
+not business looking at mnt in the operations,
+and the relevant bits of flags (mostly whether it's
+O_EXCLUSIVE) should be stored in the intent, because
+that's the only way it should be used.
 
-I sent Emanuele the attached patch during the weekend...
+Doing it that way also allows to fix some braindead calling conventions
+like this one:
 
-> The failure mode isn't nice, it actually ends up crashing with an OOPS
-> in qla2xxx_init_host_attr() because ha->node_name is NULL, it's
-> supposed to be initialized by functions like qla2x00_nvram_config()
+> -int permission(struct inode *inode, int mask, struct nameidata *nd)
+> +int permission(struct inode *inode, int mask, struct nameidata2 *nd)
+>  {
+>  	umode_t mode = inode->i_mode;
+>  	int retval, submask;
+> @@ -278,7 +278,7 @@ int permission(struct inode *inode, int 
+>   * for filesystem access without changing the "normal" uids which
+>   * are used for other things.
+>   */
 
-No, it's not very nice...
+>  static inline struct dentry *
+>  do_revalidate(struct dentry *dentry, struct nameidata *nd)
 
-> Can we revert the patch below or do something similar to get things
-> working again on sparc64?
-> 
-> The most important thing which qla2x00_nvram_config() seems to want to
-> get is the WWN port_name and node_name.  These are provided in the OFW
-> device tree so we could pluck them out of there with something like:
-> 
-> #ifdef CONFIG_SPARC
-> #include <asm/prom.h>
-> #include <asm/pbm.h>
-> #endif
-> 
-> ...
-> 
-> #ifdef CONFIG_SPARC
-> 	struct pcidev_cookie *pcp = pdev->sysdata;
-> 	u8 *port_name, *node_name;
-> 
-> 	port_name = of_get_property(pcp->prom_node, "port-wwn", NULL);
-> 	node_name = of_get_property(pcp->prom_node, "node-wwn", NULL);
-> #endif
-> Those will hold a pointer to the property values or NULL if the
-> property does not exist.  This is private data, so you should make
-> copies of them into your local data structure and not use references
-> to them.
-> 
-> I don't see any OFW properties present that could be used to fill in
-> the rest of the NVRAM parameters, so we'd need to use the defaults
-> that the code before the change was using.
+Or this one.
 
-I'd be more inclined to do soemthing like the above, rather than:
+> -			result = dir->i_op->lookup(dir, dentry, nd);
+> +			result = dir->i_op->lookup(dir, dentry, ND2(nd));
 
-> But even if that fails, I think the fallback code should be put back,
-> since it obviously was used by at least one system and it's probable
-> that there are some other applications of using this qla2xxx chip that
-> will have an empty NVRAM too.
+or this one.
 
-Then they should really get their NVRAM corrected, if in fact their
-NVRAMs are cleared.
-
-> I can understand the apprehension in using a fixed port_name[] value,
-> since it could conflict with other FC controllers on the mesh, but if
-> that is so important just choose some random value that is a valid FC
-> ID or use some characteristic ID that can be used to compose part of
-> the port WWN in order to give it at least some uniqueness.
-
-Look, there's a fine balance here that we must strike -- the solution
-that you're proposing implies that there's some 'random' bit-space
-within the IEEE NAA with which one can safely encode without stomping
-on any valid OUI.
-
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="0001-qla2xxx-Error-out-during-probe-if-we-re-unable-to.patch"
-
->From 9ee6de3bbaa03390b83226e7bb84c49566a583b3 Mon Sep 17 00:00:00 2001
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Date: Wed, 11 Apr 2007 16:02:06 -0700
-Subject: [PATCH] qla2xxx: Error-out during probe() if we're unable to complete HBA initialization.
-
-Remove a stale check against ha->device_flags
-(DFLG_NO_CABLE) as topology scanning is performed within the
-DPC-thread context.
-
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
----
- drivers/scsi/qla2xxx/qla_os.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-index b78919a..0a36912 100644
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -1577,9 +1577,7 @@ qla2x00_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
- 		goto probe_failed;
- 	}
- 
--	if (qla2x00_initialize_adapter(ha) &&
--	    !(ha->device_flags & DFLG_NO_CABLE)) {
--
-+	if (qla2x00_initialize_adapter(ha)) {
- 		qla_printk(KERN_WARNING, ha,
- 		    "Failed to initialize adapter\n");
- 
--- 
-1.5.1.1.107.g7a159
-
-
---J2SCkAp4GZ/dPZZf--
+etc..
