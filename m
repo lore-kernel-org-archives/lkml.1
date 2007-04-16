@@ -1,68 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030457AbXDPWEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030997AbXDPWHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030457AbXDPWEJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030997AbXDPWEJ
+	id S1030997AbXDPWHz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031006AbXDPWHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:04:09 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:50932 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030457AbXDPWEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:04:08 -0400
-Message-ID: <4623F212.5030904@vmware.com>
-Date: Mon, 16 Apr 2007 15:00:50 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
-References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com> <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com> <461FD9BF.90609@vmware.com> <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com> <461FEF1C.5010806@vmware.com> <Pine.LNX.4.64.0704161831500.8213@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0704161831500.8213@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Apr 2007 18:07:55 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55360 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030997AbXDPWHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 18:07:54 -0400
+Date: Tue, 17 Apr 2007 00:07:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: [patch] CFS (Completely Fair Scheduler), v2
+Message-ID: <20070416220715.GA4071@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> You're right to want to defer your pte_updates, David is right to want
-> to batch his TLB flushes.  It bothers me that you have a surprising case,
-> and that unless you abandon your optimization, it imposes a new constraint
-> on how to proceed in common code (without #ifdef'ing around).
->
-> But perhaps in this case David might concede that the longer we delay
-> the TLB flush, the more likely a referenced bit is to be missed - that is,
-> it gets cleared from the pte, but if that page is accessed again before
-> the TLB is flushed, the processor may well omit to reinstate the accessed
-> bit, and our stats drift away from reality.
->
-> Compromise patch below: would that be satisfactory to you, David?
->   
 
-Although I appreciate the heroics, you needn't do this on our account; 
-the win of a couple thousand cycles is not worth the cost in complexity, 
-IMHO, and the penalty on native quite potentially overshadows this.  If 
-you still issue the flush inside the spinlock, as required for this 
-paravirt optimization, you are taking the risk of holding the spinlock 
-an extra long time while issuing a TLB shootdown - which means waiting 
-for an IPI.
+this is the second release of the CFS (Completely Fair Scheduler) 
+patchset, against v2.6.21-rc7:
 
-It might not matter that much on i386, but on big iron (or realtime) 
-systems, this could have significant negative scaling effects for 
-workloads where the page page table was hot on some set of CPUs (say, 
-remapping file pages for database access).  In time, the benefits of 
-this optimization to the hypervisor will decrease, while the benefits of 
-optimizing the other way for shorter spinlock time may increase, both in 
-a VM and on native hardware.
+   http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.patch
 
-So I would rather just drop the pte_update_defer down to a pte_update if 
-the flush is not immediately following - as it is nice and simply 
-correct without getting in the way.  I see there is more in this thread 
-that I haven't read yet, so I preemptively reserve the right to issue an 
-invalidation of this opinion...
+i'd like to thank everyone for the tremendous amount of feedback and 
+testing the v1 patch got - i could hardly keep up with just reading the 
+mails! Some of the stuff people addressed i couldnt implement yet, i 
+mostly concentrated on bugs, regressions and debuggability.
 
-Thanks,
+there's a fair amount of churn:
 
-Zach
+   15 files changed, 456 insertions(+), 241 deletions(-)
+
+But it's an encouraging sign that there was no crash bug found in v1, 
+all the bugs were related to scheduling-behavior details. The code was 
+tested on 3 architectures so far: i686, x86_64 and ia64. Most of the 
+code size increase in -v2 is due to debugging helpers, they'll be 
+removed later. (The new /proc/sched_debug file can be used to see the 
+fine details of CFS scheduling.)
+
+Changes since -v1:
+
+ - make nice levels less starvable. (reported by Willy Tarreau)
+
+ - fixed child-runs first. A /proc/sys/kernel/sched_child_runs_first 
+   flag can be used to turn it on/off. (This might fix the Kaffeine bug
+   reported by S.Çağlar Onur <)
+
+ - changed SCHED_FAIR back to SCHED_NORMAL (suggested by Con Kolivas)
+
+ - UP build fix. (reported by Gabriel C)
+
+ - timer tick micro-optimization (Dmitry Adamushko)
+
+ - preemption fix: sched_class->check_preempt_curr method to decide 
+   whether to preempt after a wakeup (or at a timer tick). (Found via a
+   fairness-test-utility written for CFS by Mike Galbraith)
+
+ - start forked children with neutral statistics instead of trying to 
+   inherit them from the parent: Willy Tarreau reported that this 
+   results in better behavior on extreme workloads, and it also 
+   simplifies the code quite nicely. Removed sched_exit() and the 
+   ->task_exit() methods.
+
+ - make nice levels independent of the sched_granularity value
+
+ - new /proc/sched_debug file listing runqueue details and the rbtree
+
+ - new SCH-* fields in /proc/<NR>/status to see scheduling details
+
+ - new cpu-hog feature (off by default) and sysctl tunable to set it: 
+   /proc/sys/kernel/sched_max_hog_history_ns tunable defaults to
+   0 (off). Positive values are meant the maximum 'memory' that the 
+   scheduler has of CPU hogs.
+
+ - various code cleanups
+
+ - added more statistics temporarily: sum_exec_runtime, 
+   sum_wait_runtime.
+
+ - added -CFS-v2 to EXTRAVERSION
+
+as usual, any sort of feedback, bugreports, fixes and suggestions are 
+more than welcome,
+
+	Ingo
