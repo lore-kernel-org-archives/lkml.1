@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030459AbXDPLex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030468AbXDPLgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030459AbXDPLex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 07:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030468AbXDPLex
+	id S1030468AbXDPLgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 07:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030476AbXDPLgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 07:34:53 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:36388 "EHLO relay.sw.ru"
+	Mon, 16 Apr 2007 07:36:21 -0400
+Received: from khc.piap.pl ([195.187.100.11]:43235 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030459AbXDPLew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 07:34:52 -0400
-Message-ID: <46236082.3000101@sw.ru>
-Date: Mon, 16 Apr 2007 15:39:46 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	id S1030468AbXDPLgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 07:36:20 -0400
+To: Mikko Tiihonen <mikko.tiihonen@iki.fi>
+Cc: clemens@ladisch.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] hpet: Enable hidden HPET on NVidia motherboards
+References: <1176708094.22969.7.camel@dual.local>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 16 Apr 2007 13:36:19 +0200
+In-Reply-To: <1176708094.22969.7.camel@dual.local> (Mikko Tiihonen's message of "Mon, 16 Apr 2007 10:21:33 +0300")
+Message-ID: <m3y7kssg98.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH] Don't attach callback to a going-away netlink socket
-Content-Type: multipart/mixed;
- boundary="------------090809030000090201070201"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090809030000090201070201
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Mikko Tiihonen <mikko.tiihonen@iki.fi> writes:
 
-From: Denis Lunev <den@openvz.org>
+> Enables HPET for NVidia motherboards with broken BIOS. The patch reads
+> the HPET address from the pci config space. The patch should also work
+> if ACPI is disabled.
+>
+> The HPET search is done in early-quirks because even 
+> DECLARE_PCI_FIXUP_EARLY was too late. If the new quirk causes problems
+> it can be disabled with the nohpet boot option.
+>
+> The patch assumes that the BIOS has done the basic setup of HPET, but
+> has not published the result in ACPI tables. This is at least true for
+> some Asus and Gigabyte motherboards.
 
-There is a race between netlink_dump_start() and netlink_release()
-that can lead to the situation when a netlink socket with non-zero
-callback is freed.
-
---------------090809030000090201070201
-Content-Type: text/plain;
- name="diff-netlink-dont-dump-in-dead-socket"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff-netlink-dont-dump-in-dead-socket"
-
---- a/net/netlink/af_netlink.c	2004-10-25 12:12:23.000000000 +0400
-+++ b/net/netlink/af_netlink.c	2004-10-28 16:26:12.000000000 +0400
-@@ -255,6 +255,7 @@ static int netlink_release(struct socket
- 		return 0;
- 
- 	netlink_remove(sk);
-+	sock_orphan(sk);
- 	nlk = nlk_sk(sk);
- 
- 	spin_lock(&nlk->cb_lock);
-@@ -269,7 +270,6 @@ static int netlink_release(struct socket
- 	/* OK. Socket is unlinked, and, therefore,
- 	   no new packets will arrive */
- 
--	sock_orphan(sk);
- 	sock->sk = NULL;
- 	wake_up_interruptible_all(&nlk->wait);
- 
-@@ -942,9 +942,9 @@ int netlink_dump_start(struct sock *ssk,
- 		return -ECONNREFUSED;
- 	}
- 	nlk = nlk_sk(sk);
--	/* A dump is in progress... */
-+	/* A dump or destruction is in progress... */
- 	spin_lock(&nlk->cb_lock);
--	if (nlk->cb) {
-+	if (nlk->cb || sock_flag(sk, SOCK_DEAD)) {
- 		spin_unlock(&nlk->cb_lock);
- 		netlink_destroy_callback(cb);
- 		sock_put(sk);
-
---------------090809030000090201070201--
+I think the code should only be enabled by its CONFIG_*.
+-- 
+Krzysztof Halasa
