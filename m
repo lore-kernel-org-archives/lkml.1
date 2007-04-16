@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbXDPTDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbXDPTEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbXDPTDY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXDPTDY
+	id S1753278AbXDPTEk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbXDPTEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:03:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:23528 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753276AbXDPTDX (ORCPT
+	Mon, 16 Apr 2007 15:04:40 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:31322 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753278AbXDPTEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:03:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=dbCa2HFr04kTbdZcHOq0tDQuylLgDxzddMt/p0bpeeucqFzGPZdDCwSqJrBXmtOOS20vPdBSsXxlsuRZfgXiSfjBt3igda0C8OghdXH7SjJsXC3+N0TcyVHOF+otefIi/AkYI8ayllefJmAhRx9HCbDFgrHIcxQCpKfeeWtQuAg=
-Date: Mon, 16 Apr 2007 21:02:54 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: Tomasz =?UTF-8?B?S8WCb2N6a28=?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Mike Snitzer <snitzer@gmail.com>, Neil Brown <neilb@suse.de>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-Message-Id: <20070416210254.d619933c.diegocg@gmail.com>
-In-Reply-To: <Pine.BSO.4.63.0704161734370.11088@rudy.mif.pg.gda.pl>
-References: <op.tqqwdfzcftfxs2@localhost.localdomain>
-	<17952.5537.364603.419364@notabene.brown>
-	<170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com>
-	<Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr>
-	<Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
-	<46238204.9060907@s5r6.in-berlin.de>
-	<Pine.BSO.4.63.0704161606280.11088@rudy.mif.pg.gda.pl>
-	<20070416145527.GA26863@infradead.org>
-	<Pine.BSO.4.63.0704161734370.11088@rudy.mif.pg.gda.pl>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 16 Apr 2007 15:04:39 -0400
+X-AuditID: d80ac287-a0943bb000002c59-d0-4623c8c61242 
+Date: Mon, 16 Apr 2007 20:04:29 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: David Rientjes <rientjes@google.com>
+cc: Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
+In-Reply-To: <Pine.LNX.4.64.0704161139020.12097@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0704161956510.13584@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com>
+ <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
+ <461FD9BF.90609@vmware.com> <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
+ <461FEF1C.5010806@vmware.com> <Pine.LNX.4.64.0704161831500.8213@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704161139020.12097@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 16 Apr 2007 19:04:38.0700 (UTC) FILETIME=[14C1B6C0:01C7805A]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, 16 Apr 2007 17:46:50 +0200 (CEST), Tomasz Kłoczko <kloczek@rudy.mif.pg.gda.pl> escribió:
+On Mon, 16 Apr 2007, David Rientjes wrote:
+> 
+> > Compromise patch below: would that be satisfactory to you, David?
+> 
+> I really like the patch, but for perhaps a slightly different reason: 
+> we're only flushing ranges that have been shown to need it.  We aren't 
+> completely flushing the entire mm which is likely to be excessive in 
+> situations where we're actually using /proc/pid/clear_refs in combination 
+> with /proc/pid/smaps for memory footprint approximation (i.e. it's on a 
+> fine granularity).
 
-> also some other interestig numbers can be founnd on:
-> http://milek.blogspot.com/2006/08/hw-raid-vs-zfs-software-raid-part-ii.html
+It would be more of a reason to like the patch, if more architectures
+actually implemented flush_tlb_range as anything different from
+flush_tlb_mm ;)  Sadly, few can do better than flush_tlb_mm: ia64
+is the exception I remember, and maybe a couple of others.  I put
+flush_tlb_range there merely because it seems more appropriate,
+but it's rather deceptive.
 
-So software raid can be faster than HW raid. News at 11.
+Hugh
