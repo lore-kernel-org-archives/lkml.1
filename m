@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030901AbXDPThm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030915AbXDPTiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030901AbXDPThm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030909AbXDPThm
+	id S1030915AbXDPTiz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030916AbXDPTiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:37:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52847
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1030901AbXDPThl (ORCPT
+	Mon, 16 Apr 2007 15:38:55 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56478 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1030915AbXDPTiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:37:41 -0400
-Date: Mon, 16 Apr 2007 12:37:43 -0700 (PDT)
-Message-Id: <20070416.123743.07452378.davem@davemloft.net>
-To: andrew.vasquez@qlogic.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@SteelEye.com, ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070416163712.GA10822@andrew-vasquezs-computer.local>
-References: <20070416.010218.130850966.davem@davemloft.net>
-	<20070416163712.GA10822@andrew-vasquezs-computer.local>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Apr 2007 15:38:54 -0400
+Date: Mon, 16 Apr 2007 15:38:52 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [Patch -mm 0/3] RFC: module unloading vs. release function
+In-Reply-To: <d120d5000704161130j7ae89a1eyef89e015f0a3e97f@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704161530160.2685-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Date: Mon, 16 Apr 2007 09:37:12 -0700
+On Mon, 16 Apr 2007, Dmitry Torokhov wrote:
 
-> On Mon, 16 Apr 2007, David Miller wrote:
+> On 4/16/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> > Hi,
+> >
+> > based on the discussion in "How should an exit routine wait for
+> > release() callbacks?", I've cooked up some patches that make module
+> > unload wait until the last reference for a kobject has been dropped.
+> > This should plug the "release function in already deleted module" race;
+> > however, if the last kobject_put() from the module containing the
+> > release function is not in the module's exit function, there's still a
+> > small window (not sure if and how to plug this).
 > 
-> > But even if that fails, I think the fallback code should be put back,
-> > since it obviously was used by at least one system and it's probable
-> > that there are some other applications of using this qla2xxx chip that
-> > will have an empty NVRAM too.
+> Unfortunately all this "wait for refcount in module's exit" schemas
+> lead to the following deadlock:
 > 
-> Then they should really get their NVRAM corrected, if in fact their
-> NVRAMs are cleared.
-> 
-> > I can understand the apprehension in using a fixed port_name[] value,
-> > since it could conflict with other FC controllers on the mesh, but if
-> > that is so important just choose some random value that is a valid FC
-> > ID or use some characteristic ID that can be used to compose part of
-> > the port WWN in order to give it at least some uniqueness.
-> 
-> Look, there's a fine balance here that we must strike -- the solution
-> that you're proposing implies that there's some 'random' bit-space
-> within the IEEE NAA with which one can safely encode without stomping
-> on any valid OUI.
+>         rmmod my_module < /path/to/some/file/incrementing/my/refcount
 
-The fact is that your driver was significantly more robust
-previously, and now it's so less robust that it now fails for
-people.
+(Note that this problem will be a lot harder to provoke once Tejun's
+changes to sysfs are in place.  But it will still be possible, unless we 
+make similar changes to all the other filesystems as well.)
 
-That's totally unacceptable.
+There are three possible approaches to this problem:
 
-Just like the sparc64 systsems, others depending upon this fallback
-behavior the qla2xxx driver had are going to break and they are not
-going to be able to just go and fix their hardware and re-flash the
-NVRAM.
+     1. Ignore it, as we do now.  If someone actually tries running your
+	example above, an oops will result when the kobject's release
+	method is called after my_module has been unloaded from memory.
 
-Every user on the planet is going to be 1,000 times more happy with a
-big fat warning in their kernel log saying that things might not go
-right, but the driver is going to try anyways, rather than a complete
-non-attempt to make things work.
+     2. Do what Cornelia suggested, and allow the example to deadlock.
 
-You replaced a possible failure with a guarenteed one.
+     3. Change the module code so that rmmod can return _before_ the
+	module is actually unloaded from memory (but after the module's
+	exit routine has completed).  This will lead to more problems.
+	For example, what if someone tries to modprobe my_module back
+	again before it has finished unloading?
 
-%99.9999999 of people are never going to run into a FC ID collision.
-They have an onboard FC controller and a disk or two.  They DON'T
-CARE, they want their systems to work and if you don't give them that
-you're not being a good driver maintainer.
+My feeling is that either a deadlock or more complications with modprobe 
+would be preferable to an oops.  Your opinion may differ.
 
-You BROKE things, therefore you must FIX it.
+(Also, doing this might be a good way to expose a lot of hidden 
+refcounting bugs.  They will become very obvious when rmmod hangs.)
 
-Now I'm happy to code up the sparc OFW property bits but your attitude
-and perspective on this absolutely has to change and the old fallback
-code still has to go back in there, possible FC ID collisions or not.
+Alan Stern
+
