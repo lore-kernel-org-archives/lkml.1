@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030490AbXDPMBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030495AbXDPMEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030490AbXDPMBo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 08:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030503AbXDPMBo
+	id S1030495AbXDPMEP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 08:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030501AbXDPMEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 08:01:44 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:55515 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030490AbXDPMBn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 08:01:43 -0400
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Date: Mon, 16 Apr 2007 15:02:26 +0300
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070413202100.GA9957@elte.hu> <200704160149.42914.ismail@pardus.org.tr> <20070416115854.GA27566@elte.hu>
-In-Reply-To: <20070416115854.GA27566@elte.hu>
-X-Face: 9Va_@~iRiB"*X1O@K#(=?utf-8?q?thBxy=236XXkD87I=3DG=7E=23=26tFA=26=24mM+4oHIQZGdgCx9=23IZ=7ByL-?=
- =?utf-8?q?rk8CY=0A=09u=3B=7DX=7D?=,+R%vB]|/kKH:-<%Mym?njPCL%'gcIX.J$I}9+{Q|vvl0&c+>WFNbuN,>)
- =?utf-8?q?Of=3AUJq0=0A=09=7DL9+?="}tE:hB<t]y=^%m/R6z.OA8}$@VZ6N?m?h4^,GBNW&xS]9'I?;1OEohho"yF>
- =?utf-8?q?s36=7EN=0A=09=5CE0=60?=@O~`!C>JQkL|pqY{]A7Ow0PD$;BJ9^%!$[hV?(lrTA\rJk\rxnz>oW&W,
- =?utf-8?q?=3DE3obyZfC=0A=09=5EC=7BbqWCY?=
+	Mon, 16 Apr 2007 08:04:15 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:46381 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030495AbXDPMEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 08:04:14 -0400
+Message-ID: <46236739.5000409@sw.ru>
+Date: Mon, 16 Apr 2007 16:08:25 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704161502.26942.ismail@pardus.org.tr>
+To: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH] Set a separate lockdep class for neighbour table's proxy_queue
+Content-Type: multipart/mixed;
+ boundary="------------000704030900030605080103"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 April 2007 14:58:54 Ingo Molnar wrote:
-> * Ismail Dönmez <ismail@pardus.org.tr> wrote:
-> > Tested this on top of Linus' GIT tree but the system gets very
-> > unresponsive during high disk i/o using ext3 as filesystem but even
-> > writing a 300mb file to a usb disk (iPod actually) has the same
-> > affect.
->
-> hm. Is this an SMP system+kernel by any chance?
+This is a multi-part message in MIME format.
+--------------000704030900030605080103
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Nope the kernel and the system is UP.
+Otherwise the following calltrace will lead to a wrong
+lockdep warning:
 
-Regards,
-ismail
+  neigh_proxy_process()
+    `- lock(neigh_table->proxy_queue.lock);
+  arp_redo /* via tbl->proxy_redo */
+  arp_process
+  neigh_event_ns
+  neigh_update
+  skb_queue_purge
+    `- lock(neighbor->arp_queue.lock);
 
+This is not a deadlock actually, as neighbor table's proxy_queue
+and the neighbor's arp_queue are different queues.
+
+Lockdep thinks there is a deadlock as both queues are initialized
+with skb_queue_head_init() and thus have a common class.
+
+--------------000704030900030605080103
+Content-Type: text/plain;
+ name="diff-set-lockdep-class-for-neighbour-table-skb-list"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff-set-lockdep-class-for-neighbour-table-skb-list"
+
+--- a/include/linux/skbuff.h	2007-04-09 22:52:27.000000000 +0400
++++ b/include/linux/skbuff.h	2007-04-09 22:52:32.000000000 +0400
+@@ -628,6 +628,13 @@ static inline void skb_queue_head_init(s
+ 	list->qlen = 0;
+ }
+ 
++static inline void skb_queue_head_init_class(struct sk_buff_head *list,
++		struct lock_class_key *class)
++{
++	skb_queue_head_init(list);
++	lockdep_set_class(&list->lock, class);
++}
++
+ /*
+  *	Insert an sk_buff at the start of a list.
+  *
+--- a/net/core/neighbour.c	2007-04-09 22:52:28.000000000 +0400
++++ b/net/core/neighbour.c	2007-04-09 22:53:01.000000000 +0400
+@@ -1327,6 +1327,8 @@ void neigh_parms_destroy(struct neigh_pa
+ 	kfree(parms);
+ }
+ 
++static struct lock_class_key neigh_table_proxy_queue_class;
++
+ void neigh_table_init_no_netlink(struct neigh_table *tbl)
+ {
+ 	unsigned long now = jiffies;
+@@ -1379,7 +1381,8 @@ void neigh_table_init_no_netlink(struct 
+ 	init_timer(&tbl->proxy_timer);
+ 	tbl->proxy_timer.data	  = (unsigned long)tbl;
+ 	tbl->proxy_timer.function = neigh_proxy_process;
+-	skb_queue_head_init(&tbl->proxy_queue);
++	skb_queue_head_init_class(&tbl->proxy_queue,
++			&neigh_table_proxy_queue_class);
+ 
+ 	tbl->last_flush = now;
+ 	tbl->last_rand	= now + tbl->parms.reachable_time * 20;
+
+--------------000704030900030605080103--
