@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbXDPTEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXDPTOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbXDPTEk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbXDPTEk
+	id S1753376AbXDPTOb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbXDPTOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:04:40 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:31322 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbXDPTEj (ORCPT
+	Mon, 16 Apr 2007 15:14:31 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:2602 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753376AbXDPTOa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:04:39 -0400
-X-AuditID: d80ac287-a0943bb000002c59-d0-4623c8c61242 
-Date: Mon, 16 Apr 2007 20:04:29 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: David Rientjes <rientjes@google.com>
-cc: Zachary Amsden <zach@vmware.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
-In-Reply-To: <Pine.LNX.4.64.0704161139020.12097@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0704161956510.13584@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com>
- <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
- <461FD9BF.90609@vmware.com> <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
- <461FEF1C.5010806@vmware.com> <Pine.LNX.4.64.0704161831500.8213@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0704161139020.12097@chino.kir.corp.google.com>
+	Mon, 16 Apr 2007 15:14:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PJmgY/eofx7Pgb3dtV+2PQDcgSpAtmVVGlRODdXx0F/soGU79QPtwcCuJ2OpGOhT1BrgYuBt2JaBTGIT5SAkbgZExstQvlQs8Qnl4BcZ/zVpQ5E5GgBUkDfPxOmW1+3PkaKg3zpw9/U8kQ6yZ3d//KGM4V+uu5nrzkelX9qAyBc=
+Message-ID: <f383264b0704161214x168b36f4tdd9a074d604b36cb@mail.gmail.com>
+Date: Mon, 16 Apr 2007 12:14:27 -0700
+From: "Matt Reimer" <mattjreimer@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH 6/7] [RFC] ds2760 battery driver
+Cc: "Anton Vorontsov" <cbou@mail.ru>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, dwmw2@infradead.org
+In-Reply-To: <20070415194001.GF10097@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 16 Apr 2007 19:04:38.0700 (UTC) FILETIME=[14C1B6C0:01C7805A]
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070411232522.GF20095@zarina> <20070415194001.GF10097@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007, David Rientjes wrote:
-> 
-> > Compromise patch below: would that be satisfactory to you, David?
-> 
-> I really like the patch, but for perhaps a slightly different reason: 
-> we're only flushing ranges that have been shown to need it.  We aren't 
-> completely flushing the entire mm which is likely to be excessive in 
-> situations where we're actually using /proc/pid/clear_refs in combination 
-> with /proc/pid/smaps for memory footprint approximation (i.e. it's on a 
-> fine granularity).
+On 4/15/07, Pavel Machek <pavel@ucw.cz> wrote:
+> > +     di->update_time = jiffies;
+> > +
+> > +     /* DS2760 reports voltage in units of 4.88mV, but the battery class
+> > +      * reports in units of mV, so convert by multiplying by 4.875.
+> > +      * We approximate because integer math is cheap, and close enough. */
+> > +     di->voltage_raw = (di->raw[DS2760_VOLTAGE_MSB] << 3) |
+> > +                       (di->raw[DS2760_VOLTAGE_LSB] >> 5);
+> > +     di->voltage_mV = (di->voltage_raw * 5) - (di->voltage_raw / 8);
+>
+> Hmm, not sure if such tricks re really worth it... should not compiler
+> be doing this?
 
-It would be more of a reason to like the patch, if more architectures
-actually implemented flush_tlb_range as anything different from
-flush_tlb_mm ;)  Sadly, few can do better than flush_tlb_mm: ia64
-is the exception I remember, and maybe a couple of others.  I put
-flush_tlb_range there merely because it seems more appropriate,
-but it's rather deceptive.
+The shifts (<< 3 and >> 5) are just to get the bits reassembled in the
+right positions. The multiplication by 5 and subtracting 1/8 is
+because (AFAIK) we can't do floating point multiplication in the
+kernel. I'm open to suggestions.
 
-Hugh
+> > +     /* Calculate the empty level at the present temperature. */
+> > +     scale[4] = di->raw[DS2760_ACTIVE_EMPTY + 4];
+> > +     for (i = 3; i >= 0; i--)
+> > +             scale[i] = scale[i + 1] + di->raw[DS2760_ACTIVE_EMPTY + i];
+> > +
+> > +     di->empty_mAh = battery_interpolate(scale, di->temp_C / 10);
+>
+> Wow.
+
+Yeah, mea culpa. I don't like its obtuseness either, and haven't
+revisited it since I got it working. Basically the battery has an
+array stored in its EEPROM that represents the empty level at various
+temperature thresholds. What makes this complicated is that the array
+does not contain all absolute values; just the first is absolute, and
+the others are relative to it, in reverse order. The above code
+converts it to an array of absolute values from low to high. I'm open
+to suggestions about this one too.
+
+Matt
