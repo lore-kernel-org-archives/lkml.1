@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbXDPWmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbXDPWrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbXDPWmk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXDPWmj
+	id S1753978AbXDPWrd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXDPWrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:42:39 -0400
-Received: from gw.goop.org ([64.81.55.164]:47638 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753968AbXDPWmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:42:39 -0400
-Message-ID: <4623A03C.1030105@goop.org>
-Date: Mon, 16 Apr 2007 11:11:40 -0500
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc6 + firstfloor patches: BUG: sleeping function called
- from invalid context at kernel/sched,.c:3643
-References: <462072C2.4070605@goop.org> <200704141338.50058.ak@suse.de> <462143B9.6080907@goop.org> <200704151223.19599.ak@suse.de>
-In-Reply-To: <200704151223.19599.ak@suse.de>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 16 Apr 2007 18:47:33 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:53986 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753978AbXDPWrc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 18:47:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=DqrAdKGe2OrTJu8CSiFLJuipG5y2HWrrt/yAnGXhl3RIeX9yzj9KvuuFTwRJaOvnMKZuwnA4u7wMHGLGkRCpVnlxZfmGm+T6jM0Kp7+ROOZFnD22TBvHlN/0x+qKVvZ5JdkX7dfD+HO76s1fcHcIcBXLJsecHPv+63c2troEqQE=
+Subject: Re: [PATCH -rc7 Re] [Trivial] Spelling at drivers/video/Kconfig
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Miguel Ojeda <maxextreme@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <653402b90704161521t9d39495s720a3c3c5f374173@mail.gmail.com>
+References: <653402b90704150334o4e81df48n5bf5dc221da07d2a@mail.gmail.com>
+	 <653402b90704161521t9d39495s720a3c3c5f374173@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 17 Apr 2007 06:47:23 +0800
+Message-Id: <1176763643.10238.5.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Hmm, are you sure? Can you double check?  With the latest tree?
->
-> I could reproduce the problem and my change fixed the problem for me.
->   
+On Tue, 2007-04-17 at 00:21 +0200, Miguel Ojeda wrote:
+> "Trivial patch, against -rc6. I don't know if anyone has fixed this by now."
+> 
 
-Hm.  Me too.  I just booted 2.6.21-rc7-ff-paravirt, and it seems fine.
+I'll pick this up.
 
-    J
+Tony
+
 
