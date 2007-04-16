@@ -1,79 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXDPHd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbXDPHg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbXDPHd1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 03:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXDPHd1
+	id S1753073AbXDPHg6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 03:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbXDPHg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 03:33:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52119 "EHLO mx2.mail.elte.hu"
+	Mon, 16 Apr 2007 03:36:58 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:11417 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932203AbXDPHd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 03:33:26 -0400
-Date: Mon, 16 Apr 2007 09:32:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Willy Tarreau <w@1wt.eu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070416073258.GB17444@elte.hu>
-References: <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu> <20070415095146.GA30327@gnuppy.monkey.org> <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com> <20070415124527.GP943@1wt.eu> <20070415153933.GB6623@elte.hu> <46230950.8000005@bigpond.net.au> <4623166A.3080500@bigpond.net.au> <46231A77.8030600@bigpond.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46231A77.8030600@bigpond.net.au>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753072AbXDPHg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 03:36:57 -0400
+Message-ID: <4623289A.1000101@sw.ru>
+Date: Mon, 16 Apr 2007 11:41:14 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+Subject: [PATCH] Check for error returned by kthread_create on creating journal
+ thread
+Content-Type: multipart/mixed;
+ boundary="------------020900000406050409030808"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020900000406050409030808
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-* Peter Williams <pwil3058@bigpond.net.au> wrote:
+If the thread failed to create the subsequent wait_event
+will hang forever.
 
-> One more quick comment.  The claim that there is no concept of time 
-> slice in the new scheduler is only true in the sense of the rather 
-> arcane implementation of time slices extant in the O(1) scheduler.
+This is likely to happen if kernel hits max_threads limit.
 
-yeah. AFAIK most other mainstream OSs also still often use similarly 
-'arcane' concepts (i'm here ignoring literature, you can find everything 
-and its opposite suggested in literature) so i felt the need to point 
-out the difference ;) After all Linux is about doing a better mainstream 
-OS, it is not about beating the OS literature at lunacy ;-)
+Will be critical for virtualization systems that limit the
+number of tasks and kernel memory usage within the container.
 
-The precise statement would be: "there's no concept of giving out a 
-time-slice to a task and sticking to it unless a higher-prio task comes 
-along, nor is there a concept of having a low-res granularity 
-->time_slice thing. There is accurate accounting of how much CPU time a 
-task used up, and there is a granularity setting that together gives the 
-current task a fairness advantage of a given amount of nanoseconds - 
-which has similar [but not equivalent] effects to traditional timeslices 
-that most mainstream OSs use".
+--------------020900000406050409030808
+Content-Type: text/plain;
+ name="diff-jbd-check-start-journal-thread-return-value"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff-jbd-check-start-journal-thread-return-value"
 
-> Your new parameter sched_granularity_ns is equivalent to the concept 
-> of time slice in most other kernels that I've peeked inside and 
-> computing literature in general (going back over several decades e.g. 
-> the magic garden).
+--- ./fs/jbd/journal.c.jbdthreads	2007-04-16 11:17:36.000000000 +0400
++++ ./fs/jbd/journal.c	2007-04-16 11:30:09.000000000 +0400
+@@ -211,10 +211,16 @@ end_loop:
+ 	return 0;
+ }
+ 
+-static void journal_start_thread(journal_t *journal)
++static int journal_start_thread(journal_t *journal)
+ {
+-	kthread_run(kjournald, journal, "kjournald");
++	struct task_struct *t;
++
++	t = kthread_run(kjournald, journal, "kjournald");
++	if (IS_ERR(t))
++		return PTR_ERR(t);
++
+ 	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
++	return 0;
+ }
+ 
+ static void journal_kill_thread(journal_t *journal)
+@@ -840,8 +846,7 @@ static int journal_reset(journal_t *jour
+ 
+ 	/* Add the dynamic fields and write it to disk. */
+ 	journal_update_superblock(journal, 1);
+-	journal_start_thread(journal);
+-	return 0;
++	return journal_start_thread(journal);
+ }
+ 
+ /**
+--- ./fs/jbd2/journal.c.jbdthreads	2007-04-16 11:17:36.000000000 +0400
++++ ./fs/jbd2/journal.c	2007-04-16 11:27:45.000000000 +0400
+@@ -211,10 +211,16 @@ end_loop:
+ 	return 0;
+ }
+ 
+-static void jbd2_journal_start_thread(journal_t *journal)
++static int jbd2_journal_start_thread(journal_t *journal)
+ {
+-	kthread_run(kjournald2, journal, "kjournald2");
++	struct task_struct *t;
++
++	t = kthread_run(kjournald2, journal, "kjournald2");
++	if (IS_ERR(t))
++		return PTR_ERR(t);
++
+ 	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
++	return 0;
+ }
+ 
+ static void journal_kill_thread(journal_t *journal)
+@@ -840,8 +846,7 @@ static int journal_reset(journal_t *jour
+ 
+ 	/* Add the dynamic fields and write it to disk. */
+ 	jbd2_journal_update_superblock(journal, 1);
+-	jbd2_journal_start_thread(journal);
+-	return 0;
++	return jbd2_journal_start_thread(journal);
+ }
+ 
+ /**
 
-note that you can set it to 0 and the box still functions - so 
-sched_granularity_ns, while useful for performance/bandwidth workloads, 
-isnt truly inherent to the design.
-
-So in the announcement i just opted for a short sentence: "there's no 
-concept of timeslices", albeit like most short stentences it's not a 
-technically 100% accurate statement - but still it conveyed the intended 
-information more effectively to the interested lkml reader than the 
-longer version could ever have =B-)
-
-	Ingo
+--------------020900000406050409030808--
