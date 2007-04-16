@@ -1,158 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbXDPFs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbXDPFsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbXDPFs3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 01:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbXDPFs3
+	id S1753943AbXDPFsz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 01:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXDPFsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 01:48:29 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1120 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753678AbXDPFs2 (ORCPT
+	Mon, 16 Apr 2007 01:48:54 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:49807 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753945AbXDPFsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 01:48:28 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 15 Apr 2007 22:47:18 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-cc: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-Reply-To: <200704160109.31310.pisa@cmp.felk.cvut.cz>
-Message-ID: <Pine.LNX.4.64.0704152243110.8382@alien.or.mcafeemobile.com>
-References: <20070413202100.GA9957@elte.hu> <20070413222151.GD8915@holomorphy.com>
- <Pine.LNX.4.64.0704140008001.10930@alien.or.mcafeemobile.com>
- <200704160109.31310.pisa@cmp.felk.cvut.cz>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 16 Apr 2007 01:48:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:x-mailer:mime-version:content-type;
+        b=m0ps9cn4wpPeyeM2WIV5IxpXlJz+6UQFreGceowX3vHWdwakXDQaUdxeHoI3i8Kp6cD/r2UelINqJlENFEbjA2mFHMFtwn6O6EcxpczlosRMcoFzAJENNcUT2a/PNT7D5PKPHxzXKCnW139LpryuqVbUnFUr25MHao408KF+68Q=
+Date: Sun, 15 Apr 2007 22:48:46 -0700
+From: Mike Mattie <codermattie@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [BUG] 2.6.21-rc7 hpt366 driver broken
+Message-ID: <20070415224846.52a465b6@reforged>
+X-Mailer: Claws Mail 2.6.1 (GTK+ 2.10.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_px8GjtOpPBIcclmHeZIxBMH;
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007, Pavel Pisa wrote:
+--Sig_px8GjtOpPBIcclmHeZIxBMH
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> I cannot help myself to not report results with GAVL
-> tree algorithm there as an another race competitor.
-> I believe, that it is better solution for large priority
-> queues than RB-tree and even heap trees. It could be
-> disputable if the scheduler needs such scalability on
-> the other hand. The AVL heritage guarantees lower height
-> which results in shorter search times which could
-> be profitable for other uses in kernel.
-> 
-> GAVL algorithm is AVL tree based, so it does not suffer from
-> "infinite" priorities granularity there as TR does. It allows
-> use for generalized case where tree is not fully balanced.
-> This allows to cut the first item withour rebalancing.
-> This leads to the degradation of the tree by one more level
-> (than non degraded AVL gives) in maximum, which is still
-> considerably better than RB-trees maximum.
-> 
-> http://cmp.felk.cvut.cz/~pisa/linux/smart-queue-v-gavl.c
+Hello,
 
-Here are the results on my Opteron 252:
+I am testing the 2.6.21-rc7 kernel release. The IDE hpt366 driver is crashi=
+ng hanging the boot.
+I have basically the same config as 2.6.20.7 which works fine (except for n=
+etconsole mentioned in
+a previous mail).
 
-Testing N=1
-gavl_cfs = 187.20 cycles/loop
-CFS = 194.16 cycles/loop
-TR  = 314.87 cycles/loop
-CFS = 194.15 cycles/loop
-gavl_cfs = 187.15 cycles/loop
+here is the hand-copied info:
 
-Testing N=2
-gavl_cfs = 268.94 cycles/loop
-CFS = 305.53 cycles/loop
-TR  = 313.78 cycles/loop
-CFS = 289.58 cycles/loop
-gavl_cfs = 266.02 cycles/loop
+* "unable to handle paging request" , null deref
 
-Testing N=4
-gavl_cfs = 452.13 cycles/loop
-CFS = 518.81 cycles/loop
-TR  = 311.54 cycles/loop
-CFS = 516.23 cycles/loop
-gavl_cfs = 450.73 cycles/loop
+* EIP @ init_chipset_hpt366
 
-Testing N=8
-gavl_cfs = 609.29 cycles/loop
-CFS = 644.65 cycles/loop
-TR  = 308.11 cycles/loop
-CFS = 667.01 cycles/loop
-gavl_cfs = 592.89 cycles/loop
+init_setup_hpt302
+htp366_init_one
+ide_scan_pcidev
+ide_scan_pcibus
+ide_init
+init
 
-Testing N=16
-gavl_cfs = 686.30 cycles/loop
-CFS = 807.41 cycles/loop
-TR  = 317.20 cycles/loop
-CFS = 810.24 cycles/loop
-gavl_cfs = 688.42 cycles/loop
+some hardware info:
 
-Testing N=32
-gavl_cfs = 756.57 cycles/loop
-CFS = 852.14 cycles/loop
-TR  = 301.22 cycles/loop
-CFS = 876.12 cycles/loop
-gavl_cfs = 758.46 cycles/loop
+/usr/sbin/lspci -v | grep -i HPT -A 9                 [mattie@reforged]
+00:09.0 RAID bus controller: Triones Technologies, Inc. HPT302/302N
+(rev 02) Subsystem: Triones Technologies, Inc. Unknown device 0001
+        Flags: bus master, 66MHz, medium devsel, latency 120, IRQ 18
+        I/O ports at ec00 [size=3D8]
+        I/O ports at e800 [size=3D4]
+        I/O ports at e400 [size=3D8]
+        I/O ports at e000 [size=3D4]
+        I/O ports at dc00 [size=3D256]
+        Expansion ROM at dffe0000 [disabled by cmd] [size=3D128K]
+        Capabilities: <access denied>
 
-Testing N=64
-gavl_cfs = 831.97 cycles/loop
-CFS = 997.16 cycles/loop
-TR  = 304.74 cycles/loop
-CFS = 1003.26 cycles/loop
-gavl_cfs = 832.83 cycles/loop
+I cannot get more information since netconsole is broken.
 
-Testing N=128
-gavl_cfs = 897.33 cycles/loop
-CFS = 1030.36 cycles/loop
-TR  = 295.65 cycles/loop
-CFS = 1035.29 cycles/loop
-gavl_cfs = 892.51 cycles/loop
+I am running a git-bisect to see if I can resolve it to a commit.
 
-Testing N=256
-gavl_cfs = 963.17 cycles/loop
-CFS = 1146.04 cycles/loop
-TR  = 295.35 cycles/loop
-CFS = 1162.04 cycles/loop
-gavl_cfs = 966.31 cycles/loop
+Cheers,
+Mike Mattie
 
-Testing N=512
-gavl_cfs = 1029.82 cycles/loop
-CFS = 1218.34 cycles/loop
-TR  = 288.78 cycles/loop
-CFS = 1257.97 cycles/loop
-gavl_cfs = 1029.83 cycles/loop
+--Sig_px8GjtOpPBIcclmHeZIxBMH
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-Testing N=1024
-gavl_cfs = 1091.76 cycles/loop
-CFS = 1318.47 cycles/loop
-TR  = 287.74 cycles/loop
-CFS = 1311.72 cycles/loop
-gavl_cfs = 1093.29 cycles/loop
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Testing N=2048
-gavl_cfs = 1153.03 cycles/loop
-CFS = 1398.84 cycles/loop
-TR  = 286.75 cycles/loop
-CFS = 1438.68 cycles/loop
-gavl_cfs = 1149.97 cycles/loop
+iD8DBQFGIw5CdfRchrkBInkRAl8IAKDsUOvUbQX/Ebd684d3jyZB7j4UtACgos+4
+xcm886PIhCI3JYtvSc/LkQA=
+=6v9Y
+-----END PGP SIGNATURE-----
 
-
-There seem to be some difference from your numbers. This is with:
-
-gcc version 4.1.2
-
-and -O2. But then and Opteron can behave quite differentyl than a Duron on 
-a bench like this ;)
-
-
-
-- Davide
-
-
+--Sig_px8GjtOpPBIcclmHeZIxBMH--
