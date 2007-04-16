@@ -1,165 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030816AbXDPQLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030810AbXDPQNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030816AbXDPQLz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 12:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030811AbXDPQLy
+	id S1030810AbXDPQNq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 12:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030812AbXDPQNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 12:11:54 -0400
-Received: from mx1.suse.de ([195.135.220.2]:50126 "EHLO mx1.suse.de"
+	Mon, 16 Apr 2007 12:13:46 -0400
+Received: from holomorphy.com ([66.93.40.71]:40427 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030790AbXDPQLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 12:11:52 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Christoph Hellwig <hch@infradead.org>
-Subject: [nameidata 1/2] Don't pass NULL nameidata to vfs_create
-Date: Mon, 16 Apr 2007 18:11:30 +0200
-User-Agent: KMail/1.9.5
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>
-References: <20070412090809.917795000@suse.de> <20070412090836.207973000@suse.de> <20070412100628.GA25078@infradead.org>
-In-Reply-To: <20070412100628.GA25078@infradead.org>
+	id S1030810AbXDPQNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 12:13:46 -0400
+Date: Mon, 16 Apr 2007 09:13:26 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Willy Tarreau <w@1wt.eu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       hui Bill Huey <billh@gnuppy.monkey.org>, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070416161326.GJ2986@holomorphy.com>
+References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu> <20070415095146.GA30327@gnuppy.monkey.org> <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com> <20070415124527.GP943@1wt.eu> <20070415152643.GH8915@holomorphy.com> <46239C62.4090302@nortel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704161811.30364.agruen@suse.de>
+In-Reply-To: <46239C62.4090302@nortel.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 April 2007 12:06, Christoph Hellwig wrote:
-> Once again very strong NACK.  Every conditional passing of vfsmounts get my
-> veto.  As mentioned last time if you really want this send a patch series
-> first that passed the vfsmount consistantly.
+William Lee Irwin III wrote:
+>> The sorts of like explicit decisions I'd like to be made for these are:
+>> (1) In a mixture of tasks with varying nice numbers, a given nice number
+>>	corresponds to some share of CPU bandwidth. Implementations
+>>	should not have the freedom to change this arbitrarily according
+>>	to some intention.
 
-I don't consider it fair to NACK this patch just because some other part of 
-the kernel uses vfs_create() in the wrong way -- those are really independent 
-issues. The bug is not that hard to fix though; here is a proposed patch on 
-top of the other AppArmor patches.
+On Mon, Apr 16, 2007 at 09:55:14AM -0600, Chris Friesen wrote:
+> The first question that comes to my mind is whether nice levels should 
+> be linear or not.  I would lean towards nonlinear as it allows a wider 
+> range (although of course at the expense of precision).  Maybe something 
+> like "each nice level gives X times the cpu of the previous"?  I think a 
+> value of X somewhere between 1.15 and 1.25 might be reasonable.
+> What about also having something that looks at latency, and how latency 
+> changes with niceness?
+> What about specifying the timeframe over which the cpu bandwidth is 
+> measured?  I currently have a system where the application designers 
+> would like it to be totally fair over a period of 1 second.  As you can 
+> imagine, mainline doesn't do very well in this case.
 
-The offenders are nfsd and the mqueue filesystem. Instantiate a struct 
-nameidata there.
+It's unclear how latency enters the picture as the semantics of nice
+levels relevant to such are essentially priority preemption, which is
+not particularly easy to mess up. I suppose tests to ensure priority
+preemption occurs properly are in order.
 
-The .dentry and .mnt fields can easily be filled in in nfsd. The mqueue 
-filesystem is somewhat special: files that mq_open creates are on an internal 
-mount and the mqueue filesystem is not generally visible (it may or may not 
-be mounted). When passing a regular vfsmount to vfs_create the files would 
-appear disconnected while they actually are kernel-internal objects. Use a 
-NULL vfsmount there to avoid that -- passing the kernel-internal vfsmount 
-there wouldn't help, anyway.
+I don't really have a preference regarding specific semantics for nice
+numbers, just that they should be deterministic and specified somewhere.
+It's not really for us to decide what those semantics are as it's more
+of a userspace ABI/API issue.
 
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+The timeframe is also relevant, but I suspect it's more of a performance
+metric than a strict requirement.
 
----
- fs/namei.c    |    7 ++++---
- fs/nfsd/vfs.c |   23 +++++++++++++++++++----
- ipc/mqueue.c  |    6 +++++-
- 3 files changed, 28 insertions(+), 8 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1503,7 +1503,7 @@ int vfs_create(struct inode *dir, struct
- 		return -EACCES;	/* shouldn't it be ENOSYS? */
- 	mode &= S_IALLUGO;
- 	mode |= S_IFREG;
--	error = security_inode_create(dir, dentry, nd ? nd->mnt : NULL, mode);
-+	error = security_inode_create(dir, dentry, nd->mnt, mode);
- 	if (error)
- 		return error;
- 	DQUOT_INIT(dir);
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1108,6 +1108,18 @@ nfsd_commit(struct svc_rqst *rqstp, stru
- }
- #endif /* CONFIG_NFSD_V3 */
- 
-+static inline int
-+nfsd_do_create(struct inode *dir, struct dentry *child, struct vfsmount *mnt,
-+	       int mode)
-+{
-+	struct nameidata nd = {
-+		.dentry = child,
-+		.mnt = mnt,
-+	};
-+
-+	return vfs_create(dir, child, mode, &nd);
-+}
-+
- /*
-  * Create a file (regular, directory, device, fifo); UNIX sockets 
-  * not yet implemented.
-@@ -1192,7 +1204,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 	err = 0;
- 	switch (type) {
- 	case S_IFREG:
--		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
-+		host_err = nfsd_do_create(dirp, dchild, exp->ex_mnt,
-+					  iap->ia_mode);
- 		break;
- 	case S_IFDIR:
- 		host_err = vfs_mkdir(dirp, dchild, exp->ex_mnt, iap->ia_mode);
-@@ -1253,6 +1266,7 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 	        int *truncp, int *created)
- {
- 	struct dentry	*dentry, *dchild = NULL;
-+	struct svc_export *exp;
- 	struct inode	*dirp;
- 	__be32		err;
- 	int		host_err;
-@@ -1271,6 +1285,7 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 		goto out;
- 
- 	dentry = fhp->fh_dentry;
-+	exp = fhp->fh_export;
- 	dirp = dentry->d_inode;
- 
- 	/* Get all the sanity checks out of the way before
-@@ -1288,7 +1303,7 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 	if (IS_ERR(dchild))
- 		goto out_nfserr;
- 
--	err = fh_compose(resfhp, fhp->fh_export, dchild, fhp);
-+	err = fh_compose(resfhp, exp, dchild, fhp);
- 	if (err)
- 		goto out;
- 
-@@ -1334,13 +1349,13 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
- 		goto out;
- 	}
- 
--	host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
-+	host_err = nfsd_do_create(dirp, dchild, exp->ex_mnt, iap->ia_mode);
- 	if (host_err < 0)
- 		goto out_nfserr;
- 	if (created)
- 		*created = 1;
- 
--	if (EX_ISSYNC(fhp->fh_export)) {
-+	if (EX_ISSYNC(exp)) {
- 		err = nfserrno(nfsd_sync_dir(dentry));
- 		/* setattr will sync the child (or not) */
- 	}
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -604,6 +604,10 @@ static int mq_attr_ok(struct mq_attr *at
- static struct file *do_create(struct dentry *dir, struct dentry *dentry,
- 			int oflag, mode_t mode, struct mq_attr __user *u_attr)
- {
-+	struct nameidata nd = {
-+		.dentry = dentry,
-+		/* Not a regular create, so set .mnt to NULL. */
-+	};
- 	struct mq_attr attr;
- 	int ret;
- 
-@@ -619,7 +623,7 @@ static struct file *do_create(struct den
- 	}
- 
- 	mode &= ~current->fs->umask;
--	ret = vfs_create(dir->d_inode, dentry, mode, NULL);
-+	ret = vfs_create(dir->d_inode, dentry, mode, &nd);
- 	dentry->d_fsdata = NULL;
- 	if (ret)
- 		goto out;
+-- wli
