@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbXDPUre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030959AbXDPUzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbXDPUre (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 16:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbXDPUre
+	id S1030959AbXDPUzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 16:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030962AbXDPUzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 16:47:34 -0400
-Received: from mx33.mail.ru ([194.67.23.194]:13802 "EHLO mx33.mail.ru"
+	Mon, 16 Apr 2007 16:55:53 -0400
+Received: from mail.suse.de ([195.135.220.2]:39068 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753642AbXDPUrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 16:47:33 -0400
-Date: Tue, 17 Apr 2007 00:43:32 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
-Subject: Re: [PATCH 2/7] [RFC] Common power driver for Linux gadgets
-Message-ID: <20070416204332.GA4978@zarina>
-Reply-To: cbou@mail.ru
-References: <20070411232456.GB20095@zarina> <20070413135001.GD20618@zarina> <20070416201615.GB19713@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	id S1030939AbXDPUzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 16:55:51 -0400
+Date: Mon, 16 Apr 2007 13:56:12 -0700
+From: John Johansen <jjohansen@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org
+Subject: Re: [AppArmor 39/41] AppArmor: Profile loading and manipulation, pathname matching
+Message-ID: <20070416205612.GA4030@suse.de>
+References: <20070412090809.917795000@suse.de> <20070412090849.465428000@suse.de> <p733b35903l.fsf@bingen.suse.de> <200704151621.52906.agruen@suse.de> <20070416062708.GA14641@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ikeVEW9yuYc//A+q"
 Content-Disposition: inline
-In-Reply-To: <20070416201615.GB19713@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070416062708.GA14641@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 09:16:15PM +0100, Russell King wrote:
-> On Fri, Apr 13, 2007 at 05:50:01PM +0400, Anton Vorontsov wrote:
-> > +/*
-> > + * include/linux/ioport.h does not provide flags for generic IRQ trigger
-> > + * types. So, we're using "ISA PnP IRQ specific bits", and converting them.
-> > + */
-> > +static unsigned int get_irq_flags(struct resource *res)
-> > +{
-> > +	unsigned int flags = IRQF_DISABLED;
-> > +
-> > +	if (res->flags & IORESOURCE_IRQ_HIGHEDGE)
-> > +		flags |= IRQF_TRIGGER_RISING;
-> > +	if (res->flags & IORESOURCE_IRQ_LOWEDGE)
-> > +		flags |= IRQF_TRIGGER_FALLING;
-> > +	if (res->flags & IORESOURCE_IRQ_HIGHLEVEL)
-> > +		flags |= IRQF_TRIGGER_HIGH;
-> > +	if (res->flags & IORESOURCE_IRQ_LOWLEVEL)
-> > +		flags |= IRQF_TRIGGER_LOW;
-> > +	if (res->flags & IORESOURCE_IRQ_SHAREABLE)
-> > +		flags |= IRQF_SHARED;
-> > +
-> > +	return flags;
-> > +}
-> 
-> Eww.  The IORESOURCE IRQ bits are intentionally chosen to be the same as
-> the IRQF bits:
 
-> include/linux/interrupt.h:
-> /*
->  * These correspond to the IORESOURCE_IRQ_* defines in
+--ikeVEW9yuYc//A+q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yeah, few days ago I noticed it myself, already fixed it in my tree.
-Thanks anyway.
+On Mon, Apr 16, 2007 at 08:27:08AM +0200, Andi Kleen wrote:
+> > It's nice to check for consistency though, so we're adding that. Profil=
+e=20
+> > loading is a trusted operation, at least so far, and so security wise w=
+e=20
+> > don't actually have to care --- if loading an invalid profile can bring=
+ down=20
+> > the system, then that's no worse than an arbitrary module that crashes =
+the=20
+> > machine. Not sure if there will ever be user loadable profiles; at leas=
+t at=20
+> > that point we had to care.
+>=20
+> A security system that allows to crash the kernel is a little weird=20
+> though. It would be better to check. Not that a recursion check
+> is particularly expensive.
+>=20
+Indeed.  It will be fixed in the next rev.
 
->  * linux/ioport.h to select the interrupt line behaviour.  When
->  * requesting an interrupt without specifying a IRQF_TRIGGER, the
->  * setting should be assumed to be "as already configured", which
->  * may be as per machine or firmware initialisation.
->  */
-> 
-> The exception is IRQF_SHARED which should be a _driver_ choice not a
-> _platform_ choice, and therefore makes no sense in your "get_irq_flags"
-> definition.
+thanks
+john
 
-Ugh, I see...
 
-> Plus, if we ever did want to introduce such a function, it should be
-> a generic thing, not specific to some random power subsystem de jour.
-> 
-> -- 
-> Russell King
->  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
->  maintainer of:
-> 
+--ikeVEW9yuYc//A+q
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-Thanks for comments.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+iD8DBQFGI+Lsi/GH5xuqKCcRAo/WAJ41H0KTy9tYDUzYmtOp0fNp+4oZ/gCcDB4u
+QB/zbUDpIInmG+L73hJwof4=
+=mWyw
+-----END PGP SIGNATURE-----
+
+--ikeVEW9yuYc//A+q--
