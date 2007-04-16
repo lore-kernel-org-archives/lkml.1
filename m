@@ -1,85 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXDPIr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965352AbXDPIsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965287AbXDPIr6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 04:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXDPIr6
+	id S965352AbXDPIsu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 04:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXDPIsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 04:47:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49739 "EHLO mx3.mail.elte.hu"
+	Mon, 16 Apr 2007 04:48:50 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60952 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965287AbXDPIr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 04:47:57 -0400
-Date: Mon, 16 Apr 2007 10:47:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Cc: surya.prabhakar@wipro.com, kernel@kolivas.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, npiggin@suse.de, efault@gmx.de,
-       arjan@infradead.org, tglx@linutronix.de, wli@holomorphy.com
-Subject: Re: [TEST RESULT]massive_intr.c -- cfs/vanilla/sd-0.40
-Message-ID: <20070416084724.GA10912@elte.hu>
-References: <1176540546.2702.15.camel@bluegenie> <20070414120220.GA2346@elte.hu> <877iscsp1x.wl%takeuchi_satoru@jp.fujitsu.com>
+	id S965352AbXDPIss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 04:48:48 -0400
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
+	namespace" clone flag
+From: Ram Pai <linuxram@us.ibm.com>
+To: devel@openvz.org
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
+References: <20070412164541.580374744@szeredi.hu>
+	 <20070412164620.588752236@szeredi.hu>
+	 <20070412203208.GG27772@sergelap.austin.ibm.com>
+	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Mon, 16 Apr 2007 01:47:00 -0700
+Message-Id: <1176713221.9488.17.camel@ram.us.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <877iscsp1x.wl%takeuchi_satoru@jp.fujitsu.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com> wrote:
+> 
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> 
+> > Quoting Miklos Szeredi (miklos@szeredi.hu):
+> >> From: Miklos Szeredi <mszeredi@suse.cz>
+> >> 
+> >> If CLONE_NEWNS and CLONE_NEWNS_USERMNT are given to clone(2) or
+> >> unshare(2), then allow user mounts within the new namespace.
+> >> 
+> >> This is not flexible enough, because user mounts can't be enabled
+> for
+> >> the initial namespace.
+> >> 
+> >> The remaining clone bits also getting dangerously few...
+> >> 
+> >> Alternatives are:
+> >> 
+> >>   - prctl() flag
+> >>   - setting through the containers filesystem
+> >
+> > Sorry, I know I had mentioned it, but this is definately my least
+> > favorite approach.
+> >
+> > Curious whether are any other suggestions/opinions from the
+> containers
+> > list?
+> 
+> Given the existence of shared subtrees allowing/denying this at the
+> mount
+> namespace level is silly and wrong.
+> 
+> If we need more than just the filesystem permission checks can we
+> make it a mount flag settable with mount and remount that allows
+> non-privileged users the ability to create mount points under it
+> in directories they have full read/write access to.
 
-> > btw., other schedulers might work better with some more test-time: 
-> > i'd suggest to use 60 seconds (./massive_intr 10 60) [or maybe more, 
-> > using more threads] to see long-term fairness effects.
-> 
-> I tested CFS with massive_intr. I did long term, many CPUs, and many 
-> processes cases.
-> 
-> Test environment
-> ================
-> 
->  - kernel:         2.6.21-rc6-CFS
->  - run time:       300 secs
->  - # of CPU:       1 or 4
->  - # of processes: 200 or 800
-> 
-> Result
-> ======
-> 
->   +---------+-----------+-------+------+------+--------+
->   |   # of  |   # of    | avg   | max  | min  |  stdev |
->   |   CPUs  | processes | (*1)  | (*2) | (*3) |  (*4)  |
->   +---------+-----------+-------+------+------+--------+
->   | 1(i386) |           | 117.9 |  123 |  115 |    1.2 |
->   +---------|       200 +-------+------+------+--------+
->   |         |           | 750.2 |  767 |  735 |   10.6 |
->   | 4(ia64) +-----------+-------+------+------+--------+
->   |         |   800(*5) | 187.3 |  189 |  186 |    0.8 |
->   +---------+-----------+-------+------+------+--------+
-> 
->   *1) average number of loops among all processes
->   *2) maximum number of loops among all processes
->   *3) minimum number of loops among all processes
->   *4) standard deviation
->   *5) Its # of processes per CPU is equal to first test case.
-> 
-> Pretty good! CFS seems to be fair in any situation.
+Also for bind-mount and remount operations the flag has to be propagated
+down its propagation tree.  Otherwise a unpriviledged mount in a shared
+mount wont get reflected in its peers and slaves, leading to unidentical
+shared-subtrees.
 
-thanks for testing this! Indeed the min-max values and standard 
-deviation look all pretty healthy. (They in fact seem to be better than 
-the other patch of mine against upstream that you tested, correct?)
+RP
 
-[ And there's also another nice little detail in your feedback: CFS
-  actually builds, boots and works fine on ia64 too ;-) ]
 
-	Ingo
+> 
+> I don't like the use of clone flags for this purpose but in this
+> case the shared subtress are a much more fundamental reasons for not
+> doing this at the namespace level.
+> 
+> Eric
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers 
+
