@@ -1,138 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030927AbXDPT4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030935AbXDPT5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030927AbXDPT4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030930AbXDPT4w
+	id S1030935AbXDPT5M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030933AbXDPT5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:56:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:29150 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030927AbXDPT4u (ORCPT
+	Mon, 16 Apr 2007 15:57:12 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:45445 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030930AbXDPT5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:56:50 -0400
-Date: Mon, 16 Apr 2007 22:56:49 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+	Mon, 16 Apr 2007 15:57:09 -0400
+Date: Mon, 16 Apr 2007 14:56:52 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Jens Axboe <jens.axboe@oracle.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.osdl.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: SATA resume slowness, e1000 MSI warning
-Message-ID: <20070416195649.GA4507@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070308102354.GC5149@mellanox.co.il>
-	<m1wt1oyqyo.fsf@ebiederm.dsl.xmission.com>
-	<20070311112400.GB24475@mellanox.co.il>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
+Message-ID: <20070416195652.GA350@sergelap.austin.ibm.com>
+References: <20070412164620.588752236@szeredi.hu> <20070412203208.GG27772@sergelap.austin.ibm.com> <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com> <1176713221.9488.17.camel@ram.us.ibm.com> <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu> <1176716941.9488.57.camel@ram.us.ibm.com> <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu> <m18xcsl3yc.fsf@ebiederm.dsl.xmission.com> <E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu> <m1zm58jfj3.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070311112400.GB24475@mellanox.co.il>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <m1zm58jfj3.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Hmm. pci_save_pcix_state/pci_restore_pcix_state seem to only handle
-> > > regular devices and seem to ignore the fact that for bridge PCI-X
-> > > capability has a different structure.
-> > >
-> > > Is this intentional? 
-> > 
-> > Probably not a such.  I don't think we have any drivers for bridge
-> > devices so I don't think it matters.  It likely wouldn't hurt to fix
-> > it just in case though.
-> > 
-> > Do any of the mellanox cards do anything with the bridge on the card?
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> Miklos Szeredi <miklos@szeredi.hu> writes:
 > 
-> Yes but they do their own thing wrt saving/restoring registers.
-> Look at drivers/infiniband/hw/mthca/mthca_reset.c
+> >> > That depends.  Current patches check the "unprivileged submounts
+> >> > allowed under this mount" flag only on the requested mount and not on
+> >> > the propagated mounts.  Do you see a problem with this?
+> >> 
+> >> I think privileges of this sort should propagate.  If I read what you
+> >> just said correctly if I have a private mount namespace I won't be able
+> >> to mount anything unless when it was setup the unprivileged submount
+> >> command was explicitly set.
+> >
+> > By design yes.  Why is that a problem?
 > 
-> > > If not, here's a patch to fix this. Warning: completely untested.
-> > 
-> > If you fix the offsets and diff this against my last fix (to never
-> > free the buffer) I think your patch makes sense.
+> It certainly doesn't match my intuition.
 > 
-> Let's agree what the correct offsets are.
-> 
-> > > PCI: restore bridge PCI-X capability registers after PM event
-> > >
-> > > Restore PCI-X bridge up/downstream capability registers
-> > > after PM event.  This includes maxumum split transaction
-> > > commitment limit which might be vital for PCI X.
-> > >
-> > > Signed-off-by: Michael S. Tsirkin <mst@mellanox.co.il>
-> > >
-> > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> > > index df49530..4b788ef 100644
-> > > --- a/drivers/pci/pci.c
-> > > +++ b/drivers/pci/pci.c
-> > > @@ -597,14 +597,19 @@ static int pci_save_pcix_state(struct pci_dev *dev)
-> > >  	if (pos <= 0)
-> > >  		return 0;
-> > >  
-> > > -	save_state = kzalloc(sizeof(*save_state) + sizeof(u16), GFP_KERNEL);
-> > > + save_state = kzalloc(sizeof(*save_state) + sizeof(u16) * 2, GFP_KERNEL);
-> > >  	if (!save_state) {
-> > > -		dev_err(&dev->dev, "Out of memory in pci_save_pcie_state\n");
-> > > +		dev_err(&dev->dev, "Out of memory in pci_save_pcix_state\n");
-> > >  		return -ENOMEM;
-> > >  	}
-> > >  	cap = (u16 *)&save_state->data[0];
-> > >  
-> > > -	pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
-> > > +	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
-> > 
-> > This appears to be the proper test.
-> > 
-> > > + pci_read_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, &cap[i++]);
-> > > + pci_read_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, &cap[i++]);
-> > > +	} else
-> > > +		pci_read_config_word(dev, pos + PCI_X_CMD, &cap[i++]);
-> > > +
-> > >  	pci_add_saved_cap(dev, save_state);
-> > >  	return 0;
-> > >  }
-> > > @@ -621,7 +626,11 @@ static void pci_restore_pcix_state(struct pci_dev *dev)
-> > >  		return;
-> > >  	cap = (u16 *)&save_state->data[0];
-> > >  
-> > > -	pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
-> > > +	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
-> > > + pci_write_config_word(dev, pos + PCI_X_BRIDGE_UP_SPL_CTL, cap[i++]);
-> > > + pci_write_config_word(dev, pos + PCI_X_BRIDGE_DN_SPL_CTL, cap[i++]);
-> > 
-> > These look like the proper two registers to save.
-> > 
-> > > +	} else
-> > > +		pci_write_config_word(dev, pos + PCI_X_CMD, cap[i++]);
-> > >  	pci_remove_saved_cap(save_state);
-> > >  	kfree(save_state);
-> > >  }
-> > > diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-> > > index f09cce2..fb7eefd 100644
-> > > --- a/include/linux/pci_regs.h
-> > > +++ b/include/linux/pci_regs.h
-> > > @@ -332,6 +332,8 @@
-> > >  #define PCI_X_STATUS_SPL_ERR 0x20000000 /* Rcvd Split Completion Error Msg */
-> > >  #define  PCI_X_STATUS_266MHZ	0x40000000	/* 266 MHz capable */
-> > >  #define  PCI_X_STATUS_533MHZ	0x80000000	/* 533 MHz capable */
-> > > +#define PCI_X_BRIDGE_UP_SPL_CTL 10 /* PCI-X upstream split transaction limit */
-> > > +#define PCI_X_BRIDGE_DN_SPL_CTL 14 /* PCI-X downstream split transaction limit */
-> > 
-> > Unless I am completely misreading the spec. While you have picked the
-> > right register to save the offsets should be 0x08 and 0x0c or 8 and 12....
-> 
-> No, the spec is written in terms of dwords (32 bit), we are storing words (16 bits).
-> The data at offsets 8 and 12 is read-only split transaction capacity.
-> Split transaction limit starts at bit 16 so you need to add 2 to byte offset.
+> Why are directory permissions not sufficient to allow/deny non-priveleged mounts?
+> I don't understand that contention yet.
 
-So, Eric, what are your thoughts on this patch (probably wrt 2.6.22)?
-Since the rest of the save/restore code uses 16 bit transactions,
-it should be safe here too?
+The same scenarios laid out previously in this thread.  I.e.
 
--- 
-MST
+1. user hallyn does mount --bind / /home/hallyn/root
+2. (...)
+3. admin does "deluser hallyn"
+
+and deluser starts wiping out root
+
+Or,
+
+1. user hallyn does mount --bind / /home/hallyn/root
+2. backup daemon starts backing up /home/hallyn/root/home/hallyn/root/home...
+
+So we started down the path of forcing users to clone a new namespace
+before doing user mounts, which is what the clone flag was about.  Using
+per-mount flags also suffices as you had pointed out, which is being
+done here.  But directory permissions are inadequate.
+
+(Unless you want to tackle each problem legacy tool one at a time to
+remove problems - i.e. deluser should umount everything under
+/home/hallyn before deleting, backup should be spawned from it's own
+namespace cloned right after boot or just back up on one filesystem,
+etc.)
+
+-serge
+
+> I should probably go back and look and see how plan9 handles mount/unmount
+> permissions.  Plan9 gets away with a lot more because it doesn't have
+> a suid bit and mount namespaces were always present, so they don't have
+> backwards compatibility problems.
+> 
+> My best guess at the moment is that plan9 treated mount/unmount as
+> completely unprivileged and used the mount namespaces to limit the
+> scope of what would be affected by a mount/unmount operation.  I think
+> that may be reasonable in linux as well but it will require the
+> presence of a mount namespace to limit the affects of what a user can
+> do.
+> 
+> So short of a more thorough audit I believe the final semantics should
+> be: 
+> - mount/unmount for non-priveleged processes should only be limited
+>   by the mount namespace and directory permissions.
+> - CLONE_NEWNS should not be a privileged operation. 
+> 
+> What prevents us from allowing these things?
+> 
+> - Unprivileged CLONE_NEWNS and unprivileged mounts needs resource
+>   accounting so we don't have a denial of service attack.
+> 
+> - Unprivileged mounts must be limited to directories that we have
+>   permission to modify in a way that we could get the same effect
+>   as the mount or unmount operation in terms of what files are visible
+>   otherwise we can mess up SUID executables.
+> 
+> - Anything else?
+> 
+> There are user space issues such as a reasonable pam module and how
+> to do backups.  However those are user space issues.
+> 
+> What am I missing that requires us to add MNT_USER and MNT_USERMNT?
+> 
+> Eric
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
