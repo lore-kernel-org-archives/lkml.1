@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030266AbXDPJ2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXDPJbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030266AbXDPJ2W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 05:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030283AbXDPJ2W
+	id S965105AbXDPJbI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 05:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965153AbXDPJbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 05:28:22 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:59666 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030266AbXDPJ2V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 05:28:21 -0400
-To: linuxram@us.ibm.com
-CC: serue@us.ibm.com, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       containers@lists.osdl.org, util-linux-ng@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <1176711509.9488.4.camel@ram.us.ibm.com> (message from Ram Pai on
-	Mon, 16 Apr 2007 01:18:29 -0700)
-Subject: Re: [patch 0/8] unprivileged mount syscall
-References: <20070406160238.f3178189.akpm@linux-foundation.org>
-	 <E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu>
-	 <20070409143802.GB4891@sergelap.austin.ibm.com>
-	 <E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu>
-	 <20070409170743.GF24415@sergelap.austin.ibm.com>
-	 <E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu>
-	 <1176194285.2903.67.camel@ram.us.ibm.com>
-	 <E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu>
-	 <1176316116.2811.39.camel@ram.us.ibm.com>
-	 <E1HcKQd-0001yO-00@dorka.pomaz.szeredi.hu>
-	 <20070413132832.GA1483@sergelap.austin.ibm.com>
-	 <E1HcMOq-0002As-00@dorka.pomaz.szeredi.hu> <1176711509.9488.4.camel@ram.us.ibm.com>
-Message-Id: <E1HdNUv-0006gt-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 16 Apr 2007 11:27:45 +0200
+	Mon, 16 Apr 2007 05:31:08 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:56967 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965105AbXDPJbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 05:31:06 -0400
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Dave Jones <davej@redhat.com>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <20070416075543.GB15281@redhat.com>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	 <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com>
+	 <20070416011636.GO3691@stusta.de> <20070416062921.GB7528@redhat.com>
+	 <1176706447.5129.6.camel@daplas> <20070416072326.GA15281@redhat.com>
+	 <1176708722.5129.8.camel@daplas>  <20070416075543.GB15281@redhat.com>
+Content-Type: text/plain
+Date: Mon, 16 Apr 2007 10:26:43 +0100
+Message-Id: <1176715603.6794.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Arn't there ways to escape chroot jails? Serge had pointed me to a URL
-> which showed chroots can be escaped. And if that is true than having all
-> user's private mount tree in the same namespace can be a security issue?
+On Mon, 2007-04-16 at 03:55 -0400, Dave Jones wrote: 
+> On Mon, Apr 16, 2007 at 03:32:02PM +0800, Antonino A. Daplas wrote:
+>  > On Mon, 2007-04-16 at 03:23 -0400, Dave Jones wrote:
+>  > > On Mon, Apr 16, 2007 at 02:54:07PM +0800, Antonino A. Daplas wrote:
+>  > >  
+>  > >  > CONFIG_ACPI_VIDEO depends on BACKLIGHT_CLASS_DEVICE, which, in turn is
+>  > >  > enabled by FB_BACKLIGHT. So we can narrow it down further, can you try?
+>  > >  > 
+>  > >  > CONFIG_FB_BACKLIGHT=y
+>  > >  > CONFIG_ACPI_VIDEO=n
+>  > > 
+>  > > That also gets me a dead display. Backlight doesn't turn back on.
+>  > 
+>  > Anything under /sys/class/backlight?
+> 
+> Entries from ibm_acpi.  I rmmod'd that, leaving the dir empty,
+> and it still fails.
 
-No.  In fact chrooting the user into /share/$USER will actually
-_grant_ a privilege to the user, instead of taking it away.  It allows
-the user to modify it's root namespace, which it wouldn't be able to
-in the initial namespace.
+What happens if you never load ibm-acpi?
 
-So even if the user could escape from the chroot (which I doubt), s/he
-would not be able to do any harm, since unprivileged mounting would be
-restricted to /share.  Also /share/$USER should only have read/search
-permission for $USER or no permissions at all, which would mean, that
-other users' namespaces would be safe from tampering as well.
+I'm a bit puzzled as CONFIG_FB_BACKLIGHT doesn't do anything with the
+intelfb driver. One thing it does do is set
+CONFIG_BACKLIGHT_CLASS_DEVICE. When you disabled FB_BACKLIGHT and got a
+working display on resume, was that set and was (or had) ibm-acpi been
+loaded?
 
-Miklos
+A variety of other options such as ACPI_IBM also set
+CONFIG_BACKLIGHT_CLASS_DEVICE although without a backlight driver it
+will do nothing hence the suspicion is on ibm-acpi, perhaps interacting
+with the backlight class badly.
+
+Does echoing numbers to /sys/class/backlight/ibm_acpi/brightness change
+the backlight brightness as expected? If you can ssh into the machine
+after its resumed with the display problem, it would be interesting to
+know what the brightness was and if changing it helped too...
+
+Regards,
+
+Richard
+
