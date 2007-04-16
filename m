@@ -1,87 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030950AbXDPUSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030952AbXDPUSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030950AbXDPUSs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 16:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030951AbXDPUSs
+	id S1030952AbXDPUSx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 16:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030953AbXDPUSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 16:18:48 -0400
-Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:43102 "EHLO
-	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030950AbXDPUSr (ORCPT
+	Mon, 16 Apr 2007 16:18:53 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:54887 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030952AbXDPUSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 16:18:47 -0400
-Date: Mon, 16 Apr 2007 22:18:45 +0200 (CEST)
-From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-To: Diego Calleja <diegocg@gmail.com>
-cc: Christoph Hellwig <hch@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Mike Snitzer <snitzer@gmail.com>, Neil Brown <neilb@suse.de>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: <20070416210254.d619933c.diegocg@gmail.com>
-Message-ID: <Pine.BSO.4.63.0704162110200.11088@rudy.mif.pg.gda.pl>
-References: <op.tqqwdfzcftfxs2@localhost.localdomain> <17952.5537.364603.419364@notabene.brown>
- <170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com>
- <Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr>
- <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl> <46238204.9060907@s5r6.in-berlin.de>
- <Pine.BSO.4.63.0704161606280.11088@rudy.mif.pg.gda.pl> <20070416145527.GA26863@infradead.org>
- <Pine.BSO.4.63.0704161734370.11088@rudy.mif.pg.gda.pl>
- <20070416210254.d619933c.diegocg@gmail.com>
+	Mon, 16 Apr 2007 16:18:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=l8hm3KQubNn2TyKCVNKi4iuWybn7ZW952/yeoHttmOYHZooQo/+yiDfnSNEjh9DZH0KRIr5TgfLYFDJYWrM1rxJ0xq6KL6yQ1uSjmjiCF8i+mhUktjGH4knTeU6TsAQGTSiPn1ny5/IxeyOVbB2dUeYXi9cHFDGFNUkgJ/wbcsY=
+Message-ID: <d120d5000704161318t7bbc8ab9t3a23145dcc44e7dd@mail.gmail.com>
+Date: Mon, 16 Apr 2007 16:18:50 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [Patch -mm 0/3] RFC: module unloading vs. release function
+Cc: "Alan Stern" <stern@rowland.harvard.edu>,
+       "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Tejun Heo" <htejun@gmail.com>, "Rusty Russell" <rusty@rustcorp.com.au>
+In-Reply-To: <20070416195229.GA16074@kroah.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-515844929-1176754725=:11088"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d120d5000704161130j7ae89a1eyef89e015f0a3e97f@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0704161530160.2685-100000@iolanthe.rowland.org>
+	 <d120d5000704161247v1ce98cc2v9ba53d91b166f935@mail.gmail.com>
+	 <20070416195229.GA16074@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---0-515844929-1176754725=:11088
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 16 Apr 2007, Diego Calleja wrote:
-
-> El Mon, 16 Apr 2007 17:46:50 +0200 (CEST), Tomasz K³oczko <kloczek@rudy.mif.pg.gda.pl> escribió:
+On 4/16/07, Greg KH <greg@kroah.com> wrote:
+> On Mon, Apr 16, 2007 at 03:47:13PM -0400, Dmitry Torokhov wrote:
+> > On 4/16/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > >On Mon, 16 Apr 2007, Dmitry Torokhov wrote:
+> > >
+> > >> On 4/16/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> > >> > Hi,
+> > >> >
+> > >> > based on the discussion in "How should an exit routine wait for
+> > >> > release() callbacks?", I've cooked up some patches that make module
+> > >> > unload wait until the last reference for a kobject has been dropped.
+> > >> > This should plug the "release function in already deleted module" race;
+> > >> > however, if the last kobject_put() from the module containing the
+> > >> > release function is not in the module's exit function, there's still a
+> > >> > small window (not sure if and how to plug this).
+> > >>
+> > >> Unfortunately all this "wait for refcount in module's exit" schemas
+> > >> lead to the following deadlock:
+> > >>
+> > >>         rmmod my_module < /path/to/some/file/incrementing/my/refcount
+> > >
+> > >(Note that this problem will be a lot harder to provoke once Tejun's
+> > >changes to sysfs are in place.  But it will still be possible, unless we
+> > >make similar changes to all the other filesystems as well.)
+> > >
+> > >There are three possible approaches to this problem:
+> > >
+> > >    1. Ignore it, as we do now.  If someone actually tries running your
+> > >       example above, an oops will result when the kobject's release
+> > >       method is called after my_module has been unloaded from memory.
+> > >
+> > >    2. Do what Cornelia suggested, and allow the example to deadlock.
+> > >
+> > >    3. Change the module code so that rmmod can return _before_ the
+> > >       module is actually unloaded from memory (but after the module's
+> > >       exit routine has completed).  This will lead to more problems.
+> > >       For example, what if someone tries to modprobe my_module back
+> > >       again before it has finished unloading?
+> > >
+> > >My feeling is that either a deadlock or more complications with modprobe
+> > >would be preferable to an oops.  Your opinion may differ.
+> > >
+> >
+> > What about 4:
+> >
+> >     When registering an [k]object increment refcount of module that
+> > provides ->release() function.
+> >
+> > That would normally require ->release function to be placed on
+> > subsystem level to allow unloading individual devices.
 >
->> also some other interestig numbers can be founnd on:
->> http://milek.blogspot.com/2006/08/hw-raid-vs-zfs-software-raid-part-ii.html
+> But that would also mean that a lot of modules that want to be able to
+> be released whenever they want to today, not be allowed to (network
+> drivers, etc.)
 >
-> So software raid can be faster than HW raid. News at 11.
 
-Of cources it can be true in most cases (probably for some more advanced 
-RAID controlers). Few weeks ago I perform some basic test on Dell 2950 
-with 8x73GB SAS disk .. just as for kill time (waiting for access to some 
-bigger box ;). This small iron box have inside RAID controller (Dell uses 
-in this box LSI Logic SAS MegaRAID based ctrl). Anykind combinations on 
-controler level RAID was slower than using this as plain JBOD with LVM or 
-MD+LVM. Diffrence between HW and soft RAID was not so big (1-6% depending 
-on configuration) but allways HW produces worser results (don't ask me 
-why). Finaly I decide using this disk as four RAID1 luns only because 
-under Linux I can't read each phisical disk SMART data and protecting this 
-by RAID on controller level and collecting SNMP traps from DRAC card was 
-kind of worakaround for this (in my case it will be better constanlty 
-monitor disk healt and collesting some SMART data for observe trends on 
-for example zabbix graphs for try predict some faults using triggers). On 
-top of this was configured diffrent types of volumes on LVM level (some 
-with stripping some without, some with bigger some with smaller chunk 
-size).
+No, only the core module has to stay. For example, every time you
+register an input device you pin input.ko as it is the module that
+provides ->release() method for input devices. You can freely unload
+psmouse, or hid or your favorite joystick but input has to stay until
+last reference to the input device is dropped. serio and gameport work
+the same way.
 
-But .. in case ZFS diffrences can be better visable.
-Q: why ?
-A: because most of HW RAID controlers (nevermind is it small/simple 
-internal HW controler for DAS sotorage or advances in storage processor in 
-dedicated FC array) are _optimized_ for classic FS workloads but .. ZFS 
-uses bunch of devices in completly diffrent way/characteristics. If you 
-will see flashing LEDs on box with disk first time configurad for classic 
-RAID<any_level> (nevermind soft or hw) and on second time configured for 
-ZFS you will see kind of organoleptic diffrence.
-And yes .. ZFS may be kind of problem for some HW vendors ;)
+I think the requirement that one is not able to unload a core
+subsystem module untill all users are dropped off is ok - you can't
+unload it anyway until you unload all drivers that reference its
+exported functions and once you unload all the drivers data objects
+will drop off pretty quickly.
 
-kloczek
 -- 
------------------------------------------------------------
-*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
------------------------------------------------------------
-Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
---0-515844929-1176754725=:11088--
+Dmitry
