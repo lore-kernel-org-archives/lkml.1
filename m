@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbXDPVpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbXDPVrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbXDPVpW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 17:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbXDPVpW
+	id S1753913AbXDPVrN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 17:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbXDPVrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 17:45:22 -0400
-Received: from rwcrmhc15.comcast.net ([216.148.227.155]:56313 "EHLO
-	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753905AbXDPVpW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 17:45:22 -0400
-To: linux-kernel@vger.kernel.org
-Subject: bug in tcp?
-Date: Mon, 16 Apr 2007 15:45:19 -0600
-From: Sebastian Kuzminsky <seb@highlab.com>
-Message-Id: <E1HdZ0h-0001go-RK@highlab.com>
+	Mon, 16 Apr 2007 17:47:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51490 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbXDPVrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 17:47:13 -0400
+Message-ID: <4623EE59.7090005@redhat.com>
+Date: Mon, 16 Apr 2007 17:44:57 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz,
+       alsa-devel@alsa-project.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [1/2] 2.6.21-rc7: known regressions
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003714.GL3691@stusta.de>
+In-Reply-To: <20070416003714.GL3691@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing some weird behavior in TCP.  The issue is perfectly
-reproducible using netcat and other programs.  This is what I do:
+Adrian Bunk wrote:
 
-    1.  Open a TCP connection over the loopback (over IPv4).
+> This email lists some known regressions in Linus' tree compared to 2.6.20.
+> 
+> Subject    : snd_intel8x0: divide error: 0000
+> References : http://lkml.org/lkml/2007/3/5/252
+> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> Status     : unknown
+> 
 
-    2.  Send a couple of bytes of data each way.  No problems.
+Oops is in sound/pci/intel8x0.c::snd_intel8x0_update(), part of
+the interrupt handler:
 
-    3.  Wait about 120 hours with no writes on either side of the
-        connection.
+Line 751:
 
-    4.  write() a few bytes to the server's socket.  I'd expect the data
-        to go through, but it doesnt.  I see the TCP frame from the
-        server to the client, but instead of an ACK, the client sends
-        back a RST.  netstat shows the bytes sitting in the server's
-        socket's send-buffer.
+        ichdev->position += step * ichdev->fragsize1;
+        if (! chip->in_measurement)
+                ichdev->position %= ichdev->size;
 
-    5.  write a few bytes to the client's socket.  The server gets
-        these immediately.
+ichdev->size is 0. Interrupt happened upon request_irq().
 
-    6.  On the next server-to-client retransmit, the client gets the
-        bytes from the server.  After this, the connection works normally.
-
-
-The libpcap capture file is here:  http://highlab.com/~seb/tcp-idleness-bug
-
-
-The behavior is reproducible on all kernels I've tried: 2.4.32, 2.6.19.1,
-and 2.6.20.4.  I dont think it's iptables-related, though I'm rerunning
-the tests on a machine without iptables to be sure.  I'll have results
-for you in 120 hours.  ;-)
-
-
--- 
-Sebastian Kuzminsky
+Does chip->in_measurement need to be reset because this is a
+crashdump kernel?
