@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030972AbXDPVRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030969AbXDPVV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030972AbXDPVRA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 17:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030973AbXDPVRA
+	id S1030969AbXDPVV6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 17:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030981AbXDPVV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 17:17:00 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:14998 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030972AbXDPVQ7 (ORCPT
+	Mon, 16 Apr 2007 17:21:57 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41385 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030969AbXDPVV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 17:16:59 -0400
-X-IronPort-AV: i="4.14,415,1170662400"; 
-   d="scan'208"; a="412057042:sNHT140263350"
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 16 Apr 2007 14:16:54 -0700
-Message-ID: <aday7ks6mux.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+	Mon, 16 Apr 2007 17:21:57 -0400
+Date: Mon, 16 Apr 2007 23:21:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070416212154.GA25508@one.firstfloor.org>
+References: <20070413202100.GA9957@elte.hu> <p73tzvg56ag.fsf@bingen.suse.de> <20070416210556.GA25637@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 16 Apr 2007 21:16:54.0943 (UTC) FILETIME=[8F204AF0:01C7806C]
-Authentication-Results: sj-dkim-6; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim6002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20070416210556.GA25637@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+> actually, i designed the CFS code assuming a per-CPU TSC (with no global 
+> synchronization), not assuming any globally sync TSC. In fact i wrote it 
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+That already worked in the old scheduler (just in a hackish way)
 
-This tree is also available from kernel.org mirrors at:
+> on such systems: a CoreDuo2 box that has stops the TSC in C3 and the 
+> different cores have wildly different TSC values and a dual-core 
+> Athlon64 that quickly drifts its TSC. So i'll keep the sched_clock() 
+> change for now.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+The problem is not CPU synchronized TSC, but TSC with varying frequency
+on a single CPU like on the A64.
 
-This will get a one-liner that fixes data corruption seen with storage
-over iSER:
+The old implementation can lose really badly on that because it mixes
+measurements at different frequencies together without individual scaling.
 
-Michael S. Tsirkin (1):
-      IB/mthca: Fix data corruption after FMR unmap on Sinai
+The error gets worse the longer the system runs.
 
- drivers/infiniband/hw/mthca/mthca_mr.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+>> BTW with all this CPU time measurement it would be really nice to
+>> report it to the user too. It seems a bit bizarre that the scheduler
+>> keeps track of ns, but top only knows jiffies with large sampling
+>> errors.
 
+> yeah - i'll fix that too if someone doesnt beat me at it.
 
-diff --git a/drivers/infiniband/hw/mthca/mthca_mr.c b/drivers/infiniband/hw/mthca/mthca_mr.c
-index fdb576d..ee561c5 100644
---- a/drivers/infiniband/hw/mthca/mthca_mr.c
-+++ b/drivers/infiniband/hw/mthca/mthca_mr.c
-@@ -835,6 +835,7 @@ void mthca_arbel_fmr_unmap(struct mthca_dev *dev, struct mthca_fmr *fmr)
- 
- 	key = arbel_key_to_hw_index(fmr->ibmr.lkey);
- 	key &= dev->limits.num_mpts - 1;
-+	key = adjust_key(dev, key);
- 	fmr->ibmr.lkey = fmr->ibmr.rkey = arbel_hw_index_to_key(key);
- 
- 	fmr->maps = 0;
+I've been pondering for some time if doubling the NMI watchdog as a 
+ring 0 counter for this is worth it. So far I'm still undecided
+(and it's moot now since it's disabled by default :/)
+
+-Andi
+
