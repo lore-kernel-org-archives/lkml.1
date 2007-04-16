@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030781AbXDPPzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030782AbXDPP5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030781AbXDPPzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 11:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030782AbXDPPzh
+	id S1030782AbXDPP5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 11:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030787AbXDPP5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 11:55:37 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:51577 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030781AbXDPPzg (ORCPT
+	Mon, 16 Apr 2007 11:57:17 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:32940 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030782AbXDPP5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 11:55:36 -0400
-Message-ID: <46239C62.4090302@nortel.com>
-Date: Mon, 16 Apr 2007 09:55:14 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Willy Tarreau <w@1wt.eu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       hui Bill Huey <billh@gnuppy.monkey.org>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu> <20070415095146.GA30327@gnuppy.monkey.org> <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com> <20070415124527.GP943@1wt.eu> <20070415152643.GH8915@holomorphy.com>
-In-Reply-To: <20070415152643.GH8915@holomorphy.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Apr 2007 15:55:19.0244 (UTC) FILETIME=[A1FE48C0:01C7803F]
+	Mon, 16 Apr 2007 11:57:16 -0400
+To: ebiederm@xmission.com
+CC: linuxram@us.ibm.com, containers@lists.osdl.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <m1d524l43w.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [patch 0/8] unprivileged mount syscall
+References: <20070406160238.f3178189.akpm@linux-foundation.org>
+	<E1Ha4cN-0004rc-00@dorka.pomaz.szeredi.hu>
+	<20070409143802.GB4891@sergelap.austin.ibm.com>
+	<E1Hawf4-0000E7-00@dorka.pomaz.szeredi.hu>
+	<20070409170743.GF24415@sergelap.austin.ibm.com>
+	<E1Hb0CH-0000nX-00@dorka.pomaz.szeredi.hu>
+	<1176194285.2903.67.camel@ram.us.ibm.com>
+	<E1HbaJV-00059N-00@dorka.pomaz.szeredi.hu>
+	<1176316116.2811.39.camel@ram.us.ibm.com>
+	<E1HcKQd-0001yO-00@dorka.pomaz.szeredi.hu>
+	<20070413132832.GA1483@sergelap.austin.ibm.com>
+	<E1HcMOq-0002As-00@dorka.pomaz.szeredi.hu>
+	<1176711509.9488.4.camel@ram.us.ibm.com>
+	<E1HdNUv-0006gt-00@dorka.pomaz.szeredi.hu> <m1d524l43w.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1HdTYJ-0007al-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 16 Apr 2007 17:55:39 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
+> >> Arn't there ways to escape chroot jails? Serge had pointed me to a URL
+> >> which showed chroots can be escaped. And if that is true than having all
+> >> user's private mount tree in the same namespace can be a security issue?
+> >
+> > No.  In fact chrooting the user into /share/$USER will actually
+> > _grant_ a privilege to the user, instead of taking it away.  It allows
+> > the user to modify it's root namespace, which it wouldn't be able to
+> > in the initial namespace.
+> >
+> > So even if the user could escape from the chroot (which I doubt), s/he
+> > would not be able to do any harm, since unprivileged mounting would be
+> > restricted to /share.  Also /share/$USER should only have read/search
+> > permission for $USER or no permissions at all, which would mean, that
+> > other users' namespaces would be safe from tampering as well.
+> 
+> A couple of points.
+> - chroot can be escaped, it is just a chdir for the root directory
+> it is not a security feature.  The only security is that you have to
+> be root to call chdir.  A carefully done namespace setup won't have
+> that issue.
+> 
+> - While it may not violate security as far as what a user is allowed
+> to modify it may violate security as far as what a user is allowed
+> to see.
 
-> The sorts of like explicit decisions I'd like to be made for these are:
-> (1) In a mixture of tasks with varying nice numbers, a given nice number
-> 	corresponds to some share of CPU bandwidth. Implementations
-> 	should not have the freedom to change this arbitrarily according
-> 	to some intention.
+I think that's just up to the permissions in the global namespace.  In
+this example if you 'chmod 0 /share' there won't be anything for the
+user to see.
 
-The first question that comes to my mind is whether nice levels should 
-be linear or not.  I would lean towards nonlinear as it allows a wider 
-range (although of course at the expense of precision).  Maybe something 
-like "each nice level gives X times the cpu of the previous"?  I think a 
-value of X somewhere between 1.15 and 1.25 might be reasonable.
+> There are interesting per login cases as well such as allowing a
+> user to replicate their mount tree from another machine when they
+> log in.  When /home is on a network filesystem this can be very
+> practical and can allow propagation of mounts across machines not
+> just across a single login session.
 
-What about also having something that looks at latency, and how latency 
-changes with niceness?
+Yeah, sounds interesting, but I think it's better to get the basics
+working first, and then we can start to think about the extras.
 
-What about specifying the timeframe over which the cpu bandwidth is 
-measured?  I currently have a system where the application designers 
-would like it to be totally fair over a period of 1 second.  As you can 
-imagine, mainline doesn't do very well in this case.
+Btw, there's nothing that prevents cloning the namespace _after_
+chrooting into the per-user tree.  That would still be simpler than
+doing it the other way round: first creating per-session namespaces
+and then setting up mount propagation between them.
 
-Chris
-
-
-
+Miklos
