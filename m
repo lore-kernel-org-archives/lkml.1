@@ -1,93 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030690AbXDPOpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030694AbXDPOrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030690AbXDPOpo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 10:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030669AbXDPOpn
+	id S1030694AbXDPOrQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 10:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030721AbXDPOrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 10:45:43 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:54966 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030690AbXDPOpn (ORCPT
+	Mon, 16 Apr 2007 10:47:16 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:20138 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030694AbXDPOrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 10:45:43 -0400
-X-Originating-Ip: 24.6.145.253
-Date: Mon, 16 Apr 2007 10:44:52 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: so what *is* obsolete and removable?
-In-Reply-To: <9a8748490704151450i251b8b1av8439bc275e982866@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0704161030040.6837@localhost.localdomain>
-References: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
- <9a8748490704151450i251b8b1av8439bc275e982866@mail.gmail.com>
+	Mon, 16 Apr 2007 10:47:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=N5msGHWVzCaAcRaI71lnRwK7ZSXw+36u3bJc66zD88Ot9+JD2Ajd8vn8EVxr94UCicofaUPGR9hdt2uM5p9dn+x3i6NjPhoQ3M2Jm0JYBfew//sqMoe/bMJSbMIGRBS0vKjBR0v8GPCueJQ//IwmhPlZvO/uoR+MvCO3tsjf64Y=
+Message-ID: <b6a2187b0704160747l2707cac8ifc480bdbf147c37b@mail.gmail.com>
+Date: Mon, 16 Apr 2007 22:47:13 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: 4GB Physical. Less than 3GB in Linux.
+Cc: linux-kernel@vger.kernel.org,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>
+In-Reply-To: <46238572.5050203@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-14.854, required 5, ALL_TRUSTED -1.80, BAYES_00 -15.00,
-	INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_NJABL_DUL 1.95,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b6a2187b0704160028x3f979dc3s1c9e18995f229782@mail.gmail.com>
+	 <46238572.5050203@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Apr 2007, Jesper Juhl wrote:
+On 4/16/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> The X60 most certainly contains a chipset which severely limits the
+> amount of accessible RAM due to issues with remapping of PCIe addresses.
+>  Intel explains it somewhere on their web presence.  A quick & lazy web
+> search turned this Intel paper up:
+> http://www.polywell.com/us/support/faq/4GB_Rev1.pdf
 
-> On 15/04/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> >
-> >   in a recent posting, ian anderson suggested that, before kernel
-> > features are removed, they should spend a reasonable amount of
-> > time in the feature removal file to give everyone fair warning.
-> > if that's the case, then there are a *bunch* of things that should
-> > perhaps be added to that file real soon now just to start the
-> > clock ticking.
-> >
-> [snip]
-> > ./sound/oss/Kconfig:    bool "Obsolete OSS drivers"
-> > ./sound/oss/Kconfig:      This option enables support for obsolete OSS
-> > drivers that
-> >
-> >   clearly, that was a fairly brainless search, but it still
-> > reveals a pile of stuff that's "obsolete" (whatever that means in
-> > the context in which it's used).  so what's really obsolete?
-> >
-> IIRC Adrian Bunk is handling the removal of obsolete OSS drivers and
-> doing a nice job at it. Dunno about the rest of the stuff.
+Stefan,
 
-oh, i realize that a number of those examples from my earlier post
-were already handled/being handled (i don't even look under OSS these
-days when doing any cleanup).
+That's interesting.Thanks for the pointer. I wondered if there's
+anyone working on a patch for this.
 
-my point was that, if ian's position is valid and stuff shouldn't be
-removed without fair warning, then a lot of that stuff should get
-entered into the feature removal file real soon now.
+I've seen this problem before, just like Vincent, I thought it's only
+me. Didn't really bother me, until I got a new X60s with 4GB RAM.
 
-rday
-
-p.s.  again, if you run the simple grep i mentioned before:
-
-  $ grep -iw obsolete $(find . -name Kconfig\*)
-
-you find some odd combinations, such as this from net/ipv4/Kconfig:
-
-config ARPD
-        bool "IP: ARP daemon support (EXPERIMENTAL)"
-        depends on EXPERIMENTAL
-        ---help---
-        ...
-        This code is experimental and also obsolete...
-
-the thought of something being both experimental *and* obsolete is a
-bit weird, is it not?
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Thanks,
+Jeff.
