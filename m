@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030967AbXDPVCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030968AbXDPVCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030967AbXDPVCi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 17:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030968AbXDPVCi
+	id S1030968AbXDPVCs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 17:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030970AbXDPVCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 17:02:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38162 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030967AbXDPVCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 17:02:37 -0400
-Date: Mon, 16 Apr 2007 17:01:59 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       fche@redhat.com, systemtap@sources.redhat.com
-Subject: Re: [PATCH 0/13] maps: pagemap, kpagemap, and related cleanups
-Message-ID: <20070416210159.GA12538@redhat.com>
-References: <20070412185723.5a5f0443.akpm@linux-foundation.org> <461EE890.2040601@yahoo.com.au> <20070412193255.62a0b8ed.akpm@linux-foundation.org> <461EEFEC.2010205@yahoo.com.au> <20070413065357.GP2986@holomorphy.com> <461F2BCB.2020200@yahoo.com.au> <20070413075142.GA23822@infradead.org> <461F3961.6030300@yahoo.com.au> <20070413081338.GA27675@infradead.org> <p73zm5857ei.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73zm5857ei.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.1i
+	Mon, 16 Apr 2007 17:02:48 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40514 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1030968AbXDPVCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 17:02:47 -0400
+Date: Mon, 16 Apr 2007 17:02:46 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Greg KH <greg@kroah.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [Patch -mm 0/3] RFC: module unloading vs. release function
+In-Reply-To: <d120d5000704161318t7bbc8ab9t3a23145dcc44e7dd@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704161634460.2795-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Mon, 16 Apr 2007, Dmitry Torokhov wrote:
 
-On Mon, Apr 16, 2007 at 11:36:05PM +0200, Andi Kleen wrote:
-> Christoph Hellwig <hch@infradead.org> writes:
-> > and [systemtap] does a lot of really wrong things in it's
-> > runtime). [...]
+> > > What about 4:
+> > >
+> > >     When registering an [k]object increment refcount of module that
+> > > provides ->release() function.
+> > >
+> > > That would normally require ->release function to be placed on
+> > > subsystem level to allow unloading individual devices.
 
-(Thanks, Christoph, for at least a few specifics.  Some of them have
-already been dealt with in the recent past.)
+That's what Cornelia is trying to do.  For all release methods, not just 
+those on the subsystem level (although that is where most of them sit).
 
+> > But that would also mean that a lot of modules that want to be able to
+> > be released whenever they want to today, not be allowed to (network
+> > drivers, etc.)
+> >
+> 
+> No, only the core module has to stay. For example, every time you
+> register an input device you pin input.ko as it is the module that
+> provides ->release() method for input devices. You can freely unload
+> psmouse, or hid or your favorite joystick but input has to stay until
+> last reference to the input device is dropped. serio and gameport work
+> the same way.
+> 
+> I think the requirement that one is not able to unload a core
+> subsystem module untill all users are dropped off is ok - you can't
+> unload it anyway until you unload all drivers that reference its
+> exported functions and once you unload all the drivers data objects
+> will drop off pretty quickly.
 
-> I must agree with that. Perhaps it would be good if its runtime code
-> was posted to l-k at some point and reviewed in the standard way
-> even when it isn't merged.
+The problem is that sometimes devices are owned by modules that aren't
+core subsystem modules.  Or the code using a device doesn't depend on the
+device's owner module and therefore doesn't pin it.
 
-I'll let the runtime's maintainers judge whether this particular venue
-would be helpful.  But is the choice of venue really an obstacle?
-Everyone who cares is *already* welcome to browse the code (available
-on CVS, cvsweb, tarballs - would git help?), and critique it (e.g. on
-our open public mailing list or via bugzilla).
+Alan Stern
 
-http://sourceware.org/systemtap/getinvolved.html
-
-- FChE
