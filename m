@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031022AbXDPWZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031024AbXDPW02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031022AbXDPWZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031021AbXDPWZV
+	id S1031024AbXDPW02 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031021AbXDPW02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:25:21 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:42504 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031002AbXDPWZU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:25:20 -0400
-Date: Mon, 16 Apr 2007 15:25:17 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@SteelEye.com, ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-Message-ID: <20070416222517.GD14351@andrew-vasquezs-computer.local>
-References: <20070416.123743.07452378.davem@davemloft.net> <20070416200857.GH10822@andrew-vasquezs-computer.local> <20070416211049.GC13590@andrew-vasquezs-computer.local> <20070416.150846.45744461.davem@davemloft.net>
+	Mon, 16 Apr 2007 18:26:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36021 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031019AbXDPW00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 18:26:26 -0400
+Message-ID: <4623F804.3020405@redhat.com>
+Date: Mon, 16 Apr 2007 18:26:12 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070416.150846.45744461.davem@davemloft.net>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 16 Apr 2007 22:25:04.0515 (UTC) FILETIME=[14B37530:01C78076]
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Pavel Machek <pavel@ucw.cz>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: Loud "pop" coming from hard drive on reboot
+References: <461D4E2C.6000704@redhat.com> <20070414105255.GB9157@ucw.cz> <20070415155343.GA12069@khazad-dum.debian.net> <Pine.LNX.4.61.0704152050150.27018@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704152050150.27018@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007, David Miller wrote:
-
-> From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-> Date: Mon, 16 Apr 2007 14:10:49 -0700
+Jan Engelhardt wrote:
+> On Apr 15 2007 12:53, Henrique de Moraes Holschuh wrote:
+>> On Sat, 14 Apr 2007, Pavel Machek wrote:
+>>> How common are notebooks that cut power to disks during reboot?
+>> Assuming it also does this when running Windows, I'd report it as a grave
+>> bug to the vendor and demand it to be fixed, or the machine to be exchanged
+>> with another model that doesn't have this defect.
 > 
-> > Ok, how about the following patch based on the one you posted which
-> > adds the codes to retrieve the WWPN/WWNN from firmware on SPARC, and
-> > also adds the module-parameter override I mentioned above.
-> > 
-> > Perhaps the module-parameter should be set to non-zero in the case of
-> > SPARC, to take care of your system configurations?
-> 
-> I think it should default to non-zero always, in fact the option
-> is completely pointless.
-> 
-> The guy who hits this had a system which worked previously, and you're
-> explicitly breaking it.  That's wrong.
+> Given that it does not happen on Windows (IIRC Chuck's post),
+> then just what is Windows [not] doing that Linux does?
 
-Sorry, 'it' didn't work...  'It' *never* did.
+It looks like there are two problems here:
 
-> How can you not see that this quality of implementation decision
-> you're making stinks?
+(1) Some notebooks power off and back on when restarting.
+    Both Linux and other OS handle that badly because they
+    assume power is not interrupted on reboot. The noise
+    emitted is relatively loud.
 
-You're defending a position which itself left users with a false sense
-of security and comfort.  This is a *real* problem from an enterprise
-perspective where FC reigns.  Fine, I'll agree that wacking-users (and
-I'll wager the outliers) with a 2x4 was a bit extreme, but I'd much
-rather handle those users on a case-by-case basis, either by:
+(2) Linux (alone) gives a very muted pop on shutdown. This could
+    be from bad interaction with the shutdown command, or some
+    other reason (drive not given enough time to shut down?)
+    The noise is not very loud, maybe the head did not have to
+    move very far?
 
-* If dealing with a PCI card, directing a user  to a support staff at
-  QLogic to resolve the NVRAM issues.
-
-* If it's some on-board ISP with no NVRAM, as was your SPARC case,
-  then add *proper* codes to retrieve the data from some secondary
-  persistent store.
