@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031000AbXDPWVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031022AbXDPWZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031000AbXDPWVs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031002AbXDPWVs
+	id S1031022AbXDPWZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031021AbXDPWZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:21:48 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:44637 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031000AbXDPWVr (ORCPT
+	Mon, 16 Apr 2007 18:25:21 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:42504 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031002AbXDPWZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:21:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n7ZwVYMYwz+yrM/K0hFSH2pEtrZQffbdDIN7sMvKaznR9a5mk1VvosaU1uoEqp3uJm6O7DxaM5fkikxFhxbPMbCoMOffYUQDp7MJka0Z0bDpvi5ibI4U0zyMRmDU2sVoaU5MZtQRec2URNofT5k+DrDnOsTL6t/A6etxiBQlf9s=
-Message-ID: <653402b90704161521t9d39495s720a3c3c5f374173@mail.gmail.com>
-Date: Tue, 17 Apr 2007 00:21:46 +0200
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: akpm@osdl.org
-Subject: [PATCH -rc7 Re] [Trivial] Spelling at drivers/video/Kconfig
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <653402b90704150334o4e81df48n5bf5dc221da07d2a@mail.gmail.com>
+	Mon, 16 Apr 2007 18:25:20 -0400
+Date: Mon, 16 Apr 2007 15:25:17 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com, ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+Message-ID: <20070416222517.GD14351@andrew-vasquezs-computer.local>
+References: <20070416.123743.07452378.davem@davemloft.net> <20070416200857.GH10822@andrew-vasquezs-computer.local> <20070416211049.GC13590@andrew-vasquezs-computer.local> <20070416.150846.45744461.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <653402b90704150334o4e81df48n5bf5dc221da07d2a@mail.gmail.com>
+In-Reply-To: <20070416.150846.45744461.davem@davemloft.net>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 16 Apr 2007 22:25:04.0515 (UTC) FILETIME=[14B37530:01C78076]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Trivial patch, against -rc6. I don't know if anyone has fixed this by now."
+On Mon, 16 Apr 2007, David Miller wrote:
 
-Resend comment: Still present in -rc7.
----
+> From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> Date: Mon, 16 Apr 2007 14:10:49 -0700
+> 
+> > Ok, how about the following patch based on the one you posted which
+> > adds the codes to retrieve the WWPN/WWNN from firmware on SPARC, and
+> > also adds the module-parameter override I mentioned above.
+> > 
+> > Perhaps the module-parameter should be set to non-zero in the case of
+> > SPARC, to take care of your system configurations?
+> 
+> I think it should default to non-zero always, in fact the option
+> is completely pointless.
+> 
+> The guy who hits this had a system which worked previously, and you're
+> explicitly breaking it.  That's wrong.
 
- drivers/video/Kconfig:
-    - Spelling: "Frambuffer hardware support"
+Sorry, 'it' didn't work...  'It' *never* did.
 
- drivers/video/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> How can you not see that this quality of implementation decision
+> you're making stinks?
 
-Signed-off-by: Miguel Ojeda Sandonis <maxextreme@gmail.com>
----
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index e4f0dd0..8372ace 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -139,7 +139,7 @@ config FB_TILEBLITTING
-         This is particularly important to one driver, matroxfb.  If
-         unsure, say N.
+You're defending a position which itself left users with a false sense
+of security and comfort.  This is a *real* problem from an enterprise
+perspective where FC reigns.  Fine, I'll agree that wacking-users (and
+I'll wager the outliers) with a 2x4 was a bit extreme, but I'd much
+rather handle those users on a case-by-case basis, either by:
 
--comment "Frambuffer hardware drivers"
-+comment "Frame buffer hardware drivers"
-        depends on FB
+* If dealing with a PCI card, directing a user  to a support staff at
+  QLogic to resolve the NVRAM issues.
 
- config FB_CIRRUS
-
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+* If it's some on-board ISP with no NVRAM, as was your SPARC case,
+  then add *proper* codes to retrieve the data from some secondary
+  persistent store.
