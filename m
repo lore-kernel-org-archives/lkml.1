@@ -1,109 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXDPGsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXDPGyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932318AbXDPGsn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 02:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932332AbXDPGsn
+	id S932286AbXDPGyV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 02:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932332AbXDPGyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 02:48:43 -0400
-Received: from qsrv02ps.mx.bigpond.com ([144.140.83.182]:38211 "EHLO
-	qsrv02ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932318AbXDPGsm (ORCPT
+	Mon, 16 Apr 2007 02:54:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:31585 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932286AbXDPGyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 02:48:42 -0400
-Message-ID: <46230950.8000005@bigpond.net.au>
-Date: Mon, 16 Apr 2007 15:27:44 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Willy Tarreau <w@1wt.eu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       hui Bill Huey <billh@gnuppy.monkey.org>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       linux-kernel@vger.kernel.org,
+	Mon, 16 Apr 2007 02:54:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=TduXENI8/IjTmxZLM7WF4ZP/lCoEXvr/j6sFsBo8UDIeTdBVN7MwgblSVA586H7+oz6H6og7L9yh0lLGIU03FAuKN+wdvwg4yy3lo0Hn1WPBmZRKdOkCfUe+SpqKQ7lFl9oTKB0rcwV51ditEGdQSWhH+vtLScV4jqDumlSjkYw=
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Adrian Bunk <bunk@stusta.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu> <20070415095146.GA30327@gnuppy.monkey.org> <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com> <20070415124527.GP943@1wt.eu> <20070415153933.GB6623@elte.hu>
-In-Reply-To: <20070415153933.GB6623@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Richard Purdie <rpurdie@rpsys.net>
+In-Reply-To: <20070416062921.GB7528@redhat.com>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	 <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com>
+	 <20070416011636.GO3691@stusta.de>  <20070416062921.GB7528@redhat.com>
+Content-Type: text/plain
+Date: Mon, 16 Apr 2007 14:54:07 +0800
+Message-Id: <1176706447.5129.6.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta02ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Mon, 16 Apr 2007 05:27:49 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Willy Tarreau <w@1wt.eu> wrote:
-> 
->> Ingo could have publicly spoken with them about his ideas of killing 
->> the O(1) scheduler and replacing it with an rbtree-based one, [...]
-> 
-> yes, that's precisely what i did, via a patchset :)
-> 
-> [ I can even tell you when it all started: i was thinking about Mike's
->   throttling patches while watching Manchester United beat the crap out
->   of AS Roma (7 to 1 end result), Thuesday evening. I started coding it
->   Wednesday morning and sent the patch Friday evening. I very much
->   believe in low-latency when it comes to development too ;) ]
-> 
-> (if this had been done via a comittee then today we'd probably still be 
-> trying to find a suitable timeslot for the initial conference call where 
-> we'd discuss the election of a chair who would be tasked with writing up 
-> an initial document of feature requests, on which we'd take a vote, 
-> possibly this year already, because the matter is really urgent you know 
-> ;-)
-> 
->> [...] and using part of Bill's work to speed up development.
-> 
-> ok, let me make this absolutely clear: i didnt use any bit of plugsched 
-> - in fact the most difficult bits of the modularization was for areas of 
-> sched.c that plugsched never even touched AFAIK. (the load-balancer for 
-> example.)
+On Mon, 2007-04-16 at 02:29 -0400, Dave Jones wrote:
+> On Mon, Apr 16, 2007 at 03:16:37AM +0200, Adrian Bunk wrote:
+>  > On Sun, Apr 15, 2007 at 08:54:46PM -0400, Dave Jones wrote:
+>  > > On Mon, Apr 16, 2007 at 02:37:23AM +0200, Adrian Bunk wrote:
+>  > > 
+>  > >  > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+>  > >  >              workaround: booting with "hpet=disable"
+>  > >  > References : http://lkml.org/lkml/2007/3/13/3
+>  > >  > Submitter  : Dave Jones <davej@redhat.com>
+>  > >  >              Jeremy Fitzhardinge <jeremy@goop.org>
+>  > >  > Caused-By  : PCI merge
+>  > >  >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
+>  > >  > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+>  > >  >              Rafael J. Wysocki <rjw@sisk.pl>
+>  > >  > Status     : unknown
+>  > > 
 
-This sounds like your new scheduler intends to increase the coupling 
-between scheduling and load balancing.  I think that this would be a 
-mistake and lead (down the track) to spiralling complexity as you make 
-changes to the code to address the corner conditions that it will create.
+<snip>
 
-> 
-> Plugsched simply does something else: i modularized scheduling policies 
-> in essence that have to cooperate with each other, while plugsched 
-> modularized complete schedulers which are compile-time or boot-time 
-> selected, with no runtime cooperation between them. (one has to be 
-> selected at a time)
+> I'll try and narrow down exactly where it's failing in the
+> backlight code next, but it's getting late here, so I may
+> leave this until tomorrow for further investigation.
+> Some other clues for anyone playing along at home:
+> This X60 has Intel graphics.  ie, I'm not using any of
+> the drivers that 'select FB_BACKLIGHT',
 
-You can't really have more than one scheduler operating in the same 
-priority range on the same CPU as they will be fighting each other 
-trying to achieve their separate and not necessarily compatible (in fact 
-highly likely to be incompatible) aims.  Multiple schedulers on the same 
-CPU have to have a pecking order just like SCHED_OTHER and real time 
-policies.  It wouldn't be hard to prove that SCHED_RR and SCHED_FIFO is 
-a problem in waiting if ever someone tried to use them both on a highly 
-real time system.
+CONFIG_ACPI_VIDEO depends on BACKLIGHT_CLASS_DEVICE, which, in turn is
+enabled by FB_BACKLIGHT. So we can narrow it down further, can you try?
 
-> 
-> (and i have no trouble at all with crediting Will's work either: a few 
-> years ago i used Will's PID rework concepts for an NPTL related speedup 
-> and Will is very much credited for it in today's kernel/pid.c and he 
-> continued to contribute to it later on.)
-> 
-> (the tree walking bits of sched_fair.c were in fact derived from 
-> kernel/hrtimer.c, the rbtree code written by Thomas and me :-)
-> 
-> 	Ingo
+CONFIG_FB_BACKLIGHT=y
+CONFIG_ACPI_VIDEO=n
 
-Are your new patches available somewhere for easy download or do I have 
-to try to dig them out of the mailing list archive?  Or could you mail 
-them to me separately?  I'm keen to see how you new scheduler proposal 
-works.
+Tony
 
-Thanks
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
