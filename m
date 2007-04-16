@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbXDPStj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbXDPSwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754212AbXDPStj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 14:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbXDPStj
+	id S1754217AbXDPSwS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 14:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbXDPSwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 14:49:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37896 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754212AbXDPSti (ORCPT
+	Mon, 16 Apr 2007 14:52:18 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:59761 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754217AbXDPSwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 14:49:38 -0400
-Date: Mon, 16 Apr 2007 11:47:16 -0700
-From: Greg KH <greg@kroah.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <htejun@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Patch -mm 0/3] RFC: module unloading vs. release function
-Message-ID: <20070416184716.GA6262@kroah.com>
-References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com> <d120d5000704161130j7ae89a1eyef89e015f0a3e97f@mail.gmail.com>
+	Mon, 16 Apr 2007 14:52:17 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=vHC7BW7O+I8/weDJm/DfnijPSKIWNypWrOElHBu3B0WdIKSH/n+Yb0ffB5NuYbi7l
+	S9SYR7/MiMBJ1+2nMu4Mw==
+Date: Mon, 16 Apr 2007 11:51:53 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] i386: use pte_update_defer in ptep_test_and_clear_{dirty,young}
+In-Reply-To: <Pine.LNX.4.64.0704161831500.8213@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0704161139020.12097@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0703252335560.4535@chino.kir.corp.google.com>
+ <46082BE6.30402@vmware.com> <Pine.LNX.4.64.0704131838310.8399@blonde.wat.veritas.com>
+ <461FD9BF.90609@vmware.com> <Pine.LNX.4.64.0704132108430.14740@blonde.wat.veritas.com>
+ <461FEF1C.5010806@vmware.com> <Pine.LNX.4.64.0704161831500.8213@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d120d5000704161130j7ae89a1eyef89e015f0a3e97f@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 02:30:17PM -0400, Dmitry Torokhov wrote:
-> On 4/16/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> >Hi,
-> >
-> >based on the discussion in "How should an exit routine wait for
-> >release() callbacks?", I've cooked up some patches that make module
-> >unload wait until the last reference for a kobject has been dropped.
-> >This should plug the "release function in already deleted module" race;
-> >however, if the last kobject_put() from the module containing the
-> >release function is not in the module's exit function, there's still a
-> >small window (not sure if and how to plug this).
+On Mon, 16 Apr 2007, Hugh Dickins wrote:
+
+> When, as now, core mm people make some change, failing to take your
+> case into account.
 > 
-> Unfortunately all this "wait for refcount in module's exit" schemas
-> lead to the following deadlock:
+
+That's exactly what happened here: include/asm-i386/pgtable.h is 
+advertising both __HAVE_ARCH_PTEP_TEST_AND_CLEAR_{DIRTY,YOUNG} without 
+actually having them.  No consideration is going to be given to such a 
+hack when clearing A/D bits in generic code.  If the optimization for a 
+specific architecture is not possible for an atomic test and clear of A/D 
+bits generically, then it's not an optimization at all.  It's a bug.
+
+> You're right to want to defer your pte_updates, David is right to want
+> to batch his TLB flushes.  It bothers me that you have a surprising case,
+> and that unless you abandon your optimization, it imposes a new constraint
+> on how to proceed in common code (without #ifdef'ing around).
 > 
->        rmmod my_module < /path/to/some/file/incrementing/my/refcount
 
-No, it should just return "module in use" as the reference count it
-grabbed before rmmod is called.
+Batching the TLB flushes was really a no brainer: there was a significant 
+speed-up in /proc/pid/clear_refs by using flush_tlb_mm() over 
+flush_tlb_page().  If there's an "optimization" for paravirt that gets in 
+the way by defering the updated A/D bit, then it needs to be eliminated.  
+It was merged because there were no generic uses of 
+ptep_test_and_clear_{dirty,young}, but now there are.
 
-But either way, that's just foolish to try to prevent that from failing
-:)
+If it was really considered to be an "optimization," which is was 
+advertised to be in the changelog associated with a very trivial patch, 
+then removing it by definition would not introduce new constraints that 
+would need to be patched.  I'd like to see a patch without the defer and 
+see how invasive it truly is on generic code because it was not originally 
+merged that invasively.
 
-thanks,
+> Compromise patch below: would that be satisfactory to you, David?
+> 
 
-greg k-h
+I really like the patch, but for perhaps a slightly different reason: 
+we're only flushing ranges that have been shown to need it.  We aren't 
+completely flushing the entire mm which is likely to be excessive in 
+situations where we're actually using /proc/pid/clear_refs in combination 
+with /proc/pid/smaps for memory footprint approximation (i.e. it's on a 
+fine granularity).
+
+		David
