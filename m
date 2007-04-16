@@ -1,115 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751717AbXDPAra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbXDPAui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751717AbXDPAra (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 20:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXDPAra
+	id S1753774AbXDPAui (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 20:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbXDPAui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 20:47:30 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:51661 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750837AbXDPAra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 20:47:30 -0400
-Date: Mon, 16 Apr 2007 02:37:14 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Hans-Georg Rist <hg.rist@web.de>, perex@suse.cz,
-       alsa-devel@alsa-project.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Stephen Clark <Stephen.Clark@seclark.us>, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org,
-       Michal Jaegermann <michal@ellpspace.math.ualberta.ca>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
-       Dave Jones <davej@redhat.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, David Miller <davem@davemloft.net>,
-       Andi Kleen <ak@suse.de>, Oliver Neukum <oneukum@suse.de>,
-       greg@kroah.com, linux-usb-devel@lists.sourceforge.net,
-       CIJOML <cijoml@volny.cz>, Markus Rechberger <markus.rechberger@amd.com>,
-       v4l-dvb-maintainer@linuxtv.org
-Subject: [1/2] 2.6.21-rc7: known regressions
-Message-ID: <20070416003714.GL3691@stusta.de>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	Sun, 15 Apr 2007 20:50:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41237 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753107AbXDPAui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 20:50:38 -0400
+Message-ID: <4622C851.2030509@redhat.com>
+Date: Sun, 15 Apr 2007 20:50:25 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "David R. Litwin" <presently42@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+References: <op.tqthonq5ftfxs2@localhost.localdomain>
+In-Reply-To: <op.tqthonq5ftfxs2@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email lists some known regressions in Linus' tree compared to 2.6.20.
+David R. Litwin wrote:
 
-If you find your name in the Cc header, you are either submitter of one
-of the bugs, maintainer of an affectected subsystem or driver, a patch
-of you caused a breakage or I'm considering you in any other way
-possibly involved with one or more of these issues.
+>> 4: ZFS has a HUGE capacity. I don't have 30 exobytes, but I might some
+>> day....
+> 
+> ext4 will probably cope with that.  XFS definitely has very high
+> limits though I admit I don't know what they are.
+> 
+> XFS is also a few exobytes.
 
-Due to the huge amount of recipients, please trim the Cc when answering.
+The fsck for none of these filesystems will be able to deal with
+a filesystem that big.  Unless, of course, you have a few weeks
+to wait for fsck to complete.
 
+Backup and restore are similar problems.  When part of the filesystem
+is lost, you don't want to have to wait for a full restore.
 
-Subject    : snd_hda_intel doesn't work with ASUS M2V mainboard
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8273
-Submitter  : Hans-Georg Rist <hg.rist@web.de>
-Status     : unknown
+Sounds simple?  Well, the hard part is figuring out exactly which
+part of the filesystem you need to restore...
 
+I don't see ZFS, ext4 or XFS addressing these issues.
 
-Subject    : snd_intel8x0: divide error: 0000
-References : http://lkml.org/lkml/2007/3/5/252
-Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Status     : unknown
+IMHO chunkfs could provide a much more promising approach.
 
-
-Subject    : ali_pata: boot from CD fails
-References : http://lkml.org/lkml/2007/3/31/160
-Submitter  : Stephen Clark <Stephen.Clark@seclark.us>
-Status     : unknown
-
-
-Subject    : kernels fail to boot with drives on ATIIXP controller
-             (ACPI/IRQ related)
-References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229621
-             http://lkml.org/lkml/2007/3/4/257
-Submitter  : Michal Jaegermann <michal@ellpspace.math.ualberta.ca>
-Status     : unknown
-
-
-Subject    : boot failure: rtl8139: exception in interrupt routine
-References : http://lkml.org/lkml/2007/3/31/160
-Submitter  : Stephen Clark <Stephen.Clark@seclark.us>
-Status     : unknown
-
-
-Subject    : laptops with e1000: lockups
-References : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229603
-Submitter  : Dave Jones <davej@redhat.com>
-Handled-By : Jesse Brandeburg <jesse.brandeburg@intel.com>
-Status     : problem is being debugged
-
-
-Subject    : forcedeth: interface hangs under load
-References : http://lkml.org/lkml/2007/4/3/39
-             http://www.spinics.net/lists/netdev/msg28981.html
-Submitter  : Ingo Molnar <mingo@elte.hu>
-Handled-By : Ingo Molnar <mingo@elte.hu>
-             Ayaz Abdulla <aabdulla@nvidia.com>
-             David Miller <davem@davemloft.net>
-Status     : problem is being debugged
-
-
-Subject    : hal daemon crashes after pulling a USB serial device
-References : http://www.opensubscriber.com/message/linux-usb-devel@lists.sourceforge.net/6369800.html
-Submitter  : Andi Kleen <ak@suse.de>
-Handled-By : Oliver Neukum <oneukum@suse.de>
-Status     : problem is being debugged
-
-
-Subject    : Oops when changing USB DVB-T adapter
-References : http://lkml.org/lkml/2007/3/9/212
-             http://lkml.org/lkml/2007/4/5/154
-Submitter  : CIJOML <cijoml@volny.cz>
-Handled-By : Markus Rechberger <markus.rechberger@amd.com>
-Status     : patches available
-
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
