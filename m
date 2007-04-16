@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbXDPRqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbXDPRqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbXDPRqJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 13:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXDPRqJ
+	id S1754142AbXDPRqh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 13:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbXDPRqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 13:46:09 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:34048 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753084AbXDPRqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 13:46:08 -0400
-Subject: [BUG] aic7xxx/aicasm build failure w/gcc-3.4.6
-To: linux-kernel@vger.kernel.org
-Date: Mon, 16 Apr 2007 12:46:05 -0500 (CDT)
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Mon, 16 Apr 2007 13:46:37 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:19685 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754140AbXDPRqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 13:46:35 -0400
+X-IronPort-AV: i="4.14,415,1170662400"; 
+   d="scan'208"; a="478548692:sNHT44817812"
+To: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Cc: Kernel Janitors <kernel-janitors@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrw Morton <akpm@linux-foundation.org>
+Subject: Re: [KJ][PATCH]Rocket port:use mutex instead of binary  semaphore
+X-Message-Flag: Warning: May contain useful information
+References: <20070416174155.GA9314@arun.site>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 16 Apr 2007 10:46:26 -0700
+In-Reply-To: <20070416174155.GA9314@arun.site> (Milind Arun Choudhary's message of "Mon, 16 Apr 2007 23:11:55 +0530")
+Message-ID: <adabqho8b65.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20070416174605.98260DBA1@gherkin.frus.com>
-From: rct@gherkin.frus.com (Bob Tracy)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 Apr 2007 17:46:27.0083 (UTC) FILETIME=[2855C5B0:01C7804F]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This showed up during a 2.6.21-rc7 build after I upgraded gcc from 3.3
-to 3.4 on a Slackware system:
+ > -	down_interruptible(&info->write_sem);
+ > +	if(mutex_lock_interruptible(&info->write_lock)){
+ > +		return -ERESTARTSYS;
+ > +	}
 
-make -C drivers/scsi/aic7xxx/aicasm
-(...)
-gcc -I/usr/include -I. aicasm.c aicasm_symbol.c aicasm_gram.c aicasm_macro_gram.c aicasm_scan.c aicasm_macro_scan.c -o aicasm -ldb
-aicasm_gram.y:1948: error: conflicting types for 'yyerror'
-aicasm_gram.tab.c:3004: error: previous implicit declaration of 'yyerror' was here
-aicasm_macro_gram.y:162: error: conflicting types for 'mmerror'
-aicasm_macro_gram.tab.c:1196: error: previous implicit declaration of 'mmerror' was here
+1) This is a semantic change.  Of course using down_interruptible()
+without checking the return value is almost certainly a bug, but have
+you thought about whether returning ERESTARTSYS is correct here?  If
+you have, then please include the reasoning in your patch description.
+(Another possibility would be to just use an uninterruptible mutex_lock())
 
-As a workaround, deleting the "void" declarations for yyerror() and
-mmerror() in the respective ".y" files fixes the problem.
+2) The coding style for the if statement is not quite right.  The
+correct way is to do
 
-Here's the "gcc -v" output:
+	if (condition)
+		one_liner;
 
-Reading specs from /usr/lib/gcc/i486-slackware-linux/3.4.6/specs
-Configured with: ../gcc-3.4.6/configure --prefix=/usr --enable-shared --enable-threads=posix --enable-__cxa_atexit --disable-checking --with-gnu-ld --verbose --target=i486-slackware-linux --host=i486-slackware-linux
-Thread model: posix
-gcc version 3.4.6
+(note the space between the 'if' and the '(', and no braces used)
 
--- 
------------------------------------------------------------------------
-Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
-rct@frus.com
------------------------------------------------------------------------
+ - R.
