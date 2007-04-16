@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173AbXDPSZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbXDPS0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754173AbXDPSZu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 14:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXDPSZt
+	id S1754191AbXDPS0o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 14:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbXDPS0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 14:25:49 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50135 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754151AbXDPSZs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 14:25:48 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4623BF83.30600@s5r6.in-berlin.de>
-Date: Mon, 16 Apr 2007 20:25:07 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Mon, 16 Apr 2007 14:26:44 -0400
+Received: from ns.suse.de ([195.135.220.2]:59248 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754154AbXDPS0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 14:26:43 -0400
+To: Mikko Tiihonen <mikko.tiihonen@iki.fi>
+Cc: clemens@ladisch.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] hpet: Enable hidden HPET on NVidia motherboards
+References: <1176708094.22969.7.camel@dual.local>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 16 Apr 2007 21:24:46 +0200
+In-Reply-To: <1176708094.22969.7.camel@dual.local>
+Message-ID: <p734png6s1t.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-CC: linux-kernel@vger.kernel.org,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>
-Subject: Re: 4GB Physical. Less than 3GB in Linux.
-References: <b6a2187b0704160028x3f979dc3s1c9e18995f229782@mail.gmail.com>	 <46238572.5050203@s5r6.in-berlin.de> <b6a2187b0704160747l2707cac8ifc480bdbf147c37b@mail.gmail.com>
-In-Reply-To: <b6a2187b0704160747l2707cac8ifc480bdbf147c37b@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua wrote:
-> On 4/16/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> The X60 most certainly contains a chipset which severely limits the
->> amount of accessible RAM due to issues with remapping of PCIe addresses.
-...
-> I wondered if there's anyone working on a patch for this.
+Mikko Tiihonen <mikko.tiihonen@iki.fi> writes:
 
-All I heard of is that the successor chipsets are supposed to lessen or
-eliminate the problem.
--- 
-Stefan Richter
--=====-=-=== -=-- =----
-http://arcgraph.de/sr/
+> It looks probable that most NVidia chipsets have the HPET address at
+> 0x44. It might be possible to enable the HPET even if BIOS did not
+
+That seems like a dangerous assumption. If anything this needs to  be keyed
+on specific PCI IDs.
+
+And the way you coded a recursive PCI scan is just .... <looking for words, censoring
+some that come to mind first> ... not nice.
+
+> initialize it properly by writing the wanted address there. Some other
+> pci config space bits might need to be fiddled around too, most likely
+> candidates are 0x74 bit 2 and 0xA3 bit ?. One or both of them have been
+> identified to change in some motherboards when HPET is enabled/disabled
+> in BIOS.
+
+Or just add a random generator and poke random bits? Should be roughly
+equivalent.
+
+Also there should be done anything here without confirmation from
+Nvidia that HPET is actually supposed to work. Sometimes hardware
+is disabled by BIOS because it is seriously broken (there was at least
+one other chipset that could corrupt your flash if you force enabled
+HPET in some steppings) 
+
+-Andi
+ 
