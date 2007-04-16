@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031024AbXDPW02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXDPW27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031024AbXDPW02 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031021AbXDPW02
+	id S1753906AbXDPW27 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbXDPW27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:26:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36021 "EHLO mx1.redhat.com"
+	Mon, 16 Apr 2007 18:28:59 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:39692 "EHLO atlrel9.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031019AbXDPW00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:26:26 -0400
-Message-ID: <4623F804.3020405@redhat.com>
-Date: Mon, 16 Apr 2007 18:26:12 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1753705AbXDPW25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 18:28:57 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Date: Mon, 16 Apr 2007 16:28:47 -0600
+User-Agent: KMail/1.9.5
+Cc: Jean Delvare <khali@linux-fr.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
+       linux-acpi@vger.kernel.org, Chuck Ebbert <cebbert@redhat.com>
+References: <45D5EA88.7090300@redhat.com> <200704151857.03115.bjorn.helgaas@hp.com> <20070416211411.GA16150@dreamland.darkstar.lan>
+In-Reply-To: <20070416211411.GA16150@dreamland.darkstar.lan>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Pavel Machek <pavel@ucw.cz>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <461D4E2C.6000704@redhat.com> <20070414105255.GB9157@ucw.cz> <20070415155343.GA12069@khazad-dum.debian.net> <Pine.LNX.4.61.0704152050150.27018@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0704152050150.27018@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704161628.47707.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Apr 15 2007 12:53, Henrique de Moraes Holschuh wrote:
->> On Sat, 14 Apr 2007, Pavel Machek wrote:
->>> How common are notebooks that cut power to disks during reboot?
->> Assuming it also does this when running Windows, I'd report it as a grave
->> bug to the vendor and demand it to be fixed, or the machine to be exchanged
->> with another model that doesn't have this defect.
-> 
-> Given that it does not happen on Windows (IIRC Chuck's post),
-> then just what is Windows [not] doing that Linux does?
+On Monday 16 April 2007 15:14, Luca Tettamanti wrote:
+> It seems that Asus exposes monitorining data using "ATK0110" (enumerated
+> in DSDT); I see it both on my P5B-E motherboard and on my notebook (L3D)
+> (they have different methods though). Another motherboard with the same
+> device may actually call it "FOOBAR123" or "WTFISTHIS".
 
-It looks like there are two problems here:
+Yup, we have the same problem with other devices.  See the long list
+of PNP IDs in 8250_pnp.c :-)
 
-(1) Some notebooks power off and back on when restarting.
-    Both Linux and other OS handle that badly because they
-    assume power is not interrupted on reboot. The noise
-    emitted is relatively loud.
+> Problem is that ACPI methods are not documented at all (how am I
+> supposed to know that "G6T6" is the reading of the 12V rail?) while the
+> datasheet of hw monitoring chips (w83627ehf in my case) are public (more
+> or less).
 
-(2) Linux (alone) gives a very muted pop on shutdown. This could
-    be from bad interaction with the shutdown command, or some
-    other reason (drive not given enough time to shut down?)
-    The noise is not very loud, maybe the head did not have to
-    move very far?
+Yes, I see that it's attractive to use a single w83627ehf.c driver.
+For an ACPI driver, we'd have to build a list of PNP IDs, and possibly
+information about which methods read which information.  That's
+certainly more work.
 
+On the other hand, the ACPI driver would avoid the synchronization
+issues that started this whole thread.  That's a pretty compelling
+advantage.
+
+> Furthermore, sensor driver exposes all the reading of the chip
+> (e.g. in the DSDT I can't find the VSB or battery voltage).
+
+Maybe Asus didn't hook up those readings on the board.  I would
+guess that PC Probe doesn't expose the VSB or battery voltage either.
+
+I'm sure you've seen these:
+  http://lists.lm-sensors.org/pipermail/lm-sensors/2005-October/014050.html
+  http://www.lm-sensors.org/wiki/AsusFormulaHacking
+
+Looks like nobody took up the challenge, though :-)  It looks fun
+to play with, if only I had the time and hardware.
+
+Bjorn
