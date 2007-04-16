@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbXDPASx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXDPAgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbXDPASx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 20:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXDPASx
+	id S1754116AbXDPAgP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 20:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbXDPAgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 20:18:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:5400 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754169AbXDPASw (ORCPT
+	Sun, 15 Apr 2007 20:36:15 -0400
+Received: from lazybastard.de ([212.112.238.170]:43518 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbXDPAgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 20:18:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=bGhdBjUM5HA5jIq0zOFXV2BBPcbRD9q5kOEucNgURDmJ+srHEG11UBV5l4UgX+LiVRiNRuqotZDtyU6Y0xCkofZDUgx1jW9fWzstTILM09BkDGPMQseBQav5uOWRmvxqjzUiZh3Li26sv5UOS11rf8CSUP8KDr6KTjgtRdfhhPY=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Date: Sun, 15 Apr 2007 20:18:48 -0400
-User-Agent: KMail/1.9.6
-Cc: Con Kolivas <kernel@kolivas.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       hui Bill Huey <billh@gnuppy.monkey.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Peter Williams <pwil3058@bigpond.net.au>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070413202100.GA9957@elte.hu> <200704151258.48857.gene.heskett@verizon.net> <1176660032.6364.32.camel@Homer.simpson.net>
-In-Reply-To: <1176660032.6364.32.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Apr 2007 20:36:14 -0400
+Date: Mon, 16 Apr 2007 02:31:48 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: [RFC] MTD driver for MMC cards
+Message-ID: <20070416003148.GA23559@lazybastard.org>
+References: <200612281418.20643.arnd@arndb.de> <200701012322.14735.arnd@arndb.de> <459CB001.4010800@drzeus.cx> <200704160133.18597.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200704152018.48500.gene.heskett@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200704160133.18597.arnd@arndb.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 April 2007, Mike Galbraith wrote:
->On Sun, 2007-04-15 at 12:58 -0400, Gene Heskett wrote:
->> Chuckle, possibly but then I'm not anything even remotely close to an
->> expert here Con, just reporting what I get.  And I just rebooted to
->> 2.6.21-rc6 + sched-mike-5.patch for grins and giggles, or frowns and
->> profanity as the case may call for.
->
->Erm, that patch is embarrassingly buggy, so profanity should dominate.
->
->	-Mike
+On Mon, 16 April 2007 01:33:17 +0200, Arnd Bergmann wrote:
+> 
+> There is also still some need for performance testing. Jörn
+> brought up the point that if a specific card can't have multiple
+> open erase block simulateously, it's rather pointless for
+> logfs. It might still be useful to use jffs2 on those cards,
+> because IFAIK that only writes to one erase block at any
+> time.
 
-Chuckle, ROTFLMAO even.
+This appears to be a problem for practically all consumer-available
+flash media.  They spend a lot of effort trying to hide any flash
+properties from their users.  And while this is a decent strategy for
+FAT, ext3, ntfs and similar, it is actually very inefficient for a flash
+filesystem.
 
-I didn't run it that long as I immediately rebuilt and rebooted when I found 
-I'd used the wrong patch, and in fact had tested that one and found it 
-sub-optimal before I'd built and ran Con's -0.40 version.  As for bugs of the 
-type that make it to the screen or logs, I didn't see any.  OTOH, my eyesight 
-is slowly going downhill, now 20/25.  It was 20/10 30 years ago.  Now thats 
-reason for profanity...
+After talking to several manufacturers, most seemed to be fairly
+open-minded towards supporting an alternate interface with raw flash
+access.  So much for the good news.  Bad news is that such an elternate
+interface still needs to be defined.
+
+Jörn
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Unix weanies are as bad at this as anyone.
-             -- Larry Wall in <199702111730.JAA28598@wall.org>
+Courage is not the absence of fear, but rather the judgement that
+something else is more important than fear.
+-- Ambrose Redmoon
