@@ -1,48 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030685AbXDPOld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030687AbXDPOnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030685AbXDPOld (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 10:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030686AbXDPOld
+	id S1030687AbXDPOnF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 10:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030690AbXDPOnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 10:41:33 -0400
-Received: from waste.org ([66.93.16.53]:36861 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030685AbXDPOla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 10:41:30 -0400
-Date: Mon, 16 Apr 2007 09:28:24 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070416142823.GX11115@waste.org>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415213153.GW11115@waste.org> <20070416030349.GB13626@wotan.suse.de>
+	Mon, 16 Apr 2007 10:43:05 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56992 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1030687AbXDPOnE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 10:43:04 -0400
+Date: Mon, 16 Apr 2007 10:43:01 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Tejun Heo <htejun@gmail.com>,
+       Markus Rechberger <markus.rechberger@amd.com>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: How should an exit routine wait for release() callbacks?
+In-Reply-To: <20070416105316.0b91c2fd@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0704161028330.4861-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070416030349.GB13626@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 05:03:49AM +0200, Nick Piggin wrote:
-> I'd prefer if we kept a single CPU scheduler in mainline, because I
-> think that simplifies analysis and focuses testing.
+On Mon, 16 Apr 2007, Cornelia Huck wrote:
 
-I think you'll find something like 80-90% of the testing will be done
-on the default choice, even if other choices exist. So you really
-won't have much of a problem here.
+> On Fri, 13 Apr 2007 11:24:58 -0400 (EDT),
+> Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > I have to admit, this is a puzzler.  I'm beginning to think there should 
+> > be two types of module references: Those which (like module dependency) 
+> > will prevent rmmod from running, and those which (like the one here) would 
+> > automatically be dropped by deregistration.  Then every kobject could have 
+> > an owner and could hold a reference of the second type to its owner until 
+> > its release routine returns.
+> 
+> This sounds like the most promising idea yet.
+> 
+> We could make kobject_add() bump up this second-type refcount (since
 
-But when the only choice for other schedulers is to go out-of-tree,
-then only 1% of the people will try it out and those people are
-guaranteed to be the ones who saw scheduling problems in mainline.
-So the alternative won't end up getting any testing on many of the
-workloads that work fine in mainstream so their feedback won't tell
-you very much at all.
+Actually it has to be done in kobject_init() since the release method can 
+be called any time after that, even if the kobject is never add'ed.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> from now on it may be looked up). kobject_get()/kobject_put() wouldn't
+> need to grab an extra reference (we already have refcounting for this
+> object in place). kobject_cleanup() could do something like:
+> 
+> struct module * kobject_owner = kobj->owner;
+> ...
+> call_release();
+> put_second_module_refcount(kobject_owner);
+> 
+> combined with the module unloading code waiting after calling the exit
+> function until the second type refcount dropped to 0. This would make
+> sure that the module is not deleted until the last release function has
+> been called.
+> 
+> The module would stay in memory (not be unloaded) until the last
+> kobject created by the module is deleted, but I think that is just what
+> we want. At least this doesn't mean that the module blocks its own
+> unloading.
+
+Yes, that's what I had in mind.
+
+It would have to apply to other things besides kobjects -- in principle,
+anything with a release routine, although in many cases it wouldn't be 
+needed.  But in particular, it _would_ be needed for struct device.
+
+(In fact, perhaps kobject would not need it.  There aren't too many places
+where a raw kobject is used; almost always it is embedded in some larger
+object -- like struct device -- along with a release method pointer.  
+This larger object would need an owner but its embedded kobject usually
+would not.)
+
+On the other hand, this proposal involves adding a fair amount of overhead
+(all those .owner fields) for a rather small benefit.  And it involves
+modifying a core kernel subsystem (kernel/module.c).  All to prevent
+certain unlikely sorts of errors when removing a module -- something which
+Linus has said repeatedly need not be supported terribly well.
+
+So I'm uncertain whether other people will be in favor of all this.
+
+Alan Stern
+
