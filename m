@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXDPHcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXDPHd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbXDPHcX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 03:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXDPHcX
+	id S932203AbXDPHd1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 03:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXDPHd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 03:32:23 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:43285 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754051AbXDPHcV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 03:32:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hsvOHFOCaZXrrQVs0WXSgVRy1KTZWJIrBqZWj0J/CI17xH3KNTDLrGkvqRysBYZLS+vSa2LJ33UgCishCHRmTBOEHVtI08CTfUTT5A8CHeoBMzJNy6V5Ve9iTgbKRiZAT0h32SmKiOpEnvLmfzFa5C6wXs05/tPZEAouZUtHzDA=
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
+	Mon, 16 Apr 2007 03:33:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52119 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932203AbXDPHd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 03:33:26 -0400
+Date: Mon, 16 Apr 2007 09:32:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Willy Tarreau <w@1wt.eu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-In-Reply-To: <20070416072326.GA15281@redhat.com>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	 <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com>
-	 <20070416011636.GO3691@stusta.de> <20070416062921.GB7528@redhat.com>
-	 <1176706447.5129.6.camel@daplas>  <20070416072326.GA15281@redhat.com>
-Content-Type: text/plain
-Date: Mon, 16 Apr 2007 15:32:02 +0800
-Message-Id: <1176708722.5129.8.camel@daplas>
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070416073258.GB17444@elte.hu>
+References: <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu> <20070415095146.GA30327@gnuppy.monkey.org> <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com> <20070415124527.GP943@1wt.eu> <20070415153933.GB6623@elte.hu> <46230950.8000005@bigpond.net.au> <4623166A.3080500@bigpond.net.au> <46231A77.8030600@bigpond.net.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46231A77.8030600@bigpond.net.au>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 03:23 -0400, Dave Jones wrote:
-> On Mon, Apr 16, 2007 at 02:54:07PM +0800, Antonino A. Daplas wrote:
->  
->  > CONFIG_ACPI_VIDEO depends on BACKLIGHT_CLASS_DEVICE, which, in turn is
->  > enabled by FB_BACKLIGHT. So we can narrow it down further, can you try?
->  > 
->  > CONFIG_FB_BACKLIGHT=y
->  > CONFIG_ACPI_VIDEO=n
-> 
-> That also gets me a dead display. Backlight doesn't turn back on.
 
-Anything under /sys/class/backlight?
+* Peter Williams <pwil3058@bigpond.net.au> wrote:
 
-Tony
+> One more quick comment.  The claim that there is no concept of time 
+> slice in the new scheduler is only true in the sense of the rather 
+> arcane implementation of time slices extant in the O(1) scheduler.
 
+yeah. AFAIK most other mainstream OSs also still often use similarly 
+'arcane' concepts (i'm here ignoring literature, you can find everything 
+and its opposite suggested in literature) so i felt the need to point 
+out the difference ;) After all Linux is about doing a better mainstream 
+OS, it is not about beating the OS literature at lunacy ;-)
 
+The precise statement would be: "there's no concept of giving out a 
+time-slice to a task and sticking to it unless a higher-prio task comes 
+along, nor is there a concept of having a low-res granularity 
+->time_slice thing. There is accurate accounting of how much CPU time a 
+task used up, and there is a granularity setting that together gives the 
+current task a fairness advantage of a given amount of nanoseconds - 
+which has similar [but not equivalent] effects to traditional timeslices 
+that most mainstream OSs use".
+
+> Your new parameter sched_granularity_ns is equivalent to the concept 
+> of time slice in most other kernels that I've peeked inside and 
+> computing literature in general (going back over several decades e.g. 
+> the magic garden).
+
+note that you can set it to 0 and the box still functions - so 
+sched_granularity_ns, while useful for performance/bandwidth workloads, 
+isnt truly inherent to the design.
+
+So in the announcement i just opted for a short sentence: "there's no 
+concept of timeslices", albeit like most short stentences it's not a 
+technically 100% accurate statement - but still it conveyed the intended 
+information more effectively to the interested lkml reader than the 
+longer version could ever have =B-)
+
+	Ingo
