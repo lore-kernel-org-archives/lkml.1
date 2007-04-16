@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030805AbXDPQAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030802AbXDPQB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030805AbXDPQAX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 12:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030803AbXDPQAX
+	id S1030802AbXDPQB5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 12:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030800AbXDPQB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 12:00:23 -0400
-Received: from mx2.suse.de ([195.135.220.15]:37681 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030799AbXDPQAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 12:00:21 -0400
-From: Danny Kukawka <dkukawka@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] ACPI: more verbose thermal zone shutdown message
-Date: Mon, 16 Apr 2007 17:58:45 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stefan Seyfried <seife@suse.de>
-References: <200704051615.07960.dkukawka@suse.de> <20070415191107.GD10097@ucw.cz>
-In-Reply-To: <20070415191107.GD10097@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704161758.45943.dkukawka@suse.de>
+	Mon, 16 Apr 2007 12:01:57 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:33783 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030795AbXDPQB4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 12:01:56 -0400
+To: ebiederm@xmission.com
+CC: linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
+References: <20070412164541.580374744@szeredi.hu>
+	<20070412164620.588752236@szeredi.hu>
+	<20070412203208.GG27772@sergelap.austin.ibm.com>
+	<m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
+	<1176713221.9488.17.camel@ram.us.ibm.com>
+	<E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
+	<1176716941.9488.57.camel@ram.us.ibm.com>
+	<E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu> <m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 16 Apr 2007 17:58:06 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sonntag, 15. April 2007, Pavel Machek wrote:
-> Hi!
+> > That depends.  Current patches check the "unprivileged submounts
+> > allowed under this mount" flag only on the requested mount and not on
+> > the propagated mounts.  Do you see a problem with this?
 > 
-> > while debug some strange termal shutdowns I wrote this patch to get more 
-> > information in /var/log/messages about the reason for the shutdown. I 
-> > think this would be useful in general.
-> > 
-> > Danny
-> > 
-> > From: Danny Kukawka <dkukawka@suse.de>
-> > Subject: ACPI: more verbose thermal zone shutdown message
-> > 
-> > add more information to acpi thermal zone shutdown message for easier
-> > debugging
-> > 
-> > Signed-off-by: Danny Kukawka <dkukawka@suse.de>
-> 
-> Yes, please.
-[..]
-> Why two printks with same info, and why is one of them WARNING and
-> second EMERG?
+> I think privileges of this sort should propagate.  If I read what you
+> just said correctly if I have a private mount namespace I won't be able
+> to mount anything unless when it was setup the unprivileged submount
+> command was explicitly set.
 
-I think this is  what happen and why there are currently two messages:
+By design yes.  Why is that a problem?
 
-* if the temperature is really critical you get (now) this:
-----------------
-kernel: Critical trip point (102 C) reached on Thermalzone [THM]
-kernel: Critical temperature reached (150 C on [THM] with trip point set to: 
-102 C), shutting down.
-----------------
-
-* and if something send a critical temp event to the thermal zone you get:
-----------------
-kernel: Critical temperature reached (42 C on [THM] with trip point set to: 
-102 C), shutting down.
-----------------
-
-Maybe we can delete the first one, since you get now also from second 
-message the information if the temperature was really critical or if 
-there was an other reason for the shutdown, but in the past this was
-IMO needed to differ.
-
-Danny
+Miklos
