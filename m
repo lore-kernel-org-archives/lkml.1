@@ -1,111 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030519AbXDPNNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXDPNPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030519AbXDPNNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 09:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXDPNNV
+	id S1030599AbXDPNPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 09:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030603AbXDPNPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 09:13:21 -0400
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:58133 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030519AbXDPNNU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 09:13:20 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-content-class: urn:content-classes:message
+	Mon, 16 Apr 2007 09:15:30 -0400
+Received: from styx.suse.cz ([82.119.242.94]:52721 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030599AbXDPNPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 09:15:30 -0400
+Date: Mon, 16 Apr 2007 15:22:25 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Li Yu <raise.sail@gmail.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?UTF-8?B?5p2o57qi?= <yanghong@ccoss.com.cn>,
+       =?iso-2022-jp?Q?=1B$B9=3F=3BV5#=1B=28J?= <hongzhiyi@ccoss.com.cn>
+Subject: Re: [PATCH] hid: hid bus prototype 20070416
+In-Reply-To: <46230EDE.5020300@gmail.com>
+Message-ID: <alpine.LSU.0.98.0704161504280.18903@jikos.suse.cz>
+References: <46230EDE.5020300@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 4GB Physical. Less than 3GB in Linux.
-Date: Mon, 16 Apr 2007 09:12:56 -0400
-Message-ID: <8E8F647D7835334B985D069AE964A4F7028FE6F2@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 4GB Physical. Less than 3GB in Linux.
-Thread-Index: Acd/+NuKTRFrmLsFR5OqGQ78QoNp2wAL7yHg
-References: <b6a2187b0704160028x3f979dc3s1c9e18995f229782@mail.gmail.com>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>,
-       "lkml" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 Apr 2007 13:12:57.0039 (UTC) FILETIME=[F32FC5F0:01C78028]
+Content-Type: TEXT/PLAIN; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> I've noticed that with 4GB physical ram, I'm only see 3098000 
-> MB on the Dell 745, and 3107056MB on the IBM X60s.
-> 
-> I've tested with CONFIG_HIGHMEM4G=y, CONFIG_HIGHMEM64G=y, 
-> CONFIG_X86_PAE=y, but nothing makes any difference.
-> 
-> Tested on Linux 2.6.20, Linux 2.6.21-rc7.
+On Mon, 16 Apr 2007, Li Yu wrote:
 
-Got similar problem on a HP XW6200:
-http://bugzilla.kernel.org/show_bug.cgi?id=7111
+> HID bus prototype 20070416
 
-Tought I was the only one getting this!
+Hi Li,
 
-> # dmesg
-> copy_e820_map() start: 0000000000000000 size: 000000000009f000 end:
-> 000000000009f000 type: 1
-> copy_e820_map() type is E820_RAM
-> copy_e820_map() start: 000000000009f000 size: 0000000000001000 end:
-> 00000000000a0000 type: 2
-> copy_e820_map() start: 00000000000dc000 size: 0000000000024000 end:
-> 0000000000100000 type: 2
-> copy_e820_map() start: 0000000000100000 size: 00000000bf5d0000 end:
-> 00000000bf6d0000 type: 1
-> copy_e820_map() type is E820_RAM
-> copy_e820_map() start: 00000000bf6d0000 size: 000000000000f000 end:
-> 00000000bf6df000 type: 3
-> copy_e820_map() start: 00000000bf6df000 size: 0000000000021000 end:
-> 00000000bf700000 type: 4
-> copy_e820_map() start: 00000000bf700000 size: 0000000000900000 end:
-> 00000000c0000000 type: 2
-> copy_e820_map() start: 00000000f0000000 size: 0000000004000000 end:
-> 00000000f4000000 type: 2
-> copy_e820_map() start: 00000000fec00000 size: 0000000000010000 end:
-> 00000000fec10000 type: 2
-> copy_e820_map() start: 00000000fed00000 size: 0000000000000400 end:
-> 00000000fed00400 type: 2
-> copy_e820_map() start: 00000000fed14000 size: 0000000000006000 end:
-> 00000000fed1a000 type: 2
-> copy_e820_map() start: 00000000fed1c000 size: 0000000000074000 end:
-> 00000000fed90000 type: 2
-> copy_e820_map() start: 00000000fee00000 size: 0000000000001000 end:
-> 00000000fee01000 type: 2
-> copy_e820_map() start: 00000000ff800000 size: 0000000000800000 end:
-> 0000000100000000 type: 2
->  BIOS-e820: 0000000000000000 - 000000000009f000 (usable)
->  BIOS-e820: 000000000009f000 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
->  BIOS-e820: 00000000bf6d0000 - 00000000bf6df000 (ACPI data)
->  BIOS-e820: 00000000bf6df000 - 00000000bf700000 (ACPI NVS)
->  BIOS-e820: 00000000bf700000 - 00000000c0000000 (reserved)
->  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
->  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
->  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
->  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
->  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
->  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
->  BIOS-e820: 00000000ff800000 - 0000000100000000 (reserved) 
-> 2166MB HIGHMEM available.
-> 896MB LOWMEM available.
-> 
-> Memory: 3106140k/3136320k available (2225k kernel code, 
-> 29072k reserved, 910k data, 196k init, 2218816k highmem) 
-> virtual kernel memory layout:
->     fixmap  : 0xfff50000 - 0xfffff000   ( 700 kB)
->     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
->     vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
->     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
->       .init : 0xc0416000 - 0xc0447000   ( 196 kB)
->       .data : 0xc032c513 - 0xc040ff34   ( 910 kB)
->       .text : 0xc0100000 - 0xc032c513   (2225 kB)
-> 
-> 
-> Thanks,
-> Jeff.
+thanks for taking care. Well, the patch is quite huge, do you think you 
+could split it into separate independent parts (use quilt or something 
+similar for patch management) which could be reviewed independently?
 
-- vin
+As the code changes are often quite non-trivial, layering is changed, 
+lots of files are touched, etc. it would help a lot.
+
+Notes from a quick skim through the patch:
+
+- it seems that you accidentaly deleted the newly added quirk for
+   mightymouse in the bluetooth hid code?
+- what is the point behind HID_QUIRK_SKIP? Why doesn't HID_QUIRK_IGNORE
+   suffice? And why is it defined in so strange way:
+
+@@ -270,6 +271,7 @@ struct hid_item {
+  #define HID_QUIRK_LOGITECH_DESCRIPTOR          0x00100000
+  #define HID_QUIRK_DUPLICATE_USAGES             0x00200000
+  #define HID_QUIRK_RESET_LEDS                   0x00400000
++#define HID_QUIRK_SKIP                         0x80000000
+
+- there are bunches of some easy codingstyle issues (spaces around '=',
+   etc)
+
+But doing really thorough review is quite hard, as the patch contains lots 
+of unrelated changes. I'll look at it a little bit more, but when you send 
+a broken-out version with separate changes, that'd be great.
+
+Thanks,
+
+-- 
+Jiri Kosina
