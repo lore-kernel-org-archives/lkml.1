@@ -1,108 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030997AbXDPWHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031003AbXDPWIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030997AbXDPWHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 18:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031006AbXDPWHz
+	id S1031003AbXDPWIq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 18:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031006AbXDPWIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 18:07:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55360 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030997AbXDPWHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 18:07:54 -0400
-Date: Tue, 17 Apr 2007 00:07:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: [patch] CFS (Completely Fair Scheduler), v2
-Message-ID: <20070416220715.GA4071@elte.hu>
+	Mon, 16 Apr 2007 18:08:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32839
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1031003AbXDPWIp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 18:08:45 -0400
+Date: Mon, 16 Apr 2007 15:08:46 -0700 (PDT)
+Message-Id: <20070416.150846.45744461.davem@davemloft.net>
+To: andrew.vasquez@qlogic.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com, ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070416211049.GC13590@andrew-vasquezs-computer.local>
+References: <20070416.123743.07452378.davem@davemloft.net>
+	<20070416200857.GH10822@andrew-vasquezs-computer.local>
+	<20070416211049.GC13590@andrew-vasquezs-computer.local>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Date: Mon, 16 Apr 2007 14:10:49 -0700
 
-this is the second release of the CFS (Completely Fair Scheduler) 
-patchset, against v2.6.21-rc7:
+> Ok, how about the following patch based on the one you posted which
+> adds the codes to retrieve the WWPN/WWNN from firmware on SPARC, and
+> also adds the module-parameter override I mentioned above.
+> 
+> Perhaps the module-parameter should be set to non-zero in the case of
+> SPARC, to take care of your system configurations?
 
-   http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.patch
+I think it should default to non-zero always, in fact the option
+is completely pointless.
 
-i'd like to thank everyone for the tremendous amount of feedback and 
-testing the v1 patch got - i could hardly keep up with just reading the 
-mails! Some of the stuff people addressed i couldnt implement yet, i 
-mostly concentrated on bugs, regressions and debuggability.
+The guy who hits this had a system which worked previously, and you're
+explicitly breaking it.  That's wrong.
 
-there's a fair amount of churn:
-
-   15 files changed, 456 insertions(+), 241 deletions(-)
-
-But it's an encouraging sign that there was no crash bug found in v1, 
-all the bugs were related to scheduling-behavior details. The code was 
-tested on 3 architectures so far: i686, x86_64 and ia64. Most of the 
-code size increase in -v2 is due to debugging helpers, they'll be 
-removed later. (The new /proc/sched_debug file can be used to see the 
-fine details of CFS scheduling.)
-
-Changes since -v1:
-
- - make nice levels less starvable. (reported by Willy Tarreau)
-
- - fixed child-runs first. A /proc/sys/kernel/sched_child_runs_first 
-   flag can be used to turn it on/off. (This might fix the Kaffeine bug
-   reported by S.Çağlar Onur <)
-
- - changed SCHED_FAIR back to SCHED_NORMAL (suggested by Con Kolivas)
-
- - UP build fix. (reported by Gabriel C)
-
- - timer tick micro-optimization (Dmitry Adamushko)
-
- - preemption fix: sched_class->check_preempt_curr method to decide 
-   whether to preempt after a wakeup (or at a timer tick). (Found via a
-   fairness-test-utility written for CFS by Mike Galbraith)
-
- - start forked children with neutral statistics instead of trying to 
-   inherit them from the parent: Willy Tarreau reported that this 
-   results in better behavior on extreme workloads, and it also 
-   simplifies the code quite nicely. Removed sched_exit() and the 
-   ->task_exit() methods.
-
- - make nice levels independent of the sched_granularity value
-
- - new /proc/sched_debug file listing runqueue details and the rbtree
-
- - new SCH-* fields in /proc/<NR>/status to see scheduling details
-
- - new cpu-hog feature (off by default) and sysctl tunable to set it: 
-   /proc/sys/kernel/sched_max_hog_history_ns tunable defaults to
-   0 (off). Positive values are meant the maximum 'memory' that the 
-   scheduler has of CPU hogs.
-
- - various code cleanups
-
- - added more statistics temporarily: sum_exec_runtime, 
-   sum_wait_runtime.
-
- - added -CFS-v2 to EXTRAVERSION
-
-as usual, any sort of feedback, bugreports, fixes and suggestions are 
-more than welcome,
-
-	Ingo
+How can you not see that this quality of implementation decision
+you're making stinks?
