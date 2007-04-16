@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbXDPKqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250AbXDPKsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbXDPKqa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 06:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030342AbXDPKqa
+	id S1752250AbXDPKsH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 06:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXDPKsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 06:46:30 -0400
-Received: from mail.screens.ru ([213.234.233.54]:33621 "EHLO mail.screens.ru"
+	Mon, 16 Apr 2007 06:48:06 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:58872 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752250AbXDPKq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 06:46:29 -0400
-Date: Mon, 16 Apr 2007 14:45:59 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Cc: Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH -mm] scheduler: fix the return of the first time_slice
-Message-ID: <20070416104559.GA84@tv-sign.ru>
-References: <877isozllw.wl%takeuchi_satoru@jp.fujitsu.com> <20070408230927.9a49c504.akpm@linux-foundation.org> <200704140131.12500.kernel@kolivas.org> <871wilrrlz.wl%takeuchi_satoru@jp.fujitsu.com> <87wt0dq6jn.wl%takeuchi_satoru@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87wt0dq6jn.wl%takeuchi_satoru@jp.fujitsu.com>
-User-Agent: Mutt/1.5.11
+	id S1752250AbXDPKsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 06:48:05 -0400
+Message-ID: <46235447.3080000@free.fr>
+Date: Mon, 16 Apr 2007 12:47:35 +0200
+From: John <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: linux.kernel@free.fr
+Subject: Disabling x86 System Management Mode
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/16, Satoru Takeuchi wrote:
->
-> --- linux-2.6.21-rc6-mm1.tsfix.orig/kernel/exit.c	2007-04-15 16:56:12.000000000 +0900
-> +++ linux-2.6.21-rc6-mm1.tsfix/kernel/exit.c	2007-04-15 16:56:17.000000000 +0900
-> @@ -680,10 +680,14 @@
->  			reaper = child_reaper(father);
->  			break;
->  		}
-> +		if (reaper->time_slice_reaper == father)
-> +			reaper->time_slice_reaper = NULL;
->  	} while (reaper->exit_state);
->  
->  	list_for_each_safe(_p, _n, &father->children) {
->  		p = list_entry(_p, struct task_struct, sibling);
-> +		if (p->time_slice_reaper == father)
-> +			p->time_slice_reaper = NULL;
->  		choose_new_parent(p, reaper);
->  		reparent_thread(p, father);
->  	}
-> Index: linux-2.6.21-rc6-mm1.tsfix/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.21-rc6-mm1.tsfix.orig/kernel/sched.c	2007-04-15 16:56:12.000000000 +0900
-> +++ linux-2.6.21-rc6-mm1.tsfix/kernel/sched.c	2007-04-15 16:56:17.000000000 +0900
-> @@ -1693,7 +1693,7 @@
->  	 * The remainder of the first timeslice might be recovered by
->  	 * the parent if the child exits early enough.
->  	 */
-> -	p->first_time_slice = 1;
-> +	p->time_slice_reaper = current;
->  	p->timestamp = sched_clock();
->  	local_irq_enable();
+Hello everyone,
 
-I am afraid this doesn't work for CLONE_THREAD. Suppose that some sub-thread (not
-main thread) T1 creates another sub-thread, T2.
+According to Wikipedia:
+http://en.wikipedia.org/wiki/Non-Maskable_Interrupt
+http://en.wikipedia.org/wiki/System_Management_Mode
 
-	T2->time_slice_reaper = T1.
+"SMM is an operating mode of the Intel 386SL and later microprocessor in 
+which all normal execution (including the operating system) is 
+suspended, and special separate software (usually firmware or a 
+hardware-assisted debugger) is executed in high-privilege mode.
 
-then T1 exits, but forget_original_parent(T1) doesn't change T2->time_slice_reaper,
-because T2 is not on T1->children list. Now T2->time_slice_reaper points to an
-already freed task_struct.
+Operations in SMM take CPU time away from the OS, since the CPU state 
+must be stored to memory (SMRAM) and any write back caches must be 
+flushed. This can destroy real-time behavior and cause clock ticks to 
+get lost."
 
-Oleg.
+AFAIU, even a hard real-time OS is "defenseless" against SMIs that
+kick the CPU into SMM.
 
+I'm planning on writing a few line of code to gather indirect evidence
+that the CPU is periodically entering SMM.
+
+I was considering a kernel module along the lines of...
+
+for (i=0; i < N; ++i)
+{
+   schedule_timeout(1); /* sleep at least one jiffy */
+   disable interrupts
+   unsigned cycles = foo();
+   /* update stats with cycles */
+   enable interrupts
+}
+
+foo is a loop full of NOPs.
+It takes up only a few lines in L1 cache.
+The conditional jump is easy to predict.
+There is a serializing instruction before and after.
+As a result, foo's latency should be very consistent.
+foo returns the number of cycles it ran. On the systems I have to work 
+with, foo typically runs in ~800 microseconds.
+I suppose disabling interrupts that long is bound to break something 
+somewhere?
+
+.globl foo
+foo:
+   push %ebx
+   push %esi
+   cpuid
+   rdtsc
+   mov MM, %ecx
+   mov %eax, %esi
+.align 16
+.L1:
+   nop
+   nop
+   ... (lots of nops)
+   dec %ecx
+   jnz .L1
+.L2:
+   cpuid
+   rdtsc
+   sub %esi, %eax
+   pop %esi
+   pop %ebx
+   ret
+
+If foo returns something out of the ordinary, even though interrupts 
+were disabled, then it must have been interrupted by a non-maskable 
+interrupt, probably a system management interrupt.
+
+What do you think about this approach?
+I'm open to comments and suggestions.
+
+Regards.
