@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXDPGyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbXDPHBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbXDPGyV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 02:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932332AbXDPGyV
+	id S932079AbXDPHBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 03:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbXDPHBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 02:54:21 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:31585 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932286AbXDPGyU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 02:54:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=TduXENI8/IjTmxZLM7WF4ZP/lCoEXvr/j6sFsBo8UDIeTdBVN7MwgblSVA586H7+oz6H6og7L9yh0lLGIU03FAuKN+wdvwg4yy3lo0Hn1WPBmZRKdOkCfUe+SpqKQ7lFl9oTKB0rcwV51ditEGdQSWhH+vtLScV4jqDumlSjkYw=
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 16 Apr 2007 03:01:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46330 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753640AbXDPHBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 03:01:45 -0400
+Date: Mon, 16 Apr 2007 09:01:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-In-Reply-To: <20070416062921.GB7528@redhat.com>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	 <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com>
-	 <20070416011636.GO3691@stusta.de>  <20070416062921.GB7528@redhat.com>
-Content-Type: text/plain
-Date: Mon, 16 Apr 2007 14:54:07 +0800
-Message-Id: <1176706447.5129.6.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [RFD] CPU hotplug and suspend
+Message-ID: <20070416070132.GB1783@elf.ucw.cz>
+References: <200704061732.32712.rjw@sisk.pl> <20070409140352.GB3864@ucw.cz> <200704091514.56167.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704091514.56167.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 02:29 -0400, Dave Jones wrote:
-> On Mon, Apr 16, 2007 at 03:16:37AM +0200, Adrian Bunk wrote:
->  > On Sun, Apr 15, 2007 at 08:54:46PM -0400, Dave Jones wrote:
->  > > On Mon, Apr 16, 2007 at 02:37:23AM +0200, Adrian Bunk wrote:
->  > > 
->  > >  > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
->  > >  >              workaround: booting with "hpet=disable"
->  > >  > References : http://lkml.org/lkml/2007/3/13/3
->  > >  > Submitter  : Dave Jones <davej@redhat.com>
->  > >  >              Jeremy Fitzhardinge <jeremy@goop.org>
->  > >  > Caused-By  : PCI merge
->  > >  >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
->  > >  > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
->  > >  >              Rafael J. Wysocki <rjw@sisk.pl>
->  > >  > Status     : unknown
->  > > 
+Hi!
 
-<snip>
+> > > Currently, we use the CPU hotplug to disable nonboot CPUs in the suspend code
+> > > paths, but with the recent change of code ordering (ie. nonboot CPUs are
+> > > disabled after freezing tasks _and_ devices) it has become quite troublesome.
+> > > The reason of this is that there are some CPU hotplug notifiers registered and
+> > > called on each run of cpu_up()/cpu_down() that assume the system to be fully
+> > > functional, which is not the case during the suspend.  Moreover, at least some
+> > > of them do things that are not really necessary for disabling or enabling the
+> > > nonboot CPUs.
+> > 
+> > Right.
+> > 
+> > > The advantage of using the CPU hotplug (in its current form) for suspending is
+> > > that if some CPUs don't reappear during the resume, we are safe.  Still, I
+> > > think it would be more appropriate, and simpler in the long run, to notify the
+> > > interested subsystems _only_ if one (or more) CPUs are not functional after the
+> > > resume. 
+> > 
+> > I'm afraid that adding 'cpu not there so simulate unplug' path will
+> > make it complex, and prone to failure, as _noone_ is going to test it.
+> 
+> Does it mean you think we should stick with the current approach and sort out
+> all issues as they show up, or should we go for not using the CPU hotplug for
+> suspending without implementing the 'cpu not there so simulate unplug' path
+> at all (eg. we can fail the resume instead)?
 
-> I'll try and narrow down exactly where it's failing in the
-> backlight code next, but it's getting late here, so I may
-> leave this until tomorrow for further investigation.
-> Some other clues for anyone playing along at home:
-> This X60 has Intel graphics.  ie, I'm not using any of
-> the drivers that 'select FB_BACKLIGHT',
-
-CONFIG_ACPI_VIDEO depends on BACKLIGHT_CLASS_DEVICE, which, in turn is
-enabled by FB_BACKLIGHT. So we can narrow it down further, can you try?
-
-CONFIG_FB_BACKLIGHT=y
-CONFIG_ACPI_VIDEO=n
-
-Tony
-
-
+I'd fix the current approach, but...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
