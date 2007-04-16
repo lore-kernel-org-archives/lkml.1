@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030686AbXDPPM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030751AbXDPPXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030686AbXDPPM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 11:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030736AbXDPPM2
+	id S1030751AbXDPPXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 11:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030755AbXDPPXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 11:12:28 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:34086 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030686AbXDPPM2 (ORCPT
+	Mon, 16 Apr 2007 11:23:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:33358 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030751AbXDPPXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 11:12:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=RJpC1DPKq04YZ4256SKDUN03fGYj0Iy3U0qRqubvSRfpajiwWWmEDrK+mheKJhOKRbDxMr5csZ8x6KpK410buEb9tVt+FUFe6hZtbVLaolphoCwVV/72AShXkGKeOXhdPL3jOpxb7zEe0G50OIltMz0j16Qs9CbLIfvIMGaL5ng=
-Message-ID: <75b66ecd0704160812k79fc5b18j499ec7b91333df95@mail.gmail.com>
-Date: Mon, 16 Apr 2007 11:12:26 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: John <linux.kernel@free.fr>
-Subject: Re: Disabling x86 System Management Mode
+	Mon, 16 Apr 2007 11:23:19 -0400
+Date: Mon, 16 Apr 2007 17:23:18 +0200
+From: Jan Kara <jack@suse.cz>
+To: Tino Keitel <tino.keitel@gmx.de>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46235EA9.8060100@free.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 0/6] UDF cleanup and fixes
+Message-ID: <20070416152318.GG25785@atrey.karlin.mff.cuni.cz>
+References: <20070306164447.GC3661@duck.suse.cz> <20070330045923.GA5528@dose.home.local> <460D51AA.2080307@redhat.com> <20070331094631.GA24220@thinkpad.home.local> <461117BB.5040705@redhat.com> <20070404063620.GA5465@dose.home.local> <20070412160112.GD23348@duck.suse.cz> <20070412155946.GA7613@dose.home.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46235447.3080000@free.fr> <46235EA9.8060100@free.fr>
-X-Google-Sender-Auth: d2a1e822e3695184
+In-Reply-To: <20070412155946.GA7613@dose.home.local>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/07, John <linux.kernel@free.fr> wrote:
-> Chipset: VIA Pro133T
-> http://www.via.com.tw/en/products/chipsets/legacy/pro133/
-> VT82C694T north bridge + VT82C686B south bridge
->
-> AFAIU, the south bridge can be a source of SMIs.
-> Can the north bridge also be a source of SMIs?
->
-> What I/O ports do I need to write to, and what values should I write to
-> these ports, in order to prevent the VT82C686B from sending SMIs?
->
+> On Thu, Apr 12, 2007 at 18:01:12 +0200, Jan Kara wrote:
+> > On Wed 04-04-07 08:36:20, Tino Keitel wrote:
+> > > On Mon, Apr 02, 2007 at 10:48:27 -0400, Chuck Ebbert wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > Well, it works for me on 32-bit as well, right up to 100% full.
+> > > > No problems at all...
+> > > 
+> > > Maybe it depends on the kernel. I patched 2.6.20 with the patches
+> > > above and got the described behaviour.
+> >   I've sent you an email with a few questions but probably it got lost in
+> > the noise... Are you able to reproduce the problem? Have you reproduced the
+> > problem on a freshly created UDF image or was it some older image?
+> 
+> Hi,
+> 
+> I can't remember of any errors in the kernel or about not available
+> space. It was an image file that I expermimented with, and I did
+> multiple mkudffs runs on the file. Could it be that the behaviour was
+> caused by stale data inside the image?
+  OK, thanks for info. Umm, I don't find it likely that some stale data
+in the image would cause this but maybe something could confuse mkudffs
+(like it was expecting zeros somewhere where they were not). If you had
+some recipe how to reproduce the problem (it would be enough if you had
+something like: I have this file, I run mkudffs, mount it, see wrong
+free blocks count), I can have a look at it. Otherwise, it's hard to
+track it down...
 
-Check out some of the links in this thread:
-
-http://www.embeddedrelated.com/usenet/embedded/show/50333-1.php
-
-Lee
+								Honza
