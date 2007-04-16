@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030673AbXDPOgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030680AbXDPOge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030673AbXDPOgI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 10:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030680AbXDPOgH
+	id S1030680AbXDPOge (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 10:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030684AbXDPOge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 10:36:07 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:52141 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030673AbXDPOgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 10:36:05 -0400
-Date: Mon, 16 Apr 2007 16:36:13 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Mike Mattie <codermattie@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org
-Subject: Re: [BUG] 2.6.21-rc7 hpt366 driver broken
-Message-ID: <20070416143613.GD10338@stusta.de>
-References: <20070415224846.52a465b6@reforged> <20070416043822.0ea2490e@reforged>
+	Mon, 16 Apr 2007 10:36:34 -0400
+Received: from [212.12.190.15] ([212.12.190.15]:33000 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030683AbXDPOgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 10:36:33 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+Date: Mon, 16 Apr 2007 17:38:52 +0300
+User-Agent: KMail/1.5
+References: <200704150931.42268.a1426z@gawab.com>
+In-Reply-To: <200704150931.42268.a1426z@gawab.com>
+Cc: William Lee Irwin III <wli@holomorphy.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070416043822.0ea2490e@reforged>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704161738.52870.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Cc's added, full bug report was in http://lkml.org/lkml/2007/4/16/18 ]
+Ingo Molnar wrote:
+> * William Lee Irwin III <wli@holomorphy.com> wrote:
+> > On Sun, Apr 15, 2007 at 09:57:48PM +0200, Ingo Molnar wrote:
+> > > Oh I was very much testing "CPU bandwidth allocation as influenced by
+> > > nice numbers" - it's one of the basic things i do when modifying the
+> > > scheduler. An automated tool, while nice (all automation is nice)
+> > > wouldnt necessarily show such bugs though, because here too it needed
+> > > thousands of running tasks to trigger in practice. Any volunteers? ;)
+> >
+> > Worse comes to worse I might actually get around to doing it myself.
+> > Any more detailed descriptions of the test for a rainy day?
+>
+> the main complication here is that the handling of nice levels is still
+> typically a 2nd or 3rd degree design factor when writing schedulers. The
+> reason isnt carelessness, the reason is simply that users typically only
+> care about a single nice level: the one that all tasks run under by
+> default.
+>
+> Also, often there's just one or two good ways to attack the problem
+> within a given scheduler approach and the quality of nice levels often
+> suffers under other, more important design factors like performance.
+>
+> This means that for example for the vanilla scheduler the distribution
+> of CPU power depends on HZ, on the number of tasks and on the scheduling
+> pattern. The distribution of CPU power amongst nice levels is basically
+> a function of _everything_. That makes any automated test pretty
+> challenging. Both with SD and with CFS there's a good chance to actually
+> formalize the meaning of nice levels, but i'd not go as far as to
+> mandate any particular behavior by rigidly saying "pass this automated
+> tool, else ...", other than "make nice levels resonable". All the other
+> more formal CPU resource limitation techniques are then a matter of
+> CKRM-alike patches, which offer much more finegrained mechanisms than
+> pure nice levels anyway.
+>
+> so to answer your question: it's pretty much freely defined. Make up
+> your mind about it and figure out the ways how people use nice levels
+> and think about which aspects of that experience are worth testing for
+> intelligently.
 
-On Mon, Apr 16, 2007 at 04:38:22AM -0700, Mike Mattie wrote:
-> On Sun, 15 Apr 2007 22:48:46 -0700
-> Mike Mattie <codermattie@gmail.com> wrote:
-> 
-> > Hello,
-> > 
-> > I am testing the 2.6.21-rc7 kernel release. The IDE hpt366 driver is
-> > crashing hanging the boot. I have basically the same config as
-> > 2.6.20.7 which works fine (except for netconsole mentioned in a
-> > previous mail).
-> > 
-> > here is the hand-copied info:
-> > 
-> > * "unable to handle paging request" , null deref
-> > * EIP @ init_chipset_hpt366
-> > 
-> 
-> > I am running a git-bisect to see if I can resolve it to a commit.
-> 
-> This was identified as the first broken commit:
-> 
-> commit 7b73ee05d0acb926923d43d78b61add776ea4bb1
-> Author: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Date:   Wed Feb 7 18:18:16 2007 +0100
-> 
->     hpt366: init code rewrite
-> 
-> Reverting is conflicted so it will be a bit longer before I pin-point any other build-breaks.
+I think this post, http://lkml.org/lkml/2007/4/15/5, shows the problem 
+clearly with only 3 tasks running.
 
-Thanks for your report.
 
-Can you use a digital camera for taking a photograph of the crash?
-
-cu
-Adrian
+Thanks!
 
 --
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Al
 
