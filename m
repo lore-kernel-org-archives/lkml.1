@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965105AbXDPJbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030300AbXDPJfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965105AbXDPJbI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 05:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965153AbXDPJbI
+	id S1030300AbXDPJfw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 05:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXDPJfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 05:31:08 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:56967 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965105AbXDPJbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 05:31:06 -0400
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Dave Jones <davej@redhat.com>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <20070416075543.GB15281@redhat.com>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	 <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com>
-	 <20070416011636.GO3691@stusta.de> <20070416062921.GB7528@redhat.com>
-	 <1176706447.5129.6.camel@daplas> <20070416072326.GA15281@redhat.com>
-	 <1176708722.5129.8.camel@daplas>  <20070416075543.GB15281@redhat.com>
-Content-Type: text/plain
-Date: Mon, 16 Apr 2007 10:26:43 +0100
-Message-Id: <1176715603.6794.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Apr 2007 05:35:52 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:33634 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030283AbXDPJfv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 05:35:51 -0400
+To: linuxram@us.ibm.com
+CC: devel@openvz.org, serue@us.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, viro@ftp.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <1176713221.9488.17.camel@ram.us.ibm.com> (message from Ram Pai
+	on Mon, 16 Apr 2007 01:47:00 -0700)
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
+	namespace" clone flag
+References: <20070412164541.580374744@szeredi.hu>
+	 <20070412164620.588752236@szeredi.hu>
+	 <20070412203208.GG27772@sergelap.austin.ibm.com>
+	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com> <1176713221.9488.17.camel@ram.us.ibm.com>
+Message-Id: <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 16 Apr 2007 11:32:47 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 03:55 -0400, Dave Jones wrote: 
-> On Mon, Apr 16, 2007 at 03:32:02PM +0800, Antonino A. Daplas wrote:
->  > On Mon, 2007-04-16 at 03:23 -0400, Dave Jones wrote:
->  > > On Mon, Apr 16, 2007 at 02:54:07PM +0800, Antonino A. Daplas wrote:
->  > >  
->  > >  > CONFIG_ACPI_VIDEO depends on BACKLIGHT_CLASS_DEVICE, which, in turn is
->  > >  > enabled by FB_BACKLIGHT. So we can narrow it down further, can you try?
->  > >  > 
->  > >  > CONFIG_FB_BACKLIGHT=y
->  > >  > CONFIG_ACPI_VIDEO=n
->  > > 
->  > > That also gets me a dead display. Backlight doesn't turn back on.
->  > 
->  > Anything under /sys/class/backlight?
+> > Given the existence of shared subtrees allowing/denying this at the
+> > mount
+> > namespace level is silly and wrong.
+> > 
+> > If we need more than just the filesystem permission checks can we
+> > make it a mount flag settable with mount and remount that allows
+> > non-privileged users the ability to create mount points under it
+> > in directories they have full read/write access to.
 > 
-> Entries from ibm_acpi.  I rmmod'd that, leaving the dir empty,
-> and it still fails.
+> Also for bind-mount and remount operations the flag has to be propagated
+> down its propagation tree.  Otherwise a unpriviledged mount in a shared
+> mount wont get reflected in its peers and slaves, leading to unidentical
+> shared-subtrees.
 
-What happens if you never load ibm-acpi?
+That's an interesting question.  Do we want shared mounts to be
+totally identical, including mnt_flags?  It doesn't look as if
+do_remount() guarantees that currently.
 
-I'm a bit puzzled as CONFIG_FB_BACKLIGHT doesn't do anything with the
-intelfb driver. One thing it does do is set
-CONFIG_BACKLIGHT_CLASS_DEVICE. When you disabled FB_BACKLIGHT and got a
-working display on resume, was that set and was (or had) ibm-acpi been
-loaded?
-
-A variety of other options such as ACPI_IBM also set
-CONFIG_BACKLIGHT_CLASS_DEVICE although without a backlight driver it
-will do nothing hence the suspicion is on ibm-acpi, perhaps interacting
-with the backlight class badly.
-
-Does echoing numbers to /sys/class/backlight/ibm_acpi/brightness change
-the backlight brightness as expected? If you can ssh into the machine
-after its resumed with the display problem, it would be interesting to
-know what the brightness was and if changing it helped too...
-
-Regards,
-
-Richard
-
+Miklos
