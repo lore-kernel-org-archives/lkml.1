@@ -1,117 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbXDPBu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbXDPB71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754276AbXDPBu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 21:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbXDPBu3
+	id S1754279AbXDPB71 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 21:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXDPB71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 21:50:29 -0400
-Received: from qsrv03ps.mx.bigpond.com ([144.140.82.183]:62528 "EHLO
-	qsrv03ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754137AbXDPBu2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 21:50:28 -0400
-Message-ID: <4622CC30.6030707@bigpond.net.au>
-Date: Mon, 16 Apr 2007 11:06:56 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415233909.GE2986@holomorphy.com>
-In-Reply-To: <20070415233909.GE2986@holomorphy.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Mon, 16 Apr 2007 01:07:01 +0000
+	Sun, 15 Apr 2007 21:59:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38582 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754277AbXDPB70 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 21:59:26 -0400
+Date: Mon, 16 Apr 2007 11:59:11 +1000
+From: David Chinner <dgc@sgi.com>
+To: xfs-masters@oss.sgi.com
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [xfs-masters] Re: mm snapshot broken-out-2007-04-11-02-24.tar.gz uploaded
+Message-ID: <20070416015911.GW32602149@melbourne.sgi.com>
+References: <200704110926.l3B9Qe3D000895@shell0.pdx.osdl.net> <461D22E5.9030705@googlemail.com> <20070411121515.56425c23.akpm@linux-foundation.org> <461D5DE3.1050300@googlemail.com> <20070411154204.84c97c10.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070411154204.84c97c10.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> On Sun, Apr 15, 2007 at 10:48:24PM +0200, Ingo Molnar wrote:
->> 2) plugsched did not allow on the fly selection of schedulers, nor did
->>    it allow a per CPU selection of schedulers. IO schedulers you can 
->>    change per disk, on the fly, making them much more useful in
->>    practice. Also, IO schedulers (while definitely not being slow!) are 
->>    alot less performance sensitive than CPU schedulers.
+On Wed, Apr 11, 2007 at 03:42:04PM -0700, Andrew Morton wrote:
+> On Thu, 12 Apr 2007 00:14:59 +0200
+> Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 > 
-> One of the reasons I never posted my own code is that it never met its
-> own design goals, which absolutely included switching on the fly. I
-> think Peter Williams may have done something about that.
-
-I didn't but some students did.
-
-In a previous life, I did implement a runtime configurable CPU 
-scheduling mechanism (implemented on True64, Solaris and Linux) that 
-allowed schedulers to be loaded as modules at run time.  This was 
-released commercially on True64 and Solaris.  So I know that it can be done.
-
-I have thought about doing something similar for the SPA schedulers 
-which differ in only small ways from each other but lack motivation.
-
-> It was my hope
-> to be able to do insmod sched_foo.ko until it became clear that the
-> effort it was intended to assist wasn't going to get even the limited
-> hardware access required, at which point I largely stopped working on
-> it.
+> > Andrew Morton napisa__(a):
+> > [ 1053.757285] EIP is at xlog_iodone+0x99/0xbb [xfs]
+> > [ 1053.762069] eax: 00000000   ebx: d6871ae8   ecx: c04a396c   edx: 00000000
+> > [ 1053.769002] esi: d6871ae8   edi: d0f7def8   ebp: d0fa5f30   esp: d0fa5f18
+> > [ 1053.775912] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> > [ 1053.781842] Process xfslogd/1 (pid: 3642, ti=d0fa4000 task=cac7f5a0 task.ti=d0fa4000)
+> > [ 1053.789660] Stack: c01339fc d0f36130 db641df8 d6871ae8 d0f3611c d6871b84 d0fa5f40 fddab492 
+> > [ 1053.798450]        dd2439ad d6871b88 d0fa5f70 c0133a26 c9c39db0 d0f36144 d0fa5f70 c01372d8 
+> > [ 1053.807213]        00000000 00000000 fddab477 d0f3611c d0f85d70 00000000 d0fa5fb0 c0134469 
+> > [ 1053.815902] Call Trace:
+> > [ 1053.818721]  [<fddab492>] xfs_buf_iodone_work+0x1b/0x3e [xfs]
+> > [ 1053.824830]  [<c0133a26>] run_workqueue+0x8e/0x15a
+> > [ 1053.829766]  [<c0134469>] worker_thread+0x108/0x116
+> > [ 1053.834793]  [<c013707c>] kthread+0xb5/0xe1
+> > [ 1053.839129]  [<c0104eb3>] kernel_thread_helper+0x7/0x10
+> > [ 1053.844539]  =======================
+> > [ 1053.848172] INFO: lockdep is turned off.
+> > [ 1053.852201] Code: 46 4c db fd ba 02 00 00 00 e8 61 fc 01 00 ba 02 00 00 00 eb 0f 8a 47 78 83 e0 80 3c 01 19 d2 f7 d2 83 e2 02 89 f8 e8 99 f7 ff ff <f6> 46 68 10 75 14 f0 ff 86 bc 00 00 00 7f 0b 8d 86 bc 00 00 00 
+> > [ 1053.872927] EIP: [<fdd91dfe>] xlog_iodone+0x99/0xbb [xfs] SS:ESP 0068:d0fa5f18
+> > 
 > 
+> Bingo.  So it seems the xfslogd_workqueue is being run after unmount has
+> freed the memory which it uses.  Or something along those lines.
+
+It looks like the workqueue is being run while the log is
+being torn down.
+
+On unmount, we write a log record to indicate a clean unmount just
+before we tear the log down. We sleep on the iclog force semaphore
+waiting for the log I/O to complete, which is processed by xfslogd
+and xlog_iodone().
+
+xlog_iodone() calls xlog_state_done_syncing() which processes the I/O
+completion and wakes the unmount process sleeping on the semaphore.
+xlog_state_done_syncing() then does a bit more work before returning
+to xlog_iodone() where we check the buffer to determine if it was an
+async I/o or not.
+
+However, before we get to this, the unmount process has woken and
+continued onwards which then frees the iclogs and the buffer. Hence
+we have a race between xlog_iodone() looking at the buffer and the
+unmount process tearing the buffer down.
+
+There's a couple of different ways I can see to fix the problem -
+the first is to not reference the buffer in xlog_iodone() after
+running the callbacks that may trigger it being freed. I'd prfer to
+see if this fixes the problem before having to do more invasive
+surgery.  Can you try the patch below to see if it fixes the
+problem?
+
+> > >> [11050.550630] ---------------------------------------------
+> > >> [11050.556142] umount/3359 is trying to acquire lock:
+> > >> [11050.561060]  (&(&ip->i_lock)->mr_lock){----}, at: [<fdd8729a>] xfs_ilock+0x4d/0x6e [xfs]
+> > >> [11050.569565] 
+> > >> [11050.569567] but task is already holding lock:
+> > >> [11050.575487]  (&(&ip->i_lock)->mr_lock){----}, at: [<fdd8729a>] xfs_ilock+0x4d/0x6e [xfs]
+> > > 
+> > > An xfs thing.
+> > 
+> > Yes, I know. This is a known bug since at least 05-Jul-2006.
 > 
-> On Sun, Apr 15, 2007 at 10:48:24PM +0200, Ingo Molnar wrote:
->> 3) I/O schedulers are pretty damn clean code, and plugsched, at least
->>    the last version i saw of it, didnt come even close.
-> 
-> I'm not sure what happened there. It wasn't a big enough patch to take
-> hits in this area due to getting overwhelmed by the programming burden
-> like some other efforts of mine. Maybe things started getting ugly once
-> on-the-fly switching entered the picture. My guess is that Peter Williams
-> will have to chime in here, since things have diverged enough from my
-> one-time contribution 4 years ago.
+> It's probably not very important - often these things turn out to not
+> really be deadlockable at all.
 
- From my POV, the current version of plugsched is considerably simpler 
-than it was when I took the code over from Con as I put considerable 
-effort into minimizing code overlap in the various schedulers.
+Right - it's not a bug as such. XFS needs lockdep annotations
+(being worked on) to prevent this.
 
-I also put considerable effort into minimizing any changes to the load 
-balancing code (something Ingo seems to think is a deficiency) and the 
-result is that plugsched allows "intra run queue" scheduling to be 
-easily modified WITHOUT effecting load balancing.  To my mind scheduling 
-and load balancing are orthogonal and keeping them that way simplifies 
-things.
+Cheers,
 
-As Ingo correctly points out, plugsched does not allow different 
-schedulers to be used per CPU but it would not be difficult to modify it 
-so that they could.  Although I've considered doing this over the years 
-I decided not to as it would just increase the complexity and the amount 
-of work required to keep the patch set going.  About six months ago I 
-decided to reduce the amount of work I was doing on plugsched (as it was 
-obviously never going to be accepted) and now only publish patches 
-against the vanilla kernel's major releases (and the only reason that I 
-kept doing that is that the download figures indicated that about 80 
-users were interested in the experiment).
-
-Peter
-PS I no longer read LKML (due to time constraints) and would appreciate 
-it if I could be CC'd on any e-mails suggesting scheduler changes.
-PPS I'm just happy to see that Ingo has finally accepted that the 
-vanilla scheduler was badly in need of fixing and don't really care who 
-fixes it.
-PPS Different schedulers for different aims (i.e. server or work 
-station) do make a difference.  E.g. the spa_svr scheduler in plugsched 
-does about 1% better on kernbench than the next best scheduler in the bunch.
-PPPS Con, fairness isn't always best as humans aren't very altruistic 
-and we need to give unfair preference to interactive tasks in order to 
-stop the users flinging their PCs out the window.  But the current 
-scheduler doesn't do this very well and is also not very good at 
-fairness so needs to change.  But the changes need to address 
-interactive response and fairness not just fairness.
+Dave.
 -- 
-Peter Williams                                   pwil3058@bigpond.net.au
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+---
+ fs/xfs/xfs_log.c |   11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
+
+Index: 2.6.x-xfs-new/fs/xfs/xfs_log.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/xfs_log.c	2007-04-03 09:09:36.000000000 +1000
++++ 2.6.x-xfs-new/fs/xfs/xfs_log.c	2007-04-16 11:40:21.655306665 +1000
+@@ -988,14 +988,11 @@ xlog_iodone(xfs_buf_t *bp)
+ 	} else if (iclog->ic_state & XLOG_STATE_IOERROR) {
+ 		aborted = XFS_LI_ABORTED;
+ 	}
++	/* log I/O is always issued ASYNC, so we should see that here */
++	WARN_ON(!(XFS_BUF_ISASYNC(bp)));
+ 	xlog_state_done_syncing(iclog, aborted);
+-	if (!(XFS_BUF_ISASYNC(bp))) {
+-		/*
+-		 * Corresponding psema() will be done in bwrite().  If we don't
+-		 * vsema() here, panic.
+-		 */
+-		XFS_BUF_V_IODONESEMA(bp);
+-	}
++	/* do not reference bp here - it may have been freed during unmount */
++
+ }	/* xlog_iodone */
+ 
+ /*
