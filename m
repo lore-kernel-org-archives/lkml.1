@@ -1,75 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbXDPEVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbXDPEfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459AbXDPEVa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 00:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbXDPEVa
+	id S1754473AbXDPEfP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 00:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbXDPEfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 00:21:30 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:40816 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754459AbXDPEVa (ORCPT
+	Mon, 16 Apr 2007 00:35:15 -0400
+Received: from ihemail4.lucent.com ([135.245.0.39]:52036 "EHLO
+	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754473AbXDPEfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 00:21:30 -0400
-Date: Mon, 16 Apr 2007 00:19:33 -0400
-From: Kyle McMartin <kyle@parisc-linux.org>
-To: davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sparc64: modalias support for of_device
-Message-ID: <20070416041933.GE23783@athena.road.mcmartin.ca>
+	Mon, 16 Apr 2007 00:35:13 -0400
+X-Greylist: delayed 667 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 00:35:13 EDT
+Message-ID: <4622FA61.4000901@alcatel-lucent.com>
+Date: Mon, 16 Apr 2007 12:24:01 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: Unable to mount root fs on unknown-block(1,0)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Apr 2007 04:23:31.0542 (UTC) FILETIME=[FD799760:01C77FDE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Hi Folks,
 
-Quick patch to add modalias support for of_device to arch/sparc64 so
-sbus drivers can be automatically loaded (I hope :)
+I got problem to boot linux 2.6.25 using u-boot-1.1.4, any ideas?
 
-Untested, as I'm sparc-less at the moment.
+-------------------------
 
-Cheers,
-	Kyle
+U-Boot 1.1.4 (Apr 14 2007 - 00:57:01)
 
-diff --git a/arch/sparc64/kernel/of_device.c b/arch/sparc64/kernel/of_device.c
-index fb9bf1e..d00ed90 100644
---- a/arch/sparc64/kernel/of_device.c
-+++ b/arch/sparc64/kernel/of_device.c
-@@ -173,6 +173,19 @@ struct of_device *of_find_device_by_node(struct device_node *dp)
- }
- EXPORT_SYMBOL(of_find_device_by_node);
- 
-+static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
-+{
-+	ssize_t len;
-+	struct of_device *d = to_of_device(dev);
-+	struct device_node *node = d->node;
-+
-+	len = sprintf(buf, "of:N%sT%sC%s\n",
-+		      node->name, node->type, "*");
-+
-+	return len;
-+}
-+
- #ifdef CONFIG_PCI
- struct bus_type isa_bus_type = {
-        .name	= "isa",
-@@ -207,9 +220,15 @@ struct bus_type sbus_bus_type = {
- EXPORT_SYMBOL(sbus_bus_type);
- #endif
- 
-+static struct device_attribute of_dev_attrs[] = {
-+	__ATTR_RO(modalias),
-+	__ATTR_NULL
-+};
-+
- struct bus_type of_bus_type = {
-        .name	= "of",
-        .match	= of_platform_bus_match,
-+       .dev_attrs	= of_dev_attrs,
-        .probe	= of_device_probe,
-        .remove	= of_device_remove,
-        .suspend	= of_device_suspend,
+CPU:   XPC850xxZTB at 50 MHz: 2 kB I-Cache 1 kB D-Cache
+Board: ### No HW ID - assuming TQM8xxL
+DRAM:   8 MB
+FLASH:  4 MB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   SCC ETHERNET
+Hit any key to stop autoboot:  0
+Using SCC ETHERNET device
+TFTP from server 90.0.0.1; our IP address is 90.0.0.2
+Filename 'uImage'.
+Load address: 0x100000
+Loading: #################################################################
+         #################################################################
+         ################################
+done
+Bytes transferred = 825541 (c98c5 hex)
+
+=> printenv
+bootdelay=5
+baudrate=9600
+loads_echo=1
+ethact=SCC ETHERNET
+netmask=0xff000000
+vlan=0xffff
+nvlan=0xffff
+clocks_in_mhz=1
+bootcmd=tftp 0x100000 uImage
+autostart=no
+filesize=c98c5
+fileaddr=100000
+ipaddr=90.0.0.2
+serverip=90.0.0.1
+bootargs=root=/dev/ram rw
+stdin=serial
+stdout=serial
+stderr=serial
+
+Environment size: 293/16380 bytes
+=> bdinfo
+memstart    = 0x00000000
+memsize     = 0x00800000
+flashstart  = 0x10000000
+flashsize   = 0x00400000
+flashoffset = 0x00021000
+sramstart   = 0x00000000
+sramsize    = 0x00800000
+immr_base   = 0xFFF00000
+bootflags   = 0x00000001
+intfreq     =     50 MHz
+busfreq     =     50 MHz
+ethaddr     = 00:00:00:00:00:00
+IP addr     = 90.0.0.2
+baudrate    =   9600 bps
+
+
+=> tftp 0x200000 aaa
+Using SCC ETHERNET device
+TFTP from server 90.0.0.1; our IP address is 90.0.0.2
+Filename 'aaa'.
+Load address: 0x200000
+Loading: #
+done
+Bytes transferred = 776 (308 hex)
+=> bootm 0x100000 0x200000
+## Booting image at 00100000 ...
+   Image Name:   Linux-2.6.15
+   Created:      2007-04-15  16:56:44 UTC
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    825477 Bytes = 806.1 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 00200000 ...
+   Image Name:   ramdisk
+   Created:      2007-04-15  17:31:31 UTC
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    712 Bytes =  0.7 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 007b8000, end 007b82c8 ... OK
+Linux version 2.6.15 (root@localhost.localdomain) (gcc version 4.0.0 
+(DENX ELDK 4.0 4.0.0)) #182 Mon Apr 16 00:56:43 CST 2007
+Built 1 zonelists
+Kernel command line: root=/dev/ram rw
+PID hash table entries: 64 (order: 6, 1024 bytes)
+50
+Decrementer Frequency = 187500000/60
+Console: colour dummy device 80x25
+Dentry cache hash table entries: 2048 (order: 1, 8192 bytes)
+Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)
+Memory: 6236k available (1408k kernel code, 364k data, 84k init, 0k highmem)
+Mount-cache hash table entries: 512
+checking if image is initramfs...it isn't (no cpio magic); looks like an 
+initrd
+Freeing initrd memory: 0k freed
+NET: Registered protocol family 16
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered
+Generic RTC Driver v1.07
+Serial: CPM driver $Revision: 0.01 $
+ttyCPM0 at MMIO 0xfff00a80 (irq = 20) is a CPM UART
+RAMDISK driver initialized: 2 RAM disks of 1024K size 1024 blocksize
+loop: loaded (max 8 devices)
+eth0: CPM ENET Version 0.2 on SCC1, 00:00:00:00:00:00
+NET: Registered protocol family 2
+IP route cache hash table entries: 128 (order: -3, 512 bytes)
+TCP established hash table entries: 512 (order: -1, 2048 bytes)
+TCP bind hash table entries: 512 (order: -1, 2048 bytes)
+TCP: Hash tables configured (established 512 bind 512)
+TCP reno registered
+TCP bic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+RAMDISK: Compressed image found at block 0
+Kernel panic - not syncing: VFS: Unable to mount root fs on 
+unknown-block(1,0)
+ <0>Rebooting in 180 seconds..
+
+Thanks,
+Gavin
+
