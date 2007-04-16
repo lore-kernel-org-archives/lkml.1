@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030923AbXDPTxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030928AbXDPT4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030923AbXDPTxd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 15:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030926AbXDPTxd
+	id S1030928AbXDPT4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 15:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030926AbXDPT4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 15:53:33 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55664 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030923AbXDPTxc (ORCPT
+	Mon, 16 Apr 2007 15:56:19 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56870 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030928AbXDPT4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 15:53:32 -0400
-Date: Mon, 16 Apr 2007 15:53:31 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Patch -mm 3/3] RFC: Introduce kobject->owner for refcounting.
-In-Reply-To: <20070416180559.GA5662@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0704161539110.2685-100000@iolanthe.rowland.org>
+	Mon, 16 Apr 2007 15:56:18 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4623D4DA.60600@s5r6.in-berlin.de>
+Date: Mon, 16 Apr 2007 21:56:10 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: Robert Hancock <hancockr@shaw.ca>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: 4GB Physical. Less than 3GB in Linux.
+References: <fa.wZS4ieAkOMvNOj61QiUn9aS+YeM@ifi.uio.no>	 <46238936.3060501@shaw.ca> <b6a2187b0704160752u1c837f33p652c0d431b66459@mail.gmail.com>
+In-Reply-To: <b6a2187b0704160752u1c837f33p652c0d431b66459@mail.gmail.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007, Greg KH wrote:
-
-> On Mon, Apr 16, 2007 at 07:36:27PM +0200, Cornelia Huck wrote:
-> > Grab and release the module kobject refcount if kobj->owner is set.
-> > This prevents calls to the release function after the module has
-> > been unloaded.
+Jeff Chua wrote:
+> On 4/16/07, Robert Hancock <hancockr@shaw.ca> wrote:
+>> Chipset limitation. It uses up most of the MMIO region above 3GB
+>> preventing RAM from being mapped there, and doesn't support remapping
+>> the covered RAM to above 4GB. Nothing the kernel can do about it.
 > 
-> But doesn't this cause reference counts to be grabbed on modules that
-> don't want them?  (like network drivers)?
+> Well, I guess I learned the hard way. So it's better not to buy 4GB
+> ... it turns out to be the same as buying one with just 3GB RAM.
 
-The refcounts we are talking about will not prevent modules from being 
-unloaded.  That is, they won't cause rmmod to fail -- they will simply 
-cause it to wait until the refcount drops to 0.  This should happen 
-naturally as a result of the unregistration calls made by the module's 
-exit routine.
-
-(That was the intention, anyway.  I haven't yet seen all the parts of 
-Cornelia's patch set, but that's how we discussed it.)
-
-> I don't understand what exactly you are trying to protect from here.
-> Especially as Tejun just ripped the lifetime rules between sysfs and
-> kobjects apart.
-
-There are other ways for userspace to acquire references to kernel 
-objects.  Think of procfs or debugfs, for example.  Or opening a device 
-file.
-
-Consider this example:  A user has a pcmcia card containing a USB host 
-controller.  He plugs a USB flash drive into the card and mounts a 
-filesystem stored on the flash drive.  The mount call increments the 
-module refcount for usb-storage (the owner of the block device containing 
-the filesystem), but it doesn't do anything to the module refcount for the 
-pcmcia driver (I forget its name -- yenta or something like that).
-
-So what happens if the pcmcia driver is unloaded while the filesystem is
-mounted?  What happens when the filesystem is finally unmounted and a
-release method belonging to the pcmcia driver is called?
-
-The fundamental rule is that whenever you hand out a pointer to a routine
-living in a module, the receiver has to increment the module's refcount.  
-But the driver core violates this rule all over the place.  The most
-pervasive offender is struct device -- it contains a release() method
-pointer which often points into a module, but the driver core doesn't
-do anything like try_module_get() in device_initialize() or module_put()
-after calling dev->release().
-
-Alan Stern
-
+Except for minimal performance differences if the 3GB configuration
+doesn't support dual-channel mode.  (Not worth the price difference to 4GB.)
+-- 
+Stefan Richter
+-=====-=-=== -=-- =----
+http://arcgraph.de/sr/
