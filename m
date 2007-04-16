@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbXDPSIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbXDPSPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbXDPSIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 14:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbXDPSIb
+	id S1754149AbXDPSPU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 14:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXDPSPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 14:08:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57451 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbXDPSIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 14:08:30 -0400
-Date: Mon, 16 Apr 2007 11:05:59 -0700
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <htejun@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Patch -mm 3/3] RFC: Introduce kobject->owner for refcounting.
-Message-ID: <20070416180559.GA5662@kroah.com>
-References: <20070416193627.1db62136@gondolin.boeblingen.de.ibm.com>
+	Mon, 16 Apr 2007 14:15:20 -0400
+Received: from waste.org ([66.93.16.53]:47071 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754145AbXDPSPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 14:15:19 -0400
+Date: Mon, 16 Apr 2007 13:02:49 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Mike Mattie <codermattie@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [BUG] netconsole hangs machine 2.6.20
+Message-ID: <20070416180249.GD11166@waste.org>
+References: <20070415224537.2071da33@reforged>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070416193627.1db62136@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070415224537.2071da33@reforged>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 07:36:27PM +0200, Cornelia Huck wrote:
-> Grab and release the module kobject refcount if kobj->owner is set.
-> This prevents calls to the release function after the module has
-> been unloaded.
+[cc:ed to netdev]
 
-But doesn't this cause reference counts to be grabbed on modules that
-don't want them?  (like network drivers)?
+On Sun, Apr 15, 2007 at 10:45:37PM -0700, Mike Mattie wrote:
+> Hello,
+> 
+> netconsole is hanging my box during IDE init.
+> 
+> I am running 2.6.20.7, config is attached from /proc
+> 
+> Without using netconsole the kernel boots fine. I am writing this message from it. 
+> 
+> When I do enable net-console I get from the linux banner to a couple of lines after
+> "sanitize end" on the logging client ( Mac OS X 10.4 , simple nc listener )
+> 
+> The boot continues until hde (handled by the HPT366 driver, hdg is the last drive )
+> and then the kernel just hangs.
 
-I don't understand what exactly you are trying to protect from here.
-Especially as Tejun just ripped the lifetime rules between sysfs and
-kobjects apart.
+I don't really have a theory for that. What NIC are you using? Looks
+like VIA Rhine? Is it sharing an IRQ with your IDE interface?
 
-thanks,
+Please post your boot messages with "debug" on the kernel command
+line.
 
-greg k-h
+-- 
+Mathematics is the supreme nostalgia of our time.
