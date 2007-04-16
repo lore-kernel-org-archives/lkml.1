@@ -1,74 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbXDPLHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030354AbXDPLH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754097AbXDPLHZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 07:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbXDPLHM
+	id S1030354AbXDPLH0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 07:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXDPLHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 07:07:12 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:4655 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754089AbXDPLGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 07:06:53 -0400
-Message-ID: <462359B2.7070706@sw.ru>
-Date: Mon, 16 Apr 2007 15:10:42 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Check for error returned by kthread_create on creating
- journal thread
-References: <4623289A.1000101@sw.ru> <20070416102107.GA12818@infradead.org>
-In-Reply-To: <20070416102107.GA12818@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Apr 2007 07:07:09 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:34498 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081AbXDPLG5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 07:06:57 -0400
+Message-Id: <20070416110405.940518493@szeredi.hu>
+References: <20070416110308.739051445@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Mon, 16 Apr 2007 13:03:11 +0200
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, ebiederm@xmission.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: [patch 03/10] account user mounts
+Content-Disposition: inline; filename=account_user_mounts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Mon, Apr 16, 2007 at 11:41:14AM +0400, Pavel Emelianov wrote:
->> If the thread failed to create the subsequent wait_event
->> will hang forever.
->>
->> This is likely to happen if kernel hits max_threads limit.
->>
->> Will be critical for virtualization systems that limit the
->> number of tasks and kernel memory usage within the container.
-> 
->> --- ./fs/jbd/journal.c.jbdthreads	2007-04-16 11:17:36.000000000 +0400
->> +++ ./fs/jbd/journal.c	2007-04-16 11:30:09.000000000 +0400
->> @@ -211,10 +211,16 @@ end_loop:
->>  	return 0;
->>  }
->>  
->> -static void journal_start_thread(journal_t *journal)
->> +static int journal_start_thread(journal_t *journal)
->>  {
->> -	kthread_run(kjournald, journal, "kjournald");
->> +	struct task_struct *t;
->> +
->> +	t = kthread_run(kjournald, journal, "kjournald");
->> +	if (IS_ERR(t))
->> +		return PTR_ERR(t);
->> +
->>  	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
-> 
-> Note that this wait_event should exist at all, and the return
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-Should NOT you mean?
+Add sysctl variables for accounting and limiting the number of user
+mounts.
 
-> value of kthread_run should be assigned to journal->j_task.  Also
-> the code doesn't use the kthread primitives in other places leading
-> to crufty code.
+The maximum number of user mounts is set to 1024 by default.  This
+won't in itself enable user mounts, setting the "permit user submount"
+mount flag will also be needed.
 
-Well, this could be done with a separate patch, I think.
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Index: linux/include/linux/sysctl.h
+===================================================================
+--- linux.orig/include/linux/sysctl.h	2007-04-11 18:27:46.000000000 +0200
++++ linux/include/linux/sysctl.h	2007-04-11 20:08:16.000000000 +0200
+@@ -818,6 +818,8 @@ enum
+ 	FS_AIO_NR=18,	/* current system-wide number of aio requests */
+ 	FS_AIO_MAX_NR=19,	/* system-wide maximum number of aio requests */
+ 	FS_INOTIFY=20,	/* inotify submenu */
++	FS_NR_USER_MOUNTS=21,	/* int:current number of user mounts */
++	FS_MAX_USER_MOUNTS=22,	/* int:maximum number of user mounts */
+ 	FS_OCFS2=988,	/* ocfs2 */
+ };
+ 
+Index: linux/kernel/sysctl.c
+===================================================================
+--- linux.orig/kernel/sysctl.c	2007-04-11 18:27:46.000000000 +0200
++++ linux/kernel/sysctl.c	2007-04-11 20:08:16.000000000 +0200
+@@ -1063,6 +1063,22 @@ static ctl_table fs_table[] = {
+ #endif	
+ #endif
+ 	{
++		.ctl_name	= FS_NR_USER_MOUNTS,
++		.procname	= "nr_user_mounts",
++		.data		= &nr_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
++		.ctl_name	= FS_MAX_USER_MOUNTS,
++		.procname	= "max_user_mounts",
++		.data		= &max_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
+ 		.ctl_name	= KERN_SETUID_DUMPABLE,
+ 		.procname	= "suid_dumpable",
+ 		.data		= &suid_dumpable,
+Index: linux/Documentation/filesystems/proc.txt
+===================================================================
+--- linux.orig/Documentation/filesystems/proc.txt	2007-04-11 18:27:44.000000000 +0200
++++ linux/Documentation/filesystems/proc.txt	2007-04-12 13:32:14.000000000 +0200
+@@ -923,6 +923,15 @@ reaches aio-max-nr then io_setup will fa
+ raising aio-max-nr does not result in the pre-allocation or re-sizing
+ of any kernel data structures.
+ 
++nr_user_mounts and max_user_mounts
++----------------------------------
++
++These represent the number of "user" mounts and the maximum number of
++"user" mounts respectively.  User mounts may be created by
++unprivileged users.  User mounts may also be created with sysadmin
++privileges on behalf of a user, in which case nr_user_mounts may
++exceed max_user_mounts.
++
+ 2.2 /proc/sys/fs/binfmt_misc - Miscellaneous binary formats
+ -----------------------------------------------------------
+ 
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2007-04-11 20:08:05.000000000 +0200
++++ linux/fs/namespace.c	2007-04-12 13:29:05.000000000 +0200
+@@ -39,6 +39,9 @@ static int hash_mask __read_mostly, hash
+ static struct kmem_cache *mnt_cache __read_mostly;
+ static struct rw_semaphore namespace_sem;
+ 
++int nr_user_mounts;
++int max_user_mounts = 1024;
++
+ /* /sys/fs */
+ decl_subsys(fs, NULL, NULL);
+ EXPORT_SYMBOL_GPL(fs_subsys);
+@@ -227,11 +230,30 @@ static struct vfsmount *skip_mnt_tree(st
+ 	return p;
+ }
+ 
++static void dec_nr_user_mounts(void)
++{
++	spin_lock(&vfsmount_lock);
++	nr_user_mounts--;
++	spin_unlock(&vfsmount_lock);
++}
++
+ static void set_mnt_user(struct vfsmount *mnt)
+ {
+ 	BUG_ON(mnt->mnt_flags & MNT_USER);
+ 	mnt->mnt_uid = current->uid;
+ 	mnt->mnt_flags |= MNT_USER;
++	spin_lock(&vfsmount_lock);
++	nr_user_mounts++;
++	spin_unlock(&vfsmount_lock);
++}
++
++static void clear_mnt_user(struct vfsmount *mnt)
++{
++	if (mnt->mnt_flags & MNT_USER) {
++		mnt->mnt_uid = 0;
++		mnt->mnt_flags &= ~MNT_USER;
++		dec_nr_user_mounts();
++	}
+ }
+ 
+ static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
+@@ -283,6 +305,7 @@ static inline void __mntput(struct vfsmo
+ {
+ 	struct super_block *sb = mnt->mnt_sb;
+ 	dput(mnt->mnt_root);
++	clear_mnt_user(mnt);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
+ }
+@@ -1023,6 +1046,7 @@ static int do_remount(struct nameidata *
+ 	down_write(&sb->s_umount);
+ 	err = do_remount_sb(sb, flags, data, 0);
+ 	if (!err) {
++		clear_mnt_user(nd->mnt);
+ 		nd->mnt->mnt_flags = mnt_flags;
+ 		if (flags & MS_SETUSER)
+ 			set_mnt_user(nd->mnt);
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h	2007-04-11 20:07:51.000000000 +0200
++++ linux/include/linux/fs.h	2007-04-12 13:26:42.000000000 +0200
+@@ -50,6 +50,9 @@ extern struct inodes_stat_t inodes_stat;
+ 
+ extern int leases_enable, lease_break_time;
+ 
++extern int nr_user_mounts;
++extern int max_user_mounts;
++
+ #ifdef CONFIG_DNOTIFY
+ extern int dir_notify_enable;
+ #endif
 
+--
