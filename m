@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbXDPHZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXDPHZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754041AbXDPHZn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 03:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbXDPHZn
+	id S1754042AbXDPHZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 03:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXDPHZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 03:25:43 -0400
-Received: from [212.12.190.243] ([212.12.190.243]:32863 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754041AbXDPHZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 03:25:43 -0400
-From: Al Boldi <a1426z@gawab.com>
-Subject: IOsched: AS improvements (was: [Announce] [patch] Modular Scheduler Core and Completely Fair)
-Date: Mon, 16 Apr 2007 10:29:17 +0300
-User-Agent: KMail/1.5
-MIME-Version: 1.0
+	Mon, 16 Apr 2007 03:25:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50723 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754042AbXDPHZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 03:25:46 -0400
+Date: Mon, 16 Apr 2007 03:23:26 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+Message-ID: <20070416072326.GA15281@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Antonino A. Daplas" <adaplas@gmail.com>,
+	Adrian Bunk <bunk@stusta.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Richard Purdie <rpurdie@rpsys.net>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com> <20070416011636.GO3691@stusta.de> <20070416062921.GB7528@redhat.com> <1176706447.5129.6.camel@daplas>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704161029.18023.a1426z@gawab.com>
+In-Reply-To: <1176706447.5129.6.camel@daplas>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Actually, I would still like to be able to deprecate deadline for
-> AS, because AS has a tunable that you can switch to turn off read
-> anticipation and revert to deadline behaviour (or very close to).
+On Mon, Apr 16, 2007 at 02:54:07PM +0800, Antonino A. Daplas wrote:
+ 
+ > CONFIG_ACPI_VIDEO depends on BACKLIGHT_CLASS_DEVICE, which, in turn is
+ > enabled by FB_BACKLIGHT. So we can narrow it down further, can you try?
+ > 
+ > CONFIG_FB_BACKLIGHT=y
+ > CONFIG_ACPI_VIDEO=n
 
-You mean antic_expire?  I tried it, and it does have an enormous effect on 
-performance.  Smaller values do mimic deadline behavior in a way, as 
-deadline has some strange behaviour on sync, so it's closer to noop, which 
-is good for single user/proc access, while larger values are good for multi 
-user/proc access.  But I always have to set it to 0, or else it starves sync 
-with others reading.
+That also gets me a dead display. Backlight doesn't turn back on.
 
-I wonder if these tunables couldn't be autotuned by some form of 
-history-based access pattern detection?
+	Dave
 
-> It would have been nice if CFQ were then a layer on top of AS that
-> implemented priorities (or vice versa). And then AS could be
-> deprecated and we'd be back to 1 primary scheduler.
->
-> Well CFQ seems to be going in the right direction with that, however
-> some large users still find AS faster for some reason...
-
-AS is faster no-contest.  CFQ has some deep block-io/queue problem that slows 
-it down up to 25%.  It's related to max_sectors_kb and read_ahead_kb , and I 
-mentioned this to Jens before, and AS show this problem sometimes too, but 
-with CFQ it's much more prevalent.
-
-
-Thanks!
-
---
-Al
-
+-- 
+http://www.codemonkey.org.uk
