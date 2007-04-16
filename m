@@ -1,116 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751060AbXDPKSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbXDPKSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751060AbXDPKSM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 06:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbXDPKSL
+	id S1751908AbXDPKSy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 06:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030360AbXDPKSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 06:18:11 -0400
-Received: from omta01sl.mx.bigpond.com ([144.140.92.153]:54363 "EHLO
-	omta01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbXDPKSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 06:18:09 -0400
-X-Greylist: delayed 5012 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 06:18:09 EDT
-Message-ID: <46234D59.8020801@bigpond.net.au>
-Date: Mon, 16 Apr 2007 20:18:01 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 16 Apr 2007 06:18:53 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:34527 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030325AbXDPKSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 06:18:34 -0400
+Message-ID: <46234E9E.6080107@sw.ru>
+Date: Mon, 16 Apr 2007 14:23:26 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-References: <200704150931.42268.a1426z@gawab.com> <200704161153.17390.a1426z@gawab.com>
-In-Reply-To: <200704161153.17390.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta01sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Mon, 16 Apr 2007 10:18:06 +0000
+To: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+CC: devel@openvz.org
+Subject: [PATCH] Report that kernel is tainted if there were an OOPS before
+Content-Type: multipart/mixed;
+ boundary="------------050907060909040107060603"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Peter Williams wrote:
->> William Lee Irwin III wrote:
->>> On Mon, Apr 16, 2007 at 11:06:56AM +1000, Peter Williams wrote:
->>>> PS I no longer read LKML (due to time constraints) and would appreciate
->>>> it if I could be CC'd on any e-mails suggesting scheduler changes.
->>>> PPS I'm just happy to see that Ingo has finally accepted that the
->>>> vanilla scheduler was badly in need of fixing and don't really care who
->>>> fixes it.
->>>> PPS Different schedulers for different aims (i.e. server or work
->>>> station) do make a difference.  E.g. the spa_svr scheduler in plugsched
->>>> does about 1% better on kernbench than the next best scheduler in the
->>>> bunch. PPPS Con, fairness isn't always best as humans aren't very
->>>> altruistic and we need to give unfair preference to interactive tasks
->>>> in order to stop the users flinging their PCs out the window.  But the
->>>> current scheduler doesn't do this very well and is also not very good
->>>> at fairness so needs to change.  But the changes need to address
->>>> interactive response and fairness not just fairness.
->>> Kernel compiles not so useful a benchmark. SDET, OAST, AIM7, etc. are
->>> better ones. I'd not bother citing kernel compile results.
->> spa_svr actually does its best work when the system isn't fully loaded
->> as the type of improvement it strives to achieve (minimizing on queue
->> wait time) hasn't got much room to manoeuvre when the system is fully
->> loaded.  Therefore, the fact that it's 1% better even in these
->> circumstances is a good result and also indicates that the overhead for
->> keeping the scheduling statistics it uses for its decision making is
->> well spent.  Especially, when you consider that the total available room
->> for improvement on this benchmark is less than 3%.
->>
->> To elaborate, the motivation for this scheduler was acquired from the
->> observation of scheduling statistics (in particular, on queue wait time)
->> on systems running at about 30% to 50% load.  Theoretically, at these
->> load levels there should be no such waiting but the statistics show that
->> there is considerable waiting (sometimes as high as 30% to 50%).  I put
->> this down to "lack of serendipity" e.g.  everyone sleeping at the same
->> time and then trying to run at the same time would be complete lack of
->> serendipity.  On the other hand, if everyone is synced then there would
->> be total serendipity.
->>
->> Obviously, from the POV of a client, time the server task spends waiting
->> on the queue adds to the response time for any request that has been
->> made so reduction of this time on a server is a good thing(tm).  Equally
->> obviously, trying to achieve this synchronization by asking the tasks to
->> cooperate with each other is not a feasible solution and some external
->> influence needs to be exerted and this is what spa_svr does -- it nudges
->> the scheduling order of the tasks in a way that makes them become well
->> synced.
->>
->> Unfortunately, this is not a good scheduler for an interactive system as
->> it minimizes the response times for ALL tasks (and the system as a
->> whole) and this can result in increased response time for some
->> interactive tasks (clunkiness) which annoys interactive users.  When you
->> start fiddling with this scheduler to bring back "interactive
->> unfairness" you kill a lot of its superior low overall wait time
->> performance.
-> 
-> spa_svr is my favorite, but as you mentioned doesn't work well with ia.  So I 
-> started instrumenting its behaviour with chew.c (attached).  What I found is 
-> that prio-levels are way to coarse.  Setting max_tpt_bonus = 3 bounds this 
-> somewhat, but it was still not enough.  Looking at spa_svr_reassess_bonus 
-> and changing it to simply adjust prio based on avg_sleep did the trick like 
-> this:
-> 
-> static void spa_svr_reassess_bonus(struct task_struct *p)
-> {
-> 	if (p->sdu.spa.avg_sleep_per_cycle >> 10) {
-> 		incr_throughput_bonus(p, 1);
-> 	} else
-> 		decr_throughput_bonus(p);
-> }
-> 
+This is a multi-part message in MIME format.
+--------------050907060909040107060603
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I suspect that this would kill some of the good server performance as it 
-removes the mechanism that minimises wait time.  It is effectively just 
-a simplification of what the vanilla O(1) scheduler tries to do i.e. 
-assume tasks that sleep a lot are interactive and give them a boost.
+If the kernel OOPS-ed or BUG-ed then it probably should
+considered as tainted. Use die_counter introduced by many
+architectures to determine whether or not the kernel died.
 
-spa_ws tries to do this as well only in a bit more complicated fashion. 
-  So maybe an spa_svr modified in this way and renamed could make a good 
-interactive scheduler.
+This saves a lot of time explaining oddities in the
+calltrace seen via SysRq-P.
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+--------------050907060909040107060603
+Content-Type: text/plain;
+ name="diff-show-tainted-show-kernel-died-once"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff-show-tainted-show-kernel-died-once"
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
+index b3ffba1..764526c 100644
+--- a/arch/arm/kernel/traps.c
++++ b/arch/arm/kernel/traps.c
+@@ -207,7 +207,6 @@ void show_stack(struct task_struct *tsk,
+ static void __die(const char *str, int err, struct thread_info *thread, struct pt_regs *regs)
+ {
+ 	struct task_struct *tsk = thread->task;
+-	static int die_counter;
+ 
+ 	printk("Internal error: %s: %x [#%d]\n", str, err, ++die_counter);
+ 	print_modules();
+diff --git a/arch/avr32/kernel/traps.c b/arch/avr32/kernel/traps.c
+index c8b7153..0829ebc 100644
+--- a/arch/avr32/kernel/traps.c
++++ b/arch/avr32/kernel/traps.c
+@@ -156,8 +156,6 @@ static DEFINE_SPINLOCK(die_lock);
+ 
+ void NORET_TYPE die(const char *str, struct pt_regs *regs, long err)
+ {
+-	static int die_counter;
+-
+ 	console_verbose();
+ 	spin_lock_irq(&die_lock);
+ 	bust_spinlocks(1);
+diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
+index 35d1c38..8531901 100644
+--- a/arch/i386/kernel/traps.c
++++ b/arch/i386/kernel/traps.c
+@@ -438,7 +438,6 @@ void die(const char * str, struct pt_reg
+ 		.lock_owner =		-1,
+ 		.lock_owner_depth =	0
+ 	};
+-	static int die_counter;
+ 	unsigned long flags;
+ 
+ 	oops_enter();
+diff --git a/arch/ia64/kernel/traps.c b/arch/ia64/kernel/traps.c
+index 5bfb8be..7a1e8d8 100644
+--- a/arch/ia64/kernel/traps.c
++++ b/arch/ia64/kernel/traps.c
+@@ -47,7 +47,6 @@ die (const char *str, struct pt_regs *re
+ 		.lock_owner =		-1,
+ 		.lock_owner_depth =	0
+ 	};
+-	static int die_counter;
+ 	int cpu = get_cpu();
+ 
+ 	if (die.lock_owner != cpu) {
+diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
+index 27c53f1..2c65120 100644
+--- a/arch/mips/kernel/traps.c
++++ b/arch/mips/kernel/traps.c
+@@ -312,7 +312,6 @@ static DEFINE_SPINLOCK(die_lock);
+ 
+ NORET_TYPE void ATTRIB_NORET die(const char * str, struct pt_regs * regs)
+ {
+-	static int die_counter;
+ #ifdef CONFIG_MIPS_MT_SMTC
+ 	unsigned long dvpret = dvpe();
+ #endif /* CONFIG_MIPS_MT_SMTC */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index bf6445a..13bc4c7 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -105,7 +105,6 @@ int die(const char *str, struct pt_regs 
+ 		.lock_owner =		-1,
+ 		.lock_owner_depth =	0
+ 	};
+-	static int die_counter;
+ 	unsigned long flags;
+ 
+ 	if (debugger(regs))
+diff --git a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
+index 810f7aa..3a058fb 100644
+--- a/arch/ppc/kernel/traps.c
++++ b/arch/ppc/kernel/traps.c
+@@ -76,7 +76,6 @@ DEFINE_SPINLOCK(die_lock);
+ 
+ int die(const char * str, struct pt_regs * fp, long err)
+ {
+-	static int die_counter;
+ 	int nl = 0;
+ 	console_verbose();
+ 	spin_lock_irq(&die_lock);
+diff --git a/arch/s390/kernel/traps.c b/arch/s390/kernel/traps.c
+index 90ca82b..659f41c 100644
+--- a/arch/s390/kernel/traps.c
++++ b/arch/s390/kernel/traps.c
+@@ -251,8 +251,6 @@ static DEFINE_SPINLOCK(die_lock);
+ 
+ void die(const char * str, struct pt_regs * regs, long err)
+ {
+-	static int die_counter;
+-
+ 	debug_stop_all();
+ 	console_verbose();
+ 	spin_lock_irq(&die_lock);
+diff --git a/arch/sh/kernel/traps.c b/arch/sh/kernel/traps.c
+index e9f168f..38ae9de 100644
+--- a/arch/sh/kernel/traps.c
++++ b/arch/sh/kernel/traps.c
+@@ -78,8 +78,6 @@ DEFINE_SPINLOCK(die_lock);
+ 
+ void die(const char * str, struct pt_regs * regs, long err)
+ {
+-	static int die_counter;
+-
+ 	console_verbose();
+ 	spin_lock_irq(&die_lock);
+ 	bust_spinlocks(1);
+diff --git a/arch/sparc/kernel/traps.c b/arch/sparc/kernel/traps.c
+index dc9ffea..b9b4ddd 100644
+--- a/arch/sparc/kernel/traps.c
++++ b/arch/sparc/kernel/traps.c
+@@ -89,7 +89,6 @@ void instruction_dump (unsigned long *pc
+ 
+ void die_if_kernel(char *str, struct pt_regs *regs)
+ {
+-	static int die_counter;
+ 	int count = 0;
+ 
+ 	/* Amuse the user. */
+diff --git a/arch/sparc64/kernel/traps.c b/arch/sparc64/kernel/traps.c
+index dc652f2..556189b 100644
+--- a/arch/sparc64/kernel/traps.c
++++ b/arch/sparc64/kernel/traps.c
+@@ -2208,7 +2208,6 @@ static inline struct reg_window *kernel_
+ 
+ void die_if_kernel(char *str, struct pt_regs *regs)
+ {
+-	static int die_counter;
+ 	extern void smp_report_regs(void);
+ 	int count = 0;
+ 	
+diff --git a/arch/x86_64/kernel/traps.c b/arch/x86_64/kernel/traps.c
+index e5403dc..93c4215 100644
+--- a/arch/x86_64/kernel/traps.c
++++ b/arch/x86_64/kernel/traps.c
+@@ -570,7 +570,6 @@ void __kprobes oops_end(unsigned long fl
+ 
+ void __kprobes __die(const char * str, struct pt_regs * regs, long err)
+ {
+-	static int die_counter;
+ 	printk(KERN_EMERG "%s: %04lx [%u] ", str, err & 0xffff,++die_counter);
+ #ifdef CONFIG_PREEMPT
+ 	printk("PREEMPT ");
+diff --git a/arch/xtensa/kernel/traps.c b/arch/xtensa/kernel/traps.c
+index 693ab26..97cc4e2 100644
+--- a/arch/xtensa/kernel/traps.c
++++ b/arch/xtensa/kernel/traps.c
+@@ -465,7 +465,6 @@ DEFINE_SPINLOCK(die_lock);
+ 
+ void die(const char * str, struct pt_regs * regs, long err)
+ {
+-	static int die_counter;
+ 	int nl = 0;
+ 
+ 	console_verbose();
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index b8f8252..54c4fc4 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -202,6 +202,7 @@ extern enum system_states {
+ #define TAINT_USER			(1<<6)
+ 
+ extern void dump_stack(void);
++extern int die_counter;
+ 
+ #ifdef DEBUG
+ /* If you are writing a driver, please use dev_dbg instead */
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 623d182..3afa425 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -150,23 +150,27 @@ EXPORT_SYMBOL(panic);
+  *  'R' - User forced a module unload.
+  *  'M' - Machine had a machine check experience.
+  *  'B' - System has hit bad_page.
++ *  'D' - An OOPS has hapened.
+  *  'U' - Userspace-defined naughtiness.
+  *
+  *	The string is overwritten by the next call to print_taint().
+  */
++
++int die_counter;
+  
+ const char *print_tainted(void)
+ {
+ 	static char buf[20];
+-	if (tainted) {
+-		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c",
++	if (tainted || die_counter) {
++		snprintf(buf, sizeof(buf), "Tainted: %c%c%c%c%c%c%c%c",
+ 			tainted & TAINT_PROPRIETARY_MODULE ? 'P' : 'G',
+ 			tainted & TAINT_FORCED_MODULE ? 'F' : ' ',
+ 			tainted & TAINT_UNSAFE_SMP ? 'S' : ' ',
+ 			tainted & TAINT_FORCED_RMMOD ? 'R' : ' ',
+  			tainted & TAINT_MACHINE_CHECK ? 'M' : ' ',
+ 			tainted & TAINT_BAD_PAGE ? 'B' : ' ',
+-			tainted & TAINT_USER ? 'U' : ' ');
++			tainted & TAINT_USER ? 'U' : ' ',
++			die_counter ? 'D' : ' ');
+ 	}
+ 	else
+ 		snprintf(buf, sizeof(buf), "Not tainted");
+
+--------------050907060909040107060603--
