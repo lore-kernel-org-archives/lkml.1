@@ -1,98 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbXDPH2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750985AbXDPHbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbXDPH2Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 03:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbXDPH2X
+	id S1750985AbXDPHbi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 03:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbXDPHbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 03:28:23 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:19614 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047AbXDPH2X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 03:28:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=LWOFqOddOpcP5ZJ1f075W8MOmoQjOd6If2gvJu2DzFj3X/a6JjIS9ZulhT8hTkiTF+7DqndO3/fkVrjPBEMIX2p2IsqnT42DNQbpOHt1LvebIo9S1fbHEwfuxVHwELg8wUzc1Wps4AJg/v/OL1y0He637nGFK5vtGhR8LN1ZOq0=
-Message-ID: <b6a2187b0704160028x3f979dc3s1c9e18995f229782@mail.gmail.com>
-Date: Mon, 16 Apr 2007 15:28:21 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: 4GB Physical. Less than 3GB in Linux.
+	Mon, 16 Apr 2007 03:31:38 -0400
+Received: from mx1-2.mail.ru ([194.67.23.121]:6974 "EHLO mx1.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750985AbXDPHbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 03:31:38 -0400
+X-Greylist: delayed 44632 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 03:31:38 EDT
+Date: Mon, 16 Apr 2007 11:32:04 +0400
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Dale Amon <amon@vnl.com>, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Problem with ufs nextstep in 2.6.18 (debian)
+Message-ID: <20070416073204.GA10225@rain>
+Mail-Followup-To: Dale Amon <amon@vnl.com>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've noticed that with 4GB physical ram, I'm only see 3098000 MB on
-the Dell 745, and 3107056MB on the IBM X60s.
+>The error also happens in 2.6.19, same as in 2.6.18.
+>I extracted this from syslog: 
+>Apr 17 00:14:15 kdev kernel: UFS-fs error (device loop0):
+>ufs_check_page: bad entry
 
-I've tested with CONFIG_HIGHMEM4G=y, CONFIG_HIGHMEM64G=y,
-CONFIG_X86_PAE=y, but nothing makes any difference.
+Is this happened also with this patch:
+http://lkml.org/lkml/diff/2007/2/5/75/1
+?
 
-Tested on Linux 2.6.20, Linux 2.6.21-rc7.
+-- 
+/Evgeniy
 
-# dmesg
-copy_e820_map() start: 0000000000000000 size: 000000000009f000 end:
-000000000009f000 type: 1
-copy_e820_map() type is E820_RAM
-copy_e820_map() start: 000000000009f000 size: 0000000000001000 end:
-00000000000a0000 type: 2
-copy_e820_map() start: 00000000000dc000 size: 0000000000024000 end:
-0000000000100000 type: 2
-copy_e820_map() start: 0000000000100000 size: 00000000bf5d0000 end:
-00000000bf6d0000 type: 1
-copy_e820_map() type is E820_RAM
-copy_e820_map() start: 00000000bf6d0000 size: 000000000000f000 end:
-00000000bf6df000 type: 3
-copy_e820_map() start: 00000000bf6df000 size: 0000000000021000 end:
-00000000bf700000 type: 4
-copy_e820_map() start: 00000000bf700000 size: 0000000000900000 end:
-00000000c0000000 type: 2
-copy_e820_map() start: 00000000f0000000 size: 0000000004000000 end:
-00000000f4000000 type: 2
-copy_e820_map() start: 00000000fec00000 size: 0000000000010000 end:
-00000000fec10000 type: 2
-copy_e820_map() start: 00000000fed00000 size: 0000000000000400 end:
-00000000fed00400 type: 2
-copy_e820_map() start: 00000000fed14000 size: 0000000000006000 end:
-00000000fed1a000 type: 2
-copy_e820_map() start: 00000000fed1c000 size: 0000000000074000 end:
-00000000fed90000 type: 2
-copy_e820_map() start: 00000000fee00000 size: 0000000000001000 end:
-00000000fee01000 type: 2
-copy_e820_map() start: 00000000ff800000 size: 0000000000800000 end:
-0000000100000000 type: 2
- BIOS-e820: 0000000000000000 - 000000000009f000 (usable)
- BIOS-e820: 000000000009f000 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000bf6d0000 (usable)
- BIOS-e820: 00000000bf6d0000 - 00000000bf6df000 (ACPI data)
- BIOS-e820: 00000000bf6df000 - 00000000bf700000 (ACPI NVS)
- BIOS-e820: 00000000bf700000 - 00000000c0000000 (reserved)
- BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
- BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
- BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
- BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000ff800000 - 0000000100000000 (reserved)
-2166MB HIGHMEM available.
-896MB LOWMEM available.
-
-Memory: 3106140k/3136320k available (2225k kernel code, 29072k
-reserved, 910k data, 196k init, 2218816k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfff50000 - 0xfffff000   ( 700 kB)
-    pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-    vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
-    lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-      .init : 0xc0416000 - 0xc0447000   ( 196 kB)
-      .data : 0xc032c513 - 0xc040ff34   ( 910 kB)
-      .text : 0xc0100000 - 0xc032c513   (2225 kB)
-
-
-Thanks,
-Jeff.
