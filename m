@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030342AbXDPLTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030455AbXDPLZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030342AbXDPLTy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 07:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030357AbXDPLTy
+	id S1030455AbXDPLZI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 07:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030449AbXDPLZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 07:19:54 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:58654 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030342AbXDPLTx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 07:19:53 -0400
-Date: Mon, 16 Apr 2007 07:19:19 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: =?UTF-8?Q?Tomasz_K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
-cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Mike Snitzer <snitzer@gmail.com>,
-       Neil Brown <neilb@suse.de>, "David R. Litwin" <presently42@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
-Message-ID: <alpine.DEB.0.83.0704160711010.16021@sigma.j-a-k-j.com>
-References: <op.tqqwdfzcftfxs2@localhost.localdomain> 
- <17952.5537.364603.419364@notabene.brown> <170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com>
- <Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr>
- <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 16 Apr 2007 07:25:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48007 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030455AbXDPLZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 07:25:06 -0400
+Date: Mon, 16 Apr 2007 13:24:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Willy Tarreau <w@1wt.eu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070416112440.GA20014@elte.hu>
+References: <20070414172920.GA2433@1wt.eu> <m1647yn956.fsf@ebiederm.dsl.xmission.com> <20070414175433.GA17527@elte.hu> <20070414181854.GA5826@1wt.eu> <20070415175555.GA28524@elte.hu> <20070415180604.GA550@1wt.eu> <20070415192046.GA7504@elte.hu> <20070415193531.GD2986@holomorphy.com> <20070415195748.GA16004@elte.hu> <20070415235421.GF2986@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070415235421.GF2986@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> FUSE implemtation uses too many context switches on each I/O so on the same
-> hardware it will never will be so fast as on Linux, BSD and MOX (yes ZFS is
-> now avalaible on all this OSes .. and few people says Windows implemtation is
-> very close). Current FUSE implemntation can't be comparable in aspects of
-> speed and probably never will be on using threads (very simmilar case to ALSA
-> and mixing in user space .. in both cases it is broken by design). Also ZFS on
-> Solaris uses few other system abilities for example it interract with PSH.
+
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+
+> On Sun, Apr 15, 2007 at 09:57:48PM +0200, Ingo Molnar wrote:
+> > Oh I was very much testing "CPU bandwidth allocation as influenced by 
+> > nice numbers" - it's one of the basic things i do when modifying the 
+> > scheduler. An automated tool, while nice (all automation is nice) 
+> > wouldnt necessarily show such bugs though, because here too it needed 
+> > thousands of running tasks to trigger in practice. Any volunteers? ;)
 > 
-> So FUSE ZFS is IMO only kind of academic demo implemtation only but never will
-> be usefull/ready for production (plain waste of time). If Linux licensing will
-> not be relaxed probaly we can forget about ZFS on Linux (licensing problems in
-> this case are obly on Linux side .. <ironically>in this case ZFS licensing is
-> more oppened than Linux licensing </ironically>).
-> 
-> kloczek
-> PS. IIRC implemting ZFS on FUSE was some kind of workaround for licensing
-> issue but FUSE fill uses vfs layer and probaly still thinking about
-> licensing is actual.
+> Worse comes to worse I might actually get around to doing it myself. 
+> Any more detailed descriptions of the test for a rainy day?
 
-I'm just a lowly proto-hacker trying to get into kernel development, but 
-even I know a few things, and I'm getting very tired of hearing FUSE 
-slammed as stupid and the Linux licencing policy as foolish. I can sum 
-things up in two short passages.
+the main complication here is that the handling of nice levels is still 
+typically a 2nd or 3rd degree design factor when writing schedulers. The 
+reason isnt carelessness, the reason is simply that users typically only 
+care about a single nice level: the one that all tasks run under by 
+default.
 
-FUSE is intended for end-users, not critical server applications. 
-End-users have plenty of processor to spare at lower-than-ever prices. So 
-you have a simple and flexible end-user API that lets you do anything with 
-anything in any way you want, all the time, without needing to (or even 
-needing to be able to) alter your kernel. Win.
+Also, often there's just one or two good ways to attack the problem 
+within a given scheduler approach and the quality of nice levels often 
+suffers under other, more important design factors like performance.
 
-Linux licencing basically says, "If you want in on this good thing, you 
-have to play by the rules. That means no cheating, no scamming, no 
-profiting at the expense of others, and no getting on a high horse and 
-proclaiming to the rest of the world that you are in control of their 
-destinies. Play nice, kiddies." If you want to do something, you do it 
-open and you do it Free, and if you don't want to, well...write your own 
-kernel!
+This means that for example for the vanilla scheduler the distribution 
+of CPU power depends on HZ, on the number of tasks and on the scheduling 
+pattern. The distribution of CPU power amongst nice levels is basically 
+a function of _everything_. That makes any automated test pretty 
+challenging. Both with SD and with CFS there's a good chance to actually 
+formalize the meaning of nice levels, but i'd not go as far as to 
+mandate any particular behavior by rigidly saying "pass this automated 
+tool, else ...", other than "make nice levels resonable". All the other 
+more formal CPU resource limitation techniques are then a matter of 
+CKRM-alike patches, which offer much more finegrained mechanisms than 
+pure nice levels anyway.
 
-There is a wonderful quotation on the GNU site comparing agencies like 
-Microsoft to crack dealers: They appear more open in theory in order to 
-get people hooked, then trigger the beartrap around your foot. Linux has 
-rules--hard, fast, and immutable--and they protect everybody from their 
-own stupidities. Open-community development takes a whole lot longer, but 
-you don't have to sell your soul to do it.
+so to answer your question: it's pretty much freely defined. Make up 
+your mind about it and figure out the ways how people use nice levels 
+and think about which aspects of that experience are worth testing for 
+intelligently.
+
+	Ingo
