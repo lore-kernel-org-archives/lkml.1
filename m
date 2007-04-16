@@ -1,95 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbXDPSZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173AbXDPSZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbXDPSZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 14:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbXDPSZ0
+	id S1754173AbXDPSZu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 14:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXDPSZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 14:25:26 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:2095 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754153AbXDPSZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 14:25:24 -0400
-X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
-Subject: Re: intermittant petabyte usage reported with broadcom nic
-From: "Michael Chan" <mchan@broadcom.com>
-To: "CaT" <cat@zip.com.au>
-cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <1176596401.5847.7.camel@dell>
-References: <20070402014319.GA8345@zip.com.au>
- <20070402001300.3b66007d.akpm@linux-foundation.org>
- <20070402074108.GB8345@zip.com.au> <1176596401.5847.7.camel@dell>
-Date: Mon, 16 Apr 2007 12:10:51 -0700
-Message-ID: <1176750651.6217.3.camel@dell>
+	Mon, 16 Apr 2007 14:25:49 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50135 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754151AbXDPSZs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 14:25:48 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4623BF83.30600@s5r6.in-berlin.de>
+Date: Mon, 16 Apr 2007 20:25:07 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6A3D600137017963274-01-01
-Content-Type: text/plain
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: linux-kernel@vger.kernel.org,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>
+Subject: Re: 4GB Physical. Less than 3GB in Linux.
+References: <b6a2187b0704160028x3f979dc3s1c9e18995f229782@mail.gmail.com>	 <46238572.5050203@s5r6.in-berlin.de> <b6a2187b0704160747l2707cac8ifc480bdbf147c37b@mail.gmail.com>
+In-Reply-To: <b6a2187b0704160747l2707cac8ifc480bdbf147c37b@mail.gmail.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-14 at 17:20 -0700, Michael Chan wrote:
+Jeff Chua wrote:
+> On 4/16/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>> The X60 most certainly contains a chipset which severely limits the
+>> amount of accessible RAM due to issues with remapping of PCIe addresses.
+...
+> I wondered if there's anyone working on a patch for this.
 
-> I also like Andi's idea of using change_page_attr() to isolate the
-> problem.  I'll try to send you a debug patch in the next few days to try
-> that out.  Thanks.
-> 
-Here's the debug patch for x86 only that will change the statistics
-memory block to read-only.  If the kernel is corrupting it, you should
-get a page fault that will crash the system.  If you continue to see
-bogus counters, it is definitely a firmware or hardware problem.  Please
-try it and let me know.  Thanks.
-
-diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
-index 0b7aded..b7d491b 100644
---- a/drivers/net/bnx2.c
-+++ b/drivers/net/bnx2.c
-@@ -47,6 +47,7 @@
- #include <linux/prefetch.h>
- #include <linux/cache.h>
- #include <linux/zlib.h>
-+#include <asm/cacheflush.h>
- 
- #include "bnx2.h"
- #include "bnx2_fw.h"
-@@ -436,6 +437,8 @@ bnx2_free_mem(struct bnx2 *bp)
- 		}
- 	}
- 	if (bp->status_blk) {
-+		change_page_attr(virt_to_page(bp->status_blk), 1, PAGE_KERNEL);
-+		global_flush_tlb();
- 		pci_free_consistent(bp->pdev, bp->status_stats_size,
- 				    bp->status_blk, bp->status_blk_mapping);
- 		bp->status_blk = NULL;
-@@ -501,6 +504,7 @@ bnx2_alloc_mem(struct bnx2 *bp)
- 	bp->status_stats_size = status_blk_size +
- 				sizeof(struct statistics_block);
- 
-+	bp->status_stats_size = PAGE_SIZE;
- 	bp->status_blk = pci_alloc_consistent(bp->pdev, bp->status_stats_size,
- 					      &bp->status_blk_mapping);
- 	if (bp->status_blk == NULL)
-@@ -508,6 +512,10 @@ bnx2_alloc_mem(struct bnx2 *bp)
- 
- 	memset(bp->status_blk, 0, bp->status_stats_size);
- 
-+	/* x86 debug code to see if the kernel is corrupting the statistics */
-+	change_page_attr(virt_to_page(bp->status_blk), 1, PAGE_KERNEL_RO);
-+	global_flush_tlb();
-+
- 	bp->stats_blk = (void *) ((unsigned long) bp->status_blk +
- 				  status_blk_size);
- 
-@@ -4307,7 +4315,9 @@ bnx2_timer(unsigned long data)
- 	msg = (u32) ++bp->fw_drv_pulse_wr_seq;
- 	REG_WR_IND(bp, bp->shmem_base + BNX2_DRV_PULSE_MB, msg);
- 
-+#if 0
- 	bp->stats_blk->stat_FwRxDrop = REG_RD_IND(bp, BNX2_FW_RX_DROP_COUNT);
-+#endif
- 
- 	if (bp->phy_flags & PHY_SERDES_FLAG) {
- 		if (CHIP_NUM(bp) == CHIP_NUM_5706)
-
-
+All I heard of is that the successor chipsets are supposed to lessen or
+eliminate the problem.
+-- 
+Stefan Richter
+-=====-=-=== -=-- =----
+http://arcgraph.de/sr/
