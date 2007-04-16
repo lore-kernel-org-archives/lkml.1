@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031021AbXDPXN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030843AbXDPXZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031021AbXDPXN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 19:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030991AbXDPXN3
+	id S1030843AbXDPXZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 19:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031025AbXDPXZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 19:13:29 -0400
-Received: from mail23.syd.optusnet.com.au ([211.29.133.164]:48360 "EHLO
-	mail23.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031020AbXDPXN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 19:13:28 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-Subject: Staircase cpu scheduler v17.1
-Date: Tue, 17 Apr 2007 09:13:24 +1000
-User-Agent: KMail/1.9.5
+	Mon, 16 Apr 2007 19:25:24 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48854 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030843AbXDPXZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 19:25:23 -0400
+From: Neil Brown <neilb@suse.de>
+To: Theodore Tso <tytso@mit.edu>
+Date: Tue, 17 Apr 2007 09:24:47 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704170913.24622.kernel@kolivas.org>
+Message-ID: <17956.1471.150238.216776@notabene.brown>
+Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: If not readdir() then what?
+In-Reply-To: message from Theodore Tso on Monday April 16
+References: <20070408184129.GA20871@lazybastard.org>
+	<17947.65165.569482.976343@notabene.brown>
+	<20070411144252.GB17778@thunk.org>
+	<17949.25061.739035.688232@notabene.brown>
+	<20070411232224.GF17778@thunk.org>
+	<17949.36737.701327.104172@notabene.brown>
+	<20070412023712.GA8175@lazybastard.org>
+	<17949.51797.386833.917451@notabene.brown>
+	<20070412122116.GD28148@thunk.org>
+	<17955.5453.164637.970405@notabene.brown>
+	<20070416110702.GF27533@thunk.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all
+On Monday April 16, tytso@mit.edu wrote:
+> 
+> The challenge is making it be stable across inserts/deletes, never
+> mind reboots.  And it's not a "little bit of cacheing"; in order to be
+> correct we would have to cache *forever*, since at least in theory an
+> NFS client could hold on to a cookie for an arbitrarily long period of
+> time (weeks, months, years, decades), yes?
 
-Here is the current release of the Staircase cpu scheduler (the original 
-generation I design that spurned development elsewhere for RSDL), for 
-2.6.21-rc7
+Yes.  But I think we've already establish that the on-disk structure
+chosen by ext3/htree is not able to perfectly support NFS (which is a
+pity given that it was written for Linux and Linux is thought to
+support NFS).  Our goal is to find the best mapping possible and,
+where caching can improve stability for real-world uses, use caching
+to help stabilise that mapping.
 
-http://ck.kolivas.org/patches/pre-releases/2.6.21-rc7/2.6.21-rc7-ck1/patches/sched-staircase-17.1.patch
+> 
+> You're welcome to try, but I suspect it won't take long before you'll
+> see why I'm asserting that a directory fd cache in nfsd is *way* less
+> work.  :-)
 
-To remind people where this cpu scheduler fits into the picture:
+You have provided some very helpful insights into how ext3/htree
+currently works - thanks for that.
+I will definitely make a closer inspection of the code and so how
+possible it is to realise by ideas.  I'll let you know how I go.
 
--It is purpose built with interactivity first and foremost.
--It aims to be mostly fair most of the time
--It is has strong semantics desribing the cpu relationship between different 
-nice levels (nice 19 is 1/20th the cpu of nice 0).
--It is resistant to most forms of starvation
--Latency of tasks that are not heavily cpu bound is exceptionally low 
-irrespective of nice level -if they stay within their cpu bounds; What this 
-means is you can have and audio application if it uses very little cpu 
-running at nice 19 and it will still be unlikely to skip audio in the 
-presence of a kernel compile nice -20.
--Therefore you can renice X or whatever to your heart's content, but then... 
-you don't need to renice X with this design.
--The design is a single priority array very low overhead small codebase (the 
-diffstat summary obviously muddied by removing more comments is 4 files 
-changed, 418 insertions(+), 714 deletions(-))
-4 files changed, 418 insertions(+), 714 deletions(-)
-
-Disadavantages:
--There are heuristics
--There are some rare cpu usage patterns that can lead to excessive unfairness 
-and relative starvation.
-
-Bonuses:
-With the addition of further patches in that same directory above it has:
-- An interactive tunable flag which further increases the fairness and makes 
-nice values more absolutely determine latency (instead of cpu usage vs 
-entitlement determining latency as the default above)
-/proc/sys/kernel/interactive 
-- A compute tunable which makes timeslices much longer and has delayed 
-preemption for maximum cpu cache utilisation for compute intensive workloads
-/proc/sys/kernel/compute 
-- A soft realtime unprivileged policy for normal users with a tunable maximum 
-cpu usage set to 80% by default
-/proc/sys/kernel/iso_cpu
-- A background scheduling class that uses zero cpu usage resources if any 
-other task wants cpu.
-
-This is unashamedly a relatively unfair slightly starveable cpu scheduler with 
-exceptional quality _Desktop_ performance as it was always intended to be. 
-
-It is NOT intended for mainline use as mainline needs a general purpose cpu 
-scheduler (remember!). I have no intention of pushing it as such given its 
-disadvantages, and don't really care about those disadvantages as I have no 
-intention of trying to "plug up" the theoretical exploits and disadvantages 
-either since desktops aren't really affected BUT this scheduler is great fun 
-to use. Unfortunately the version of this scheduler in plugsched is not up to 
-date with this code. Perhaps if demand for plugsched somehow turns the world 
-on its head then this code may have a place elsewhere too.
-
-Enjoy! If you don't like it? Doesn't matter; you have a choice so just use 
-something else. This is code that will only be in -ck.
-
--- 
--ck
+NeilBrown
