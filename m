@@ -1,100 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030621AbXDPOB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030622AbXDPODQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030621AbXDPOB1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 10:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030628AbXDPOB1
+	id S1030622AbXDPODQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 10:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030628AbXDPODQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 10:01:27 -0400
-Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:30185 "EHLO
-	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030621AbXDPOB0 (ORCPT
+	Mon, 16 Apr 2007 10:03:16 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:59979 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030622AbXDPODP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 10:01:26 -0400
-Date: Mon, 16 Apr 2007 16:01:23 +0200 (CEST)
-From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-To: Mike Snitzer <snitzer@gmail.com>
-cc: Neil Brown <neilb@suse.de>, "David R. Litwin" <presently42@gmail.com>,
+	Mon, 16 Apr 2007 10:03:15 -0400
+Message-ID: <46238204.9060907@s5r6.in-berlin.de>
+Date: Mon, 16 Apr 2007 16:02:44 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Mike Snitzer <snitzer@gmail.com>,
+       Neil Brown <neilb@suse.de>, "David R. Litwin" <presently42@gmail.com>,
        linux-kernel@vger.kernel.org
 Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: <170fa0d20704160507w4af4cb92ua259a55789f95c3e@mail.gmail.com>
-Message-ID: <Pine.BSO.4.63.0704161419260.11088@rudy.mif.pg.gda.pl>
-References: <op.tqqwdfzcftfxs2@localhost.localdomain> 
- <17952.5537.364603.419364@notabene.brown>  <170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com>
-  <Pine.BSO.4.63.0704161140460.11088@rudy.mif.pg.gda.pl>
- <170fa0d20704160507w4af4cb92ua259a55789f95c3e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-1098872399-1176732083=:11088"
+References: <op.tqqwdfzcftfxs2@localhost.localdomain>  <17952.5537.364603.419364@notabene.brown> <170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com> <Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr> <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
+In-Reply-To: <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Tomasz K³oczko wrote:
+> Current FUSE implemntation can't be 
+> comparable in aspects of speed and probably never will be on using threads
 
---0-1098872399-1176732083=:11088
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
+Did you measure this on a few hardwares and workloads?
 
-On Mon, 16 Apr 2007, Mike Snitzer wrote:
-[..]
-> The ZFS volume management piece could've easily been abstracted to be
-> outside of the actual filesystem.
+> (very simmilar case to ALSA and mixing in user space ..
 
-Sorry .. but can you poof this by show one example of this kind of 
-problems ?
-
-> In fact its more natural to maintain that separation.
-
-Sorry but cause of developing ZFS was not braking classic/"natural" FS 
-abstraction but try to solve things like limited I/O bandwich and 
-statatistical number of errors on storing portion informations (it 
-~constant but capacity of used storage divices grows) now avalaible 
-storage devices and simplify managing hundrets or thousands phisical 
-devices. From this point of view it is state of art.
-
-> It allows people to have choices about how they manage the underlying 
-> block layer rather than imposing one specialized solution.  Look at the 
-> various technologies in Linux (LVM2, MD, Linux Multipath) to understand 
-> the flexibility Linux provides for managing storage.
-
-Except ext4 all this all this technologies not solves some problems which 
-are plugged by ZFS. Also adding checksuming to ext3 (aka ext4) it is not 
-all what profides ZFS way ..
-
-> Not to mention the availability of commercial solutions from the various 
-> storage vendors.
-
-It is not matter comercial/non-commercial .. forget about this argument 
-(don't practice this kind of FUDing).
-
-ZFS was implemnted and is useable .. very useable like many commersial 
-technologiess (do you remenber form where come NFS to Linux ?)
-It is so useable it case many people are now ready for switch from Linux 
-to Solaris.
-Few days ago I'm swich two backup servers with few TB storage from Linux 
-to Solaris .. only because client want use ZFS .. because ZFS is EXCELENT 
-for this kind tasks (only because it allow save many thousands of 
-<put_your_currency_name> because it allow better utilize the same storage) 
-and trust me .. cases like this will be more .. much more and changing 
-licensing Linux code will be MUCH more easier than reinventing wheel (wich 
-will be reimplemnting ZFS under GPL).
-
-Problem is not on technical area but on licensing and it is plain Linux 
-word problem because neccessary in this case changes on CDDL side will 
-make this code less oppended than now .. so you can (probably ?) forget 
-about GPLing ZFS code (and ZFS it is not all what will good to have from 
-Sol in Linux).
-IMO current Linux licensing less is importand than bringing in possible 
-simpler way things like ZFS to Linux. So best/simpler way will be start 
-change Linux licensing for save all GPL goodies and allow interract with 
-code on license like CDDL.
-Licensing is for allow keep in best possible form Linux. If it can't do 
-this in best possible way it must be change (must evolve .. like 
-many othes things around).
-
-kloczek
+Audio is about guaranteed latency, not "speed".
 -- 
------------------------------------------------------------
-*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
------------------------------------------------------------
-Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
---0-1098872399-1176732083=:11088--
+Stefan Richter
+-=====-=-=== -=-- -==-=
+http://arcgraph.de/sr/
