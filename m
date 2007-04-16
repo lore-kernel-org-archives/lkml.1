@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751951AbXDPKDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXDPKDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751951AbXDPKDE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 06:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbXDPKDE
+	id S1030323AbXDPKDO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 06:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030339AbXDPKDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 06:03:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56493 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751951AbXDPKDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 06:03:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-Date: Mon, 16 Apr 2007 12:06:22 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Chua <jeff.chua.linux@gmail.com>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Dave Jones <davej@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Dmitry Torokhov <dtor@insightbb.com>,
-       David Brownell <david-b@pacbell.net>, Marcus Better <marcus@better.se>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       James Simmons <jsimmons@infradead.org>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de>
-In-Reply-To: <20070416003723.GM3691@stusta.de>
+	Mon, 16 Apr 2007 06:03:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:11281 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030325AbXDPKDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 06:03:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GldD1Z5Q1lSpktsXueZaiWe9BPiVkqCGB5XiIzCUzkumIfaxB7As+AofDPHDZGwN320XfuRJpBJFDwhDZv2rAWMK6/rjMeRtM56vSJ+uvMU1dWomLTpulqXFOnwQE9ogIRmWrab27mF+As9E840IhZ1XNRWiq9M70S5tJJ7wHx4=
+Message-ID: <38b2ab8a0704160303l7c550c2dq3b700b2e93d01a7@mail.gmail.com>
+Date: Mon, 16 Apr 2007 12:03:11 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: question on generic gpio interface
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200704131543.32976.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704161206.31145.rjw@sisk.pl>
+References: <38b2ab8a0704131351la5085vf0ab58e85cf49879@mail.gmail.com>
+	 <200704131543.32976.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 16 April 2007 02:37, Adrian Bunk wrote:
-> This email lists some known regressions in Linus' tree compared to 2.6.20.
-> 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way
-> possibly involved with one or more of these issues.
-> 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> 
-[--snip--]
-> 
-> 
-> Subject    : suspend to disk works only once
-> References : http://lkml.org/lkml/2007/4/13/240
-> Submitter  : Tobias Diedrich <ranma+kernel@tdiedrich.de>
-> Caused-By  : Rafael J. Wysocki <rjw@sisk.pl>
->              commit ed746e3b18f4df18afa3763155972c5835f284c5
-> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
->              Dmitry Torokhov <dtor@insightbb.com>
->              David Brownell <david-b@pacbell.net>
-> Status     : problem is being debugged
+Hi David,
 
-Workaround is possible: do "echo shutdown > /sys/power/disk" before the
-suspend or, for s2disk, add "shutdown method = shutdown" to the configuration
-file.
+Thanks for your detailed answer, it helps a lot !
 
-Greetings,
-Rafael
+On 4/14/07, David Brownell <david-b@pacbell.net> wrote:
+> On Friday 13 April 2007 1:51 pm, Francis Moreau wrote:
+> > Hi,
+> >
+> > I'm trying to port my old gpio code to the generic one to see if it
+> > can fit my needs.
+>
+> Good .. this is more like an IRQ question though.
+>
+
+yeah now it appears to me so...
+
+>
+> > The gpio controller is a home made one and has a really weird
+> > interface. It has several registers to read the gpio status, to
+> > configure gpio directions, or to configure if a gpio can trigger an
+> > interrupt and on which event (level or edge). All gpios use the same
+> > IRQ and a gpio controller register allows to read which gpio has
+> > triggered the interrupt.
+>
+> I'll trust you on "weird", but that sounds quite typical in
+> terms of functionality.  You'll find that most system-on-chip
+> GPIO controllers act the same way.
+>
+> IRQ logic on that platform must do a few things, like:
+>
+>  - NR_IRQS includes the N interrupts triggered from that chip,
+>    and their numbers probably fit right sometimes after the
+>    core set of IRQs (which might include SOC GPIO irqs);
+>
+>  - You'll provide an irq_chip for this controller, and it will
+>    handle the relevant irq operations (set trigger type, mask,
+>    unmask etc);
+>
+>  - When configuring the IRQ handler for that "same IRQ", you'll
+>    set it up to use a chained handler that you provide, which
+>    reads the register to see which gpio(s) triggered the IRQ,
+>    maybe acks it (if just reading that register isn't enough),
+>    and then calls whatever handler was instaled for that GPIO.
+>
+> If that's not familiar to you, look at arch/arm/mach-at91/gpio.c
+> or arch/arm/mach-pxa/irq.c or arch/arm/plat-omap/gpio.c or a
+> number of other similar files showing how the "toplevel" IRQ
+> logic will demux from a "one of these N GPIOs" interrupt down
+> to the handler for that particular IRQ.
+>
+
+I think I got the picture now, thanks again.
+
+Just to be sure I understand, it seems to me that your point 2) and 3)
+are 2 different approaches to do the same thing, aren't they ?
+
+If so I can only implement 2) since it seems to me better than the
+last one (it better uses genirq layer).
+
+Thanks !
+-- 
+Francis
