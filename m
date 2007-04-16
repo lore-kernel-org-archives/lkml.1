@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030687AbXDPOnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030690AbXDPOpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030687AbXDPOnF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 10:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030690AbXDPOnF
+	id S1030690AbXDPOpo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 10:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030669AbXDPOpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 10:43:05 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56992 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030687AbXDPOnE (ORCPT
+	Mon, 16 Apr 2007 10:45:43 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:54966 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030690AbXDPOpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 10:43:04 -0400
-Date: Mon, 16 Apr 2007 10:43:01 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Tejun Heo <htejun@gmail.com>,
-       Markus Rechberger <markus.rechberger@amd.com>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: How should an exit routine wait for release() callbacks?
-In-Reply-To: <20070416105316.0b91c2fd@gondolin.boeblingen.de.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0704161028330.4861-100000@iolanthe.rowland.org>
+	Mon, 16 Apr 2007 10:45:43 -0400
+X-Originating-Ip: 24.6.145.253
+Date: Mon, 16 Apr 2007 10:44:52 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: so what *is* obsolete and removable?
+In-Reply-To: <9a8748490704151450i251b8b1av8439bc275e982866@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0704161030040.6837@localhost.localdomain>
+References: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
+ <9a8748490704151450i251b8b1av8439bc275e982866@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-14.854, required 5, ALL_TRUSTED -1.80, BAYES_00 -15.00,
+	INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_NJABL_DUL 1.95,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007, Cornelia Huck wrote:
+On Sun, 15 Apr 2007, Jesper Juhl wrote:
 
-> On Fri, 13 Apr 2007 11:24:58 -0400 (EDT),
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> > I have to admit, this is a puzzler.  I'm beginning to think there should 
-> > be two types of module references: Those which (like module dependency) 
-> > will prevent rmmod from running, and those which (like the one here) would 
-> > automatically be dropped by deregistration.  Then every kobject could have 
-> > an owner and could hold a reference of the second type to its owner until 
-> > its release routine returns.
-> 
-> This sounds like the most promising idea yet.
-> 
-> We could make kobject_add() bump up this second-type refcount (since
+> On 15/04/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+> >
+> >   in a recent posting, ian anderson suggested that, before kernel
+> > features are removed, they should spend a reasonable amount of
+> > time in the feature removal file to give everyone fair warning.
+> > if that's the case, then there are a *bunch* of things that should
+> > perhaps be added to that file real soon now just to start the
+> > clock ticking.
+> >
+> [snip]
+> > ./sound/oss/Kconfig:    bool "Obsolete OSS drivers"
+> > ./sound/oss/Kconfig:      This option enables support for obsolete OSS
+> > drivers that
+> >
+> >   clearly, that was a fairly brainless search, but it still
+> > reveals a pile of stuff that's "obsolete" (whatever that means in
+> > the context in which it's used).  so what's really obsolete?
+> >
+> IIRC Adrian Bunk is handling the removal of obsolete OSS drivers and
+> doing a nice job at it. Dunno about the rest of the stuff.
 
-Actually it has to be done in kobject_init() since the release method can 
-be called any time after that, even if the kobject is never add'ed.
+oh, i realize that a number of those examples from my earlier post
+were already handled/being handled (i don't even look under OSS these
+days when doing any cleanup).
 
-> from now on it may be looked up). kobject_get()/kobject_put() wouldn't
-> need to grab an extra reference (we already have refcounting for this
-> object in place). kobject_cleanup() could do something like:
-> 
-> struct module * kobject_owner = kobj->owner;
-> ...
-> call_release();
-> put_second_module_refcount(kobject_owner);
-> 
-> combined with the module unloading code waiting after calling the exit
-> function until the second type refcount dropped to 0. This would make
-> sure that the module is not deleted until the last release function has
-> been called.
-> 
-> The module would stay in memory (not be unloaded) until the last
-> kobject created by the module is deleted, but I think that is just what
-> we want. At least this doesn't mean that the module blocks its own
-> unloading.
+my point was that, if ian's position is valid and stuff shouldn't be
+removed without fair warning, then a lot of that stuff should get
+entered into the feature removal file real soon now.
 
-Yes, that's what I had in mind.
+rday
 
-It would have to apply to other things besides kobjects -- in principle,
-anything with a release routine, although in many cases it wouldn't be 
-needed.  But in particular, it _would_ be needed for struct device.
+p.s.  again, if you run the simple grep i mentioned before:
 
-(In fact, perhaps kobject would not need it.  There aren't too many places
-where a raw kobject is used; almost always it is embedded in some larger
-object -- like struct device -- along with a release method pointer.  
-This larger object would need an owner but its embedded kobject usually
-would not.)
+  $ grep -iw obsolete $(find . -name Kconfig\*)
 
-On the other hand, this proposal involves adding a fair amount of overhead
-(all those .owner fields) for a rather small benefit.  And it involves
-modifying a core kernel subsystem (kernel/module.c).  All to prevent
-certain unlikely sorts of errors when removing a module -- something which
-Linus has said repeatedly need not be supported terribly well.
+you find some odd combinations, such as this from net/ipv4/Kconfig:
 
-So I'm uncertain whether other people will be in favor of all this.
+config ARPD
+        bool "IP: ARP daemon support (EXPERIMENTAL)"
+        depends on EXPERIMENTAL
+        ---help---
+        ...
+        This code is experimental and also obsolete...
 
-Alan Stern
+the thought of something being both experimental *and* obsolete is a
+bit weird, is it not?
 
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
