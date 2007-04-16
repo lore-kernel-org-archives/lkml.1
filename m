@@ -1,148 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030433AbXDPLOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030342AbXDPLTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030433AbXDPLOW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 07:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030419AbXDPLOV
+	id S1030342AbXDPLTy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 07:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030357AbXDPLTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 07:14:21 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:36622 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030342AbXDPLOU (ORCPT
+	Mon, 16 Apr 2007 07:19:54 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:58654 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030342AbXDPLTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 07:14:20 -0400
-Message-Id: <20070416110439.870156017@szeredi.hu>
-References: <20070416110308.739051445@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Mon, 16 Apr 2007 13:03:17 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       linuxram@us.ibm.com, ebiederm@xmission.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: [patch 09/10] allow unprivileged mounts
-Content-Disposition: inline; filename=unprivileged_mount.patch
+	Mon, 16 Apr 2007 07:19:53 -0400
+Date: Mon, 16 Apr 2007 07:19:19 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: =?UTF-8?Q?Tomasz_K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
+cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Mike Snitzer <snitzer@gmail.com>,
+       Neil Brown <neilb@suse.de>, "David R. Litwin" <presently42@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+In-Reply-To: <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
+Message-ID: <alpine.DEB.0.83.0704160711010.16021@sigma.j-a-k-j.com>
+References: <op.tqqwdfzcftfxs2@localhost.localdomain> 
+ <17952.5537.364603.419364@notabene.brown> <170fa0d20704140704l29d9db76q59195a3d9cad868a@mail.gmail.com>
+ <Pine.LNX.4.61.0704142251380.15892@yvahk01.tjqt.qr>
+ <Pine.BSO.4.63.0704161120070.11088@rudy.mif.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+> FUSE implemtation uses too many context switches on each I/O so on the same
+> hardware it will never will be so fast as on Linux, BSD and MOX (yes ZFS is
+> now avalaible on all this OSes .. and few people says Windows implemtation is
+> very close). Current FUSE implemntation can't be comparable in aspects of
+> speed and probably never will be on using threads (very simmilar case to ALSA
+> and mixing in user space .. in both cases it is broken by design). Also ZFS on
+> Solaris uses few other system abilities for example it interract with PSH.
+> 
+> So FUSE ZFS is IMO only kind of academic demo implemtation only but never will
+> be usefull/ready for production (plain waste of time). If Linux licensing will
+> not be relaxed probaly we can forget about ZFS on Linux (licensing problems in
+> this case are obly on Linux side .. <ironically>in this case ZFS licensing is
+> more oppened than Linux licensing </ironically>).
+> 
+> kloczek
+> PS. IIRC implemting ZFS on FUSE was some kind of workaround for licensing
+> issue but FUSE fill uses vfs layer and probaly still thinking about
+> licensing is actual.
 
-Define a new fs flag FS_SAFE, which denotes, that unprivileged
-mounting of this filesystem may not constitute a security problem.
+I'm just a lowly proto-hacker trying to get into kernel development, but 
+even I know a few things, and I'm getting very tired of hearing FUSE 
+slammed as stupid and the Linux licencing policy as foolish. I can sum 
+things up in two short passages.
 
-Since most filesystems haven't been designed with unprivileged
-mounting in mind, a thorough audit is needed before setting this flag.
+FUSE is intended for end-users, not critical server applications. 
+End-users have plenty of processor to spare at lower-than-ever prices. So 
+you have a simple and flexible end-user API that lets you do anything with 
+anything in any way you want, all the time, without needing to (or even 
+needing to be able to) alter your kernel. Win.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
+Linux licencing basically says, "If you want in on this good thing, you 
+have to play by the rules. That means no cheating, no scamming, no 
+profiting at the expense of others, and no getting on a high horse and 
+proclaiming to the rest of the world that you are in control of their 
+destinies. Play nice, kiddies." If you want to do something, you do it 
+open and you do it Free, and if you don't want to, well...write your own 
+kernel!
 
-Index: linux/fs/namespace.c
-===================================================================
---- linux.orig/fs/namespace.c	2007-04-13 13:35:29.000000000 +0200
-+++ linux/fs/namespace.c	2007-04-13 13:35:30.000000000 +0200
-@@ -785,7 +785,8 @@ asmlinkage long sys_oldumount(char __use
-  *  o if it's a sticky directory, it must be owned by the user
-  *  o it must not be an append-only file/directory
-  */
--static int mount_is_safe(struct nameidata *nd, int *flags)
-+static int mount_is_safe(struct nameidata *nd, struct file_system_type *type,
-+			 int *flags)
- {
- 	struct inode *inode = nd->dentry->d_inode;
- 
-@@ -795,6 +796,9 @@ static int mount_is_safe(struct nameidat
- 	if (!(nd->mnt->mnt_flags & MNT_USERMNT))
- 		return -EPERM;
- 
-+	if (type && !(type->fs_flags & FS_SAFE))
-+		return -EPERM;
-+
- 	if (!S_ISDIR(inode->i_mode) && !S_ISREG(inode->i_mode))
- 		return -EPERM;
- 
-@@ -1035,7 +1039,7 @@ static int do_loopback(struct nameidata 
- 	int clone_flags;
- 	struct nameidata old_nd;
- 	struct vfsmount *mnt = NULL;
--	int err = mount_is_safe(nd, &flags);
-+	int err = mount_is_safe(nd, NULL, &flags);
- 	if (err)
- 		return err;
- 	if (!old_name || !*old_name)
-@@ -1197,26 +1201,46 @@ out:
-  * create a new mount for userspace and request it to be added into the
-  * namespace's tree
-  */
--static int do_new_mount(struct nameidata *nd, char *type, int flags,
-+static int do_new_mount(struct nameidata *nd, char *fstype, int flags,
- 			int mnt_flags, char *name, void *data)
- {
-+	int err;
- 	struct vfsmount *mnt;
-+	struct file_system_type *type;
- 
--	if (!type || !memchr(type, 0, PAGE_SIZE))
-+	if (!fstype || !memchr(fstype, 0, PAGE_SIZE))
- 		return -EINVAL;
- 
--	/* we need capabilities... */
--	if (!capable(CAP_SYS_ADMIN))
--		return -EPERM;
-+	type = get_fs_type(fstype);
-+	if (!type)
-+		return -ENODEV;
- 
--	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
--	if (IS_ERR(mnt))
-+	err = mount_is_safe(nd, type, &flags);
-+	if (err)
-+		goto out_put_filesystem;
-+
-+	if (flags & MS_SETUSER) {
-+		err = reserve_user_mount();
-+		if (err)
-+			goto out_put_filesystem;
-+	}
-+
-+	mnt = vfs_kern_mount(type, flags & ~MS_SETUSER, name, data);
-+	put_filesystem(type);
-+	if (IS_ERR(mnt)) {
-+		if (flags & MS_SETUSER)
-+			dec_nr_user_mounts();
- 		return PTR_ERR(mnt);
-+	}
- 
- 	if (flags & MS_SETUSER)
--		set_mnt_user(mnt);
-+		__set_mnt_user(mnt);
- 
- 	return do_add_mount(mnt, nd, mnt_flags, NULL);
-+
-+ out_put_filesystem:
-+	put_filesystem(type);
-+	return err;
- }
- 
- /*
-@@ -1246,7 +1270,7 @@ int do_add_mount(struct vfsmount *newmnt
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
- 
--	/* MNT_USER was set earlier */
-+	/* some flags may have been set earlier */
- 	newmnt->mnt_flags |= mnt_flags;
- 	if ((err = graft_tree(newmnt, nd)))
- 		goto unlock;
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h	2007-04-13 13:35:29.000000000 +0200
-+++ linux/include/linux/fs.h	2007-04-13 13:35:30.000000000 +0200
-@@ -96,6 +96,7 @@ extern int dir_notify_enable;
- #define FS_REQUIRES_DEV 1 
- #define FS_BINARY_MOUNTDATA 2
- #define FS_HAS_SUBTYPE 4
-+#define FS_SAFE 8		/* Safe to mount by unprivileged users */
- #define FS_REVAL_DOT	16384	/* Check the paths ".", ".." for staleness */
- #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move()
- 					 * during rename() internally.
-
---
+There is a wonderful quotation on the GNU site comparing agencies like 
+Microsoft to crack dealers: They appear more open in theory in order to 
+get people hooked, then trigger the beartrap around your foot. Linux has 
+rules--hard, fast, and immutable--and they protect everybody from their 
+own stupidities. Open-community development takes a whole lot longer, but 
+you don't have to sell your soul to do it.
