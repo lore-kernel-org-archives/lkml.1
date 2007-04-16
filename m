@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbXDPRXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbXDPRdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753007AbXDPRXG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 13:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXDPRXG
+	id S1753083AbXDPRdu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 13:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXDPRdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 13:23:06 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:58403 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753007AbXDPRXE (ORCPT
+	Mon, 16 Apr 2007 13:33:50 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:45405 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753083AbXDPRdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 13:23:04 -0400
-Message-ID: <4623B0C2.7080806@nortel.com>
-Date: Mon, 16 Apr 2007 11:22:10 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Peter Williams <pwil3058@bigpond.net.au>
-CC: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415233909.GE2986@holomorphy.com> <4622CC30.6030707@bigpond.net.au>
-In-Reply-To: <4622CC30.6030707@bigpond.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 16 Apr 2007 13:33:49 -0400
+Date: Mon, 16 Apr 2007 19:36:19 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [Patch -mm 0/3] RFC: module unloading vs. release function
+Message-ID: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Apr 2007 17:22:14.0513 (UTC) FILETIME=[C6892E10:01C7804B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
+Hi,
 
-> To my mind scheduling 
-> and load balancing are orthogonal and keeping them that way simplifies 
-> things.
+based on the discussion in "How should an exit routine wait for
+release() callbacks?", I've cooked up some patches that make module
+unload wait until the last reference for a kobject has been dropped.
+This should plug the "release function in already deleted module" race;
+however, if the last kobject_put() from the module containing the
+release function is not in the module's exit function, there's still a
+small window (not sure if and how to plug this).
 
-Scuse me if I jump in here, but doesn't the load balancer need some way 
-to figure out a) when to run, and b) which tasks to pull and where to 
-push them?
+This new refcounting still needs to be exploited (i. e. a driver
+actually setting kobject->owner). Whether we need to set the owner for
+kobject or if for device would be sufficient is also still open to
+debate.
 
-I suppose you could abstract this into a per-scheduler API, but to me at 
-least these are the hard parts of the load balancer...
+[1/3] Use module->mkobj even if !CONFIG_SYSFS.
+[2/3] Expose module->mkobj reference count.
+[3/3] Introduce kobject->owner for refcounting.
 
-Chris
+Patchset is only slightly tested, but comments are welcome :)
