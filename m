@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbXDPDGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbXDPDHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbXDPDGX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Apr 2007 23:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbXDPDGX
+	id S1754372AbXDPDHS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Apr 2007 23:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXDPDHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Apr 2007 23:06:23 -0400
-Received: from THUNK.ORG ([69.25.196.29]:46314 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754363AbXDPDGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Apr 2007 23:06:22 -0400
-Date: Sun, 15 Apr 2007 23:05:11 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: If not readdir() then what?
-Message-ID: <20070416030511.GC27533@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"J. Bruce Fields" <bfields@fieldses.org>,
-	Neil Brown <neilb@suse.de>,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Ulrich Drepper <drepper@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <17947.65165.569482.976343@notabene.brown> <20070411144252.GB17778@thunk.org> <17949.25061.739035.688232@notabene.brown> <20070411232224.GF17778@thunk.org> <17949.36737.701327.104172@notabene.brown> <20070412023712.GA8175@lazybastard.org> <17949.51797.386833.917451@notabene.brown> <20070412122116.GD28148@thunk.org> <20070412171831.GD3028@fieldses.org> <461E6DF5.6040808@zytor.com>
-MIME-Version: 1.0
+	Sun, 15 Apr 2007 23:07:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36473 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754372AbXDPDHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Apr 2007 23:07:16 -0400
+Date: Mon, 16 Apr 2007 13:07:05 +1000
+From: David Chinner <dgc@sgi.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+Message-ID: <20070416030705.GY32602149@melbourne.sgi.com>
+References: <op.tqthonq5ftfxs2@localhost.localdomain> <4622C851.2030509@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <461E6DF5.6040808@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <4622C851.2030509@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 12, 2007 at 10:35:49AM -0700, H. Peter Anvin wrote:
-> J. Bruce Fields wrote:
-> >On Thu, Apr 12, 2007 at 08:21:16AM -0400, Theodore Tso wrote:
-> >>Again, compared to a directory fd cache, what you're proposing a huge
-> >>hit to the filesystem, and at the moment, given that telldir/seekdir
-> >>is rarely used by everyone else, it's mainly NFS which is the main bad
-> >>actor here by insisting on the use of a small 31/63-bit cookie as a
-> >>condition of protocol correctness.
-> >
-> >If we want to get bigger cookies into the protocol, then the sooner we
-> >start working on that the better....  How big is big enough?  And is a
-> >larger cookie sufficient on its own?
-> >
+On Sun, Apr 15, 2007 at 08:50:25PM -0400, Rik van Riel wrote:
+> David R. Litwin wrote:
 > 
-> Any fixed size is too small.  It should be a dynamic size.
+> >>4: ZFS has a HUGE capacity. I don't have 30 exobytes, but I might some
+> >>day....
+> >
+> >ext4 will probably cope with that.  XFS definitely has very high
+> >limits though I admit I don't know what they are.
+> >
+> >XFS is also a few exobytes.
+> 
+> The fsck for none of these filesystems will be able to deal with
+> a filesystem that big.  Unless, of course, you have a few weeks
+> to wait for fsck to complete.
 
-Idally it should be dynamic, but my guess is that if the cookie were a
-fixed 256 bits, it would be sufficient for pretty much all filesystems.  
+Which is why I want to be able to partially offline a chunk of
+a filesystem and repair it while the rest is still online.....
 
-						- Ted
+> Backup and restore are similar problems.  When part of the filesystem
+> is lost, you don't want to have to wait for a full restore.
+> 
+> Sounds simple?  Well, the hard part is figuring out exactly which
+> part of the filesystem you need to restore...
+> 
+> I don't see ZFS, ext4 or XFS addressing these issues.
 
+XFS has these sorts of issues directly in our cross-hairs.
+
+The major scaling problem XFS has right now is to do with
+how long repair/backup/restore take when you have hundreds
+of terabytes of storage.
+
+> IMHO chunkfs could provide a much more promising approach.
+
+Agreed, that's one method of compartmentalising the problem.....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
