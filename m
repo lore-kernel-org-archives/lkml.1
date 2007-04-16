@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965158AbXDPIhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXDPIqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965158AbXDPIhG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 04:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965104AbXDPIhF
+	id S965292AbXDPIqO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 04:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965287AbXDPIqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 04:37:05 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:44302 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965158AbXDPIhD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 04:37:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eHC5WwQf8gLMR3yHeCRiaD5+7QrO0ap+ohLcRPTE0wtkXJW9wRDnixH1JMOuDz5GpD4Mz3SYjkWcNMH+ZAFdM7A9tF1Ovks/jc8Ql47rdB9pFFEuz1pXi96/+qJ08i19F8ufXuDMog6q2Dy9n8PuhGT/ln7fNjSss7BGA1JjEdc=
-Message-ID: <38b2ab8a0704160137g1ef0713fl943c51ed9049212b@mail.gmail.com>
-Date: Mon, 16 Apr 2007 10:37:01 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: helge.hafting@aitel.hist.no, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <20070415075201.GA1644@gondor.apana.org.au>
+	Mon, 16 Apr 2007 04:46:14 -0400
+Received: from smtp4.yandex.ru ([213.180.223.136]:50436 "EHLO smtp4.yandex.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965292AbXDPIqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 04:46:13 -0400
+X-Greylist: delayed 344 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 04:46:13 EDT
+X-Comment: RFC 2476 MSA function at smtp4.yandex.ru logged sender identity as: yantux
+From: yantux <yantux@yandex.ru>
+Organization: office
+To: Linux List <linux-kernel@vger.kernel.org>
+Subject: clone and waitpid syscall: return strange error
+Date: Sun, 15 Apr 2007 21:41:47 -0600
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <38b2ab8a0704140615y2ba8145bmd3c2316a41d99265@mail.gmail.com>
-	 <E1Hco0p-0007np-00@gondolin.me.apana.org.au>
-	 <38b2ab8a0704141410q65f55381w26527aeb10fb4988@mail.gmail.com>
-	 <20070415075201.GA1644@gondor.apana.org.au>
+Message-Id: <200704152141.47138.yantux@yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/15/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> On Sat, Apr 14, 2007 at 11:10:08PM +0200, Francis Moreau wrote:
-> >
-> > ok but do you think it's safe to assume that no others parts of the
-> > kernel will request "aes-foo" ? Remember that the main point is to
-> > optimize "aes-foo" ?
->
-> What they request is up to the administrator.
->
+Help my please.
 
-But do you think it's safe to design aes driver that could work only
-with one kernel user and to rely on administrator config to verify
-this condition ?
+Question about "interactive" clone and waitpid syscalls.
 
-BTW, here are figures I got with 2 different versions of the driver
-when using tcrypt module. The second being the result with the
-optimized driver (no key reloading on each block):
+Describe.
+Process was create five a process using clone syscall.
+Two clone calling with CLONE_THREAD, other three without CLONE_THREAD.
 
-normal version:
-test 4 (128 bit key, 8192 byte blocks): 1 operation in 67991 cycles (8192 bytes)
+After then process was calling waitpid(getpid, &status, __WNOTHREAD),
+then it must not checkout process, that was created by clone with 
+CLONE_THREAD, is not it?
 
-optimized version:
-test 4 (128 bit key, 8192 byte blocks): 1 operation in 51783 cycles (8192 bytes)
+Questions.
+Where define thread_info struct?
+Where define list_head struct?
 
-So the gain is 16000 cycles which seems to worth the change, isn't it ?
+I right understand, that in kernel/fork.c, copy_process() function add process 
+to thread group?
+//1171 string number
+list_add_tail_rcu(&p->thread_group, &p->group_leader->thread_group);
 
-thanks
--- 
-Francis
+And do_wait contain next_thread too, but waitpid(getpid(), &status, __WALL) it 
+is good, but really waitpid syscall not return info about thread, because 
+return error "no child process".
+I sure that is not right, or I delusion? I waiting from waitpid info about 
+thread, but not error.
+
+Best regards,
+yantux.
