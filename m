@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030776AbXDPPpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030769AbXDPPpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030776AbXDPPpt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 11:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030769AbXDPPpt
+	id S1030769AbXDPPpx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 11:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030777AbXDPPpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 11:45:49 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38121 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030776AbXDPPps (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 11:45:48 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-References: <20070412164541.580374744@szeredi.hu>
-	<20070412164620.588752236@szeredi.hu>
-	<20070412203208.GG27772@sergelap.austin.ibm.com>
-	<m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-	<1176713221.9488.17.camel@ram.us.ibm.com>
-	<E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
-	<1176716941.9488.57.camel@ram.us.ibm.com>
-	<E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
-Date: Mon, 16 Apr 2007 09:43:55 -0600
-In-Reply-To: <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
-	message of "Mon, 16 Apr 2007 11:56:15 +0200")
-Message-ID: <m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 16 Apr 2007 11:45:53 -0400
+Received: from holomorphy.com ([66.93.40.71]:34090 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030769AbXDPPpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 11:45:51 -0400
+Date: Mon, 16 Apr 2007 08:45:40 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070416154540.GL8915@holomorphy.com>
+References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415213153.GW11115@waste.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070415213153.GW11115@waste.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> writes:
+On Sun, Apr 15, 2007 at 04:31:54PM -0500, Matt Mackall wrote:
+> That's irrelevant. Plugsched was an attempt to get alternative
+> schedulers exposure in mainline. I know, because I remember
+> encouraging Bill to pursue it. Not only did you veto plugsched (which
+> may have been a perfectly reasonable thing to do), but you also vetoed
+> the whole concept of multiple schedulers in the tree too. "We don't
+> want to balkanize the scheduling landscape".
+> And that latter part is what I'm claiming has set us back for years.
+> It's not a technical argument but a strategic one. And it's just not a
+> good strategy.
+[... excellent post trimmed...]
 
-> That depends.  Current patches check the "unprivileged submounts
-> allowed under this mount" flag only on the requested mount and not on
-> the propagated mounts.  Do you see a problem with this?
+These are some rather powerful arguments. I think I'll actually start
+looking at plugsched again.
 
-I think privileges of this sort should propagate.  If I read what you
-just said correctly if I have a private mount namespace I won't be able
-to mount anything unless when it was setup the unprivileged submount
-command was explicitly set.
 
-Eric
+-- wli
