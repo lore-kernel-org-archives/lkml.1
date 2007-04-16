@@ -1,63 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030404AbXDPLJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbXDPLJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030404AbXDPLJE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 07:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030401AbXDPLIj
+	id S1754079AbXDPLJF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 07:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030400AbXDPLIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 07:08:39 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:43685 "EHLO
+	Mon, 16 Apr 2007 07:08:37 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:43699 "EHLO
 	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbXDPLIW (ORCPT
+	with ESMTP id S1754081AbXDPLI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 07:08:22 -0400
-Message-Id: <20070416110435.155438310@szeredi.hu>
+	Mon, 16 Apr 2007 07:08:26 -0400
+Message-Id: <20070416110419.746507318@szeredi.hu>
 References: <20070416110308.739051445@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Mon, 16 Apr 2007 13:03:16 +0200
+Date: Mon, 16 Apr 2007 13:03:14 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
        linuxram@us.ibm.com, ebiederm@xmission.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org
-Subject: [patch 08/10] put declaration of put_filesystem() in fs.h
-Content-Disposition: inline; filename=put_filesystem_in_header.patch
+Subject: [patch 06/10] propagate error values from clone_mnt
+Content-Disposition: inline; filename=clone_return_errno.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Declarations go into headers.
+Allow clone_mnt() to return errors other than ENOMEM.  This will be
+used for returning a different error value when the number of user
+mounts goes over the limit.
+
+Fix copy_tree() to return EPERM for unbindable mounts.
+
+Don't propagate further from dup_mnt_ns() as that copy_tree() can only
+fail with -ENOMEM.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/super.c
+Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/super.c	2007-04-13 12:26:11.000000000 +0200
-+++ linux/fs/super.c	2007-04-13 13:25:40.000000000 +0200
-@@ -40,10 +40,6 @@
- #include <asm/uaccess.h>
+--- linux.orig/fs/namespace.c	2007-04-13 13:22:17.000000000 +0200
++++ linux/fs/namespace.c	2007-04-13 13:25:35.000000000 +0200
+@@ -261,42 +261,42 @@ static struct vfsmount *clone_mnt(struct
+ {
+ 	struct super_block *sb = old->mnt_sb;
+ 	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
++	if (!mnt)
++		return ERR_PTR(-ENOMEM);
  
- 
--void get_filesystem(struct file_system_type *fs);
--void put_filesystem(struct file_system_type *fs);
--struct file_system_type *get_fs_type(const char *name);
+-	if (mnt) {
+-		mnt->mnt_flags = old->mnt_flags;
+-		atomic_inc(&sb->s_active);
+-		mnt->mnt_sb = sb;
+-		mnt->mnt_root = dget(root);
+-		mnt->mnt_mountpoint = mnt->mnt_root;
+-		mnt->mnt_parent = mnt;
 -
- LIST_HEAD(super_blocks);
- DEFINE_SPINLOCK(sb_lock);
+-		/* don't copy the MNT_USER flag */
+-		mnt->mnt_flags &= ~MNT_USER;
+-		if (flag & CL_SETUSER)
+-			set_mnt_user(mnt);
+-
+-		if (flag & CL_SLAVE) {
+-			list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+-			mnt->mnt_master = old;
+-			CLEAR_MNT_SHARED(mnt);
+-		} else {
+-			if ((flag & CL_PROPAGATION) || IS_MNT_SHARED(old))
+-				list_add(&mnt->mnt_share, &old->mnt_share);
+-			if (IS_MNT_SLAVE(old))
+-				list_add(&mnt->mnt_slave, &old->mnt_slave);
+-			mnt->mnt_master = old->mnt_master;
+-		}
+-		if (flag & CL_MAKE_SHARED)
+-			set_mnt_shared(mnt);
++	mnt->mnt_flags = old->mnt_flags;
++	atomic_inc(&sb->s_active);
++	mnt->mnt_sb = sb;
++	mnt->mnt_root = dget(root);
++	mnt->mnt_mountpoint = mnt->mnt_root;
++	mnt->mnt_parent = mnt;
++
++	/* don't copy the MNT_USER flag */
++	mnt->mnt_flags &= ~MNT_USER;
++	if (flag & CL_SETUSER)
++		set_mnt_user(mnt);
  
-Index: linux/include/linux/fs.h
+-		/* stick the duplicate mount on the same expiry list
+-		 * as the original if that was on one */
+-		if (flag & CL_EXPIRE) {
+-			spin_lock(&vfsmount_lock);
+-			if (!list_empty(&old->mnt_expire))
+-				list_add(&mnt->mnt_expire, &old->mnt_expire);
+-			spin_unlock(&vfsmount_lock);
+-		}
++	if (flag & CL_SLAVE) {
++		list_add(&mnt->mnt_slave, &old->mnt_slave_list);
++		mnt->mnt_master = old;
++		CLEAR_MNT_SHARED(mnt);
++	} else {
++		if ((flag & CL_PROPAGATION) || IS_MNT_SHARED(old))
++			list_add(&mnt->mnt_share, &old->mnt_share);
++		if (IS_MNT_SLAVE(old))
++			list_add(&mnt->mnt_slave, &old->mnt_slave);
++		mnt->mnt_master = old->mnt_master;
++	}
++	if (flag & CL_MAKE_SHARED)
++		set_mnt_shared(mnt);
++
++	/* stick the duplicate mount on the same expiry list
++	 * as the original if that was on one */
++	if (flag & CL_EXPIRE) {
++		spin_lock(&vfsmount_lock);
++		if (!list_empty(&old->mnt_expire))
++			list_add(&mnt->mnt_expire, &old->mnt_expire);
++		spin_unlock(&vfsmount_lock);
+ 	}
+ 	return mnt;
+ }
+@@ -782,11 +782,11 @@ struct vfsmount *copy_tree(struct vfsmou
+ 	struct nameidata nd;
+ 
+ 	if (!(flag & CL_COPY_ALL) && IS_MNT_UNBINDABLE(mnt))
+-		return NULL;
++		return ERR_PTR(-EPERM);
+ 
+ 	res = q = clone_mnt(mnt, dentry, flag);
+-	if (!q)
+-		goto Enomem;
++	if (IS_ERR(q))
++		goto error;
+ 	q->mnt_mountpoint = mnt->mnt_mountpoint;
+ 
+ 	p = mnt;
+@@ -807,8 +807,8 @@ struct vfsmount *copy_tree(struct vfsmou
+ 			nd.mnt = q;
+ 			nd.dentry = p->mnt_mountpoint;
+ 			q = clone_mnt(p, p->mnt_root, flag);
+-			if (!q)
+-				goto Enomem;
++			if (IS_ERR(q))
++				goto error;
+ 			spin_lock(&vfsmount_lock);
+ 			list_add_tail(&q->mnt_list, &res->mnt_list);
+ 			attach_mnt(q, &nd);
+@@ -816,7 +816,7 @@ struct vfsmount *copy_tree(struct vfsmou
+ 		}
+ 	}
+ 	return res;
+-Enomem:
++ error:
+ 	if (res) {
+ 		LIST_HEAD(umount_list);
+ 		spin_lock(&vfsmount_lock);
+@@ -824,7 +824,7 @@ Enomem:
+ 		spin_unlock(&vfsmount_lock);
+ 		release_mounts(&umount_list);
+ 	}
+-	return NULL;
++	return q;
+ }
+ 
+ /*
+@@ -1009,13 +1009,13 @@ static int do_loopback(struct nameidata 
+ 		goto out;
+ 
+ 	clone_flags = (flags & MS_SETUSER) ? CL_SETUSER : 0;
+-	err = -ENOMEM;
+ 	if (flags & MS_REC)
+ 		mnt = copy_tree(old_nd.mnt, old_nd.dentry, clone_flags);
+ 	else
+ 		mnt = clone_mnt(old_nd.mnt, old_nd.dentry, clone_flags);
+ 
+-	if (!mnt)
++	err = PTR_ERR(mnt);
++	if (IS_ERR(mnt))
+ 		goto out;
+ 
+ 	err = graft_tree(mnt, nd);
+@@ -1563,7 +1563,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	/* First pass: copy the tree topology */
+ 	new_ns->root = copy_tree(mnt_ns->root, mnt_ns->root->mnt_root,
+ 					CL_COPY_ALL | CL_EXPIRE);
+-	if (!new_ns->root) {
++	if (IS_ERR(new_ns->root)) {
+ 		up_write(&namespace_sem);
+ 		kfree(new_ns);
+ 		return NULL;
+Index: linux/fs/pnode.c
 ===================================================================
---- linux.orig/include/linux/fs.h	2007-04-13 13:23:22.000000000 +0200
-+++ linux/include/linux/fs.h	2007-04-13 13:25:40.000000000 +0200
-@@ -1922,6 +1922,8 @@ extern int vfs_fstat(unsigned int, struc
+--- linux.orig/fs/pnode.c	2007-04-13 12:31:04.000000000 +0200
++++ linux/fs/pnode.c	2007-04-13 13:25:35.000000000 +0200
+@@ -187,8 +187,9 @@ int propagate_mnt(struct vfsmount *dest_
  
- extern int vfs_ioctl(struct file *, unsigned int, unsigned int, unsigned long);
+ 		source =  get_source(m, prev_dest_mnt, prev_src_mnt, &type);
  
-+extern void get_filesystem(struct file_system_type *fs);
-+extern void put_filesystem(struct file_system_type *fs);
- extern struct file_system_type *get_fs_type(const char *name);
- extern struct super_block *get_super(struct block_device *);
- extern struct super_block *user_get_super(dev_t);
+-		if (!(child = copy_tree(source, source->mnt_root, type))) {
+-			ret = -ENOMEM;
++		child = copy_tree(source, source->mnt_root, type);
++		if (IS_ERR(child)) {
++			ret = PTR_ERR(child);
+ 			list_splice(tree_list, tmp_list.prev);
+ 			goto out;
+ 		}
 
 --
