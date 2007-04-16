@@ -1,73 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbXDPFWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbXDPFYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753743AbXDPFWd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 01:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbXDPFWd
+	id S1753805AbXDPFYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 01:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbXDPFYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 01:22:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:6035 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753743AbXDPFWc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 01:22:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=DaF/O+2jj9zCE8yzgRLFGifP41fUOHcYH6huJ4PvKhkjnhcZ3b4gq6solJU27jYdUXT1Ejkf7PDl813upeRt0+/3CB9fVYnUGxouHW17o8BOMYgZvUp7ZZoEnn/u6ZIkZ/3BZlZ/oFKz8oqQKnx4XztFSHZ3XBzxBuqZDSJZCeU=
-Message-ID: <46230806.7060908@gmail.com>
-Date: Mon, 16 Apr 2007 09:22:14 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Mon, 16 Apr 2007 01:24:19 -0400
+Received: from mail.lzu.edu.cn ([202.201.0.136]:60235 "HELO lzu.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753805AbXDPFYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 01:24:18 -0400
+X-Greylist: delayed 620 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 01:24:04 EDT
+Message-ID: <376700739.05606@lzu.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wangbj@lzu.edu.cn
+From: "Wang, Baojun" <wangbj@lzu.edu.cn>
+Organization: dslab
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: kernel 2.6.20.6 build failed for ppc board chestnut(ibm ppc 750GX/FX)
+Date: Mon, 16 Apr 2007 13:13:01 +0800
+User-Agent: KMail/1.9.5
+Cc: linuxppc-embedded@ozlabs.org, "Wang, Baojun" <wangbj@lzu.edu.cn>
 MIME-Version: 1.0
-To: Michael Krufky <mkrufky@linuxtv.org>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-dvb-maintainer@linuxtv.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB updates
-References: <1176653207.10849.5.camel@localhost> <4622C462.8020505@linuxtv.org>
-In-Reply-To: <4622C462.8020505@linuxtv.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart13853269.86UVt1nuoB";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200704161313.04359.wangbj@lzu.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Krufky wrote:
-> Mauro,
-> 
-> I've been out of town for the past few days... I just got home and saw this:
-> 
-> 
-> Mauro Carvalho Chehab wrote:
->>    - Fix 1/3 for bug 7819: fixed frontend hotplug issue
->>    - Fix 2/3 for bug 7819: demux and dvr
->>    - Fix 3/3 for bug 7819: fixed hotplugging for dvbnet
-> I don't think that this is 2.6.21 material.  These patches have not yet
-> received
-> enough testing to be sent to mainline.
-> 
-> I have tested them, and they seem to work for my cxusb device, but we have
-> yet to hear test results from users of usb dvb devices that do not use the
-> dvb-usb framework.  (ttusb, flexcop-usb, cinergyT2, for example)
-> 
-> The bug that these patches fix has been around throughout the entire kernel
-> history of the dvb subsystem.  The bug is not a regression -- it has
-> always been
-> there.  In my opinion, it is too late in 2.6.21 development to apply
-> this change.
-> Because these fixes are not obvious, I think we should let them get some
-> more testing, and have them queued for 2.6.22 .
+--nextPart13853269.86UVt1nuoB
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+PROBLEM: linux kernel 2.6.20.6 build failed for ppc board chestnut(ibm ppc=
+=20
+750GX/FX)
+
+STEPS I followed:
+1) make ARCH=3Dppc CROSS_COMPILE=3Dppc_4xx- chestnut_defconfig # toolchain =
+from=20
+eldk 4.1
+
+2) make ARCH=3Dppc CROSS_COMPILE=3Dppc_4xx- V=3D1
+
+=2E..
+
+make -f scripts/Makefile.build obj=3Darch/ppc/platforms
+ =20
+ppc_4xx-gcc -m32 -Wp,-MD,arch/ppc/platforms/.chestnut.o.d  -nostdinc -isyst=
+em /opt/eldk/usr/bin/../lib/gcc/powerpc-linux/4.0.0/include -D__KERNEL__ -I=
+include  -include=20
+include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include -Wall -Wundef -Wstri=
+ct-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -O2 -Iarch/pp=
+c -msoft-float -pipe -ffixed-r2 -mmultiple  -mno-altivec -mstring -Wa,-malt=
+ivec -fomit-frame-pointer  -Wdeclaration-after-statement -Wno-pointer-sign =
+   -D"KBUILD_STR(s)=3D#s" -D"KBUILD_BASENAME=3DKBUILD_STR(chestnut)"  -D"KB=
+UILD_MODNAME=3DKBUILD_STR(chestnut)" -c -o=20
+arch/ppc/platforms/chestnut.o arch/ppc/platforms/chestnut.c
+arch/ppc/platforms/chestnut.c: In function 'chestnut_setup_mtd':
+arch/ppc/platforms/chestnut.c:435: error: 'physmap_map' undeclared (first u=
+se=20
+in this function)
+arch/ppc/platforms/chestnut.c:435: error: (Each undeclared identifier is=20
+reported only once
+arch/ppc/platforms/chestnut.c:435: error: for each function it appears in.)
+make[1]: *** [arch/ppc/platforms/chestnut.o] Error 1
+make: *** [arch/ppc/platforms] Error 2
 
 
-I am not arguing about the veracity of the patches, but how things are
-handled.
+This PROBLEM should also affect these boards:
+find -name '*.[chS]' -exec grep physmap_map {} \; -print
+        physmap_map.size =3D CHESTNUT_32BIT_SIZE;
+=2E/arch/ppc/platforms/chestnut.c
+        physmap_map.size =3D size;
+=2E/arch/ppc/platforms/ev64360.c
+        physmap_map.size =3D size;
+=2E/arch/ppc/platforms/katana.c
 
-Agreed to all the mentioned above. There is one more aspect. The
-mentioned patches, do not have any ACK/SOB from any DVB
-developer/maintainer for the same.
+I've veryfied 2.6.15, 2.6.19.2 2.6.20.1 2.6.20.6
 
-Huge regressions are created this way. One more time the regression
-creator is caught.
+ONLY 2.6.15 can build successfully. sounds like the problem is caused by th=
+e=20
+interface change of mtd.
 
-Manu
+
+this brute force patch sould solve the problem:
+
+diff -Nru /tmp/linux-2.6.20.6/arch/ppc/platforms/chestnut.c \ =20
+linux-2.6.20.6/arch/ppc/platforms/chestnut.c
+
+=2D-- /tmp/linux-2.6.20.6/arch/ppc/platforms/chestnut.c   2007-04-07=20
+04:02:48.000000000 +0800
++++ linux-2.6.20.6/arch/ppc/platforms/chestnut.c        2007-04-13=20
+17:09:03.000000000 +0800
+@@ -432,7 +432,9 @@
+        ptbl.name =3D "User FS";
+        ptbl.size =3D CHESTNUT_32BIT_SIZE;
+
+=2D       physmap_map.size =3D CHESTNUT_32BIT_SIZE;
++       // physmap_map.size =3D CHESTNUT_32BIT_SIZE;
++       physmap_configure(CHESTNUT_32BIT_BASE, CHESTNUT_32BIT_SIZE,=20
+CONFIG_MTD_PHYSMAP_BANKWIDTH, NULL);
++
+        physmap_set_partitions(&ptbl, 1);
+        return 0;
+ }
+
+=2D-=20
+Wang, Baojun                                        Lanzhou University
+Distributed & Embedded System Lab              http://dslab.lzu.edu.cn
+School of Information Science and Engeneering        wangbj@lzu.edu.cn
+Tianshui South Road 222. Lanzhou 730000                     .P.R.China
+Tel:+86-931-8912025                                Fax:+86-931-8912022
+
+--nextPart13853269.86UVt1nuoB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGIwXgIuIOr7tpgg0RAkuGAKCteU6aea5bRgJsi5NQx7cDDNrtKQCePddU
+ySeKP0O9tginWZW+fY5G9Xg=
+=Xfst
+-----END PGP SIGNATURE-----
+
+--nextPart13853269.86UVt1nuoB--
