@@ -1,107 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030894AbXDPXLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031021AbXDPXN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030894AbXDPXLD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 19:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030991AbXDPXLC
+	id S1031021AbXDPXN3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 19:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030991AbXDPXN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 19:11:02 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:9747 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030894AbXDPXLA (ORCPT
+	Mon, 16 Apr 2007 19:13:29 -0400
+Received: from mail23.syd.optusnet.com.au ([211.29.133.164]:48360 "EHLO
+	mail23.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031020AbXDPXN2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 19:11:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qT4HbGikc0810fbja2SDE23NzXZ11EppSetpqA97XrpTM6mgEljUEobPlxker/e7dZHB5Jm6SMYiLhhlZg0dnXLJ7Xf1iljcBBSGbexdGNvq9GqLz1hm1dpicfubStGZBD33rLzklvPwNFBN5XvcALfi41yEg1w53IfLugeLHbY=
-Message-ID: <f2b55d220704161610l71c72bc6k364bd9396cd59300@mail.gmail.com>
-Date: Mon, 16 Apr 2007 16:10:59 -0700
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Peter Williams" <pwil3058@bigpond.net.au>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Cc: "William Lee Irwin III" <wli@holomorphy.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Matt Mackall" <mpm@selenic.com>,
-       "Con Kolivas" <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>, "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <46237239.1070903@bigpond.net.au>
+	Mon, 16 Apr 2007 19:13:28 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>
+Subject: Staircase cpu scheduler v17.1
+Date: Tue, 17 Apr 2007 09:13:24 +1000
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070413202100.GA9957@elte.hu> <20070415150536.GA6623@elte.hu>
-	 <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu>
-	 <20070415233909.GE2986@holomorphy.com>
-	 <4622CC30.6030707@bigpond.net.au>
-	 <20070416030405.GI8915@holomorphy.com>
-	 <4623050B.8020602@bigpond.net.au>
-	 <20070416110439.GH2986@holomorphy.com>
-	 <46237239.1070903@bigpond.net.au>
+Message-Id: <200704170913.24622.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
-> Note that I talk of run queues
-> not CPUs as I think a shift to multiple CPUs per run queue may be a good
-> idea.
+Greetings all
 
-This observation of Peter's is the best thing to come out of this
-whole foofaraw.  Looking at what's happening in CPU-land, I think it's
-going to be necessary, within a couple of years, to replace the whole
-idea of "CPU scheduling" with "run queue scheduling" across a complex,
-possibly dynamic mix of CPU-ish resources.  Ergo, there's not much
-point in churning the mainline scheduler through a design that isn't
-significantly more flexible than any of those now under discussion.
+Here is the current release of the Staircase cpu scheduler (the original 
+generation I design that spurned development elsewhere for RSDL), for 
+2.6.21-rc7
 
-For instance, there are architectures where several "CPUs"
-(instruction stream decoders feeding execution pipelines) share parts
-of a cache hierarchy ("chip-level multitasking").  On these machines,
-you may want to co-schedule a "real" processing task on one pipeline
-with a "cache warming" task on the other pipeline -- but only for
-tasks whose memory access patterns have been sufficiently analyzed to
-write the "cache warming" task code.  Some other tasks may want to
-idle the second pipeline so they can use the full cache-to-RAM
-bandwidth.  Yet other tasks may be genuinely CPU-intensive (or I/O
-bound but so context-heavy that it's not worth yielding the CPU during
-quick I/Os), and hence perfectly happy to run concurrently with an
-unrelated task on the other pipeline.
+http://ck.kolivas.org/patches/pre-releases/2.6.21-rc7/2.6.21-rc7-ck1/patches/sched-staircase-17.1.patch
 
-There are other architectures where several "hardware threads" fight
-over parts of a cache hierarchy (sometimes bizarrely described as
-"sharing" the cache, kind of the way most two-year-olds "share" toys).
- On these machines, one instruction pipeline can't help the other
-along cache-wise, but it sure can hurt.  A scheduler designed, tested,
-and tuned principally on one of these architectures (hint:
-"hyperthreading") will probably leave a lot of performance on the
-floor on processors in the former category.
+To remind people where this cpu scheduler fits into the picture:
 
-In the not-so-distant future, we're likely to see architectures with
-dynamically reconfigurable interconnect between instruction issue
-units and execution resources.  (This is already quite feasible on,
-say, Virtex4 FX devices with multiple PPC cores, or Altera FPGAs with
-as many Nios II cores as fit on the chip.)  Restoring task context may
-involve not just MMU swaps and FPU instructions (with state-dependent
-hidden costs) but processsor reconfiguration.  Achieving "fairness"
-according to any standard that a platform integrator cares about (let
-alone an end user) will require a fairly detailed model of the hidden
-costs associated with different sorts of task switch.
+-It is purpose built with interactivity first and foremost.
+-It aims to be mostly fair most of the time
+-It is has strong semantics desribing the cpu relationship between different 
+nice levels (nice 19 is 1/20th the cpu of nice 0).
+-It is resistant to most forms of starvation
+-Latency of tasks that are not heavily cpu bound is exceptionally low 
+irrespective of nice level -if they stay within their cpu bounds; What this 
+means is you can have and audio application if it uses very little cpu 
+running at nice 19 and it will still be unlikely to skip audio in the 
+presence of a kernel compile nice -20.
+-Therefore you can renice X or whatever to your heart's content, but then... 
+you don't need to renice X with this design.
+-The design is a single priority array very low overhead small codebase (the 
+diffstat summary obviously muddied by removing more comments is 4 files 
+changed, 418 insertions(+), 714 deletions(-))
+4 files changed, 418 insertions(+), 714 deletions(-)
 
-So if you are interested in schedulers for some reason other than a
-paycheck, let the distros worry about 5% improvements on x86[_64].
-Get hold of some different "hardware" -- say:
-  - a Xilinx ML410 if you've got $3K to blow and want to explore
-reconfigurable processors;
-  - a SunFire T2000 if you've got $11K and want to mess with a CMT
-system that's actually shipping;
-  - a QEMU-simulated massively SMP x86 if you're poor but clever
-enough to implement funky cross-core cache effects yourself; or
-  - a cycle-accurate simulator from Gaisler or Virtio if you want a
-real research project.
-Then go explore some more interesting regions of parameter space and
-see what the demands on mainline Linux will look like in a few years.
+Disadavantages:
+-There are heuristics
+-There are some rare cpu usage patterns that can lead to excessive unfairness 
+and relative starvation.
 
-Cheers,
-- Michael
+Bonuses:
+With the addition of further patches in that same directory above it has:
+- An interactive tunable flag which further increases the fairness and makes 
+nice values more absolutely determine latency (instead of cpu usage vs 
+entitlement determining latency as the default above)
+/proc/sys/kernel/interactive 
+- A compute tunable which makes timeslices much longer and has delayed 
+preemption for maximum cpu cache utilisation for compute intensive workloads
+/proc/sys/kernel/compute 
+- A soft realtime unprivileged policy for normal users with a tunable maximum 
+cpu usage set to 80% by default
+/proc/sys/kernel/iso_cpu
+- A background scheduling class that uses zero cpu usage resources if any 
+other task wants cpu.
+
+This is unashamedly a relatively unfair slightly starveable cpu scheduler with 
+exceptional quality _Desktop_ performance as it was always intended to be. 
+
+It is NOT intended for mainline use as mainline needs a general purpose cpu 
+scheduler (remember!). I have no intention of pushing it as such given its 
+disadvantages, and don't really care about those disadvantages as I have no 
+intention of trying to "plug up" the theoretical exploits and disadvantages 
+either since desktops aren't really affected BUT this scheduler is great fun 
+to use. Unfortunately the version of this scheduler in plugsched is not up to 
+date with this code. Perhaps if demand for plugsched somehow turns the world 
+on its head then this code may have a place elsewhere too.
+
+Enjoy! If you don't like it? Doesn't matter; you have a choice so just use 
+something else. This is code that will only be in -ck.
+
+-- 
+-ck
