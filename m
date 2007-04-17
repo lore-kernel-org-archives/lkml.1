@@ -1,70 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030669AbXDQPeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbXDQPha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030669AbXDQPeP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030657AbXDQPeP
+	id S1753940AbXDQPha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbXDQPha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:34:15 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:25809 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030608AbXDQPeN (ORCPT
+	Tue, 17 Apr 2007 11:37:30 -0400
+Received: from fest.stud.feec.vutbr.cz ([147.229.72.16]:58629 "EHLO
+	fest.stud.feec.vutbr.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753940AbXDQPh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:34:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SVj+s4lZU3cUGtF2cpChmeq8gPSSy6idQ8sLArf7t0kbWDSDhOTMp19Nx89J3n7YUxlAT7ewz6uGlqewqRXqnL3RgJ7pkboXOiOZxNwrDAHyCBD1sDjk7zbCZpB87o0/SPTAA6icXOr3PgH6orxpf0VPPiOQHWd3FO9Oq1JL8mA=
-Message-ID: <38b2ab8a0704170834i1856886nafeeec692f49fea0@mail.gmail.com>
-Date: Tue, 17 Apr 2007 17:34:12 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-In-Reply-To: <20070417150859.GA9512@2ka.mipt.ru>
+	Tue, 17 Apr 2007 11:37:29 -0400
+X-Greylist: delayed 444 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 11:37:28 EDT
+Message-ID: <4624E7EA.4050703@stud.feec.vutbr.cz>
+Date: Tue, 17 Apr 2007 17:29:46 +0200
+From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+CC: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ZFS with Linux: An Open Plea
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org> <Pine.LNX.4.61.0704171135490.16847@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.61.0704171135490.16847@chaos.analogic.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070417130431.GA8685@2ka.mipt.ru>
-	 <E1HdnwX-0005U1-00@gondolin.me.apana.org.au>
-	 <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com>
-	 <20070417150859.GA9512@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/17/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> On Tue, Apr 17, 2007 at 04:01:51PM +0200, Francis Moreau (francis.moro@gmail.com) wrote:
-> > On 4/17/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> > >
-> > >Yep.  We don't need such a flag anyway.  All we need is a way to tweak
-> > >the priority and Bob's your uncle.
-> > >
-> >
-> > Could you elaborate please, I don't see how you prevent others users
-> > to use this module with priority.
-> >
-> > Priority is a stuff that tells you which aes implementation to use but
-> > it does not prevent an implementation to be used several times...
->
-> Preventing anyone from using the module is incorrect.
-> How will you handle the case when you have only one algo registered and
-> it will be exclusively used by ecryptfs?
->
+linux-os (Dick Johnson) skrev:
+> if you never look at somebody else's'
+> implementation details, you certainly should not be violating a patent.
 
-As I tried to explain, in that case the admin must load the module
-without the exclusive flag.
+Oh, it would be a beautiful world in which this was true!
 
-> Herbert proposes to register _second_ algo (say aes-generic(prio_100)
-> and aes_for_ecryptfs(prio_1)) with lower prio, so generic access will
-> never try to catch aes_for_ecryptfs, but your code still can access it
-> using full name.
->
-
-yes but my worries with this approach is that nothing prevent an admin
-to load others modules that will use aes_for_ecryptfs. And an admin is
-not always aware about a module implementation.
-
-Thanks
--- 
-Francis
+Michal
