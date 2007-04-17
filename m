@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161194AbXDQT76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161202AbXDQUCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161194AbXDQT76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 15:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161209AbXDQT76
+	id S1161202AbXDQUCH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 16:02:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161115AbXDQUCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 15:59:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:38680 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161194AbXDQT75 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 15:59:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=PGPamUPfIwb7EPe+AV1U6KbFIfKBdjTPGC/pdKo3g39sRQkTBq61+6+mn5Kp9bbu79rnNlbY4xgxFv648BJAw5hFbklEhuTzhXbayKl8K/AKX4eYX3A6dLQELi2BtE7yoLRXbc/F97g/1HaSj80lRQhWoj64fd57YWepTFg32cc=
-Message-ID: <4354d3270704171259w6110f678ldfec7da3f264d111@mail.gmail.com>
-Date: Tue, 17 Apr 2007 22:59:55 +0300
-From: "=?ISO-8859-1?Q?T=F6r=F6k_Edvin?=" <edwintorok@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: SOLVED: Unable to add subdirectory: Ooops in sys_add_file, called from kobject_register
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Tue, 17 Apr 2007 16:02:07 -0400
+Received: from av1.karneval.cz ([81.27.192.123]:19746 "EHLO av1.karneval.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161209AbXDQUCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 16:02:05 -0400
+Message-id: <210731960111436322@karneval.cz>
+Subject: [RFC 1/2] Input: ff, add FF_RAW effect
+From: Jiri Slaby <jirislaby@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: johann deneux <johann.deneux@gmail.com>
+Cc: Dmitry Torokhov <dtor@insightbb.com>
+Cc: <stenyak@gmail.com>
+Cc: <linux-input@atrey.karlin.mff.cuni.cz>
+Date: Tue, 17 Apr 2007 22:01:58 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/07, Török Edvin <edwintorok@gmail.com> wrote:
->
-> I got an Ooops while trying to load a little kernel module I wrote.
-> [....]
-> /* Attributes changeable via sysfs */
-> static struct attribute * default_attrs[] = {
->         &module_enabled.attr,
->         &wbinvd_execute.attr,
->         &algnment_checks.attr
-+         , NULL
-> };
+So fellows, what about these ones?
 
-I was missing a NULL terminating entry here.
+--
 
->
-> static struct kobject* control_kobject[NR_CPUS];
->  [...]
->         control_kobject[cpu] = kzalloc(sizeof(control_kobject[0]), GFP_KERNEL);
+ff, add FF_RAW effect
 
-I was missing a * here, so I ended up allocating fewer bytes.
-Correctly that line should read:
-+        control_kobject[cpu] = kzalloc(sizeof(*control_kobject[0]),
-GFP_KERNEL);
+Add new FF_RAW effect for devices such Phantom. The new model has up to 6DOF
+torque force feedback independent on any 3d-or-so value.
 
-Now the module works on Core Duo too.
-Posting this message to this list, just in case somebody else ends up
-doing the same mistakes I did.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-Edwin
+---
+commit 759e7f172031959f49e5d3a7282379e7d73621b3
+tree 906d51925ff7f95ebae8148ef2f1b2f252ef3f4e
+parent bd99756ce7fb8f3e9105b076a71046b0d8ad1f8f
+author Jiri Slaby <jirislaby@gmail.com> Tue, 17 Apr 2007 21:50:21 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Tue, 17 Apr 2007 21:50:21 +0200
+
+ drivers/input/ff-memless.c |    4 ++++
+ include/linux/input.h      |    4 +++-
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/input/ff-memless.c b/drivers/input/ff-memless.c
+index d226d93..3bbace9 100644
+--- a/drivers/input/ff-memless.c
++++ b/drivers/input/ff-memless.c
+@@ -275,6 +275,10 @@ static void ml_combine_effects(struct ff_effect *effect,
+ 			min(i + effect->u.rumble.weak_magnitude, 0xffffU);
+ 		break;
+ 
++	case FF_RAW:
++		memcpy(effect->u.ff_raw, new->u.ff_raw, sizeof(new->u.ff_raw));
++		break;
++
+ 	default:
+ 		printk(KERN_ERR "ff-memless: invalid type in ml_combine_effects()\n");
+ 		break;
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 2a23768..cc4ae1f 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -859,6 +859,7 @@ struct ff_effect {
+ 		struct ff_periodic_effect periodic;
+ 		struct ff_condition_effect condition[2]; /* One for each axis */
+ 		struct ff_rumble_effect rumble;
++		__u32 ff_raw[6];
+ 	} u;
+ };
+ 
+@@ -874,9 +875,10 @@ struct ff_effect {
+ #define FF_DAMPER	0x55
+ #define FF_INERTIA	0x56
+ #define FF_RAMP		0x57
++#define FF_RAW		0x58
+ 
+ #define FF_EFFECT_MIN	FF_RUMBLE
+-#define FF_EFFECT_MAX	FF_RAMP
++#define FF_EFFECT_MAX	FF_RAW
+ 
+ /*
+  * Force feedback periodic effect types
