@@ -1,137 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbXDQCbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbXDQCgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbXDQCbf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 22:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXDQCbf
+	id S932078AbXDQCgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 22:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbXDQCgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 22:31:35 -0400
-Received: from chicken.visionpro.com ([63.91.95.13]:14518 "EHLO
-	chicken.machinevisionproducts.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754298AbXDQCbf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 22:31:35 -0400
-X-Greylist: delayed 861 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 22:31:33 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 16 Apr 2007 22:36:22 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:42566 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbXDQCgV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 22:36:21 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Memory Allocation
-Date: Mon, 16 Apr 2007 19:17:06 -0700
-Message-ID: <14CFC56C96D8554AA0B8969DB825FEA002C99168@chicken.machinevisionproducts.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Memory Allocation
-Thread-Index: AceAln4V9lfW4sMuSHynuk7d563sRA==
-From: "Brian D. McGrew" <brian@visionpro.com>
-To: <linux-kernel@vger.kernel.org>, "Brian D. McGrew" <brian@visionpro.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17956.12963.163961.762444@smtp.charter.net>
+Date: Mon, 16 Apr 2007 22:36:19 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: linux-kernel@vger.kernel.org
+CC: linux-ide@vger.kernel.org
+Subject: 2.6.21-rc6-mm1 ATA HPT37x regression
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good evening gents!
 
-I need some help in allocating memory and understanding how the system
-allocates memory with physical versus virtual page tables.  Please
-consider the following snippet of code.  Please, no wisecracks about bad
-code; it was written in 30 seconds in haste :-)
+Hi Jeff and crew,
 
-#include <iostream>
+I was just testing out 2.6.21-rc6-mm1 to test some Cyclades patches
+and I noticed that my HPT302 (rev1) controller with a pair of 120gb WD
+disks are not longer detected and I get the following in the dmesg
+logs:
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
+    [  148.121490] hpt37x: DPLL did not stabilize.
 
-const static u_long kMaxSize = (2048 * 2048 * 256);
+Where before, under 2.6.21-rc6 I got the following:
 
-void *msg(void *ptr);
-static u_long threads_done	= 0;
+    [  173.749349] pata_hpt37x: BIOS has not set timing clocks.
+    [  173.752949] hpt37x: HPT302: Bus clock 33MHz.
+    [  173.754409] ACPI: PCI Interrupt 0000:03:06.0[A] -> GSI 18 (level,
+    low) -> IRQ
+     18
+    [  173.758403] ata5: PATA max UDMA/133 cmd 0x0001ecf8 ctl 0x0001ecf2
+    bmdma 0x000
+    1e800 irq 18
+    [  173.761396] ata6: PATA max UDMA/133 cmd 0x0001ece0 ctl 0x0001ecda
+    bmdma 0x000
+    1e808 irq 18
+    [  173.764319] scsi6 : pata_hpt37x
+    [  173.928997] ATA: abnormal status 0x78 on port 0x0001ecff
+    [  173.930511] scsi7 : pata_hpt37x
+    [  174.094906] ATA: abnormal status 0x8 on port 0x0001ece7
 
-int
-main(int argc, char *argv[])
-{
-     pthread_t thread1;
-     pthread_t thread2;
 
-     char *message1 = "Thread 1";
-     char *message2 = "Thread 2";
+Here's my lspci infomation on the board, it's an addon.  My apologies
+for the crappy word wrapping, xterms inside screen, etc. 
 
-     int iret1;
-     int iret2;
+  03:06.0 RAID bus controller: Triones Technologies, Inc. HPT302/302N
+  (rev 01)
+	  Subsystem: Triones Technologies, Inc. Unknown device 0001
+	  Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
+  ParErr- Step
+  ping- SERR+ FastB2B-
+	  Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium
+  >TAbort- <TAbort
+  - <MAbort- >SERR- <PERR-
+	  Latency: 120 (2000ns min, 2000ns max)
+	  Interrupt: pin A routed to IRQ 11
+	  Region 0: I/O ports at ecf8 [size=8]
+	  Region 1: I/O ports at ecf0 [size=4]
+	  Region 2: I/O ports at ece0 [size=8]
+	  Region 3: I/O ports at ecd8 [size=4]
+	  Region 4: I/O ports at e800 [size=256]
+	  Expansion ROM at f9000000 [disabled] [size=128K]
+	  Capabilities: [60] Power Management version 2
+		  Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA
+  PME(D0-,D1-,D2-,D3hot
+  -,D3cold-)
+		  Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-     iret1 = pthread_create(&thread1, NULL, msg, (void *) message1);
-     iret2 = pthread_create(&thread2, NULL, msg, (void *) message2);
+  03:0a.0 SCSI storage controller: Adaptec AHA-2940U2/U2W / 7890/7891
+	  Subsystem: Dell Unknown device 0087
+	  Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
+	  ParErr- Step
+  ping- SERR+ FastB2B-
+	  Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
+	  >TAbort- <TAbort
+  - <MAbort- >SERR- <PERR-
+	  Latency: 64 (9750ns min, 6250ns max), Cache Line Size: 32
+	  bytes
+	  Interrupt: pin A routed to IRQ 18
+	  BIST result: 00
+	  Region 0: I/O ports at e400 [disabled] [size=256]
+	  Region 1: Memory at f8fff000 (64-bit, non-prefetchable)
+	  [size=4K]
+	  Expansion ROM at f1000000 [disabled] [size=128K]
+	  Capabilities: [dc] Power Management version 1
+		  Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+	  PME(D0-,D1-,D2-,D3hot
+  -,D3cold-)
+		  Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-    //pthread_join(thread1, NULL);
-    //pthread_join(thread2, NULL); 
 
-    while (threads_done < 2) {
-	std::cout << "Threads complete: " << threads_done << std::endl;
-	sleep(3);
-    }
 
-    exit(0);
-}
-
-void *
-msg(void *ptr)
-{
-    char *message = (char *) ptr;
-
-    //
-    // Equal to 1 bank per thread of 256 each 4MP image buffers.  2GB.
-    //
-    char *buffer = new char[kMaxSize];
-
-    u_long max = kMaxSize;
-
-    //
-    // Init each buffer to 'something'.
-    //
-    for (u_long inx = 0; inx < max; inx++) {
-	if (inx % 102400000 == 0) {
-	    std::cout << message << ": Index: " << inx << std::endl;
-	}
-
-    	buffer[inx] = inx;
-    }
-
-    free(buffer);
-    threads_done++;
-}
-
-My test machine is a Dell Precision 490 with dual 5140 processors and
-3GB of RAM.  If I reduced kMaxSize to (2048 * 2048 * 236) is works.
-However, I need to allocate an array of char that is (2048 * 2048 * 256)
-and maybe even as large at (2048 * 2048 * 512).
-
-Obviously I have enough physical memory in the box to do this.  However,
-I suspect that I'm running out of page table entries.  Please, correct
-me if I'm wrong; but if I allocate (2048 * 2048 * 236) it work.  When I
-increment to 256 or 512 it fails and it is my suspicion that I just
-don't have enough more in kernel memory to allocate this much memory in
-user space.  
-
-Because of a piece of 3rd party hardware, I'm forced to run the kernel
-in the 4GB memory model.  What I need to be able to do is allocate an
-array of char (2048 * 2048 * (up to 512)) in user space *** AND *** I
-need the addresses that I get back to be contiguous, that's just the way
-my 3rd party hardware works.
-
-I'm inclined to believe that this in not specifically a Linux problem
-but maybe an architecture problem???  But maybe there is some kind of
-work around in the kernel for it???  I'd find it hard to believe that
-I'm the first one that ever needed to use this much memory.
-
-I ran this same code on two difference Macs.  One of them a Powerbook G4
-with 4GB of RAM and it was successful.  The other was a Macbook Pro with
-4GB of RAM and it failed.  Both running OS 10.4.9.  And of course it
-runs just lovely on my Sun workstation with Solaris.  Thus, I'm thinking
-it's an Intel/X86 issue!
-
-How the heck to I get past this problem in Linux on the X86 plateform???
+I'm moving to 2.6.21-rc7 now, but I'm willing to test out patches as
+needed.  I suspect it's the move from the 0.6.0 driver to the 0.6.5
+version, and the changes in the hpt_clock hpt37x_timings_* arrays, but
+god knows which ones are affecting me.
 
 Thanks,
-
--brian
-brian@visionpro.com
+John
