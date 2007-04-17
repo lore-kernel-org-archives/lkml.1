@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbXDQKgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbXDQKmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbXDQKgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 06:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXDQKgR
+	id S1753528AbXDQKmM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 06:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbXDQKmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 06:36:17 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:47588 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400AbXDQKgQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 06:36:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=OgaMVPvJ8YDG1KwIuOBoDoIneQmtskIW2mtJKUSG34w7ghEfrAYq74rVHcwd1Mgd82X0dtMuFTVZQA/Yohy1TZOvJ6Ywrw5Ga2PvlSqjvAkf3uoyrJ0DW7oEf/y5FG+JDA53SPMJ/2x6zyFWjiImdkEp+T4z+AUg4iUT7aSOpk8=
-Message-ID: <6d6a94c50704170336l62fc9ael1e58197e6c3853ba@mail.gmail.com>
-Date: Tue, 17 Apr 2007 18:36:14 +0800
-From: "Aubrey Li" <aubreylee@gmail.com>
-To: "Robin Getz" <rgetz@blackfin.uclinux.org>
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
-Cc: "David Howells" <dhowells@redhat.com>, uaca@alumni.uv.es,
-       bryan.wu@analog.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       waltje@uwalt.nl.mugnet.org, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200704101952.05380.rgetz@blackfin.uclinux.org>
+	Tue, 17 Apr 2007 06:42:11 -0400
+Received: from holomorphy.com ([66.93.40.71]:48423 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753528AbXDQKmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 06:42:10 -0400
+Date: Tue, 17 Apr 2007 03:41:41 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070417104141.GV8915@holomorphy.com>
+References: <20070416110439.GH2986@holomorphy.com> <46237239.1070903@bigpond.net.au> <20070416135915.GK8915@holomorphy.com> <46241677.7060909@bigpond.net.au> <20070417025704.GM8915@holomorphy.com> <462445EC.1060306@bigpond.net.au> <20070417053147.GN8915@holomorphy.com> <46246A7C.8050501@bigpond.net.au> <20070417064109.GP8915@holomorphy.com> <46247E86.5090706@bigpond.net.au>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_62647_33102637.1176806174833"
-References: <200704091146.32346.rgetz@blackfin.uclinux.org>
-	 <1176112223.17975.8.camel@roc-desktop> <9561.1176209728@redhat.com>
-	 <200704101952.05380.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46247E86.5090706@bigpond.net.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_62647_33102637.1176806174833
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+William Lee Irwin III wrote:
+>> Comments on which directions you'd like this to go in these respects
+>> would be appreciated, as I regard you as the current "project owner."
 
-On 4/11/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> On Tue 10 Apr 2007 08:55, David Howells pondered:
-> > Looking at alloc_pg_vec() in af_packet.c, I will place my bets on the
-> > latter case.  I don't know that this is a problem; it depends on how things
-> > work, and that I don't know offhand.  If someone can give me a simple test
-> > program, I would be able to evaluate it better.
->
-> Hmm - the only think I have used in the past is tcpdump/libpcap from
-> http://public.lanl.gov/cpw/
->
-> Documentation/networking/packet_mmap.txt also seems to be a little dated, but
-> does have some code snippets if you wanted to make something lightweight...
->
-> Does anyone else on netdev have a small test app?
->
-Here, in the attachment I wrote a small test app. Please correct if
-there is anything wrong, and feel free to improve it.
+On Tue, Apr 17, 2007 at 06:00:06PM +1000, Peter Williams wrote:
+> I'd do scan through LKML from about 18 months ago looking for mention of 
+> runtime configurable version of plugsched.  Some students at a 
+> university (in Germany, I think) posted some patches adding this feature 
+> to plugsched around about then.
 
--Aubrey
+Excellent. I'll go hunting for that.
 
-------=_Part_62647_33102637.1176806174833
-Content-Type: application/x-gzip; name=packet-mmap.tar.gz
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f0m7e0kj
-Content-Disposition: attachment; filename="packet-mmap.tar.gz"
 
-H4sIAP2eJEYAA+2V62+bSBDA/RX+ilFyraABGxxM0qSuzkdJatUv4UQ53UMI48VZFQPlETV31//9
-ZsGJX/TuS5qrdPuTEMvszOzszOySeP5HkqvLpZe0Gt8IDTnpdNhbP+lo5bduGOV7RUPXTB05OTbM
-hqa3DfO4AZ1vFdAmRZZ7KUDDK2Ypuf8nPZJmzxHQ85Js1H/ofSQBDclTr8EKbFb1rq1/xzQe6m+a
-bF439HanAdpTB1LH/7z+ljOeTl1rPJz0B3Z3FtBILfyQRsVnVbSs7g/SloK88H3Ruhj0LqddUBer
-4RGOb0JFJWHQDsJc9MLwDDJvmYTErfrLZf0ForgvrFNs+qKAC4Ea13lRF/UmhwIGa8lfscK5Mla5
-3tgPiRediUK6rDOuMVnMZ6CmgUgj7B/cL5r6dYqQxnH+o/663dTN06bWPD1rif91zTfZPP91mXmK
-Nf7l/Lfbhr6+/49P8PybBqrx8/8MHNLID4s5gTcRySk+LRo1b9+Ka7mXJl6LzWyLyzuiRYNVu3xl
-kuS3JN2ey+6zVn6fkGxfnMX7rrJ8TuNdUUqjxZ5aSGfbsiKiKN6WJXEY7i+MvV7uWjyc4x8wIuBe
-jq7d6fjasey18KfB2PrgTvu/2IKhvTZ35CNHMB5FF05vaFeqbc043ZGj6unareW4o+uhIOimiNdJ
-DkuPRtJdTOey+KcoMEkwPxcF3HXh55CvjmdKPgE+55VGRv8gCn7nd1641mWbDeaQlPZFlNFFRObg
-32LDv5oVwcqWnos4CECSULcLVRGkyYU76Vkf7CsFpmx7Tu9Ggds8jjLJvnrvTtzeYCDLMrwBTQaM
-U0hImsapdLCylw9k9C9gSEUagY7jL3hHkk/NPHFnIeq4LGZcb53V8x2FKH2cHjnrySD1luTBep3o
-XYXS+iHfLCckZ6HFSY77ZJsaPG6wervOz67TH10qIFUpkl+iQ6XMbRxIOJZllqq9uOHVZpSYWOiK
-AiDSTs5ldqdKmrIq18QZ46J27x38VY1vnP6VrcCwN3Gn73uO/U7BDAroigWslYtjLZtlmcqasq+U
-3JEoz1CkrSSPgsl4MOiPmHcc2I7DHFQ9gpOsOaSXCXOtK6DqrFxBnIJES1dAsbQb2QV6dFQVumwV
-Ci9WjStDF/VlFmmC5zIPpIPfoqr4D98vmu3P6oECmJpf6e9y1Qs7yn4YZwQrI5d1LJsG9/Plu/pZ
-cjgcDofD4XA4HA6Hw+FwOBwOh8PhcDjfOX8Do0m3jgAoAAA=
-------=_Part_62647_33102637.1176806174833--
+On Tue, Apr 17, 2007 at 06:00:06PM +1000, Peter Williams wrote:
+> I never added them to plugsched proper as I knew (from previous 
+> experience when the company I worked for posted patches with similar 
+> functionality) that Linux would like this idea less than he did the 
+> current plugsched mechanism.
+
+Odd how the requirements ended up including that. Fickleness abounds.
+If only we knew up-front what the end would be.
+
+
+On Tue, Apr 17, 2007 at 06:00:06PM +1000, Peter Williams wrote:
+> Unfortunately, my own cache of the relevant e-mails got overwritten 
+> during a Fedora Core upgrade (I've since moved /var onto a separate 
+> drive to avoid a repetition) or I would dig them out and send them to 
+> you.  I'd provided with copies of the company's patches to use as a 
+> guide to how to overcome the problems associated with changing 
+> schedulers on a running system (a few non trivial locking issues pop up).
+> Maybe if one of the students still reads LKML he will provide a pointer.
+
+I was tempted to restart from scratch given Ingo's comments, but I
+reconsidered and I'll be working with your code (and the German
+students' as well). If everything has to change, so be it, but it'll
+still be a derived work. It would be ignoring precedent and failure to
+properly attribute if I did otherwise.
+
+
+-- wli
