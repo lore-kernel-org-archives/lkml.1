@@ -1,81 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbXDQHYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbXDQHYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752159AbXDQHYL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 03:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXDQHYI
+	id S1752072AbXDQHYF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 03:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbXDQHXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 03:24:08 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:6692 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbXDQHXo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 03:23:44 -0400
-Date: Tue, 17 Apr 2007 09:26:15 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <htejun@gmail.com>,
-       Markus Rechberger <markus.rechberger@amd.com>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Swen Schillig <swen@vnet.ibm.com>
-Subject: Re: [linux-usb-devel] How should an exit routine wait for release()
- callbacks?
-Message-ID: <20070417092615.7381a5f3@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070416221247.GA9365@kroah.com>
-References: <20070413162701.4e7342a9@gondolin.boeblingen.de.ibm.com>
-	<Pine.LNX.4.44L0.0704131049380.3407-100000@iolanthe.rowland.org>
-	<20070416221247.GA9365@kroah.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Apr 2007 03:23:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44716 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751905AbXDQHW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 03:22:59 -0400
+Message-Id: <20070417071703.326557311@chello.nl>
+References: <20070417071046.318415445@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Tue, 17 Apr 2007 09:10:52 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: [PATCH 06/12] mm: scalable bdi statistics counters.
+Content-Disposition: inline; filename=bdi_stat.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007 15:12:47 -0700,
-Greg KH <greg@kroah.com> wrote:
+Provide scalable per backing_dev_info statistics counters.
 
-> Ah, just found this original thread, now Cornelia's patches make more
-> sense...
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/backing-dev.h |   50 ++++++++++++++++++++++++++++++++++++++++++--
+ mm/backing-dev.c            |   26 ++++++++++++++++++++++
+ 2 files changed, 74 insertions(+), 2 deletions(-)
 
-I would have included a pointer, but couldn't access marc yesterday
-evening, sorry...
+Index: linux-2.6/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6.orig/include/linux/backing-dev.h	2007-04-12 13:27:13.000000000 +0200
++++ linux-2.6/include/linux/backing-dev.h	2007-04-12 13:28:40.000000000 +0200
+@@ -8,6 +8,7 @@
+ #ifndef _LINUX_BACKING_DEV_H
+ #define _LINUX_BACKING_DEV_H
+ 
++#include <linux/percpu_counter.h>
+ #include <asm/atomic.h>
+ 
+ struct page;
+@@ -24,6 +25,10 @@ enum bdi_state {
+ 
+ typedef int (congested_fn)(void *, int);
+ 
++enum bdi_stat_item {
++	NR_BDI_STAT_ITEMS
++};
++
+ struct backing_dev_info {
+ 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
+ 	unsigned long ra_pages0; /* min readahead on start of file */
+@@ -34,14 +39,55 @@ struct backing_dev_info {
+ 	void *congested_data;	/* Pointer to aux data for congested func */
+ 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
+ 	void *unplug_io_data;
++
++	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
+ };
+ 
+-static inline void bdi_init(struct backing_dev_info *bdi)
++void bdi_init(struct backing_dev_info *bdi);
++void bdi_destroy(struct backing_dev_info *bdi);
++
++static inline void __mod_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item, s32 amount)
++{
++	percpu_counter_mod(&bdi->bdi_stat[item], amount);
++}
++
++static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
++{
++	__mod_bdi_stat(bdi, item, 1);
++}
++
++static inline void inc_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	__inc_bdi_stat(bdi, item);
++	local_irq_restore(flags);
++}
++
++static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
+ {
++	__mod_bdi_stat(bdi, item, -1);
++}
++
++static inline void dec_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	__dec_bdi_stat(bdi, item);
++	local_irq_restore(flags);
+ }
+ 
+-static inline void bdi_destroy(struct backing_dev_info *bdi)
++static inline s64 bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
+ {
++	return percpu_counter_read_positive(&bdi->bdi_stat[item]);
+ }
+ 
+ /*
+Index: linux-2.6/mm/backing-dev.c
+===================================================================
+--- linux-2.6.orig/mm/backing-dev.c	2007-04-12 13:27:10.000000000 +0200
++++ linux-2.6/mm/backing-dev.c	2007-04-12 13:28:26.000000000 +0200
+@@ -5,6 +5,30 @@
+ #include <linux/sched.h>
+ #include <linux/module.h>
+ 
++void bdi_init(struct backing_dev_info *bdi)
++{
++	int i;
++
++	if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
++		return;
++
++	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
++		percpu_counter_init(&bdi->bdi_stat[i], 0);
++}
++EXPORT_SYMBOL(bdi_init);
++
++void bdi_destroy(struct backing_dev_info *bdi)
++{
++	int i;
++
++	if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
++		return;
++
++	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
++		percpu_counter_destroy(&bdi->bdi_stat[i]);
++}
++EXPORT_SYMBOL(bdi_destroy);
++
+ static wait_queue_head_t congestion_wqh[2] = {
+ 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),
+ 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
+@@ -70,3 +94,5 @@ long congestion_wait_interruptible(int r
+ 	return ret;
+ }
+ EXPORT_SYMBOL(congestion_wait_interruptible);
++
++
 
-> 
-> On Fri, Apr 13, 2007 at 11:24:58AM -0400, Alan Stern wrote:
-> > Tejun, it just occurred to me that you would be interested in this email 
-> > thread.  Just to bring you up to speed, here's the original question:
-> > 
-> > > I've got a module which registers a struct device.  (It represents a
-> > > virtual device, not a real one, but that doesn't matter.)
-> 
-> Wait, that's the issue right there.
-> 
-> Don't do that.
-> 
-> devices should be created by busses or the platform core, which owns the
-> release function for them.  Individual drivers should not create
-> devices.
+-- 
 
-There are drivers that do it, for a variety of reasons.
-
-> 
-> Hm, but then, how would you ever unload a bus, as the same issue might
-> be there too...
-
-Exactly :) This would imply busses/subsystems could never be unloadable
-modules.
-
-> 
-> Any specific code in the kernel you can point to that has this issue
-> today?
-
-zfcp comes to mind. They register some units in zfcp_aux.c, which don't
-have anything to do with the bus the zfcp adapter is on (the ccw bus).
-Currently, that is "solved" by disallowing zfcp module unloading.
