@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbXDQIZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752820AbXDQI1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752801AbXDQIZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 04:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbXDQIZ5
+	id S1752820AbXDQI1H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 04:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXDQI1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 04:25:57 -0400
-Received: from holomorphy.com ([66.93.40.71]:43040 "EHLO holomorphy.com"
+	Tue, 17 Apr 2007 04:27:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60345 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752801AbXDQIZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 04:25:56 -0400
-Date: Tue, 17 Apr 2007 01:24:17 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
+	id S1752820AbXDQI1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 04:27:05 -0400
+Date: Tue, 17 Apr 2007 10:26:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Nick Piggin <npiggin@suse.de>
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       Peter Williams <pwil3058@bigpond.net.au>, Ingo Molnar <mingo@elte.hu>,
-       Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org,
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Gene Heskett <gene.heskett@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417082417.GT8915@holomorphy.com>
-References: <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415233909.GE2986@holomorphy.com> <4622CC30.6030707@bigpond.net.au> <20070416030405.GI8915@holomorphy.com> <4623050B.8020602@bigpond.net.au> <20070416110439.GH2986@holomorphy.com> <46237239.1070903@bigpond.net.au> <f2b55d220704161610l71c72bc6k364bd9396cd59300@mail.gmail.com> <20070417035528.GE25513@wotan.suse.de>
-MIME-Version: 1.0
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+Message-ID: <20070417082628.GD5076@elte.hu>
+References: <20070416220715.GA4071@elte.hu> <200704170053.58611.gene.heskett@gmail.com> <20070417061849.GA12385@elte.hu> <Pine.LNX.4.64.0704170053410.30516@alien.or.mcafeemobile.com> <20070417081857.GD20026@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070417035528.GE25513@wotan.suse.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070417081857.GD20026@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 04:10:59PM -0700, Michael K. Edwards wrote:
->> This observation of Peter's is the best thing to come out of this
->> whole foofaraw.  Looking at what's happening in CPU-land, I think it's
->> going to be necessary, within a couple of years, to replace the whole
->> idea of "CPU scheduling" with "run queue scheduling" across a complex,
->> possibly dynamic mix of CPU-ish resources.  Ergo, there's not much
->> point in churning the mainline scheduler through a design that isn't
->> significantly more flexible than any of those now under discussion.
 
-On Tue, Apr 17, 2007 at 05:55:28AM +0200, Nick Piggin wrote:
-> Why? If you do that, then your load balancer just becomes less flexible
-> because it is harder to have tasks run on one or the other.
+* Nick Piggin <npiggin@suse.de> wrote:
 
-On Tue, Apr 17, 2007 at 05:55:28AM +0200, Nick Piggin wrote:
-> You can have single-runqueue-per-domain behaviour (or close to) just by
-> relaxing all restrictions on idle load balancing within that domain. It
-> is harder to go the other way and place any per-cpu affinity or
-> restirctions with multiple cpus on a single runqueue.
+> Actually I think this is something that makes sense to add, even if 
+> just for debugging, but maybe also for production, depending on how 
+> much it impacts things. Child runs first is an heuristic optimisation 
+> that exploits a VM detail (however fundamental). But for things that 
+> don't exec right after forking (and maybe some things that do), it can 
+> be nicer to reduce context switches, improve cache patterns, and allow 
+> children to be load balanced away before touching memory, if 
+> child_runs_first is turned off.
 
-The big sticking point here is order-sensitivity. One can point to
-stringent sched_yield() ordering but that's not so important in and of
-itself. The more significant case is RT applications which are order-
-sensitive. Per-cpu runqueues rather significantly disturb the ordering
-requirements of applications that care about it.
+yeah, the primary intent was debug. Nick, am i confused to conclude that 
+mainline in fact runs the _parent_ first, despite all the elaborate 
+runqueue juggling we do there? This piece of code in wake_up_new_task() 
+caught my eyes:
 
-In terms of a plugging framework, the per-cpu arrangement precludes or
-makes extremely awkward scheduling policies that don't have per-cpu
-runqueues, for instance, the 2.4.x policy. There is also the alternate
-SMP scalability strategy of a lockless scheduler with a single global
-queue, which is more performance-oriented.
+                                p->prio = current->prio;
+                                p->normal_prio = current->normal_prio;
+                                list_add_tail(&p->run_list, &current->run_list);
+                                p->array = current->array;
+                                p->array->nr_active++;
+                                inc_nr_running(p, rq);
 
+shouldnt the list_add_tail() be list_add(), so that task pickup sees the 
+child first? Maybe we still do child-runs-first in practice, due to the 
+timeslice and sleep average fixups that happen if the parent preempts, 
+but the above piece of code seems a quite elaborate way of doing 
+activate_task(). To have the child _before_ the parent we'd need the 
+add-on patch below. But ... i could be wrong, this is just a quick 
+thought.
 
--- wli
+	Ingo
+
+---
+ kernel/sched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -1685,7 +1685,7 @@ void fastcall wake_up_new_task(struct ta
+ 			else {
+ 				p->prio = current->prio;
+ 				p->normal_prio = current->normal_prio;
+-				list_add_tail(&p->run_list, &current->run_list);
++				list_add(&p->run_list, &current->run_list);
+ 				p->array = current->array;
+ 				p->array->nr_active++;
+ 				inc_nr_running(p, rq);
