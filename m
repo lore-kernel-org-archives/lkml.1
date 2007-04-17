@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbXDQJgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbXDQJwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbXDQJgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 05:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbXDQJgc
+	id S1753182AbXDQJwJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 05:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbXDQJwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 05:36:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57200 "EHLO mx2.mail.elte.hu"
+	Tue, 17 Apr 2007 05:52:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57085 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753091AbXDQJgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 05:36:31 -0400
-Date: Tue, 17 Apr 2007 11:36:00 +0200
+	id S1753182AbXDQJwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 05:52:07 -0400
+Date: Tue, 17 Apr 2007 11:51:40 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Nick Piggin <npiggin@suse.de>,
-       "Michael K. Edwards" <medwards.linux@gmail.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org,
+To: Nick Piggin <npiggin@suse.de>
+Cc: Mike Galbraith <efault@gmx.de>, Peter Williams <pwil3058@bigpond.net.au>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417093600.GA22626@elte.hu>
-References: <4622CC30.6030707@bigpond.net.au> <20070416030405.GI8915@holomorphy.com> <4623050B.8020602@bigpond.net.au> <20070416110439.GH2986@holomorphy.com> <46237239.1070903@bigpond.net.au> <f2b55d220704161610l71c72bc6k364bd9396cd59300@mail.gmail.com> <20070417035528.GE25513@wotan.suse.de> <46244C43.8000607@bigpond.net.au> <20070417043456.GH25513@wotan.suse.de> <4624633D.4080005@bigpond.net.au>
+Message-ID: <20070417095140.GB22626@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <1176782489.13059.15.camel@Homer.simpson.net> <20070417041420.GF25513@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4624633D.4080005@bigpond.net.au>
+In-Reply-To: <20070417041420.GF25513@wotan.suse.de>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -41,18 +39,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Williams <pwil3058@bigpond.net.au> wrote:
+* Nick Piggin <npiggin@suse.de> wrote:
 
-> There's a lot of ugly code in the load balancer that is only there to 
-> overcome the side effects of SMT and dual core.  A lot of it was put 
-> there by Intel employees trying to make load balancing more friendly 
-> to their systems.  What I'm suggesting is that an N CPUs per runqueue 
-> is a better way of achieving that end.  I may (of course) be wrong but 
-> I think that the idea deserves more consideration than you're willing 
-> to give it.
+> > > Maybe the progress is that more key people are becoming open to 
+> > > the idea of changing the scheduler.
+> > 
+> > Could be.  All was quiet for quite a while, but when RSDL showed up, 
+> > it aroused enough interest to show that scheduling woes is on folks 
+> > radar.
+> 
+> Well I know people have had woes with the scheduler for ever (I guess 
+> that isn't going to change :P). [...]
 
-i actually implemented that some time ago and i'm afraid it was ugly as 
-hell and pretty fragile. Load-balancing gets simpler, but task picking 
-gets alot uglier.
+yes, that part isnt going to change, because the CPU is a _scarce 
+resource_ that is perhaps the most frequently overcommitted physical 
+computer resource in existence, and because the kernel does not (yet) 
+track eye movements of humans to figure out which tasks are more 
+important them. So critical human constraints are unknown to the 
+scheduler and thus complaints will always come.
+
+The upstream scheduler thought it had enough information: the sleep 
+average. So now the attempt is to go back and _simplify_ the scheduler 
+and remove that information, and concentrate on getting fairness 
+precisely right. The magic thing about 'fairness' is that it's a pretty 
+good default policy if we decide that we simply have not enough 
+information to do an intelligent choice.
+
+( Lets be cautious though: the jury is still out whether people actually 
+  like this more than the current approach. While CFS feedback looks 
+  promising after a whopping 3 days of it being released [ ;-) ], the 
+  test coverage of all 'fairness centric' schedulers, even considering 
+  years of availability is less than 1% i'm afraid, and that < 1% was 
+  mostly self-selecting. )
 
 	Ingo
