@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031162AbXDQQ25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031152AbXDQQ3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031162AbXDQQ25 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDQQ25
+	id S1031152AbXDQQ3b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031165AbXDQQ3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:28:57 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:52173 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031154AbXDQQ24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:28:56 -0400
-Date: Tue, 17 Apr 2007 22:00:55 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Shaya Potter <spotter@cs.columbia.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH  0/15] VFS based Union Mount
-Message-ID: <20070417163055.GA11318@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070417131459.GA4001@in.ibm.com> <4624DB46.6040400@cs.columbia.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 17 Apr 2007 12:29:31 -0400
+Received: from keil-draco.com ([216.193.185.50]:50404 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031152AbXDQQ3a convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 12:29:30 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Tomasz =?utf-8?q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
+Subject: Re: ZFS with Linux: An Open Plea
+Date: Tue, 17 Apr 2007 12:29:21 -0400
+User-Agent: KMail/1.9.6
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
+       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417135958.GB28201@srcf.ucam.org> <Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
+In-Reply-To: <Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4624DB46.6040400@cs.columbia.edu>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200704171229.21433.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 10:35:50AM -0400, Shaya Potter wrote:
-> Bharata B Rao wrote:
-> >Hi,
+On Tuesday 17 April 2007 11:46:38 Tomasz Kłoczko wrote:
+> On Tue, 17 Apr 2007, Matthew Garrett wrote:
+> > On Tue, Apr 17, 2007 at 03:47:32PM +0200, Tomasz Kłoczko wrote:
+> >> Realy can't or don't want (?)
+> >> So who is responsible for potential changing Linux code licensing for
+> >> allow if not incorporate CDDL code correct interraction without breaking
+> >> some law ?
 > >
-> >Here is an attempt towards vfs based union mount implementation.
-> >Union mount provides the filesytem namespace unification feature.
-> >Unlike the traditional mounts which hide the contents of the mount point,
-> >the union mount presents the merged view of the mount point and the
-> >mounted filesytem.
-> 
-> does this approach allow one to add directories to the union and have it 
-> behave normally.  namely when imagine one has the situation
-> 
-> dir-b
-> dir-a/ (contains file foo)
-> 
-> 
-> if one unions this and deletes foo, that will create a whiteout entry in 
-> dir-a
+> > Everyone who holds any copyright over any of the code in Linux, which is
+> > several thousand people. You'd probably need permission from all of
+> > them. Good luck!
+>
+> Why on discussion about switching to GPL v3 Linux code this argument was
+> allways taken as "piece of cake". Why in case switching to another license
+> which will allow use CDDL code just it is most importand contr argument ?
+>
+> kloczek
 
-(I guess you mean to say that this creates a whiteout in dir-b)
+Because *EVERY* version of the GPL contains the "or any later version of this 
+license" clause (except, now, the version being used with the Linux kernel)
 
-> 
-> now, what happens if one does
-> 
-> dir-c
-> dir-b (now contains whiteout, from previous union).
-> dir-a (contains file foo)
-> 
-> will one see foo or not. i.e. are whiteouts only looked for in the 
-> topmost dir, or in every dir?
-
-No. foo is not visible. While looking for a file in a union mounted
-directory, the lookup starts from the topmost directory and proceeds
-downwards if the file isn't present the top layers. If a whiteout is
-found in any of the top layers, the lookup is abondoned and -ENOENT
-is removed. Thus until a whiteout exists in any upper layer for
-a corresponding file in the lower layer, the lower layer file remains
-hidden until the whiteout is removed.
-
-However in the case of dir-c containing foo, the foo(from dir-c) will become
-visible after union mounting dir-c on top of dir-b and dir-a.
-
-Regards,
-Bharata.
+DRH
