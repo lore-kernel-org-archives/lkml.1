@@ -1,22 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbXDQGrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751642AbXDQGuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751623AbXDQGrM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 02:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbXDQGrL
+	id S1751642AbXDQGuY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 02:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXDQGuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 02:47:11 -0400
-Received: from omta03ps.mx.bigpond.com ([144.140.82.155]:64863 "EHLO
-	omta03ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608AbXDQGrL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 02:47:11 -0400
-Message-ID: <46246D61.8010300@bigpond.net.au>
-Date: Tue, 17 Apr 2007 16:46:57 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org,
+	Tue, 17 Apr 2007 02:50:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36376 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751608AbXDQGuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 02:50:23 -0400
+Date: Tue, 17 Apr 2007 08:49:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
@@ -25,36 +21,41 @@ CC: linux-kernel@vger.kernel.org,
        Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
        Dmitry Adamushko <dmitry.adamushko@gmail.com>
 Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-References: <20070416220715.GA4071@elte.hu>
-In-Reply-To: <20070416220715.GA4071@elte.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta03ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 06:47:03 +0000
+Message-ID: <20070417064934.GA22110@elte.hu>
+References: <20070416220715.GA4071@elte.hu> <462447E0.20806@bigpond.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462447E0.20806@bigpond.net.au>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> this is the second release of the CFS (Completely Fair Scheduler) 
-> patchset, against v2.6.21-rc7:
+
+* Peter Williams <pwil3058@bigpond.net.au> wrote:
+
+> Can I make a suggestion?
 > 
->    http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.patch
-> 
-> i'd like to thank everyone for the tremendous amount of feedback and 
-> testing the v1 patch got - i could hardly keep up with just reading the 
-> mails! Some of the stuff people addressed i couldnt implement yet, i 
-> mostly concentrated on bugs, regressions and debuggability.
+> Would it be possible (from now on) to publish changes relevant to the 
+> previous patch (eventually leading to a series of patches that 
+> describes the evolution of the new scheduler) so that it's easier for 
+> us reviewers/critics to see the latest changes.  E.g. if import such 
+> changes into something like quilt (using my gquilt GUI wrapper, of 
+> course :-)) I can then use meld (or similar) to follow what's going as 
+> suggestions get folded in and bugs get fixed etc.
 
-Have you considered using rq->raw_weighted_load instead of 
-rq->nr_running in calculating fair_clock?  This would take the nice 
-value (or RT priority) of the other tasks into account when determining 
-what's fair.
+the v1 patch is still downloadable so you can do a delta by first 
+applying the v1 patch to a quilt queue, doing a 'quilt snapshot', then 
+'quilt pop', add the v2 patch to the series file, do a 'quilt push', 
+then doing a "quilt diff --snapshot". (I just posted the delta patch in 
+this thread so you can pick it from there too.)
 
-Peter
-PS You'd have to change the migration thread's load_weight from 0 to 1 
-in order to prevent divide by zero without having to explicitly check 
-for it every time.
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+	Ingo
