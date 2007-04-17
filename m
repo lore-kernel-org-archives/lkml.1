@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161098AbXDQRTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161042AbXDQRVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161098AbXDQRTk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 13:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161042AbXDQRTk
+	id S1161042AbXDQRVJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 13:21:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161107AbXDQRVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 13:19:40 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46377 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161098AbXDQRTi (ORCPT
+	Tue, 17 Apr 2007 13:21:09 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:57347 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161042AbXDQRVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 13:19:38 -0400
-Date: Tue, 17 Apr 2007 18:21:26 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [AppArmor 31/41] Fix __d_path() for lazy unmounts and make it
- unambiguous; exclude unreachable mount points from /proc/mounts
-Message-ID: <20070417182126.2327d89d@the-village.bc.nu>
-In-Reply-To: <200704170335.21805.agruen@suse.de>
-References: <20070412090809.917795000@suse.de>
-	<200704151940.22528.agruen@suse.de>
-	<20070416225748.3e5d3003@the-village.bc.nu>
-	<200704170335.21805.agruen@suse.de>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Apr 2007 13:21:08 -0400
+Date: Tue, 17 Apr 2007 13:19:55 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: linux-kernel@vger.kernel.org
+cc: trivial@kernel.org
+Subject: [PATCH] general: convert "kernel" subdirectory to UTF-8
+Message-ID: <alpine.DEB.0.83.0704171317580.914@sigma.j-a-k-j.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="1875672472-557741582-1176830396=:914"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> For /proc/mounts, one could argue that the admin might want to see everything, 
-> but then that's not actually true even today because /proc/mounts doesn't 
-> show lazyily unmounted stuff or mounts from other namespaces, so that 
-> everything is quite relative.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The current state is not good either
+--1875672472-557741582-1176830396=:914
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 
-> The getcwd() case is even stronger as the "see everything" argument makes even 
-> less sense there. I really can't see why the kernel should return processes 
-> fake pathnames. The process is explicitly asking for the current pathname to 
-> the working directory, it doesn't want to know what the pathname was at some 
-> previous point in time.
+From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-Can you prove no existing application on the planet relies on the
-existing behaviour ? Actually more limited but sane as a test would be
-"Can you prove that the glibc behaviour visible to applications does not
-change"
+Convert the "kernel" subdirectory of the tree to UTF-8. The only file 
+modified is <kernel/sys.c>.
 
-> Actually, no. We could live fine with leaving getcwd() and /proc/mounts as 
-> ambiguous / weird / broken as they are right now. All it would take would be 
-> to reambiguate the result of the unambiguous __d_path(), which is really 
-> easy. Everything that cares about real pathnames would use the unambiguous 
-> version while the legacy interfaces would use the ambiguous version. But that 
-> really wouldn't make sense.
+Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-I disagree - firstly because of not breaking stuff, and secondly because
-it separates two discussions - merging AppArmor being one of them , and
-the correct behaviour for getcwd & /proc/mounts being the other.
+---
 
-> > Ok, providing the "real" root sees them all it isn't so bad, but to
-> > assume you can filter based upon what the task can see is dodgy as an
-> > assumption.
-> 
-> Why?
+I can't get my mail client to send in ISO-8859-1 instead of UTF-8, so the 
+actual patch is attached in octet-stream format. The below patch is just 
+for reference and will almost certainly NOT work.
 
-Because the viewing apparatus on the other side of the monitor is not
-operating in current directories/contexts.
+Also, since the patch includes both encodings, whichever encoding you 
+select while viewing it will display one correct and one garbled line. 
+However, the bytecodes -are- correct.
 
-Alan
+diff -uprN linux-2.6.21-rc7.orig/kernel/sys.c linux-2.6.21-rc7.mod/kernel/sys.c
+--- linux-2.6.21-rc7.orig/kernel/sys.c	2007-04-17 11:42:13.000000000 -0400
++++ linux-2.6.21-rc7.mod/kernel/sys.c	2007-04-17 13:16:59.000000000 -0400
+@@ -1292,7 +1292,7 @@ asmlinkage long sys_setfsuid(uid_t uid)
+ }
+ 
+ /*
+- * Samma på svenska..
++ * Samma pÃ¥ svenska..
+  */
+ asmlinkage long sys_setfsgid(gid_t gid)
+ {
+--1875672472-557741582-1176830396=:914
+Content-Type: APPLICATION/octet-stream; name=patch-kernel.bin
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.DEB.0.83.0704171319550.914@sigma.j-a-k-j.com>
+Content-Description: 
+Content-Disposition: attachment; filename=patch-kernel.bin
+
+ZGlmZiAtdXByTiBsaW51eC0yLjYuMjEtcmM3Lm9yaWcva2VybmVsL3N5cy5j
+IGxpbnV4LTIuNi4yMS1yYzcubW9kL2tlcm5lbC9zeXMuYwotLS0gbGludXgt
+Mi42LjIxLXJjNy5vcmlnL2tlcm5lbC9zeXMuYwkyMDA3LTA0LTE3IDExOjQy
+OjEzLjAwMDAwMDAwMCAtMDQwMAorKysgbGludXgtMi42LjIxLXJjNy5tb2Qv
+a2VybmVsL3N5cy5jCTIwMDctMDQtMTcgMTM6MTY6NTkuMDAwMDAwMDAwIC0w
+NDAwCkBAIC0xMjkyLDcgKzEyOTIsNyBAQCBhc21saW5rYWdlIGxvbmcgc3lz
+X3NldGZzdWlkKHVpZF90IHVpZCkKIH0KIAogLyoKLSAqIFNhbW1hIHDlIHN2
+ZW5za2EuLgorICogU2FtbWEgcMOlIHN2ZW5za2EuLgogICovCiBhc21saW5r
+YWdlIGxvbmcgc3lzX3NldGZzZ2lkKGdpZF90IGdpZCkKIHsK
+
+--1875672472-557741582-1176830396=:914--
