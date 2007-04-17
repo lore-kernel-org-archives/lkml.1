@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXDQHdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbXDQHeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbXDQHdg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 03:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbXDQHdg
+	id S1752308AbXDQHeY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 03:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXDQHeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 03:33:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48988 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbXDQHdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 03:33:35 -0400
-Date: Tue, 17 Apr 2007 09:33:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>, Nick Piggin <npiggin@suse.de>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417073308.GB30559@elte.hu>
-References: <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com>
+	Tue, 17 Apr 2007 03:34:24 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:41821 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752259AbXDQHeW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 03:34:22 -0400
+Date: Tue, 17 Apr 2007 09:36:52 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Tejun Heo <htejun@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [Patch -mm 0/3] RFC: module unloading vs. release function
+Message-ID: <20070417093652.05030383@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0704161530160.2685-100000@iolanthe.rowland.org>
+References: <d120d5000704161130j7ae89a1eyef89e015f0a3e97f@mail.gmail.com>
+	<Pine.LNX.4.44L0.0704161530160.2685-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070417070949.GR8915@holomorphy.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 16 Apr 2007 15:38:52 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-* William Lee Irwin III <wli@holomorphy.com> wrote:
+> On Mon, 16 Apr 2007, Dmitry Torokhov wrote:
 
-> On Mon, Apr 16, 2007 at 11:50:03PM -0700, Davide Libenzi wrote:
-> > I had a quick look at Ingo's code yesterday. Ingo is always smart to 
-> > prepare a main dish (feature) with a nice sider (code cleanup) to 
-> > Linus ;) And even this code does that pretty nicely. The deadline 
-> > designs looks good, although I think the final "key" calculation 
-> > code will end up quite different from what it looks now.
+> > Unfortunately all this "wait for refcount in module's exit" schemas
+> > lead to the following deadlock:
+> > 
+> >         rmmod my_module < /path/to/some/file/incrementing/my/refcount
 > 
-> The additive nice_offset breaks nice levels. A multiplicative priority 
-> weighting of a different, nonnegative metric of cpu utilization from 
-> what's now used is required for nice levels to work. I've been trying 
-> to point this out politely by strongly suggesting testing whether nice 
-> levels work.
+> (Note that this problem will be a lot harder to provoke once Tejun's
+> changes to sysfs are in place.  But it will still be possible, unless we 
+> make similar changes to all the other filesystems as well.)
+> 
+> There are three possible approaches to this problem:
+> 
+>      1. Ignore it, as we do now.  If someone actually tries running your
+> 	example above, an oops will result when the kobject's release
+> 	method is called after my_module has been unloaded from memory.
+> 
+>      2. Do what Cornelia suggested, and allow the example to deadlock.
+> 
+>      3. Change the module code so that rmmod can return _before_ the
+> 	module is actually unloaded from memory (but after the module's
+> 	exit routine has completed).  This will lead to more problems.
+> 	For example, what if someone tries to modprobe my_module back
+> 	again before it has finished unloading?
+> 
+> My feeling is that either a deadlock or more complications with modprobe 
+> would be preferable to an oops.  Your opinion may differ.
 
-granted, CFS's nice code is still incomplete, but you err quite 
-significantly with this extreme statement that they are "broken".
+My current preference is 2. (obviously :)). I don't like 3. too much
+(too complicated code), but I think it would still be better than 1.
+(And I agree, this will be harder to trigger with Tejun's patches.)
 
-nice levels certainly work to a fair degree even in the current code and 
-much of the focus is elsewhere - just try it. (In fact i claim that 
-CFS's nice levels often work _better_ than the mainline scheduler's nice 
-level support, for the testcases that matter to users.)
+> 
+> (Also, doing this might be a good way to expose a lot of hidden 
+> refcounting bugs.  They will become very obvious when rmmod hangs.)
 
-The precise behavior of nice levels, as i pointed it out in previous 
-mails, is largely 'uninteresting' and it has changed multiple times in 
-the past 10 years.
-
-What matters to users is mainly: whether X reniced to -10 does get 
-enough CPU time and whether stuff reniced to +19 doesnt take away too 
-much CPU time from the rest of the system. _How_ a Linux scheduler 
-achieves this is an internal matter and certainly CFS does it in a hacky 
-way at the moment.
-
-All the rest, 'CPU bandwidth utilization' or whatever abstract metric we 
-could come up with is just a fancy academic technicality that has no 
-real significance to any of the testers who are trying CFS right now.
-
-Sure we prefer final solutions that are clean and make sense (because 
-such things are the easiest to maintain long-term), and often such final 
-solutions are quite close to academic concepts, and i think Davide 
-correctly observed this by saying that "the final key calculation code 
-will end up quite different from what it looks now", but your 
-extreme-end claim of 'breakage' for something that is just plain 
-incomplete is not really a fair characterisation at this point.
-
-Anyone who thinks that there exists only two kinds of code: 100% correct 
-and 100% incorrect with no shades of grey inbetween is in reality a sort 
-of an extremist: whom, depending on mood and affection, we could call 
-either a 'coding purist' or a 'coding taliban' ;-)
-
-	Ingo
+Good point.
