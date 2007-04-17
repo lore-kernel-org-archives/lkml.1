@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031119AbXDQQIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031124AbXDQQKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031119AbXDQQIs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031120AbXDQQIs
+	id S1031124AbXDQQKS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031123AbXDQQKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:08:48 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33309 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1031119AbXDQQIr (ORCPT
+	Tue, 17 Apr 2007 12:10:18 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:34098 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031121AbXDQQKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:08:47 -0400
-Date: Tue, 17 Apr 2007 12:08:46 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Greg KH <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [Patch -mm 3/3] RFC: Introduce kobject->owner for refcounting.
-In-Reply-To: <20070417091624.63436fc3@gondolin.boeblingen.de.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0704171159360.20368-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Apr 2007 12:10:16 -0400
+To: serue@us.ibm.com
+CC: akpm@linux-foundation.org, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+In-reply-to: <20070417143301.GH1442@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch 05/10] Add "permit user submounts" flag to vfsmount
+References: <20070416110308.739051445@szeredi.hu> <20070416110414.591968270@szeredi.hu> <20070416192050.GB30435@sergelap.austin.ibm.com> <E1HdlAt-00013a-00@dorka.pomaz.szeredi.hu> <20070417143301.GH1442@sergelap.austin.ibm.com>
+Message-Id: <E1HdqEF-00020e-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 17 Apr 2007 18:08:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Apr 2007, Cornelia Huck wrote:
-
-> On Tue, 17 Apr 2007 12:53:10 +1000,
-> Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
-> > On Mon, 2007-04-16 at 15:53 -0400, Alan Stern wrote:
-> > > The fundamental rule is that whenever you hand out a pointer to a routine
-> > > living in a module, the receiver has to increment the module's refcount.  
-> > > But the driver core violates this rule all over the place.
+> > > MNT_USER and MNT_USERMNT?  I claim no way will people keep those
+> > > straight.  How about MNT_ALLOWUSER and MNT_USER?
 > > 
-> > Hi Alan,
-> > 
-> > 	Your rule is overly simplistic, unfortunately.  You have two choices:
-> > take a reference count, *or* ensure that the reference will go away when
-> > the module's cleanup routine is called.  Network drivers are a classic
-> > example of the latter.
+> > Umm, is "allowuser" more clear than "usermnt"?  What is allowed to the
 > 
-> Hm, but that's exactly the problem we face here. There is no race-free
-> way (at least, nobody could think about one yet) to make sure all
-> references are freed at exit time and simultaneously to make sure that
-> the release functions have finished before the module has been deleted.
+> I think so, yes.  One makes it clear that we're talking about allowing
+> user (somethings :), one might just as well mean "this is a user mount."
+> 
+> > user?  "allowusermnt" may be more descriptive, but it's a bit too
+> > long.
+> 
+> Yes, if it weren't too long it would by far have been my preference.
+> Maybe despite the length we should still go with it...
+> 
+> > I don't think it matters all that much, the user will have to look up
+> > the semantics in the manpage anyway.  Is "nosuid" descriptive?  Not
+> > very much, but we got used to it.
+> 
+> nosuid is quite clear.
 
-More specifically, there _is_ no way in general to ensure that a reference
-will go away when the module's cleanup routine is called, unless you are
-very careful not to pass that reference on to _anybody_.  The driver core
-certainly can't do this; it passes a device reference to anyone who
-creates a child of that device (the parent pointer) -- and it can't 
-guarantee that every one of its clients will drop their references when 
-their exit routines run.
+Is it?  Shouldn't these be "allowsuid", "noallowsuid", "allowexec",
+"noallowexec"?
 
-I'm not so sure I fully believe that network drivers can do what Rusty
-says, at least not in every circumstance.  There simply are too many
-possible ways for references to linger on after you thought they were all
-gone.  For example, what happens when the user has mounted a filesystem on
-a USB drive running via USB-over-TCP though a network interface?
+See, we mentally add the "allow" quite easily.
 
-Alan Stern
+> MNT_USER and MNT_USERMNT are so confusing that in the time I go from
+> quitting the manpage to foregrounding my editor, I may have already
+> forgotten which was which.
 
+Well, to the user they are always in the form "user=123" and
+"usermnt", so they are not as easy to confuse.
+
+But I feel a bit stupid bickering about this, because it isn't so
+important.  "allowuser" or "allowusermnt" are fine by me if you think
+they are substantially better than "usermnt".
+
+Miklos
