@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbXDQXXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbXDQXY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751922AbXDQXXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 19:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbXDQXXv
+	id S1752145AbXDQXY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 19:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXDQXY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 19:23:51 -0400
-Received: from omta05ps.mx.bigpond.com ([144.140.83.195]:33274 "EHLO
-	omta05ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbXDQXXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 19:23:50 -0400
-Message-ID: <462556FE.6010407@bigpond.net.au>
-Date: Wed, 18 Apr 2007 09:23:42 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Nick Piggin <npiggin@suse.de>, William Lee Irwin III <wli@holomorphy.com>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org>
-In-Reply-To: <20070417213954.GE11166@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 17 Apr 2007 19:24:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34134 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024AbXDQXYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 19:24:24 -0400
+Subject: Re: AppArmor FAQ
+From: Karl MacMillan <kmacmill@redhat.com>
+To: Crispin Cowan <crispin@novell.com>
+Cc: David Safford <safford@watson.ibm.com>, James Morris <jmorris@namei.org>,
+       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <462553A9.70504@novell.com>
+References: <20070416213350.GB4030@suse.de>
+	 <Line.LNX.4.64.0704161846110.13905@d.namei>
+	 <1176822230.3366.65.camel@localhost.localdomain>
+	 <462553A9.70504@novell.com>
+Content-Type: text/plain
+Date: Tue, 17 Apr 2007 19:20:59 -0400
+Message-Id: <1176852059.5946.128.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 23:23:47 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
->> On Mon, Apr 16, 2007 at 11:26:21PM -0700, William Lee Irwin III wrote:
->>> On Mon, Apr 16, 2007 at 11:09:55PM -0700, William Lee Irwin III wrote:
->>>>> All things are not equal; they all have different properties. I like
->>> On Tue, Apr 17, 2007 at 08:15:03AM +0200, Nick Piggin wrote:
->>>> Exactly. So we have to explore those properties and evaluate performance
->>>> (in all meanings of the word). That's only logical.
->>> Any chance you'd be willing to put down a few thoughts on what sorts
->>> of standards you'd like to set for both correctness (i.e. the bare
->>> minimum a scheduler implementation must do to be considered valid
->>> beyond not oopsing) and performance metrics (i.e. things that produce
->>> numbers for each scheduler you can compare to say "this scheduler is
->>> better than this other scheduler at this.").
->> Yeah I guess that's the hard part :)
->>
->> For correctness, I guess fairness is an easy one. I think that unfairness
->> is basically a bug and that it would be very unfortunate to merge something
->> unfair. But this is just within the context of a single runqueue... for
->> better or worse, we allow some unfairness in multiprocessors for performance
->> reasons of course.
-> 
-> I'm a big fan of fairness, but I think it's a bit early to declare it
-> a mandatory feature. Bounded unfairness is probably something we can
-> agree on, ie "if we decide to be unfair, no process suffers more than
-> a factor of x".
->  
->> Latency. Given N tasks in the system, an arbitrary task should get
->> onto the CPU in a bounded amount of time (excluding events like freak
->> IRQ holdoffs and such, obviously -- ie. just considering the context
->> of the scheduler's state machine).
-> 
-> This is a slightly stronger statement than starvation-free (which is
-> obviously mandatory). I think you're looking for something like
-> "worst-case scheduling latency is proportional to the number of
-> runnable tasks".
+On Tue, 2007-04-17 at 16:09 -0700, Crispin Cowan wrote:
+> David Safford wrote:
+> > On Mon, 2007-04-16 at 20:20 -0400, James Morris wrote:
+> >   
 
-add "taking into consideration nice and/or real time priorities of 
-runnable tasks".  I.e. if a task is nice 19 it can expect to wait longer 
-to get onto the CPU than if it was nice 0.
+<snip>
 
-> Which I think is quite a reasonable requirement.
 > 
-> I'm pretty sure the stock scheduler falls short of both of these
-> guarantees though.
+> The meaning of a file is how other processes interpret it. Until then,
+> /etc/resolv.conf is just a quaint bag of bits. What makes it special is
+> that it is what each process gets when they open the well-known
+> "/etc/resolv.conf". Which is why it is useful to guard which processes
+> can read or write to /etc/resolv.conf; the name is what makes its
+> content special, not the other way around.
 > 
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+This is not correct. My private ssh keys need to be protected regardless
+of the file name - it is the "bag of bits" that make it important not
+the name. Similarly, you protect the integrity of the applications that
+need name resolution by ensuring that the data that they read is high
+integrity. You do that by controlling data not the file name used to
+access the data. That is James point - a comprehensive mechanism like
+SELinux allows you to comprehensively protect the integrity of data.
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+Karl
+
+> Crispin
+> 
+
