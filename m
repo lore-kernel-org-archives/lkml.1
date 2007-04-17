@@ -1,151 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbXDQNQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbXDQNRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbXDQNQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 09:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbXDQNQp
+	id S1754250AbXDQNRH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 09:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbXDQNRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 09:16:45 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:37857 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754081AbXDQNQn (ORCPT
+	Tue, 17 Apr 2007 09:17:07 -0400
+Received: from omta01ps.mx.bigpond.com ([144.140.82.153]:29559 "EHLO
+	omta01ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbXDQNRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 09:16:43 -0400
-Date: Tue, 17 Apr 2007 18:53:48 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
-Subject: [RFC][PATCH 12/15] ext2 whiteout support
-Message-ID: <20070417132348.GM4001@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070417131459.GA4001@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070417131459.GA4001@in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 17 Apr 2007 09:17:04 -0400
+Message-ID: <4624C8C6.4090902@bigpond.net.au>
+Date: Tue, 17 Apr 2007 23:16:54 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+References: <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <462467E9.4030509@bigpond.net.au> <20070417064436.GE1057@wotan.suse.de> <46247BE7.2070307@bigpond.net.au> <20070417075611.GC20026@wotan.suse.de>
+In-Reply-To: <20070417075611.GC20026@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta01ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 13:16:59 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <j.blunck@tu-harburg.de>
-Subject: ext2 whiteout support
+Nick Piggin wrote:
+> On Tue, Apr 17, 2007 at 05:48:55PM +1000, Peter Williams wrote:
+>> Nick Piggin wrote:
+>>>> Other hints that it was a bad idea was the need to transfer time slices 
+>>>> between children and parents during fork() and exit().
+>>> I don't see how that has anything to do with dual arrays.
+>> It's totally to do with the dual arrays.  The only real purpose of the 
+>> time slice in O(1) (regardless of what its perceived purpose was) was to 
+>> control the switching between the arrays.
+> 
+> The O(1) design is pretty convoluted in that regard. In my scheduler,
+> the only purpose of the arrays is to renew time slices.
+> 
+> The fork/exit logic is added to make interactivity better. Ingo's
+> scheduler has similar equivalent logic.
+> 
+> 
+>>> If you put
+>>> a new child at the back of the queue, then your various interactive
+>>> shell commands that typically do a lot of dependant forking get slowed
+>>> right down behind your compile job. If you give a new child its own
+>>> timeslice irrespective of the parent, then you have things like 'make'
+>>> (which doesn't use a lot of CPU time) spawning off lots of high
+>>> priority children.
+>> This is an artefact of trying to control nice using time slices while 
+>> using them for controlling array switching and whatever else they were 
+>> being used for.  Priority (static and dynamic) is the the best way to 
+>> implement nice.
+> 
+> I don't like the timeslice based nice in mainline. It's too nasty
+> with latencies. nicksched is far better in that regard IMO.
+> 
+> But I don't know how you can assert a particular way is the best way
+> to do something.
 
-Introduce whiteout support to ext2.
+I should have added "I may be wrong but I think that ...".
 
-Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- fs/ext2/dir.c           |    2 ++
- fs/ext2/namei.c         |   17 +++++++++++++++++
- fs/ext2/super.c         |   11 ++++++++++-
- include/linux/ext2_fs.h |    4 ++++
- 4 files changed, 33 insertions(+), 1 deletion(-)
+My opinion is based on a lot of experience with different types of 
+scheduler design and the observation from gathering scheduling 
+statistics while playing with these schedulers that the size of the time 
+slices we're talking about is much larger than the CPU chunks most tasks 
+use in any one go so time slice size has no real effect on most tasks 
+and the faster CPUs become the more this becomes true.
 
---- a/fs/ext2/dir.c
-+++ b/fs/ext2/dir.c
-@@ -218,6 +218,7 @@ static unsigned char ext2_filetype_table
- 	[EXT2_FT_FIFO]		= DT_FIFO,
- 	[EXT2_FT_SOCK]		= DT_SOCK,
- 	[EXT2_FT_SYMLINK]	= DT_LNK,
-+	[EXT2_FT_WHT]		= DT_WHT,
- };
- 
- #define S_SHIFT 12
-@@ -229,6 +230,7 @@ static unsigned char ext2_type_by_mode[S
- 	[S_IFIFO >> S_SHIFT]	= EXT2_FT_FIFO,
- 	[S_IFSOCK >> S_SHIFT]	= EXT2_FT_SOCK,
- 	[S_IFLNK >> S_SHIFT]	= EXT2_FT_SYMLINK,
-+	[S_IFWHT >> S_SHIFT]	= EXT2_FT_WHT,
- };
- 
- static inline void ext2_set_de_type(ext2_dirent *de, struct inode *inode)
---- a/fs/ext2/namei.c
-+++ b/fs/ext2/namei.c
-@@ -288,6 +288,22 @@ static int ext2_rmdir (struct inode * di
- 	return err;
- }
- 
-+static int ext2_whiteout(struct inode *dir, struct dentry *dentry)
-+{
-+	struct inode *inode;
-+	int err;
-+
-+	inode = ext2_new_inode (dir, S_IFWHT | S_IRUGO);
-+	err = PTR_ERR(inode);
-+	if (IS_ERR(inode))
-+		goto out;
-+
-+	mark_inode_dirty(inode);
-+	err = ext2_add_nondir(dentry, inode);
-+out:
-+	return err;
-+}
-+
- static int ext2_rename (struct inode * old_dir, struct dentry * old_dentry,
- 	struct inode * new_dir,	struct dentry * new_dentry )
- {
-@@ -382,6 +398,7 @@ const struct inode_operations ext2_dir_i
- 	.mkdir		= ext2_mkdir,
- 	.rmdir		= ext2_rmdir,
- 	.mknod		= ext2_mknod,
-+	.whiteout	= ext2_whiteout,
- 	.rename		= ext2_rename,
- #ifdef CONFIG_EXT2_FS_XATTR
- 	.setxattr	= generic_setxattr,
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -755,6 +755,15 @@ static int ext2_fill_super(struct super_
- 	ext2_xip_verify_sb(sb); /* see if bdev supports xip, unset
- 				    EXT2_MOUNT_XIP if not */
- 
-+	if ((sb->s_flags & MS_UNION) && !(sb->s_flags & MS_RDONLY)) {
-+		if (!EXT2_HAS_INCOMPAT_FEATURE(sb,
-+				EXT2_FEATURE_INCOMPAT_WHITEOUT)) {
-+			sb->s_flags |= MS_RDONLY;
-+			ext2_warning(sb, __FUNCTION__,
-+			"no whiteout support, mounting filesystem read-only");
-+		}
-+	}
-+
- 	if (le32_to_cpu(es->s_rev_level) == EXT2_GOOD_OLD_REV &&
- 	    (EXT2_HAS_COMPAT_FEATURE(sb, ~0U) ||
- 	     EXT2_HAS_RO_COMPAT_FEATURE(sb, ~0U) ||
-@@ -1293,7 +1302,7 @@ static struct file_system_type ext2_fs_t
- 	.name		= "ext2",
- 	.get_sb		= ext2_get_sb,
- 	.kill_sb	= kill_block_super,
--	.fs_flags	= FS_REQUIRES_DEV,
-+	.fs_flags	= FS_REQUIRES_DEV | FS_WHT,
- };
- 
- static int __init init_ext2_fs(void)
---- a/include/linux/ext2_fs.h
-+++ b/include/linux/ext2_fs.h
-@@ -61,6 +61,7 @@
- #define EXT2_ROOT_INO		 2	/* Root inode */
- #define EXT2_BOOT_LOADER_INO	 5	/* Boot loader inode */
- #define EXT2_UNDEL_DIR_INO	 6	/* Undelete directory inode */
-+#define EXT2_WHT_INO		 7	/* Whiteout inode */
- 
- /* First non-reserved inode for old ext2 filesystems */
- #define EXT2_GOOD_OLD_FIRST_INO	11
-@@ -479,10 +480,12 @@ struct ext2_super_block {
- #define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004
- #define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008
- #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
-+#define EXT2_FEATURE_INCOMPAT_WHITEOUT		0x0020
- #define EXT2_FEATURE_INCOMPAT_ANY		0xffffffff
- 
- #define EXT2_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_EXT_ATTR
- #define EXT2_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE| \
-+					 EXT2_FEATURE_INCOMPAT_WHITEOUT| \
- 					 EXT2_FEATURE_INCOMPAT_META_BG)
- #define EXT2_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER| \
- 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
-@@ -549,6 +552,7 @@ enum {
- 	EXT2_FT_FIFO,
- 	EXT2_FT_SOCK,
- 	EXT2_FT_SYMLINK,
-+	EXT2_FT_WHT,
- 	EXT2_FT_MAX
- };
- 
+> 
+> 
+>>> You need to do _something_ (Ingo's does). I don't see why this would
+>>> be tied with a dual array. FWIW, mine doesn't do anything on exit()
+>>> like most others, but it may need more tuning in this area.
+>>>
+>>>
+>>>> This disregard for the dual array mechanism has prevented me from 
+>>>> looking at the rest of your scheduler in any great detail so I can't 
+>>>> comment on any other ideas that may be in there.
+>>> Well I wasn't really asking you to review it. As I said, everyone
+>>> has their own idea of what a good design does, and review can't really
+>>> distinguish between the better of two reasonable designs.
+>>>
+>>> A fair evaluation of the alternatives seems like a good idea though.
+>>> Nobody is actually against this, are they?
+>> No.  It would be nice if the basic ideas that each scheduler tries to 
+>> implement could be extracted and explained though.  This could lead to a 
+>> melding of ideas that leads to something quite good.
+>>
+>>>
+>>>>> I haven't looked at Con's ones for a while,
+>>>>> but I believe they are also much more straightforward than mainline...
+>>>> I like Con's scheduler (partly because it uses a single array) but 
+>>>> mainly because it's nice and simple.  However, his earlier schedulers 
+>>>> were prone to starvation (admittedly, only if you went out of your way 
+>>>> to make it happen) and I tried to convince him to use the anti 
+>>>> starvation mechanism in my SPA schedulers but was unsuccessful.  I 
+>>>> haven't looked at his latest scheduler that sparked all this furore so 
+>>>> can't comment on it.
+>>> I agree starvation or unfairness is unacceptable for a new scheduler.
+>>>
+>>>
+>>>>> For example, let's say all else is equal between them, then why would
+>>>>> we go with the O(logN) implementation rather than the O(1)?
+>>>> In the highly unlikely event that you can't separate them on technical 
+>>>> grounds, Occam's razor recommends choosing the simplest solution. :-)
+>>> O(logN) vs O(1) is technical grounds.
+>> In that case I'd go O(1) provided that the k factor for the O(1) wasn't 
+>> greater than O(logN)'s k factor multiplied by logMaxN.
+> 
+> Yes, or even significantly greater around typical large sizes of N.
+
+Yes.  In fact its' probably better to use the maximum number of threads 
+allowed on the system for N.  We know that value don't we?
+
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
