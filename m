@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031157AbXDQTgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031173AbXDQTlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031157AbXDQTgZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 15:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDQTgZ
+	id S1031173AbXDQTlJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 15:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031176AbXDQTlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 15:36:25 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:58755 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1031157AbXDQTgY (ORCPT
+	Tue, 17 Apr 2007 15:41:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41875
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1031164AbXDQTlI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 15:36:24 -0400
-Message-ID: <462521F1.2000806@ru.mvista.com>
-Date: Tue, 17 Apr 2007 23:37:21 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: John Stoffel <john@stoffel.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.21-rc6-mm1 ATA HPT37x regression
-References: <17956.12963.163961.762444@smtp.charter.net>	<4624D4C3.9010109@ru.mvista.com>	<17956.63043.521397.597430@smtp.charter.net>	<4624FE88.2010908@ru.mvista.com>	<20070417181340.7de99868@the-village.bc.nu> <17957.8073.587946.969040@smtp.charter.net>
-In-Reply-To: <17957.8073.587946.969040@smtp.charter.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 17 Apr 2007 15:41:08 -0400
+Date: Tue, 17 Apr 2007 12:41:10 -0700 (PDT)
+Message-Id: <20070417.124110.99829630.davem@davemloft.net>
+To: aubreylee@gmail.com
+Cc: kuznet@ms2.inr.ac.ru, pekkas@netcore.fi, jmorris@namei.org,
+       kaber@coreworks.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix UDP checksum issue in net poll mode.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <6d6a94c50704162353p2b96b3e4kd05489a59aa9bba7@mail.gmail.com>
+References: <6d6a94c50704162353p2b96b3e4kd05489a59aa9bba7@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+From: "Aubrey Li" <aubreylee@gmail.com>
+Date: Tue, 17 Apr 2007 14:53:48 +0800
 
-John Stoffel wrote:
+> In net poll mode, the current checksum function doesn't consider the
+> kind of packet which is padded to reach a specific minimum length. I
+> believe that's the problem causing my test case failed. The following
+> patch fixed this issue.
+> 
+> Signed-off-by: Aubrey.Li <aubreylee@gmail.com>
 
->>>>Ok, so do I need to do anything special with the next -mm release and
->>>>the next version?
-
->>>Well, let Alan decide that (2Alan: and I said that HPT code is bogus :-).
-
-> Alan> Try drivers/ide/pci/hpt366 - if that works grab a dmesg and let
-> Alan> me know.  It means that Sergei's DPLL sync code seems to work
-> Alan> better than the vendor code and its time to swap it over.
-
-> Ok, I'll give that a whirl under 2.6.21-rc7 tonight.  I'll build them
-> in modular so I can switch around more easily.  I hope.  :]
-
-   You can't switch from the old IDE driver -- they're *not* unloadable. :-/
-
-> Alan> Oh how I love highpoint PATA
-
-   More like PITA. :-D
-
-> It seemed like a good buy at the time when I was researching these
-> things.  Best bang for the buck I guess.  It's a RocketRaid133 card,
-
-   As for bang, it's true. You can't imagine how many days/nights I spent bangin' with the driver. :-D
-
-> but obviously I got a bum deal somewhere down the line.
-
-   HPT chips are surely not a good example of how to do things, more like an example how *not* to do. :-)
-
-> John
-
-MBR, Sergei
+This looks good, patch applied, thanks Aubrey.
