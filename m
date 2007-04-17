@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031057AbXDQCxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031060AbXDQCxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031057AbXDQCxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 22:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031058AbXDQCxu
+	id S1031060AbXDQCxx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 22:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031058AbXDQCxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 22:53:50 -0400
-Received: from ozlabs.org ([203.10.76.45]:56449 "EHLO ozlabs.org"
+	Mon, 16 Apr 2007 22:53:53 -0400
+Received: from mga01.intel.com ([192.55.52.88]:33849 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031057AbXDQCxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 22:53:50 -0400
-Subject: Re: [Patch -mm 3/3] RFC: Introduce kobject->owner for refcounting.
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>
-In-Reply-To: <Pine.LNX.4.44L0.0704161539110.2685-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0704161539110.2685-100000@iolanthe.rowland.org>
+	id S1031059AbXDQCxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 22:53:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,417,1170662400"; 
+   d="scan'208"; a="231448654:sNHT18278064"
+Subject: Re: CPU_IDLE prevents resuming from STR [was: Re: 2.6.21-rc6-mm1]
+From: Shaohua Li <shaohua.li@intel.com>
+To: Joshua Wise <joshua@joshuawise.com>
+Cc: Mattia Dongili <malattia@linux.it>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <Pine.LNX.4.63.0704162243070.3859@dashnine.joshuawise.com>
+References: <20070408143559.f5014629.akpm@linux-foundation.org>
+	 <20070413234513.GA2940@inferi.kami.home>
+	 <1176691227.6993.1.camel@sli10-conroe.sh.intel.com>
+	 <Pine.LNX.4.63.0704162243070.3859@dashnine.joshuawise.com>
 Content-Type: text/plain
-Date: Tue, 17 Apr 2007 12:53:10 +1000
-Message-Id: <1176778391.14322.273.camel@localhost.localdomain>
+Date: Tue, 17 Apr 2007 10:50:28 +0800
+Message-Id: <1176778228.7371.5.camel@sli10-conroe.sh.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 15:53 -0400, Alan Stern wrote:
-> The fundamental rule is that whenever you hand out a pointer to a routine
-> living in a module, the receiver has to increment the module's refcount.  
-> But the driver core violates this rule all over the place.
+On Mon, 2007-04-16 at 22:50 -0400, Joshua Wise wrote:
+> On Mon, 16 Apr 2007, Shaohua Li wrote:
+> > On Sat, 2007-04-14 at 01:45 +0200, Mattia Dongili wrote:
+> >> ...
+> > please check if the patch at
+> > http://marc.info/?l=linux-acpi&m=117523651630038&w=2 fixed the issue
+> 
+> I have the same system as Mattia, and when I applied this patch and turned
+> CPU_IDLE back on, I got a panic on boot. Unfortunately, the EIP scrolled off
+> screen, so I can't get a line number.
+> 
+> (I had the same STR breakage as him; STR did not work with CPU_IDLE turned
+> on, and it did work with CPU_IDLE turned off.)
+> 
+> I'm running +rc6+mm(April 11) on a Sony VAIO SZ.
+Is it possible you can get the log from a serial? I thought at least you
+can see some log info in the screen, if you haven't serial, please write
+it down. The boot panic surprise me, as it works here.
 
-Hi Alan,
-
-	Your rule is overly simplistic, unfortunately.  You have two choices:
-take a reference count, *or* ensure that the reference will go away when
-the module's cleanup routine is called.  Network drivers are a classic
-example of the latter.
-
-	Note that you cannot do both: if the cleanup routine calls something
-which drops a reference count, it implies that the cleanup routine needs
-to be called with non-zero reference count, and it won't be (ignoring
---force).
-
-I hope that clarifies?
-Rusty.
-
+Thanks,
+Shaohua
