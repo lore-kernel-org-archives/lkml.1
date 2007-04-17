@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030908AbXDQWDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031279AbXDQWDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030908AbXDQWDK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 18:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031272AbXDQWDJ
+	id S1031279AbXDQWDd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 18:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031282AbXDQWDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 18:03:09 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:3126 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030908AbXDQWDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 18:03:06 -0400
-Message-ID: <46254416.6090202@rtr.ca>
-Date: Tue, 17 Apr 2007 18:03:02 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 17 Apr 2007 18:03:33 -0400
+Received: from fb2.tech.numericable.fr ([82.216.111.50]:41199 "EHLO
+	fb2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031245AbXDQWDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 18:03:32 -0400
+X-Greylist: delayed 2005 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 18:03:32 EDT
+Message-ID: <46253CE0.6020209@free.fr>
+Date: Tue, 17 Apr 2007 23:32:16 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: emisca <emisca.ml@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <461D4E2C.6000704@redhat.com>	 <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>	 <461D54AF.3060706@redhat.com> <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com> <46253F14.4020304@rtr.ca> <462540CD.9080406@redhat.com>
-In-Reply-To: <462540CD.9080406@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, linux.kernel@free.fr
+Subject: Re: Disabling x86 System Management Mode
+References: <46235447.3080000@free.fr> <p73odlo55q2.fsf@bingen.suse.de> <4624FA85.9010704@free.fr> <20070417165759.GA10145@one.firstfloor.org>
+In-Reply-To: <20070417165759.GA10145@one.firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> Mark Lord wrote:
->> I'll patch it locally on my own machines, but what about the tens
->> of thousands of other Seagate notebook drive owners out there?
->>
-> 
-> This is a problem with Seagate specifically, spinning back up
-> on receipt of some command after spindown?
+Andi Kleen wrote:
 
-No, they just seem to be affected worse by it than some other brands.
-The bug is that libata/SCSI now spin-down the drive before the distro's
-scripts are done with it, so it spins down, and then gets spun up again
-by the distro, and then spun down again by the distro.
+> Modern x86 CPUs execute code out of order and in parallel.
 
-And along the way, one/both of the two causes a full mechanism "park",
-which is hard on things if abused (like this).
+I am aware of the (apparent) non-deterministic nature of
+superscalar out-of-order speculative execution.
 
-Or at least that's what I recall for it.  Tejun?
+> The reordering window can be quite large and the CPU can execute code
+> speculatively. This can add large errors to RDTSC when the 
+> instruction is not executed where you think it is. One way around 
+> this is to synchronize it -- using CPUID --
 
-2007/4/11, Chuck Ebbert <cebbert@redhat.com>:
-> Jan Engelhardt wrote:
-> > On Apr 11 2007 17:07, Chuck Ebbert wrote:
-> >> When I reboot my notebook, it powers off and powers back on.
-> >> On poweroff a loud snapping noise seems to be coming from the
-> >> hard drive. Today I noticed there is no "shutdown: hda" on
-> >> the console when I reboot. Whne I do a normal poweroff the
-> >> message is displayed and there is no noise. Should the IDE
-> >> code be changed so it always shuts down the drive? 
+Your terminology is surprising. CPUID is commonly referred to as a
+/serializing/ instruction.
+
+> but that also adds latency and makes the measurement less precise.
+
+Why would adding known latency make the measurement less precise?
+
+What I needed was a block of code with consistent latency, whatever
+the actual number.
+
+Regards.
