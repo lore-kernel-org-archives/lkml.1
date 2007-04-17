@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031227AbXDQRHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031230AbXDQRIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031227AbXDQRHn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 13:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031224AbXDQRHn
+	id S1031230AbXDQRIH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 13:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031231AbXDQRIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 13:07:43 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36651 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031221AbXDQRHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 13:07:42 -0400
-Date: Tue, 17 Apr 2007 21:07:07 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [CRYPTO] is it really optimized ?
-Message-ID: <20070417170707.GA24070@2ka.mipt.ru>
-References: <20070417130431.GA8685@2ka.mipt.ru> <E1HdnwX-0005U1-00@gondolin.me.apana.org.au> <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com> <20070417150859.GA9512@2ka.mipt.ru> <38b2ab8a0704170834i1856886nafeeec692f49fea0@mail.gmail.com> <20070417155725.GA18959@2ka.mipt.ru> <38b2ab8a0704170918u72792c0ei591fea98eac2681d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	Tue, 17 Apr 2007 13:08:06 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:56850 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031224AbXDQRHz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 13:07:55 -0400
+Date: Tue, 17 Apr 2007 12:07:37 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linuxram@us.ibm.com, devel@openvz.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, viro@ftp.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
+Message-ID: <20070417170737.GA14891@sergelap.austin.ibm.com>
+References: <20070412164541.580374744@szeredi.hu> <20070412164620.588752236@szeredi.hu> <20070412203208.GG27772@sergelap.austin.ibm.com> <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com> <1176713221.9488.17.camel@ram.us.ibm.com> <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu> <1176716941.9488.57.camel@ram.us.ibm.com> <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu> <1176743669.9488.62.camel@ram.us.ibm.com> <E1HdVLi-0007oe-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <38b2ab8a0704170918u72792c0ei591fea98eac2681d@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 17 Apr 2007 21:07:29 +0400 (MSD)
+In-Reply-To: <E1HdVLi-0007oe-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 06:18:42PM +0200, Francis Moreau (francis.moro@gmail.com) wrote:
-> >If there are no another users, your code already has exclusive access.
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > > > > Also for bind-mount and remount operations the flag has to be propagated
+> > > > > > down its propagation tree.  Otherwise a unpriviledged mount in a shared
+> > > > > > mount wont get reflected in its peers and slaves, leading to unidentical
+> > > > > > shared-subtrees.
+> > > > > 
+> > > > > That's an interesting question.  Do we want shared mounts to be
+> > > > > totally identical, including mnt_flags?  It doesn't look as if
+> > > > > do_remount() guarantees that currently.
+> > > > 
+> > > > Depends on the semantics of each of the flags. Some flags like of the
+> > > > read/write flag, would not interfere with the propagation semantics
+> > > > AFAICT.  But this one certainly seems to interfere.
+> > > 
+> > > That depends.  Current patches check the "unprivileged submounts
+> > > allowed under this mount" flag only on the requested mount and not on
+> > > the propagated mounts.  Do you see a problem with this?
+> > 
+> > Don't see a problem if the flag is propagated to all peers and slave
+> > mounts. 
+> > 
+> > If not, I see a problem. What if the propagated mount has its flag set
+> > to not do un-priviledged mounts, whereas the requested mount has it
+> > allowed?
 > 
-> sorry I don't understand that.
-
-Since there are no users except your module, you do have exclusive
-access already, i.e. you can stop key reloading and get your gain, but
-there is no possibility for crypto module to know that in advance
-(without hack like checking reference counter or storing private context
-pointer in some internals and check it for each new call for
-encrypt/decrypt).
-
-> >One can not know if there will be any additional users at all (consider
-> >the case when new encrypted block device or ipsec negotiation started
-> >some time after module was loaded).
-> >
+> Then the mount is allowed.
 > 
-> well I should say administrator should know.
+> It is up to the sysadmin/distro to design set up the propagations in a
+> way that this is not a problem.
+> 
+> I think it would be much less clear conceptually, if unprivileged
+> mounting would have to check propagations as well.
+> 
+> Miklos
 
-Yes, admin is a god. I would even say the god.
-So it can (if she/he wants to) setup any module with any name so that
-other users would never know it.
+I'm a bit lost about what is currently done and who advocates for what.
 
-> -- 
-> Francis
+It seems to me the MNT_ALLOWUSERMNT (or whatever :) flag should be
+propagated.  In the /share rbind+chroot example, I assume the admin
+would start by doing
 
--- 
-	Evgeniy Polyakov
+	mount --bind /share /share
+	mount --make-slave /share
+	mount --bind -o allow_user_mounts /share (or whatever)
+	mount --make-shared /share
+
+then on login, pam does
+
+	chroot /share/$USER
+
+or some sort of
+
+	mount --bind /share /home/$USER/root
+	chroot /home/$USER/root
+
+or whatever.  In any case, the user cannot make user mounts except under
+/share, and any cloned namespaces will still allow user mounts.
+
+Or are you guys talking about something else?
+
+-serge
