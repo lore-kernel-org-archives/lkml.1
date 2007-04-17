@@ -1,91 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbXDQO7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbXDQPDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbXDQO7e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 10:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbXDQO7e
+	id S932192AbXDQPDN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbXDQPDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 10:59:34 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:4241 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754338AbXDQO7d convert rfc822-to-8bit (ORCPT
+	Tue, 17 Apr 2007 11:03:12 -0400
+Received: from igw2.watson.ibm.com ([129.34.20.6]:33919 "EHLO
+	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932192AbXDQPDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 10:59:33 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 17 Apr 2007 14:59:29.0324 (UTC) FILETIME=[FFB2CEC0:01C78100]
-Content-class: urn:content-classes:message
-Subject: Re: ZFS with Linux: An Open Plea
-Date: Tue, 17 Apr 2007 10:59:27 -0400
-Message-ID: <Pine.LNX.4.61.0704171135490.16847@chaos.analogic.com>
-In-Reply-To: <20070417131045.GB18373@thunk.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: ZFS with Linux: An Open Plea
-Thread-Index: AceBAP+8uc8Xea7JSuWs5xqFDPwaXg==
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Theodore Tso" <tytso@mit.edu>
-Cc: "David R. Litwin" <presently42@gmail.com>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+	Tue, 17 Apr 2007 11:03:10 -0400
+Subject: Re: AppArmor FAQ
+From: David Safford <safford@watson.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <Line.LNX.4.64.0704161846110.13905@d.namei>
+References: <20070416213350.GB4030@suse.de>
+	 <Line.LNX.4.64.0704161846110.13905@d.namei>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 17 Apr 2007 11:03:50 -0400
+Message-Id: <1176822230.3366.65.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-04-16 at 20:20 -0400, James Morris wrote:
+> On Mon, 16 Apr 2007, John Johansen wrote:
+> 
+> > Label-based security (exemplified by SELinux, and its predecessors in
+> > MLS systems) attaches security policy to the data. As the data flows
+> > through the system, the label sticks to the data, and so security
+> > policy with respect to this data stays intact. This is a good approach
+> > for ensuring secrecy, the kind of problem that intelligence agencies have.
+> 
+> Labels are also a good approach for ensuring integrity, which is one of 
+> the most fundamental aspects of the security model implemented by SELinux.  
+> 
+> Some may infer otherwise from your document.
 
-On Tue, 17 Apr 2007, Theodore Tso wrote:
+In fact, I am not sure how you can provide integrity support without
+labels. AppArmor confines a process, but does not effectively confine 
+its output files, precisely because the output files are not labeled. 
+Other processes are free to access the unlabeled, potentially malicious 
+output files without restriction. 
 
-> On Tue, Apr 17, 2007 at 02:54:32AM -0400, David R. Litwin wrote:
->>> The license that protects the code we write is far from nonsense.
->>
->> I know. In the end, this is the reason this topic is being discussed.
->>
->> I suggest the first thing you do is contact the ZFS developers and
->> convince them to release their code under a license that's GPL
->> compatible, then we can start looking at a Linux port.
->>
->> I began by contacting them. One of the devs there told me to contact the
->> Linux devs.
->
-> Well, that was totally useless answer from the ZFS developers.  What
-> he should have told you is to contact Sun management, since they are
-> the only ones who can decide whether or not to release ZFS under a GPL
-> license, and more importantly, to give a patent license for any
-> patents they may have filed in the course of developing ZFS.  This is
-> not anything Linux developers can help you with.
->
-> 						- Ted
+> Imagine if you were re-inventing Unix and decided to implement pathname 
+> security for DAC instead of inode labeling.  What you would have is a more 
+> generalized version of apparmor, with the DAC attributes of pathnames for 
+> the entire filesystem stored in a text database with an in-kernel regex 
+> engine performing path reconstruction and pattern matching on every file 
+> access.  Sound like a good idea?  I hope not.
 
-Copyright law protects an implementation, not a specification. If
-there is a specification for a particular file-system, then certainly
-one can create a compatible one without violating any copyrights. Patents
-protect algorithms and other implementation details. Certainly, there
-are at least a hundred ways of performing the same function using
-a programming language, and if you never look at somebody else's'
-implementation details, you certainly should not be violating a patent.
+Actually, this is pretty much how z/OS/RACF works. Labels and pathnames
+for all files are stored in one database. There are advantages and 
+disadvantages to this design, but is does work, and does have an EAL4+ 
+certification on a Labeled Security Protection Profile.
 
-So, what needs to be done is simply find out the specifications of
-the file-system. From the specifications, one writes compatible code.
-To protect "IP," you might have to give it a different name than "ZFS,"
-but you certain should be able to write code that handles ZFS format
-files. The patent (pending) seems to work around the little/big endian
-issue. So, there is probably something in a header somewhere that resolves
-this --big deal, machines that are incompatible will have to suffer
-byte-swapping overhead. There are also 64-bit checksums for some reason.
-I guess they have bad hardware and needed a work-around. The 128-bit
-file-size follows the, "if a little is good, more must be better..."
-logic that became prevalent in industry once sales persons and accountants
-took over engineering.
+> And you can still use pathnames under SELinux to locate an object to 
+> label, just as you do with DAC.  You just don't put a security label on 
+> the path itself.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.16.24 on an i686 machine (5592.59 BogoMips).
-New book: http://www.AbominableFirebug.com/
-_
-
+SELinux _has_ to use pathnames to fix some ugly cases where new files
+are created with the wrong label. It uses restorecond to fix the labels
+for files such as resolv.conf, mtab, utab, and wtab, when they are 
+created. The restorecond policy file is textual, and separate from the 
+SELinux labels, which is somewhat inelegant.
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+RACF provides both labels and canonical paths for all files in one
+location. There is no false dichotomy between path based and label 
+based security. I don't know how to do this in Linux, with namespaces, 
+mounts, and symlinks, but the concept is an interesting counterpoint 
+in the discussion.
 
-Thank you.
+dave
+
