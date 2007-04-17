@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751187AbXDQGKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751240AbXDQGPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751187AbXDQGKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 02:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbXDQGKy
+	id S1751240AbXDQGPA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 02:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXDQGPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 02:10:54 -0400
-Received: from mx1.suse.de ([195.135.220.2]:38931 "EHLO mx1.suse.de"
+	Tue, 17 Apr 2007 02:15:00 -0400
+Received: from holomorphy.com ([66.93.40.71]:46752 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751187AbXDQGKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 02:10:53 -0400
-Date: Tue, 17 Apr 2007 08:10:24 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Peter Williams <pwil3058@bigpond.net.au>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org,
+	id S1751240AbXDQGPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 02:15:00 -0400
+Date: Mon, 16 Apr 2007 23:14:24 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Nick Piggin <npiggin@suse.de>,
+       "Michael K. Edwards" <medwards.linux@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417061024.GB1057@wotan.suse.de>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417055355.GQ943@1wt.eu>
-Mime-Version: 1.0
+Message-ID: <20070417061424.GK2986@holomorphy.com>
+References: <4622CC30.6030707@bigpond.net.au> <20070416030405.GI8915@holomorphy.com> <4623050B.8020602@bigpond.net.au> <20070416110439.GH2986@holomorphy.com> <46237239.1070903@bigpond.net.au> <f2b55d220704161610l71c72bc6k364bd9396cd59300@mail.gmail.com> <20070417035528.GE25513@wotan.suse.de> <46244C43.8000607@bigpond.net.au> <20070417043456.GH25513@wotan.suse.de> <4624633D.4080005@bigpond.net.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070417055355.GQ943@1wt.eu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <4624633D.4080005@bigpond.net.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 07:53:55AM +0200, Willy Tarreau wrote:
-> Hi Nick,
-> 
-> On Tue, Apr 17, 2007 at 06:29:54AM +0200, Nick Piggin wrote:
-> (...)
-> > And my scheduler for example cuts down the amount of policy code and
-> > code size significantly. I haven't looked at Con's ones for a while,
-> > but I believe they are also much more straightforward than mainline...
-> > 
-> > For example, let's say all else is equal between them, then why would
-> > we go with the O(logN) implementation rather than the O(1)?
-> 
-> Of course, if this is the case, the question will be raised. But as a
-> general rule, I don't see much potential in O(1) to finely tune scheduling
-> according to several criteria.
+On Tue, Apr 17, 2007 at 04:03:41PM +1000, Peter Williams wrote:
+> There's a lot of ugly code in the load balancer that is only there to 
+> overcome the side effects of SMT and dual core.  A lot of it was put 
+> there by Intel employees trying to make load balancing more friendly to 
+> their systems.  What I'm suggesting is that an N CPUs per runqueue is a 
+> better way of achieving that end.  I may (of course) be wrong but I 
+> think that the idea deserves more consideration than you're willing to 
+> give it.
 
-What do you mean? By what criteria?
+This may be a good one to ask Ingo about, as he did significant
+performance work on per-core runqueues for SMT. While I did write
+per-node runqueue code for NUMA at some point in the past, I did no
+tuning or other performance work on it, only functionality.
 
-> In O(logN), you can adjust scheduling in
-> realtime at a very low cost. Better processing of varying priorities or
-> fork() comes to mind.
+I've actually dealt with kernels using elder versions of Ingo's code
+for per-core runqueues on SMT, but was never called upon to examine
+that particular code for either performance or stability, so I'm
+largely ignorant of what the perceived outcome of it was.
 
-The main problem as I see it is choosing which task to run next and
-how much time to run it for. And given that there are typically far less
-than 58 (the number of priorities in nicksched) runnable tasks for a
-desktop system, I don't find it at all constraining to quantize my "next
-runnable" criteria onto that size of key.
 
-Even if you do expect a huge number of runnable tasks, you would hope
-for fewer interactive ones toward the higher end of the priority scale.
-
-Handwaving or even detailed design descriptions is simply not the best
-way to decide on a new scheduler, is all I'm saying.
-
+-- wli
