@@ -1,82 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751743AbXDQGya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbXDQG7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751743AbXDQGya (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 02:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXDQGya
+	id S1751732AbXDQG7o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 02:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXDQG7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 02:54:30 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:21225 "EHLO
+	Tue, 17 Apr 2007 02:59:44 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:24990 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751743AbXDQGy3 (ORCPT
+	with ESMTP id S1751698AbXDQG7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 02:54:29 -0400
+	Tue, 17 Apr 2007 02:59:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:to:subject:from:content-type:mime-version:content-transfer-encoding:date:message-id:user-agent;
-        b=VBxHWELxqayDalrLmWnzTWx45TtW7EkcKQs1Vompu/2gL2Osv1dinEKvHrojglh6jH+vtauOeQB4qbb7YWkMESp8MsuAF4jHsXjKzt1rTi3bsQWPw5r+K8RrUAkriSvArgOlDp6uKfG/yZ+Sy7ByHU1nqqs9iZR1LIdr/OEsPCw=
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hDrAkpOaIrbcphhkefMYLXO9Zy3OIX0r/sZ5FJaKoEr+NujKfKsGfdzu9Six/0KRx87mSowICvFdPDVfTISW8OyYbPwhTIbotK8TtITniC1/Q/EYgTpL/jMOfgOSipErOYOR1yxS6U0BU+lWUrwEF8hNgup4q0yFgaqQl3DtMnI=
+Message-ID: <ff1613620704162359w62df9e0ao6c43215a767bd706@mail.gmail.com>
+Date: Tue, 17 Apr 2007 12:29:42 +0530
+From: "Madhusudhan c" <cr.madhusudhan@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-From: "David R. Litwin" <presently42@gmail.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+Subject: MMCv4 support (8-bit support missing)
+Cc: philipl@overt.org
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Date: Tue, 17 Apr 2007 02:54:32 -0400
-Message-ID: <op.tqw1g6n0ftfxs2@localhost.localdomain>
-User-Agent: Opera Mail/9.20 (Linux)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15/04/07,  Jesper Juhl <jesper.juhl@gmail.com> wrote:
-On 14/04/07, David R. Litwin <presently42@gmail.com> wrote:
-> Before I go on, let me appologise. I don't really know what I hope to
-> accomplish, beyond trying to garner thoughts (and support?) for the  
-> topic.
->
-> Essentially: I want to use Linux and ZFS. I don't particularly care about
-> licences or any of the rest of that nonsense.
+Hi Pierre/philip,
 
-The license that protects the code we write is far from nonsense.
+This is regarding the MMCv4 support that came in as part of the MMC
+core of 2.6.20 linux kernel version.
 
-I know. In the end, this is the reason this topic is being discussed.
+The high speed MMC cards can support 4-bit/8-bit transfers. The 8-bit
+support seems to be missing from the MMCv4 support implemented by
+Philip Langdale .
+To support 8-bit transfers the core needs to implement "bus testing
+procedure". This requires support for CMD19 and CMD14.
 
-I suggest the first thing you do is contact the ZFS developers and
-convince them to release their code under a license that's GPL
-compatible, then we can start looking at a Linux port.
+Why is the support for bus testing procedure msiing from the MMCv4 support?
 
-I began by contacting them. One of the devs there told me to contact the  
-Linux devs.
-
-> FUSE is nice for trying out new and interresting ideas in userspace -
-> it has its uses.
-
-Yes, but it is not really for the end-user. To paraphrase another, it is  
-mostly academic.
-
-> What are the thoughts of the Linux community?
->
-> Can't tell you that, all I can tell you is my own oppinion.
-
-You make up a member of the Linux community.
-
-> I believe
-> ZFS for Linux would be interresting, if not for any other reason then
-> for compatibility.
-
-For the greater glory of Linux? :-)
-
-> I'd personally like to see it - but, settle the
-> license issue first.
-
-And we've come full circle: The liconsinc issue.
-
---
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
-
-
-
---
-—A watched bread-crumb never boils.
-—My hover-craft is full of eels.
-—[...]and that's the he and the she of it.
+Regards,
+Madhu
