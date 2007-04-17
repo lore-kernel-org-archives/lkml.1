@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031070AbXDQFJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031093AbXDQFLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031070AbXDQFJQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 01:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031094AbXDQFJP
+	id S1031093AbXDQFLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 01:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031095AbXDQFLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 01:09:15 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:5416 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031070AbXDQFJP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 01:09:15 -0400
-Date: Mon, 16 Apr 2007 23:08:53 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Memory Allocation
-In-reply-to: <fa.BkbRyK9fXhgijRwEDN4ejyJhMRQ@ifi.uio.no>
-To: "Brian D. McGrew" <brian@visionpro.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <46245665.2050402@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.BkbRyK9fXhgijRwEDN4ejyJhMRQ@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 17 Apr 2007 01:11:17 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47124 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031093AbXDQFLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 01:11:17 -0400
+From: Neil Brown <neilb@suse.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Date: Tue, 17 Apr 2007 15:10:51 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17956.22235.574867.179016@notabene.brown>
+Cc: Brad Campbell <brad@wasp.net.au>, Jens Axboe <jens.axboe@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+In-Reply-To: message from Chuck Ebbert on Monday April 16
+References: <4621FAF0.7000705@wasp.net.au>
+	<46220339.9080205@wasp.net.au>
+	<4623FB29.1000603@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian D. McGrew wrote:
-> Good evening gents!
+On Monday April 16, cebbert@redhat.com wrote:
 > 
-> I need some help in allocating memory and understanding how the system
-> allocates memory with physical versus virtual page tables.  Please
-> consider the following snippet of code.  Please, no wisecracks about bad
-> code; it was written in 30 seconds in haste :-)
+> cfq_dispatch_insert() was called with rq == 0. This one is getting really
+> annoying... and md is involved again (RAID0 this time.)
 
-(snip)
+Yeah... weird.
+RAID0 is so light-weight and so different from RAID1 or RAID5 that I
+feel fairly safe concluding that the problem isn't in or near md.
+But that doesn't help you.
 
-> My test machine is a Dell Precision 490 with dual 5140 processors and
-> 3GB of RAM.  If I reduced kMaxSize to (2048 * 2048 * 236) is works.
-> However, I need to allocate an array of char that is (2048 * 2048 * 256)
-> and maybe even as large at (2048 * 2048 * 512).
-> 
-> Obviously I have enough physical memory in the box to do this.  However,
-> I suspect that I'm running out of page table entries.  Please, correct
-> me if I'm wrong; but if I allocate (2048 * 2048 * 236) it work.  When I
+This really feels like a locking problem.
 
-Pretty sure you're wrong.
+The problem occurs when ->next_rq is NULL, but ->sort_list.rb_node is
+not NULL.  That happens plenty of times in the code (particularly as
+the first request is inserted) but always under ->queue_lock so it
+should never be visible to cfq_dispatch_insert..
 
-> increment to 256 or 512 it fails and it is my suspicion that I just
-> don't have enough more in kernel memory to allocate this much memory in
-> user space.  
+Except that drivers/scsi/ide-scsi.c:idescsi_eh_reset calls
+elv_next_request which could ultimately call __cfq_dispatch_requests
+without taking ->queue_lock (that I can see).  But you probably aren't
+using ide-scsi (does anyone?).
 
-Are you using a 32-bit kernel? If so, most likely you're hitting a limit 
-of the address space layout - there's just not enough room in the 
-address space for an allocation of this size.
+Given that interrupts are always disabled when queue_lock is taken, it
+might be useful to add
+   WARN_ON(!irqs_disabled());
+every time ->next_rq is set.
+Something like the following.
 
-> 
-> Because of a piece of 3rd party hardware, I'm forced to run the kernel
-> in the 4GB memory model.  What I need to be able to do is allocate an
-> array of char (2048 * 2048 * (up to 512)) in user space *** AND *** I
-> need the addresses that I get back to be contiguous, that's just the way
-> my 3rd party hardware works.
-> 
-> I'm inclined to believe that this in not specifically a Linux problem
-> but maybe an architecture problem???  But maybe there is some kind of
-> work around in the kernel for it???  I'd find it hard to believe that
-> I'm the first one that ever needed to use this much memory.
-> 
-> I ran this same code on two difference Macs.  One of them a Powerbook G4
-> with 4GB of RAM and it was successful.  The other was a Macbook Pro with
-> 4GB of RAM and it failed.  Both running OS 10.4.9.  And of course it
-> runs just lovely on my Sun workstation with Solaris.  Thus, I'm thinking
-> it's an Intel/X86 issue!
-> 
-> How the heck to I get past this problem in Linux on the X86 plateform???
+It might show something useful.... if we are lucky.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+NeilBrown
+
+
+diff .prev/block/cfq-iosched.c ./block/cfq-iosched.c
+--- .prev/block/cfq-iosched.c	2007-04-17 15:01:36.000000000 +1000
++++ ./block/cfq-iosched.c	2007-04-17 15:02:25.000000000 +1000
+@@ -628,6 +628,7 @@ static void cfq_remove_request(struct re
+ {
+ 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
+ 
++	BUG_ON(!irqs_disabled());
+ 	if (cfqq->next_rq == rq)
+ 		cfqq->next_rq = cfq_find_next_rq(cfqq->cfqd, cfqq, rq);
+ 
+@@ -1810,6 +1811,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, s
+ 	/*
+ 	 * check if this request is a better next-serve candidate)) {
+ 	 */
++	BUG_ON(!irqs_disabled());
+ 	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
+ 	BUG_ON(!cfqq->next_rq);
+ 
 
