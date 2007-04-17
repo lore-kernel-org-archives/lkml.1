@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbXDQNx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbXDQN5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368AbXDQNx3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 09:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbXDQNx3
+	id S1754361AbXDQN5I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 09:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbXDQN5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 09:53:29 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51426 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754361AbXDQNx2 convert rfc822-to-8bit (ORCPT
+	Tue, 17 Apr 2007 09:57:08 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:43058 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754373AbXDQN5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 09:53:28 -0400
-Date: Tue, 17 Apr 2007 14:56:18 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Drift@tihlde" <drift@tihlde.org>
-Cc: espen@oxygen.tihlde.org, linux-kernel@vger.kernel.org
-Subject: Re: Machine Check Exception on Opteron 265
-Message-ID: <20070417145618.624430d9@the-village.bc.nu>
-In-Reply-To: <4620EC23.4010404@mrfjo.org>
-References: <4620EC23.4010404@mrfjo.org>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Apr 2007 09:57:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=srCZw3fMs7H9+u8XK8/Fh+slTRWbbZfpusqY4imEFNR202165cZpRKSZvQl8akjQdl/LhgCru7yqL//HqkCCzLGp0v1ZpPV0+r1mdyXOwxSwpMv9H+O+/fbwm++Gm4Jre5mVic5IzgSU1SaNk06z7BJ8acwl87ahjfgEfm3o18U=
+Message-ID: <38b2ab8a0704170657x2ec8177dvea08e39d638007f3@mail.gmail.com>
+Date: Tue, 17 Apr 2007 15:57:05 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+Subject: Re: [CRYPTO] is it really optimized ?
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <20070417130431.GA8685@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0704140615y2ba8145bmd3c2316a41d99265@mail.gmail.com>
+	 <E1Hco0p-0007np-00@gondolin.me.apana.org.au>
+	 <38b2ab8a0704141410q65f55381w26527aeb10fb4988@mail.gmail.com>
+	 <20070415075201.GA1644@gondor.apana.org.au>
+	 <38b2ab8a0704160137g1ef0713fl943c51ed9049212b@mail.gmail.com>
+	 <20070417004117.GA16513@gondor.apana.org.au>
+	 <38b2ab8a0704170536x15920b15xedfd518cad50cee@mail.gmail.com>
+	 <20070417130431.GA8685@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Apr 2007 16:58:43 +0200
-Espen Fjellvær Olsen <espen@oxygen.tihlde.org> wrote:
+On 4/17/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> > OK, I tried to cook up something very simple. Since I don't know this
+> > code, please be indulgent when reading the following patch ;)
+>
+> Which means that after one has loaded ecryptfs module it can not use
+> ipsec and dm-crypt if there is only one crypto algo registered...
+>
 
-> Hi!
-> Today our Opteron 265, 2x2, paniced after many months uptime, giving
-> only this error message:
-> 
-> HARDWARE ERROR
-> CPU 2: Machine Check Exception:            4 Bank 4: b60a200100000813
-> TSC 6bb9fd0142921a ADDR a891e9b8
-> This is not a software problem!
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^]
+That's actually the goal, but I agree we would need a flag to pass
+when loading AES module to say "I want an exclusive usage of it and
+therefore it can be run faster".
 
-This is there for a good reason.
+If you have several users of AES module, you can choose (a) use the
+no-optimized version for all users or (b) choose which user needs to
+be run quickly and make it exclusively use the AES hw module; the
+others users would use the generic AES (the slower one).
 
-> We updated glibc yesterday, but that shouldnt really cause such a problem.
-> So now we wonder if this might be an MCE bug, or really a HW problem,
-> and if it is one of the CPUs, or the RAM thats faulty.
-
-Consult your hardware vendor but if its a single event in a year it might
-be anything - even cosmic rays.
-
-Alan
+-- 
+Francis
