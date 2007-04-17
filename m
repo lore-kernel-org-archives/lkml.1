@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbXDQIUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXDQIXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752674AbXDQIUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 04:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbXDQIUw
+	id S1752712AbXDQIXb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 04:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbXDQIXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 04:20:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33035 "EHLO mx3.mail.elte.hu"
+	Tue, 17 Apr 2007 04:23:31 -0400
+Received: from holomorphy.com ([66.93.40.71]:48488 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbXDQIUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 04:20:51 -0400
-Date: Tue, 17 Apr 2007 10:20:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Gene Heskett <gene.heskett@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S1752712AbXDQIXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 04:23:30 -0400
+Date: Tue, 17 Apr 2007 01:23:23 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Peter Williams <pwil3058@bigpond.net.au>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
+       linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-Message-ID: <20070417082036.GC5076@elte.hu>
-References: <20070416220715.GA4071@elte.hu> <200704170053.58611.gene.heskett@gmail.com> <20070417061849.GA12385@elte.hu> <Pine.LNX.4.64.0704170053410.30516@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070417082323.GS8915@holomorphy.com>
+References: <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704170053410.30516@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070417070155.GF1057@wotan.suse.de>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 16, 2007 at 11:26:21PM -0700, William Lee Irwin III wrote:
+>> Any chance you'd be willing to put down a few thoughts on what sorts
+>> of standards you'd like to set for both correctness (i.e. the bare
+>> minimum a scheduler implementation must do to be considered valid
+>> beyond not oopsing) and performance metrics (i.e. things that produce
+>> numbers for each scheduler you can compare to say "this scheduler is
+>> better than this other scheduler at this.").
 
-* Davide Libenzi <davidel@xmailserver.org> wrote:
+On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
+> Yeah I guess that's the hard part :)
+> For correctness, I guess fairness is an easy one. I think that unfairness
+> is basically a bug and that it would be very unfortunate to merge something
+> unfair. But this is just within the context of a single runqueue... for
+> better or worse, we allow some unfairness in multiprocessors for performance
+> reasons of course.
 
-> > ok - fortunately the delta between -v2-rc0 and -v2-final is pretty 
-> > small. One difference is the child-runs-first fix. To restore the 
-> > parent-runs-first logic, do this:
-> > 
-> > 	echo 0 > /proc/sys/kernel/sched_child_runs_first
-> 
-> Sorry, I did not follow the latest developments, but how many tunables 
-> we have so far in CFS? Are those for debug only or they're supposed to 
-> stay?
+Requiring that identical tasks be allocated equal shares of CPU
+bandwidth is the easy part here. ringtest.c exercises another aspect
+of fairness that is extremely important. Generalizing ringtest.c is
+a good idea for fairness testing.
 
-yeah, debug only. I strongly suspect the Kaffeine breakage for example 
-was related to child-runs-first, so userspace developers might be 
-interested in a switch to turn this on/off.
+But another aspect of fairness is that "controlled unfairness" is also
+intended to exist, in no small part by virtue of nice levels, but also
+in the form of favoring tasks that are considered interactive somehow.
+Testing various forms of controlled unfairness to ensure that they are
+indeed controlled and otherwise have the semantics intended is IMHO the
+more difficult aspect of fairness testing.
 
-while reviewing the upstream scheduler it occured to me that we are 
-probably _not_ doing child-runs-first there due to the list_add_tail() 
-[it should be a list_add() for it to be child-first. But i havent 
-instrumented this heavily and this portion of the mainline scheduler is 
-pretty fragile.]. So via this flag we could also see the performance 
-impact, besides the compatibility impact.
 
-> Weren't those listed inside the Axis of Evil (just to remain in topic
-> :) till yesterday?
+On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
+> Latency. Given N tasks in the system, an arbitrary task should get
+> onto the CPU in a bounded amount of time (excluding events like freak
+> IRQ holdoffs and such, obviously -- ie. just considering the context
+> of the scheduler's state machine).
 
-heh ;)
+ISTR Davide Libenzi having a scheduling latency test a number of years
+ago. Resurrecting that and tuning it to the needs of this kind of
+testing sounds relevant here. The test suite Peter Willliams mentioned
+would also help.
 
-	Ingo
+
+On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
+> I wouldn't like to see a significant drop in any micro or macro
+> benchmarks or even worse real workloads, but I could accept some if it
+> means haaving a fair scheduler by default.
+
+On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
+> Now it isn't actually too hard to achieve the above, I think. The hard bit
+> is trying to compare interactivity. Ideally, we'd be able to get scripted
+> dumps of login sessions, and measure scheduling latencies of key proceses
+> (sh/X/wm/xmms/firefox/etc).  People would send a dump if they were having
+> problems with any scheduler, and we could compare all of them against it.
+> Wishful thinking!
+
+That's a pretty good idea. I'll queue up writing something of that form
+as well.
+
+
+-- wli
