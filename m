@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751784AbXDQHC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbXDQHEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751784AbXDQHC0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 03:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXDQHC0
+	id S1751769AbXDQHEd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 03:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXDQHEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 03:02:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35948 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751784AbXDQHCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 03:02:25 -0400
-Date: Tue, 17 Apr 2007 09:01:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-Message-ID: <20070417070132.GA27261@elte.hu>
-References: <20070416220715.GA4071@elte.hu> <200704170053.58611.gene.heskett@gmail.com> <20070417061849.GA12385@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 17 Apr 2007 03:04:32 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:21030 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbXDQHEc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 03:04:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bTkx1rAVCMqdUAxde4lEHHbxavxj7Es9ranz9athcp+xAGhCJODVqP+3KnrlSEtYhtinEfJ4wOUgm3/AEOBsyIYvvfPzyFqRyWDqb0Ch/pKmo53YeEDpUkHMb8YZvnxqHPhBrsBLmbkXNF61NfAGWGH6QI4jwdcf689ZgyrLeUA=
+Message-ID: <38b2ab8a0704170004h12c4ea41we6bdab3a1b443a18@mail.gmail.com>
+Date: Tue, 17 Apr 2007 09:04:30 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: question on generic gpio interface
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200704160646.59407.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070417061849.GA12385@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <38b2ab8a0704131351la5085vf0ab58e85cf49879@mail.gmail.com>
+	 <200704131543.32976.david-b@pacbell.net>
+	 <38b2ab8a0704160303l7c550c2dq3b700b2e93d01a7@mail.gmail.com>
+	 <200704160646.59407.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 4/16/07, David Brownell <david-b@pacbell.net> wrote:
+> No, all of those need to be done.  (Plus maybe a few more things,
+> I wasn't trying to be exhaustive.)  That last point is what makes
+> the other ones take effect ... without it, the top level IRQ will
+> never get dispatched to the GPIO-specific IRQ.
+>
+> Look at the examples I referenced.
+>
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+I took a deeper look at the examples you mentioned and I understand
+what you mean now...
 
-> ok - fortunately the delta between -v2-rc0 and -v2-final is pretty 
-> small. One difference is the child-runs-first fix. To restore the 
-> parent-runs-first logic, do this:
-> 
-> 	echo 0 > /proc/sys/kernel/sched_child_runs_first
-> 
-> does this make any difference?
+I'm going to implement this since it all makes sense to me now. I'll
+give you any feedbacks and try to post questions related to gpio only
+if any.
 
-ok, i've got something better to test: i separated the delta out into a 
-more finegrained stack of 3 patches. You can pick them up from:
+BTW, are there any plan to make gpio usable from userspace ? I don't
+know if it makes sense but I saw some patches on LKML that did that.
 
- http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0.patch
- http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0-preempt-fix.patch
- http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0-child-runs-first.patch
- http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0-misc.patch
-
-i test-built and test-booted all 4 steps of this. The baseline -v2-rc0 
-patch should be the one that works - you might want to double-check it, 
-just to be sure. One of the other 3 patches ontop of this baseline 
-causes the regression on your desktop. My current bet is on preempt-fix, 
-so i have put that one first. The other one would be the second patch, 
-child-runs-first. The misc patch should have no effect on behavior - but 
-i've included it for completeness. (and i was wrong about the 'nice 
-fix', it is not in this delta)
-
-	Ingo
+Thanks again.
+-- 
+Francis
