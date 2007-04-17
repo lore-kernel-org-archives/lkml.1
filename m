@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXDQOAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbXDQOBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbXDQOAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 10:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbXDQOAV
+	id S1754401AbXDQOBz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 10:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbXDQOBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 10:00:21 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:42713 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754396AbXDQOAT (ORCPT
+	Tue, 17 Apr 2007 10:01:54 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:39978 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754400AbXDQOBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 10:00:19 -0400
-Date: Tue, 17 Apr 2007 14:59:58 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
-       linux-kernel@vger.kernel.org
-Message-ID: <20070417135958.GB28201@srcf.ucam.org>
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org> <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+	Tue, 17 Apr 2007 10:01:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nr+m3QCyvw286klyaOLk78fIg65wwzZ/Jj7SZZNQckoQei/oY19un00C6K7TMbXN0Sy3918tnmsoMphO9bvytTfiTD/K+e69ByUDLMERnca9308mlsjPEQo8NxP3Aro5D/Cmn4UDB2tN/96iyKkOkJxyT9BmWa64z7BZIetEFXg=
+Message-ID: <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com>
+Date: Tue, 17 Apr 2007 16:01:51 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Subject: Re: [CRYPTO] is it really optimized ?
+Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <E1HdnwX-0005U1-00@gondolin.me.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: ZFS with Linux: An Open Plea
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+References: <20070417130431.GA8685@2ka.mipt.ru>
+	 <E1HdnwX-0005U1-00@gondolin.me.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 03:47:32PM +0200, Tomasz Kłoczko wrote:
-> Realy can't or don't want (?)
-> So who is responsible for potential changing Linux code licensing for 
-> allow if not incorporate CDDL code correct interraction without breaking 
-> some law ?
+On 4/17/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+>
+> Yep.  We don't need such a flag anyway.  All we need is a way to tweak
+> the priority and Bob's your uncle.
+>
 
-Everyone who holds any copyright over any of the code in Linux, which is 
-several thousand people. You'd probably need permission from all of 
-them. Good luck!
+Could you elaborate please, I don't see how you prevent others users
+to use this module with priority.
 
+Priority is a stuff that tells you which aes implementation to use but
+it does not prevent an implementation to be used several times...
+
+Thanks
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Francis
