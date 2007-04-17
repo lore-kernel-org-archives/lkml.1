@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161401AbXDQWdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161398AbXDQWiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161401AbXDQWdV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 18:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161403AbXDQWdV
+	id S1161398AbXDQWiw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 18:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161403AbXDQWiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 18:33:21 -0400
-Received: from holomorphy.com ([66.93.40.71]:50305 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161401AbXDQWdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 18:33:20 -0400
-Date: Tue, 17 Apr 2007 15:32:56 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Davide Libenzi <davidel@xmailserver.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417223256.GP2986@holomorphy.com>
-References: <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com> <20070417073308.GB30559@elte.hu> <20070417090538.GU8915@holomorphy.com> <20070417092422.GA19414@elte.hu> <20070417220809.GF11166@waste.org>
+	Tue, 17 Apr 2007 18:38:52 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:13458 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161398AbXDQWiv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 18:38:51 -0400
+X-IronPort-AV: i="4.14,420,1170662400"; 
+   d="scan'208"; a="412503715:sNHT45798780"
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Tomasz =?iso-8859-1?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
+       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+X-Message-Flag: Warning: May contain useful information
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain>
+	<200704171229.21433.dhazelton@enter.net>
+	<Pine.BSO.4.63.0704172045560.11088@rudy.mif.pg.gda.pl>
+	<200704171819.28407.dhazelton@enter.net>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Apr 2007 15:38:45 -0700
+In-Reply-To: <200704171819.28407.dhazelton@enter.net> (Daniel Hazelton's message of "Tue, 17 Apr 2007 18:19:28 -0400")
+Message-ID: <ada647u1v9m.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070417220809.GF11166@waste.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 17 Apr 2007 22:38:45.0657 (UTC) FILETIME=[288D8890:01C78141]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 11:24:22AM +0200, Ingo Molnar wrote:
->> yeah. If you could come up with a sane definition that also translates 
->> into low overhead on the algorithm side that would be great!
+ > After the discussions that took place back around the time of the release of 
+ > the first draft of GPLv3 it was decided to lock Linux to *ONLY* GPLv2
 
-On Tue, Apr 17, 2007 at 05:08:09PM -0500, Matt Mackall wrote:
-> How's this:
-> If you're running two identical CPU hog tasks A and B differing only by nice
-> level (Anice, Bnice), the ratio cputime(A)/cputime(B) should be a
-> constant f(Anice - Bnice).
-> Other definitions make things hard to analyze and probably not
-> well-bounded when confronted with > 2 tasks.
-> I -think- this implies keeping a separate scaled CPU usage counter,
-> where the scaling factor is a trivial exponential function of nice
-> level where f(0) == 1. Then you schedule based on this scaled usage
-> counter rather than unscaled.
-> I also suspect we want to keep the exponential base small so that the
-> maximal difference is 10x-100x.
+This is not accurate.  As far back as I can easily check, the kernel's
+COPYING file has said:
 
-I'm already working with this as my assumed nice semantics (actually
-something with a specific exponential base, suggested in other emails)
-until others start saying they want something different and agree.
+ Also note that the only valid version of the GPL as far as the kernel
+ is concerned is _this_ particular version of the license (ie v2, not
+ v2.2 or v3.x or whatever), unless explicitly otherwise stated.
 
+To be really precise, there was a trivial rewording of this sometime
+around Feb 2002 to make it clearer, but the point is that the kernel
+has been GPL v2 only long before the GPL v3 process started.
 
--- wli
+ - R.
