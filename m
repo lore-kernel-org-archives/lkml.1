@@ -1,114 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbXDQJI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbXDQJJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752994AbXDQJI5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 05:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXDQJI5
+	id S1753043AbXDQJJP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 05:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXDQJJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 05:08:57 -0400
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:43489 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752994AbXDQJIx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 05:08:53 -0400
-From: Nagendra Singh Tomar <nagendra_tomar@adaptec.com>
-Organization: Adaptec
-To: linux-kernel@vger.kernel.org
-Subject: BUG in sysfs_remove_group
-Date: Tue, 17 Apr 2007 14:29:53 +0530
-User-Agent: KMail/1.9.4
+	Tue, 17 Apr 2007 05:09:15 -0400
+Received: from holomorphy.com ([66.93.40.71]:34147 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753024AbXDQJJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 05:09:12 -0400
+Date: Tue, 17 Apr 2007 02:05:38 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Davide Libenzi <davidel@xmailserver.org>, Nick Piggin <npiggin@suse.de>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070417090538.GU8915@holomorphy.com>
+References: <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com> <20070417073308.GB30559@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704171429.53115.nagendra_tomar@adaptec.com>
-X-OriginalArrivalTime: 17 Apr 2007 09:08:44.0717 (UTC) FILETIME=[00229DD0:01C780D0]
+In-Reply-To: <20070417073308.GB30559@elte.hu>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The return value of lookup_one_len() is used without testing for error return. 
-This results in the following oops when SELinux is enabled and enforced.  The 
-reason for the Oops is as follows.
-	The shell's (bash) SELinux domain is not allowed "search" permission in sysfs 
-filesystem (type sysfs_t in the default SELinux policy), due to which the 
-lookup_one_len->__lookup_hash->permission->security_inode_permission 
-returns -EACCESS. This -ve number is passed as the 'dir' argument to 
-remove_files()  and then to sysfs_hash_and_remove() which accesses this bogus 
-pointer resulting in the crash.
-	A simple fix will be to check for IS_ERR(dir) in sysfs_remove_group() and 
-return (without doing anything) if true, but this will result in the 
-corresponding sysfs dirent entries to be leaked. IMHO the proper fix will be 
-to not check for "search" permissions in such cases where the internal kernel 
-code is trying to free up sysfs entries like the current case.
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+>> The additive nice_offset breaks nice levels. A multiplicative priority 
+>> weighting of a different, nonnegative metric of cpu utilization from 
+>> what's now used is required for nice levels to work. I've been trying 
+>> to point this out politely by strongly suggesting testing whether nice 
+>> levels work.
 
-Comments ?
+On Tue, Apr 17, 2007 at 09:33:08AM +0200, Ingo Molnar wrote:
+> granted, CFS's nice code is still incomplete, but you err quite 
+> significantly with this extreme statement that they are "broken".
+
+I used the word relatively loosely. Nothing extreme is going on.
+Maybe the phrasing exaggerated the force of the opinion. I'm sorry
+about having misspoke so.
 
 
-- Tomar
+On Tue, Apr 17, 2007 at 09:33:08AM +0200, Ingo Molnar wrote:
+> nice levels certainly work to a fair degree even in the current code and 
+> much of the focus is elsewhere - just try it. (In fact i claim that 
+> CFS's nice levels often work _better_ than the mainline scheduler's nice 
+> level support, for the testcases that matter to users.)
+
+Al Boldi's testcase appears to reveal some issues. I'm plotting a
+testcase of my own if I can ever get past responding to email.
 
 
- 
- BUG: unable to handle kernel paging request at virtual address fffffffb
-  printing eip:
- c01aa182
- *pde = 00002067
- *pte = 00000000
- Oops: 0000 [#1]
- PREEMPT 
- Modules linked in: nls_iso8859_1 nls_cp437 vfat fat usb_storage i915 usbhid 
-autofs4 hidp rfcomm l2cap bluetooth vmnet(P) parport_pc vmmon(P) sunrpc 
-iscsi_tcp libiscsi scsi_transport_iscsi ipv6 dm_mirror dm_multipath dm_mod 
-video button battery asus_acpi backlight ac parport nvram snd_intel8x0m 
-snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy joydev snd_seq_oss 
-snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ipw2200 
-sg pcspkr ieee80211 ieee80211_crypt snd_pcm tg3 snd_timer rng_core snd 
-soundcore snd_page_alloc firmware_class i2c_i801 rtc ata_piix libata sd_mod 
-scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd usbcore
- CPU:    0
- EIP:    0060:[<c01aa182>]    Tainted: P      VLI
- EFLAGS: 00010286   (2.6.20 #8)
- EIP is at sysfs_hash_and_remove+0x32/0x130
- eax: fffffff3   ebx: c03ec750   ecx: ffffffff   edx: fffffff3
- esi: fffffff3   edi: fffffff3   ebp: dd68fdd0   esp: dd68fdb4
- ds: 007b   es: 007b   ss: 0068
- Process bash (pid: 21158, ti=dd68e000 task=e5b34560 task.ti=dd68e000)
- Stack: c03a68ef fffffff3 dd68fde0 c0176591 c03ec750 fffffff3 fffffff3 
-dd68fde0 
-        c01ac98b c03ec748 f0749c68 dd68fdf4 c01ac9d1 f0749c00 f0749c00 
-f0749c68 
-        dd68fdfc c0265a20 dd68fe08 c02651c0 f7f9fa34 dd68fe20 c025f87b 
-00000000 
- Call Trace:
-  [<c010502a>] show_trace_log_lvl+0x1a/0x30
-  [<c01050f1>] show_stack_log_lvl+0xb1/0xe0
-  [<c01052db>] show_registers+0x1bb/0x300
-  [<c0105533>] die+0x113/0x240
-  [<c03202dd>] do_page_fault+0x2bd/0x5f0
-  [<c031e9ec>] error_code+0x74/0x7c
-  [<c01ac98b>] remove_files+0x1b/0x30
-  [<c01ac9d1>] sysfs_remove_group+0x31/0x60
-  [<c0265a20>] dpm_sysfs_remove+0x10/0x20
-  [<c02651c0>] device_pm_remove+0x20/0x60
-  [<c025f87b>] device_del+0x17b/0x1b0
-  [<c025f8bb>] device_unregister+0xb/0x20
-  [<c025f948>] device_destroy+0x78/0x90
-  [<c023f7bc>] vcs_remove_sysfs+0x1c/0x40
-  [<c024569e>] con_close+0x5e/0x70
-  [<c023779c>] release_dev+0x13c/0x680
-  [<c0237cf2>] tty_release+0x12/0x20
-  [<c016e7cb>] __fput+0x9b/0x190
-  [<c016e928>] fput+0x18/0x20
-  [<c016bcb7>] filp_close+0x47/0x70
-  [<c011fc55>] put_files_struct+0x95/0xa0
-  [<c0120ec3>] do_exit+0x143/0x870
-  [<c0121617>] do_group_exit+0x27/0x80
-  [<c012167f>] sys_exit_group+0xf/0x20
-  [<c0104130>] syscall_call+0x7/0xb
-  =======================
- Code: c0 89 5d f4 89 75 f8 89 7d fc 89 45 e8 89 55 e4 75 17 b8 fe ff ff ff 8b 
-5d f4 8b 75 f8 8b 7d fc 89 ec 5d c3 90 8d 74 26 00 89 c2 <8b> 40 08 85 c0 74 
-e0 8b 72 50 83 c0 68 e8 8c 37 17 00 8b 5e 0c 
- EIP: [<c01aa182>] sysfs_hash_and_remove+0x32/0x130 SS:ESP 0068:dd68fdb4
-  <1>Fixing recursive fault but reboot is needed!
+On Tue, Apr 17, 2007 at 09:33:08AM +0200, Ingo Molnar wrote:
+> The precise behavior of nice levels, as i pointed it out in previous 
+> mails, is largely 'uninteresting' and it has changed multiple times in 
+> the past 10 years.
+
+I expect that whether a scheduler can handle such prioritization has a
+rather strong predictive quality regarding whether it can handle, say,
+CKRM controls. I remain convinced that there should be some target
+behavior and that some attempt should be made to achieve it. I don't
+think any particular behavior is best, just that the behavior should
+be well-defined.
 
 
+On Tue, Apr 17, 2007 at 09:33:08AM +0200, Ingo Molnar wrote:
+> What matters to users is mainly: whether X reniced to -10 does get 
+> enough CPU time and whether stuff reniced to +19 doesnt take away too 
+> much CPU time from the rest of the system. _How_ a Linux scheduler 
+> achieves this is an internal matter and certainly CFS does it in a hacky 
+> way at the moment.
+
+It's not so far out. Basically just changing the key calculation in a
+relatively simple manner should get things into relatively good shape.
+It can, of course, be done other ways (I did it a rather different way
+in vdls, though that method is not likely to be considered desirable).
+
+I can't really write a testcase for such loose semantics, so the above
+description is useless to me. These squishy sorts of definitions of
+semantics are also uninformative to users, who, I would argue, do have
+some interest in what nice levels mean. There have been at least a small
+number of concerns about the strength of nice levels, and it would
+reveal issues surrounding that area earlier if there were an objective
+one could test to see if it were achieved.
+
+It's furthermore a user-visible change in system call semantics we
+should be more careful about changing out from beneath users.
+
+So I see a lot of good reasons to pin down nice numbers. Incompleteness
+is not a particularly mortal sin, but the proliferation of competing
+schedulers is creating a need for standards, and that's what I'm really
+on about.
+
+
+On Tue, Apr 17, 2007 at 09:33:08AM +0200, Ingo Molnar wrote:
+> All the rest, 'CPU bandwidth utilization' or whatever abstract metric we 
+> could come up with is just a fancy academic technicality that has no 
+> real significance to any of the testers who are trying CFS right now.
+
+I could say "percent cpu" if it sounds less like formal jargon, which
+"CPU bandwidth utilization" isn't really.
+
+
+On Tue, Apr 17, 2007 at 09:33:08AM +0200, Ingo Molnar wrote:
+> Sure we prefer final solutions that are clean and make sense (because 
+> such things are the easiest to maintain long-term), and often such final 
+> solutions are quite close to academic concepts, and i think Davide 
+> correctly observed this by saying that "the final key calculation code 
+> will end up quite different from what it looks now", but your 
+> extreme-end claim of 'breakage' for something that is just plain 
+> incomplete is not really a fair characterisation at this point.
+
+It wasn't meant to be quite as strong a statement as it came out.
+Sorry about that.
+
+
+On Tue, Apr 17, 2007 at 09:33:08AM +0200, Ingo Molnar wrote:
+> Anyone who thinks that there exists only two kinds of code: 100% correct 
+> and 100% incorrect with no shades of grey inbetween is in reality a sort 
+> of an extremist: whom, depending on mood and affection, we could call 
+> either a 'coding purist' or a 'coding taliban' ;-)
+
+I've made no such claims. Also rest assured that the tone of the
+critique is not hostile, and wasn't meant to sound that way.
+
+Also, given the general comments it appears clear that some statistical
+metric of deviation from the intended behavior furthermore qualified by
+timescale is necessary, so this appears to be headed toward a sort of
+performance metric as opposed to a pass/fail test anyway. However, to
+even measure this at all, some statement of intention is required. I'd
+prefer that there be a Linux-standard semantics for nice so results are
+more directly comparable and so that users also get similar nice
+behavior from the scheduler as it varies over time and possibly
+implementations if users should care to switch them out with some
+scheduler patch or other.
+
+
+-- wli
