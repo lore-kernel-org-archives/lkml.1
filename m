@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031040AbXDQPxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031100AbXDQP5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031040AbXDQPxD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:53:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031098AbXDQPxD
+	id S1031100AbXDQP5J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031101AbXDQP5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:53:03 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:35837 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031097AbXDQPxA (ORCPT
+	Tue, 17 Apr 2007 11:57:09 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35875 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031100AbXDQP5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:53:00 -0400
-Message-ID: <4624ED3E.3070604@nortel.com>
-Date: Tue, 17 Apr 2007 09:52:30 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Peter Williams <pwil3058@bigpond.net.au>
-CC: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415233909.GE2986@holomorphy.com> <4622CC30.6030707@bigpond.net.au> <4623B0C2.7080806@nortel.com> <46241ABE.5030604@bigpond.net.au>
-In-Reply-To: <46241ABE.5030604@bigpond.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 17 Apr 2007 11:57:08 -0400
+Date: Tue, 17 Apr 2007 16:59:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tomasz =?UTF-8?B?S8WCb2N6a28=?= <kloczek@rudy.mif.pg.gda.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
+       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+Message-ID: <20070417165953.1395692e@the-village.bc.nu>
+In-Reply-To: <Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain>
+	<20070417131045.GB18373@thunk.org>
+	<Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+	<20070417135958.GB28201@srcf.ucam.org>
+	<Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Apr 2007 15:52:34.0543 (UTC) FILETIME=[6A3CA7F0:01C78108]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
-> Chris Friesen wrote:
->> Scuse me if I jump in here, but doesn't the load balancer need some 
->> way to figure out a) when to run, and b) which tasks to pull and where 
->> to push them?
+> Why on discussion about switching to GPL v3 Linux code this argument was 
+> allways taken as "piece of cake". Why in case switching to another license 
 
-> Yes but both of these are independent of the scheduler discipline in force.
+What planet do you come from I wonder ?
 
-It is not clear to me that this is always the case, especially once you 
-mix in things like resource groups.
+On Earth (where most of us usually reside) the consensus of the kernel
+developers and the legal people they talked to was that GPLv2 to GPLv3
+would be very very hard to do if not impossible for the kernel.
 
-> If
-> the load balancer manages to keep the weighted (according to static 
-> priority) load and distribution of priorities within the loads on the 
-> CPUs roughly equal and the scheduler does a good job of ensuring 
-> fairness, interactive responsiveness etc. for the tasks within a CPU 
-> then the result will be good system performance within the constraints 
-> set by the sys admins use of real time priorities and nice.
-
-Suppose I have a really high priority task running.  Another very high 
-priority task wakes up and would normally preempt the first one. 
-However, there happens to be another cpu available.  It seems like it 
-would be a win if we moved one of those tasks to the available cpu 
-immediately so they can both run simultaneously.  This would seem to 
-require some communication between the scheduler and the load balancer.
-
-Certainly the above design could introduce a lot of context switching. 
-But if my goal is a scheduler that minimizes latency (even at the cost 
-of throughput) then that's an acceptable price to pay.
-
-Chris
+Alan
