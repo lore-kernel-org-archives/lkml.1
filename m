@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031191AbXDQQyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031179AbXDQQ52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031191AbXDQQyq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031190AbXDQQyq
+	id S1031179AbXDQQ52 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031189AbXDQQ52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:54:46 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38210 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031185AbXDQQyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:54:45 -0400
-Date: Tue, 17 Apr 2007 11:54:34 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [patch 05/10] Add "permit user submounts" flag to vfsmount
-Message-ID: <20070417165434.GA31864@sergelap.austin.ibm.com>
-References: <20070416110308.739051445@szeredi.hu> <20070416110414.591968270@szeredi.hu> <20070416192050.GB30435@sergelap.austin.ibm.com> <E1HdlAt-00013a-00@dorka.pomaz.szeredi.hu> <20070417143301.GH1442@sergelap.austin.ibm.com> <E1HdqEF-00020e-00@dorka.pomaz.szeredi.hu>
+	Tue, 17 Apr 2007 12:57:28 -0400
+Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:2979 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031179AbXDQQ52 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 12:57:28 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ZFS with Linux: An Open Plea
+Date: Tue, 17 Apr 2007 17:57:11 +0100
+User-Agent: KMail/1.9.5
+Cc: Tomasz =?utf-8?q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
+       Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
+       linux-kernel@vger.kernel.org
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl> <20070417154814.632da1d9@the-village.bc.nu>
+In-Reply-To: <20070417154814.632da1d9@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1HdqEF-00020e-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704171757.12070.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > > MNT_USER and MNT_USERMNT?  I claim no way will people keep those
-> > > > straight.  How about MNT_ALLOWUSER and MNT_USER?
-> > > 
-> > > Umm, is "allowuser" more clear than "usermnt"?  What is allowed to the
-> > 
-> > I think so, yes.  One makes it clear that we're talking about allowing
-> > user (somethings :), one might just as well mean "this is a user mount."
-> > 
-> > > user?  "allowusermnt" may be more descriptive, but it's a bit too
-> > > long.
-> > 
-> > Yes, if it weren't too long it would by far have been my preference.
-> > Maybe despite the length we should still go with it...
-> > 
-> > > I don't think it matters all that much, the user will have to look up
-> > > the semantics in the manpage anyway.  Is "nosuid" descriptive?  Not
-> > > very much, but we got used to it.
-> > 
-> > nosuid is quite clear.
-> 
-> Is it?  Shouldn't these be "allowsuid", "noallowsuid", "allowexec",
-> "noallowexec"?
-> 
-> See, we mentally add the "allow" quite easily.
+On Tuesday 17 April 2007 15:48, Alan Cox wrote:
+> > So who is responsible for potential changing Linux code licensing for
+> > allow if not incorporate CDDL code correct interraction without breaking
+> > some law ?
+>
+> Every single contributor, individually. Which won't happen.
+>
+> The real test of whether Sun were serious about ZFS being anywhere but
+> Solaris is what they do to license it - they've patented everything they
+> can, and made the code available only under licenses incompatible with
+> other OS products. Their intent is quite clear, and quite sad.
 
-But they aren't accompanied by a flag meaning "don't allow any
-non-nosuid mounts below this point".  *That* is what causes the problem
-here.
+This isn't universally true. Look at Java, for example, which Sun recently 
+released parts of under an open source license -- not the CDDL, not a 
+CDDL/xxx dual license, the GPL proper.
 
-> > MNT_USER and MNT_USERMNT are so confusing that in the time I go from
-> > quitting the manpage to foregrounding my editor, I may have already
-> > forgotten which was which.
-> 
-> Well, to the user they are always in the form "user=123" and
-> "usermnt", so they are not as easy to confuse.
+Indeed, Sun already have products that are dual licensed CDDL/GPL, for example 
+the J2EE product.
 
-It still makes the kernel code harder to read, but for the user yes that
-is helpful.
+> If Sun want ZFS to get used all over the place in free software then I'd
+> have expected at the very least to see them throw out a copy of the code,
+> docs and patent grant in a form that could be used, even if it came with
+> no other assistance of any kind.
 
-> But I feel a bit stupid bickering about this, because it isn't so
-> important.  "allowuser" or "allowusermnt" are fine by me if you think
-> they are substantially better than "usermnt".
+I couldn't speculate on the rationale, but it does seem that Sun's choice to 
+use _only_ the CDDL with certain software (like ZFS) is deliberate.
 
-Thanks, I really really do  :)
+-- 
+Cheers,
+Alistair.
 
--serge
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
