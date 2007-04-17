@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXDQIBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbXDQIEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbXDQIBy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 04:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXDQIBy
+	id S1752443AbXDQIEL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 04:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXDQIEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 04:01:54 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:43819
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752463AbXDQIBx (ORCPT
+	Tue, 17 Apr 2007 04:04:11 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4632 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbXDQIEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 04:01:53 -0400
-Date: Tue, 17 Apr 2007 09:58:36 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: linux-driver@qlogic.com
-Cc: James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] qla1280: use DMA_64BIT_MASK instead of ~ 0ULL
-Message-ID: <20070417075836.GA22931@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	linux-driver@qlogic.com, James.Bottomley@SteelEye.com,
-	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 17 Apr 2007 04:04:08 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 17 Apr 2007 01:03:46 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Gene Heskett <gene.heskett@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+In-Reply-To: <20070417061849.GA12385@elte.hu>
+Message-ID: <Pine.LNX.4.64.0704170053410.30516@alien.or.mcafeemobile.com>
+References: <20070416220715.GA4071@elte.hu> <200704170053.58611.gene.heskett@gmail.com>
+ <20070417061849.GA12385@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-QLA1280: call pci_set_dma_mask with DMA_64BIT_MASK instead of  ~ 0ULL
+On Tue, 17 Apr 2007, Ingo Molnar wrote:
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> ok - fortunately the delta between -v2-rc0 and -v2-final is pretty 
+> small. One difference is the child-runs-first fix. To restore the 
+> parent-runs-first logic, do this: 
+> 
+> 	echo 0 > /proc/sys/kernel/sched_child_runs_first
 
----
+Sorry, I did not follow the latest developments, but how many tunables we 
+have so far in CFS? Are those for debug only or they're supposed to stay?
+Weren't those listed inside the Axis of Evil (just to remain in topic :) 
+till yesterday?
 
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 6777e8a..54d8bdf 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -4293,7 +4293,7 @@ qla1280_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
- 	ha->devnum = devnum;	/* specifies microcode load address */
- 
- #ifdef QLA_64BIT_PTR
--	if (pci_set_dma_mask(ha->pdev, (dma_addr_t) ~ 0ULL)) {
-+	if (pci_set_dma_mask(ha->pdev, DMA_64BIT_MASK)) {
- 		if (pci_set_dma_mask(ha->pdev, DMA_32BIT_MASK)) {
- 			printk(KERN_WARNING "scsi(%li): Unable to set a "
- 			       "suitable DMA mask - aborting\n", ha->host_no); 
--- 
-              Comunicar bichos a <bug-coreutils@gnu.org>
-                     (LANG=es_ES uname --help)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-                                                                  `-
+
+- Davide
+
+
