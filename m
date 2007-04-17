@@ -1,131 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbXDQNRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbXDQNRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754250AbXDQNRH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 09:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbXDQNRH
+	id S1754302AbXDQNRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 09:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbXDQNRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 09:17:07 -0400
-Received: from omta01ps.mx.bigpond.com ([144.140.82.153]:29559 "EHLO
-	omta01ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754250AbXDQNRE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 09:17:04 -0400
-Message-ID: <4624C8C6.4090902@bigpond.net.au>
-Date: Tue, 17 Apr 2007 23:16:54 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <462467E9.4030509@bigpond.net.au> <20070417064436.GE1057@wotan.suse.de> <46247BE7.2070307@bigpond.net.au> <20070417075611.GC20026@wotan.suse.de>
-In-Reply-To: <20070417075611.GC20026@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta01ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 13:16:59 +0000
+	Tue, 17 Apr 2007 09:17:18 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58316 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754302AbXDQNRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 09:17:14 -0400
+Date: Tue, 17 Apr 2007 18:54:19 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
+Subject: [RFC][PATCH 13/15] ext3 whiteout support
+Message-ID: <20070417132419.GN4001@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070417131459.GA4001@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070417131459.GA4001@in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Tue, Apr 17, 2007 at 05:48:55PM +1000, Peter Williams wrote:
->> Nick Piggin wrote:
->>>> Other hints that it was a bad idea was the need to transfer time slices 
->>>> between children and parents during fork() and exit().
->>> I don't see how that has anything to do with dual arrays.
->> It's totally to do with the dual arrays.  The only real purpose of the 
->> time slice in O(1) (regardless of what its perceived purpose was) was to 
->> control the switching between the arrays.
-> 
-> The O(1) design is pretty convoluted in that regard. In my scheduler,
-> the only purpose of the arrays is to renew time slices.
-> 
-> The fork/exit logic is added to make interactivity better. Ingo's
-> scheduler has similar equivalent logic.
-> 
-> 
->>> If you put
->>> a new child at the back of the queue, then your various interactive
->>> shell commands that typically do a lot of dependant forking get slowed
->>> right down behind your compile job. If you give a new child its own
->>> timeslice irrespective of the parent, then you have things like 'make'
->>> (which doesn't use a lot of CPU time) spawning off lots of high
->>> priority children.
->> This is an artefact of trying to control nice using time slices while 
->> using them for controlling array switching and whatever else they were 
->> being used for.  Priority (static and dynamic) is the the best way to 
->> implement nice.
-> 
-> I don't like the timeslice based nice in mainline. It's too nasty
-> with latencies. nicksched is far better in that regard IMO.
-> 
-> But I don't know how you can assert a particular way is the best way
-> to do something.
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: ext3 whiteout support
 
-I should have added "I may be wrong but I think that ...".
+Introduce whiteout support for ext3.
 
-My opinion is based on a lot of experience with different types of 
-scheduler design and the observation from gathering scheduling 
-statistics while playing with these schedulers that the size of the time 
-slices we're talking about is much larger than the CPU chunks most tasks 
-use in any one go so time slice size has no real effect on most tasks 
-and the faster CPUs become the more this becomes true.
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Signed-off-bg: Jan Blunck <jblunck@suse.de>
+---
+ fs/ext3/dir.c           |    2 -
+ fs/ext3/namei.c         |   65 ++++++++++++++++++++++++++++++++++++++++++++----
+ fs/ext3/super.c         |   11 +++++++-
+ include/linux/ext3_fs.h |    5 ++-
+ 4 files changed, 75 insertions(+), 8 deletions(-)
 
-> 
-> 
->>> You need to do _something_ (Ingo's does). I don't see why this would
->>> be tied with a dual array. FWIW, mine doesn't do anything on exit()
->>> like most others, but it may need more tuning in this area.
->>>
->>>
->>>> This disregard for the dual array mechanism has prevented me from 
->>>> looking at the rest of your scheduler in any great detail so I can't 
->>>> comment on any other ideas that may be in there.
->>> Well I wasn't really asking you to review it. As I said, everyone
->>> has their own idea of what a good design does, and review can't really
->>> distinguish between the better of two reasonable designs.
->>>
->>> A fair evaluation of the alternatives seems like a good idea though.
->>> Nobody is actually against this, are they?
->> No.  It would be nice if the basic ideas that each scheduler tries to 
->> implement could be extracted and explained though.  This could lead to a 
->> melding of ideas that leads to something quite good.
->>
->>>
->>>>> I haven't looked at Con's ones for a while,
->>>>> but I believe they are also much more straightforward than mainline...
->>>> I like Con's scheduler (partly because it uses a single array) but 
->>>> mainly because it's nice and simple.  However, his earlier schedulers 
->>>> were prone to starvation (admittedly, only if you went out of your way 
->>>> to make it happen) and I tried to convince him to use the anti 
->>>> starvation mechanism in my SPA schedulers but was unsuccessful.  I 
->>>> haven't looked at his latest scheduler that sparked all this furore so 
->>>> can't comment on it.
->>> I agree starvation or unfairness is unacceptable for a new scheduler.
->>>
->>>
->>>>> For example, let's say all else is equal between them, then why would
->>>>> we go with the O(logN) implementation rather than the O(1)?
->>>> In the highly unlikely event that you can't separate them on technical 
->>>> grounds, Occam's razor recommends choosing the simplest solution. :-)
->>> O(logN) vs O(1) is technical grounds.
->> In that case I'd go O(1) provided that the k factor for the O(1) wasn't 
->> greater than O(logN)'s k factor multiplied by logMaxN.
-> 
-> Yes, or even significantly greater around typical large sizes of N.
-
-Yes.  In fact its' probably better to use the maximum number of threads 
-allowed on the system for N.  We know that value don't we?
-
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -29,7 +29,7 @@
+ #include <linux/rbtree.h>
+ 
+ static unsigned char ext3_filetype_table[] = {
+-	DT_UNKNOWN, DT_REG, DT_DIR, DT_CHR, DT_BLK, DT_FIFO, DT_SOCK, DT_LNK
++	DT_UNKNOWN, DT_REG, DT_DIR, DT_CHR, DT_BLK, DT_FIFO, DT_SOCK, DT_LNK, DT_WHT
+ };
+ 
+ static int ext3_readdir(struct file *, void *, filldir_t);
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1071,6 +1071,7 @@ static unsigned char ext3_type_by_mode[S
+ 	[S_IFIFO >> S_SHIFT]	= EXT3_FT_FIFO,
+ 	[S_IFSOCK >> S_SHIFT]	= EXT3_FT_SOCK,
+ 	[S_IFLNK >> S_SHIFT]	= EXT3_FT_SYMLINK,
++	[S_IFWHT >> S_SHIFT]	= EXT3_FT_WHT,
+ };
+ 
+ static inline void ext3_set_de_type(struct super_block *sb,
+@@ -1786,7 +1787,7 @@ out_stop:
+ /*
+  * routine to check that the specified directory is empty (for rmdir)
+  */
+-static int empty_dir (struct inode * inode)
++static int empty_dir (handle_t *handle, struct inode * inode)
+ {
+ 	unsigned long offset;
+ 	struct buffer_head * bh;
+@@ -1848,8 +1849,28 @@ static int empty_dir (struct inode * ino
+ 			continue;
+ 		}
+ 		if (le32_to_cpu(de->inode)) {
+-			brelse (bh);
+-			return 0;
++			/* If this is a whiteout, remove it */
++			if (de->file_type == EXT3_FT_WHT) {
++				unsigned long ino = le32_to_cpu(de->inode);
++				struct inode *tmp_inode = iget(inode->i_sb, ino);
++				if (!tmp_inode) {
++					brelse (bh);
++					return 0;
++				}
++
++				if (ext3_delete_entry(handle, inode, de, bh)) {
++					iput(tmp_inode);
++					brelse (bh);
++					return 0;
++				}
++
++				tmp_inode->i_ctime = inode->i_ctime;
++				tmp_inode->i_nlink--;
++				iput(tmp_inode);
++			} else {
++				brelse (bh);
++				return 0;
++			}
+ 		}
+ 		offset += le16_to_cpu(de->rec_len);
+ 		de = (struct ext3_dir_entry_2 *)
+@@ -2031,7 +2052,7 @@ static int ext3_rmdir (struct inode * di
+ 		goto end_rmdir;
+ 
+ 	retval = -ENOTEMPTY;
+-	if (!empty_dir (inode))
++	if (!empty_dir (handle, inode))
+ 		goto end_rmdir;
+ 
+ 	retval = ext3_delete_entry(handle, dir, de, bh);
+@@ -2060,6 +2081,39 @@ end_rmdir:
+ 	return retval;
+ }
+ 
++/*
++ * TODO: Not sure about the args to ext3_journal_start. Check.
++ */
++static int ext3_whiteout(struct inode *dir, struct dentry *dentry)
++{
++	struct inode * inode;
++	int err, retries = 0;
++	handle_t *handle;
++
++retry:
++	handle = ext3_journal_start(dir, EXT3_DATA_TRANS_BLOCKS(dir->i_sb) +
++					EXT3_INDEX_EXTRA_TRANS_BLOCKS + 3 +
++					2*EXT3_QUOTA_INIT_BLOCKS(dir->i_sb));
++	if (IS_ERR(handle))
++		return PTR_ERR(handle);
++
++	if (IS_DIRSYNC(dir))
++		handle->h_sync = 1;
++
++	inode = ext3_new_inode (handle, dir, S_IFWHT | S_IRUGO);
++	err = PTR_ERR(inode);
++	if (IS_ERR(inode))
++		goto out_stop;
++
++	err = ext3_add_nondir(handle, dentry, inode);
++
++out_stop:
++	ext3_journal_stop(handle);
++	if (err == -ENOSPC && ext3_should_retry_alloc(dir->i_sb, &retries))
++		goto retry;
++	return err;
++}
++
+ static int ext3_unlink(struct inode * dir, struct dentry *dentry)
+ {
+ 	int retval;
+@@ -2261,7 +2315,7 @@ static int ext3_rename (struct inode * o
+ 	if (S_ISDIR(old_inode->i_mode)) {
+ 		if (new_inode) {
+ 			retval = -ENOTEMPTY;
+-			if (!empty_dir (new_inode))
++			if (!empty_dir (handle, new_inode))
+ 				goto end_rename;
+ 		}
+ 		retval = -EIO;
+@@ -2377,6 +2431,7 @@ const struct inode_operations ext3_dir_i
+ 	.mkdir		= ext3_mkdir,
+ 	.rmdir		= ext3_rmdir,
+ 	.mknod		= ext3_mknod,
++	.whiteout	= ext3_whiteout,
+ 	.rename		= ext3_rename,
+ 	.setattr	= ext3_setattr,
+ #ifdef CONFIG_EXT3_FS_XATTR
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -1493,6 +1493,15 @@ static int ext3_fill_super (struct super
+ 	sb->s_flags = (sb->s_flags & ~MS_POSIXACL) |
+ 		((sbi->s_mount_opt & EXT3_MOUNT_POSIX_ACL) ? MS_POSIXACL : 0);
+ 
++	if ((sb->s_flags & MS_UNION) && !(sb->s_flags & MS_RDONLY)) {
++		if (!EXT3_HAS_INCOMPAT_FEATURE(sb,
++				EXT3_FEATURE_INCOMPAT_WHITEOUT)) {
++			sb->s_flags |= MS_RDONLY;
++			ext3_warning(sb, __FUNCTION__,
++			"no whiteout support, mounting filesystem read-only");
++		}
++	}
++
+ 	if (le32_to_cpu(es->s_rev_level) == EXT3_GOOD_OLD_REV &&
+ 	    (EXT3_HAS_COMPAT_FEATURE(sb, ~0U) ||
+ 	     EXT3_HAS_RO_COMPAT_FEATURE(sb, ~0U) ||
+@@ -2749,7 +2758,7 @@ static struct file_system_type ext3_fs_t
+ 	.name		= "ext3",
+ 	.get_sb		= ext3_get_sb,
+ 	.kill_sb	= kill_block_super,
+-	.fs_flags	= FS_REQUIRES_DEV,
++	.fs_flags	= FS_REQUIRES_DEV | FS_WHT,
+ };
+ 
+ static int __init init_ext3_fs(void)
+--- a/include/linux/ext3_fs.h
++++ b/include/linux/ext3_fs.h
+@@ -63,6 +63,7 @@
+ #define EXT3_UNDEL_DIR_INO	 6	/* Undelete directory inode */
+ #define EXT3_RESIZE_INO		 7	/* Reserved group descriptors inode */
+ #define EXT3_JOURNAL_INO	 8	/* Journal inode */
++#define EXT3_WHT_INO		 9	/* Whiteout inode */
+ 
+ /* First non-reserved inode for old ext3 filesystems */
+ #define EXT3_GOOD_OLD_FIRST_INO	11
+@@ -582,6 +583,7 @@ static inline int ext3_valid_inum(struct
+ #define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004 /* Needs recovery */
+ #define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008 /* Journal device */
+ #define EXT3_FEATURE_INCOMPAT_META_BG		0x0010
++#define EXT3_FEATURE_INCOMPAT_WHITEOUT		0x0020
+ 
+ #define EXT3_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_EXT_ATTR
+ #define EXT3_FEATURE_INCOMPAT_SUPP	(EXT3_FEATURE_INCOMPAT_FILETYPE| \
+@@ -648,8 +650,9 @@ struct ext3_dir_entry_2 {
+ #define EXT3_FT_FIFO		5
+ #define EXT3_FT_SOCK		6
+ #define EXT3_FT_SYMLINK		7
++#define EXT3_FT_WHT		8
+ 
+-#define EXT3_FT_MAX		8
++#define EXT3_FT_MAX		9
+ 
+ /*
+  * EXT3_DIR_PAD defines the directory entries boundaries
