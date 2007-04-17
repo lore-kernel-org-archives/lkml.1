@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161263AbXDQRsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030820AbXDQRvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161263AbXDQRsu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 13:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161260AbXDQRst
+	id S1030820AbXDQRvG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 13:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030812AbXDQRvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 13:48:49 -0400
-Received: from waste.org ([66.93.16.53]:41578 "EHLO waste.org"
+	Tue, 17 Apr 2007 13:51:06 -0400
+Received: from thunk.org ([69.25.196.29]:60422 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161263AbXDQRst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 13:48:49 -0400
-Date: Tue, 17 Apr 2007 12:35:23 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417173522.GE11115@waste.org>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415213153.GW11115@waste.org> <20070416030349.GB13626@wotan.suse.de> <20070416142823.GX11115@waste.org> <20070417033120.GC25513@wotan.suse.de>
+	id S1030820AbXDQRvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 13:51:04 -0400
+Date: Tue, 17 Apr 2007 13:50:55 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
+       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+Message-ID: <20070417175055.GA24963@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Daniel Hazelton <dhazelton@enter.net>,
+	Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
+	"David R. Litwin" <presently42@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org> <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl> <200704171222.19892.dhazelton@enter.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070417033120.GC25513@wotan.suse.de>
+In-Reply-To: <200704171222.19892.dhazelton@enter.net>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 05:31:20AM +0200, Nick Piggin wrote:
-> On Mon, Apr 16, 2007 at 09:28:24AM -0500, Matt Mackall wrote:
-> > On Mon, Apr 16, 2007 at 05:03:49AM +0200, Nick Piggin wrote:
-> > > I'd prefer if we kept a single CPU scheduler in mainline, because I
-> > > think that simplifies analysis and focuses testing.
-> > 
-> > I think you'll find something like 80-90% of the testing will be done
-> > on the default choice, even if other choices exist. So you really
-> > won't have much of a problem here.
-> > 
-> > But when the only choice for other schedulers is to go out-of-tree,
-> > then only 1% of the people will try it out and those people are
-> > guaranteed to be the ones who saw scheduling problems in mainline.
-> > So the alternative won't end up getting any testing on many of the
-> > workloads that work fine in mainstream so their feedback won't tell
-> > you very much at all.
-> 
-> Yeah I concede that perhaps it is the only way to get things going
-> any further. But how do we decide if and when the current scheduler
-> should be demoted from default, and which should replace it?
+On Tue, Apr 17, 2007 at 12:22:19PM -0400, Daniel Hazelton wrote:
+> Nope. You've just ignored it when it was explained *why* the existing ZFS code 
+> cannot be simply be ported to Linux. If you really need ZFS on linux, might I 
+> suggest that you port the code on your own and maintain whatever patches are 
+> needed to use it? As it stands ZFS *might* show up in Linux as a from-scratch 
+> implementation, although I stress the "might" because there are patents 
+> involved.
 
-Step one is ship both in -mm. If that doesn't give us enough
-confidence, ship both in mainline. If that doesn't give us enough
-confidence, wait until vendors ship both. Eventually a clear picture
-should emerge. If it doesn't, either the change is not significant or
-no one cares.
+Given that Sun has reportedly filed a huge number of patents covering
+ZFS and has refused to make them available for anything other than
+Solaris --- and there are senior Sun programmers who have on record
+stated that one of the reasons why Sun picked the CDDL was precisely
+because it was incompatible with GPL and Sun fears Linux ---- I
+wouldn't bet on Sun being willing to making a patent license available
+to a hypothetical alternate implementation of the ZFS format for
+Linux.
 
-But it really is important to be able to do controlled experiments on
-this stuff with little effort. That's the recipe for getting lots of
-valid feedback.
+Again, this is is Sun's fault, and it's because they fear Linux, and
+it may have something to do with the fact that the vast majority of
+their Opteron boxes get Linux installed instead of Solaris.  The
+bottom line is that people who would like ZFS need to understand that
+the code is Copyright by Sun, and there are almost certainly patents
+owned by Sun, and if they choose licenses that are explicitly designed
+to be incompatible with Linux, we should respect Sun's deep-seated
+fear of Linux, and we can continue trying to innovate around better
+filesystem and LVM storage technologies, as opposed to trying to chase
+the ZFS tail lights.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Of course, this is all open source.  If someone wants to work on
+reimplementing ZFS from scratch, either in userspace or in the kernel,
+certainly the Linux community won't stop them.  Given the patent
+issues Linus might not feel comfortable including it in the mainline
+sources without a promise from Sun that they won't sue the pants off
+of him and The Linux Foundation, but again, that's Sun's decision, and
+no one else can help you there.
+
+						- Ted
