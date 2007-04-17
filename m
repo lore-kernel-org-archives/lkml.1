@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbXDQIqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbXDQIxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbXDQIqE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 04:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXDQIqE
+	id S1752880AbXDQIxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 04:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXDQIxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 04:46:04 -0400
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:4949 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752869AbXDQIqB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 04:46:01 -0400
-Date: Tue, 17 Apr 2007 10:45:58 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Cc: LM Sensors <lm-sensors@lm-sensors.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Hans de Goede <j.w.r.degoede@hhs.nl>,
-       David Hubbard <david.c.hubbard@gmail.com>,
-       Rudolf Marek <r.marek@assembler.cz>, Juerg Haefliger <juergh@gmail.com>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [lm-sensors] Hardware monitoring subsystem maintainer position
- is open
-Message-ID: <20070417104558.0ff9a230@hyperion.delvare>
-In-Reply-To: <20070415150320.GA3158@jupiter.solarsys.private>
-References: <20070410150227.1bac05b5@hyperion.delvare>
-	<20070415150320.GA3158@jupiter.solarsys.private>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Tue, 17 Apr 2007 04:53:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56050 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752868AbXDQIxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 04:53:45 -0400
+Date: Tue, 17 Apr 2007 10:52:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+Message-ID: <20070417085239.GA15562@elte.hu>
+References: <20070416220715.GA4071@elte.hu> <46246D61.8010300@bigpond.net.au> <20070417075146.GM2986@holomorphy.com> <20070417081606.GB5076@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070417081606.GB5076@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
 
-On Sun, 15 Apr 2007 11:03:20 -0400, Mark M. Hoffman wrote:
-> Hi Jean, et al:
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * William Lee Irwin III <wli@holomorphy.com> wrote:
 > 
-> * Jean Delvare <khali@linux-fr.org> [2007-04-10 15:02:27 +0200]:
-> > I am resigning from my role as hardware monitoring subsystem
-> > (drivers/hwmon) maintainer. This is too much work for me, I do not have
-> > the necessary bandwidth to review all the incoming patches, in
-> > particular new drivers, in a timely manner. Patch authors have been
-> > complaining about this repeatedly. This is no fun for them, and even
-> > less for me, so I'd rather let someone else with more spare time take
-> > care of it. If there are volunteers, this is the right time to speak up.
+> > On Tue, Apr 17, 2007 at 04:46:57PM +1000, Peter Williams wrote:
+> >
+> > > Have you considered using rq->raw_weighted_load instead of 
+> > > rq->nr_running in calculating fair_clock?  This would take the 
+> > > nice value (or RT priority) of the other tasks into account when 
+> > > determining what's fair.
 > > 
-> > I will still be maintaining the individual hardware monitoring drivers
-> > I am listed for in file MAINTAINERS (adm1025, f71805f, lm83 and lm90)
-> > as well as the I2C subsystem. No change here.
-> > 
-> > I will continue to feed -mm with pending hwmon patches until 2.6.21
-> > final is released, then I'll send everything I have to Linus for
-> > 2.6.22-rc1, the last of which will be:
-> >  (...)
+> > I suspect you mean 
+> > (curr->load_weight*delta_exec)/rq->raw_weighted_load in 
+> > update_curr().
 > 
-> /me throws hat in
-> 
-> I volunteer to become the new MAINTAINER, but in a much more limited sense
-> of the term than Jean is/was.  I can take care of a couple git trees, and do
-> some detailed reviews when I have time.  For the most part, I will have to
-> rely on others to do reviews as well.
+> good idea, i'll try that.
 
-This is excellent news, thanks for volunteering. We have been working
-together for a long time now and I'm happy to see you take the lead.
-You have my blessing.
+i'll try another thing too: we could perhaps get rid of rq->nr_running 
+and only use raw_weighted_load, because now the only main remaining 
+property of ->nr_running is "is it zero or not".
 
-> I would not be volunteering for this role, if Juerg and others had not also
-> volunteered to be more active reviewers.
-> 
-> As for the discussions later in this thread about process... IMHO that's a
-> little premature.  I intend to get brand new stuff into -mm perhaps a little
-> earlier than Jean did... but it still ain't going to Linus before it's ready.
-> Other than that, I would rather just see what works for me and for you (other
-> hwmon authors).
-> 
-> Assuming no one else wants the job (ruik?) I'll start working with Jean to
-> get things set up as soon as I can.
+[ ->nr_running's only other significant use is 'group_capacity', but in
+  reality it is only interested in whether all CPUs in the group are
+  busy and what the combined cpu power of that group is, and this could
+  be restructured to use rq->curr and cpu_power - and become independent
+  of nr_running. ]
 
-Great. I'll help you make the transition as smooth as possible.
+[ then there are other details like load-average, but we could change
+  that to be weighted-cpu-load driven - that makes sense anyway: a
+  reniced task should have less effect on the 'system load' than a
+  non-reniced task. ]
 
--- 
-Jean Delvare
+that would be one less variable to maintain in the scheduler hotpath, 
+and it would make smpnice an effective _replacement_ for nr_running, 
+instead of an add-on thing that costs a bit of performance.
+
+	Ingo
