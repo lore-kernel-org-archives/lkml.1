@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965211AbXDQCop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031057AbXDQCxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965211AbXDQCop (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 22:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965397AbXDQCop
+	id S1031057AbXDQCxu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 22:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031058AbXDQCxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 22:44:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59051 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965211AbXDQCoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 22:44:44 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/HpDEHnpnHUJfCjBKRm0jgp8vLsc+UQQgjll87Y3
-	5Bc1iA7XTuA1TP
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <46240F98.3020800@bigpond.net.au>
-References: <20070413202100.GA9957@elte.hu>
-	 <200704151327.13589.kernel@kolivas.org>
-	 <1176619384.6222.70.camel@Homer.simpson.net>
-	 <46240F98.3020800@bigpond.net.au>
+	Mon, 16 Apr 2007 22:53:50 -0400
+Received: from ozlabs.org ([203.10.76.45]:56449 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031057AbXDQCxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 22:53:50 -0400
+Subject: Re: [Patch -mm 3/3] RFC: Introduce kobject->owner for refcounting.
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0704161539110.2685-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0704161539110.2685-100000@iolanthe.rowland.org>
 Content-Type: text/plain
-Date: Tue, 17 Apr 2007 04:29:01 +0200
-Message-Id: <1176776941.6222.21.camel@Homer.simpson.net>
+Date: Tue, 17 Apr 2007 12:53:10 +1000
+Message-Id: <1176778391.14322.273.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-17 at 10:06 +1000, Peter Williams wrote:
-> Mike Galbraith wrote:
-> >
-> > Demystify what?   The casual observer need only read either your attempt
-> > at writing a scheduler, or my attempts at fixing the one we have, to see
-> > that it was high time for someone with the necessary skills to step in.
-> 
-> Make that "someone with the necessary clout".
+On Mon, 2007-04-16 at 15:53 -0400, Alan Stern wrote:
+> The fundamental rule is that whenever you hand out a pointer to a routine
+> living in a module, the receiver has to increment the module's refcount.  
+> But the driver core violates this rule all over the place.
 
-No, I was brutally honest to both of us, but quite correct.
+Hi Alan,
 
-> > Now progress can happen, which was _not_ happening before.
-> > 
-> 
-> This is true.
+	Your rule is overly simplistic, unfortunately.  You have two choices:
+take a reference count, *or* ensure that the reference will go away when
+the module's cleanup routine is called.  Network drivers are a classic
+example of the latter.
 
-Yup, and progress _is_ happening now, quite rapidly.
+	Note that you cannot do both: if the cleanup routine calls something
+which drops a reference count, it implies that the cleanup routine needs
+to be called with non-zero reference count, and it won't be (ignoring
+--force).
 
-	-Mike
+I hope that clarifies?
+Rusty.
 
