@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030931AbXDQXJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030945AbXDQXJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030931AbXDQXJg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 19:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030925AbXDQXJg
+	id S1030945AbXDQXJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 19:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030930AbXDQXJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 19:09:36 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:45009 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030924AbXDQXJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 19:09:35 -0400
-X-Greylist: delayed 840 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 19:09:35 EDT
-Message-ID: <462553A9.70504@novell.com>
-Date: Tue, 17 Apr 2007 16:09:29 -0700
-From: Crispin Cowan <crispin@novell.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Tue, 17 Apr 2007 19:09:58 -0400
+Received: from holomorphy.com ([66.93.40.71]:35301 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030929AbXDQXJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 19:09:54 -0400
+Date: Tue, 17 Apr 2007 16:07:54 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: "Michael K. Edwards" <medwards.linux@gmail.com>
+Cc: Peter Williams <pwil3058@bigpond.net.au>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070417230754.GR2986@holomorphy.com>
+References: <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <1176782489.13059.15.camel@Homer.simpson.net> <20070417041420.GF25513@wotan.suse.de> <20070417095140.GB22626@elte.hu> <4624CF3B.6040704@bigpond.net.au> <f2b55d220704171600w2de57cafhc1b2d8d7df67cc6b@mail.gmail.com>
 MIME-Version: 1.0
-To: David Safford <safford@watson.ibm.com>
-CC: James Morris <jmorris@namei.org>, John Johansen <jjohansen@suse.de>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: AppArmor FAQ
-References: <20070416213350.GB4030@suse.de>	 <Line.LNX.4.64.0704161846110.13905@d.namei> <1176822230.3366.65.camel@localhost.localdomain>
-In-Reply-To: <1176822230.3366.65.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f2b55d220704171600w2de57cafhc1b2d8d7df67cc6b@mail.gmail.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Safford wrote:
-> On Mon, 2007-04-16 at 20:20 -0400, James Morris wrote:
->   
->> On Mon, 16 Apr 2007, John Johansen wrote:
->>     
->>> Label-based security (exemplified by SELinux, and its predecessors in
->>> MLS systems) attaches security policy to the data. As the data flows
->>> through the system, the label sticks to the data, and so security
->>> policy with respect to this data stays intact. This is a good approach
->>> for ensuring secrecy, the kind of problem that intelligence agencies have.
->>>       
->> Labels are also a good approach for ensuring integrity, which is one of 
->> the most fundamental aspects of the security model implemented by SELinux.  
->>
->> Some may infer otherwise from your document.
->>     
-> In fact, I am not sure how you can provide integrity support without
-> labels. AppArmor confines a process, but does not effectively confine 
-> its output files, precisely because the output files are not labeled. 
-> Other processes are free to access the unlabeled, potentially malicious 
-> output files without restriction. 
->   
-That depends on what you mean by "integrity." It is true that AppArmor
-does not directly manage information flow. AppArmor assumes that if you
-granted write permission to /etc/resolv.conf, that you meant to do that.
-Whether any other process is permitted to access /etc/resolv.conf is
-determined by those other process's respective profiles.
+On Tue, Apr 17, 2007 at 04:00:53PM -0700, Michael K. Edwards wrote:
+> Works, that is, right up until you add nonlinear interactions with CPU
+> speed scaling.  From my perspective as an embedded platform
+> integrator, clock/voltage scaling is the elephant in the scheduler's
+> living room.  Patch in DPM (now OpPoint?) to scale the clock based on
+> what task is being scheduled, and suddenly the dynamic priority
+> calculations go wild.  Nip this in the bud by putting an RT priority
+> on the relevant threads (which you have to do anyway if you need
+> remotely audio-grade latency), and the lock affinity heuristics break,
+> so you have to hand-tune all the thread priorities.  Blecch.
+[...not terribly enlightening stuff trimmed...]
 
-What AppArmor provides is a way for administrators to confine software
-that they have to run but do not trust. The use of pathnames means that
-the administrator can understand the exact meaning of the security
-policy, without having to do a complete labeling of the file system. The
-flip side of not managing information flow is that each profile is
-independent of every other profile.
+The ongoing scheduler work is on a much more basic level than these
+affairs I'm guessing you googled. When the basics work as intended it
+will be possible to move on to more advanced issues.
 
-The meaning of a file is how other processes interpret it. Until then,
-/etc/resolv.conf is just a quaint bag of bits. What makes it special is
-that it is what each process gets when they open the well-known
-"/etc/resolv.conf". Which is why it is useful to guard which processes
-can read or write to /etc/resolv.conf; the name is what makes its
-content special, not the other way around.
 
-Crispin
-
--- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
-Director of Software Engineering   http://novell.com
-"You cannot say anything that is both simple and complete."--Crispin on Goedel
-
+-- wli
