@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030844AbXDQTCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031143AbXDQT1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030844AbXDQTCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 15:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030856AbXDQTCq
+	id S1031143AbXDQT1P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 15:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031140AbXDQT1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 15:02:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58823 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030844AbXDQTCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 15:02:45 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200704171430.21075.rgetz@blackfin.uclinux.org> 
-References: <200704171430.21075.rgetz@blackfin.uclinux.org>  <200704091146.32346.rgetz@blackfin.uclinux.org> <200704101952.05380.rgetz@blackfin.uclinux.org> <6d6a94c50704170336l62fc9ael1e58197e6c3853ba@mail.gmail.com> 
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: "Aubrey Li" <aubreylee@gmail.com>, uaca@alumni.uv.es, bryan.wu@analog.com,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, waltje@uwalt.nl.mugnet.org,
-       netdev@vger.kernel.org, "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 17 Apr 2007 20:02:07 +0100
-Message-ID: <9265.1176836527@redhat.com>
+	Tue, 17 Apr 2007 15:27:14 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:47683 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031137AbXDQT1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 15:27:13 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17957.8073.587946.969040@smtp.charter.net>
+Date: Tue, 17 Apr 2007 15:27:05 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, John Stoffel <john@stoffel.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.21-rc6-mm1 ATA HPT37x regression
+In-Reply-To: <20070417181340.7de99868@the-village.bc.nu>
+References: <17956.12963.163961.762444@smtp.charter.net>
+	<4624D4C3.9010109@ru.mvista.com>
+	<17956.63043.521397.597430@smtp.charter.net>
+	<4624FE88.2010908@ru.mvista.com>
+	<20070417181340.7de99868@the-village.bc.nu>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-> David - Does this give you what you need?
+>> > Ok, so do I need to do anything special with the next -mm release and
+>> > the next version?
+>> 
+>> Well, let Alan decide that (2Alan: and I said that HPT code is bogus :-).
 
-Possibly.  I'll have a look at it tomorrow.
+Alan> Try drivers/ide/pci/hpt366 - if that works grab a dmesg and let
+Alan> me know.  It means that Sergei's DPLL sync code seems to work
+Alan> better than the vendor code and its time to swap it over.
 
-David
+Ok, I'll give that a whirl under 2.6.21-rc7 tonight.  I'll build them
+in modular so I can switch around more easily.  I hope.  :]
+
+Alan> Oh how I love highpoint PATA
+
+It seemed like a good buy at the time when I was researching these
+things.  Best bang for the buck I guess.  It's a RocketRaid133 card,
+but obviously I got a bum deal somewhere down the line.
+
+Now I've got a Sil3114 SATA controller, which seems to be working just
+fine now.  Hopefully it won't have problems like this!
+
+John
+
