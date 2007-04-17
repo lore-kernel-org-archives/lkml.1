@@ -1,65 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031261AbXDQVvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031237AbXDQVxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031261AbXDQVvq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 17:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031263AbXDQVvq
+	id S1031237AbXDQVxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 17:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031264AbXDQVxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 17:51:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37383 "EHLO mx1.redhat.com"
+	Tue, 17 Apr 2007 17:53:51 -0400
+Received: from waste.org ([66.93.16.53]:37351 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031261AbXDQVvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 17:51:44 -0400
-Subject: Re: AppArmor FAQ
-From: Karl MacMillan <kmacmill@redhat.com>
-To: casey@schaufler-ca.com
-Cc: Andi Kleen <andi@firstfloor.org>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <657751.18080.qm@web36614.mail.mud.yahoo.com>
-References: <657751.18080.qm@web36614.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Tue, 17 Apr 2007 17:48:27 -0400
-Message-Id: <1176846507.5946.70.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	id S1031237AbXDQVxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 17:53:50 -0400
+Date: Tue, 17 Apr 2007 16:39:54 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070417213954.GE11166@waste.org>
+References: <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070417070155.GF1057@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-17 at 13:19 -0700, Casey Schaufler wrote:
-> --- Andi Kleen <andi@firstfloor.org> wrote:
-> > > although this can often be done with PAM plugins, which is a standard way 
-> > > to do this kind of thing in modern Unix & Linux OSs.
+On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
+> On Mon, Apr 16, 2007 at 11:26:21PM -0700, William Lee Irwin III wrote:
+> > On Mon, Apr 16, 2007 at 11:09:55PM -0700, William Lee Irwin III wrote:
+> > >> All things are not equal; they all have different properties. I like
 > > 
-> > PAM plugins in vi and emacs? Scary idea.
+> > On Tue, Apr 17, 2007 at 08:15:03AM +0200, Nick Piggin wrote:
+> > > Exactly. So we have to explore those properties and evaluate performance
+> > > (in all meanings of the word). That's only logical.
 > > 
-> > And what do you do if someone decides to use OpenOffice to edit their
-> > /etc/resolv.conf? For a lot of people that's the only text editor 
-> > they know.
+> > Any chance you'd be willing to put down a few thoughts on what sorts
+> > of standards you'd like to set for both correctness (i.e. the bare
+> > minimum a scheduler implementation must do to be considered valid
+> > beyond not oopsing) and performance metrics (i.e. things that produce
+> > numbers for each scheduler you can compare to say "this scheduler is
+> > better than this other scheduler at this.").
 > 
-> For SELinux to be effective it has to have a complete policy definition.
-> This would prevent the OpenOffice access (unless OpenOffice is in the
-> modify_resolv_conf_t domain) above.
+> Yeah I guess that's the hard part :)
 > 
-> This, by the way, is a fundimental advantage of a path scheme over a
-> label scheme in that label schemes require every object be labeled
-> (it's Section 3.1.1.3 of the TCSEC if you want to look it up) while a
-> path scheme (in the absences of a published requirement) only requires
-> those names it cares about. SELinux in the absence of a correct and
-> complete policy could be considered dangerous.
-> 
+> For correctness, I guess fairness is an easy one. I think that unfairness
+> is basically a bug and that it would be very unfortunate to merge something
+> unfair. But this is just within the context of a single runqueue... for
+> better or worse, we allow some unfairness in multiprocessors for performance
+> reasons of course.
 
-This is wildly untrue (as I believe you know Casey). The effectiveness
-of SELinux is certainly diminished by not confining all applications,
-but that in no way makes it dangerous. It simply means that certain
-aspects of the security are no longer guaranteed by the policy but
-instead rely on application correctness. SELinux still offers useful
-protections against a variety security threats in a targeted
-configuration.
+I'm a big fan of fairness, but I think it's a bit early to declare it
+a mandatory feature. Bounded unfairness is probably something we can
+agree on, ie "if we decide to be unfair, no process suffers more than
+a factor of x".
+ 
+> Latency. Given N tasks in the system, an arbitrary task should get
+> onto the CPU in a bounded amount of time (excluding events like freak
+> IRQ holdoffs and such, obviously -- ie. just considering the context
+> of the scheduler's state machine).
 
-This is in contrast to a security mechanism that is path based and
-doesn't control all accesses which can make _no_ guarantees about any
-security goals. 
+This is a slightly stronger statement than starvation-free (which is
+obviously mandatory). I think you're looking for something like
+"worst-case scheduling latency is proportional to the number of
+runnable tasks". Which I think is quite a reasonable requirement.
 
-Karl
+I'm pretty sure the stock scheduler falls short of both of these
+guarantees though.
 
+-- 
+Mathematics is the supreme nostalgia of our time.
