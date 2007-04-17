@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031246AbXDQRKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161024AbXDQRNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031246AbXDQRKe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 13:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031248AbXDQRKe
+	id S1161024AbXDQRNF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 13:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161039AbXDQRNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 13:10:34 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40346 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031246AbXDQRKc (ORCPT
+	Tue, 17 Apr 2007 13:13:04 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:36106 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161024AbXDQRNC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 13:10:32 -0400
-Date: Tue, 17 Apr 2007 18:13:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.21-rc6-mm1 ATA HPT37x regression
-Message-ID: <20070417181340.7de99868@the-village.bc.nu>
-In-Reply-To: <4624FE88.2010908@ru.mvista.com>
-References: <17956.12963.163961.762444@smtp.charter.net>
-	<4624D4C3.9010109@ru.mvista.com>
-	<17956.63043.521397.597430@smtp.charter.net>
-	<4624FE88.2010908@ru.mvista.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 17 Apr 2007 13:13:02 -0400
+Date: Tue, 17 Apr 2007 10:11:44 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH] Introduce a handy list_first_entry macro
+Message-ID: <20070417171144.GR17395@mami.zabbo.net>
+References: <4624AD20.6050009@sw.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4624AD20.6050009@sw.ru>
+User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Ok, so do I need to do anything special with the next -mm release and
-> > the next version?
+On Tue, Apr 17, 2007 at 03:18:56PM +0400, Pavel Emelianov wrote:
+> There are many places in the kernel where the construction like
 > 
->    Well, let Alan decide that (2Alan: and I said that HPT code is bogus :-).
+>    foo = list_entry(head->next, struct foo_struct, list);
+> 
+> are used. 
+> The code might look more descriptive and neat if using the macro
+> 
+>    list_first_entry(head, type, member) \
+>              list_entry((head)->next, type, member)
 
-Try drivers/ide/pci/hpt366 - if that works grab a dmesg and let me know.
-It means that Sergei's DPLL sync code seems to work better than the
-vendor code and its time to swap it over.
+> -			dquot = list_entry(dirty->next, struct dquot, dq_dirty);
+> +			dquot = list_first_entry(dirty, struct dquot, dq_dirty);
 
-Oh how I love highpoint PATA
+I think it's more than just descriptive and neat.  A common sneaky bug
+is to accidentally pass &list->next into list_entry() instead of
+list->next. This is easy to do because one is used to typing &list in
+list_empty(), etc.  So by following ->next in the macro we make the list
+argument consistent in list_empty() and list_first_entry() and hopefully
+reduce the risk of making that mistake.
 
-Alan
+I like it.
+
+- z
