@@ -1,101 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbXDQKtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbXDQK7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566AbXDQKtO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 06:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbXDQKtN
+	id S1753645AbXDQK7J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 06:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbXDQK7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 06:49:13 -0400
-Received: from smtp103.plus.mail.re2.yahoo.com ([206.190.53.28]:45706 "HELO
-	smtp103.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753566AbXDQKtN (ORCPT
+	Tue, 17 Apr 2007 06:59:09 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:38065 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753625AbXDQK7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 06:49:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=aFt8M6ZGRKqE4JU4w2doji6ZEZwg6gmqkoTRYeEtMpSYKYg4+kY6AWne2BivRNtPIxDZa433XV5a/sSgNbbmDzoqPn7WDzoMPDHjPmzxTuyci+2KaGGq+UxnmfL+xfOxh96R753cO1PqyCXUgzsQzNtXexfeMNyZtn7oElNRTZU=  ;
-X-YMail-OSG: 4GAUSvcVM1na79BKyGnk6yV3OpXiDPDobzvjWN2T0LV90afYg03cpARyBvUUXOeoffqdCKITgQWTpKG85iUHFWR6fCXcWxMcQoHBbNPoTjl_I_DXN5jN
-Date: Tue, 17 Apr 2007 12:49:07 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: randy.dunlap@oracle.com
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [KERNEL-DOC] kill warnings when building mandocs
-Message-ID: <20070417104907.GA6155@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070413091422.GA15426@zmei.tnic> <20070414091341.7665d8b0.randy.dunlap@oracle.com> <20070415071050.GA4002@gollum.tnic>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070415071050.GA4002@gollum.tnic>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 17 Apr 2007 06:59:07 -0400
+Date: Tue, 17 Apr 2007 13:01:38 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg K-H <greg@kroah.com>, Frank Pavlic <fpavlic@de.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: [Patch driver tree] qeth: Remove usage of subsys.rwsem
+Message-ID: <20070417130138.37089b7b@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 15, 2007 at 09:10:50AM +0200, Borislav Petkov wrote:
-> On Sat, Apr 14, 2007 at 09:13:41AM -0700, Randy Dunlap wrote:
-> > On Fri, 13 Apr 2007 11:14:22 +0200 Borislav Petkov wrote:
-> > 
-> > > This patch shuts warnings of the sort:
-> > > 
-> > > make -C /mnt/samsung_200/sam/kernel/trees/21-rc6/build \
-> > > 	KBUILD_SRC=/mnt/samsung_200/sam/kernel/trees/21-rc6 \
-> > > 	KBUILD_EXTMOD="" -f /mnt/samsung_200/sam/kernel/trees/21-rc6/Makefile mandocs
-> > > make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=scripts/basic
-> > > make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=Documentation/DocBook mandocs
-> > >   SRCTREE=/mnt/samsung_200/sam/kernel/trees/21-rc6/ /mnt/samsung_200/sam/kernel/trees/21-rc6/build/scripts/basic/docproc doc /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/wanbook.tmpl >Documentation/DocBook/wanbook.xml
-> > >   if grep -q refentry Documentation/DocBook/wanbook.xml; then xmlto man -m /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/stylesheet.xsl -o Documentation/DocBook/man Documentation/DocBook/wanbook.xml ; gzip -f Documentation/DocBook/man/*.9; fi
-> > > Note: meta version: No productnumber or alternative     sppp_close
-> > > Note: meta version: No refmiscinfo@class=version        sppp_close
-> > > Note: Writing sppp_close.9
-> > > Note: meta version: No productnumber or alternative     sppp_open
-> > > Note: meta version: No refmiscinfo@class=version        sppp_open
-> > > 
-> > > by adding a RefMiscInfo xml tag in the form of the current kernel version to 
-> > > the function, struct and enum definitions in files included by kernel-doc when 
-> > > building 'mandocs'.  However, the version string appears truncated on the manpage
-> > > due to some constraints in the xml DTD for the man header, I believe, for the
-> > > troff output is truncated too.
-> > 
-> > Hi Borislav,
-> > 
-> > I cannot reproduce this error (either, a la the tex error).
-> > Any hints about how I could do so?
-> 
-> Hm, this is strange. IIRC, the refmiscinfo version tag is imposed by the docbook
-> xsl stylesheets for manpages, see
-> http://www.oasis-open.org/archives/docbook-apps/200508/msg00111.html and
-> especially the 'man'-section, subsection 'extra2 field.' According to it, 
-> the stylesheets check several different locations for version info to be put in
-> the left footer position in the manpage, and if none is found, they simply state
-> that there's no version info, so this is not an error message but simply a
-> notification which, if nothing else, annoys while building the mandocs.
-> 
-> The URL cites the changelog of docbook-xsl 1.69.1 and this is also the
-> version in SLED 10 you're using so you should be getting this, too. I'll
-> try to dig deeper into this. The relevant packs I use are docbook-xsl:
-> 1.72.0.dfsg.1-1, xmlto: 0.0.18-5.1 on debian unstable. 
+Hi,
 
-Hi Randi,
+the current driver tree contains the removal of subsys.rwsem.
+Unfortunately, this breaks qeth. However, it should be no problem to
+fix the walking of the devices for /proc/qeth:
 
-I'm pretty sure the reason you cannot reproduce this warning is the line 
+No need to take subsys.rwsem during walking the devices,
+driver_find_devices() should already suffice.
 
-<xsl:param name="refentry.version.suppress">1</xsl:param>
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-which can be found in param.xsl, it being a part of the docbook-xsl
-distribution. The parameter's name is self-explanatory and a '1' suppresses
-the version generation. I was able to get this error because in the
-debian docbook-xsl package this param value is set to 0 by default.
+---
+ drivers/s390/net/qeth_proc.c |    2 --
+ 1 files changed, 2 deletions(-)
 
-This means, some users will get this warning and some will not, depending on the
-setting in the param.xsl file. What is the way to go here wrt to a solution
-dealing with all cases:
-
-1. patch the kernel-doc?
-2. issue an info so that the user can suppress the annoying warning by
-themselves?
-3. ...?
-
--- 
-Regards/Gruß,
-    Boris.
+--- linux.orig/drivers/s390/net/qeth_proc.c
++++ linux/drivers/s390/net/qeth_proc.c
+@@ -37,7 +37,6 @@ qeth_procfile_seq_start(struct seq_file 
+ 	struct device *dev = NULL;
+ 	loff_t nr = 0;
+ 
+-	down_read(&qeth_ccwgroup_driver.driver.bus->subsys.rwsem);
+ 	if (*offset == 0)
+ 		return SEQ_START_TOKEN;
+ 	while (1) {
+@@ -53,7 +52,6 @@ qeth_procfile_seq_start(struct seq_file 
+ static void
+ qeth_procfile_seq_stop(struct seq_file *s, void* it)
+ {
+-	up_read(&qeth_ccwgroup_driver.driver.bus->subsys.rwsem);
+ }
+ 
+ static void *
