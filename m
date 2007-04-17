@@ -1,115 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031104AbXDQSpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031118AbXDQSqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031104AbXDQSpl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 14:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031126AbXDQSpl
+	id S1031118AbXDQSqB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 14:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031064AbXDQSqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 14:45:41 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:44293 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031064AbXDQSpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 14:45:40 -0400
-To: ebiederm@xmission.com
-CC: miklos@szeredi.hu, serue@us.ibm.com, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <m1zm56j27m.fsf@ebiederm.dsl.xmission.com>
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-References: <20070412164620.588752236@szeredi.hu>
-	<20070412203208.GG27772@sergelap.austin.ibm.com>
-	<m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-	<1176713221.9488.17.camel@ram.us.ibm.com>
-	<E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
-	<1176716941.9488.57.camel@ram.us.ibm.com>
-	<E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
-	<m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
-	<E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu>
-	<m1zm58jfj3.fsf@ebiederm.dsl.xmission.com>
-	<20070416195652.GA350@sergelap.austin.ibm.com>
-	<m1k5wbjrsh.fsf@ebiederm.dsl.xmission.com>
-	<E1HdlYr-00015O-00@dorka.pomaz.szeredi.hu> <m1zm56j27m.fsf@ebiederm.dsl.xmission.com>
-Message-Id: <E1HdsX6-0002Kl-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 17 Apr 2007 20:36:04 +0200
+	Tue, 17 Apr 2007 14:46:01 -0400
+Received: from mail.suse.de ([195.135.220.2]:36656 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031118AbXDQSp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 14:45:59 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: Permanent Kgdb integration into the kernel - lets get with it.
+Date: Tue, 17 Apr 2007 20:45:03 +0200
+User-Agent: KMail/1.9.6
+Cc: piet@bluelane.com, Tom Rini <trini@kernel.crashing.org>,
+       Dave Jiang <djiang@mvista.com>, linux-kernel@vger.kernel.org,
+       sshtylyov@ru.mvista.com, Andrew Morton <akpm@osdl.org>,
+       George Anzinger <george@wildturkeyranch.net>,
+       "David O'Brien" <obrien@freebsd.org>
+References: <20070307204516.GA24095@blade.az.mvista.com> <1173392650.8912.236.camel@piet2.bluelane.com> <20070417113016.1f0812c7.randy.dunlap@oracle.com>
+In-Reply-To: <20070417113016.1f0812c7.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200704172045.03743.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'm still not sure, what your problem is.
-> 
-> My problem right now is that I see a serious complexity escalation in
-> the user interface that we must support indefinitely.
-> 
-> I see us taking a nice powerful concept and seriously watering it down.
-> To some extent we have to avoid confusing suid applications.  (I would
-> so love to remove the SUID bit...).
-> 
-> I'm being contrary to ensure we have a good code review.
 
-OK.  And it's very much appreciated :)
+> Is there any movement on this?
 
-> I have heard it said that there are two kinds of design.  Something
-> so simple it obviously has no deficiencies.  Something so complex it has
-> no obvious deficiencies.  I am very much afraid we are slipping the
-> mount namespace into the latter category of work.  Which is a bad
-> bad thing for core OS feature.
+I'm open to reasonable patches for the hooks at least. If that is done
+then the actual kgdb code can be reviewed and considered eventually too. 
 
-I've tried to make this unprivileged mount thing as simple as
-possible, and no simpler.  If we can make it even simpler, all the
-better.
+But just having the hooks in would make it easy enough to use anyways 
+(no patching, just dropping in of new files, or even loading of it as a
+module into any kernel)
 
-> > With the v3 of the usermounts patchset, by default, user mounts are
-> > disabled, because the "allow unpriv submounts" flag is cleared on all
-> > mounts.
-> >
-> > There are several options available to sysadmins and distro builders
-> > to enable user mounts in a secure way:
-> >
-> >   - pam module, which creates a private namespace, and sets "allow
-> >     unpriv submounts" on the mounts within the namespace
-> >
-> >   - pam module, which rbinds / onto /mnt/ns/$USER, and chroots into
-> >     /mnt/ns/$USER, then sets the "allow unpriv submounts" on the
-> >     mounts under /mnt/ns/$USER.
-> 
-> In part this really disturbs me because we now have two mechanisms for
-> controlling the scope of what a user can do.
+When I did the original x86-64 kgdb port this worked nicely --
+kgdb could work with just the standard die notifiers and a simple
+change in the serial console code.
 
-You mean rbind+chroot and clone(CLONE_NS)?  Yes, those are two
-different mechanisms achieving very similar results.  But what has
-this to do with unprivileged mounts?
+The recent kgdb seems to need much more changes again though.
 
-> A flag or a new namespace.  Two mechanisms to accomplish the same
-> thing sound wrong, and hard to manage.
+However every time when I suggested this (fixing the hooks first
+and submitting the really needed changes piece by piece)
+there didn't seem to be any interest from the various kgdb maintainers.
 
-The flag permitting the unprivileged mounts (which we now agreed to
-name "allowusermnt") is used in both cases.
+So my impression currently is that they're not interested in merging.
 
-Just creating a new namespace doesn't always imply that you want to
-allow user mounts inside, does it?  These are orthogonal features.
+Another problem is that kgdb is moving more and more away from
+mainline by adding various weird hacks and workarounds in random
+code that just make  merging harder.
 
-> >   - sysadmin creates /mnt/usermounts writable to all users, with
-> >     sticky bit (same as /tmp), does "mount --bind /mnt/usermounts
-> >     /mnt/usermounts" and sets the "allow unpriv submounts" on
-> >     /mnt/usermounts.
-> >
-> > All of these are perfectly safe wrt userdel and backup (assuming it
-> > doesn't try back up /mnt).
-> 
-> I also don't understand at all the user= mount flag and options.
+Before anything could be considered for merging that all would
+need to be cleaned up.
 
-The "user=UID" or (or MNT_USER flag) serves multiple purposes:
-
-  - help mount(8) move away from /etc/mtab
-  - allow unprivileged umounts
-  - account user mounts
-
-> All it seemed to be used for was adding permissions to unmount.  In user
-> space to deal with the lack of any form of untrusted mounts I can understand
-> this.  In kernel space this seems to be more of a problem.
-
-Why is handling unprivileged mounts in kernel different from handling
-them in userspace in this respect?
-
-Miklos
+-Andi
