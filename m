@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbXDQGPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbXDQGTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751205AbXDQGPG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 02:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXDQGPG
+	id S1751110AbXDQGTQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 02:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXDQGTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 02:15:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49394 "EHLO mx2.suse.de"
+	Tue, 17 Apr 2007 02:19:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37380 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbXDQGPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 02:15:05 -0400
-Date: Tue, 17 Apr 2007 08:15:03 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Peter Williams <pwil3058@bigpond.net.au>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org,
+	id S1751110AbXDQGTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 02:19:14 -0400
+Date: Tue, 17 Apr 2007 08:18:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417061503.GC1057@wotan.suse.de>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com>
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+Message-ID: <20070417061849.GA12385@elte.hu>
+References: <20070416220715.GA4071@elte.hu> <200704170053.58611.gene.heskett@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070417060955.GO8915@holomorphy.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <200704170053.58611.gene.heskett@gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 11:09:55PM -0700, William Lee Irwin III wrote:
-> On Tue, Apr 17, 2007 at 02:17:22PM +1000, Peter Williams wrote:
-> >> I myself was thinking of this as the chance for a much needed 
-> >> simplification of the scheduling code and if this can be done with the 
-> >> result being "reasonable" it then gives us the basis on which to propose 
-> >> improvements based on the ideas of others such as you mention.
-> >> As the size of the cpusched indicates, trying to evaluate alternative 
-> >> proposals based on the current O(1) scheduler is fraught.  Hopefully, 
-> 
-> On Tue, Apr 17, 2007 at 06:29:54AM +0200, Nick Piggin wrote:
-> > I don't know why. The problem is that you can't really evaluate good
-> > proposals by looking at the code (you can say that one is bad, ie. the
-> > current one, which has a huge amount of temporal complexity and is
-> > explicitly unfair), but it is pretty hard to say one behaves well.
-> > And my scheduler for example cuts down the amount of policy code and
-> > code size significantly. I haven't looked at Con's ones for a while,
-> > but I believe they are also much more straightforward than mainline...
-> > For example, let's say all else is equal between them, then why would
-> > we go with the O(logN) implementation rather than the O(1)?
-> 
-> All things are not equal; they all have different properties. I like
 
-Exactly. So we have to explore those properties and evaluate performance
-(in all meanings of the word). That's only logical.
+* Gene Heskett <gene.heskett@gmail.com> wrote:
 
+> This one (v2-rc2) is not a keeper I'm sorry to say, Ingo.  v2-rc0 was 
+> much better.  Watching amanda run with htop, kmails composer is being 
+> subjected to 5 to 10 second pauses, and htop says that gzip -best 
+> isn't getting more that 15% of the cpu, and the /amandatapes drive is 
+> being written to in a regular pattern that seems to be the cause of 
+> the pauses according to gkrellm, which also seems to track the size of 
+> the writes, and can show anything from 4.3k to 54 megs as being 
+> written in one cycle of its screen update.
 
-> On a random note, limitations on kernel address space make O(lg(n))
-> effectively O(1), albeit with large upper bounds on the worst case
-> and an expected case much faster than the worst case.
+ok - fortunately the delta between -v2-rc0 and -v2-final is pretty 
+small. One difference is the child-runs-first fix. To restore the 
+parent-runs-first logic, do this: 
 
-Yeah. O(n!) is also O(1) if you can put an upper bound on n ;)
+	echo 0 > /proc/sys/kernel/sched_child_runs_first
 
+does this make any difference?
+
+If not then pretty much the only other change was the nice level tweak i 
+did. Could you try to grab a few snapshots of scheduling state via 
+something like:
+
+   while sleep 1; do cat /proc/sched_debug >> to-ingo.txt; done
+
+(and tell me the PID of the kmail composer, to make sure i'm checking 
+the right task's behavior.)
+
+also, as a separate experiment, could you perhaps run this script as 
+root:
+
+   cd /proc; for N in [1-9]*; do renice -n 0 $N; done
+
+this will move all tasks in the system to nice level 0 and should make 
+any nice level handling logic in the scheduler irrelevant. Do you have X 
+reniced perhaps?
+
+Lots of system threads have negative or positive nice levels, so once 
+you have executed this script, only a reboot will be a practical way to 
+restore it to the previous settings.
+
+	Ingo
