@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031149AbXDQQZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031162AbXDQQ25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031149AbXDQQZP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031154AbXDQQZP
+	id S1031162AbXDQQ25 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDQQ25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:25:15 -0400
-Received: from [212.12.190.103] ([212.12.190.103]:33030 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031149AbXDQQZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:25:14 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-Date: Tue, 17 Apr 2007 19:29:00 +0300
-User-Agent: KMail/1.5
-References: <200704150931.42268.a1426z@gawab.com>
-In-Reply-To: <200704150931.42268.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Apr 2007 12:28:57 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:52173 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031154AbXDQQ24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 12:28:56 -0400
+Date: Tue, 17 Apr 2007 22:00:55 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Shaya Potter <spotter@cs.columbia.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  0/15] VFS based Union Mount
+Message-ID: <20070417163055.GA11318@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070417131459.GA4001@in.ibm.com> <4624DB46.6040400@cs.columbia.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704171929.00258.a1426z@gawab.com>
+In-Reply-To: <4624DB46.6040400@cs.columbia.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Anyone who thinks that there exists only two kinds of code: 100% correct
-> and 100% incorrect with no shades of grey inbetween is in reality a sort
-> of an extremist: whom, depending on mood and affection, we could call
-> either a 'coding purist' or a 'coding taliban' ;-)
+On Tue, Apr 17, 2007 at 10:35:50AM -0400, Shaya Potter wrote:
+> Bharata B Rao wrote:
+> >Hi,
+> >
+> >Here is an attempt towards vfs based union mount implementation.
+> >Union mount provides the filesytem namespace unification feature.
+> >Unlike the traditional mounts which hide the contents of the mount point,
+> >the union mount presents the merged view of the mount point and the
+> >mounted filesytem.
+> 
+> does this approach allow one to add directories to the union and have it 
+> behave normally.  namely when imagine one has the situation
+> 
+> dir-b
+> dir-a/ (contains file foo)
+> 
+> 
+> if one unions this and deletes foo, that will create a whiteout entry in 
+> dir-a
 
-I am not sure what you mean by this?!?
+(I guess you mean to say that this creates a whiteout in dir-b)
 
-It's probably well known that nothing is perfect, even if you tried, but to 
-use this to excuse sub-optimal coding sounds rather lame.
+> 
+> now, what happens if one does
+> 
+> dir-c
+> dir-b (now contains whiteout, from previous union).
+> dir-a (contains file foo)
+> 
+> will one see foo or not. i.e. are whiteouts only looked for in the 
+> topmost dir, or in every dir?
 
-Now, admitting that everything may be fixable, would have been a much more 
-reasonable response.
+No. foo is not visible. While looking for a file in a union mounted
+directory, the lookup starts from the topmost directory and proceeds
+downwards if the file isn't present the top layers. If a whiteout is
+found in any of the top layers, the lookup is abondoned and -ENOENT
+is removed. Thus until a whiteout exists in any upper layer for
+a corresponding file in the lower layer, the lower layer file remains
+hidden until the whiteout is removed.
 
+However in the case of dir-c containing foo, the foo(from dir-c) will become
+visible after union mounting dir-c on top of dir-b and dir-a.
 
-Thanks!
-
---
-Al
-
+Regards,
+Bharata.
