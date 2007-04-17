@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752257AbXDQHd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXDQHdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752257AbXDQHd2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 03:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbXDQHd2
+	id S1752064AbXDQHdg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 03:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbXDQHdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 03:33:28 -0400
-Received: from mx2.suse.de ([195.135.220.15]:52356 "EHLO mx2.suse.de"
+	Tue, 17 Apr 2007 03:33:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48988 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752237AbXDQHd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 03:33:27 -0400
-Date: Tue, 17 Apr 2007 09:33:12 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
+	id S1752064AbXDQHdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 03:33:35 -0400
+Date: Tue, 17 Apr 2007 09:33:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>, Nick Piggin <npiggin@suse.de>,
        Peter Williams <pwil3058@bigpond.net.au>,
        Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>,
+       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417073312.GA20026@wotan.suse.de>
-References: <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com> <Pine.LNX.4.64.0704170021460.30516@alien.or.mcafeemobile.com>
+Message-ID: <20070417073308.GB30559@elte.hu>
+References: <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704170021460.30516@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070417070949.GR8915@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 12:27:28AM -0700, Davide Libenzi wrote:
-> On Tue, 17 Apr 2007, William Lee Irwin III wrote:
-> 
-> > On Mon, Apr 16, 2007 at 11:50:03PM -0700, Davide Libenzi wrote:
-> > > I would suggest to thoroughly test all your alternatives before deciding. 
-> > > Some code and design may look very good and small at the beginning, but 
-> > > when you start patching it to cover all the dark spots, you effectively 
-> > > end up with another thing (in both design and code footprint).
-> > > About O(1), I never thought it was a must (besides a good marketing 
-> > > material), and O(log(N)) *may* be just fine (to be verified, of course).
-> > 
-> > The trouble with thorough testing right now is that no one agrees on
-> > what the tests should be and a number of the testcases are not in great
-> > shape. An agreed-upon set of testcases for basic correctness should be
-> > devised and the implementations of those testcases need to be
-> > maintainable code and the tests set up for automated testing and
-> > changing their parameters without recompiling via command-line options.
-> > 
-> > Once there's a standard regression test suite for correctness, one
-> > needs to be devised for performance, including interactive performance.
-> > The primary difficulty I see along these lines is finding a way to
-> > automate tests of graphics and input device response performance. Others,
-> > like how deterministically priorities are respected over progressively
-> > smaller time intervals and noninteractive workload performance are
-> > nowhere near as difficult to arrange and in many cases already exist.
-> > Just reuse SDET, AIM7/AIM9, OAST, contest, interbench, et al.
-> 
-> What I meant was, that the rules (requirements and associated test cases) 
-> for this new Scheduler Amazing Race should be set forward, and not kept a 
-> moving target to fit&follow one or the other implementation.
 
-Exactly. Well I don't mind if it is a moving target as such, just as
-long as the decisions are rational (no "blah is more important
-because I say so").
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+
+> On Mon, Apr 16, 2007 at 11:50:03PM -0700, Davide Libenzi wrote:
+> > I had a quick look at Ingo's code yesterday. Ingo is always smart to 
+> > prepare a main dish (feature) with a nice sider (code cleanup) to 
+> > Linus ;) And even this code does that pretty nicely. The deadline 
+> > designs looks good, although I think the final "key" calculation 
+> > code will end up quite different from what it looks now.
+> 
+> The additive nice_offset breaks nice levels. A multiplicative priority 
+> weighting of a different, nonnegative metric of cpu utilization from 
+> what's now used is required for nice levels to work. I've been trying 
+> to point this out politely by strongly suggesting testing whether nice 
+> levels work.
+
+granted, CFS's nice code is still incomplete, but you err quite 
+significantly with this extreme statement that they are "broken".
+
+nice levels certainly work to a fair degree even in the current code and 
+much of the focus is elsewhere - just try it. (In fact i claim that 
+CFS's nice levels often work _better_ than the mainline scheduler's nice 
+level support, for the testcases that matter to users.)
+
+The precise behavior of nice levels, as i pointed it out in previous 
+mails, is largely 'uninteresting' and it has changed multiple times in 
+the past 10 years.
+
+What matters to users is mainly: whether X reniced to -10 does get 
+enough CPU time and whether stuff reniced to +19 doesnt take away too 
+much CPU time from the rest of the system. _How_ a Linux scheduler 
+achieves this is an internal matter and certainly CFS does it in a hacky 
+way at the moment.
+
+All the rest, 'CPU bandwidth utilization' or whatever abstract metric we 
+could come up with is just a fancy academic technicality that has no 
+real significance to any of the testers who are trying CFS right now.
+
+Sure we prefer final solutions that are clean and make sense (because 
+such things are the easiest to maintain long-term), and often such final 
+solutions are quite close to academic concepts, and i think Davide 
+correctly observed this by saying that "the final key calculation code 
+will end up quite different from what it looks now", but your 
+extreme-end claim of 'breakage' for something that is just plain 
+incomplete is not really a fair characterisation at this point.
+
+Anyone who thinks that there exists only two kinds of code: 100% correct 
+and 100% incorrect with no shades of grey inbetween is in reality a sort 
+of an extremist: whom, depending on mood and affection, we could call 
+either a 'coding purist' or a 'coding taliban' ;-)
+
+	Ingo
