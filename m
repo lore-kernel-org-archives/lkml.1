@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbXDQOBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbXDQOCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbXDQOBz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 10:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbXDQOBy
+	id S1754404AbXDQOCt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 10:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbXDQOCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 10:01:54 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:39978 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754400AbXDQOBx (ORCPT
+	Tue, 17 Apr 2007 10:02:49 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33633 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754400AbXDQOCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 10:01:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nr+m3QCyvw286klyaOLk78fIg65wwzZ/Jj7SZZNQckoQei/oY19un00C6K7TMbXN0Sy3918tnmsoMphO9bvytTfiTD/K+e69ByUDLMERnca9308mlsjPEQo8NxP3Aro5D/Cmn4UDB2tN/96iyKkOkJxyT9BmWa64z7BZIetEFXg=
-Message-ID: <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com>
-Date: Tue, 17 Apr 2007 16:01:51 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, helge.hafting@aitel.hist.no,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-In-Reply-To: <E1HdnwX-0005U1-00@gondolin.me.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 17 Apr 2007 10:02:48 -0400
+Date: Tue, 17 Apr 2007 17:02:46 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Pavel Emelianov <xemul@sw.ru>
+cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>, linux-mm@kvack.org
+Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M
+In-Reply-To: <4624D0C1.4090304@sw.ru>
+Message-ID: <Pine.LNX.4.64.0704171653420.22366@sbz-30.cs.Helsinki.FI>
+References: <4624C3C1.9040709@sw.ru> <84144f020704170622h2b16f0f6m47ffdbb3b5686758@mail.gmail.com>
+ <4624D0C1.4090304@sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070417130431.GA8685@2ka.mipt.ru>
-	 <E1HdnwX-0005U1-00@gondolin.me.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/17/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
->
-> Yep.  We don't need such a flag anyway.  All we need is a way to tweak
-> the priority and Bob's your uncle.
->
+Hi Pavel,
 
-Could you elaborate please, I don't see how you prevent others users
-to use this module with priority.
+At some point in time, I wrote:
+> > So, now we have two locks protecting cache_chain? Please explain why
+> > you can't use the mutex.
 
-Priority is a stuff that tells you which aes implementation to use but
-it does not prevent an implementation to be used several times...
+On Tue, 17 Apr 2007, Pavel Emelianov wrote:
+> Because OOM can actually happen with this mutex locked. For example
+> kmem_cache_create() locks it and calls kmalloc(), or write to
+> /proc/slabinfo also locks it and calls do_tune_cpu_caches(). This is
+> very rare case and the deadlock is VERY unlikely to happen, but it
+> will be very disappointing if it happens.
+> 
+> Moreover, I put the call to show_slabs() into sysrq handler, so it may
+> be called from atomic context.
+> 
+> Making mutex_trylock() is possible, but we risk of loosing this info
+> in case OOM happens while the mutex is locked for cache shrinking (see
+> cache_reap() for example)...
+> 
+> So we have a choice - either we have an additional lock on a slow and
+> rare paths and show this info for sure, or we do not have a lock, but
+> have a risk of loosing this info.
 
-Thanks
--- 
-Francis
+I don't worry about performance as much I do about maintenance. Do you 
+know if mutex_trylock() is a problem in practice? Could we perhaps fix 
+the worst offenders who are holding cache_chain_mutex for a long time?
+
+In any case, if we do end up adding the lock, please add a BIG FAT COMMENT 
+explaining why we have it.
+
+At some point in time, I wrote:
+> > I would also drop the OFF_SLAB bits because it really doesn't matter
+> > that much for your purposes. Besides, you're already per-node and
+> > per-CPU caches here which attribute to much more memory on NUMA setups
+> > for example.
+ 
+On Tue, 17 Apr 2007, Pavel Emelianov wrote:
+> This gives us a more precise information :) The precision is less than 1%
+> so if nobody likes/needs it, this may be dropped.
+
+My point is that the "precision" is useless here. We probably waste more 
+memory in the caches which are not accounted here. So I'd just drop it.
