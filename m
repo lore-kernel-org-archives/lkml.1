@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161398AbXDQWiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161403AbXDQWoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161398AbXDQWiw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 18:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161403AbXDQWiw
+	id S1161403AbXDQWoe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 18:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161406AbXDQWoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 18:38:52 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:13458 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161398AbXDQWiv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 18:38:51 -0400
+	Tue, 17 Apr 2007 18:44:34 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:7599 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161403AbXDQWod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 18:44:33 -0400
 X-IronPort-AV: i="4.14,420,1170662400"; 
-   d="scan'208"; a="412503715:sNHT45798780"
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Tomasz =?iso-8859-1?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-X-Message-Flag: Warning: May contain useful information
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain>
-	<200704171229.21433.dhazelton@enter.net>
-	<Pine.BSO.4.63.0704172045560.11088@rudy.mif.pg.gda.pl>
-	<200704171819.28407.dhazelton@enter.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Apr 2007 15:38:45 -0700
-In-Reply-To: <200704171819.28407.dhazelton@enter.net> (Daniel Hazelton's message of "Tue, 17 Apr 2007 18:19:28 -0400")
-Message-ID: <ada647u1v9m.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Apr 2007 22:38:45.0657 (UTC) FILETIME=[288D8890:01C78141]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+   d="scan'208"; a="52078449:sNHT14927976"
+Subject: Re: nfs: desynchronized value of nfs_i.ncommit.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87hcrfaqam.fsf@duaron.myhome.or.jp>
+References: <87hcrfaqam.fsf@duaron.myhome.or.jp>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Tue, 17 Apr 2007 18:44:30 -0400
+Message-Id: <1176849870.6455.3.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 17 Apr 2007 22:44:37.0419 (UTC) FILETIME=[FA3827B0:01C78141]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > After the discussions that took place back around the time of the release of 
- > the first draft of GPLv3 it was decided to lock Linux to *ONLY* GPLv2
+On Wed, 2007-04-18 at 02:01 +0900, OGAWA Hirofumi wrote:
+> Hi,
+> 
+> I've got the following message today. Probably, it happened on heavy load.
+> 
+> NFS: desynchronized value of nfs_i.ncommit.
+> NFS: desynchronized value of nfs_i.ncommit.
+> NFS: desynchronized value of nfs_i.ncommit.
+> NFS: desynchronized value of nfs_i.ncommit.
+> NFS: desynchronized value of nfs_i.ncommit.
+> NFS: desynchronized value of nfs_i.ncommit.
+> NFS: desynchronized value of nfs_i.ncommit.
+> [...]
+> 
+> Any idea? Thanks.
 
-This is not accurate.  As far back as I can easily check, the kernel's
-COPYING file has said:
+It is a known issue that is due to nfs_writepage() 'stealing' requests
+from the commit list. The most dangerous consequence is that it screws
+up the NR_UNSTABLE_NFS page accounting...
 
- Also note that the only valid version of the GPL as far as the kernel
- is concerned is _this_ particular version of the license (ie v2, not
- v2.2 or v3.x or whatever), unless explicitly otherwise stated.
+I'm working on a fix, and will post it to lkml as soon as I'm happy with
+tests.
 
-To be really precise, there was a trivial rewording of this sometime
-around Feb 2002 to make it clearer, but the point is that the kernel
-has been GPL v2 only long before the GPL v3 process started.
-
- - R.
+Cheers
+  Trond
