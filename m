@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031052AbXDQBdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbXDQBf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031052AbXDQBdG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 21:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031053AbXDQBdG
+	id S1754240AbXDQBf0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 21:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbXDQBf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 21:33:06 -0400
-Received: from qsrv01ps.mx.bigpond.com ([144.140.82.181]:46553 "EHLO
-	qsrv01ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031052AbXDQBdF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 21:33:05 -0400
-Message-ID: <46240F22.2050209@bigpond.net.au>
-Date: Tue, 17 Apr 2007 10:04:50 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 16 Apr 2007 21:35:26 -0400
+Received: from mail.suse.de ([195.135.220.2]:54913 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750930AbXDQBfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 21:35:24 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [AppArmor 31/41] Fix __d_path() for lazy unmounts and make it unambiguous; exclude unreachable mount points from /proc/mounts
+Date: Tue, 17 Apr 2007 03:35:21 +0200
+User-Agent: KMail/1.9.5
+Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070412090809.917795000@suse.de> <200704151940.22528.agruen@suse.de> <20070416225748.3e5d3003@the-village.bc.nu>
+In-Reply-To: <20070416225748.3e5d3003@the-village.bc.nu>
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       hui Bill Huey <billh@gnuppy.monkey.org>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415051645.GA28438@gnuppy.monkey.org> <20070415084447.GC24886@elte.hu> <20070415095146.GA30327@gnuppy.monkey.org> <84144f020704150339i4a0d437fja6868ab671558ba1@mail.gmail.com> <20070415124527.GP943@1wt.eu> <20070415152643.GH8915@holomorphy.com> <46239C62.4090302@nortel.com>
-In-Reply-To: <46239C62.4090302@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 00:04:55 +0000
+Content-Disposition: inline
+Message-Id: <200704170335.21805.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> William Lee Irwin III wrote:
+On Monday 16 April 2007 23:57, Alan Cox wrote:
+> I don't believe the existing behaviour _IS_ a mistake.
+
+So what would be the arguments why this behavior makes sense, other than 
+legacy?
+
+For /proc/mounts, one could argue that the admin might want to see everything, 
+but then that's not actually true even today because /proc/mounts doesn't 
+show lazyily unmounted stuff or mounts from other namespaces, so that 
+everything is quite relative.
+
+Along that line of argumentation, I would at least expect unambiguous output, 
+to be able to tell which mountpoints are actually meaningful to the 
+requesting process. It's not only human operators looking at /proc/mounts; 
+applications care as well.
+
+But after thinking about this issue quite a while, I really can't see what 
+that should be good for. The current /proc/mounts interface is obviously 
+broken; the chroot example should have demonstrated that. There are also 
+unnecessary special cases because of that, such as having to filter out the 
+rootfs entry when trying to figure out what's really mounted on /, and having 
+to guess what's there and what's not in a particular context. The more 
+complex mount scenarios will get, the more obviously broken the 
+current /proc/mounts interface will become.
+
+The getcwd() case is even stronger as the "see everything" argument makes even 
+less sense there. I really can't see why the kernel should return processes 
+fake pathnames. The process is explicitly asking for the current pathname to 
+the working directory, it doesn't want to know what the pathname was at some 
+previous point in time.
+
+> > Process can access file descriptors which are unreachable via path name
+> > just fine indeed, but those fds still don't have a valid path in the
+> > context of that process.
 > 
->> The sorts of like explicit decisions I'd like to be made for these are:
->> (1) In a mixture of tasks with varying nice numbers, a given nice number
->>     corresponds to some share of CPU bandwidth. Implementations
->>     should not have the freedom to change this arbitrarily according
->>     to some intention.
-> 
-> The first question that comes to my mind is whether nice levels should 
-> be linear or not.
+> Which while problematic to your name based security is just fine to
+> everything else.
 
-No. That squishes one end of the table too much.  It needs to be 
-(approximately) piecewise linear around nice == 0.  Here's the mapping I 
-use in my entitlement based schedulers:
+Actually, no. We could live fine with leaving getcwd() and /proc/mounts as 
+ambiguous / weird / broken as they are right now. All it would take would be 
+to reambiguate the result of the unambiguous __d_path(), which is really 
+easy. Everything that cares about real pathnames would use the unambiguous 
+version while the legacy interfaces would use the ambiguous version. But that 
+really wouldn't make sense.
 
-#define NICE_TO_LP(nice) ((nice >=0) ? (20 - (nice)) : (20 + (nice) * 
-(nice)))
+> Ok, providing the "real" root sees them all it isn't so bad, but to
+> assume you can filter based upon what the task can see is dodgy as an
+> assumption.
 
-It has the (good) feature that a nice == 19 task has 1/20th the 
-entitlement of a nice == 0 task and a nice == -20 task has 21 times the 
-entitlement of a nice == 0 task.  It's not strictly linear for negative 
-nice values but is very cheap to calculate and quite easy to invert if 
-necessary.
+Why?
 
->  I would lean towards nonlinear as it allows a wider 
-> range (although of course at the expense of precision).  Maybe something 
-> like "each nice level gives X times the cpu of the previous"?  I think a 
-> value of X somewhere between 1.15 and 1.25 might be reasonable.
-> 
-> What about also having something that looks at latency, and how latency 
-> changes with niceness?
-> 
-> What about specifying the timeframe over which the cpu bandwidth is 
-> measured?  I currently have a system where the application designers 
-> would like it to be totally fair over a period of 1 second.
-
-Have you tried the spa_ebs scheduler?  The half life is no longer a run 
-time configurable parameter (as making it highly adjustable results in 
-less efficient code) but it could be adjusted to be approximately 
-equivalent to 0.5 seconds by changing some constants in the code.
-
->  As you can 
-> imagine, mainline doesn't do very well in this case.
-
-You should look back through the plugsched patches where many of these 
-ideas have been experimented with.
-
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+Thanks,
+Andreas
