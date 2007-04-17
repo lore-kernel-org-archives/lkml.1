@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161172AbXDQT6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161199AbXDQT73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161172AbXDQT6N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 15:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161186AbXDQT6N
+	id S1161199AbXDQT73 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 15:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161039AbXDQT73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 15:58:13 -0400
-Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:28150 "EHLO
-	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161172AbXDQT6M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 15:58:12 -0400
-Date: Tue, 17 Apr 2007 21:58:09 +0200 (CEST)
-From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-To: Daniel Hazelton <dhazelton@enter.net>
-cc: Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: <200704171229.21433.dhazelton@enter.net>
-Message-ID: <Pine.BSO.4.63.0704172045560.11088@rudy.mif.pg.gda.pl>
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417135958.GB28201@srcf.ucam.org>
- <Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
- <200704171229.21433.dhazelton@enter.net>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-684605250-1176839889=:11088"
+	Tue, 17 Apr 2007 15:59:29 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:55156 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161199AbXDQT72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 15:59:28 -0400
+Date: Tue, 17 Apr 2007 14:57:47 -0500
+From: Stephen Cameron <steve.cameron@hp.com>
+To: linux-kernel@vger.kernel.org
+Cc: mike.miller@hp.com
+Subject: [PATCH] Documentation: cciss: detecting failed drives
+Message-ID: <20070417195747.GA11004@quandary.cca.cpqcorp.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---0-684605250-1176839889=:11088
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
+From: Stephen M. Cameron <steve.cameron@hp.com>
+Signed-off-by: Stephen M. Cameron <steve.cameron@hp.com>
 
-On Tue, 17 Apr 2007, Daniel Hazelton wrote:
-[..]
->> Why on discussion about switching to GPL v3 Linux code this argument was
->> allways taken as "piece of cake". Why in case switching to another license
->> which will allow use CDDL code just it is most importand contr argument ?
->>
->> kloczek
->
-> Because *EVERY* version of the GPL contains the "or any later version of this
-> license" clause (except, now, the version being used with the Linux kernel)
+Document how to detect drive failures for cciss 
 
-So after around commented swiching to GPL v3 it will be possible to start 
-work on GLP v3.5 which will allow easy reuse CDDL code under Linux .. good 
-to know :o)
-How many years it will take ? two, three ? more ? (it will be 
-good to know how long we must wait on ZFS under Linux .. I don't belive in 
-rewriting ZFS code time and make it so useable on production as *now* it 
-is possible under Solaris/*BSD/MOX and passing all pointless arguing will 
-take shorter time) .. or maybe never because some people says 
-something like "Linux is in GPL cage".
+---
 
-Hmm .. transforming KProbes/systemtap to someting useable as DTrace was 
-started more than two years ago and I don't see end of base work (sill on 
-start). Make ALSA so useable as OSS it was next three trashed years 
-(because some developers stays on position "mixing audio in kernel space 
-is dangerous") and also not finished in many points. LVM still isnt't 
-Veritas. I don't see OpenVZ to tries be so useable and easy for managa as 
-Solaris zoning (why OpenVZ people can't use the same commands syntax for 
-manage zones as under Solaris .. command syntax is not patented :). Also 
-.. moment .. moment .. for what I'm waiting if I can install and use 
-Solaris/*BSD/MOX *NOW* ??? Why still contribute any code to project which 
-seems must die ? (Is is realy true that some beeings which can't evolve in 
-changeing enviroment will not survive .. ?)
+ Documentation/cciss.txt |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
-EOT .. sorry
-
-kloczek
--- 
------------------------------------------------------------
-*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
------------------------------------------------------------
-Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
---0-684605250-1176839889=:11088--
+diff -puN Documentation/cciss.txt~cciss_vol_status_doc Documentation/cciss.txt
+--- linux-2.6.21-rc6/Documentation/cciss.txt~cciss_vol_status_doc	2007-04-13 13:56:17.000000000 -0500
++++ linux-2.6.21-rc6-scameron/Documentation/cciss.txt	2007-04-13 14:01:33.000000000 -0500
+@@ -22,14 +22,21 @@ This driver is known to work with the fo
+ 	* SA E200i
+ 	* SA E500
+ 
+-If nodes are not already created in the /dev/cciss directory, run as root:
++Detecting drive failures:
++-------------------------
+ 
+-# cd /dev
+-# ./MAKEDEV cciss
++To get the status of logical volumes and to detect physical drive 
++failures, you can use the cciss_vol_status program found here:
++http://cciss.sourceforge.net/#cciss_utils
+ 
+ Device Naming:
+ --------------
+ 
++If nodes are not already created in the /dev/cciss directory, run as root:
++
++# cd /dev
++# ./MAKEDEV cciss
++
+ You need some entries in /dev for the cciss device.  The MAKEDEV script
+ can make device nodes for you automatically.  Currently the device setup
+ is as follows:
+_
