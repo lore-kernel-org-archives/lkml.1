@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbXDQFCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031091AbXDQFGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbXDQFCI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 01:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXDQFCI
+	id S1031091AbXDQFGl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 01:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXDQFGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 01:02:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57893
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753918AbXDQFCH (ORCPT
+	Tue, 17 Apr 2007 01:06:40 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:38627 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753970AbXDQFGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 01:02:07 -0400
-Date: Mon, 16 Apr 2007 22:02:08 -0700 (PDT)
-Message-Id: <20070416.220208.94071670.davem@davemloft.net>
-To: andrew.vasquez@qlogic.com
-Cc: seokmann.ju@qlogic.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-       ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070417024107.GE16469@dmccrory-d810.qlogic.org>
-References: <20070416234705.GA15937@dmccrory-d810.qlogic.org>
-	<20070416.170504.02298047.davem@davemloft.net>
-	<20070417024107.GE16469@dmccrory-d810.qlogic.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 17 Apr 2007 01:06:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=j49wXaFxSlR0pWh1/1slWiY7GmyA5pWOxZKrvGxjz7uidUchuGYVRayQGv0afv3G2bv4SWH1F2UGRFl3mvd2WXpSFHueEKqYctcONuK4uefd+6nJ3U5PAcPTw0kfrWy3yk3c2VPLTn6Bib1YLsQwYyF2zUS4a/FNf0uRZ66Un1w=
+Message-ID: <462455D7.3050908@gmail.com>
+Date: Tue, 17 Apr 2007 14:06:31 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: maneesh@in.ibm.com
+CC: gregkh@suse.de, dmitry.torokhov@gmail.com, cornelia.huck@de.ibm.com,
+       oneukum@suse.de, rpurdie@rpsys.net, James.Bottomley@SteelEye.com,
+       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET #master] sysfs: make sysfs disconnect immediately on
+ deletion, take 2
+References: <11760923261269-git-send-email-htejun@gmail.com> <20070416082212.GC31874@in.ibm.com>
+In-Reply-To: <20070416082212.GC31874@in.ibm.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Date: Mon, 16 Apr 2007 19:41:07 -0700
+Hello, Maneesh.
 
-> That verbiage sounds fine -- so would you consider the previous patch
-> I submitted (with module parameter) along with the wording above?
+Maneesh Soni wrote:
+> I started looking at these patches and parallely also did some testing on a 
+> 8 CPU system. I am using the patches from Greg's tree at
+> http://www.kernel.org/pub/scm/linux/kernel/git/gregkh/patches.git/
+> 
+> I ran following loops parallelly
+> 
+> # while true; do insmod drivers/net/dummy.ko; sleep 1;rmmod dummy; done
+> # while true; do find /sys/class/net/dummy0 | xargs cat; sleep 1; done
+> # while true; do umount /sys; sleep 1; mount -t sysfs none /sys; done
+> # while true; do find /sys | xargs cat > /dev/null; sleep 1; done
+> 
+> and got the following oops
+> 
+> Unable to handle kernel NULL pointer dereference at 000000000000004c RIP:
+>  [<ffffffff802935b4>] simple_unlink+0x14/0x5c
 
-Yes, that sounds fine.
+Eeek... I'll try to replicate and track down the bug here.  FWIW, SCSI
+also oopses if udev is running due to a bug in SCSI open/close handling.
 
-> I'm in transit for a redeye to NY so I won't be able to modify the
-> patch, If you would be amenable to the above, Seokmann, could you
-> rework the patch?
+Thanks for testing.
 
-Thanks guys.
+-- 
+tejun
