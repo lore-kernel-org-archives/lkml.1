@@ -1,57 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030624AbXDQPql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030887AbXDQPt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030624AbXDQPql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030748AbXDQPql
+	id S1030887AbXDQPt2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXDQPt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:46:41 -0400
-Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:33533 "EHLO
-	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030624AbXDQPqk (ORCPT
+	Tue, 17 Apr 2007 11:49:28 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:43105 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030887AbXDQPt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:46:40 -0400
-Date: Tue, 17 Apr 2007 17:46:38 +0200 (CEST)
-From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: <20070417135958.GB28201@srcf.ucam.org>
-Message-ID: <Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org>
- <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl> <20070417135958.GB28201@srcf.ucam.org>
+	Tue, 17 Apr 2007 11:49:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=AT5vnGqxgDK/paK5aNiUf/1Nw5Lcdoahsilh1XV1fUsLuo0v82mFAcMZ1HVwa/KG5DJ+lP/G7qKwWS1D2nCh/dWX7vA8I7PObQ4X2KTSnNQJ4x2FvRTeQO6q0iXbWr1mZgNYI0dSeRsCew22PoxXEBOn9iUBQcjtBy/q4Iu2MJQ=
+Message-ID: <4624EC51.7080604@googlemail.com>
+Date: Tue, 17 Apr 2007 17:48:33 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070207)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="0-778917318-1176824798=:11088"
+To: caglar@pardus.org.tr
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, Willy Tarreau <w@1wt.eu>,
+       Gene Heskett <gene.heskett@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+References: <20070416220715.GA4071@elte.hu> <200704170112.35819.caglar@pardus.org.tr> <20070417085936.GB16645@elte.hu> <200704171745.22544.caglar@pardus.org.tr>
+In-Reply-To: <200704171745.22544.caglar@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---0-778917318-1176824798=:11088
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
-
-On Tue, 17 Apr 2007, Matthew Garrett wrote:
-
-> On Tue, Apr 17, 2007 at 03:47:32PM +0200, Tomasz K³oczko wrote:
->> Realy can't or don't want (?)
->> So who is responsible for potential changing Linux code licensing for
->> allow if not incorporate CDDL code correct interraction without breaking
->> some law ?
+S.Ã‡aÄŸlar Onur wrote:
+> 17 Nis 2007 Sal tarihinde, Ingo Molnar ÅŸunlarÄ± yazmÄ±ÅŸtÄ±: 
+>   
+>>> Sorry for delayed response but i just find some free time, do you
+>>> still want me to test mainline + "parent-runs first" patch or will i
+>>> drop that one and test v2 which can change default behaviour?
+>>>       
+>> i suspect for now it would be sufficient if you could check the v2
+>> patch.
+>>
+>> if it _works_, please try this:
+>>
+>>     echo 0 > /proc/sys/kernel/sched_child_runs_first
+>>
+>> this should break Kaffeine again :)
+>>
+>> (if it doesnt work then the Kaffeine problem is unrelated to
+>> child-runs-first.)
+>>     
 >
-> Everyone who holds any copyright over any of the code in Linux, which is
-> several thousand people. You'd probably need permission from all of
-> them. Good luck!
+> OK, i tested both plain -rc7 and -rc7 + CFSv2 with while 
+> sched_child_runs_first enabled/disabled.
+>
+> I'm always using same video file and try to reproduce freeze with constantly 
+> pressing forward/backward buttons. With CFS 2-3 forward/backward attempt 
+> reproduces this behaviour. 
+>
+> And here are the results.
+>
+> Mainline still has no issues with both xine-lib/kaffeine and xine-ui 
+> (kaffeine-0.8.4, xine-lib-1.1.5 [both xcb enabled], xine-ui-0.99.4). I really 
+> try hard to reproduce the freeze, but i can't...
+>
+> And CFSv2 still fails for both child_runs_first and parent_runs_first cases 
+> with same strace output (FUTEX_WAIT).
+>   
 
-Why on discussion about switching to GPL v3 Linux code this argument was 
-allways taken as "piece of cake". Why in case switching to another license 
-which will allow use CDDL code just it is most importand contr argument ?
+I have the same problem here ( same packages ).
 
-kloczek
--- 
------------------------------------------------------------
-*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
------------------------------------------------------------
-Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
---0-778917318-1176824798=:11088--
+Even VLC if I go forward/backward and then play again its start to 
+ramdom freeze here but only for 1 - 2 seconds maybe.
+
+
+> If you want me to test something else just ask please :) 
+>
+> Cheers
+>   
+
