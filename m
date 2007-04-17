@@ -1,117 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbXDQNqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbXDQNrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbXDQNqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 09:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXDQNqO
+	id S1754351AbXDQNrf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 09:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXDQNrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 09:46:14 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:44517 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754357AbXDQNqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 09:46:13 -0400
-Message-ID: <4624D0C1.4090304@sw.ru>
-Date: Tue, 17 Apr 2007 17:50:57 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Tue, 17 Apr 2007 09:47:35 -0400
+Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:27916 "EHLO
+	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754329AbXDQNre (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 09:47:34 -0400
+Date: Tue, 17 Apr 2007 15:47:32 +0200 (CEST)
+From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
+To: Theodore Tso <tytso@mit.edu>
+cc: "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+In-Reply-To: <20070417131045.GB18373@thunk.org>
+Message-ID: <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>, linux-mm@kvack.org
-Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M
-References: <4624C3C1.9040709@sw.ru> <84144f020704170622h2b16f0f6m47ffdbb3b5686758@mail.gmail.com>
-In-Reply-To: <84144f020704170622h2b16f0f6m47ffdbb3b5686758@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="0-1472417631-1176817652=:11088"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Hi,
-> 
-> On 4/17/07, Pavel Emelianov <xemul@sw.ru> wrote:
->> The out_of_memory() function and SysRq-M handler call
->> show_mem() to show the current memory usage state.
->>
->> This is also helpful to see which slabs are the largest
->> in the system.
-> 
-> Makes sense.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks! :)
+--0-1472417631-1176817652=:11088
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-> On 4/17/07, Pavel Emelianov <xemul@sw.ru> wrote:
->> diff --git a/mm/slab.c b/mm/slab.c
->> index 21b3c61..9a5829a 100644
->> --- a/mm/slab.c
->> +++ b/mm/slab.c
->> @@ -749,6 +749,7 @@ static inline void init_lock_keys(void)
->>   * 2. Protect sanity of cpu_online_map against cpu hotplug events
->>   */
->>  static DEFINE_MUTEX(cache_chain_mutex);
->> +static DEFINE_SPINLOCK(cache_chain_lock);
-> 
-> So, now we have two locks protecting cache_chain? Please explain why
-> you can't use the mutex.
+On Tue, 17 Apr 2007, Theodore Tso wrote:
+[..]
+> Well, that was totally useless answer from the ZFS developers.  What
+> he should have told you is to contact Sun management, since they are
+> the only ones who can decide whether or not to release ZFS under a GPL
+> license, and more importantly, to give a patent license for any
+> patents they may have filed in the course of developing ZFS.  This is
+> not anything Linux developers can help you with.
 
-Because OOM can actually happen with this mutex locked. For example
-kmem_cache_create() locks it and calls kmalloc(), or write to
-/proc/slabinfo also locks it and calls do_tune_cpu_caches(). This is
-very rare case and the deadlock is VERY unlikely to happen, but it
-will be very disappointing if it happens.
+Realy can't or don't want (?)
+So who is responsible for potential changing Linux code licensing for 
+allow if not incorporate CDDL code correct interraction without breaking 
+some law ?
+And/or what Linux can loose on follow this king changes ?
+And/or why Linux code licensing can't evolve ? Seems when Linux code was 
+licensed noone was thinking about case like interraction with code under 
+license like CDDL so why now it can be corrected and still many people try 
+to think like "anything arond Linux must evolve .. but not Linux" (?)
+Why this can't be fixes ?
 
-Moreover, I put the call to show_slabs() into sysrq handler, so it may
-be called from atomic context.
+If in this ponit in Linux "evniroment" can't be chaged .. sorry but is it 
+not kind of hipocritics ?
 
-Making mutex_trylock() is possible, but we risk of loosing this info
-in case OOM happens while the mutex is locked for cache shrinking (see
-cache_reap() for example)...
-
-So we have a choice - either we have an additional lock on a slow and
-rare paths and show this info for sure, or we do not have a lock, but
-have a risk of loosing this info.
-
->> +static unsigned long get_cache_size(struct kmem_cache *cachep)
->> +{
->> +       unsigned long slabs;
->> +       struct kmem_list3 *l3;
->> +       struct list_head *lh;
->> +       int node;
->> +
->> +       slabs = 0;
->> +
->> +       for_each_online_node (node) {
->> +               l3 = cachep->nodelists[node];
->> +               if (l3 == NULL)
->> +                       continue;
->> +
->> +               spin_lock(&l3->list_lock);
->> +               list_for_each (lh, &l3->slabs_full)
->> +                       slabs++;
->> +               list_for_each (lh, &l3->slabs_partial)
->> +                       slabs++;
->> +               list_for_each (lh, &l3->slabs_free)
->> +                       slabs++;
->> +               spin_unlock(&l3->list_lock);
->> +       }
->> +
->> +       return slabs * ((PAGE_SIZE << cachep->gfporder) +
->> +               (OFF_SLAB(cachep) ? cachep->slabp_cache->buffer_size :
->> 0));
->> +}
-> 
-> Considering you're doing this at out_of_memory() time, wouldn't it
-> make more sense to add a ->nr_pages to struct kmem_cache and do the
-> tracking in kmem_getpages/kmem_freepages?
-
-Sounds good.
-
-> I would also drop the OFF_SLAB bits because it really doesn't matter
-> that much for your purposes. Besides, you're already per-node and
-> per-CPU caches here which attribute to much more memory on NUMA setups
-> for example.
-
-This gives us a more precise information :) The precision is less than 1%
-so if nobody likes/needs it, this may be dropped.
-
-Pavel.
+kloczek
+-- 
+-----------------------------------------------------------
+*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
+-----------------------------------------------------------
+Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
+--0-1472417631-1176817652=:11088--
