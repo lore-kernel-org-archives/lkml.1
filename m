@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030752AbXDQUMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031151AbXDQUNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030752AbXDQUMU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 16:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031151AbXDQUMU
+	id S1031151AbXDQUNB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 16:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031197AbXDQUNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 16:12:20 -0400
-Received: from relay5.ptmail.sapo.pt ([212.55.154.25]:34486 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1030752AbXDQUMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 16:12:19 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 16:12:19 EDT
-X-AntiVirus: PTMail-AV 0.3-0.90.1
-Message-ID: <46252891.6080701@wizy.org>
-Date: Tue, 17 Apr 2007 21:05:37 +0100
-From: Ricardo Correia <linux-kernel@wizy.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: Florian Weimer <fw@deneb.enyo.de>
-CC: Theodore Tso <tytso@mit.edu>, Daniel Hazelton <dhazelton@enter.net>,
-       Tomasz K?oczko <kloczek@rudy.mif.pg.gda.pl>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain>	<20070417131045.GB18373@thunk.org>	<Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>	<200704171222.19892.dhazelton@enter.net>	<20070417175055.GA24963@thunk.org> <87odlmrei0.fsf@mid.deneb.enyo.de> <46252675.9010201@wizy.org>
-In-Reply-To: <46252675.9010201@wizy.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Apr 2007 16:13:01 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:55941 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031189AbXDQUNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 16:13:00 -0400
+Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
+From: john stultz <johnstul@us.ibm.com>
+To: mikpe@it.uu.se
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Adrian Bunk <bunk@stusta.de>, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070417100942.c990604b.akpm@linux-foundation.org>
+References: <20070417100942.c990604b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 17 Apr 2007 13:12:44 -0700
+Message-Id: <1176840764.15198.136.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ricardo Correia wrote:
-> That FAQ entry is outdated, ZFS can recover from metadata corruption on
-> non-replicated pools for a long time already.
+On Tue, 2007-04-17 at 10:09 -0700, Andrew Morton wrote:
+> I guess this counts as a regression.
+> 
+> Begin forwarded message:
+> 
+> Date: Tue, 17 Apr 2007 14:16:25 +0200 (MEST)
+> From: Mikael Pettersson 	
+> To: linux-kernel@vger.kernel.org
+> Subject: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
+> 
+> 
+> The machine is an old Athlon64 laptop (Targa Visionary 811,
+> OEMd as the Arima W720-K8, also sold as the eMachines m6805)
+> with a VIA K8T800 chipset. ACPI is enabled.
+> 
+> Up to kernel 2.6.20, time-keeping worked fine. In the
+> x86-64 kernel, the clock source is listed as "jiffies".
+> 
+> With current 2.6.21-rc7, the x86-64 kernel selects
+> acpi_pm as its clock source. Unfortunately, with this
+> clock time drifts and it loses several minutes per hour.
+> 
+> What's strange is that the i386 kernel on the same
+> machine (with similar .config) does not lose time
+> while using the acpi_pm clock source.
 
-Just a clarification, ZFS not only detects metadata corruption through
-the use of checksums but, since it keeps 2-3 copies of each metadata
-block on-disk (even on non-replicated pools), it also rewrites the
-corrupted blocks, effectively repairing the corruption.
+Huh. Quite strange as its the same acpi_pm clocksource driver!
 
-All of this is done transparently to the user but, of course, it's
-possible to see a report of checksum failures.
+The only difference I see right off is that verify_pmtmr_rate() isn't
+done on x86_64. Although I'd expect you'd see "PM-Timer running at
+invalid rate" w/ the i386 kernel if it made a difference.
+
+Could you send me the dmesg output for both the x86_64 and i386 kernels
+you tried?
+
+thanks
+-john
+
 
