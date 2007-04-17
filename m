@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbXDQMJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbXDQMQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753885AbXDQMJk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 08:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbXDQMJj
+	id S1753883AbXDQMQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 08:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXDQMQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 08:09:39 -0400
-Received: from mail.suse.de ([195.135.220.2]:33025 "EHLO mx1.suse.de"
+	Tue, 17 Apr 2007 08:16:31 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:37044 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753878AbXDQMJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 08:09:36 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SuSE Labs, Novell
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [nameidata 1/2] Don't pass NULL nameidata to vfs_create
-Date: Tue, 17 Apr 2007 14:09:44 +0200
-User-Agent: KMail/1.9.5
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>
-References: <20070412090809.917795000@suse.de> <200704161840.41343.agruen@suse.de> <20070416164502.GA11762@infradead.org>
-In-Reply-To: <20070416164502.GA11762@infradead.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2395
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704171409.45201.agruen@suse.de>
+	id S1753883AbXDQMQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 08:16:30 -0400
+Date: Tue, 17 Apr 2007 14:16:25 +0200 (MEST)
+Message-Id: <200704171216.l3HCGPxv017629@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 April 2007 18:45, Christoph Hellwig wrote:
-> You should provide intent information, yes - which your patch didn't :)
+The machine is an old Athlon64 laptop (Targa Visionary 811,
+OEMd as the Arima W720-K8, also sold as the eMachines m6805)
+with a VIA K8T800 chipset. ACPI is enabled.
 
-Well, the information implicitly provided is "no intent": In do_create() in
-ipc/mqueue.c intents would be pretty pointless because the mqueue filesystem
-is local. In fs/nfsd/vfs.c, intents would make slightly more sense assuming
-that the underlying filesystem eported via nfsd is remote. That's an
-optimization, and not even a very important one.
+Up to kernel 2.6.20, time-keeping worked fine. In the
+x86-64 kernel, the clock source is listed as "jiffies".
 
-> (Which btw, I expect to cause quite a few problems for apparmor or other
-> lsms, but I guess so far no one has tried them on NFSv4)
+With current 2.6.21-rc7, the x86-64 kernel selects
+acpi_pm as its clock source. Unfortunately, with this
+clock time drifts and it loses several minutes per hour.
 
-Pathname wise, NFSv4 should look like any other filesystem on the client side. 
-On the Server side, the concept of pathnames doesn't really fly for nfs: if a 
-directory contains more than one link to the same file, there is no way to 
-tell those aliases from each other from the file descriptor. In addition, 
-computing even the somewhat ambiguous pathnames that can be computed would
-require subtree checking. But trying to confine nfsd is pretty pointless 
-anyway: the deamon is privileged and can do whatever it wants. It makes more
-sense to export the right directories with the right permissions in the first
-place.
+What's strange is that the i386 kernel on the same
+machine (with similar .config) does not lose time
+while using the acpi_pm clock source.
 
-Thanks,
-Andreas
+There are no messages in dmesg to suggest that the
+kernel has detected any problems with acpi_pm.
+
+/Mikael
