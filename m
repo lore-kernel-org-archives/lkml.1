@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXDQPGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964974AbXDQPJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbXDQPGg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbXDQPGg
+	id S964974AbXDQPJQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030506AbXDQPJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:06:36 -0400
-Received: from relay2.ptmail.sapo.pt ([212.55.154.22]:56133 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S932409AbXDQPGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:06:34 -0400
-X-AntiVirus: PTMail-AV 0.3-0.90.1
-Message-ID: <4624E275.7000705@wizy.org>
-Date: Tue, 17 Apr 2007 16:06:29 +0100
-From: Ricardo Correia <linux-kernel@wizy.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: =?ISO-8859-1?Q?Tomasz_K=3Foczko?= <kloczek@rudy.mif.pg.gda.pl>,
-       Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain>	<20070417131045.GB18373@thunk.org>	<Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl> <20070417154814.632da1d9@the-village.bc.nu>
-In-Reply-To: <20070417154814.632da1d9@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Apr 2007 11:09:16 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:51205 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964974AbXDQPJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 11:09:14 -0400
+Date: Tue, 17 Apr 2007 19:08:59 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [CRYPTO] is it really optimized ?
+Message-ID: <20070417150859.GA9512@2ka.mipt.ru>
+References: <20070417130431.GA8685@2ka.mipt.ru> <E1HdnwX-0005U1-00@gondolin.me.apana.org.au> <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 17 Apr 2007 19:09:08 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> The real test of whether Sun were serious about ZFS being anywhere but
-> Solaris is what they do to license it - they've patented everything they
-> can, and made the code available only under licenses incompatible with
-> other OS products. Their intent is quite clear, and quite sad.
+On Tue, Apr 17, 2007 at 04:01:51PM +0200, Francis Moreau (francis.moro@gmail.com) wrote:
+> On 4/17/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> >
+> >Yep.  We don't need such a flag anyway.  All we need is a way to tweak
+> >the priority and Bob's your uncle.
+> >
+> 
+> Could you elaborate please, I don't see how you prevent others users
+> to use this module with priority.
+> 
+> Priority is a stuff that tells you which aes implementation to use but
+> it does not prevent an implementation to be used several times...
 
-That is not quite true. They made ZFS available under the CDDL, which is
-an OSI-approved open-source license that is *less* restrictive than the
-GPL. The CDDL doesn't prevent anyone from using the ZFS code in
-combination with code under other licenses.
+Preventing anyone from using the module is incorrect.
+How will you handle the case when you have only one algo registered and
+it will be exclusively used by ecryptfs?
 
-The proof of that is that ZFS has already been ported to FreeBSD and
-it's being ported to the Mac OS X kernel.
+Herbert proposes to register _second_ algo (say aes-generic(prio_100)
+and aes_for_ecryptfs(prio_1)) with lower prio, so generic access will
+never try to catch aes_for_ecryptfs, but your code still can access it
+using full name.
 
-The main problem with ZFS on Linux is that most people consider that the
-GPL doesn't allow non-GPL kernel modules.
+> Thanks
+> -- 
+> Francis
+
+-- 
+	Evgeniy Polyakov
