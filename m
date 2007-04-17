@@ -1,36 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbXDQPha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030657AbXDQPkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbXDQPha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbXDQPha
+	id S1030657AbXDQPkT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030608AbXDQPkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:37:30 -0400
-Received: from fest.stud.feec.vutbr.cz ([147.229.72.16]:58629 "EHLO
-	fest.stud.feec.vutbr.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753940AbXDQPh3 (ORCPT
+	Tue, 17 Apr 2007 11:40:19 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:1107 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030672AbXDQPkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:37:29 -0400
-X-Greylist: delayed 444 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 11:37:28 EDT
-Message-ID: <4624E7EA.4050703@stud.feec.vutbr.cz>
-Date: Tue, 17 Apr 2007 17:29:46 +0200
-From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	Tue, 17 Apr 2007 11:40:17 -0400
+X-IronPort-AV: i="4.14,419,1170662400"; 
+   d="scan'208"; a="370220522:sNHT44806584"
+To: "Francis Moreau" <francis.moro@gmail.com>
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [CRYPTO] is it really optimized ?
+X-Message-Flag: Warning: May contain useful information
+References: <38b2ab8a0704170659o3f65f5fbo94a59be58727d21c@mail.gmail.com>
+	<E1HdoGm-0005WU-00@gondolin.me.apana.org.au>
+	<38b2ab8a0704170741n619e169s6a2f3ac5b768a950@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Apr 2007 08:40:13 -0700
+In-Reply-To: <38b2ab8a0704170741n619e169s6a2f3ac5b768a950@mail.gmail.com> (Francis Moreau's message of "Tue, 17 Apr 2007 16:41:00 +0200")
+Message-ID: <adairbv57s2.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-CC: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ZFS with Linux: An Open Plea
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org> <Pine.LNX.4.61.0704171135490.16847@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.61.0704171135490.16847@chaos.analogic.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Apr 2007 15:40:13.0875 (UTC) FILETIME=[B0C3B030:01C78106]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-os (Dick Johnson) skrev:
-> if you never look at somebody else's'
-> implementation details, you certainly should not be violating a patent.
+ > Again, my code is faster only because I skip the key loading in 
+ > "cia_encrypt" method. Actually the gain is bigger in decryption mode 
+ > than in encryption one because I also generate the decryption key for 
+ > each block.
 
-Oh, it would be a beautiful world in which this was true!
-
-Michal
+I wonder if there's some way you can cache the last caller and reload
+the key lazily (only when it changes).  Of course without your code
+it's hard to say...
