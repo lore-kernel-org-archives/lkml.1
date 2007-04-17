@@ -1,130 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031148AbXDQQW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031150AbXDQQWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031148AbXDQQW0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031151AbXDQQWZ
+	id S1031150AbXDQQWc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031151AbXDQQWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:22:25 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:7362 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031148AbXDQQWY (ORCPT
+	Tue, 17 Apr 2007 12:22:32 -0400
+Received: from keil-draco.com ([216.193.185.50]:50378 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031150AbXDQQWb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:22:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UC2SzMviTb8wSWr1C3KlqB4EY+UoDCsaCelI5bd5jlgmJlHHrzzZRgrYtrA6kn39LQpVvSFbP+a1bdbUlbcpRUJ0cyJ/J/gzm2xzaeGxJtQJZcOyascQ2aDq5BPBeEd/WnCulsVd+ktZOZMYuD7Hh1vDLKCCcpl81xmrGTgCgWU=
-Message-ID: <5486cca80704170922o7edc3020oc3f14f099eab1dee@mail.gmail.com>
-Date: Tue, 17 Apr 2007 18:22:22 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: FTDI usb-serial possible bug
-Cc: greg@kroah.com
-In-Reply-To: <5486cca80704140747u74f92c8bj564618b1cdc09e43@mail.gmail.com>
+	Tue, 17 Apr 2007 12:22:31 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Tomasz =?utf-8?q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
+Subject: Re: ZFS with Linux: An Open Plea
+Date: Tue, 17 Apr 2007 12:22:19 -0400
+User-Agent: KMail/1.9.6
+Cc: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
+       linux-kernel@vger.kernel.org
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org> <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+In-Reply-To: <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <5486cca80704140747u74f92c8bj564618b1cdc09e43@mail.gmail.com>
+Message-Id: <200704171222.19892.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi to the list,
+On Tuesday 17 April 2007 09:47:32 Tomasz Kłoczko wrote:
+> On Tue, 17 Apr 2007, Theodore Tso wrote:
+> [..]
+>
+> > Well, that was totally useless answer from the ZFS developers.  What
+> > he should have told you is to contact Sun management, since they are
+> > the only ones who can decide whether or not to release ZFS under a GPL
+> > license, and more importantly, to give a patent license for any
+> > patents they may have filed in the course of developing ZFS.  This is
+> > not anything Linux developers can help you with.
+>
+> Realy can't or don't want (?)
 
-I'm forwarding to lkml this mail that got no answer on linux-usb.
-It describes a nasty behavior of the ftdi usb-serial linux driver.
+As it has been explained to you before it is "can't"
 
----------- Forwarded message ----------
-From: Antonino Ingargiola <tritemio@gmail.com>
-Date: Apr 14, 2007 4:47 PM
-Subject: FTDI usb-serial possible bug
-To: linux-usb-users@lists.sourceforge.net
+> So who is responsible for potential changing Linux code licensing for
+> allow if not incorporate CDDL code correct interraction without breaking
+> some law ?
 
+If I've parsed this query correctly the answer is: Linux is licensed under the 
+GPL and because a number of people that have contributed code to it can no 
+longer agree to a change in the license because they have died this cannot be 
+changed. That was explained quite clearly in several mails as well.
 
-Hi to the list,
+> And/or what Linux can loose on follow this king changes ?
+> And/or why Linux code licensing can't evolve ? Seems when Linux code was
+> licensed noone was thinking about case like interraction with code under
+> license like CDDL so why now it can be corrected and still many people try
+> to think like "anything arond Linux must evolve .. but not Linux" (?)
 
-I report a problem found with a device that use the FTDI chip to
-communicate data to pc.
-I'll try to describe my scenario as well as I can, but please tell me
-if you nedd further information.
+When Linux was licensed under the GPL there was only *ONE* real choice for 
+licensing it. Linus released the code under the GPL and there it has 
+remained, with Linus leading development. If Linux had *NOT* been released 
+under the GPL it would not be as popular or as powerful as it is - and that 
+is not an opinion but a statement of fact.
 
-The device is a counter that sends a string of 9 chars (8 digits and
-an '\r') each 10ms, using the virtual serial port created by the OS
-driver (the communication parameter are: 115200, 8N1). This device was
-built some years ago at our labs, and has been used many times with
-windows without problems.
+> Why this can't be fixes ?
 
-Recently we are trying to use it under Linux. Using python to read
-from the serial device I've found that some data were corrupted. The
-application involves reading a set on counts (say 100 counts, i.e. 100
-8-digit strings terminated by a \r), then wait that the instruments
-are positioned (some seconds) and re-do the acquisition. What happens
-is that (provided that the pause is > 3 seconds) the 27-th or 28-th
-string is quite systematically corrupted (some character is missing,
-so the string is lower that 8 digit, or if the \r is missing two
-string are concatenated).
+See the previous statement and several previous mails in this thread. Linux is 
+licensed under the GPL, it is the *only* license agreed to by everyone that 
+has contributed code. If I remember the statistics, there have been something 
+like 10,000 different people that have contributed code. Since each 
+contributor holds the copyright on their code they are the *ONLY* people that 
+could change the license on it. Anyone attempting to change the license 
+without agreement from *everyone* that has contributed code to the kernel 
+they are in violation of US and international copyright laws.
 
-I have been able to reproduce the problem with a simple test case both
-in bash and in python. Let see below:
+> If in this ponit in Linux "evniroment" can't be chaged .. sorry but is it
+> not kind of hipocritics ?
 
-    #!/bin/bash
-    stty -F /dev/ttyUSB0 115200 -parenb -ixon
-    while true; do
-        echo "\n  * Reading counter..."
-        head -n 100 /dev/ttyUSB0
-        sleep 3
-    done
+Nope. You've just ignored it when it was explained *why* the existing ZFS code 
+cannot be simply be ported to Linux. If you really need ZFS on linux, might I 
+suggest that you port the code on your own and maintain whatever patches are 
+needed to use it? As it stands ZFS *might* show up in Linux as a from-scratch 
+implementation, although I stress the "might" because there are patents 
+involved.
 
-and in python:
+DRH
 
-    #!/usr/bin/env python
+(Now please, drop the subject - IMNSHO it is never going to happen)
 
-    import serial, time
-
-    s = serial.Serial('/dev/ttyUSB0', 115200)
-    while True:
-        print 'Reading counter ...'
-        for i in xrange(100):
-            print s.readline(eol='\r')
-        time.sleep(3)
-
-With this two test cases I get the 27 or 28 line almost always
-corrupted, due to some missing characters.
-
-The same python code under windows (changing only the device name)
-gives uncorrupted strings.
-
-The Linux versions tested were fedora core 2 (with its shipped
-kernel), ubuntu dapper (with its shipped kernel) and debian etch with
-an home-built 2.6.20 kernel. All the Linux versions give the same
-result with corrupted data. I've also tried, in python, to open the
-device every time I need to read a series of data and then close it
-before the sleep, but none changed. Eliminating the sleep from the
-test case eliminates the problem.
-
-The same test performed on a real serial port receiving continuous
-stream of data (created via software and sent by a second serial port)
-does not yield to any corruption problem.
-
-All these elements bring me to think that the problem can reside in
-the linux ftdi usb-serial driver, maybe some problem managing the
-input buffer .... but here I'm just guessing.
-
-In python using s.inWaiting() in the above example I can see the
-number of chars in the input buffer. I've found that the input buffer
-has quite almost alway 8 or 17 chars one instruction before the
-readline call that returns corrupted data (remember that the line is 9
-chars, 8 digits and a \r). I don't know if it means something :).
-
-I'm not very fluent in C (and in C serial programming) so I've not
-provided a C test case, I hope this is not a problem (the python and
-bash test cases seems significant too, thought).
-
-Ask me if you need further information or if you have any request for
-further testing.
-
-Thanks in advance,
-
-Cheers,
-
-  ~ Antonio
