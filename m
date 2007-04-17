@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031108AbXDQP6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031112AbXDQP7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031108AbXDQP6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031106AbXDQP6x
+	id S1031112AbXDQP7W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031107AbXDQP7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:58:53 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:15212 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031103AbXDQP6w (ORCPT
+	Tue, 17 Apr 2007 11:59:21 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36843 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1031112AbXDQP7U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:58:52 -0400
-X-IronPort-AV: i="4.14,419,1170662400"; 
-   d="scan'208"; a="412341549:sNHT44825740"
-To: CaT <cat@zip.com.au>
-Cc: Michael Chan <mchan@broadcom.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Jean-Daniel Pauget <jd@disjunkt.com>
-Subject: Re: intermittant petabyte usage reported with broadcom nic
-X-Message-Flag: Warning: May contain useful information
-References: <20070402014319.GA8345@zip.com.au>
-	<20070402001300.3b66007d.akpm@linux-foundation.org>
-	<20070402074108.GB8345@zip.com.au> <1176596401.5847.7.camel@dell>
-	<1176750651.6217.3.camel@dell> <20070416234348.GF8345@zip.com.au>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Apr 2007 08:58:47 -0700
-In-Reply-To: <20070416234348.GF8345@zip.com.au> (cat@zip.com.au's message of "Tue, 17 Apr 2007 09:43:48 +1000")
-Message-ID: <ada1wij56x4.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Tue, 17 Apr 2007 11:59:20 -0400
+Date: Tue, 17 Apr 2007 11:59:16 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Tejun Heo <htejun@gmail.com>,
+       Markus Rechberger <markus.rechberger@amd.com>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] How should an exit routine wait for release()
+ callbacks?
+In-Reply-To: <20070416221247.GA9365@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0704171150270.20368-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Apr 2007 15:58:47.0812 (UTC) FILETIME=[48B8FC40:01C78109]
-Authentication-Results: sj-dkim-6; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim6002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I actually have a couple of Dell 1950 systems with bnx2 NICs too,
-which I use for kernel development (ie one more crash is fine :)
+On Mon, 16 Apr 2007, Greg KH wrote:
 
-If someone can give me an idea for what kind of load to use, I can try
-this patch out to see if it triggers.
+> > > I've got a module which registers a struct device.  (It represents a
+> > > virtual device, not a real one, but that doesn't matter.)
+> 
+> Wait, that's the issue right there.
+> 
+> Don't do that.
+> 
+> devices should be created by busses or the platform core, which owns the
+> release function for them.  Individual drivers should not create
+> devices.
+> 
+> Hm, but then, how would you ever unload a bus, as the same issue might
+> be there too...
+> 
+> Any specific code in the kernel you can point to that has this issue
+> today?
 
- - R.
+I first noticed it while working with dummy_hcd.  It creates a virtual 
+host controller platform device and a virtual device controller platform 
+device.  Its exit routine doesn't wait (and has no way to wait) for the 
+release methods of those devices to finish executing.
+
+But the same issue tends to pop up anywhere you have a "bridge" device --
+one that connects two different kinds of bus.  For instance, a PC-card
+essentially bridges a CardBus to whatever you can plug into that card.  
+usb-storage essentially bridges a USB bus to a SCSI bus.  uhci-hcd
+essentially bridges a PCI bus to a USB bus.
+
+The problem itself isn't very noticeable.  Existing uses of
+try_module_get() generally reduce it to an unlikely race, and the
+uncoupling of sysfs from devices will make it even rarer.
+
+But the problem still exists potentially.
+
+Alan Stern
+
