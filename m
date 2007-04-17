@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031109AbXDQP6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031108AbXDQP6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031109AbXDQP6B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031107AbXDQP6A
+	id S1031108AbXDQP6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031106AbXDQP6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:58:00 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:44740 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031105AbXDQP57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:57:59 -0400
-Date: Tue, 17 Apr 2007 19:57:25 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [CRYPTO] is it really optimized ?
-Message-ID: <20070417155725.GA18959@2ka.mipt.ru>
-References: <20070417130431.GA8685@2ka.mipt.ru> <E1HdnwX-0005U1-00@gondolin.me.apana.org.au> <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com> <20070417150859.GA9512@2ka.mipt.ru> <38b2ab8a0704170834i1856886nafeeec692f49fea0@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <38b2ab8a0704170834i1856886nafeeec692f49fea0@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 17 Apr 2007 19:57:53 +0400 (MSD)
+	Tue, 17 Apr 2007 11:58:53 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:15212 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031103AbXDQP6w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 11:58:52 -0400
+X-IronPort-AV: i="4.14,419,1170662400"; 
+   d="scan'208"; a="412341549:sNHT44825740"
+To: CaT <cat@zip.com.au>
+Cc: Michael Chan <mchan@broadcom.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Jean-Daniel Pauget <jd@disjunkt.com>
+Subject: Re: intermittant petabyte usage reported with broadcom nic
+X-Message-Flag: Warning: May contain useful information
+References: <20070402014319.GA8345@zip.com.au>
+	<20070402001300.3b66007d.akpm@linux-foundation.org>
+	<20070402074108.GB8345@zip.com.au> <1176596401.5847.7.camel@dell>
+	<1176750651.6217.3.camel@dell> <20070416234348.GF8345@zip.com.au>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 17 Apr 2007 08:58:47 -0700
+In-Reply-To: <20070416234348.GF8345@zip.com.au> (cat@zip.com.au's message of "Tue, 17 Apr 2007 09:43:48 +1000")
+Message-ID: <ada1wij56x4.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 Apr 2007 15:58:47.0812 (UTC) FILETIME=[48B8FC40:01C78109]
+Authentication-Results: sj-dkim-6; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim6002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 05:34:12PM +0200, Francis Moreau (francis.moro@gmail.com) wrote:
-> >Preventing anyone from using the module is incorrect.
-> >How will you handle the case when you have only one algo registered and
-> >it will be exclusively used by ecryptfs?
-> >
-> 
-> As I tried to explain, in that case the admin must load the module
-> without the exclusive flag.
+I actually have a couple of Dell 1950 systems with bnx2 NICs too,
+which I use for kernel development (ie one more crash is fine :)
 
-If there are another users, then flag should not be set.
-If there are no another users, your code already has exclusive access.
-One can not know if there will be any additional users at all (consider
-the case when new encrypted block device or ipsec negotiation started
-some time after module was loaded).
+If someone can give me an idea for what kind of load to use, I can try
+this patch out to see if it triggers.
 
-> >Herbert proposes to register _second_ algo (say aes-generic(prio_100)
-> >and aes_for_ecryptfs(prio_1)) with lower prio, so generic access will
-> >never try to catch aes_for_ecryptfs, but your code still can access it
-> >using full name.
-> >
-> 
-> yes but my worries with this approach is that nothing prevent an admin
-> to load others modules that will use aes_for_ecryptfs. And an admin is
-> not always aware about a module implementation.
-
-Some module is not allowed to force such restrictions, since it does not
-know if there are other users or other algorithms.
-You can call your algo with private company name hashed with author's
-birtday, so no one in the world will be able to request such algo.
-Actually its name can be read from /proc/crypto, but that is another
-story.
-
-> Thanks
-> -- 
-> Francis
-
--- 
-	Evgeniy Polyakov
+ - R.
