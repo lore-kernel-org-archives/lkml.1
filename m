@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161204AbXDQReg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161216AbXDQRfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161204AbXDQReg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 13:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161202AbXDQReg
+	id S1161216AbXDQRfK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 13:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161206AbXDQRfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 13:34:36 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:10060 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161196AbXDQRef (ORCPT
+	Tue, 17 Apr 2007 13:35:10 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:45541 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161205AbXDQRfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 13:34:35 -0400
-X-IronPort-AV: i="4.14,419,1170662400"; 
-   d="scan'208"; a="478875283:sNHT47845216"
-To: "Francis Moreau" <francis.moro@gmail.com>
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [CRYPTO] is it really optimized ?
-X-Message-Flag: Warning: May contain useful information
-References: <38b2ab8a0704170659o3f65f5fbo94a59be58727d21c@mail.gmail.com>
-	<E1HdoGm-0005WU-00@gondolin.me.apana.org.au>
-	<38b2ab8a0704170741n619e169s6a2f3ac5b768a950@mail.gmail.com>
-	<adairbv57s2.fsf@cisco.com>
-	<38b2ab8a0704170914h3a766236t47bc7e1c8de67662@mail.gmail.com>
-	<ada7isb3qr2.fsf@cisco.com>
-	<38b2ab8a0704171024m3d838bdak14370a7d0931557f@mail.gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 17 Apr 2007 10:34:29 -0700
-In-Reply-To: <38b2ab8a0704171024m3d838bdak14370a7d0931557f@mail.gmail.com> (Francis Moreau's message of "Tue, 17 Apr 2007 19:24:04 +0200")
-Message-ID: <adalkgq3nx6.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Tue, 17 Apr 2007 13:35:08 -0400
+Date: Tue, 17 Apr 2007 13:35:07 -0400
+To: David Acker <dacker@roinet.com>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       Jeff Garzik <jeff@garzik.org>, Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFT] e100 driver on ARM
+Message-ID: <20070417173507.GB5575@csclub.uwaterloo.ca>
+References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Apr 2007 17:34:29.0344 (UTC) FILETIME=[A6F13E00:01C78116]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <46239138.4040408@roinet.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > It seems trivial to keep the last key you were given and do a quick
- > > memcmp in your setkey method to see if it's different from the last
- > > key you pushed to hardware, and set a flag if it is.  Then only do
- > > your set_key() if you have a new key to pass to hardware.
- > >
- > > I'm assuming the expense is in the aes_write() calls, and you could
- > > avoid them if you know you're not writing something new.
+On Mon, Apr 16, 2007 at 11:07:36AM -0400, David Acker wrote:
+> Lennart Sorensen wrote:
+> >Which PCI host controller are you using with the PXA255?  We tried using
+> >a PXA255 based system with a PCI controller a couple of years ago and
+> >have to change to a different cpu in the end due to the PCI controller
+> >simply not being valid PCI.  The PXA255 wasn't designed for PCI, and I
+> >get the impression that non of the PCI companion chips for it do a good
+> >enough job to actually add it correctly.
+> >
+> 
+> Sorry for the delay in responding...my wife and I just had twins!
+> 
+> We are using the IT8152G RISC-to-PCI companion chip.
 
- > that's a wrong assumption. aes_write()/aes_read() are both used to
- > access to the controller and are slow (no cache involved).
+Well the IT8152G+PXA255 combination used on the SBC we tried a couple of
+years ago did not work.  The PCI bus had errors and the SBC maker gave
+up trying to fix it.  We switched to a Geode SC1200 based board instead
+which works fine PCI wise.
 
-Sorry, I wasn't clear.  I meant that the hardware access is what is
-slow, and that anything you do on the CPU is relatively cheap compared
-to that.
+My suspicision (although it is only that) is that the PXA255 trying to
+access memory may cause interruptions in PCI bus master transfers, which
+is of course not permitted by the PCI spec (at least the way I read it).
+We tried it with RTL8139, AMD 972 (both ethernet) as well as a number of
+T1/E1 and DDS wan cards from sangoma.  The wan cards had the most issues
+with it (they drivers and hardware would get out of sync due to PCI bus
+problems), while the ethernet just had occational packet corruption.  I
+will certainly never consider using a PXA + ITE pci controller
+combination ever again.  Too bad since the performance of the PXA is
+amazing.  The PXA chips are not designed to speak to PCI, and the ITE
+companion chip doesn't quite do the job of pretending it was.  I would
+expect problems if you do pci bus master transfers and/or any kind of
+PCI bus traffic load.
 
-So my suggestion is just to keep a cache (in CPU memory) of what you
-have already loaded into the HW, and before reloading the HW just
-check the cache and don't do the actual HW access if you're not going
-to change the HW contents.  So you avoid any extra aes_write and
-aes_read calls in the cache hit case.
-
-This would have the advantage of making anything that does lots of
-bulk encryption fast without special casing ecryptfs.
-
- - R.
+--
+Len Sorensen
