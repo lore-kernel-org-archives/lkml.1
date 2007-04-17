@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXDQIN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbXDQIQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752573AbXDQIN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 04:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXDQIN2
+	id S1752702AbXDQIQq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 04:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXDQIQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 04:13:28 -0400
-Received: from wasp.net.au ([203.190.192.17]:33878 "EHLO wasp.net.au"
+	Tue, 17 Apr 2007 04:16:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52605 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbXDQIN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 04:13:26 -0400
-Message-ID: <462481A0.4060707@wasp.net.au>
-Date: Tue, 17 Apr 2007 12:13:20 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Chuck Ebbert <cebbert@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-References: <4621FAF0.7000705@wasp.net.au>	<46220339.9080205@wasp.net.au>	<4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown>
-In-Reply-To: <17956.22235.574867.179016@notabene.brown>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752702AbXDQIQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 04:16:45 -0400
+Date: Tue, 17 Apr 2007 10:16:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+Message-ID: <20070417081606.GB5076@elte.hu>
+References: <20070416220715.GA4071@elte.hu> <46246D61.8010300@bigpond.net.au> <20070417075146.GM2986@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070417075146.GM2986@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Monday April 16, cebbert@redhat.com wrote:
->> cfq_dispatch_insert() was called with rq == 0. This one is getting really
->> annoying... and md is involved again (RAID0 this time.)
+
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+
+> On Tue, Apr 17, 2007 at 04:46:57PM +1000, Peter Williams wrote:
+>
+> > Have you considered using rq->raw_weighted_load instead of 
+> > rq->nr_running in calculating fair_clock?  This would take the nice 
+> > value (or RT priority) of the other tasks into account when 
+> > determining what's fair.
 > 
-> Yeah... weird.
-> RAID0 is so light-weight and so different from RAID1 or RAID5 that I
-> feel fairly safe concluding that the problem isn't in or near md.
-> But that doesn't help you.
+> I suspect you mean 
+> (curr->load_weight*delta_exec)/rq->raw_weighted_load in update_curr().
 
-It's raid-5 here and it was degraded. I've just added the extra disk now and I've been running with 
-the deadline scheduler to work around the issue. I'll add Neil's patch and try some tests with cfq 
-tonight if I get the chance.
+good idea, i'll try that.
 
-Brad
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
+	Ingo
