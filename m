@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbXDQKmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbXDQKrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbXDQKmM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 06:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbXDQKmL
+	id S1753564AbXDQKrF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 06:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbXDQKrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 06:42:11 -0400
-Received: from holomorphy.com ([66.93.40.71]:48423 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753528AbXDQKmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 06:42:10 -0400
-Date: Tue, 17 Apr 2007 03:41:41 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417104141.GV8915@holomorphy.com>
-References: <20070416110439.GH2986@holomorphy.com> <46237239.1070903@bigpond.net.au> <20070416135915.GK8915@holomorphy.com> <46241677.7060909@bigpond.net.au> <20070417025704.GM8915@holomorphy.com> <462445EC.1060306@bigpond.net.au> <20070417053147.GN8915@holomorphy.com> <46246A7C.8050501@bigpond.net.au> <20070417064109.GP8915@holomorphy.com> <46247E86.5090706@bigpond.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46247E86.5090706@bigpond.net.au>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 17 Apr 2007 06:47:05 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:44949 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753541AbXDQKrD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 06:47:03 -0400
+To: serue@us.ibm.com
+CC: akpm@linux-foundation.org, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+In-reply-to: <20070416192050.GB30435@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch 05/10] Add "permit user submounts" flag to vfsmount
+References: <20070416110308.739051445@szeredi.hu> <20070416110414.591968270@szeredi.hu> <20070416192050.GB30435@sergelap.austin.ibm.com>
+Message-Id: <E1HdlAt-00013a-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 17 Apr 2007 12:44:39 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
->> Comments on which directions you'd like this to go in these respects
->> would be appreciated, as I regard you as the current "project owner."
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > If MNT_USERMNT flag is not set in the target vfsmount, then
+> 
+> MNT_USER and MNT_USERMNT?  I claim no way will people keep those
+> straight.  How about MNT_ALLOWUSER and MNT_USER?
 
-On Tue, Apr 17, 2007 at 06:00:06PM +1000, Peter Williams wrote:
-> I'd do scan through LKML from about 18 months ago looking for mention of 
-> runtime configurable version of plugsched.  Some students at a 
-> university (in Germany, I think) posted some patches adding this feature 
-> to plugsched around about then.
+Umm, is "allowuser" more clear than "usermnt"?  What is allowed to the
+user?  "allowusermnt" may be more descriptive, but it's a bit too
+long.
 
-Excellent. I'll go hunting for that.
+I don't think it matters all that much, the user will have to look up
+the semantics in the manpage anyway.  Is "nosuid" descriptive?  Not
+very much, but we got used to it.
 
-
-On Tue, Apr 17, 2007 at 06:00:06PM +1000, Peter Williams wrote:
-> I never added them to plugsched proper as I knew (from previous 
-> experience when the company I worked for posted patches with similar 
-> functionality) that Linux would like this idea less than he did the 
-> current plugsched mechanism.
-
-Odd how the requirements ended up including that. Fickleness abounds.
-If only we knew up-front what the end would be.
-
-
-On Tue, Apr 17, 2007 at 06:00:06PM +1000, Peter Williams wrote:
-> Unfortunately, my own cache of the relevant e-mails got overwritten 
-> during a Fedora Core upgrade (I've since moved /var onto a separate 
-> drive to avoid a repetition) or I would dig them out and send them to 
-> you.  I'd provided with copies of the company's patches to use as a 
-> guide to how to overcome the problems associated with changing 
-> schedulers on a running system (a few non trivial locking issues pop up).
-> Maybe if one of the students still reads LKML he will provide a pointer.
-
-I was tempted to restart from scratch given Ingo's comments, but I
-reconsidered and I'll be working with your code (and the German
-students' as well). If everything has to change, so be it, but it'll
-still be a derived work. It would be ignoring precedent and failure to
-properly attribute if I did otherwise.
-
-
--- wli
+Miklos
