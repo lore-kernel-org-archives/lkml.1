@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031067AbXDQDOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031066AbXDQDTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031067AbXDQDOb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 23:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031065AbXDQDOb
+	id S1031066AbXDQDTg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 23:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031069AbXDQDTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 23:14:31 -0400
-Received: from 18.208-100-46.steadfast.net ([208.100.46.18]:38708 "EHLO
-	dev.x-plane.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1031067AbXDQDOa (ORCPT
+	Mon, 16 Apr 2007 23:19:36 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:38944 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031066AbXDQDTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 23:14:30 -0400
-X-Greylist: delayed 1534 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 23:14:30 EDT
-Date: Mon, 16 Apr 2007 22:50:02 -0400 (EDT)
-From: Joshua Wise <joshua@joshuawise.com>
-To: Shaohua Li <shaohua.li@intel.com>
-cc: Mattia Dongili <malattia@linux.it>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: CPU_IDLE prevents resuming from STR [was: Re: 2.6.21-rc6-mm1]
-In-Reply-To: <1176691227.6993.1.camel@sli10-conroe.sh.intel.com>
-Message-ID: <Pine.LNX.4.63.0704162243070.3859@dashnine.joshuawise.com>
-References: <20070408143559.f5014629.akpm@linux-foundation.org> 
- <20070413234513.GA2940@inferi.kami.home> <1176691227.6993.1.camel@sli10-conroe.sh.intel.com>
+	Mon, 16 Apr 2007 23:19:35 -0400
+Message-ID: <46243CC5.3090501@zachcarter.com>
+Date: Mon, 16 Apr 2007 20:19:33 -0700
+From: Zach Carter <linux@zachcarter.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Dave Jones <davej@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: BUG:  Bad page state errors during kernel make (resolved)
+References: <4622EDD3.9080103@zachcarter.com> <20070416035603.GD21217@redhat.com> <46230A3A.8060907@zachcarter.com> <46240888.1040804@redhat.com>
+In-Reply-To: <46240888.1040804@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Apr 2007, Shaohua Li wrote:
-> On Sat, 2007-04-14 at 01:45 +0200, Mattia Dongili wrote:
->> ...
-> please check if the patch at
-> http://marc.info/?l=linux-acpi&m=117523651630038&w=2 fixed the issue
 
-I have the same system as Mattia, and when I applied this patch and turned
-CPU_IDLE back on, I got a panic on boot. Unfortunately, the EIP scrolled off
-screen, so I can't get a line number.
 
-(I had the same STR breakage as him; STR did not work with CPU_IDLE turned
-on, and it did work with CPU_IDLE turned off.)
+> Zach Carter wrote:
+>>
+>> Do you think there might be other bad hw, or another explanation?
+> 
 
-I'm running +rc6+mm(April 11) on a Sony VAIO SZ.
+Well, after updating the BIOS for the motherboard, I was able to rebuild the kernel 6 times in a row 
+with no page state errors.  I noticed that the recent BIOS update includes "Enhanced compatibility 
+with Linux":
 
-joshua
+	http://www.abit-usa.com/products/mb/bios.php?categories=1&model=316
+
+In case anyone searching the ML archive has the same problem, the motherboard is an ABIT KN9 ULTRA 
+Socket AM2 NVIDIA nForce 570 Ultra MCP ATX
+
+-Zach
