@@ -1,146 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbXDQEyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbXDQEzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753695AbXDQEyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 00:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbXDQEyR
+	id S1753831AbXDQEzJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 00:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbXDQEzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 00:54:17 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:25648 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753695AbXDQEyH convert rfc822-to-8bit (ORCPT
+	Tue, 17 Apr 2007 00:55:09 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:24679 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031084AbXDQEzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 00:54:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=j/rXECkukQPAlfBKGWFgS23o9XgUJ5nIV/fLLsgLMUper6OlWiTVREO7m7sSk/22FVB9DH5ZP0XdnY5Zm3HI4D78tgtmuCR5HT468xl2A0znKyr8D8g8wHRTGihAsN1j+mWdYCiTPIejCQsMfV9We96gGTlTgAluKippHg5kgx8=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-Date: Tue, 17 Apr 2007 00:53:56 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
-References: <20070416220715.GA4071@elte.hu>
-In-Reply-To: <20070416220715.GA4071@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704170053.58611.gene.heskett@gmail.com>
+	Tue, 17 Apr 2007 00:55:06 -0400
+X-IronPort-AV: i="4.14,417,1170651600"; 
+   d="scan'208"; a="35272178:sNHT25575704"
+Subject: Re: [PATCH] Blackfin: blackfin on-chip SPI controller driver
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: David Brownell <david-b@pacbell.net>
+Cc: bryan.wu@analog.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+In-Reply-To: <200704161931.36065.david-b@pacbell.net>
+References: <1173091280.5264.201.camel@roc-desktop>
+	 <200704161931.36065.david-b@pacbell.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Tue, 17 Apr 2007 12:52:13 +0800
+Message-Id: <1176785533.11515.18.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 April 2007, Ingo Molnar wrote:
->this is the second release of the CFS (Completely Fair Scheduler)
->patchset, against v2.6.21-rc7:
->
->   http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.patch
->
->i'd like to thank everyone for the tremendous amount of feedback and
->testing the v1 patch got - i could hardly keep up with just reading the
->mails! Some of the stuff people addressed i couldnt implement yet, i
->mostly concentrated on bugs, regressions and debuggability.
->
->there's a fair amount of churn:
->
->   15 files changed, 456 insertions(+), 241 deletions(-)
->
->But it's an encouraging sign that there was no crash bug found in v1,
->all the bugs were related to scheduling-behavior details. The code was
->tested on 3 architectures so far: i686, x86_64 and ia64. Most of the
->code size increase in -v2 is due to debugging helpers, they'll be
->removed later. (The new /proc/sched_debug file can be used to see the
->fine details of CFS scheduling.)
->
->Changes since -v1:
->
-> - make nice levels less starvable. (reported by Willy Tarreau)
->
-> - fixed child-runs first. A /proc/sys/kernel/sched_child_runs_first
->   flag can be used to turn it on/off. (This might fix the Kaffeine bug
->   reported by S.Çağlar Onur <)
->
-> - changed SCHED_FAIR back to SCHED_NORMAL (suggested by Con Kolivas)
->
-> - UP build fix. (reported by Gabriel C)
->
-> - timer tick micro-optimization (Dmitry Adamushko)
->
-> - preemption fix: sched_class->check_preempt_curr method to decide
->   whether to preempt after a wakeup (or at a timer tick). (Found via a
->   fairness-test-utility written for CFS by Mike Galbraith)
->
-> - start forked children with neutral statistics instead of trying to
->   inherit them from the parent: Willy Tarreau reported that this
->   results in better behavior on extreme workloads, and it also
->   simplifies the code quite nicely. Removed sched_exit() and the
->   ->task_exit() methods.
->
-> - make nice levels independent of the sched_granularity value
->
-> - new /proc/sched_debug file listing runqueue details and the rbtree
->
-> - new SCH-* fields in /proc/<NR>/status to see scheduling details
->
-> - new cpu-hog feature (off by default) and sysctl tunable to set it:
->   /proc/sys/kernel/sched_max_hog_history_ns tunable defaults to
->   0 (off). Positive values are meant the maximum 'memory' that the
->   scheduler has of CPU hogs.
->
-> - various code cleanups
->
-> - added more statistics temporarily: sum_exec_runtime,
->   sum_wait_runtime.
->
-> - added -CFS-v2 to EXTRAVERSION
->
->as usual, any sort of feedback, bugreports, fixes and suggestions are
->more than welcome,
->
->	Ingo
+On Mon, 2007-04-16 at 18:31 -0800, David Brownell wrote:
+> Cleaning out some of my pending-reviews queue ... after you address
+> these comments I think what I'd like to do is sign off on one clean
+> patch, rather than initial-plus-cleanups.
+> 
+> 
 
-This one (v2-rc2) is not a keeper I'm sorry to say, Ingo.  v2-rc0 was much 
-better.  Watching amanda run with htop, kmails composer is being subjected to 
-5 to 10 second pauses, and htop says that gzip -best isn't getting more that 
-15% of the cpu, and the /amandatapes drive is being written to in a regular 
-pattern that seems to be the cause of the pauses  according to gkrellm, which 
-also seems to track the size of the writes, and can show anything from 4.3k 
-to 54 megs as being written in one cycle of its screen update.
+Thanks a lot, David. We will try to cleanup the code and most issues
+pointed out in your review.
 
-Normally hdd will fire up and take it at about 40+M/second steady till its 
-done when there is a file ready to write even if its a 7GB file.  And I can 
-type right on during the disk i/o.  But not now.
+> On Monday 05 March 2007 2:41 am, Wu, Bryan wrote:
+> 
+> > --- linux-2.6.orig/drivers/spi/Kconfig	2007-03-01 11:33:07.000000000 +0800
+> > +++ linux-2.6/drivers/spi/Kconfig	2007-03-01 11:40:22.000000000 +0800
+> 
+> I'm adjusting this to address the later patches you sent.
+> 
+> One global comment I'll make, just in case -- please make
+> sure all your line-start indents only include tabs, and
+> there's no space-at-end-of-line stuff going on, or lines
+> wrapping past column 80.
+> 
+> I did this review in KMail, which doesn't highlight such
+> minor errors; and I suspect you're mostly OK, but for a
+> new driver there's no reason not to be 100% OK in those
+> particular respects!  (And I *did* notice one of your
+> cleanup patches clearly adding tabs-then-spaces indents.)
+> 
 
-In short, I seem to be heavily I/O bound.  But when the write to /dev/hdd3 is 
-done, then gzip -best pops right up to 90% plus cpu and I get my machine 
-back.
+Yes, I sent out a coding style incremental patch appending in -mm tree.
+Should I send out a new patch including the coding style clean up and
+code updated according to this review, or still submit incremental
+patches to Andrew?
 
-In between file writes I checked the drives speed with hdparm:
+> 
+> > @@ -156,7 +156,11 @@
+> >  #
+> >  # Add new SPI protocol masters in alphabetical order above this line
+> >  #
+> > -
+> > +config SPI_BFIN
+> > +	tristate "SPI controller driver for ADI Blackfin5xx"
+> > +	depends on SPI_MASTER && BFIN
+> > +	help
+> > +	  This is the SPI controller master driver for Blackfin 5xx processor.
+> 
+> Please put this in Kconfig up with the other SPI controller drivers, in
+> alphabetical order.  Just like the comment says.
+> 
+> Likewise, please add it to the Makefile in alphabetical order.
+> 
 
-root@coyote ~]# hdparm -Tt /dev/hdd
+Got it, it should be followed.
 
-/dev/hdd:
- Timing cached reads:   856 MB in  2.01 seconds = 426.15 MB/sec
- Timing buffered disk reads:  222 MB in  3.01 seconds =  73.68 MB/sec
+> 
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ linux-2.6/drivers/spi/spi_bfin5xx.c	2007-03-01 11:40:22.000000000 +0800
+> 
+> > +#ifdef DEBUG
+> > +#define ASSERT(expr) \
+> > +	if (!(expr)) { \
+> > +		printk(KERN_DEBUG "assertion failed! %s[%d]: %s\n", \
+> > +		       __FUNCTION__, __LINE__, #expr); \
+> > +		panic(KERN_DEBUG "%s", __FUNCTION__); \
+> 
+> Seems like either WARN_ON(expr) or BUG_ON(expr) will be better.
+> The general rule of BUG variants is: don't, unless the system
+> really can't continue operating.  (I see a later patch removed
+> this entirely, good.
+> 
+> 
+Yes, we are trying to use kernel generic BUG_ON and WARN_ON to replace
+our own assert function. I fixed this in other code and obviously it was
+missed in this driver patch. 
 
-That's not too shabby, and obviously dma is active at least for the reading.
+> > +	}
+> > +#else
+> > +#define ASSERT(expr)
+> > +#endif
+> > +
+> > +#define IS_DMA_ALIGNED(x) (((u32)(x)&0x07)==0)
+> > +
+> > +#define DEFINE_SPI_REG(reg, off) \
+> > +static inline u16 read_##reg(void) \
+> > +            { return *(volatile unsigned short*)(SPI0_REGBASE + off); } \
+> > +static inline void write_##reg(u16 v) \
+> > +            {*(volatile unsigned short*)(SPI0_REGBASE + off) = v;\
+> > +             SSYNC();}
+> 
+> These should be readw() and writew() or similar... also, I can't tell
+> what SSYNC() does, but it sure looks like something that shouldn't be
+> hidden like that.  I/O memory should be mapped such that writes don't
+> get re-ordered.  And flushing any write buffer should not be forced in
+> such low-level accessors ... if it's needed, it should be done at the
+> relevant points in the driver.  (Which you seem to do in a few places
+> below.  The duplication is undesirable.)
+> 
+> 
+> > +
+> > +DEFINE_SPI_REG(CTRL, 0x00)
+> 
+> ... this particular style of register accessor is not generally used in Linux.
+> The typical style is
+> 
+> 	u16 value = __raw_readw(SPI0_REGBASE + SPI_CTRL)
+> 	__raw_writew(SPI0_REGBASE + SPI_CTRL, value);
+> 
+> or wrapped in macros so spi_readw(CTRL) and spi_writew(CTRL, value) work.
+> 
+> Of course, SPI1/SPI2/etc should be supported too ... so it's common to have
+> those take a pointer to some controller struct with a "void __iomem *regs"
+> pointer to the rgisters for that instance.  spi_readw(master, CTRL) etc.
+>  
+> 
+> > +#define START_STATE ((void*)0)
+> > +#define RUNNING_STATE ((void*)1)
+> > +#define DONE_STATE ((void*)2)
+> > +#define ERROR_STATE ((void*)-1)
+> 
+> Normally states would be represented by enum values, which among other
+> things supports "switch (state) { ... }" state machine code.  This driver
+> is full of uncommon idioms, which will make it harder for most kernel
+> developers to dive in and help.
+> 
+> Even if you have a style guide internal to Analog which says to do things
+> this way ... don't.
+> 
+> 
 
-gzip -best was running while this was executing. So I think the drive is fine 
-and the scheduling is whats funkity.  Sorry.
+Apparently, the driver author Luke wrote this driver based on
+drivers/spi/pxa2xx_spi.c. These things are all from pxa2xx_spi.c driver.
+I will update our driver according to your comments.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-  After they got rid of capital punishment, they had to hang twice
-  as many people as before.
+> > +
+> > +#define QUEUE_RUNNING 0
+> > +#define QUEUE_STOPPED 1
+> > +
+> > +int dma_requested;
+> > +char chip_select_flag;
+> 
+> These should probably be members of the per-controller state struct,
+> and otherwise should certainly be static.  This driver exports a LOT
+> of stuff that should be static ...
+> 
+
+You are right. It should be fixed up
+
+> 
+> > +
+> > +struct driver_data {
+> 
+> Not the most explanatory of names.  Could you do better?
+> 
+> 
+
+Copy that from pxa2xx_spi.c, sorry.
+And your comments are very valuable, we will update this driver ASAP.
+Thanks again
+Best Regards,
+-Bryan Wu
