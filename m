@@ -1,119 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161413AbXDQWwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030917AbXDQW7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161413AbXDQWwk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 18:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161415AbXDQWwk
+	id S1030917AbXDQW7A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 18:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030919AbXDQW7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 18:52:40 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50539 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161413AbXDQWwj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 18:52:39 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: David Lang <david.lang@digitalinsight.com>
-Subject: Re: ZFS with Linux: An Open Plea
-Date: Tue, 17 Apr 2007 18:52:29 -0400
-User-Agent: KMail/1.9.6
-Cc: Tomasz =?utf-8?q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <200704171819.28407.dhazelton@enter.net> <Pine.LNX.4.63.0704171505390.1696@qynat.qvtvafvgr.pbz>
-In-Reply-To: <Pine.LNX.4.63.0704171505390.1696@qynat.qvtvafvgr.pbz>
+	Tue, 17 Apr 2007 18:59:00 -0400
+Received: from holomorphy.com ([66.93.40.71]:46662 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030917AbXDQW67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 18:58:59 -0400
+Date: Tue, 17 Apr 2007 15:59:02 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Davide Libenzi <davidel@xmailserver.org>,
+       Nick Piggin <npiggin@suse.de>, Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070417225902.GQ2986@holomorphy.com>
+References: <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com> <20070417073308.GB30559@elte.hu> <20070417090538.GU8915@holomorphy.com> <20070417092422.GA19414@elte.hu> <20070417220809.GF11166@waste.org> <20070417223256.GP2986@holomorphy.com> <20070417223909.GO11115@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704171852.29546.dhazelton@enter.net>
+In-Reply-To: <20070417223909.GO11115@waste.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 April 2007 18:12:17 David Lang wrote:
-> On Tue, 17 Apr 2007, Daniel Hazelton wrote:
-> > On Tuesday 17 April 2007 15:58:09 Tomasz Kłoczko wrote:
-> >> On Tue, 17 Apr 2007, Daniel Hazelton wrote:
-> >> [..]
-> >>
-> >>>> Why on discussion about switching to GPL v3 Linux code this argument
-> >>>> was allways taken as "piece of cake". Why in case switching to another
-> >>>> license which will allow use CDDL code just it is most importand contr
-> >>>> argument ?
-> >>>>
-> >>>> kloczek
-> >>>
-> >>> Because *EVERY* version of the GPL contains the "or any later version
-> >>> of this license" clause (except, now, the version being used with the
-> >>> Linux kernel)
-> >>
-> >> So after around commented swiching to GPL v3 it will be possible to
-> >> start work on GLP v3.5 which will allow easy reuse CDDL code under Linux
-> >> .. good to know :o)
-> >
-> > Nope. Note that I said "Except the Linux Kernel".
-> >
-> > After the discussions that took place back around the time of the release
-> > of the first draft of GPLv3 it was decided to lock Linux to *ONLY* GPLv2
->
-> actually the GPLv2 only predates the GPLv3 draft by several years
->
-> there are quite a few other projects that are also GPLv2 only
->
-> > So the Linux kernel will *never* be able to have a version of the GPL
-> > other than the current one applied. This change might have occurred
-> > without the knowledge or agreement of the FSF, who maintain the GPL, but
-> > since it was done with the complete agreement of all the current
-> > developers - and assumed agreement of any who contributed and are no
-> > longer able to consent (since their code was originally released under
-> > GPLv2) - it should stand. After all, the form of the license that applies
-> > to the kernel is shipped with the kernels sources.
->
-> the 'or later' version is not part of the GPLv2 license itself, it's a burb
-> that the FSF suggests that people use so that they (the FSF) can
-> retroactivly change the license of the code that other people create.
->
-> The dispute over the GPLv3 is if these retroactive chagnes aer to the
-> benifit or detriment of the people who created the code.
->
-> > In fact, from the copy in the latest Git:
-> > NOTE! This copyright does *not* cover user programs that use kernel
-> > services by normal system calls - this is merely considered normal use
-> > of the kernel, and does *not* fall under the heading of "derived work".
-> > Also note that the GPL below is copyrighted by the Free Software
-> > Foundation, but the instance of code that it refers to (the Linux
-> > kernel) is copyrighted by me and others who actually wrote it.
-> >
-> > Also note that the only valid version of the GPL as far as the kernel
-> > is concerned is _this_ particular version of the license (ie v2, not
-> > v2.2 or v3.x or whatever), unless explicitly otherwise stated.
-> >
-> >                        Linus Torvalds
-> > -----------------
->
-> take a look at the date that this went into the kernel
+On Tue, Apr 17, 2007 at 03:32:56PM -0700, William Lee Irwin III wrote:
+>> I'm already working with this as my assumed nice semantics (actually
+>> something with a specific exponential base, suggested in other emails)
+>> until others start saying they want something different and agree.
 
-Yeah, I did afterwards. Perhaps it was because of the discussion that occurred 
-then that I remember it.
+On Tue, Apr 17, 2007 at 05:39:09PM -0500, Matt Mackall wrote:
+> Good. This has a couple nice mathematical properties, including
+> "bounded unfairness" which I mentioned earlier. What base are you
+> looking at?
 
-> >> How many years it will take ? two, three ? more ? (it will be
-> >> good to know how long we must wait on ZFS under Linux .. I don't belive
-> >> in rewriting ZFS code time and make it so useable on production as *now*
-> >> it is possible under Solaris/*BSD/MOX and passing all pointless arguing
-> >> will take shorter time) .. or maybe never because some people says
-> >> something like "Linux is in GPL cage".
-> >
-> > Linux is not in any cage - Solaris and ZFS, because of the CDDL, sit
-> > inside the cage. I, personally, will *NEVER* release code meant to be
-> > "open source" under a license that makes demands like those of the user.
->
-> and similarly, many people will not release code under a license that lets
-> other people change the terms years later.
-
-Agreed. This is something that I would never do. 
-
-DRH
-
->
-> David Lang
+I'm working with the following suggestion:
 
 
+On Tue, Apr 17, 2007 at 09:07:49AM -0400, James Bruce wrote:
+> Nonlinear is a must IMO.  I would suggest X = exp(ln(10)/10) ~= 1.2589
+> That value has the property that a nice=10 task gets 1/10th the cpu of a
+> nice=0 task, and a nice=20 task gets 1/100 of nice=0.  I think that
+> would be fairly easy to explain to admins and users so that they can
+> know what to expect from nicing tasks.
+
+
+I'm not likely to write the testcase until this upcoming weekend, though.
+
+
+-- wli
