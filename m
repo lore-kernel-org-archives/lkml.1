@@ -1,50 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031131AbXDQS4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030788AbXDQS6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031131AbXDQS4D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 14:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031138AbXDQS4C
+	id S1030788AbXDQS6X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 14:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030844AbXDQS6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 14:56:02 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32785
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1031131AbXDQS4A (ORCPT
+	Tue, 17 Apr 2007 14:58:23 -0400
+Received: from outmx013.isp.belgacom.be ([195.238.5.64]:58542 "EHLO
+	outmx013.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030788AbXDQS6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 14:56:00 -0400
-Date: Tue, 17 Apr 2007 11:56:02 -0700 (PDT)
-Message-Id: <20070417.115602.35506934.davem@davemloft.net>
-To: seokmann.ju@qlogic.com
-Cc: andrew.vasquez@qlogic.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-       ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <A6970E9A290F3F4682E1EAD0EA14F32BDF5854@AVEXCH2.qlogic.org>
-References: <20070417024107.GE16469@dmccrory-d810.qlogic.org>
-	<20070416.220208.94071670.davem@davemloft.net>
-	<A6970E9A290F3F4682E1EAD0EA14F32BDF5854@AVEXCH2.qlogic.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 17 Apr 2007 14:58:22 -0400
+Date: Tue, 17 Apr 2007 20:58:49 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Holger Eiboeck <holger@eiboeck.de>
+Subject: RFC: drivers/char/watchdog/pcwd.c + drivers/char/watchdog/pcwd_pci.c
+Message-ID: <20070417185849.GA2632@infomag.infomag.iguana.be>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Seokmann Ju" <seokmann.ju@qlogic.com>
-Date: Tue, 17 Apr 2007 11:28:07 -0700
+Hi all,
 
-> Hello David,
-> On Mon 4/16/2007 10:02 PM, David Miller wrote:
-> > > I'm in transit for a redeye to NY so I won't be able to modify the 
-> > > patch, If you would be amenable to the above, Seokmann, could you 
-> > > rework the patch?
-> > 
-> > Thanks guys.
-> Here, I've attached updated patch. Please take this.
-> Sorry for late.
+Would anyone object if we would merge the "full bells and whistles" drivers for
+the pcwd isa and pci cards in the kernel tree. (It basically only adds some extra
+/proc routines). This would make it easier to maintain the "full bells and whistles"
+driver.
 
-Actually, I misunderstood the patch.
+Greetings,
+Wim.
 
-If SPARC provides the port and node WWN numbers in the OFW properties
-the driver should load properly.
-
-NAK, I reject this patch.
