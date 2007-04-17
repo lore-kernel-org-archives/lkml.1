@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXDQPEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030484AbXDQPF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964834AbXDQPEf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDQPEf
+	id S1030484AbXDQPF6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964988AbXDQPF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:04:35 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:1110 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964834AbXDQPEe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:04:34 -0400
-Message-ID: <4624E1DE.2040300@imap.cc>
-Date: Tue, 17 Apr 2007 17:03:58 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Tue, 17 Apr 2007 11:05:58 -0400
+Received: from ns2.suse.de ([195.135.220.15]:52145 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932339AbXDQPF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 11:05:57 -0400
+Date: Tue, 17 Apr 2007 08:03:31 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torresmat@gmail.com, conke.hu@gmail.com
+Subject: Re: [PATCH] pci-quirks: disable MSI on RS400-200 and RS480
+Message-ID: <20070417150331.GA30372@suse.de>
+References: <20070416045918.GI10619@htj.dyndns.org> <4624E058.8010808@garzik.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Tilman Schmidt <tilman@imap.cc>, Randy Dunlap <randy.dunlap@oracle.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       i4ldeveloper@listserv.isdn4linux.de, Karsten Keil <kkeil@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: so what *is* obsolete and removable?
-References: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>	<4623FB0E.4080602@imap.cc>	<20070416161337.d59f2ea3.randy.dunlap@oracle.com>	<4624C320.3050206@imap.cc> <20070417144054.24c104bf@the-village.bc.nu>
-In-Reply-To: <20070417144054.24c104bf@the-village.bc.nu>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig46ABE4EFD9668E9A1E089CD9"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4624E058.8010808@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig46ABE4EFD9668E9A1E089CD9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 17, 2007 at 10:57:28AM -0400, Jeff Garzik wrote:
+> Tejun Heo wrote:
+> >MSI doesn't work on RS400-200 and RS480 requiring pci=nomsi kernel
+> >boot parameter for ahci to work.  This patch disables MSI on those
+> >chips.
+> >
+> >  http://thread.gmane.org/gmane.linux.ide/17820
+> >  http://thread.gmane.org/gmane.linux.ide/17516
+> >  https://bugzilla.novell.com/show_bug.cgi?id=263893
+> >
+> >Signed-off-by: Tejun Heo <htejun@gmail.com>
+> 
+> ACK.  Greg will apply, I presume?
 
-On Tue, 17 Apr 2007 14:40:54 +0100, Alan Cox wrote:
-> If the obsolete tag is to be removed then it needs a formal maintainer,=
+Yes, I'll add this to my tree.
 
-> all the obsolete interface usage cleaning up and the like otherwise at
-> some point in a clean up it is going to end up breaking and migrating t=
-o
-> && BROKEN as well.
+thanks,
 
-I'm not sure I understand. What do you mean by "obsolete interface
-usage"? What sort of cleaning up needs to be done? What sort of
-breakage do you anticipate in the event of a clean up?
-
-Thanks
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig46ABE4EFD9668E9A1E089CD9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGJOHlMdB4Whm86/kRAgDMAJ0dXzqPtP7DujTwCpTb416QLcnXFgCfe5J0
-MJHDDLG4d8Ldm3dTVCGcT58=
-=rK7d
------END PGP SIGNATURE-----
-
---------------enig46ABE4EFD9668E9A1E089CD9--
+greg k-h
