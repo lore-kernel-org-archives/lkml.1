@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbXDQDbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbXDQDgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbXDQDbr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 23:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbXDQDbr
+	id S1753952AbXDQDgO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 23:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXDQDgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 23:31:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43780 "EHLO mx2.suse.de"
+	Mon, 16 Apr 2007 23:36:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47165 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752062AbXDQDbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 23:31:46 -0400
-Date: Tue, 17 Apr 2007 05:31:20 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+	id S1753952AbXDQDgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 23:36:13 -0400
+Date: Mon, 16 Apr 2007 23:34:00 -0400
+From: Dave Jones <davej@redhat.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Adrian Bunk <bunk@stusta.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417033120.GC25513@wotan.suse.de>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415213153.GW11115@waste.org> <20070416030349.GB13626@wotan.suse.de> <20070416142823.GX11115@waste.org>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+Message-ID: <20070417033400.GE22804@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Richard Purdie <rpurdie@rpsys.net>,
+	"Antonino A. Daplas" <adaplas@gmail.com>,
+	Adrian Bunk <bunk@stusta.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com> <20070416011636.GO3691@stusta.de> <20070416062921.GB7528@redhat.com> <1176706447.5129.6.camel@daplas> <20070416072326.GA15281@redhat.com> <1176708722.5129.8.camel@daplas> <20070416075543.GB15281@redhat.com> <1176715603.6794.13.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070416142823.GX11115@waste.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1176715603.6794.13.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 09:28:24AM -0500, Matt Mackall wrote:
-> On Mon, Apr 16, 2007 at 05:03:49AM +0200, Nick Piggin wrote:
-> > I'd prefer if we kept a single CPU scheduler in mainline, because I
-> > think that simplifies analysis and focuses testing.
-> 
-> I think you'll find something like 80-90% of the testing will be done
-> on the default choice, even if other choices exist. So you really
-> won't have much of a problem here.
-> 
-> But when the only choice for other schedulers is to go out-of-tree,
-> then only 1% of the people will try it out and those people are
-> guaranteed to be the ones who saw scheduling problems in mainline.
-> So the alternative won't end up getting any testing on many of the
-> workloads that work fine in mainstream so their feedback won't tell
-> you very much at all.
+On Mon, Apr 16, 2007 at 10:26:43AM +0100, Richard Purdie wrote:
 
-Yeah I concede that perhaps it is the only way to get things going
-any further. But how do we decide if and when the current scheduler
-should be demoted from default, and which should replace it?
+ > >  > >  > CONFIG_FB_BACKLIGHT=y
+ > >  > >  > CONFIG_ACPI_VIDEO=n
+ > >  > > 
+ > >  > > That also gets me a dead display. Backlight doesn't turn back on.
+ > >  > 
+ > >  > Anything under /sys/class/backlight?
+ > > 
+ > > Entries from ibm_acpi.  I rmmod'd that, leaving the dir empty,
+ > > and it still fails.
+ > 
+ > What happens if you never load ibm-acpi?
+
+Same thing. No backlight on resume.
+I rm'd the .ko, so there's no chance it got loaded.
+
+ > I'm a bit puzzled as CONFIG_FB_BACKLIGHT doesn't do anything with the
+ > intelfb driver. One thing it does do is set
+ > CONFIG_BACKLIGHT_CLASS_DEVICE. When you disabled FB_BACKLIGHT and got a
+ > working display on resume, was that set and was (or had) ibm-acpi been
+ > loaded?
+ > 
+ > A variety of other options such as ACPI_IBM also set
+ > CONFIG_BACKLIGHT_CLASS_DEVICE although without a backlight driver it
+ > will do nothing hence the suspicion is on ibm-acpi, perhaps interacting
+ > with the backlight class badly.
+ > 
+ > Does echoing numbers to /sys/class/backlight/ibm_acpi/brightness change
+ > the backlight brightness as expected?
+
+/sys/class/backlight/ibm/brightness takes a value from 0 to 7.
+Starts off with a default of 0. I tried all values in there, and
+it made no visible difference.  But as the no-backlight thing happens
+without this even loaded, I think this is a separate problem.
+
+ > If you can ssh into the machine
+ > after its resumed with the display problem, it would be interesting to
+ > know what the brightness was and if changing it helped too...
+
+When the backlight doesn't come on, for some reason, nothing else
+runs.  Capslock works, so it's at least partially alive, but even
+doing..
+
+echo mem > /sys/power/state ; echo foo >/bar ; sync
+
+results in no /bar being created.
+Ethernet remains down when its in this state too.
+
+It's the reason it's taken this long to get any debug info out of it at all.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
