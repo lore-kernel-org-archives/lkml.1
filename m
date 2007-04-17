@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161356AbXDQS0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161369AbXDQS1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161356AbXDQS0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 14:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161362AbXDQS0n
+	id S1161369AbXDQS1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 14:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161366AbXDQS1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 14:26:43 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:41594 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161356AbXDQS0m (ORCPT
+	Tue, 17 Apr 2007 14:27:31 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44204 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161373AbXDQS1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 14:26:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=o4H9QxGc1G+B+wTf9GPr9Y+/974U1UsgvLeunPx4bo7tbkp/xCFWVE6BR+URBJ8z9IYSTfdKRuCYzZm1wn2Tn6Q9L15aElT5AOAYkgrtOmgfpOiQtmu4Xlc8KuhAivTUeiFmOU2/pa3P37zwhamwgo1qq2YAuB+RjiT8Be+DVCg=
-Message-ID: <837c0d330704171126n551010d7v6759fc9a516878ab@mail.gmail.com>
-Date: Tue, 17 Apr 2007 20:26:40 +0200
-From: "Jasper Spaans" <jasper@vs19.net>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 4GB Physical. Less than 3GB in Linux.
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <b6a2187b0704160752u1c837f33p652c0d431b66459@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 17 Apr 2007 14:27:30 -0400
+Date: Tue, 17 Apr 2007 11:30:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: piet@bluelane.com
+Cc: Tom Rini <trini@kernel.crashing.org>, Andi Kleen <ak@suse.de>,
+       Dave Jiang <djiang@mvista.com>, linux-kernel@vger.kernel.org,
+       sshtylyov@ru.mvista.com, Andrew Morton <akpm@osdl.org>,
+       George Anzinger <george@wildturkeyranch.net>,
+       "David O'Brien" <obrien@FreeBSD.org>
+Subject: Re: Permanent Kgdb integration into the kernel - lets get with it.
+Message-Id: <20070417113016.1f0812c7.randy.dunlap@oracle.com>
+In-Reply-To: <1173392650.8912.236.camel@piet2.bluelane.com>
+References: <20070307204516.GA24095@blade.az.mvista.com>
+	<200703081814.53153.ak@suse.de>
+	<45F04B6E.9000703@mvista.com>
+	<200703081937.56167.ak@suse.de>
+	<20070308184940.GP11626@smtp.west.cox.net>
+	<1173392650.8912.236.camel@piet2.bluelane.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.wZS4ieAkOMvNOj61QiUn9aS+YeM@ifi.uio.no>
-	 <46238936.3060501@shaw.ca>
-	 <b6a2187b0704160752u1c837f33p652c0d431b66459@mail.gmail.com>
-X-Google-Sender-Auth: dd713f826abe0849
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/16/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> On 4/16/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> > Jeff Chua wrote:
-> > > I've noticed that with 4GB physical ram, I'm only see 3098000 MB on
-> > > the Dell 745, and 3107056MB on the IBM X60s.
-> > >
-> > > I've tested with CONFIG_HIGHMEM4G=y, CONFIG_HIGHMEM64G=y,
-> > > CONFIG_X86_PAE=y, but nothing makes any difference.
-> >
-> > Chipset limitation. It uses up most of the MMIO region above 3GB
-> > preventing RAM from being mapped there, and doesn't support remapping
-> > the covered RAM to above 4GB. Nothing the kernel can do about it.
->
-> Well, I guess I learned the hard way. So it's better not to buy 4GB
-> ... it turns out to be the same as buying one with just 3GB RAM.
+On Thu, 08 Mar 2007 14:24:10 -0800 Piet Delaney wrote:
 
-Might be a setting in the bios... look for something like memory hole,
-memory remapping, 4G DRAM, etc.
+> On Thu, 2007-03-08 at 11:49 -0700, Tom Rini wrote:
+> > On Thu, Mar 08, 2007 at 07:37:56PM +0100, Andi Kleen wrote:
+> > > On Thursday 08 March 2007 18:44, Dave Jiang wrote:
+> > > 
+> > > > In spite of kgdb, shouldn't it have that \n anyways in case some other code
+> > > > gets added in the future after the macro? Or are you saying that there should
+> > > > never be any code ever after that macro?
+> > > 
+> > > Sure if there is mainline code added after that macro we add the \n.
+> > > But only if it makes sense to add code there, which it didn't in kgdb.
+> > 
+> > Was that because with recent enough tools and config options there was
+> > enough annotations so GDB could finally figure out where things had
+> > stopped?  Thanks.
+> 
+> The reason Linus said he didn't allow George's kgdb mm patch to 
+> be integrating into the kernel a year or two ago was that Amit and
+> George had significantly different implementations. So Amit, Tom, 
+> George, and the rest of the kgdb development gang worked together 
+> and came up with a unified version that we now support on SourceForge. 
+> 
+> Tom rolled up a mm patch back in December for Andrew and then the
+> integration process stopped. I suggest we work together on getting
+> the kgdb patch back into the mm series and permanently into the kernel
+> like the kexec code and then we can avoid this kernel development
+> obfuscation.
 
-VrGr,
--- 
-Jasper Spaans                                       http://jsp.vs19.net/
+Hi,
+Is there any movement on this?
 
-               This line was last modified 0 seconds ago.
+Thanks,
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
