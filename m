@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031071AbXDQEBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031072AbXDQEHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031071AbXDQEBg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 00:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031072AbXDQEBg
+	id S1031072AbXDQEHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 00:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031073AbXDQEHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 00:01:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46397 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1031071AbXDQEBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 00:01:35 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18uRUJW4GAu3SLyTCHALvsEC3cE96YVeZnktGz8lB
-	lQGfpNKk94jsUt
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Mike Galbraith <efault@gmx.de>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Williams <pwil3058@bigpond.net.au>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+	Tue, 17 Apr 2007 00:07:07 -0400
+Received: from omta05sl.mx.bigpond.com ([144.140.93.195]:39012 "EHLO
+	omta05sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031072AbXDQEHF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 00:07:05 -0400
+Message-ID: <462447E0.20806@bigpond.net.au>
+Date: Tue, 17 Apr 2007 14:06:56 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070417034050.GD25513@wotan.suse.de>
-References: <20070413202100.GA9957@elte.hu>
-	 <200704151327.13589.kernel@kolivas.org>
-	 <1176619384.6222.70.camel@Homer.simpson.net>
-	 <46240F98.3020800@bigpond.net.au>
-	 <1176776941.6222.21.camel@Homer.simpson.net>
-	 <20070417034050.GD25513@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 17 Apr 2007 06:01:29 +0200
-Message-Id: <1176782489.13059.15.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+References: <20070416220715.GA4071@elte.hu>
+In-Reply-To: <20070416220715.GA4071@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta05sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 04:07:02 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-17 at 05:40 +0200, Nick Piggin wrote:
-> On Tue, Apr 17, 2007 at 04:29:01AM +0200, Mike Galbraith wrote:
- 
-> > Yup, and progress _is_ happening now, quite rapidly.
+Ingo Molnar wrote:
+> this is the second release of the CFS (Completely Fair Scheduler) 
+> patchset, against v2.6.21-rc7:
 > 
-> Progress as in progress on Ingo's scheduler. I still don't know how we'd
-> decide when to replace the mainline scheduler or with what.
+>    http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.patch
 > 
-> I don't think we can say Ingo's is better than the alternatives, can we?
+> i'd like to thank everyone for the tremendous amount of feedback and 
+> testing the v1 patch got - i could hardly keep up with just reading the 
+> mails! Some of the stuff people addressed i couldnt implement yet, i 
+> mostly concentrated on bugs, regressions and debuggability.
 
-No, that would require massive performance testing of all alternatives.
+Can I make a suggestion?
 
-> If there is some kind of bakeoff, then I'd like one of Con's designs to
-> be involved, and mine, and Peter's...
+Would it be possible (from now on) to publish changes relevant to the 
+previous patch (eventually leading to a series of patches that describes 
+the evolution of the new scheduler) so that it's easier for us 
+reviewers/critics to see the latest changes.  E.g. if import such 
+changes into something like quilt (using my gquilt GUI wrapper, of 
+course :-)) I can then use meld (or similar) to follow what's going as 
+suggestions get folded in and bugs get fixed etc.
 
-The trouble with a bakeoff is that it's pretty darn hard to get people
-to test in the first place, and then comes weighting the subjective and
-hard performance numbers.  If they're close in numbers, do you go with
-the one which starts the least flamewars or what?
+Thanks
+Peter
+-- 
+Peter Williams                                   pwil3058@bigpond.net.au
 
-> Maybe the progress is that more key people are becoming open to the idea
-> of changing the scheduler.
-
-Could be.  All was quiet for quite a while, but when RSDL showed up, it
-aroused enough interest to show that scheduling woes is on folks radar.
-
-	-Mike
-
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
