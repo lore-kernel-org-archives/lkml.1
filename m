@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031289AbXDQXLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031292AbXDQXMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031289AbXDQXLJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 19:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030930AbXDQXLJ
+	id S1031292AbXDQXMb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 19:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031295AbXDQXMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 19:11:09 -0400
-Received: from waste.org ([66.93.16.53]:35163 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031291AbXDQXLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 19:11:07 -0400
-Date: Tue, 17 Apr 2007 17:57:23 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Davide Libenzi <davidel@xmailserver.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417225723.GP11115@waste.org>
-References: <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com> <20070417073308.GB30559@elte.hu> <20070417090538.GU8915@holomorphy.com> <20070417092422.GA19414@elte.hu> <20070417220809.GF11166@waste.org> <20070417223256.GP2986@holomorphy.com> <20070417223909.GO11115@waste.org> <20070417225902.GQ2986@holomorphy.com>
+	Tue, 17 Apr 2007 19:12:30 -0400
+Received: from web36603.mail.mud.yahoo.com ([209.191.85.20]:31255 "HELO
+	web36603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1031291AbXDQXM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 19:12:29 -0400
+X-YMail-OSG: TKnaLZIVM1nqNFrXBgsfqjI7Sa4pyWjmBK4MwAZZL6ksOv2qvyuzSsSMYlOAEIGX6ARuMmiI4A--
+X-RocketYMMF: rancidfat
+Date: Tue, 17 Apr 2007 16:12:28 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: AppArmor FAQ
+To: Karl MacMillan <kmacmill@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <1176846507.5946.70.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070417225902.GQ2986@holomorphy.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <680990.15666.qm@web36603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 03:59:02PM -0700, William Lee Irwin III wrote:
-> On Tue, Apr 17, 2007 at 03:32:56PM -0700, William Lee Irwin III wrote:
-> >> I'm already working with this as my assumed nice semantics (actually
-> >> something with a specific exponential base, suggested in other emails)
-> >> until others start saying they want something different and agree.
-> 
-> On Tue, Apr 17, 2007 at 05:39:09PM -0500, Matt Mackall wrote:
-> > Good. This has a couple nice mathematical properties, including
-> > "bounded unfairness" which I mentioned earlier. What base are you
-> > looking at?
-> 
-> I'm working with the following suggestion:
-> 
-> 
-> On Tue, Apr 17, 2007 at 09:07:49AM -0400, James Bruce wrote:
-> > Nonlinear is a must IMO.  I would suggest X = exp(ln(10)/10) ~= 1.2589
-> > That value has the property that a nice=10 task gets 1/10th the cpu of a
-> > nice=0 task, and a nice=20 task gets 1/100 of nice=0.  I think that
-> > would be fairly easy to explain to admins and users so that they can
-> > know what to expect from nicing tasks.
-> 
-> I'm not likely to write the testcase until this upcoming weekend, though.
 
-So that means there's a 10000:1 ratio between nice 20 and nice -19. In
-that sort of dynamic range, you're likely to have non-trivial
-numerical accuracy issues in integer/fixed-point math.
+--- Karl MacMillan <kmacmill@redhat.com> wrote:
 
-(Especially if your clock is jiffies-scale, which a significant number
-of machines will continue to be.)
+> On Tue, 2007-04-17 at 13:19 -0700, Casey Schaufler wrote:
+> > --- Andi Kleen <andi@firstfloor.org> wrote:
+> > > > although this can often be done with PAM plugins, which is a standard
+> way 
+> > > > to do this kind of thing in modern Unix & Linux OSs.
+> > > 
+> > > PAM plugins in vi and emacs? Scary idea.
+> > > 
+> > > And what do you do if someone decides to use OpenOffice to edit their
+> > > /etc/resolv.conf? For a lot of people that's the only text editor 
+> > > they know.
+> > 
+> > For SELinux to be effective it has to have a complete policy definition.
+> > This would prevent the OpenOffice access (unless OpenOffice is in the
+> > modify_resolv_conf_t domain) above.
+> > 
+> > This, by the way, is a fundimental advantage of a path scheme over a
+> > label scheme in that label schemes require every object be labeled
+> > (it's Section 3.1.1.3 of the TCSEC if you want to look it up) while a
+> > path scheme (in the absences of a published requirement) only requires
+> > those names it cares about. SELinux in the absence of a correct and
+> > complete policy could be considered dangerous.
+> > 
+> 
+> This is wildly untrue (as I believe you know Casey).
 
-I really think if we want to have vastly different ratios, we probably
-want to be looking at BATCH and RT scheduling classes instead.
+Is it? In an environment with automatic domain transitions and
+socket based administrative interfaces I can easily imagine how
+an incorrect or incomplete policy definition (or even one containing
+an ill advised regular expression in a pathname) could result in
+a user being able to get inappropriate service from an application.
+Maybe I am being silly. I am part of the generation that treats
+the setuid bit gingerly, and one of the people who worked to see that
+the POSIX capability mechanism was appropriately careful. The notion
+of applications flipping their security contexts about based on
+externally specified rules in an environment where communications
+with potentially privileged processes are covered by another set
+of those rules does not inspire confidence. I think that those rules
+had better be very carefully defined for them to be worthy of trust.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> The effectiveness
+> of SELinux is certainly diminished by not confining all applications,
+> but that in no way makes it dangerous. It simply means that certain
+> aspects of the security are no longer guaranteed by the policy but
+> instead rely on application correctness. SELinux still offers useful
+> protections against a variety security threats in a targeted
+> configuration.
+
+OK, if it make you feel secure, that's fine. It doesn't do anything
+for me.
+
+> This is in contrast to a security mechanism that is path based and
+> doesn't control all accesses which can make _no_ guarantees about any
+> security goals. 
+
+But ... in a targeted policy SELinux isn't controlling all accesses, either.
+Well, there's really no point it making further arguements. I don't
+expect to get through where I've failed before. And SELinux is still the
+best type enforcement scheme available, so if you like that sort of thing
+it's a fine choice. I still don't think that the arguments against path
+based access are particularly compelling.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
