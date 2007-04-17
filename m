@@ -1,112 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964862AbXDQOM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXDQOQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964862AbXDQOM6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 10:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964974AbXDQOM6
+	id S1030181AbXDQOQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 10:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030185AbXDQOQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 10:12:58 -0400
-Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:3227 "EHLO
-	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964862AbXDQOM5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 10:12:57 -0400
-X-Greylist: delayed 392 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 10:12:57 EDT
-Date: Tue, 17 Apr 2007 16:06:21 +0200
-From: Erik Mouw <mouw@nl.linux.org>
-To: Tomasz K?oczko <kloczek@rudy.mif.pg.gda.pl>
-Cc: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-Message-ID: <20070417140621.GD22351@gateway.home>
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org> <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+	Tue, 17 Apr 2007 10:16:24 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:3938 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030181AbXDQOQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 10:16:23 -0400
+Message-ID: <4624D7D5.1000007@sw.ru>
+Date: Tue, 17 Apr 2007 18:21:09 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
-Content-Disposition: inline
-In-Reply-To: <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
-Organization: Eric Conspiracy Secret Labs
-X-Eric-Conspiracy: There is no conspiracy!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>, linux-mm@kvack.org
+Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M
+References: <4624C3C1.9040709@sw.ru> <84144f020704170622h2b16f0f6m47ffdbb3b5686758@mail.gmail.com> <4624D0C1.4090304@sw.ru> <Pine.LNX.4.64.0704171653420.22366@sbz-30.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0704171653420.22366@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pekka J Enberg wrote:
+> Hi Pavel,
+> 
+> At some point in time, I wrote:
+>>> So, now we have two locks protecting cache_chain? Please explain why
+>>> you can't use the mutex.
+> 
+> On Tue, 17 Apr 2007, Pavel Emelianov wrote:
+>> Because OOM can actually happen with this mutex locked. For example
+>> kmem_cache_create() locks it and calls kmalloc(), or write to
+>> /proc/slabinfo also locks it and calls do_tune_cpu_caches(). This is
+>> very rare case and the deadlock is VERY unlikely to happen, but it
+>> will be very disappointing if it happens.
+>>
+>> Moreover, I put the call to show_slabs() into sysrq handler, so it may
+>> be called from atomic context.
+>>
+>> Making mutex_trylock() is possible, but we risk of loosing this info
+>> in case OOM happens while the mutex is locked for cache shrinking (see
+>> cache_reap() for example)...
+>>
+>> So we have a choice - either we have an additional lock on a slow and
+>> rare paths and show this info for sure, or we do not have a lock, but
+>> have a risk of loosing this info.
+> 
+> I don't worry about performance as much I do about maintenance. Do you 
+> know if mutex_trylock() is a problem in practice? Could we perhaps fix 
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No, this mutex is unlocked most of the time, but I have 
+already been in the situations when the information that 
+might not get on the screen did not actually get there in 
+the most inappropriate moment :)
 
-On Tue, Apr 17, 2007 at 03:47:32PM +0200, Tomasz K?oczko wrote:
-> On Tue, 17 Apr 2007, Theodore Tso wrote:
-> [..]
-> >Well, that was totally useless answer from the ZFS developers.  What
-> >he should have told you is to contact Sun management, since they are
-> >the only ones who can decide whether or not to release ZFS under a GPL
-> >license, and more importantly, to give a patent license for any
-> >patents they may have filed in the course of developing ZFS.  This is
-> >not anything Linux developers can help you with.
->=20
-> Realy can't or don't want (?)
-> So who is responsible for potential changing Linux code licensing for=20
-> allow if not incorporate CDDL code correct interraction without breaking=
-=20
-> some law ?
+> the worst offenders who are holding cache_chain_mutex for a long time?
+> 
+> In any case, if we do end up adding the lock, please add a BIG FAT COMMENT 
+> explaining why we have it.
 
-All Linux contributors (i.e: copyright owners) are. If you want to
-change the kernel license, you have all contributors to agree. Like
-somebody else in this thread already said: some of them can't be
-reached anymore, some of them are even dead.
+OK. I will keep this lock unless someone have a forcible
+argument for not doing this.
 
-For Sun it would be much easier: there might be many contributors to
-ZFS, but all of them are employed by Sun and hence Sun owns the
-copyright and has the choice of license.
+> At some point in time, I wrote:
+>>> I would also drop the OFF_SLAB bits because it really doesn't matter
+>>> that much for your purposes. Besides, you're already per-node and
+>>> per-CPU caches here which attribute to much more memory on NUMA setups
+>>> for example.
+>  
+> On Tue, 17 Apr 2007, Pavel Emelianov wrote:
+>> This gives us a more precise information :) The precision is less than 1%
+>> so if nobody likes/needs it, this may be dropped.
+> 
+> My point is that the "precision" is useless here. We probably waste more 
+> memory in the caches which are not accounted here. So I'd just drop it.
 
-> And/or what Linux can loose on follow this king changes ?
+OK. I will rework the patch according to your comments.
 
-A lot. Like an even playing field for all contributors.
-
-> And/or why Linux code licensing can't evolve ? Seems when Linux code was=
-=20
-> licensed noone was thinking about case like interraction with code under=
-=20
-> license like CDDL so why now it can be corrected and still many people tr=
-y=20
-> to think like "anything arond Linux must evolve .. but not Linux" (?)
-
-The Linux kernel was licensed under GPLv2 way before Sun even thought
-about CDDL. You can't blame Linus for choosing a license that was
-incompatible with to be written future licenses.
-
-> Why this can't be fixes ?
-
-Because so far we haven't found a way to ask dead copyright owners to
-think about relicensing their code. And even if we had, that still
-doesn't mean they would actually agree with relicensing their code.
-
-> If in this ponit in Linux "evniroment" can't be chaged .. sorry but is it=
-=20
-> not kind of hipocritics ?
-
-Nothing hypocritical about it, just undoable.
-
-
-Erik
-
---=20
-They're all fools. Don't worry. Darwin may be slow, but he'll
-eventually get them. -- Matthew Lammers in alt.sysadmin.recovery
-
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGJNRc/PlVHJtIto0RAnU0AJ90M6chbhD2FcRcO4wrLNZy47k5HwCfSEYj
-9w2LtKKWOLkvH/faMVEfX0g=
-=UFtX
------END PGP SIGNATURE-----
-
---AhhlLboLdkugWU4S--
+Pavel.
