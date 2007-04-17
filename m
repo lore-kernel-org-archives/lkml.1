@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030918AbXDQXA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030931AbXDQXJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030918AbXDQXA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 19:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030921AbXDQXA4
+	id S1030931AbXDQXJg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 19:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030925AbXDQXJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 19:00:56 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:43873 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030918AbXDQXAz (ORCPT
+	Tue, 17 Apr 2007 19:09:36 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:45009 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030924AbXDQXJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 19:00:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lPXOZ2FVh4BXQkw3WqzCPqDVLC5PbCnGoH4hZpSaGYPsluXRqej0L5VFwwFEb70DDeXCz0bUciwNxASZtSGZ5mT42s48nWB6lm8R7SX5lpkkUPWSzBX9D2vG5HdG93J1H0IGA5J9E5vvBrwznsztCEJ2wOPEfgsYuSaFvc4W1YE=
-Message-ID: <f2b55d220704171600w2de57cafhc1b2d8d7df67cc6b@mail.gmail.com>
-Date: Tue, 17 Apr 2007 16:00:53 -0700
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Peter Williams" <pwil3058@bigpond.net.au>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <npiggin@suse.de>,
-       "Mike Galbraith" <efault@gmx.de>, "Con Kolivas" <kernel@kolivas.org>,
-       "ck list" <ck@vds.kolivas.org>, "Bill Huey" <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <4624CF3B.6040704@bigpond.net.au>
+	Tue, 17 Apr 2007 19:09:35 -0400
+X-Greylist: delayed 840 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 19:09:35 EDT
+Message-ID: <462553A9.70504@novell.com>
+Date: Tue, 17 Apr 2007 16:09:29 -0700
+From: Crispin Cowan <crispin@novell.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: David Safford <safford@watson.ibm.com>
+CC: James Morris <jmorris@namei.org>, John Johansen <jjohansen@suse.de>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: AppArmor FAQ
+References: <20070416213350.GB4030@suse.de>	 <Line.LNX.4.64.0704161846110.13905@d.namei> <1176822230.3366.65.camel@localhost.localdomain>
+In-Reply-To: <1176822230.3366.65.camel@localhost.localdomain>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070413202100.GA9957@elte.hu>
-	 <200704151327.13589.kernel@kolivas.org>
-	 <1176619384.6222.70.camel@Homer.simpson.net>
-	 <46240F98.3020800@bigpond.net.au>
-	 <1176776941.6222.21.camel@Homer.simpson.net>
-	 <20070417034050.GD25513@wotan.suse.de>
-	 <1176782489.13059.15.camel@Homer.simpson.net>
-	 <20070417041420.GF25513@wotan.suse.de>
-	 <20070417095140.GB22626@elte.hu> <4624CF3B.6040704@bigpond.net.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/17/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
-> The other way in which the code deviates from the original as that (for
-> a few years now) I no longer calculated CPU bandwidth usage directly.
-> I've found that the overhead is less if I keep a running average of the
-> size of a tasks CPU bursts and the length of its scheduling cycle (i.e.
-> from on CPU one time to on CPU next time) and using the ratio of these
-> values as a measure of bandwidth usage.
->
-> Anyway it works and gives very predictable allocations of CPU bandwidth
-> based on nice.
+David Safford wrote:
+> On Mon, 2007-04-16 at 20:20 -0400, James Morris wrote:
+>   
+>> On Mon, 16 Apr 2007, John Johansen wrote:
+>>     
+>>> Label-based security (exemplified by SELinux, and its predecessors in
+>>> MLS systems) attaches security policy to the data. As the data flows
+>>> through the system, the label sticks to the data, and so security
+>>> policy with respect to this data stays intact. This is a good approach
+>>> for ensuring secrecy, the kind of problem that intelligence agencies have.
+>>>       
+>> Labels are also a good approach for ensuring integrity, which is one of 
+>> the most fundamental aspects of the security model implemented by SELinux.  
+>>
+>> Some may infer otherwise from your document.
+>>     
+> In fact, I am not sure how you can provide integrity support without
+> labels. AppArmor confines a process, but does not effectively confine 
+> its output files, precisely because the output files are not labeled. 
+> Other processes are free to access the unlabeled, potentially malicious 
+> output files without restriction. 
+>   
+That depends on what you mean by "integrity." It is true that AppArmor
+does not directly manage information flow. AppArmor assumes that if you
+granted write permission to /etc/resolv.conf, that you meant to do that.
+Whether any other process is permitted to access /etc/resolv.conf is
+determined by those other process's respective profiles.
 
-Works, that is, right up until you add nonlinear interactions with CPU
-speed scaling.  From my perspective as an embedded platform
-integrator, clock/voltage scaling is the elephant in the scheduler's
-living room.  Patch in DPM (now OpPoint?) to scale the clock based on
-what task is being scheduled, and suddenly the dynamic priority
-calculations go wild.  Nip this in the bud by putting an RT priority
-on the relevant threads (which you have to do anyway if you need
-remotely audio-grade latency), and the lock affinity heuristics break,
-so you have to hand-tune all the thread priorities.  Blecch.
+What AppArmor provides is a way for administrators to confine software
+that they have to run but do not trust. The use of pathnames means that
+the administrator can understand the exact meaning of the security
+policy, without having to do a complete labeling of the file system. The
+flip side of not managing information flow is that each profile is
+independent of every other profile.
 
-Not to mention the likelihood that the task whose clock speed you're
-trying to crank up (say, a WiFi soft MAC) needs to be _lower_ priority
-than the application.  (You want to crank the CPU for this task
-because it runs with the RF hot, which may cost you as much power as
-the rest of the platform.)  You'd better hope you can remove it from
-the dynamic priority heuristics with SCHED_BATCH.  Otherwise
-everything _else_ has to be RT priority (or it'll be starved by the
-soft MAC) and you've basically tossed SCHED_NORMAL in the bin.  Double
-blecch!
+The meaning of a file is how other processes interpret it. Until then,
+/etc/resolv.conf is just a quaint bag of bits. What makes it special is
+that it is what each process gets when they open the well-known
+"/etc/resolv.conf". Which is why it is useful to guard which processes
+can read or write to /etc/resolv.conf; the name is what makes its
+content special, not the other way around.
 
-Is it too much to ask for someone with actual engineering training
-(not me, unfortunately) to sit down and build a negative-feedback
-control system that handles soft-real-time _and_ dynamic-priority
-_and_ batch loads, CPU _and_ I/O scheduling, preemption _and_ clock
-scaling?  And actually separates the accounting and control mechanisms
-from the heuristics, so the latter can be tuned (within a well
-documented stable range) to reflect the expected system usage
-patterns?
+Crispin
 
-It's not like there isn't a vast literature in this area over the past
-decade, including some dealing specifically with clock scaling
-consistent with low-latency applications.  It's a pity that people
-doing academic work in this area rarely wade into LKML, even when
-they're hacking on a Linux fork.  But then, there's not much economic
-incentive for them to do so, and they can usually get their fill of
-citation politics and dominance games without leaving their home
-department.  :-P
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+Director of Software Engineering   http://novell.com
+"You cannot say anything that is both simple and complete."--Crispin on Goedel
 
-Seriously, though.  If you're really going to put the mainline
-scheduler through this kind of churn, please please pretty please knit
-in per-task clock scaling (possibly even rejigged during the slice;
-see e. g. Yuan and Nahrstedt's GRACE-OS papers) and some sort of
-linger mechanism to keep from taking context switch hits when you're
-confident that an I/O will complete quickly.
-
-Cheers,
-- Michael
