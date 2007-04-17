@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXDQN7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXDQOAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932231AbXDQN7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 09:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbXDQN7b
+	id S932255AbXDQOAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 10:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbXDQOAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 09:59:31 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:38759 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754388AbXDQN7a (ORCPT
+	Tue, 17 Apr 2007 10:00:21 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:42713 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754396AbXDQOAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 09:59:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=U9KBv3TKb9pQO1fo0dfHYI4+rAYgMqAseG7WGMUB1XmltmWQpT/VKzuQc1lGY28SRXFde/YhkQffjXCIVMFLizcdsMZh6WusAVTfcSqPrdgNbNWVW4uqQPfpFbxfaJQYnytpYUhXDSauRA4ng2mvg4bCFDokOMaUV31ShPjGOmE=
-Message-ID: <38b2ab8a0704170659o3f65f5fbo94a59be58727d21c@mail.gmail.com>
-Date: Tue, 17 Apr 2007 15:59:29 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: helge.hafting@aitel.hist.no, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <E1HdnvW-0005Ti-00@gondolin.me.apana.org.au>
+	Tue, 17 Apr 2007 10:00:19 -0400
+Date: Tue, 17 Apr 2007 14:59:58 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
+Cc: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
+       linux-kernel@vger.kernel.org
+Message-ID: <20070417135958.GB28201@srcf.ucam.org>
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org> <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <38b2ab8a0704170536x15920b15xedfd518cad50cee@mail.gmail.com>
-	 <E1HdnvW-0005Ti-00@gondolin.me.apana.org.au>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: ZFS with Linux: An Open Plea
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/17/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
->
-> Actually, I was referring to your AES module :)
->
+On Tue, Apr 17, 2007 at 03:47:32PM +0200, Tomasz Kłoczko wrote:
+> Realy can't or don't want (?)
+> So who is responsible for potential changing Linux code licensing for 
+> allow if not incorporate CDDL code correct interraction without breaking 
+> some law ?
 
-Well I don't if I can do that unfortunately.
+Everyone who holds any copyright over any of the code in Linux, which is 
+several thousand people. You'd probably need permission from all of 
+them. Good luck!
 
-Actually there's nothing really interesting in this code, only key or
-acc loadings and that's it.
-
-What do you want to see exactly ?
-
-Thanks
 -- 
-Francis
+Matthew Garrett | mjg59@srcf.ucam.org
