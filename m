@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbXDQAGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbXDQAR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbXDQAGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 20:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbXDQAGw
+	id S1754098AbXDQAR0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 20:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbXDQAR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 20:06:52 -0400
-Received: from omta01ps.mx.bigpond.com ([144.140.82.153]:30975 "EHLO
-	omta01ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754091AbXDQAGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 20:06:52 -0400
-X-Greylist: delayed 82787 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Apr 2007 20:06:51 EDT
-Message-ID: <46240F98.3020800@bigpond.net.au>
-Date: Tue, 17 Apr 2007 10:06:48 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu>	 <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net>
-In-Reply-To: <1176619384.6222.70.camel@Homer.simpson.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta01ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 00:06:49 +0000
+	Mon, 16 Apr 2007 20:17:26 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47120 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754098AbXDQARZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Apr 2007 20:17:25 -0400
+Date: Mon, 16 Apr 2007 19:24:03 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Wang, Baojun" <wangbj@lzu.edu.cn>
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: Re: PROBLEM: kernel 2.6.20.6 build failed for ppc board chestnut(ibm ppc 750GX/FX)
+Message-ID: <20070417002402.GB23995@crusty.rchland.ibm.com>
+References: <200704161313.04359.wangbj@lzu.edu.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704161313.04359.wangbj@lzu.edu.cn>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Galbraith wrote:
-> On Sun, 2007-04-15 at 13:27 +1000, Con Kolivas wrote:
->> On Saturday 14 April 2007 06:21, Ingo Molnar wrote:
->>> [announce] [patch] Modular Scheduler Core and Completely Fair Scheduler
->>> [CFS]
->>>
->>> i'm pleased to announce the first release of the "Modular Scheduler Core
->>> and Completely Fair Scheduler [CFS]" patchset:
->>>
->>>    http://redhat.com/~mingo/cfs-scheduler/sched-modular+cfs.patch
->>>
->>> This project is a complete rewrite of the Linux task scheduler. My goal
->>> is to address various feature requests and to fix deficiencies in the
->>> vanilla scheduler that were suggested/found in the past few years, both
->>> for desktop scheduling and for server scheduling workloads.
->> The casual observer will be completely confused by what on earth has happened 
->> here so let me try to demystify things for them.
-> 
-> [...]
-> 
-> Demystify what?   The casual observer need only read either your attempt
-> at writing a scheduler, or my attempts at fixing the one we have, to see
-> that it was high time for someone with the necessary skills to step in.
-
-Make that "someone with the necessary clout".
-
-> Now progress can happen, which was _not_ happening before.
+On Mon, Apr 16, 2007 at 01:13:01PM +0800, Wang, Baojun wrote:
+> PROBLEM: linux kernel 2.6.20.6 build failed for ppc board chestnut(ibm ppc 
+> 750GX/FX)
 > 
 
-This is true.
+Confirmed.  arch/ppc isn't getting much love these days.
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+<snip>
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+> this brute force patch sould solve the problem:
+
+This is missing a Signed-off-by: line.
+
+> diff -Nru /tmp/linux-2.6.20.6/arch/ppc/platforms/chestnut.c \  
+> linux-2.6.20.6/arch/ppc/platforms/chestnut.c
+> 
+> --- /tmp/linux-2.6.20.6/arch/ppc/platforms/chestnut.c   2007-04-07 
+> 04:02:48.000000000 +0800
+> +++ linux-2.6.20.6/arch/ppc/platforms/chestnut.c        2007-04-13 
+> 17:09:03.000000000 +0800
+> @@ -432,7 +432,9 @@
+>         ptbl.name = "User FS";
+>         ptbl.size = CHESTNUT_32BIT_SIZE;
+> 
+> -       physmap_map.size = CHESTNUT_32BIT_SIZE;
+> +       // physmap_map.size = CHESTNUT_32BIT_SIZE;
+
+Just remove this completely.  It's not needed any longer.
+
+> +       physmap_configure(CHESTNUT_32BIT_BASE, CHESTNUT_32BIT_SIZE, 
+> CONFIG_MTD_PHYSMAP_BANKWIDTH, NULL);
+
+Technically, this call isn't needed.  The chestnut_defconfig already provides
+the correct variables.
+
+josh
