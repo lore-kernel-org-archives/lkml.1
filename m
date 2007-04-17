@@ -1,40 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030369AbXDQOdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030405AbXDQOdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030369AbXDQOdI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 10:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030370AbXDQOdI
+	id S1030405AbXDQOdS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 10:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030413AbXDQOdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 10:33:08 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:47554 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030369AbXDQOdG (ORCPT
+	Tue, 17 Apr 2007 10:33:18 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:33702 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030370AbXDQOdQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 10:33:06 -0400
-Date: Tue, 17 Apr 2007 10:32:59 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: =?UTF-8?Q?Tomasz_K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
-cc: Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-In-Reply-To: <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
-Message-ID: <alpine.DEB.0.83.0704171028540.27446@sigma.j-a-k-j.com>
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <20070417131045.GB18373@thunk.org>
- <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+	Tue, 17 Apr 2007 10:33:16 -0400
+Date: Tue, 17 Apr 2007 09:33:01 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [patch 05/10] Add "permit user submounts" flag to vfsmount
+Message-ID: <20070417143301.GH1442@sergelap.austin.ibm.com>
+References: <20070416110308.739051445@szeredi.hu> <20070416110414.591968270@szeredi.hu> <20070416192050.GB30435@sergelap.austin.ibm.com> <E1HdlAt-00013a-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HdlAt-00013a-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And/or why Linux code licensing can't evolve ? Seems when Linux code was
-> licensed noone was thinking about case like interraction with code under
-> license like CDDL so why now it can be corrected and still many people try to
-> think like "anything arond Linux must evolve .. but not Linux" (?)
-> Why this can't be fixes ?
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > From: Miklos Szeredi <mszeredi@suse.cz>
+> > > 
+> > > If MNT_USERMNT flag is not set in the target vfsmount, then
+> > 
+> > MNT_USER and MNT_USERMNT?  I claim no way will people keep those
+> > straight.  How about MNT_ALLOWUSER and MNT_USER?
+> 
+> Umm, is "allowuser" more clear than "usermnt"?  What is allowed to the
 
-That's not evolution; it's de-evolution. Linux morphing to some sort of 
-mentally-damaged pseudo-proprietary licence would be like switching back 
-to a feudal society where 50 was considered unbelievably ancient.
+I think so, yes.  One makes it clear that we're talking about allowing
+user (somethings :), one might just as well mean "this is a user mount."
 
-I'm sure Linus did think very closely about the interaction of his code 
-with proprietary licences. He thought about it, snickered for a few 
-moments, and made the right decision.
+> user?  "allowusermnt" may be more descriptive, but it's a bit too
+> long.
+
+Yes, if it weren't too long it would by far have been my preference.
+Maybe despite the length we should still go with it...
+
+> I don't think it matters all that much, the user will have to look up
+> the semantics in the manpage anyway.  Is "nosuid" descriptive?  Not
+> very much, but we got used to it.
+
+nosuid is quite clear.  MNT_USER and MNT_USERMNT are so confusing that
+in the time I go from quitting the manpage to foregrounding my editor, I
+may have already forgotten which was which.
+
+-serge
