@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031194AbXDQQ6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031195AbXDQQ6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031194AbXDQQ6F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031195AbXDQQ6F
+	id S1031195AbXDQQ6K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:58:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031197AbXDQQ6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:58:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33566 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031194AbXDQQ6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:58:04 -0400
-Date: Tue, 17 Apr 2007 18:57:59 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: John Sigler <linux.kernel@free.fr>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: Disabling x86 System Management Mode
-Message-ID: <20070417165759.GA10145@one.firstfloor.org>
-References: <46235447.3080000@free.fr> <p73odlo55q2.fsf@bingen.suse.de> <4624FA85.9010704@free.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4624FA85.9010704@free.fr>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 17 Apr 2007 12:58:09 -0400
+Received: from cs.columbia.edu ([128.59.16.20]:47481 "EHLO cs.columbia.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031195AbXDQQ6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 12:58:07 -0400
+Message-ID: <4624FC38.6040503@cs.columbia.edu>
+Date: Tue, 17 Apr 2007 12:56:24 -0400
+From: Shaya Potter <spotter@cs.columbia.edu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: bharata@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  0/15] VFS based Union Mount
+References: <20070417131459.GA4001@in.ibm.com> <4624DB46.6040400@cs.columbia.edu> <20070417163055.GA11318@in.ibm.com>
+In-Reply-To: <20070417163055.GA11318@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 06:49:09PM +0200, John Sigler wrote:
-> >>.globl foo
-> >>foo:
-> >>   push %ebx
-> >>   push %esi
-> >>   cpuid
-> >>   rdtsc
-> >
-> >At least some SMM implementations restore the old TSC value. Sad but true.
+Bharata B Rao wrote:
+
+> No. foo is not visible. While looking for a file in a union mounted
+> directory, the lookup starts from the topmost directory and proceeds
+> downwards if the file isn't present the top layers. If a whiteout is
+> found in any of the top layers, the lookup is abondoned and -ENOENT
+> is removed. Thus until a whiteout exists in any upper layer for
+> a corresponding file in the lower layer, the lower layer file remains
+> hidden until the whiteout is removed.
 > 
-> Why would they do that?
+> However in the case of dir-c containing foo, the foo(from dir-c) will become
+> visible after union mounting dir-c on top of dir-b and dir-a.
 
-I asked the same question.  But it has been observed.
+ok, so the major limitation of this approach is that the top most layer 
+has to either be, ext2, ext3 or tmpfs (in patch), and most likely not 
+NFS (assumption is that NFS has no conception of the whiteout type of 
+file).  One thing the unionfs people are doing w/ their ODF approach, is 
+within the ODF fs, they have a special inode that is the "whiteout" 
+inode, and when they create a whiteout, they just create a hardlink from 
+the dentry they want to whiteout to the "whiteout inode".  could that be 
+a worthwhile approach instead of the whiteout file type?  (i.e. many 
+file systems support the concept of a hard link).
 
-> How would you detect periodic SMM on such a system?
-
-It's not a design goal of SMM to be detectable so the BIOS 
-writers and hardware designers don't care if you can.
-
-You could probably try to measure using a external or the LAPIC 
-clock.  Or check the chipset bits. 
-
-> 
-> >Besides RDTSC can be speculated around on some CPUs which also adds errors.
-> 
-> I don't understand this sentence. Could you clarify?
-
-Modern x86 CPUs execute code out of order and in parallel. The reordering
-window can be quite large and the CPU can execute code speculatively. 
-This can add large errors to RDTSC when the instruction is not executed
-where you think it is. One way around this is to synchronize it -- 
-using CPUID -- but that also adds latency and makes the measurement
-less precise.
-
--Andi
-
+I ask, because using union in a diskless environment.  Imagine pxe 
+booting a kernel/initramfs and then using union to create a real root fs 
+  (shared lower layer, private rw upper layer, ala live cds).  Which 
+brings up a different point, with unionfs, one can pivot_root into it, 
+can one do the same for these "union mounts"?  Don't know enough about 
+the VFS to know if this should "just work" or might be a problem.
