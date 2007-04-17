@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbXDQLyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbXDQMJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbXDQLyb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 07:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXDQLyb
+	id S1752658AbXDQMJL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 08:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbXDQMJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 07:54:31 -0400
-Received: from iggypop2.siwnet.net ([81.216.65.12]:59587 "EHLO
-	iggypop2.siwnet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbXDQLyW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 07:54:22 -0400
-From: Marcus Better <marcus@better.se>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [3/3] 2.6.21-rc6: known regressions
-Date: Tue, 17 Apr 2007 13:54:01 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Adrian Bunk <bunk@stusta.de>
-References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704171017.07012.marcus@better.se> <1176802076.6227.2.camel@daplas>
-In-Reply-To: <1176802076.6227.2.camel@daplas>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1769455.t1OSbY4cIj";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704171354.06542.marcus@better.se>
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Tue Apr 17 13:54:17 2007
-X-DSPAM-Confidence: 0.6075
-X-DSPAM-Probability: 0.0248
-X-DSPAM-Signature: 4624b56965371975720330
-X-DSPAM-Factors: 27,
-	Received*(unknown, 0.94439,
-	as+I, 0.12045,
-	Yes, 0.20359,
-	as, 0.20688,
-	as, 0.20688,
-	From*Marcus Better <marcus@better.se>, 0.24071,
-	Subject*Re, 0.67420,
-	Received*(Postfix)+with, 0.67386,
-	Received*(Postfix)+with, 0.67386,
-	Received*(Postfix), 0.67386,
-	Received*(Postfix), 0.67386,
-	Cc*vger.kernel.org>, 0.40000,
-	Cc*linux+pm, 0.40000,
-	Message-Id*<200704171354.06542.marcus, 0.40000,
-	Date*Apr, 0.40000,
-	Content-Type*micalg=pgp, 0.40000,
-	Received*Tue, 0.40000,
-	Received*Tue, 0.40000,
-	Cc*Adrian+Bunk, 0.40000,
-	Received*9332C205CCA, 0.40000,
-	Date*2007+13, 0.40000,
-	Works!+>, 0.40000,
-	Received*ESMTP, 0.40000,
-	Received*ESMTP, 0.40000,
-	Content-Disposition*inline, 0.40000,
-	Cc*stusta.de>, 0.40000,
-	a3+m, 0.40000
+	Tue, 17 Apr 2007 08:09:10 -0400
+Received: from smtp19.orange.fr ([80.12.242.17]:63316 "EHLO smtp19.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbXDQMJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 08:09:09 -0400
+X-ME-UUID: 20070417120149727.B186760000B4@mwinf1913.orange.fr
+Date: Tue, 17 Apr 2007 14:01:48 +0200
+From: Jean-Daniel Pauget <jd@disjunkt.com>
+To: CaT <cat@zip.com.au>
+Cc: Michael Chan <mchan@broadcom.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: intermittant petabyte usage reported with broadcom nic
+Message-ID: <20070417120148.GB5510@disjunkt.com>
+References: <20070402014319.GA8345@zip.com.au> <20070402001300.3b66007d.akpm@linux-foundation.org> <20070402074108.GB8345@zip.com.au> <1176596401.5847.7.camel@dell> <1176750651.6217.3.camel@dell> <20070416234348.GF8345@zip.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070416234348.GF8345@zip.com.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1769455.t1OSbY4cIj
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, Apr 17, 2007 at 09:43:48AM +1000, CaT wrote:
+> On Mon, Apr 16, 2007 at 12:10:51PM -0700, Michael Chan wrote:
+> > On Sat, 2007-04-14 at 17:20 -0700, Michael Chan wrote:
+> > 
+> > Here's the debug patch for x86 only that will change the statistics
+> > memory block to read-only.  If the kernel is corrupting it, you should
+> > get a page fault that will crash the system.  If you continue to see
+> > bogus counters, it is definitely a firmware or hardware problem.  Please
+> > try it and let me know.  Thanks.
+[.../...]
+> Perhaps Jean-Daniel, who is also experiencing this problem and seemingly
+> more frequently then I, has a box that he could run your patch on. I
+> think we both run pretty-much the same hardware (Dell [12]950s).
+    Dell 1950/2950 indeed...
 
-> > s2ram -f -a3 -m: Works!
->
-> Thanks.  Should we consider this regression resolved?
+    if there is any way to catch that writing without crashing the system 
+    (even to the price of some slowness) I can test it. if not, I can't 
+    because all my available targets are remote administrated and involved 
+    with production processes.
+    if luckilly one of them gets free, I'll to apply the latest patch you'd 
+    provide me. I may also try it one day I'm close to those machines, so 
+    keep me in the list of up to date patches.
 
-Yes, as far as I am concerned...
+-- 
+    Jean-Daniel Pauget
 
-Marcus
-
---nextPart1769455.t1OSbY4cIj
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGJLVeXjXn6TzcAQkRAsXXAJ4lkyhKMKeAUWk+gdfDmYmmgjCIIgCfZ293
-NDDgP5WhKmNG+U36AR6lsdw=
-=WhK+
------END PGP SIGNATURE-----
-
---nextPart1769455.t1OSbY4cIj--
-
+    Tél: +33 (0)2 33 17 20 16
+    2, rue André PELCA
+    50580 Denneville-Plage
+    France
 
