@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031268AbXDQV6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031275AbXDQV66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031268AbXDQV6k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 17:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031270AbXDQV6k
+	id S1031275AbXDQV66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 17:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031267AbXDQV66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 17:58:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39848 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031268AbXDQV6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 17:58:38 -0400
-Subject: Re: AppArmor FAQ
-From: Karl MacMillan <kmacmill@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+	Tue, 17 Apr 2007 17:58:58 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39455 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031269AbXDQV6z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 17:58:55 -0400
+Date: Tue, 17 Apr 2007 22:58:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Casey Schaufler <casey@schaufler-ca.com>, Andi Kleen <andi@firstfloor.org>,
+       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <Line.LNX.4.64.0704161846110.13905@d.namei>
-References: <20070416213350.GB4030@suse.de>
-	 <Line.LNX.4.64.0704161846110.13905@d.namei>
-Content-Type: text/plain
-Date: Tue, 17 Apr 2007 17:55:17 -0400
-Message-Id: <1176846917.5946.79.camel@localhost.localdomain>
+Subject: Re: AppArmor FAQ
+Message-ID: <20070417225815.000b0fdb@the-village.bc.nu>
+In-Reply-To: <20070417211653.GB11944@one.firstfloor.org>
+References: <20070417181016.GA10903@one.firstfloor.org>
+	<657751.18080.qm@web36614.mail.mud.yahoo.com>
+	<20070417211653.GB11944@one.firstfloor.org>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 20:20 -0400, James Morris wrote:
-> On Mon, 16 Apr 2007, John Johansen wrote:
-> 
-> > Label-based security (exemplified by SELinux, and its predecessors in
-> > MLS systems) attaches security policy to the data. As the data flows
-> > through the system, the label sticks to the data, and so security
-> > policy with respect to this data stays intact. This is a good approach
-> > for ensuring secrecy, the kind of problem that intelligence agencies have.
-> 
-> Labels are also a good approach for ensuring integrity, which is one of 
-> the most fundamental aspects of the security model implemented by SELinux.  
-> 
-> Some may infer otherwise from your document.
-> 
+> But easy to use security is probably better than complicated security
+> because normal people will more likely use it.
 
-Not only that, the implication that secrecy is only useful to
-intelligence agencies is pretty funny. Personally, I think that
-protecting the confidentiality of my data is important (and my bank and
-health care providers protecting the data they have about me). Type
-Enforcement was specifically designed to be able to address integrity
-_and_ confidentiality in a way acceptable to commercial organizations.
+Easy to use security is only better if it *works*, and preferably its
+excessively secure. Ineffective security is actually worse than no
+security.
 
-Karl
+Real world examples include people using RFID badges thinking they are
+secure so removing the use of the conventional key in door lock and
+people using WEP wireless security so running no encryption or other
+security on their wireless. Several of whom if statements are to believed
+then found themselves being sued by the music industry because their IP
+was used for file sharing.
+
+Bad security is dangerous, really dangerous.
 
 
+I'm not sure if AppArmor can be made good security for the general case,
+but it is a model that works in the limited http environment
+(eg .htaccess) and is something people can play with and hack on and may
+be possible to configure to be very secure.
+
+Alan
