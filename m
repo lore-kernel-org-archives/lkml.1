@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031079AbXDQEaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031082AbXDQEb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031079AbXDQEaB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 00:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031083AbXDQEaA
+	id S1031082AbXDQEb6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 00:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031083AbXDQEb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 00:30:00 -0400
-Received: from mx1.suse.de ([195.135.220.2]:34708 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031079AbXDQEaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 00:30:00 -0400
-Date: Tue, 17 Apr 2007 06:29:54 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417042954.GG25513@wotan.suse.de>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46244A52.4000403@bigpond.net.au>
-User-Agent: Mutt/1.5.9i
+	Tue, 17 Apr 2007 00:31:58 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:60290 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031082AbXDQEb5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 00:31:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:cc:subject:date:x-mailer:from:message-id;
+        b=tXKGux2KSQNIHIYFUrMTv9xdR/XEPh0RT5ArK3o5NPQ4BHZ5bg8UdQasnw09ohdPcKMIYr6OAb3n8+Y5Rk5H6Q4yw5gYNOjNAJgq2K2SyZLhjTAmN9Ij5ZiTSr/ZPklTxPTeh3EqQSy5k4AH2Kbzka4U4eMtRwEw0i7q/T9vtLY=
+To: perex@suse.cz, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: Abhijit Bhopatkar <bainonline@gmail.com>
+Subject: [PATCH] [ALSA] Add first generation macbook subsystem ID
+Date: Tue, 17 Apr 2007 10:01:47 +0530
+X-Mailer: git-send-email 1.4.4.2
+From: bainonline@gmail.com
+Message-ID: <46244dbb.7672bd23.37b9.00c5@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 02:17:22PM +1000, Peter Williams wrote:
-> Nick Piggin wrote:
-> >On Tue, Apr 17, 2007 at 04:29:01AM +0200, Mike Galbraith wrote:
-> >>On Tue, 2007-04-17 at 10:06 +1000, Peter Williams wrote:
-> >>>Mike Galbraith wrote:
-> >>>>Demystify what?   The casual observer need only read either your attempt
-> >>>>at writing a scheduler, or my attempts at fixing the one we have, to see
-> >>>>that it was high time for someone with the necessary skills to step in.
-> >>>Make that "someone with the necessary clout".
-> >>No, I was brutally honest to both of us, but quite correct.
-> >>
-> >>>>Now progress can happen, which was _not_ happening before.
-> >>>>
-> >>>This is true.
-> >>Yup, and progress _is_ happening now, quite rapidly.
-> >
-> >Progress as in progress on Ingo's scheduler. I still don't know how we'd
-> >decide when to replace the mainline scheduler or with what.
-> >
-> >I don't think we can say Ingo's is better than the alternatives, can we?
-> >If there is some kind of bakeoff, then I'd like one of Con's designs to
-> >be involved, and mine, and Peter's...
-> 
-> I myself was thinking of this as the chance for a much needed 
-> simplification of the scheduling code and if this can be done with the 
-> result being "reasonable" it then gives us the basis on which to propose 
-> improvements based on the ideas of others such as you mention.
-> 
-> As the size of the cpusched indicates, trying to evaluate alternative 
-> proposals based on the current O(1) scheduler is fraught.  Hopefully, 
+From: Abhijit Bhopatkar <bainonline@gmail.com>
 
-I don't know why. The problem is that you can't really evaluate good
-proposals by looking at the code (you can say that one is bad, ie. the
-current one, which has a huge amount of temporal complexity and is
-explicitly unfair), but it is pretty hard to say one behaves well.
+First generation MacBooks were getting ignored by sigmatel drivers
+and wrongly being identified as MACMINI. This patch makes them
+identify as MACBOOK.
 
-And my scheduler for example cuts down the amount of policy code and
-code size significantly. I haven't looked at Con's ones for a while,
-but I believe they are also much more straightforward than mainline...
+Signed-off-by: Abhijit Bhopatkar <bainonline@gmail.com>
+---
+ sound/pci/hda/patch_sigmatel.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-For example, let's say all else is equal between them, then why would
-we go with the O(logN) implementation rather than the O(1)?
+diff --git a/sound/pci/hda/patch_sigmatel.c b/sound/pci/hda/patch_sigmatel.c
+index c94291b..cb99df5 100644
+--- a/sound/pci/hda/patch_sigmatel.c
++++ b/sound/pci/hda/patch_sigmatel.c
+@@ -1905,6 +1905,9 @@ static int patch_stac922x(struct hda_codec *codec)
+ 		 */
+ 		printk(KERN_INFO "hda_codec: STAC922x, Apple subsys_id=%x\n", codec->subsystem_id);
+ 		switch (codec->subsystem_id) {
++		case 0x106b0a00: /* MacBook First generatoin */
++			spec->board_config = STAC_MACBOOK;
++			break;
+ 		case 0x106b0200: /* MacBook Pro first generation */
+ 			spec->board_config = STAC_MACBOOK_PRO_V1;
+ 			break;
+-- 
+1.4.4.2
 
