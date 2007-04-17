@@ -1,98 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031306AbXDQXzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031330AbXDRAAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031306AbXDQXzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 19:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031309AbXDQXzi
+	id S1031330AbXDRAAH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 20:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031339AbXDRAAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 19:55:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:59673 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031306AbXDQXzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 19:55:37 -0400
-Subject: Re: [Patch -mm 3/3] RFC: Introduce kobject->owner for refcounting.
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>
-In-Reply-To: <Pine.LNX.4.44L0.0704171159360.20368-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0704171159360.20368-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Wed, 18 Apr 2007 09:55:34 +1000
-Message-Id: <1176854134.14322.308.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Apr 2007 20:00:07 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:52046 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031330AbXDRAAF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 20:00:05 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: AppArmor FAQ
+Date: Tue, 17 Apr 2007 23:53:22 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <f03mli$8g8$1@taverner.cs.berkeley.edu>
+References: <20070416213350.GB4030@suse.de> <1176822230.3366.65.camel@localhost.localdomain> <462553A9.70504@novell.com> <1176852059.5946.128.camel@localhost.localdomain>
+Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1176854002 8712 128.32.168.222 (17 Apr 2007 23:53:22 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Tue, 17 Apr 2007 23:53:22 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-17 at 12:08 -0400, Alan Stern wrote:
-> More specifically, there _is_ no way in general to ensure that a reference
-> will go away when the module's cleanup routine is called, unless you are
-> very careful not to pass that reference on to _anybody_.  The driver core
-> certainly can't do this; it passes a device reference to anyone who
-> creates a child of that device (the parent pointer) -- and it can't 
-> guarantee that every one of its clients will drop their references when 
-> their exit routines run.
+Karl MacMillan  wrote:
+>My private ssh keys need to be protected regardless
+>of the file name - it is the "bag of bits" that make it important not
+>the name.
 
-Hi Alan,
+I think you picked a bad example.  That's a confidentiality policy.
+AppArmor can't make any guarantees about confidentiality.  Neither can
+SELinux.  If you give a malicious app the power to read your private ssh
+key, it's game over, dude.  (Covert channels, wall banging, and all that.)
+So don't do that.
 
-	Your assertion is correct.  I haven't studied the driver core, so I
-might be off-base here, but you'll note that if the module references
-the core kmalloc'ed object rather than the other way around it can be
-done safely.  The core can also reference the module, but it must be
-able to live without it once it's gone (eg. by returning -ENOENT).
+>Similarly, you protect the integrity of the applications that
+>need name resolution by ensuring that the data that they read is high
+>integrity. You do that by controlling data not the file name used to
+>access the data. That is James point - a comprehensive mechanism like
+>SELinux allows you to comprehensively protect the integrity of data.
 
-A really poor example is below:
+I think this argument just misses the point.  What you want isn't what
+AppArmor does.  Fine.  Nobody is forcing you to use AppArmor.  But that
+doesn't mean AppArmor is useless.  There may be people who want what
+AppArmor has to provide.
 
-int register_foo(struct foo *foo)
-{
-	struct registered_foo *r = kmalloc(...);
-	if (!r)
-		return -ENOMEM;
-	r->foo = foo;
-	atomic_set(&r->refcnt, 1);
-	spin_lock(&foo_lock);
-	list_add(&foos, &r->list);
-	spin_unlock(&foo_lock);
-	return 0;
-}
+It sounds like you want a comprehensive information flow control system.
+That's not what AppArmor provides.  If I understand correctly, one
+thing AppArmor does provide is a way to confine untrusted legacy
+apps in a restricted jail.  That can be useful in some scenarios.
+Consider, for instance, a web server where untrusted users can upload PHP
+scripts, and you're concerned that those PHP scripts might be malicious.
+Maybe you'd like to confine the PHP interpreter to limit what it can do.
+That might be a good application for something like AppArmor.  You don't
+need comprehensive information flow control for that kind of use, and
+it would likely just get in the way.
 
-void unregister_foo(struct foo *foo)
-{
-	struct registered_foo *i, *found = NULL;
-	spin_lock(&foo_lock);
-	list_for_each_entry(i, &foos, list) {
-		if (i->foo == foo) {
-			i->foo = NULL;
-			if (atomic_dec_and_test(&i->refcnt))
-				kfree(i);
-			break;
-		}
-	}
-	spin_unlock(&foo_lock);
-}
-
-int get_foo_value(struct registered_foo *r)
-{
-	u32 val = -ENOENT;
-	spin_lock(&foo_lock);
-	if (r->foo)
-		val = r->foo->val;
-	spin_unlock(&foo_lock);
-	return val;
-}
-
-> I'm not so sure I fully believe that network drivers can do what Rusty
-> says, at least not in every circumstance.  There simply are too many
-> possible ways for references to linger on after you thought they were all
-> gone.  For example, what happens when the user has mounted a filesystem on
-> a USB drive running via USB-over-TCP though a network interface?
-
-That's actually fine, it's when packets linger in the system holding
-references to the interface they came from that things get tricky.
-Hence the networking code tries not to do that.
-
-Cheers,
-Rusty.
-
+Those who want a information flow control system, will probably use
+SELinux or something like it.  Those who want what AppArmor has to offer,
+might well use AppArmor.  They solve different problems and have different
+tradeoffs.  There is room for more than one security tool in the world.
