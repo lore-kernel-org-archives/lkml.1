@@ -1,93 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbXDQH0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbXDQH0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040AbXDQH0p (ORCPT <rfc822;w@1wt.eu>);
+	id S1752141AbXDQH0p (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 17 Apr 2007 03:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXDQH0i
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXDQH0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 03:26:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44883 "EHLO mx1.redhat.com"
+	Tue, 17 Apr 2007 03:26:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44882 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbXDQHXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752000AbXDQHXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Apr 2007 03:23:31 -0400
-Message-Id: <20070417071703.565797115@chello.nl>
+Message-Id: <20070417071703.072560305@chello.nl>
 References: <20070417071046.318415445@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Apr 2007 09:10:54 +0200
+Date: Tue, 17 Apr 2007 09:10:50 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com
-Subject: [PATCH 08/12] mm: count writeback pages per BDI
-Content-Disposition: inline; filename=bdi_stat_writeback.patch
+Subject: [PATCH 04/12] lib: percpu_counter_mod64
+Content-Disposition: inline; filename=percpu_counter_mod.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Count per BDI writeback pages.
+Add percpu_counter_mod64() to allow large modifications.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/backing-dev.h |    1 +
- mm/page-writeback.c         |   12 ++++++++++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
+ include/linux/percpu_counter.h |    9 +++++++++
+ lib/percpu_counter.c           |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
 
-Index: linux-2.6/mm/page-writeback.c
+Index: linux-2.6/include/linux/percpu_counter.h
 ===================================================================
---- linux-2.6.orig/mm/page-writeback.c	2007-04-12 17:32:17.000000000 +0200
-+++ linux-2.6/mm/page-writeback.c	2007-04-12 17:34:24.000000000 +0200
-@@ -977,14 +977,18 @@ int test_clear_page_writeback(struct pag
- 	int ret;
+--- linux-2.6.orig/include/linux/percpu_counter.h	2007-04-12 13:54:55.000000000 +0200
++++ linux-2.6/include/linux/percpu_counter.h	2007-04-12 14:00:21.000000000 +0200
+@@ -36,6 +36,7 @@ static inline void percpu_counter_destro
+ }
  
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
+ void percpu_counter_mod(struct percpu_counter *fbc, s32 amount);
++void percpu_counter_mod64(struct percpu_counter *fbc, s64 amount);
+ s64 percpu_counter_sum(struct percpu_counter *fbc);
  
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestClearPageWriteback(page);
--		if (ret)
-+		if (ret) {
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__dec_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		write_unlock_irqrestore(&mapping->tree_lock, flags);
- 	} else {
- 		ret = TestClearPageWriteback(page);
-@@ -1000,14 +1004,18 @@ int test_set_page_writeback(struct page 
- 	int ret;
+ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+@@ -81,6 +82,14 @@ percpu_counter_mod(struct percpu_counter
+ 	preempt_enable();
+ }
  
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
- 
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestSetPageWriteback(page);
--		if (!ret)
-+		if (!ret) {
- 			radix_tree_tag_set(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__inc_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		if (!PageDirty(page))
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
-Index: linux-2.6/include/linux/backing-dev.h
++static inline void
++percpu_counter_mod64(struct percpu_counter *fbc, s64 amount)
++{
++	preempt_disable();
++	fbc->count += amount;
++	preempt_enable();
++}
++
+ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+ {
+ 	return fbc->count;
+Index: linux-2.6/lib/percpu_counter.c
 ===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h	2007-04-12 17:32:17.000000000 +0200
-+++ linux-2.6/include/linux/backing-dev.h	2007-04-12 17:32:40.000000000 +0200
-@@ -27,6 +27,7 @@ typedef int (congested_fn)(void *, int);
+--- linux-2.6.orig/lib/percpu_counter.c	2006-07-31 13:07:38.000000000 +0200
++++ linux-2.6/lib/percpu_counter.c	2007-04-12 14:17:12.000000000 +0200
+@@ -25,6 +25,34 @@ void percpu_counter_mod(struct percpu_co
+ }
+ EXPORT_SYMBOL(percpu_counter_mod);
  
- enum bdi_stat_item {
- 	BDI_DIRTY,
-+	BDI_WRITEBACK,
- 	NR_BDI_STAT_ITEMS
- };
- 
++void percpu_counter_mod64(struct percpu_counter *fbc, s64 amount)
++{
++	long count;
++	s32 *pcount;
++	int cpu;
++
++	if (amount >= FBC_BATCH || amount <= -FBC_BATCH) {
++		spin_lock(&fbc->lock);
++		fbc->count += amount;
++		spin_unlock(&fbc->lock);
++		return;
++	}
++
++	cpu = get_cpu();
++	pcount = per_cpu_ptr(fbc->counters, cpu);
++	count = *pcount + amount;
++	if (count >= FBC_BATCH || count <= -FBC_BATCH) {
++		spin_lock(&fbc->lock);
++		fbc->count += count;
++		*pcount = 0;
++		spin_unlock(&fbc->lock);
++	} else {
++		*pcount = count;
++	}
++	put_cpu();
++}
++EXPORT_SYMBOL(percpu_counter_mod64);
++
+ /*
+  * Add up all the per-cpu counts, return the result.  This is a more accurate
+  * but much slower version of percpu_counter_read_positive()
 
 -- 
 
