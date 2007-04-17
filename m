@@ -1,106 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031125AbXDQQNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031116AbXDQQPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031125AbXDQQNJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031127AbXDQQNJ
+	id S1031116AbXDQQPB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031127AbXDQQPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:13:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:63785 "EHLO
+	Tue, 17 Apr 2007 12:15:00 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:64994 "EHLO
 	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031125AbXDQQNH (ORCPT
+	with ESMTP id S1031116AbXDQQO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:13:07 -0400
+	Tue, 17 Apr 2007 12:14:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=uAuk027Z0A7wSoiGu8X6+Vl7udp5SxQJhP8MQFRv6sWhSmFG/OQnm1COOOKAKGLdJ3aGAqbPqUTlr9+0OrQ6VyEIW7pj4MvQ2nUkIWGO/qhCwMwR3UwVGQR9eyTAhwAZoIxqpboIO7lAUOgdBc1Q2wh7nIMZ2pLm7YjEHxSGleo=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-Date: Tue, 17 Apr 2007 12:12:55 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
-References: <20070416220715.GA4071@elte.hu> <200704170053.58611.gene.heskett@gmail.com> <20070417061849.GA12385@elte.hu>
-In-Reply-To: <20070417061849.GA12385@elte.hu>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CJ/aBYmpzAymhXuR6kZmBpA3Bs2K/pJp2scvZirNq/l9CJF0r8B9N2+Tccwnaa5bI4A73ShAwFxhnC3oRhrNkMhC9zY//UuKYCCCEqjMiC/7nKg+1YROHHvVCk9c/TqwYlDocyndRltoPMwAF/P5hC4n1BdK/ztobGRfi3LFCww=
+Message-ID: <38b2ab8a0704170914h3a766236t47bc7e1c8de67662@mail.gmail.com>
+Date: Tue, 17 Apr 2007 18:14:58 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [CRYPTO] is it really optimized ?
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <adairbv57s2.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704171212.55528.gene.heskett@gmail.com>
+References: <38b2ab8a0704170659o3f65f5fbo94a59be58727d21c@mail.gmail.com>
+	 <E1HdoGm-0005WU-00@gondolin.me.apana.org.au>
+	 <38b2ab8a0704170741n619e169s6a2f3ac5b768a950@mail.gmail.com>
+	 <adairbv57s2.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 April 2007, Ingo Molnar wrote:
->* Gene Heskett <gene.heskett@gmail.com> wrote:
->> This one (v2-rc2) is not a keeper I'm sorry to say, Ingo.  v2-rc0 was
->> much better.  Watching amanda run with htop, kmails composer is being
->> subjected to 5 to 10 second pauses, and htop says that gzip -best
->> isn't getting more that 15% of the cpu, and the /amandatapes drive is
->> being written to in a regular pattern that seems to be the cause of
->> the pauses according to gkrellm, which also seems to track the size of
->> the writes, and can show anything from 4.3k to 54 megs as being
->> written in one cycle of its screen update.
+On 4/17/07, Roland Dreier <rdreier@cisco.com> wrote:
+>  > Again, my code is faster only because I skip the key loading in
+>  > "cia_encrypt" method. Actually the gain is bigger in decryption mode
+>  > than in encryption one because I also generate the decryption key for
+>  > each block.
 >
->ok - fortunately the delta between -v2-rc0 and -v2-final is pretty
->small. One difference is the child-runs-first fix. To restore the
->parent-runs-first logic, do this:
->
-I'm running 21-rc7-CFS-v2-rc0.1 now.
+> I wonder if there's some way you can cache the last caller and reload
+> the key lazily (only when it changes).
 
->	echo 0 > /proc/sys/kernel/sched_child_runs_first
+yes something that allows crypto drivers to detect if the key has
+changed would be good.
 
-This is currently a 1.  Reset to 0 by the above.
+> Of course without your code it's hard to say...
+>
 
->does this make any difference?
+Alright you can find the main part of it below...
 
-Hard to tell, not much running except fetchmail/procmail and this composer.
+----------------------------
 
->
->If not then pretty much the only other change was the nice level tweak i
->did. Could you try to grab a few snapshots of scheduling state via
->something like:
->
->   while sleep 1; do cat /proc/sched_debug >> to-ingo.txt; done
-The crf1.txt is with it=1, the cfr0.txt is with it zeroed.
+struct foo_aes_ctx {
+	u8 key[AES_KEY_LENGTH];
+};
 
->(and tell me the PID of the kmail composer, to make sure i'm checking
->the right task's behavior.)
+/*
+ *
+ */
+static inline void set_dir(int dir)
+{
+	u32 cr = aes_read(AES_CR);
+	
+	switch (dir) {
+	case AES_DIR_ENCRYPT:
+		cr |= CR_DIR;
+		break;
+	case AES_DIR_DECRYPT:
+		cr &= ~CR_DIR;
+		break;
+	default:
+		BUG();
+	}
+	aes_write(cr, AES_CR);
+}
 
-And I let the crf0 version run longer as I was looking for the composer's pid, 
-but htop (or I) can't see it.  Even a ps -e isn't seeing it!  But its 
-running, I'm actively typing in it.  So you get 3 files, the third one called 
-ps-e.txt, in private mail.  I thought it was called composer, I really did.
+static inline void set_key(const char *key)
+{
+	u32 key0 = be32_to_cpup((const u32 *)(key + 12));
+	u32 key1 = be32_to_cpup((const u32 *)(key + 8));
+	u32 key2 = be32_to_cpup((const u32 *)(key + 4));
+	u32 key3 = be32_to_cpup((const u32 *)(key));
 
->
->also, as a separate experiment, could you perhaps run this script as
->root:
->
->   cd /proc; for N in [1-9]*; do renice -n 0 $N; done
->
->this will move all tasks in the system to nice level 0 and should make
->any nice level handling logic in the scheduler irrelevant. Do you have X
->reniced perhaps?
->
->Lots of system threads have negative or positive nice levels, so once
->you have executed this script, only a reboot will be a practical way to
->restore it to the previous settings.
->
->	Ingo
+	aes_write(key0, AES_KEY0);
+	aes_write(key1, AES_KEY1);
+	aes_write(key2, AES_KEY2);
+	aes_write(key3, AES_KEY3);
+}
+
+/* should take only 11 cycles */
+static int gen_dkey(void)
+{
+	int timeout = 100;
+
+	aes_write(aes_read(AES_CR) | CR_DKEYGEN, AES_CR);
+
+	while (aes_read(AES_CR) & CR_DKEYGEN) {
+		if (--timeout == 0)
+			return -EIO;
+	}
+	return 0;
+}
+
+static int crypt_block(int dir, u8 *dst, const u8 *src, const char *key)
+{
+	register u32 acc0 = be32_to_cpup((const u32 *)(src + 12));
+	register u32 acc1 = be32_to_cpup((const u32 *)(src + 8));
+	register u32 acc2 = be32_to_cpup((const u32 *)(src + 4));
+	register u32 acc3 = be32_to_cpup((const u32 *)(src));
+	unsigned long flags;
+
+	spin_lock_irqsave(&foo_aes_lock, flags);
+
+	set_key(key);
+	set_dir(dir);
+
+	if (dir == AES_DIR_DECRYPT)
+		gen_dkey();
+
+	aes_write(acc0, AES_ACC0);
+	aes_write(acc1, AES_ACC1);
+	aes_write(acc2, AES_ACC2);
+	aes_write(acc3, AES_ACC3);
+
+	{
+		/* Again, should take only 11 cycles */
+		int timeout = 100;
+
+		while (aes_read(AES_CR) & 0x70) {
+			if (--timeout == 0)
+				return -EIO;
+		}
+	}
+
+	/* order is important, guess why ? */
+	*(u32 *)(dst + 12) = cpu_to_be32(aes_read(AES_ACC0));
+	*(u32 *)(dst + 8)  = cpu_to_be32(aes_read(AES_ACC1));
+	*(u32 *)(dst + 4)  = cpu_to_be32(aes_read(AES_ACC2));
+	*(u32 *)(dst)      = cpu_to_be32(aes_read(AES_ACC3));
+
+	spin_unlock_irqrestore(&foo_aes_lock, flags);
+
+	return 0;
+}
+
+/*
+ *
+ */
+static int foo_setkey(struct crypto_tfm *tfm, const u8 *key, unsigned int len)
+{
+	struct foo_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+	int rv;
+
+	if (len == AES_KEY_LENGTH) {
+		memcpy(ctx->key, key, AES_KEY_LENGTH);
+		rv = 0;
+	} else {
+		tfm->crt_flags |= CRYPTO_TFM_RES_BAD_KEY_LEN;
+		rv = -EINVAL;
+	}
+	return rv;
+}
+
+static void foo_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+{
+	struct foo_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+
+	BUG_ON(!in);
+	BUG_ON(!out);
+
+	crypt_block(AES_DIR_DECRYPT, out, in, ctx->key);
+}
+
+static void foo_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+{
+	struct foo_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+
+	BUG_ON(!in);
+	BUG_ON(!out);
+
+	crypt_block(AES_DIR_ENCRYPT, out, in, ctx->key);
+}
+
+static struct crypto_alg foo_alg = {
+	.cra_name               = "aes",
+	.cra_driver_name	= "aes-128-foo",
+	.cra_priority           = 300,
+	.cra_flags		= CRYPTO_ALG_TYPE_CIPHER,
+	.cra_blocksize		= AES_MIN_BLOCK_SIZE,
+	.cra_ctxsize		= sizeof(struct foo_aes_ctx),
+	.cra_module		= THIS_MODULE,
+	.cra_list		= LIST_HEAD_INIT(foo_alg.cra_list),
+	.cra_u			= {
+		.cipher = {
+			.cia_min_keysize	=  AES_KEY_LENGTH,
+			.cia_max_keysize	=  AES_KEY_LENGTH,
+			.cia_setkey		=  foo_setkey,
+			.cia_encrypt		=  foo_encrypt,
+			.cia_decrypt		=  foo_decrypt
+		}
+	}
+};
 
 
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-I have many CHARTS and DIAGRAMS..
+Francis
