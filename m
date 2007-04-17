@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031179AbXDQQ52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031194AbXDQQ6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031179AbXDQQ52 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031189AbXDQQ52
+	id S1031194AbXDQQ6F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031195AbXDQQ6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:57:28 -0400
-Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:2979 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031179AbXDQQ52 (ORCPT
+	Tue, 17 Apr 2007 12:58:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33566 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031194AbXDQQ6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:57:28 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ZFS with Linux: An Open Plea
-Date: Tue, 17 Apr 2007 17:57:11 +0100
-User-Agent: KMail/1.9.5
-Cc: Tomasz =?utf-8?q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
-       Theodore Tso <tytso@mit.edu>, "David R. Litwin" <presently42@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain> <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl> <20070417154814.632da1d9@the-village.bc.nu>
-In-Reply-To: <20070417154814.632da1d9@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Apr 2007 12:58:04 -0400
+Date: Tue, 17 Apr 2007 18:57:59 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: John Sigler <linux.kernel@free.fr>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Disabling x86 System Management Mode
+Message-ID: <20070417165759.GA10145@one.firstfloor.org>
+References: <46235447.3080000@free.fr> <p73odlo55q2.fsf@bingen.suse.de> <4624FA85.9010704@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704171757.12070.s0348365@sms.ed.ac.uk>
+In-Reply-To: <4624FA85.9010704@free.fr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 April 2007 15:48, Alan Cox wrote:
-> > So who is responsible for potential changing Linux code licensing for
-> > allow if not incorporate CDDL code correct interraction without breaking
-> > some law ?
->
-> Every single contributor, individually. Which won't happen.
->
-> The real test of whether Sun were serious about ZFS being anywhere but
-> Solaris is what they do to license it - they've patented everything they
-> can, and made the code available only under licenses incompatible with
-> other OS products. Their intent is quite clear, and quite sad.
+On Tue, Apr 17, 2007 at 06:49:09PM +0200, John Sigler wrote:
+> >>.globl foo
+> >>foo:
+> >>   push %ebx
+> >>   push %esi
+> >>   cpuid
+> >>   rdtsc
+> >
+> >At least some SMM implementations restore the old TSC value. Sad but true.
+> 
+> Why would they do that?
 
-This isn't universally true. Look at Java, for example, which Sun recently 
-released parts of under an open source license -- not the CDDL, not a 
-CDDL/xxx dual license, the GPL proper.
+I asked the same question.  But it has been observed.
 
-Indeed, Sun already have products that are dual licensed CDDL/GPL, for example 
-the J2EE product.
+> How would you detect periodic SMM on such a system?
 
-> If Sun want ZFS to get used all over the place in free software then I'd
-> have expected at the very least to see them throw out a copy of the code,
-> docs and patent grant in a form that could be used, even if it came with
-> no other assistance of any kind.
+It's not a design goal of SMM to be detectable so the BIOS 
+writers and hardware designers don't care if you can.
 
-I couldn't speculate on the rationale, but it does seem that Sun's choice to 
-use _only_ the CDDL with certain software (like ZFS) is deliberate.
+You could probably try to measure using a external or the LAPIC 
+clock.  Or check the chipset bits. 
 
--- 
-Cheers,
-Alistair.
+> 
+> >Besides RDTSC can be speculated around on some CPUs which also adds errors.
+> 
+> I don't understand this sentence. Could you clarify?
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+Modern x86 CPUs execute code out of order and in parallel. The reordering
+window can be quite large and the CPU can execute code speculatively. 
+This can add large errors to RDTSC when the instruction is not executed
+where you think it is. One way around this is to synchronize it -- 
+using CPUID -- but that also adds latency and makes the measurement
+less precise.
+
+-Andi
+
