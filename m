@@ -1,66 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030775AbXDQSgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030780AbXDQSlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030775AbXDQSgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 14:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030780AbXDQSgR
+	id S1030780AbXDQSlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 14:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030795AbXDQSlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 14:36:17 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:54388 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1030775AbXDQSgR (ORCPT
+	Tue, 17 Apr 2007 14:41:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:48479 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030780AbXDQSlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 14:36:17 -0400
-Message-ID: <462513D9.4030403@ru.mvista.com>
-Date: Tue, 17 Apr 2007 22:37:13 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 17 Apr 2007 14:41:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=mnKk4KoVnioNI6RgMAb2/YsZZU0BTeD8Mf38sW/v+CwxaFx1x5O+BFI5fS+jam6KMAxZTF9iKpsnjvr6MjwiCqnIOnaEo1GXi7TTB9x1kAEMbGMYQ7tMKM1LsFb2Dozxzk+V80jf97er8s4wfoz7oxilm1HgSKGDnx2cEICvZ6k=
+Date: Wed, 18 Apr 2007 03:41:10 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, dmitry.torokhov@gmail.com
+Subject: [PATCH RFD] alternative kobject release wait mechanism
+Message-ID: <20070417184110.GJ10619@htj.dyndns.org>
+References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: piet@bluelane.com, Tom Rini <trini@kernel.crashing.org>,
-       Andi Kleen <ak@suse.de>, Dave Jiang <djiang@mvista.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       George Anzinger <george@wildturkeyranch.net>,
-       "David O'Brien" <obrien@FreeBSD.org>
-Subject: Re: Permanent Kgdb integration into the kernel - lets get with it.
-References: <20070307204516.GA24095@blade.az.mvista.com>	<200703081814.53153.ak@suse.de>	<45F04B6E.9000703@mvista.com>	<200703081937.56167.ak@suse.de>	<20070308184940.GP11626@smtp.west.cox.net>	<1173392650.8912.236.camel@piet2.bluelane.com> <20070417113016.1f0812c7.randy.dunlap@oracle.com>
-In-Reply-To: <20070417113016.1f0812c7.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hello, all.
 
-Randy Dunlap wrote:
+Agreed with the problem but I'm not very enthusiastic for adding
+kobj->owner.  How about the following?  exit() routines will have to
+do device_unregister_wait() instead of device_unregister().  On return
+from it, it's guaranteed that all references to it are dropped and
+->release is finished.  The caller is responsible for avoiding
+deadlock, of course.
 
->>>>>In spite of kgdb, shouldn't it have that \n anyways in case some other code
->>>>>gets added in the future after the macro? Or are you saying that there should
->>>>>never be any code ever after that macro?
->>>>
->>>>Sure if there is mainline code added after that macro we add the \n.
->>>>But only if it makes sense to add code there, which it didn't in kgdb.
+The code is only compile-tested and is more of proof-of-concept than
+working code.
 
->>>Was that because with recent enough tools and config options there was
->>>enough annotations so GDB could finally figure out where things had
->>>stopped?  Thanks.
->>
->>The reason Linus said he didn't allow George's kgdb mm patch to 
->>be integrating into the kernel a year or two ago was that Amit and
->>George had significantly different implementations. So Amit, Tom, 
->>George, and the rest of the kgdb development gang worked together 
->>and came up with a unified version that we now support on SourceForge. 
+DO NOT APPLY.
 
->>Tom rolled up a mm patch back in December for Andrew and then the
->>integration process stopped. I suggest we work together on getting
->>the kgdb patch back into the mm series and permanently into the kernel
->>like the kexec code and then we can avoid this kernel development
->>obfuscation.
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 37930d0..72ccf16 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -741,6 +741,17 @@ void put_device(struct device * dev)
  
-> Hi,
-> Is there any movement on this?
-
-   Jason Wessel has taken up KGDB maintenance for upstream. We're now working on merging the several diverse trees together.
-
-WBR, Sergei
+ 
+ /**
++ *	put_device_wait - put and wait for all references to go away
++ *	@dev:	device in question.
++ */
++void put_device_wait(struct device * dev)
++{
++	if (dev)
++		kobject_put_wait(&dev->kobj);
++}
++
++
++/**
+  *	device_del - delete device from system.
+  *	@dev:	device.
+  *
+@@ -839,6 +850,20 @@ void device_unregister(struct device * dev)
+ }
+ 
+ 
++/**
++ *	device_unregister_wait - unregister dev and wait for it to be released
++ *	@dev:	device going away.
++ *
++ *	Delete and put @dev; then, wait for it to be released.
++ */
++void device_unregister_wait(struct device * dev)
++{
++	pr_debug("DEV: Unregistering device. ID = '%s'\n", dev->bus_id);
++	device_del(dev);
++	put_device_wait(dev);
++}
++
++
+ static struct device * next_device(struct klist_iter * i)
+ {
+ 	struct klist_node * n = klist_next(i);
+@@ -917,8 +942,10 @@ EXPORT_SYMBOL_GPL(device_register);
+ 
+ EXPORT_SYMBOL_GPL(device_del);
+ EXPORT_SYMBOL_GPL(device_unregister);
++EXPORT_SYMBOL_GPL(device_unregister_wait);
+ EXPORT_SYMBOL_GPL(get_device);
+ EXPORT_SYMBOL_GPL(put_device);
++EXPORT_SYMBOL_GPL(put_device_wait);
+ 
+ EXPORT_SYMBOL_GPL(device_create_file);
+ EXPORT_SYMBOL_GPL(device_remove_file);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 5cf30e9..1a1f1da 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -490,6 +490,7 @@ void driver_init(void);
+  */
+ extern int __must_check device_register(struct device * dev);
+ extern void device_unregister(struct device * dev);
++extern void device_unregister_wait(struct device * dev);
+ extern void device_initialize(struct device * dev);
+ extern int __must_check device_add(struct device * dev);
+ extern void device_del(struct device * dev);
+@@ -535,6 +536,7 @@ extern int (*platform_notify_remove)(struct device * dev);
+  */
+ extern struct device * get_device(struct device * dev);
+ extern void put_device(struct device * dev);
++extern void put_device_wait(struct device * dev);
+ 
+ 
+ /* drivers/base/power/shutdown.c */
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index b850e03..4f0bb2d 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -85,9 +85,11 @@ extern int __must_check kobject_move(struct kobject *, struct kobject *);
+ 
+ extern int __must_check kobject_register(struct kobject *);
+ extern void kobject_unregister(struct kobject *);
++extern void kobject_unregister_wait(struct kobject *);
+ 
+ extern struct kobject * kobject_get(struct kobject *);
+ extern void kobject_put(struct kobject *);
++extern void kobject_put_wait(struct kobject *);
+ 
+ extern struct kobject *kobject_add_dir(struct kobject *, const char *);
+ 
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 057921c..22e5148 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -16,6 +16,15 @@
+ #include <linux/stat.h>
+ #include <linux/slab.h>
+ 
++struct kobj_wait {
++	struct list_head	list;
++	struct kobject		*kobj;
++	struct completion	cmpl;
++};
++
++static spinlock_t kobj_wait_lock = SPIN_LOCK_UNLOCKED;
++static LIST_HEAD(kobj_wait_list);
++
+ /**
+  *	populate_dir - populate directory with attributes.
+  *	@kobj:	object we're working on.
+@@ -425,6 +434,23 @@ void kobject_unregister(struct kobject * kobj)
+ }
+ 
+ /**
++ *	kobject_unregister_wait - unregister, put and wait
++ *	@kobj:	object going away
++ *
++ *	Remove @kobj from hierarchy, decrement refcount and wait for
++ *	it to die.
++ */
++void kobject_unregister_wait(struct kobject * kobj)
++{
++	if (!kobj)
++		return;
++	pr_debug("kobject %s: unregistering\n",kobject_name(kobj));
++	kobject_uevent(kobj, KOBJ_REMOVE);
++	kobject_del(kobj);
++	kobject_put_wait(kobj);
++}
++
++/**
+  *	kobject_get - increment refcount for object.
+  *	@kobj:	object.
+  */
+@@ -446,8 +472,22 @@ void kobject_cleanup(struct kobject * kobj)
+ 	struct kobj_type * t = get_ktype(kobj);
+ 	struct kset * s = kobj->kset;
+ 	struct kobject * parent = kobj->parent;
++	struct kobj_wait *kwait;
++	unsigned long flags;
+ 
+ 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
++
++	/* is somebody waiting for @kobj to die? */
++	spin_lock_irqsave(&kobj_wait_lock, flags);
++	list_for_each_entry(kwait, &kobj_wait_list, list) {
++		if (kwait->kobj == kobj) {
++			list_del_init(&kwait->list);
++			break;
++		}
++	}
++	spin_unlock_irqrestore(&kobj_wait_lock, flags);
++
++	/* clean up */
+ 	if (kobj->k_name != kobj->name)
+ 		kfree(kobj->k_name);
+ 	kobj->k_name = NULL;
+@@ -456,6 +496,10 @@ void kobject_cleanup(struct kobject * kobj)
+ 	if (s)
+ 		kset_put(s);
+ 	kobject_put(parent);
++
++	/* notify waiter */
++	if (kwait)
++		complete(&kwait->cmpl);
+ }
+ 
+ static void kobject_release(struct kref *kref)
+@@ -475,6 +519,42 @@ void kobject_put(struct kobject * kobj)
+ 		kref_put(&kobj->kref, kobject_release);
+ }
+ 
++/**
++ *	kobject_put_wait - put and wait for all references to go away
++ *	@kobj:	object
++ *
++ *	This function is used by @kobj owner to kill it - it puts a
++ *	reference to @kobj and waits till all the references are gone
++ *	and ->release is finished.  @kobj must have been deleted and
++ *	the caller is responsible for guaranteeing that all references
++ *	will be dropped in foreseeable future.
++ */
++void kobject_put_wait(struct kobject * kobj)
++{
++	struct kobj_wait kwait;
++	unsigned long flags;
++
++	if (!kobj)
++		return;
++
++	BUG_ON(!list_empty(&kobj->entry));
++
++	init_completion(&kwait.cmpl);
++	kwait.kobj = kobj;
++
++	spin_lock_irqsave(&kobj_wait_lock, flags);
++	list_add(&kwait.list, &kobj_wait_list);
++	spin_unlock_irqrestore(&kobj_wait_lock, flags);
++
++	kobject_put(kobj);
++
++	if (!wait_for_completion_timeout(&kwait.cmpl, 30 * HZ)) {
++		printk(KERN_WARNING "kobject_put_wait: kobject %p is still "
++		       "alive after 30s, possible reference count bug\n", kobj);
++		dump_stack();
++		wait_for_completion(&kwait.cmpl);
++	}
++}
+ 
+ static void dir_release(struct kobject *kobj)
+ {
+@@ -691,8 +771,10 @@ void subsys_remove_file(struct subsystem * s, struct subsys_attribute * a)
+ EXPORT_SYMBOL(kobject_init);
+ EXPORT_SYMBOL(kobject_register);
+ EXPORT_SYMBOL(kobject_unregister);
++EXPORT_SYMBOL(kobject_unregister_wait);
+ EXPORT_SYMBOL(kobject_get);
+ EXPORT_SYMBOL(kobject_put);
++EXPORT_SYMBOL(kobject_put_wait);
+ EXPORT_SYMBOL(kobject_add);
+ EXPORT_SYMBOL(kobject_del);
+ 
