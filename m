@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031222AbXDQRHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031227AbXDQRHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031222AbXDQRHg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 13:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031221AbXDQRHg
+	id S1031227AbXDQRHn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 13:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031224AbXDQRHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 13:07:36 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59348 "EHLO mx2.suse.de"
+	Tue, 17 Apr 2007 13:07:43 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36651 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031222AbXDQRHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 13:07:35 -0400
-To: Karl MacMillan <kmacmill@redhat.com>
-Cc: David Safford <safford@watson.ibm.com>, James Morris <jmorris@namei.org>,
-       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: AppArmor FAQ
-References: <20070416213350.GB4030@suse.de>
-	<Line.LNX.4.64.0704161846110.13905@d.namei>
-	<1176822230.3366.65.camel@localhost.localdomain>
-	<1176825641.5946.41.camel@localhost.localdomain>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 17 Apr 2007 20:05:29 +0200
-In-Reply-To: <1176825641.5946.41.camel@localhost.localdomain>
-Message-ID: <p73abx66fme.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1031221AbXDQRHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 13:07:42 -0400
+Date: Tue, 17 Apr 2007 21:07:07 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [CRYPTO] is it really optimized ?
+Message-ID: <20070417170707.GA24070@2ka.mipt.ru>
+References: <20070417130431.GA8685@2ka.mipt.ru> <E1HdnwX-0005U1-00@gondolin.me.apana.org.au> <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com> <20070417150859.GA9512@2ka.mipt.ru> <38b2ab8a0704170834i1856886nafeeec692f49fea0@mail.gmail.com> <20070417155725.GA18959@2ka.mipt.ru> <38b2ab8a0704170918u72792c0ei591fea98eac2681d@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <38b2ab8a0704170918u72792c0ei591fea98eac2681d@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 17 Apr 2007 21:07:29 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karl MacMillan <kmacmill@redhat.com> writes:
- 
-> No - the real fix is to change the applications or to run under a policy
-> that confines all applications. Most of the problems with resolv.conf,
-> mtab, etc. stem from admin processes (e.g., editors or shell scripts)
-> all running under the same unconfined domain.
+On Tue, Apr 17, 2007 at 06:18:42PM +0200, Francis Moreau (francis.moro@gmail.com) wrote:
+> >If there are no another users, your code already has exclusive access.
 > 
-> In some cases applications need modification as only the application has
-> enough information to determine the correct label. Usually this means
-> preserving labels from input files or separating the output into
-> distinct directories so type transitions or label inheritance will work.
+> sorry I don't understand that.
+
+Since there are no users except your module, you do have exclusive
+access already, i.e. you can stop key reloading and get your gain, but
+there is no possibility for crypto module to know that in advance
+(without hack like checking reference counter or storing private context
+pointer in some internals and check it for each new call for
+encrypt/decrypt).
+
+> >One can not know if there will be any additional users at all (consider
+> >the case when new encrypted block device or ipsec negotiation started
+> >some time after module was loaded).
+> >
 > 
-> restorecond is just a hack not a requirement or a sign that something is
-> wrong with the model. That is why it is a userspace application and not
-> integrated into the kernel mechanism.
+> well I should say administrator should know.
 
-You nicely show one of the major disadvantages of the label model vs the path 
-model here: it requires modification of a lot of applications. 
+Yes, admin is a god. I would even say the god.
+So it can (if she/he wants to) setup any module with any name so that
+other users would never know it.
 
-Maybe John can borrow your statement for new versions of his FAQ @)
+> -- 
+> Francis
 
--Andi
+-- 
+	Evgeniy Polyakov
