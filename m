@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030887AbXDQPt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030726AbXDQPv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030887AbXDQPt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXDQPt2
+	id S1030726AbXDQPv7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030892AbXDQPv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:49:28 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:43105 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030887AbXDQPt1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:49:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=AT5vnGqxgDK/paK5aNiUf/1Nw5Lcdoahsilh1XV1fUsLuo0v82mFAcMZ1HVwa/KG5DJ+lP/G7qKwWS1D2nCh/dWX7vA8I7PObQ4X2KTSnNQJ4x2FvRTeQO6q0iXbWr1mZgNYI0dSeRsCew22PoxXEBOn9iUBQcjtBy/q4Iu2MJQ=
-Message-ID: <4624EC51.7080604@googlemail.com>
-Date: Tue, 17 Apr 2007 17:48:33 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070207)
-MIME-Version: 1.0
-To: caglar@pardus.org.tr
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Willy Tarreau <w@1wt.eu>,
-       Gene Heskett <gene.heskett@gmail.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-References: <20070416220715.GA4071@elte.hu> <200704170112.35819.caglar@pardus.org.tr> <20070417085936.GB16645@elte.hu> <200704171745.22544.caglar@pardus.org.tr>
-In-Reply-To: <200704171745.22544.caglar@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 17 Apr 2007 11:51:59 -0400
+Received: from mba.ocn.ne.jp ([122.1.175.29]:56938 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030726AbXDQPv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 11:51:58 -0400
+Date: Wed, 18 Apr 2007 00:51:55 +0900 (JST)
+Message-Id: <20070418.005155.25477582.anemo@mba.ocn.ne.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, device@lanana.org, ralf@linux-mips.org,
+       sshtylyov@ru.mvista.com
+Subject: [PATCH 1/2] serial_txx9: Use assigned device numbers
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S.Çağlar Onur wrote:
-> 17 Nis 2007 Sal tarihinde, Ingo Molnar şunları yazmıştı: 
->   
->>> Sorry for delayed response but i just find some free time, do you
->>> still want me to test mainline + "parent-runs first" patch or will i
->>> drop that one and test v2 which can change default behaviour?
->>>       
->> i suspect for now it would be sufficient if you could check the v2
->> patch.
->>
->> if it _works_, please try this:
->>
->>     echo 0 > /proc/sys/kernel/sched_child_runs_first
->>
->> this should break Kaffeine again :)
->>
->> (if it doesnt work then the Kaffeine problem is unrelated to
->> child-runs-first.)
->>     
->
-> OK, i tested both plain -rc7 and -rc7 + CFSv2 with while 
-> sched_child_runs_first enabled/disabled.
->
-> I'm always using same video file and try to reproduce freeze with constantly 
-> pressing forward/backward buttons. With CFS 2-3 forward/backward attempt 
-> reproduces this behaviour. 
->
-> And here are the results.
->
-> Mainline still has no issues with both xine-lib/kaffeine and xine-ui 
-> (kaffeine-0.8.4, xine-lib-1.1.5 [both xcb enabled], xine-ui-0.99.4). I really 
-> try hard to reproduce the freeze, but i can't...
->
-> And CFSv2 still fails for both child_runs_first and parent_runs_first cases 
-> with same strace output (FUTEX_WAIT).
->   
+The serial_txx9 driver have abused device numbers (major 4, minor 128)
+if CONFIG_SERIAL_TXX9_STDSERIAL was not set.  This patch makes the
+driver use proper device numbers assigned for it (major 204, minor
+196-203).  I suppose a typical user of this driver set
+CONFIG_SERIAL_TXX9_STDSERIAL to Y (i.e. use "ttyS0"), so this patch
+would not cause big compatibility issue.
 
-I have the same problem here ( same packages ).
-
-Even VLC if I go forward/backward and then play again its start to 
-ramdom freeze here but only for 1 - 2 seconds maybe.
-
-
-> If you want me to test something else just ask please :) 
->
-> Cheers
->   
-
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
+index 509ace7..1deb576 100644
+--- a/drivers/serial/serial_txx9.c
++++ b/drivers/serial/serial_txx9.c
+@@ -62,7 +62,7 @@
+ 
+ #include <asm/io.h>
+ 
+-static char *serial_version = "1.08";
++static char *serial_version = "1.09";
+ static char *serial_name = "TX39/49 Serial driver";
+ 
+ #define PASS_LIMIT	256
+@@ -70,13 +70,14 @@ static char *serial_name = "TX39/49 Serial driver";
+ #if !defined(CONFIG_SERIAL_TXX9_STDSERIAL)
+ /* "ttyS" is used for standard serial driver */
+ #define TXX9_TTY_NAME "ttyTX"
+-#define TXX9_TTY_MINOR_START	(64 + 64)	/* ttyTX0(128), ttyTX1(129) */
++#define TXX9_TTY_MINOR_START	196
++#define TXX9_TTY_MAJOR	204
+ #else
+ /* acts like standard serial driver */
+ #define TXX9_TTY_NAME "ttyS"
+ #define TXX9_TTY_MINOR_START	64
+-#endif
+ #define TXX9_TTY_MAJOR	TTY_MAJOR
++#endif
+ 
+ /* flag aliases */
+ #define UPF_TXX9_HAVE_CTS_LINE	UPF_BUGGY_UART
