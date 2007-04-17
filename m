@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161042AbXDQRVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161107AbXDQRWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161042AbXDQRVJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 13:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161107AbXDQRVJ
+	id S1161107AbXDQRWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 13:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161126AbXDQRWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 13:21:09 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:57347 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161042AbXDQRVI (ORCPT
+	Tue, 17 Apr 2007 13:22:54 -0400
+Received: from ag-out-0708.google.com ([72.14.246.249]:44589 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161107AbXDQRWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 13:21:08 -0400
-Date: Tue, 17 Apr 2007 13:19:55 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: linux-kernel@vger.kernel.org
-cc: trivial@kernel.org
-Subject: [PATCH] general: convert "kernel" subdirectory to UTF-8
-Message-ID: <alpine.DEB.0.83.0704171317580.914@sigma.j-a-k-j.com>
+	Tue, 17 Apr 2007 13:22:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=YWNfzUIFAAQT0GtiGmMmTUqHCVlzGBGa2jrXHglHVzYzifw8Deq4O8DhkDxr10QSY/BpCqTdTfFDvlGIRcyJ1X99tN0wLjE4MJnyeE73gjigV0LbTIDhBz0PRZC4s1Dj2Y0gcdJXui8oyw01LbcVvCFdPq6DcKuSy83+kXvqc+Y=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+Date: Tue, 17 Apr 2007 13:22:48 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
+References: <20070416220715.GA4071@elte.hu> <20070417061849.GA12385@elte.hu> <20070417070132.GA27261@elte.hu>
+In-Reply-To: <20070417070132.GA27261@elte.hu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1875672472-557741582-1176830396=:914"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704171322.49291.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday 17 April 2007, Ingo Molnar wrote:
+>* Ingo Molnar <mingo@elte.hu> wrote:
+>> ok - fortunately the delta between -v2-rc0 and -v2-final is pretty
+>> small. One difference is the child-runs-first fix. To restore the
+>> parent-runs-first logic, do this:
+>>
+>> 	echo 0 > /proc/sys/kernel/sched_child_runs_first
+>>
+>> does this make any difference?
+>
+>ok, i've got something better to test: i separated the delta out into a
+>more finegrained stack of 3 patches. You can pick them up from:
+>
+> http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0.patch
+> http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0-preempt-fix.p
+>atch
+> http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0-child-runs-fi
+>rst.patch
+> http://redhat.com/~mingo/cfs-scheduler/older/sched-cfs-v2-rc0-misc.patch
+>
+Got them all saved Ingo, but it will be late tomorrow before I can play again.
 
---1875672472-557741582-1176830396=:914
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+>i test-built and test-booted all 4 steps of this. The baseline -v2-rc0
+>patch should be the one that works - you might want to double-check it,
+>just to be sure. One of the other 3 patches ontop of this baseline
+>causes the regression on your desktop. My current bet is on preempt-fix,
+>so i have put that one first. The other one would be the second patch,
+>child-runs-first. The misc patch should have no effect on behavior - but
+>i've included it for completeness. (and i was wrong about the 'nice
+>fix', it is not in this delta)
+>
+>	Ingo
 
-From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-Convert the "kernel" subdirectory of the tree to UTF-8. The only file 
-modified is <kernel/sys.c>.
 
-Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
-
----
-
-I can't get my mail client to send in ISO-8859-1 instead of UTF-8, so the 
-actual patch is attached in octet-stream format. The below patch is just 
-for reference and will almost certainly NOT work.
-
-Also, since the patch includes both encodings, whichever encoding you 
-select while viewing it will display one correct and one garbled line. 
-However, the bytecodes -are- correct.
-
-diff -uprN linux-2.6.21-rc7.orig/kernel/sys.c linux-2.6.21-rc7.mod/kernel/sys.c
---- linux-2.6.21-rc7.orig/kernel/sys.c	2007-04-17 11:42:13.000000000 -0400
-+++ linux-2.6.21-rc7.mod/kernel/sys.c	2007-04-17 13:16:59.000000000 -0400
-@@ -1292,7 +1292,7 @@ asmlinkage long sys_setfsuid(uid_t uid)
- }
- 
- /*
-- * Samma på svenska..
-+ * Samma pÃ¥ svenska..
-  */
- asmlinkage long sys_setfsgid(gid_t gid)
- {
---1875672472-557741582-1176830396=:914
-Content-Type: APPLICATION/octet-stream; name=patch-kernel.bin
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.0.83.0704171319550.914@sigma.j-a-k-j.com>
-Content-Description: 
-Content-Disposition: attachment; filename=patch-kernel.bin
-
-ZGlmZiAtdXByTiBsaW51eC0yLjYuMjEtcmM3Lm9yaWcva2VybmVsL3N5cy5j
-IGxpbnV4LTIuNi4yMS1yYzcubW9kL2tlcm5lbC9zeXMuYwotLS0gbGludXgt
-Mi42LjIxLXJjNy5vcmlnL2tlcm5lbC9zeXMuYwkyMDA3LTA0LTE3IDExOjQy
-OjEzLjAwMDAwMDAwMCAtMDQwMAorKysgbGludXgtMi42LjIxLXJjNy5tb2Qv
-a2VybmVsL3N5cy5jCTIwMDctMDQtMTcgMTM6MTY6NTkuMDAwMDAwMDAwIC0w
-NDAwCkBAIC0xMjkyLDcgKzEyOTIsNyBAQCBhc21saW5rYWdlIGxvbmcgc3lz
-X3NldGZzdWlkKHVpZF90IHVpZCkKIH0KIAogLyoKLSAqIFNhbW1hIHDlIHN2
-ZW5za2EuLgorICogU2FtbWEgcMOlIHN2ZW5za2EuLgogICovCiBhc21saW5r
-YWdlIGxvbmcgc3lzX3NldGZzZ2lkKGdpZF90IGdpZCkKIHsK
-
---1875672472-557741582-1176830396=:914--
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+This life is yours.  Some of it was given to you; the rest, you made yourself.
