@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031286AbXDQXtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031301AbXDQXuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031286AbXDQXtN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 19:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031301AbXDQXtM
+	id S1031301AbXDQXuf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 19:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031304AbXDQXuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 19:49:12 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:41917 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031286AbXDQXtL (ORCPT
+	Tue, 17 Apr 2007 19:50:35 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:11584 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031303AbXDQXue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 19:49:11 -0400
+	Tue, 17 Apr 2007 19:50:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SCrTi8u65Y/6rlOiT4uHZShApGlpN5lt5SOpOPsrMG58dJTpf9ArejOSE7/j3RfpdBkIAHXN2c7rnwBVb1hVS7uzk0PD/hdDNLyX+/lR7QueDkZnba28GfeVnZ4j0RRqkeMiJQY6an/sFUDnvmpqUuo5X3YbmstuYOgdKZ6YqF8=
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <20070417033400.GE22804@redhat.com>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	 <20070416003723.GM3691@stusta.de> <20070416005446.GB21217@redhat.com>
-	 <20070416011636.GO3691@stusta.de> <20070416062921.GB7528@redhat.com>
-	 <1176706447.5129.6.camel@daplas> <20070416072326.GA15281@redhat.com>
-	 <1176708722.5129.8.camel@daplas> <20070416075543.GB15281@redhat.com>
-	 <1176715603.6794.13.camel@localhost.localdomain>
-	 <20070417033400.GE22804@redhat.com>
-Content-Type: text/plain
-Date: Wed, 18 Apr 2007 07:48:55 +0800
-Message-Id: <1176853735.8463.9.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gvv77k7V+NR9GRva7DdLGAx/qLivZbCRvb9xiQo9uFhPgd1Itk9W8t22x4vdM/SW2tzdLnpFrhuxvpi41xnjULqs0z/ZPAmKpiZmnYRBChR6y0uFQjYRpmURDE8NwU4uLwhr3oN3BeHfVnvbNwrjPtaBPDdC21Ro81hpKfXUkbM=
+Message-ID: <68676e00704171650t604e30f4j3749b7c5a8ddc5c5@mail.gmail.com>
+Date: Wed, 18 Apr 2007 01:50:29 +0200
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+Subject: Re: [lm-sensors] Could the k8temp driver be interfering with ACPI?
+Cc: "Jean Delvare" <khali@linux-fr.org>, "Pavel Machek" <pavel@ucw.cz>,
+       linux-kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
+       linux-acpi@vger.kernel.org, "Chuck Ebbert" <cebbert@redhat.com>
+In-Reply-To: <200704161628.47707.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <45D5EA88.7090300@redhat.com>
+	 <200704151857.03115.bjorn.helgaas@hp.com>
+	 <20070416211411.GA16150@dreamland.darkstar.lan>
+	 <200704161628.47707.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-16 at 23:34 -0400, Dave Jones wrote:
-> On Mon, Apr 16, 2007 at 10:26:43AM +0100, Richard Purdie wrote:
-> 
->  > >  > >  > CONFIG_FB_BACKLIGHT=y
->  > >  > >  > CONFIG_ACPI_VIDEO=n
->  > >  > > 
->  > >  > > That also gets me a dead display. Backlight doesn't turn back on.
->  > >  > 
->  > >  > Anything under /sys/class/backlight?
->  > > 
->  > > Entries from ibm_acpi.  I rmmod'd that, leaving the dir empty,
->  > > and it still fails.
->  > 
->  > What happens if you never load ibm-acpi?
-> 
-> Same thing. No backlight on resume.
-> I rm'd the .ko, so there's no chance it got loaded.
-> 
->  > I'm a bit puzzled as CONFIG_FB_BACKLIGHT doesn't do anything with the
->  > intelfb driver. One thing it does do is set
->  > CONFIG_BACKLIGHT_CLASS_DEVICE. When you disabled FB_BACKLIGHT and got a
->  > working display on resume, was that set and was (or had) ibm-acpi been
->  > loaded?
->  > 
->  > A variety of other options such as ACPI_IBM also set
->  > CONFIG_BACKLIGHT_CLASS_DEVICE although without a backlight driver it
->  > will do nothing hence the suspicion is on ibm-acpi, perhaps interacting
->  > with the backlight class badly.
->  > 
->  > Does echoing numbers to /sys/class/backlight/ibm_acpi/brightness change
->  > the backlight brightness as expected?
-> 
-> /sys/class/backlight/ibm/brightness takes a value from 0 to 7.
-> Starts off with a default of 0. I tried all values in there, and
-> it made no visible difference.  But as the no-backlight thing happens
-> without this even loaded, I think this is a separate problem.
-> 
->  > If you can ssh into the machine
->  > after its resumed with the display problem, it would be interesting to
->  > know what the brightness was and if changing it helped too...
-> 
-> When the backlight doesn't come on, for some reason, nothing else
-> runs.  Capslock works, so it's at least partially alive, but even
-> doing..
-> 
-> echo mem > /sys/power/state ; echo foo >/bar ; sync
-> 
-> results in no /bar being created.
-> Ethernet remains down when its in this state too.
+On 4/17/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> On Monday 16 April 2007 15:14, Luca Tettamanti wrote:
+> > Problem is that ACPI methods are not documented at all (how am I
+> > supposed to know that "G6T6" is the reading of the 12V rail?) while the
+> > datasheet of hw monitoring chips (w83627ehf in my case) are public (more
+> > or less).
+>
+> Yes, I see that it's attractive to use a single w83627ehf.c driver.
+> For an ACPI driver, we'd have to build a list of PNP IDs, and possibly
+> information about which methods read which information.  That's
+> certainly more work.
+>
+> On the other hand, the ACPI driver would avoid the synchronization
+> issues that started this whole thread.  That's a pretty compelling
+> advantage.
+>
+> > Furthermore, sensor driver exposes all the reading of the chip
+> > (e.g. in the DSDT I can't find the VSB or battery voltage).
+>
+> Maybe Asus didn't hook up those readings on the board.  I would
+> guess that PC Probe doesn't expose the VSB or battery voltage either.
 
-Have you tried these boot options?
+PC Probe does not. But the lines are wired and the readings (from
+Linux) are sensible.
 
-acpi_sleep=s3_mode; or
-acpi_sleep=s3_bios,s3_mode
+> I'm sure you've seen these:
+>   http://lists.lm-sensors.org/pipermail/lm-sensors/2005-October/014050.html
+>   http://www.lm-sensors.org/wiki/AsusFormulaHacking
 
-Tony
+Actually I haven't, I've happily ignored ACPI until now ;-) My DSDT
+doesn't look too bad, I may give it a try...
 
-
+Luca
