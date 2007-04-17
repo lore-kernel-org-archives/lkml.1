@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031106AbXDQQCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031110AbXDQQCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031106AbXDQQCa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 12:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031107AbXDQQCa
+	id S1031110AbXDQQCg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 12:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031111AbXDQQCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 12:02:30 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:56562 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031106AbXDQQC3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 12:02:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=umV2kH+gWzSpi7bgkjYtcgT3pPsJREhIFl38B6n3ggAPTEP+5bunsw93f6ou2lF3ziNQxIAqq6DTMBkx7PLjlvdwH2b39Ua+WmuFOkrHEI05EoCeKYuQYFFoMrCSdWAC1l8TooCGksx9AnKHQy8on66b9OSqJdc3V6GeTjn+9p0=
-Message-ID: <170fa0d20704170902i5779f5cv669013fea151f90c@mail.gmail.com>
-Date: Tue, 17 Apr 2007 12:02:28 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: ian.murdock@sun.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ZFS with Linux: An Open Plea
-Cc: "=?ISO-8859-2?Q?Tomasz_K=B3oczko?=" <kloczek@rudy.mif.pg.gda.pl>,
-       "Theodore Tso" <tytso@mit.edu>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070417154814.632da1d9@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Apr 2007 12:02:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55864 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031110AbXDQQCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 12:02:34 -0400
+Date: Tue, 17 Apr 2007 18:01:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, Willy Tarreau <w@1wt.eu>,
+       Gene Heskett <gene.heskett@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Christophe Thommeret <hftom@free.fr>,
+       Christoph Pfister <christophpfister@gmail.com>,
+       Jurgen Kofler <kaffeine@gmx.net>
+Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
+Message-ID: <20070417160142.GA18861@elte.hu>
+References: <20070416220715.GA4071@elte.hu> <200704170112.35819.caglar@pardus.org.tr> <20070417085936.GB16645@elte.hu> <200704171745.22544.caglar@pardus.org.tr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain>
-	 <20070417131045.GB18373@thunk.org>
-	 <Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
-	 <20070417154814.632da1d9@the-village.bc.nu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200704171745.22544.caglar@pardus.org.tr>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/17/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > So who is responsible for potential changing Linux code licensing for
-> > allow if not incorporate CDDL code correct interraction without breaking
-> > some law ?
->
-> Every single contributor, individually. Which won't happen.
->
-> The real test of whether Sun were serious about ZFS being anywhere but
-> Solaris is what they do to license it - they've patented everything they
-> can, and made the code available only under licenses incompatible with
-> other OS products. Their intent is quite clear, and quite sad.
->
-> Compare it to what the old Sun company did with NFS, which is now a
-> standard used everywhere.
->
-> If Sun want ZFS to get used all over the place in free software then I'd
-> have expected at the very least to see them throw out a copy of the code,
-> docs and patent grant in a form that could be used, even if it came with
-> no other assistance of any kind. Now would be a great time to do that,
-> but I can't see it happening, instead they'll miss the boat just as
-> microsoft did with Office XML (three years ago they'd have sailed it
-> through ISO to the sound of fanfairs)
 
-Maybe Ian Murdock could weigh in on this given his new position at Sun. Ian?
+* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
 
-BTW, congrats on the new gig...
+> If you want me to test something else just ask please :)
+
+yes, it would be nice to do a:
+
+	strace -o kaffine.log -f -tttTTT kaffeine
+
+log. Because in your old log this is visible:
+
+ clone(child_stack=0xb02394a4, 
+ flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, 
+ parent_tidptr=0xb0239bd8, {entry_number:6, base_addr:0xb0239b90, 
+ limit:1048575, seg_32bit:1, contents:0, read_exec_only:0, 
+ limit_in_pages:1, seg_not_present:0, useable:1}, 
+ child_tidptr=0xb0239bd8) = 11340
+ futex(0x89ac218, FUTEX_WAKE, 1)         = 1
+
+we cloned a task and immediately afterwards we used futex 0x89ac218. 
+After that point many things happen, but the lockup itself:
+
+ futex(0x89ac218, FUTEX_WAIT, 2, NULL)   = 0
+ futex(0x89ac218, FUTEX_WAIT, 2, NULL)   = 0
+ futex(0x89ac218, FUTEX_WAIT, 2, NULL)   = 0
+
+is the same futex. Probably related to the same child thread? It would 
+be nice to also get a gdb backtrace:
+
+	gdb kaffine
+	<reproduce the hang>
+	Ctrl-C
+	bt
+
+this should give you a gdb backtrace of that kaffeine hang. Thanks,
+
+	Ingo
