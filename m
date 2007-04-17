@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbXDQIob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbXDQIqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbXDQIob (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 04:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXDQIob
+	id S1752869AbXDQIqE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 04:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXDQIqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 04:44:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43206 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752817AbXDQIoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 04:44:30 -0400
-Date: Tue, 17 Apr 2007 10:44:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417084405.GA13661@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <462467E9.4030509@bigpond.net.au>
+	Tue, 17 Apr 2007 04:46:04 -0400
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:4949 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752869AbXDQIqB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 04:46:01 -0400
+Date: Tue, 17 Apr 2007 10:45:58 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Mark M. Hoffman" <mhoffman@lightlink.com>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Hans de Goede <j.w.r.degoede@hhs.nl>,
+       David Hubbard <david.c.hubbard@gmail.com>,
+       Rudolf Marek <r.marek@assembler.cz>, Juerg Haefliger <juergh@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [lm-sensors] Hardware monitoring subsystem maintainer position
+ is open
+Message-ID: <20070417104558.0ff9a230@hyperion.delvare>
+In-Reply-To: <20070415150320.GA3158@jupiter.solarsys.private>
+References: <20070410150227.1bac05b5@hyperion.delvare>
+	<20070415150320.GA3158@jupiter.solarsys.private>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462467E9.4030509@bigpond.net.au>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Mark,
 
-* Peter Williams <pwil3058@bigpond.net.au> wrote:
-
-> > And my scheduler for example cuts down the amount of policy code and 
-> > code size significantly.
+On Sun, 15 Apr 2007 11:03:20 -0400, Mark M. Hoffman wrote:
+> Hi Jean, et al:
 > 
-> Yours is one of the smaller patches mainly because you perpetuate (or 
-> you did in the last one I looked at) the (horrible to my eyes) dual 
-> array (active/expired) mechanism.  That this idea was bad should have 
-> been apparent to all as soon as the decision was made to excuse some 
-> tasks from being moved from the active array to the expired array.  
-> This essentially meant that there would be circumstances where extreme 
-> unfairness (to the extent of starvation in some cases) -- the very 
-> things that the mechanism was originally designed to ensure (as far as 
-> I can gather).  Right about then in the development of the O(1) 
-> scheduler alternative solutions should have been sought.
+> * Jean Delvare <khali@linux-fr.org> [2007-04-10 15:02:27 +0200]:
+> > I am resigning from my role as hardware monitoring subsystem
+> > (drivers/hwmon) maintainer. This is too much work for me, I do not have
+> > the necessary bandwidth to review all the incoming patches, in
+> > particular new drivers, in a timely manner. Patch authors have been
+> > complaining about this repeatedly. This is no fun for them, and even
+> > less for me, so I'd rather let someone else with more spare time take
+> > care of it. If there are volunteers, this is the right time to speak up.
+> > 
+> > I will still be maintaining the individual hardware monitoring drivers
+> > I am listed for in file MAINTAINERS (adm1025, f71805f, lm83 and lm90)
+> > as well as the I2C subsystem. No change here.
+> > 
+> > I will continue to feed -mm with pending hwmon patches until 2.6.21
+> > final is released, then I'll send everything I have to Linus for
+> > 2.6.22-rc1, the last of which will be:
+> >  (...)
+> 
+> /me throws hat in
+> 
+> I volunteer to become the new MAINTAINER, but in a much more limited sense
+> of the term than Jean is/was.  I can take care of a couple git trees, and do
+> some detailed reviews when I have time.  For the most part, I will have to
+> rely on others to do reviews as well.
 
-in hindsight i'd agree. But back then we were clearly not ready for 
-fine-grained accurate statistics + trees (cpus are alot faster at more 
-complex arithmetics today, plus people still believed that low-res can 
-be done well enough), and taking out any of these two concepts from CFS 
-would result in a similarly complex runqueue implementation. Also, the 
-array switch was just thought to be of another piece of 'if the 
-heuristics go wrong, we fall back to an array switch' logic, right in 
-line with the other heuristics. And you have to accept it, mainline's 
-ability to auto-renice make -j jobs (and other CPU hogs) was quite a 
-plus for developers, so it had (and probably still has) quite some 
-inertia.
+This is excellent news, thanks for volunteering. We have been working
+together for a long time now and I'm happy to see you take the lead.
+You have my blessing.
 
-	Ingo
+> I would not be volunteering for this role, if Juerg and others had not also
+> volunteered to be more active reviewers.
+> 
+> As for the discussions later in this thread about process... IMHO that's a
+> little premature.  I intend to get brand new stuff into -mm perhaps a little
+> earlier than Jean did... but it still ain't going to Linus before it's ready.
+> Other than that, I would rather just see what works for me and for you (other
+> hwmon authors).
+> 
+> Assuming no one else wants the job (ruik?) I'll start working with Jean to
+> get things set up as soon as I can.
+
+Great. I'll help you make the transition as smooth as possible.
+
+-- 
+Jean Delvare
