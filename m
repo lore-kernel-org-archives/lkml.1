@@ -1,118 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbXDQNoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbXDQNqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbXDQNoh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 09:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbXDQNoh
+	id S1754357AbXDQNqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 09:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXDQNqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 09:44:37 -0400
-Received: from omta03sl.mx.bigpond.com ([144.140.92.155]:22829 "EHLO
-	omta03sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754344AbXDQNog (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 09:44:36 -0400
-Message-ID: <4624CF3B.6040704@bigpond.net.au>
-Date: Tue, 17 Apr 2007 23:44:27 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 17 Apr 2007 09:46:14 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:44517 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754357AbXDQNqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 09:46:13 -0400
+Message-ID: <4624D0C1.4090304@sw.ru>
+Date: Tue, 17 Apr 2007 17:50:57 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <1176782489.13059.15.camel@Homer.simpson.net> <20070417041420.GF25513@wotan.suse.de> <20070417095140.GB22626@elte.hu>
-In-Reply-To: <20070417095140.GB22626@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>, linux-mm@kvack.org
+Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M
+References: <4624C3C1.9040709@sw.ru> <84144f020704170622h2b16f0f6m47ffdbb3b5686758@mail.gmail.com>
+In-Reply-To: <84144f020704170622h2b16f0f6m47ffdbb3b5686758@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta03sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 13:44:32 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Nick Piggin <npiggin@suse.de> wrote:
+Pekka Enberg wrote:
+> Hi,
 > 
->>>> Maybe the progress is that more key people are becoming open to 
->>>> the idea of changing the scheduler.
->>> Could be.  All was quiet for quite a while, but when RSDL showed up, 
->>> it aroused enough interest to show that scheduling woes is on folks 
->>> radar.
->> Well I know people have had woes with the scheduler for ever (I guess 
->> that isn't going to change :P). [...]
+> On 4/17/07, Pavel Emelianov <xemul@sw.ru> wrote:
+>> The out_of_memory() function and SysRq-M handler call
+>> show_mem() to show the current memory usage state.
+>>
+>> This is also helpful to see which slabs are the largest
+>> in the system.
 > 
-> yes, that part isnt going to change, because the CPU is a _scarce 
-> resource_ that is perhaps the most frequently overcommitted physical 
-> computer resource in existence, and because the kernel does not (yet) 
-> track eye movements of humans to figure out which tasks are more 
-> important them. So critical human constraints are unknown to the 
-> scheduler and thus complaints will always come.
+> Makes sense.
+
+Thanks! :)
+
+> On 4/17/07, Pavel Emelianov <xemul@sw.ru> wrote:
+>> diff --git a/mm/slab.c b/mm/slab.c
+>> index 21b3c61..9a5829a 100644
+>> --- a/mm/slab.c
+>> +++ b/mm/slab.c
+>> @@ -749,6 +749,7 @@ static inline void init_lock_keys(void)
+>>   * 2. Protect sanity of cpu_online_map against cpu hotplug events
+>>   */
+>>  static DEFINE_MUTEX(cache_chain_mutex);
+>> +static DEFINE_SPINLOCK(cache_chain_lock);
 > 
-> The upstream scheduler thought it had enough information: the sleep 
-> average. So now the attempt is to go back and _simplify_ the scheduler 
-> and remove that information, and concentrate on getting fairness 
-> precisely right. The magic thing about 'fairness' is that it's a pretty 
-> good default policy if we decide that we simply have not enough 
-> information to do an intelligent choice.
+> So, now we have two locks protecting cache_chain? Please explain why
+> you can't use the mutex.
+
+Because OOM can actually happen with this mutex locked. For example
+kmem_cache_create() locks it and calls kmalloc(), or write to
+/proc/slabinfo also locks it and calls do_tune_cpu_caches(). This is
+very rare case and the deadlock is VERY unlikely to happen, but it
+will be very disappointing if it happens.
+
+Moreover, I put the call to show_slabs() into sysrq handler, so it may
+be called from atomic context.
+
+Making mutex_trylock() is possible, but we risk of loosing this info
+in case OOM happens while the mutex is locked for cache shrinking (see
+cache_reap() for example)...
+
+So we have a choice - either we have an additional lock on a slow and
+rare paths and show this info for sure, or we do not have a lock, but
+have a risk of loosing this info.
+
+>> +static unsigned long get_cache_size(struct kmem_cache *cachep)
+>> +{
+>> +       unsigned long slabs;
+>> +       struct kmem_list3 *l3;
+>> +       struct list_head *lh;
+>> +       int node;
+>> +
+>> +       slabs = 0;
+>> +
+>> +       for_each_online_node (node) {
+>> +               l3 = cachep->nodelists[node];
+>> +               if (l3 == NULL)
+>> +                       continue;
+>> +
+>> +               spin_lock(&l3->list_lock);
+>> +               list_for_each (lh, &l3->slabs_full)
+>> +                       slabs++;
+>> +               list_for_each (lh, &l3->slabs_partial)
+>> +                       slabs++;
+>> +               list_for_each (lh, &l3->slabs_free)
+>> +                       slabs++;
+>> +               spin_unlock(&l3->list_lock);
+>> +       }
+>> +
+>> +       return slabs * ((PAGE_SIZE << cachep->gfporder) +
+>> +               (OFF_SLAB(cachep) ? cachep->slabp_cache->buffer_size :
+>> 0));
+>> +}
 > 
-> ( Lets be cautious though: the jury is still out whether people actually 
->   like this more than the current approach. While CFS feedback looks 
->   promising after a whopping 3 days of it being released [ ;-) ], the 
->   test coverage of all 'fairness centric' schedulers, even considering 
->   years of availability is less than 1% i'm afraid, and that < 1% was 
->   mostly self-selecting. )
+> Considering you're doing this at out_of_memory() time, wouldn't it
+> make more sense to add a ->nr_pages to struct kmem_cache and do the
+> tracking in kmem_getpages/kmem_freepages?
 
-At this point I'd like to make the observation that spa_ebs is a very 
-fair scheduler if you consider "nice" to be an indication of the 
-relative entitlement of tasks to CPU bandwidth.
+Sounds good.
 
-It works by mapping nice to shares using a function very similar to the 
-one for calculating p->load weight except it's not offset by the RT 
-priorities as RT is handled separately.  In theory, a runnable task's 
-entitlement to CPU bandwidth at any time is the ratio of its shares to 
-the total shares held by runnable tasks on the same CPU (in reality, a 
-smoothed average of this sum is used to make scheduling smoother).  The 
-dynamic priorities of the runnable tasks are then fiddled to try to keep 
-each tasks CPU bandwidth usage in proportion to its entitlement.
+> I would also drop the OFF_SLAB bits because it really doesn't matter
+> that much for your purposes. Besides, you're already per-node and
+> per-CPU caches here which attribute to much more memory on NUMA setups
+> for example.
 
-That's the theory anyway.
+This gives us a more precise information :) The precision is less than 1%
+so if nobody likes/needs it, this may be dropped.
 
-The actual implementation looks a bit different due to efficiency 
-considerations.  The modifications to the above theory boil down to 
-keeping a running measure of the (recent) highest CPU bandwidth use per 
-share for tasks running on the CPU -- I call this the yardstick for this 
-CPU.  When it's time to put a task on the run queue it's dynamic 
-priority is determined by comparing its CPU bandwidth per share value 
-with the yardstick for its CPU.  If it's greater than the yardstick this 
-value becomes the new yardstick and the task gets given the lowest 
-possible dynamic priority (for its scheduling class).  If the value is 
-zero it gets the highest possible priority (for its scheduling class) 
-which would be MAX_RT_PRIO for a SCHED_OTHER task.  Otherwise it gets 
-given a priority between these two extremes proportional to ratio of its 
-CPU bandwidth per share value and the yardstick.  Quite simple really.
-
-The other way in which the code deviates from the original as that (for 
-a few years now) I no longer calculated CPU bandwidth usage directly. 
-I've found that the overhead is less if I keep a running average of the 
-size of a tasks CPU bursts and the length of its scheduling cycle (i.e. 
-from on CPU one time to on CPU next time) and using the ratio of these 
-values as a measure of bandwidth usage.
-
-Anyway it works and gives very predictable allocations of CPU bandwidth 
-based on nice.
-
-Another good feature is that (in this pure form) it's starvation free. 
-However, if you fiddle with it and do things like giving bonus priority 
-boosts to interactive tasks it becomes susceptible to starvation.  This 
-can be fixed by using an anti starvation mechanism such as SPA's 
-promotion scheme and that's what spa_ebs does.
-
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+Pavel.
