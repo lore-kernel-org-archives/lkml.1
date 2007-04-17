@@ -1,60 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030917AbXDQW7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030918AbXDQXA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030917AbXDQW7A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 18:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030919AbXDQW7A
+	id S1030918AbXDQXA4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 19:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030921AbXDQXA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 18:59:00 -0400
-Received: from holomorphy.com ([66.93.40.71]:46662 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030917AbXDQW67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 18:58:59 -0400
-Date: Tue, 17 Apr 2007 15:59:02 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Davide Libenzi <davidel@xmailserver.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
+	Tue, 17 Apr 2007 19:00:56 -0400
+Received: from qb-out-0506.google.com ([72.14.204.235]:43873 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030918AbXDQXAz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 19:00:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lPXOZ2FVh4BXQkw3WqzCPqDVLC5PbCnGoH4hZpSaGYPsluXRqej0L5VFwwFEb70DDeXCz0bUciwNxASZtSGZ5mT42s48nWB6lm8R7SX5lpkkUPWSzBX9D2vG5HdG93J1H0IGA5J9E5vvBrwznsztCEJ2wOPEfgsYuSaFvc4W1YE=
+Message-ID: <f2b55d220704171600w2de57cafhc1b2d8d7df67cc6b@mail.gmail.com>
+Date: Tue, 17 Apr 2007 16:00:53 -0700
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Peter Williams" <pwil3058@bigpond.net.au>
 Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417225902.GQ2986@holomorphy.com>
-References: <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com> <20070417073308.GB30559@elte.hu> <20070417090538.GU8915@holomorphy.com> <20070417092422.GA19414@elte.hu> <20070417220809.GF11166@waste.org> <20070417223256.GP2986@holomorphy.com> <20070417223909.GO11115@waste.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <npiggin@suse.de>,
+       "Mike Galbraith" <efault@gmx.de>, "Con Kolivas" <kernel@kolivas.org>,
+       "ck list" <ck@vds.kolivas.org>, "Bill Huey" <billh@gnuppy.monkey.org>,
+       linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <4624CF3B.6040704@bigpond.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070417223909.GO11115@waste.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070413202100.GA9957@elte.hu>
+	 <200704151327.13589.kernel@kolivas.org>
+	 <1176619384.6222.70.camel@Homer.simpson.net>
+	 <46240F98.3020800@bigpond.net.au>
+	 <1176776941.6222.21.camel@Homer.simpson.net>
+	 <20070417034050.GD25513@wotan.suse.de>
+	 <1176782489.13059.15.camel@Homer.simpson.net>
+	 <20070417041420.GF25513@wotan.suse.de>
+	 <20070417095140.GB22626@elte.hu> <4624CF3B.6040704@bigpond.net.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 03:32:56PM -0700, William Lee Irwin III wrote:
->> I'm already working with this as my assumed nice semantics (actually
->> something with a specific exponential base, suggested in other emails)
->> until others start saying they want something different and agree.
+On 4/17/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
+> The other way in which the code deviates from the original as that (for
+> a few years now) I no longer calculated CPU bandwidth usage directly.
+> I've found that the overhead is less if I keep a running average of the
+> size of a tasks CPU bursts and the length of its scheduling cycle (i.e.
+> from on CPU one time to on CPU next time) and using the ratio of these
+> values as a measure of bandwidth usage.
+>
+> Anyway it works and gives very predictable allocations of CPU bandwidth
+> based on nice.
 
-On Tue, Apr 17, 2007 at 05:39:09PM -0500, Matt Mackall wrote:
-> Good. This has a couple nice mathematical properties, including
-> "bounded unfairness" which I mentioned earlier. What base are you
-> looking at?
+Works, that is, right up until you add nonlinear interactions with CPU
+speed scaling.  From my perspective as an embedded platform
+integrator, clock/voltage scaling is the elephant in the scheduler's
+living room.  Patch in DPM (now OpPoint?) to scale the clock based on
+what task is being scheduled, and suddenly the dynamic priority
+calculations go wild.  Nip this in the bud by putting an RT priority
+on the relevant threads (which you have to do anyway if you need
+remotely audio-grade latency), and the lock affinity heuristics break,
+so you have to hand-tune all the thread priorities.  Blecch.
 
-I'm working with the following suggestion:
+Not to mention the likelihood that the task whose clock speed you're
+trying to crank up (say, a WiFi soft MAC) needs to be _lower_ priority
+than the application.  (You want to crank the CPU for this task
+because it runs with the RF hot, which may cost you as much power as
+the rest of the platform.)  You'd better hope you can remove it from
+the dynamic priority heuristics with SCHED_BATCH.  Otherwise
+everything _else_ has to be RT priority (or it'll be starved by the
+soft MAC) and you've basically tossed SCHED_NORMAL in the bin.  Double
+blecch!
 
+Is it too much to ask for someone with actual engineering training
+(not me, unfortunately) to sit down and build a negative-feedback
+control system that handles soft-real-time _and_ dynamic-priority
+_and_ batch loads, CPU _and_ I/O scheduling, preemption _and_ clock
+scaling?  And actually separates the accounting and control mechanisms
+from the heuristics, so the latter can be tuned (within a well
+documented stable range) to reflect the expected system usage
+patterns?
 
-On Tue, Apr 17, 2007 at 09:07:49AM -0400, James Bruce wrote:
-> Nonlinear is a must IMO.  I would suggest X = exp(ln(10)/10) ~= 1.2589
-> That value has the property that a nice=10 task gets 1/10th the cpu of a
-> nice=0 task, and a nice=20 task gets 1/100 of nice=0.  I think that
-> would be fairly easy to explain to admins and users so that they can
-> know what to expect from nicing tasks.
+It's not like there isn't a vast literature in this area over the past
+decade, including some dealing specifically with clock scaling
+consistent with low-latency applications.  It's a pity that people
+doing academic work in this area rarely wade into LKML, even when
+they're hacking on a Linux fork.  But then, there's not much economic
+incentive for them to do so, and they can usually get their fill of
+citation politics and dominance games without leaving their home
+department.  :-P
 
+Seriously, though.  If you're really going to put the mainline
+scheduler through this kind of churn, please please pretty please knit
+in per-task clock scaling (possibly even rejigged during the slice;
+see e. g. Yuan and Nahrstedt's GRACE-OS papers) and some sort of
+linger mechanism to keep from taking context switch hits when you're
+confident that an I/O will complete quickly.
 
-I'm not likely to write the testcase until this upcoming weekend, though.
-
-
--- wli
+Cheers,
+- Michael
