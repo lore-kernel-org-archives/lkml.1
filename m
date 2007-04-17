@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbXDQHYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbXDQHZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbXDQHYn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 03:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXDQHYL
+	id S1752151AbXDQHZS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 03:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXDQHZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 03:24:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44887 "EHLO mx1.redhat.com"
+	Tue, 17 Apr 2007 03:25:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45325 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbXDQHXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 03:23:31 -0400
-Message-Id: <20070417071703.833648566@chello.nl>
+	id S1751943AbXDQHYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 03:24:52 -0400
+Message-Id: <20070417071702.933410506@chello.nl>
 References: <20070417071046.318415445@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Apr 2007 09:10:56 +0200
+Date: Tue, 17 Apr 2007 09:10:49 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com
-Subject: [PATCH 10/12] mm: expose BDI statistics in sysfs.
-Content-Disposition: inline; filename=bdi_stat_sysfs.patch
+Subject: [PATCH 03/12] lib: dampen the percpu_counter FBC_BATCH
+Content-Disposition: inline; filename=percpu_counter_batch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose the per BDI stats in /sys/block/<dev>/queue/*
+With the current logic the percpu_counter's accuracy delta is quadric
+wrt the number of cpus in the system, reduce this to O(n ln n).
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- block/ll_rw_blk.c |   32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ include/linux/percpu_counter.h |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-mm/block/ll_rw_blk.c
+Index: linux-2.6-mm/include/linux/percpu_counter.h
 ===================================================================
---- linux-2.6-mm.orig/block/ll_rw_blk.c
-+++ linux-2.6-mm/block/ll_rw_blk.c
-@@ -3976,6 +3976,20 @@ static ssize_t queue_max_hw_sectors_show
- 	return queue_var_show(max_hw_sectors_kb, (page));
- }
+--- linux-2.6-mm.orig/include/linux/percpu_counter.h
++++ linux-2.6-mm/include/linux/percpu_counter.h
+@@ -11,6 +11,7 @@
+ #include <linux/threads.h>
+ #include <linux/percpu.h>
+ #include <linux/types.h>
++#include <linux/log2.h>
  
-+static ssize_t queue_nr_dirty_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_DIRTY));
-+}
-+
-+static ssize_t queue_nr_writeback_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_WRITEBACK));
-+}
-+
-+static ssize_t queue_nr_unstable_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_UNSTABLE));
-+}
+ #ifdef CONFIG_SMP
  
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
-@@ -4006,6 +4020,21 @@ static struct queue_sysfs_entry queue_ma
- 	.show = queue_max_hw_sectors_show,
+@@ -20,11 +21,7 @@ struct percpu_counter {
+ 	s32 *counters;
  };
  
-+static struct queue_sysfs_entry queue_dirty_entry = {
-+	.attr = {.name = "dirty_pages", .mode = S_IRUGO },
-+	.show = queue_nr_dirty_show,
-+};
-+
-+static struct queue_sysfs_entry queue_writeback_entry = {
-+	.attr = {.name = "writeback_pages", .mode = S_IRUGO },
-+	.show = queue_nr_writeback_show,
-+};
-+
-+static struct queue_sysfs_entry queue_unstable_entry = {
-+	.attr = {.name = "unstable_pages", .mode = S_IRUGO },
-+	.show = queue_nr_unstable_show,
-+};
-+
- static struct queue_sysfs_entry queue_iosched_entry = {
- 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
- 	.show = elv_iosched_show,
-@@ -4018,6 +4047,9 @@ static struct attribute *default_attrs[]
- 	&queue_initial_ra_entry.attr,
- 	&queue_max_hw_sectors_entry.attr,
- 	&queue_max_sectors_entry.attr,
-+	&queue_dirty_entry.attr,
-+	&queue_writeback_entry.attr,
-+	&queue_unstable_entry.attr,
- 	&queue_iosched_entry.attr,
- 	NULL,
- };
+-#if NR_CPUS >= 16
+-#define FBC_BATCH	(NR_CPUS*2)
+-#else
+-#define FBC_BATCH	(NR_CPUS*4)
+-#endif
++#define FBC_BATCH	(8*ilog2(NR_CPUS))
+ 
+ static inline void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
 
 -- 
 
