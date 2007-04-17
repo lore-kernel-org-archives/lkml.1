@@ -1,132 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031089AbXDQF1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXDQFgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031089AbXDQF1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 01:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbXDQF1T
+	id S964792AbXDQFgY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 01:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXDQFgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 01:27:19 -0400
-Received: from 1wt.eu ([62.212.114.60]:1964 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753972AbXDQF1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 01:27:18 -0400
-Date: Tue, 17 Apr 2007 07:25:50 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-Message-ID: <20070417052550.GA9491@1wt.eu>
-References: <20070416220715.GA4071@elte.hu> <200704170053.58611.gene.heskett@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200704170053.58611.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.11
+	Tue, 17 Apr 2007 01:36:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59235 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753990AbXDQFgX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 01:36:23 -0400
+Date: Mon, 16 Apr 2007 22:35:21 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: akpm@linux-foundation.com
+cc: linux-kernel@vger.kernel.org
+Subject: slab allocators: Remove obsolete SLAB_MUST_HWCACHE_ALIGN
+Message-ID: <Pine.LNX.4.64.0704162232530.31027@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gene,
+The flag SLAB_MUST_HWCACHE_ALIGN is
 
-On Tue, Apr 17, 2007 at 12:53:56AM -0400, Gene Heskett wrote:
-> On Monday 16 April 2007, Ingo Molnar wrote:
-> >this is the second release of the CFS (Completely Fair Scheduler)
-> >patchset, against v2.6.21-rc7:
-> >
-> >   http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.patch
-> >
-> >i'd like to thank everyone for the tremendous amount of feedback and
-> >testing the v1 patch got - i could hardly keep up with just reading the
-> >mails! Some of the stuff people addressed i couldnt implement yet, i
-> >mostly concentrated on bugs, regressions and debuggability.
-> >
-> >there's a fair amount of churn:
-> >
-> >   15 files changed, 456 insertions(+), 241 deletions(-)
-> >
-> >But it's an encouraging sign that there was no crash bug found in v1,
-> >all the bugs were related to scheduling-behavior details. The code was
-> >tested on 3 architectures so far: i686, x86_64 and ia64. Most of the
-> >code size increase in -v2 is due to debugging helpers, they'll be
-> >removed later. (The new /proc/sched_debug file can be used to see the
-> >fine details of CFS scheduling.)
-> >
-> >Changes since -v1:
-> >
-> > - make nice levels less starvable. (reported by Willy Tarreau)
-> >
-> > - fixed child-runs first. A /proc/sys/kernel/sched_child_runs_first
-> >   flag can be used to turn it on/off. (This might fix the Kaffeine bug
-> >   reported by S.Ça??lar Onur <)
-> >
-> > - changed SCHED_FAIR back to SCHED_NORMAL (suggested by Con Kolivas)
-> >
-> > - UP build fix. (reported by Gabriel C)
-> >
-> > - timer tick micro-optimization (Dmitry Adamushko)
-> >
-> > - preemption fix: sched_class->check_preempt_curr method to decide
-> >   whether to preempt after a wakeup (or at a timer tick). (Found via a
-> >   fairness-test-utility written for CFS by Mike Galbraith)
-> >
-> > - start forked children with neutral statistics instead of trying to
-> >   inherit them from the parent: Willy Tarreau reported that this
-> >   results in better behavior on extreme workloads, and it also
-> >   simplifies the code quite nicely. Removed sched_exit() and the
-> >   ->task_exit() methods.
-> >
-> > - make nice levels independent of the sched_granularity value
-> >
-> > - new /proc/sched_debug file listing runqueue details and the rbtree
-> >
-> > - new SCH-* fields in /proc/<NR>/status to see scheduling details
-> >
-> > - new cpu-hog feature (off by default) and sysctl tunable to set it:
-> >   /proc/sys/kernel/sched_max_hog_history_ns tunable defaults to
-> >   0 (off). Positive values are meant the maximum 'memory' that the
-> >   scheduler has of CPU hogs.
-> >
-> > - various code cleanups
-> >
-> > - added more statistics temporarily: sum_exec_runtime,
-> >   sum_wait_runtime.
-> >
-> > - added -CFS-v2 to EXTRAVERSION
-> >
-> >as usual, any sort of feedback, bugreports, fixes and suggestions are
-> >more than welcome,
-> >
-> >	Ingo
-> 
-> This one (v2-rc2) is not a keeper I'm sorry to say, Ingo.  v2-rc0 was much 
-> better.  Watching amanda run with htop, kmails composer is being subjected to 
-> 5 to 10 second pauses, and htop says that gzip -best isn't getting more that 
-> 15% of the cpu, and the /amandatapes drive is being written to in a regular 
-> pattern that seems to be the cause of the pauses  according to gkrellm, which 
-> also seems to track the size of the writes, and can show anything from 4.3k 
-> to 54 megs as being written in one cycle of its screen update.
+1. Never checked by SLAB at all.
 
-Have you tried previous version with the fair-fork patch ? It might be possible
-that your workload is sensible to the fork()'s child getting much CPU upon
-startup.
+2. A duplicate of SLAB_HWCACHE_ALIGN for SLUB
 
-Ingo, maybe I'm saying something stupid, but in my userland scheduler, when
-new tasks are "forked", they are queued at the end of the run queue with a
-fixed priority. In our case, this would translate into assigning them the
-same prio and timeslice as their parent, but queuing them at the end so that
-they don't make existing tasks starve during huge fork() loads.
+3. Fulfills the role of SLAB_HWCACHE_ALIGN for SLOB.
 
-I don't know how that would be possible (nor if that would help in anything),
-but I found it was a good compromise over sharing the timeslice with the
-parent. Perhaps we should have some absolute timeslice and some relative
-timeslice (eg: X percent of total time divided by the number of tasks) ?
+The only remaining use is in sparc64 and ppc64 and their use there
+reflects some earlier role that the slab flag once may have had. If
+its specified then SLAB_HWCACHE_ALIGN is also specified.
 
-Regards,
-Willy
+The flag is confusing, inconsistent and has no purpose.
 
+Remove it.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6.21-rc6/include/linux/slab.h
+===================================================================
+--- linux-2.6.21-rc6.orig/include/linux/slab.h	2007-04-16 21:55:03.000000000 -0700
++++ linux-2.6.21-rc6/include/linux/slab.h	2007-04-16 21:55:10.000000000 -0700
+@@ -26,7 +26,6 @@ typedef struct kmem_cache kmem_cache_t _
+ #define SLAB_POISON		0x00000800UL	/* DEBUG: Poison objects */
+ #define SLAB_HWCACHE_ALIGN	0x00002000UL	/* Align objs on cache lines */
+ #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
+-#define SLAB_MUST_HWCACHE_ALIGN	0x00008000UL	/* Force alignment even if debuggin is active */
+ #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
+ #define SLAB_RECLAIM_ACCOUNT	0x00020000UL	/* Objects are reclaimable */
+ #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
+Index: linux-2.6.21-rc6/mm/slab.c
+===================================================================
+--- linux-2.6.21-rc6.orig/mm/slab.c	2007-04-16 21:55:16.000000000 -0700
++++ linux-2.6.21-rc6/mm/slab.c	2007-04-16 21:55:33.000000000 -0700
+@@ -175,12 +175,12 @@
+ # define CREATE_MASK	(SLAB_DEBUG_INITIAL | SLAB_RED_ZONE | \
+ 			 SLAB_POISON | SLAB_HWCACHE_ALIGN | \
+ 			 SLAB_CACHE_DMA | \
+-			 SLAB_MUST_HWCACHE_ALIGN | SLAB_STORE_USER | \
++			 SLAB_STORE_USER | \
+ 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
+ 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD)
+ #else
+ # define CREATE_MASK	(SLAB_HWCACHE_ALIGN | \
+-			 SLAB_CACHE_DMA | SLAB_MUST_HWCACHE_ALIGN | \
++			 SLAB_CACHE_DMA | \
+ 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
+ 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD)
+ #endif
+Index: linux-2.6.21-rc6/mm/slub.c
+===================================================================
+--- linux-2.6.21-rc6.orig/mm/slub.c	2007-04-16 21:55:38.000000000 -0700
++++ linux-2.6.21-rc6/mm/slub.c	2007-04-16 21:56:07.000000000 -0700
+@@ -1500,7 +1500,7 @@ static int calculate_order(int size)
+ static unsigned long calculate_alignment(unsigned long flags,
+ 		unsigned long align)
+ {
+-	if (flags & (SLAB_MUST_HWCACHE_ALIGN | SLAB_HWCACHE_ALIGN))
++	if (flags & SLAB_HWCACHE_ALIGN)
+ 		return max_t(unsigned long, align, L1_CACHE_BYTES);
+ 
+ 	if (align < ARCH_SLAB_MINALIGN)
+@@ -3083,8 +3083,7 @@ SLAB_ATTR(reclaim_account);
+ 
+ static ssize_t hwcache_align_show(struct kmem_cache *s, char *buf)
+ {
+-	return sprintf(buf, "%d\n", !!(s->flags &
+-		(SLAB_HWCACHE_ALIGN|SLAB_MUST_HWCACHE_ALIGN)));
++	return sprintf(buf, "%d\n", !!(s->flags & SLAB_HWCACHE_ALIGN));
+ }
+ SLAB_ATTR_RO(hwcache_align);
+ 
+Index: linux-2.6.21-rc6/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- linux-2.6.21-rc6.orig/arch/powerpc/mm/hugetlbpage.c	2007-04-16 21:58:53.000000000 -0700
++++ linux-2.6.21-rc6/arch/powerpc/mm/hugetlbpage.c	2007-04-16 21:59:02.000000000 -0700
+@@ -1063,8 +1063,7 @@ static int __init hugetlbpage_init(void)
+ 	huge_pgtable_cache = kmem_cache_create("hugepte_cache",
+ 					       HUGEPTE_TABLE_SIZE,
+ 					       HUGEPTE_TABLE_SIZE,
+-					       SLAB_HWCACHE_ALIGN |
+-					       SLAB_MUST_HWCACHE_ALIGN,
++					       SLAB_HWCACHE_ALIGN,
+ 					       zero_ctor, NULL);
+ 	if (! huge_pgtable_cache)
+ 		panic("hugetlbpage_init(): could not create hugepte cache\n");
+Index: linux-2.6.21-rc6/arch/powerpc/mm/init_64.c
+===================================================================
+--- linux-2.6.21-rc6.orig/arch/powerpc/mm/init_64.c	2007-04-16 21:59:08.000000000 -0700
++++ linux-2.6.21-rc6/arch/powerpc/mm/init_64.c	2007-04-16 21:59:19.000000000 -0700
+@@ -183,8 +183,7 @@ void pgtable_cache_init(void)
+ 		    "for size: %08x...\n", name, i, size);
+ 		pgtable_cache[i] = kmem_cache_create(name,
+ 						     size, size,
+-						     SLAB_HWCACHE_ALIGN |
+-						     SLAB_MUST_HWCACHE_ALIGN,
++						     SLAB_HWCACHE_ALIGN,
+ 						     zero_ctor,
+ 						     NULL);
+ 		if (! pgtable_cache[i])
+Index: linux-2.6.21-rc6/arch/sparc64/mm/init.c
+===================================================================
+--- linux-2.6.21-rc6.orig/arch/sparc64/mm/init.c	2007-04-16 21:59:32.000000000 -0700
++++ linux-2.6.21-rc6/arch/sparc64/mm/init.c	2007-04-16 21:59:40.000000000 -0700
+@@ -191,8 +191,7 @@ void pgtable_cache_init(void)
+ {
+ 	pgtable_cache = kmem_cache_create("pgtable_cache",
+ 					  PAGE_SIZE, PAGE_SIZE,
+-					  SLAB_HWCACHE_ALIGN |
+-					  SLAB_MUST_HWCACHE_ALIGN,
++					  SLAB_HWCACHE_ALIGN,
+ 					  zero_ctor,
+ 					  NULL);
+ 	if (!pgtable_cache) {
+Index: linux-2.6.21-rc6/arch/sparc64/mm/tsb.c
+===================================================================
+--- linux-2.6.21-rc6.orig/arch/sparc64/mm/tsb.c	2007-04-16 22:00:02.000000000 -0700
++++ linux-2.6.21-rc6/arch/sparc64/mm/tsb.c	2007-04-16 22:00:12.000000000 -0700
+@@ -262,8 +262,7 @@ void __init tsb_cache_init(void)
+ 
+ 		tsb_caches[i] = kmem_cache_create(name,
+ 						  size, size,
+-						  SLAB_HWCACHE_ALIGN |
+-						  SLAB_MUST_HWCACHE_ALIGN,
++						  SLAB_HWCACHE_ALIGN,
+ 						  NULL, NULL);
+ 		if (!tsb_caches[i]) {
+ 			prom_printf("Could not create %s cache\n", name);
+Index: linux-2.6.21-rc6/mm/slob.c
+===================================================================
+--- linux-2.6.21-rc6.orig/mm/slob.c	2007-04-16 21:57:43.000000000 -0700
++++ linux-2.6.21-rc6/mm/slob.c	2007-04-16 21:58:28.000000000 -0700
+@@ -21,7 +21,7 @@
+  *
+  * SLAB is emulated on top of SLOB by simply calling constructors and
+  * destructors for every SLAB allocation. Objects are returned with
+- * the 8-byte alignment unless the SLAB_MUST_HWCACHE_ALIGN flag is
++ * the 8-byte alignment unless the SLAB_HWCACHE_ALIGN flag is
+  * set, in which case the low-level allocator will fragment blocks to
+  * create the proper alignment. Again, objects of page-size or greater
+  * are allocated by calling __get_free_pages. As SLAB objects know
+@@ -295,7 +295,7 @@ struct kmem_cache *kmem_cache_create(con
+ 		c->ctor = ctor;
+ 		c->dtor = dtor;
+ 		/* ignore alignment unless it's forced */
+-		c->align = (flags & SLAB_MUST_HWCACHE_ALIGN) ? SLOB_ALIGN : 0;
++		c->align = (flags & SLAB_HWCACHE_ALIGN) ? SLOB_ALIGN : 0;
+ 		if (c->align < align)
+ 			c->align = align;
+ 	}
