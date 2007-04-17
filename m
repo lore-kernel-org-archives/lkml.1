@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbXDQNdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbXDQNij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbXDQNdT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 09:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXDQNdT
+	id S1754323AbXDQNij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 09:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbXDQNij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 09:33:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:53350 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754013AbXDQNdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 09:33:19 -0400
-Message-ID: <4624CC7C.6040107@goop.org>
-Date: Tue, 17 Apr 2007 09:32:44 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Hugh Dickins <hugh@veritas.com>,
-       David Rientjes <rientjes@google.com>,
-       Michel Lespinasse <walken@vmware.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] Pte drop ptep_get_and_clear paravirt op.patch
-References: <200704120530.l3C5Ubs0022821@zach-dev.vmware.com>
-In-Reply-To: <200704120530.l3C5Ubs0022821@zach-dev.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 17 Apr 2007 09:38:39 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52120 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754323AbXDQNii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 09:38:38 -0400
+Date: Tue, 17 Apr 2007 14:40:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       i4ldeveloper@listserv.isdn4linux.de, Karsten Keil <kkeil@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: so what *is* obsolete and removable?
+Message-ID: <20070417144054.24c104bf@the-village.bc.nu>
+In-Reply-To: <4624C320.3050206@imap.cc>
+References: <Pine.LNX.4.64.0704151647200.29357@localhost.localdomain>
+	<4623FB0E.4080602@imap.cc>
+	<20070416161337.d59f2ea3.randy.dunlap@oracle.com>
+	<4624C320.3050206@imap.cc>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> In shadow mode hypervisors, ptep_get_and_clear achieves the desired
-> purpose of keeping the shadows in sync by issuing a native_get_and_clear,
-> followed by a call to pte_update, which indicates the PTE has been
-> modified.
->
-> Direct mode hypervisors (Xen) have no need for this anyway, and will trap
-> the update using writable pagetables.
->   
+> > If the patch is in -mm and it's not critical (like this subject),
+> > then it probably won't be merged until after 2.6.21 is released...
+> 
+> Fine by me, as long as it does get merged eventually so I can stop
+> watching for attempts to remove isdn4linux as obsolete.
 
-Jan Beulich just posted a patch for Xen/linux which specialzes
-ptep_get_and_clear, which apparently improves kernel-compile performance
-by 25-30% on some configurations.  I think we'll want to keep this.
+If the obsolete tag is to be removed then it needs a formal maintainer,
+all the obsolete interface usage cleaning up and the like otherwise at
+some point in a clean up it is going to end up breaking and migrating to
+&& BROKEN as well.
 
-    J
+If that is going to get done (by Karsten or someone else given Karsten
+appears totally occupied on other stuff) then great.
+
+Alan
