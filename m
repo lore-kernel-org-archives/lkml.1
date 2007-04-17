@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031100AbXDQP5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031109AbXDQP6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031100AbXDQP5J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 11:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031101AbXDQP5J
+	id S1031109AbXDQP6B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 11:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031107AbXDQP6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 11:57:09 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35875 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031100AbXDQP5I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 11:57:08 -0400
-Date: Tue, 17 Apr 2007 16:59:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tomasz =?UTF-8?B?S8WCb2N6a28=?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: ZFS with Linux: An Open Plea
-Message-ID: <20070417165953.1395692e@the-village.bc.nu>
-In-Reply-To: <Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
-References: <op.tqw1g6n0ftfxs2@localhost.localdomain>
-	<20070417131045.GB18373@thunk.org>
-	<Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
-	<20070417135958.GB28201@srcf.ucam.org>
-	<Pine.BSO.4.63.0704171741260.11088@rudy.mif.pg.gda.pl>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 17 Apr 2007 11:58:00 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:44740 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031105AbXDQP57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 11:57:59 -0400
+Date: Tue, 17 Apr 2007 19:57:25 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [CRYPTO] is it really optimized ?
+Message-ID: <20070417155725.GA18959@2ka.mipt.ru>
+References: <20070417130431.GA8685@2ka.mipt.ru> <E1HdnwX-0005U1-00@gondolin.me.apana.org.au> <38b2ab8a0704170701p69fd547dwe3e2523ba5798b55@mail.gmail.com> <20070417150859.GA9512@2ka.mipt.ru> <38b2ab8a0704170834i1856886nafeeec692f49fea0@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <38b2ab8a0704170834i1856886nafeeec692f49fea0@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 17 Apr 2007 19:57:53 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why on discussion about switching to GPL v3 Linux code this argument was 
-> allways taken as "piece of cake". Why in case switching to another license 
+On Tue, Apr 17, 2007 at 05:34:12PM +0200, Francis Moreau (francis.moro@gmail.com) wrote:
+> >Preventing anyone from using the module is incorrect.
+> >How will you handle the case when you have only one algo registered and
+> >it will be exclusively used by ecryptfs?
+> >
+> 
+> As I tried to explain, in that case the admin must load the module
+> without the exclusive flag.
 
-What planet do you come from I wonder ?
+If there are another users, then flag should not be set.
+If there are no another users, your code already has exclusive access.
+One can not know if there will be any additional users at all (consider
+the case when new encrypted block device or ipsec negotiation started
+some time after module was loaded).
 
-On Earth (where most of us usually reside) the consensus of the kernel
-developers and the legal people they talked to was that GPLv2 to GPLv3
-would be very very hard to do if not impossible for the kernel.
+> >Herbert proposes to register _second_ algo (say aes-generic(prio_100)
+> >and aes_for_ecryptfs(prio_1)) with lower prio, so generic access will
+> >never try to catch aes_for_ecryptfs, but your code still can access it
+> >using full name.
+> >
+> 
+> yes but my worries with this approach is that nothing prevent an admin
+> to load others modules that will use aes_for_ecryptfs. And an admin is
+> not always aware about a module implementation.
 
-Alan
+Some module is not allowed to force such restrictions, since it does not
+know if there are other users or other algorithms.
+You can call your algo with private company name hashed with author's
+birtday, so no one in the world will be able to request such algo.
+Actually its name can be read from /proc/crypto, but that is another
+story.
+
+> Thanks
+> -- 
+> Francis
+
+-- 
+	Evgeniy Polyakov
