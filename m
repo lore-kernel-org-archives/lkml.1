@@ -1,141 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161333AbXDQU0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161289AbXDQUaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161333AbXDQU0z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 16:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161331AbXDQU0z
+	id S1161289AbXDQUaB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 16:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161334AbXDQUaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 16:26:55 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:35327 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161327AbXDQU0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 16:26:53 -0400
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
-	namespace" clone flag
-From: Ram Pai <linuxram@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, devel@openvz.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, viro@ftp.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <E1Hdtai-0002Ri-00@dorka.pomaz.szeredi.hu>
-References: <20070412164541.580374744@szeredi.hu>
-	 <20070412164620.588752236@szeredi.hu>
-	 <20070412203208.GG27772@sergelap.austin.ibm.com>
-	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-	 <1176713221.9488.17.camel@ram.us.ibm.com>
-	 <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
-	 <1176716941.9488.57.camel@ram.us.ibm.com>
-	 <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
-	 <1176743669.9488.62.camel@ram.us.ibm.com>
-	 <E1HdVLi-0007oe-00@dorka.pomaz.szeredi.hu>
-	 <20070417170737.GA14891@sergelap.austin.ibm.com>
-	 <E1Hdrir-0002E8-00@dorka.pomaz.szeredi.hu>
-	 <1176838111.2813.109.camel@ram.us.ibm.com>
-	 <E1Hdtai-0002Ri-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 17 Apr 2007 13:25:04 -0700
-Message-Id: <1176841504.2813.124.camel@ram.us.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Tue, 17 Apr 2007 16:30:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:1482 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161289AbXDQUaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 16:30:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=PEVmwC/NBbh2DnNxPX4cVizSqZGabgr9dXik2VClN7RqrqQgcVcZW67EkXlfSIjALUVKX7lPl9/NPHJFccRvNqakFOLPWHY2SqHfrKF7zqhDPSApncV+q+qEjnP5vO1gxbDdQo8wmwUvmum/fA1o1/ynd7UBNY58PpPlRgu4Z8o=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Neil Brown <neilb@suse.de>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+Date: Tue, 17 Apr 2007 22:39:50 +0200
+User-Agent: KMail/1.9.6
+Cc: Chuck Ebbert <cebbert@redhat.com>, Brad Campbell <brad@wasp.net.au>,
+       Jens Axboe <jens.axboe@oracle.com>, lkml <linux-kernel@vger.kernel.org>
+References: <4621FAF0.7000705@wasp.net.au> <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown>
+In-Reply-To: <17956.22235.574867.179016@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704172239.50519.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-17 at 21:43 +0200, Miklos Szeredi wrote:
-> > > > I'm a bit lost about what is currently done and who advocates for what.
-> > > > 
-> > > > It seems to me the MNT_ALLOWUSERMNT (or whatever :) flag should be
-> > > > propagated.  In the /share rbind+chroot example, I assume the admin
-> > > > would start by doing
-> > > > 
-> > > > 	mount --bind /share /share
-> > > > 	mount --make-slave /share
-> > > > 	mount --bind -o allow_user_mounts /share (or whatever)
-> > > > 	mount --make-shared /share
-> > > > 
-> > > > then on login, pam does
-> > > > 
-> > > > 	chroot /share/$USER
-> > > > 
-> > > > or some sort of
-> > > > 
-> > > > 	mount --bind /share /home/$USER/root
-> > > > 	chroot /home/$USER/root
-> > > > 
-> > > > or whatever.  In any case, the user cannot make user mounts except under
-> > > > /share, and any cloned namespaces will still allow user mounts.
-> > > 
-> > > I don't quite understand your method.  This is how I think of it:
-> > > 
-> > > mount --make-rshared /
-> > > mkdir -p /mnt/ns/$USER
-> > > mount --rbind / /mnt/ns/$USER
-> > > mount --make-rslave /mnt/ns/$USER
-> > > mount --set-flags --recursive -oallowusermnt /mnt/ns/$USER
-> > > chroot /mnt/ns/$USER
-> > > su - $USER
-> > > 
-> > > I did actually try something equivalent (without the fancy mount
-> > > commands though), and it worked fine.  The only "problem" is the
-> > > proliferation of mounts in /proc/mounts.  There was a recently posted
-> > > patch in AppArmor, that at least hides unreachable mounts from
-> > > /proc/mounts, so the user wouldn't see all those.  But it could still
-> > > be pretty confusing to the sysadmin.
-> > 
-> > unbindable mounts were designed to overcome the proliferation problem.
-> > 
-> > Your steps should be something like this:
-> > 
-> > mount --make-rshared /
-> > mkdir -p /mnt/ns
-> > mount --bind /mnt/ns /mnt/ns
-> > mount --make-unbindable /mnt/ns
-> > mkdir -p /mnt/ns/$USER
-> > mount --rbind / /mnt/ns/$USER
-> > mount --make-rslave /mnt/ns/$USER
-> > mount --set-flags --recursive -oallowusermnt /mnt/ns/$USER
-> > chroot /mnt/ns/$USER
-> > su - $USER
-> > 
-> > try this and your proliferation problem will disappear. :-)
-> 
-> Right, this is needed.
-> 
-> My problem wasn't actually this (which would only have hit, if I tried
-> with more than one user), just that the number of mounts in
-> /proc/mounts grows linearly with the number of users.
-> 
-> That can't be helped in such an easy way unfortunately.
-> 
-> > > Propagating some mount flags and not propagating others is
-> > > inconsistent and confusing, so I wouldn't want that.  Currently
-> > > remount doesn't propagate mount flags, that may be a bug, 
-> > 
-> > For consistency reason, one can propagate all the flags. But
-> > propagating only those flags that interfere with shared-subtree
-> > semantics should suffice.
-> 
-> I still don't believe not propagating "allowusermnt" interferes with
-> mount propagation.  In my posted patches the mount (including
-> propagations) is allowed based on the "allowusermnt" flag on the
-> parent of the requested mount.  The flag is _not_ checked during
-> propagation.
-> 
-> Allowing this and other flags to NOT be propagated just makes it
-> possible to have a set of shared mounts with asymmetric properties,
-> which may actually be desirable.
 
-The shared mount feature was designed to ensure that the mount remained
-identical at all the locations. Now designing features 
-to make it un-identical but still naming it shared, will break its
-original purpose.  Slave mounts were designed to make it asymmetric.
+Hi,
 
-Whatever feature that is desired to be exploited; can that be exploited
-with the current set of semantics that we have? Is there a real need to
-make the mounts asymmetric but at the same time name them as shared?
-Maybe I dont understand what the desired application is? 
-
-RP
-
+On Tuesday 17 April 2007, Neil Brown wrote:
+> On Monday April 16, cebbert@redhat.com wrote:
+> > 
+> > cfq_dispatch_insert() was called with rq == 0. This one is getting really
+> > annoying... and md is involved again (RAID0 this time.)
 > 
-> Miklos
+> Yeah... weird.
+> RAID0 is so light-weight and so different from RAID1 or RAID5 that I
+> feel fairly safe concluding that the problem isn't in or near md.
+> But that doesn't help you.
+> 
+> This really feels like a locking problem.
+> 
+> The problem occurs when ->next_rq is NULL, but ->sort_list.rb_node is
+> not NULL.  That happens plenty of times in the code (particularly as
+> the first request is inserted) but always under ->queue_lock so it
+> should never be visible to cfq_dispatch_insert..
+> 
+> Except that drivers/scsi/ide-scsi.c:idescsi_eh_reset calls
+> elv_next_request which could ultimately call __cfq_dispatch_requests
+> without taking ->queue_lock (that I can see).  But you probably aren't
+> using ide-scsi (does anyone?).
 
+ide-scsi is holding ide_lock while calling elv_next_request()
+(for ide ide_lock == ->queue_lock)
+
+Also from the original report:
+
+On Sunday 15 April 2007, Brad Campbell wrote:
+> 
+> The box is booted with PXE and runs an nfsroot. It's Debian 3.1. It has 2 SIL 3112 controllers in it 
+> with 4 WD 200GB ATA drives all on PATA->SATA bridges.
+
+and you can even see libata functions in the OOPS...
+
+Bart
