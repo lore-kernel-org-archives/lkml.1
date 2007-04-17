@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031176AbXDQTny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031182AbXDQTqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031176AbXDQTny (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 15:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031180AbXDQTny
+	id S1031182AbXDQTqJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 15:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031189AbXDQTqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 15:43:54 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41110 "EHLO gaimboi.tmr.com"
+	Tue, 17 Apr 2007 15:46:09 -0400
+Received: from mail.enyo.de ([212.9.189.167]:4843 "EHLO mail.enyo.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031176AbXDQTnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 15:43:53 -0400
-Message-ID: <4625220C.2060201@tmr.com>
-Date: Tue, 17 Apr 2007 15:37:48 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1031182AbXDQTqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 15:46:08 -0400
+X-Greylist: delayed 1303 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 15:46:08 EDT
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>,
+       "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+References: <op.tqw1g6n0ftfxs2@localhost.localdomain>
+	<20070417131045.GB18373@thunk.org>
+	<Pine.BSO.4.63.0704171527150.11088@rudy.mif.pg.gda.pl>
+	<200704171222.19892.dhazelton@enter.net>
+	<20070417175055.GA24963@thunk.org>
+Date: Tue, 17 Apr 2007 21:24:07 +0200
+In-Reply-To: <20070417175055.GA24963@thunk.org> (Theodore Tso's message of
+	"Tue, 17 Apr 2007 13:50:55 -0400")
+Message-ID: <87odlmrei0.fsf@mid.deneb.enyo.de>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Mark Lord <lkml@rtr.ca>
-CC: Buytaert_Steven@emc.com, andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: sched_yield proposals/rationale
-References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com> <p737ish90ss.fsf@bingen.suse.de> <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com> <20070412133158.GB31455@one.firstfloor.org> <585DC2133F7C974F87D4EC432896F1720309F485@CORPUSMX10A.corp.emc.com> <461EB367.1050405@tmr.com> <585DC2133F7C974F87D4EC432896F1720309F645@CORPUSMX10A.corp.emc.com> <461FDDF9.7040503@rtr.ca>
-In-Reply-To: <461FDDF9.7040503@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Buytaert_Steven@emc.com wrote:
->>> From: Bill Davidsen
->>>
->>> And having gotten same, are you going to code up what appears to be a
->>> solution, based on this feedback?
->>
->> The feedback was helpful in verifying whether there are any arguments 
->> against my approach. The real proof is in the pudding.
->>
->> I'm running a kernel with these changes, as we speak. Overall system 
->> throughput is about up 20%. With 'system throughput' I mean measured 
->> performance of a rather large (experimental) system. The patch isn't 
->> even 24h old... Also the application latency has improved.
-> 
-> Cool.  You *do know* that there is a brand new CPU scheduler
-> scheduled to replace the current one for the 2.6.22 Kernel, right?
-> 
-Having tried both nicksched and Con's fair sched on some normal loads, 
-as opposed to benchmarks, I sure hope Linus changes his mind about 
-having several schedulers in the kernel. The "one perfect and 
-self-adjusting scheduler" isn't here yet.
+* Theodore Tso:
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+> we can continue trying to innovate around better filesystem and LVM
+> storage technologies, as opposed to trying to chase the ZFS tail
+> lights.
+
+Indeed.  Here's a gem from the official ZFS FAQ:
+
+| What can I do if ZFS panics on every boot?
+| 
+|     ZFS is designed to survive arbitrary hardware failures through the
+|     use of redundancy (mirroring or RAID-Z). Unfortunately, certain
+|     failures in non-replicated configurations can cause ZFS to panic
+|     when trying to load the pool. This is a bug, and will be fixed in
+|     the near future (along with several other nifty features like
+|     background scrubbing and the ability to see a list of corrupted
+|     files). In the meantime, if you find yourself in the situation
+|     where you cannot boot due to a corrupt pool, do the followng:
+| 
+|        1. boot using '-m milestone=none'
+|        2. # mount -o remount /
+|        3. # rm /etc/zfs/zpool.cache
+|        4. # reboot
+| 
+|     This will remove all knowledge of pools from your system. You will
+|     have to re-create your pool and restore from backup.
+
+<http://opensolaris.org/os/community/zfs/faq/#zfspanic>
+
+I keep hoping that this FAQ entry is outdated, but the date on that
+page is rather current. 8-/
