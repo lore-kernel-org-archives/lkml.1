@@ -1,15 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbXDQOZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXDQO3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbXDQOZg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 10:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXDQOZg
+	id S1030284AbXDQO3J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 10:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030187AbXDQO3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 10:25:36 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38898 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753135AbXDQOZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 10:25:35 -0400
-Date: Tue, 17 Apr 2007 09:25:19 -0500
+	Tue, 17 Apr 2007 10:29:08 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:48085 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754412AbXDQO3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 10:29:05 -0400
+Date: Tue, 17 Apr 2007 09:28:45 -0500
 From: "Serge E. Hallyn" <serue@us.ibm.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Miklos Szeredi <miklos@szeredi.hu>, linuxram@us.ibm.com,
@@ -17,7 +18,7 @@ Cc: Miklos Szeredi <miklos@szeredi.hu>, linuxram@us.ibm.com,
        containers@lists.osdl.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
 Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-Message-ID: <20070417142519.GF1442@sergelap.austin.ibm.com>
+Message-ID: <20070417142845.GG1442@sergelap.austin.ibm.com>
 References: <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com> <1176713221.9488.17.camel@ram.us.ibm.com> <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu> <1176716941.9488.57.camel@ram.us.ibm.com> <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu> <m18xcsl3yc.fsf@ebiederm.dsl.xmission.com> <E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu> <m1zm58jfj3.fsf@ebiederm.dsl.xmission.com> <20070416195652.GA350@sergelap.austin.ibm.com> <m1k5wbjrsh.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -68,12 +69,7 @@ Quoting Eric W. Biederman (ebiederm@xmission.com):
 > I don't see a way that backup and deluser won't need to be modified
 > to work properly in a system where non-priveleged mounts are allowed,
 > at least they will need to account for /share.
-
-Yes, all the tools need to avoid /share.  Though at least it's a single
-location we can avoid, and it is purely a system configuration issue,
-whereas fixing deluser to watch for user mounts under /home involves (I
-assume) rewriting a part of it.
-
+> 
 > That said it is clearly a hazard if we enable this functionality by
 > default.
 > 
@@ -91,21 +87,15 @@ assume) rewriting a part of it.
 > 
 >   I think a simple sysctl to enable/disable of non-priveleged mounts 
 >   defaulting to disabled is enough.
-> 
+
+There is a sysctl for max_user_mounts which can be set to 0.
+
+So a simple on/off sysctl is unnecessary, but given that admins might
+wonder whether 0 means infinite :), and I agree on/off is important, a
+second one wouldn't hurt.
+
 > Am I correct or will it be more difficult than just a little pam
 > module to ensure non-trusted users never run in the initial mount
 > namespace?
-
-The danger with relying on the pam module is that you have to plug it in
-all the right places.  For instance, if we're talking about malicious
-users, now we have to start worrying about an ftp daemon with user login
-that isn't using pam, and happens to have an exploitable bug.
-
-So it seems to me the per-mount flag you suggested really is the best
-solution.  Now the pam module is still needed, but only to set things up
-so that the user *can* do user mounts.  If there's a way to login
-bypassing the pam module, then the user simply won't be able to do user
-mounts anywhere but under /share, and as Miklos suggested the perms on
-share can probably be set to 000.
-
--serge
+> 
+> Eric
