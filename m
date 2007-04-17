@@ -1,78 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031046AbXDQAyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031042AbXDQBEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031046AbXDQAyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Apr 2007 20:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031043AbXDQAyb
+	id S1031042AbXDQBEQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Apr 2007 21:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031043AbXDQBEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Apr 2007 20:54:31 -0400
-Received: from omta03ps.mx.bigpond.com ([144.140.82.155]:55887 "EHLO
-	omta03ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031046AbXDQAya (ORCPT
+	Mon, 16 Apr 2007 21:04:16 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:8352 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031042AbXDQBEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Apr 2007 20:54:30 -0400
-Message-ID: <46241ABE.5030604@bigpond.net.au>
-Date: Tue, 17 Apr 2007 10:54:22 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 16 Apr 2007 21:04:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=OvU3EC6Gv5oO12h7vPC7BtscKwUGL8ZN+6IembRcm31lgvIRd6vbYDsdsvA43uKNCQhFblHI6bzC5E9cvMFhtgxBUCq5p1suZ6EyWhNFGJfSNw+Wfmeg9jYVMZNDqG5rfqF/awks1aGTr97x5GfPi025hsE1pNWAr2wJpFly6Gw=
+Message-ID: <46241CCF.2000707@gmail.com>
+Date: Tue, 17 Apr 2007 09:03:11 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <20070415150536.GA6623@elte.hu> <20070415200535.GC11166@waste.org> <20070415204824.GA25813@elte.hu> <20070415233909.GE2986@holomorphy.com> <4622CC30.6030707@bigpond.net.au> <4623B0C2.7080806@nortel.com>
-In-Reply-To: <4623B0C2.7080806@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Li Yu <raise.sail@gmail.com>,
+       =?ISO-8859-1?Q?=3F=3F=3F?= <hongzhiyi@ccoss.com.cn>,
+       =?ISO-8859-1?Q?=3F=3F?= <yanghong@ccoss.com.cn>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [PATCH] hid: hid bus prototype 20070416
+References: <46230EDE.5020300@gmail.com> <alpine.LSU.0.98.0704161504280.18903@jikos.suse.cz>
+In-Reply-To: <alpine.LSU.0.98.0704161504280.18903@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta03ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 17 Apr 2007 00:54:27 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Peter Williams wrote:
-> 
->> To my mind scheduling and load balancing are orthogonal and keeping 
->> them that way simplifies things.
-> 
-> Scuse me if I jump in here, but doesn't the load balancer need some way 
-> to figure out a) when to run, and b) which tasks to pull and where to 
-> push them?
+Jiri Kosina wrote:
+> On Mon, 16 Apr 2007, Li Yu wrote:
+>
+>   
+>> HID bus prototype 20070416
+>>     
+>
+> Hi Li,
+>
+> thanks for taking care. Well, the patch is quite huge, do you think you 
+> could split it into separate independent parts (use quilt or something 
+> similar for patch management) which could be reviewed independently?
+>
+> As the code changes are often quite non-trivial, layering is changed, 
+> lots of files are touched, etc. it would help a lot.
+>
+>   
+OK, I must be next.
+> Notes from a quick skim through the patch:
+>
+> - it seems that you accidentaly deleted the newly added quirk for
+>    mightymouse in the bluetooth hid code?
+>   
 
-Yes but both of these are independent of the scheduler discipline in force.
+They should be lost while I play bluetooth.
+> - what is the point behind HID_QUIRK_SKIP? Why doesn't HID_QUIRK_IGNORE
+>    suffice? And why is it defined in so strange way:
+>
+> @@ -270,6 +271,7 @@ struct hid_item {
+>   #define HID_QUIRK_LOGITECH_DESCRIPTOR          0x00100000
+>   #define HID_QUIRK_DUPLICATE_USAGES             0x00200000
+>   #define HID_QUIRK_RESET_LEDS                   0x00400000
+> +#define HID_QUIRK_SKIP                         0x80000000
+>
+>   
+I am sorry for missing some description here. In simple words, the
+HID_QUIRK_IGNORE let usbhid do not register some hid devices at all,
+however, the HID_QUIRK_SKIP just let usbhid skip matching with the
+device which is marked that quirk, but still register this kind of hid
+device. So another HID driver still handle have chances to handle it.
+You can discover out there, the hid-core.c is not pure HID driver, it
+also take the transports role here.
 
-> 
-> I suppose you could abstract this into a per-scheduler API, but to me at 
-> least these are the hard parts of the load balancer...
+I think this quirk have such difference with others, so I define it so.
+If we do like so, just change it. That is OK.
 
-Load balancing needs to be based on the static priorities (i.e. nice or 
-real time priority) of the runnable tasks not the dynamic priorities. 
-If the load balancer manages to keep the weighted (according to static 
-priority) load and distribution of priorities within the loads on the 
-CPUs roughly equal and the scheduler does a good job of ensuring 
-fairness, interactive responsiveness etc. for the tasks within a CPU 
-then the result will be good system performance within the constraints 
-set by the sys admins use of real time priorities and nice.
+May be, we need another hid_skiplist[] ?
 
-The smpnice modifications to the load balancer were meant to give it the 
-appropriate behaviour and what we need to fix now is the intra CPU 
-scheduling.
+> - there are bunches of some easy codingstyle issues (spaces around '=',
+>    etc)
+>
+>   
+Yes, This is one of reasons for it is only for review.
+> But doing really thorough review is quite hard, as the patch contains lots 
+> of unrelated changes. I'll look at it a little bit more, but when you send 
+> a broken-out version with separate changes, that'd be great.
+>
+>   
+OK.
+> Thanks,
+>
+>   
 
-Even if the load balancer isn't yet perfect perfecting it can be done 
-separately to fixing the scheduler preferably with as little 
-interdependency as possible.  Probably the only contribution to load 
-balancing that the scheduler really needs to make is the calculating of 
-the average weighted load on each of the CPUs (or run queues if there's 
-more than one CPU per runqueue).
-
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
