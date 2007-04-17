@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXDQLsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbXDQLyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbXDQLsO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 07:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbXDQLsO
+	id S1753875AbXDQLyb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 07:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXDQLyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 07:48:14 -0400
-Received: from wasp.net.au ([203.190.192.17]:34733 "EHLO wasp.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753865AbXDQLsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 07:48:14 -0400
-Message-ID: <4624B3F6.4040009@wasp.net.au>
-Date: Tue, 17 Apr 2007 15:48:06 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Tue, 17 Apr 2007 07:54:31 -0400
+Received: from iggypop2.siwnet.net ([81.216.65.12]:59587 "EHLO
+	iggypop2.siwnet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753875AbXDQLyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 07:54:22 -0400
+From: Marcus Better <marcus@better.se>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [3/3] 2.6.21-rc6: known regressions
+Date: Tue, 17 Apr 2007 13:54:01 +0200
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Adrian Bunk <bunk@stusta.de>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704171017.07012.marcus@better.se> <1176802076.6227.2.camel@daplas>
+In-Reply-To: <1176802076.6227.2.camel@daplas>
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Chuck Ebbert <cebbert@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-References: <4621FAF0.7000705@wasp.net.au>	<46220339.9080205@wasp.net.au>	<4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown>
-In-Reply-To: <17956.22235.574867.179016@notabene.brown>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1769455.t1OSbY4cIj";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200704171354.06542.marcus@better.se>
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Tue Apr 17 13:54:17 2007
+X-DSPAM-Confidence: 0.6075
+X-DSPAM-Probability: 0.0248
+X-DSPAM-Signature: 4624b56965371975720330
+X-DSPAM-Factors: 27,
+	Received*(unknown, 0.94439,
+	as+I, 0.12045,
+	Yes, 0.20359,
+	as, 0.20688,
+	as, 0.20688,
+	From*Marcus Better <marcus@better.se>, 0.24071,
+	Subject*Re, 0.67420,
+	Received*(Postfix)+with, 0.67386,
+	Received*(Postfix)+with, 0.67386,
+	Received*(Postfix), 0.67386,
+	Received*(Postfix), 0.67386,
+	Cc*vger.kernel.org>, 0.40000,
+	Cc*linux+pm, 0.40000,
+	Message-Id*<200704171354.06542.marcus, 0.40000,
+	Date*Apr, 0.40000,
+	Content-Type*micalg=pgp, 0.40000,
+	Received*Tue, 0.40000,
+	Received*Tue, 0.40000,
+	Cc*Adrian+Bunk, 0.40000,
+	Received*9332C205CCA, 0.40000,
+	Date*2007+13, 0.40000,
+	Works!+>, 0.40000,
+	Received*ESMTP, 0.40000,
+	Received*ESMTP, 0.40000,
+	Content-Disposition*inline, 0.40000,
+	Cc*stusta.de>, 0.40000,
+	a3+m, 0.40000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Monday April 16, cebbert@redhat.com wrote:
->> cfq_dispatch_insert() was called with rq == 0. This one is getting really
->> annoying... and md is involved again (RAID0 this time.)
-> 
-> Yeah... weird.
-> RAID0 is so light-weight and so different from RAID1 or RAID5 that I
-> feel fairly safe concluding that the problem isn't in or near md.
+--nextPart1769455.t1OSbY4cIj
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Just a quick thought. Could this issue in any way cause silent data corruption on write to the md?
+> > s2ram -f -a3 -m: Works!
+>
+> Thanks.  Should we consider this regression resolved?
 
-I've been chasing a bug for months now on this box which resulted in a small bit of seemingly random 
-corruption in large copies to /dev/md0. Problem is, I changed the PSU in the box (which appeared to 
-help a little) but then about the same time I discovered the oops was in cfq so changed the 
-scheduler also. I've not been able to oops or reproduce the data corruption since.
+Yes, as far as I am concerned...
 
-I've now got to go back to cfq and see if I can get it to panic reproducibly again, but I'm 
-wondering now if there may have been another issue there.
+Marcus
 
-Brad
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
+--nextPart1769455.t1OSbY4cIj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGJLVeXjXn6TzcAQkRAsXXAJ4lkyhKMKeAUWk+gdfDmYmmgjCIIgCfZ293
+NDDgP5WhKmNG+U36AR6lsdw=
+=WhK+
+-----END PGP SIGNATURE-----
+
+--nextPart1769455.t1OSbY4cIj--
+
+
