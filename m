@@ -1,39 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030572AbXDQVvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031261AbXDQVvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030572AbXDQVvQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 17:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965084AbXDQVvP
+	id S1031261AbXDQVvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 17:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031263AbXDQVvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 17:51:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37116 "EHLO mx1.redhat.com"
+	Tue, 17 Apr 2007 17:51:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37383 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965030AbXDQVvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 17:51:14 -0400
-Message-ID: <462540CD.9080406@redhat.com>
-Date: Tue, 17 Apr 2007 17:49:01 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: emisca <emisca.ml@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <461D4E2C.6000704@redhat.com>	 <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>	 <461D54AF.3060706@redhat.com> <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com> <46253F14.4020304@rtr.ca>
-In-Reply-To: <46253F14.4020304@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1031261AbXDQVvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 17:51:44 -0400
+Subject: Re: AppArmor FAQ
+From: Karl MacMillan <kmacmill@redhat.com>
+To: casey@schaufler-ca.com
+Cc: Andi Kleen <andi@firstfloor.org>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <657751.18080.qm@web36614.mail.mud.yahoo.com>
+References: <657751.18080.qm@web36614.mail.mud.yahoo.com>
+Content-Type: text/plain
+Date: Tue, 17 Apr 2007 17:48:27 -0400
+Message-Id: <1176846507.5946.70.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
+On Tue, 2007-04-17 at 13:19 -0700, Casey Schaufler wrote:
+> --- Andi Kleen <andi@firstfloor.org> wrote:
+> > > although this can often be done with PAM plugins, which is a standard way 
+> > > to do this kind of thing in modern Unix & Linux OSs.
+> > 
+> > PAM plugins in vi and emacs? Scary idea.
+> > 
+> > And what do you do if someone decides to use OpenOffice to edit their
+> > /etc/resolv.conf? For a lot of people that's the only text editor 
+> > they know.
 > 
-> I'll patch it locally on my own machines, but what about the tens
-> of thousands of other Seagate notebook drive owners out there?
+> For SELinux to be effective it has to have a complete policy definition.
+> This would prevent the OpenOffice access (unless OpenOffice is in the
+> modify_resolv_conf_t domain) above.
+> 
+> This, by the way, is a fundimental advantage of a path scheme over a
+> label scheme in that label schemes require every object be labeled
+> (it's Section 3.1.1.3 of the TCSEC if you want to look it up) while a
+> path scheme (in the absences of a published requirement) only requires
+> those names it cares about. SELinux in the absence of a correct and
+> complete policy could be considered dangerous.
 > 
 
-This is a problem with Seagate specifically, spinning back up
-on receipt of some command after spindown?
+This is wildly untrue (as I believe you know Casey). The effectiveness
+of SELinux is certainly diminished by not confining all applications,
+but that in no way makes it dangerous. It simply means that certain
+aspects of the security are no longer guaranteed by the policy but
+instead rely on application correctness. SELinux still offers useful
+protections against a variety security threats in a targeted
+configuration.
+
+This is in contrast to a security mechanism that is path based and
+doesn't control all accesses which can make _no_ guarantees about any
+security goals. 
+
+Karl
 
