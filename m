@@ -1,136 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031146AbXDQTaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031157AbXDQTgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031146AbXDQTaW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 15:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031145AbXDQTaV
+	id S1031157AbXDQTgZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 15:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDQTgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 15:30:21 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38910 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031139AbXDQTaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 15:30:20 -0400
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
-	namespace" clone flag
-From: Ram Pai <linuxram@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, devel@openvz.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, viro@ftp.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <E1Hdrir-0002E8-00@dorka.pomaz.szeredi.hu>
-References: <20070412164541.580374744@szeredi.hu>
-	 <20070412164620.588752236@szeredi.hu>
-	 <20070412203208.GG27772@sergelap.austin.ibm.com>
-	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-	 <1176713221.9488.17.camel@ram.us.ibm.com>
-	 <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
-	 <1176716941.9488.57.camel@ram.us.ibm.com>
-	 <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
-	 <1176743669.9488.62.camel@ram.us.ibm.com>
-	 <E1HdVLi-0007oe-00@dorka.pomaz.szeredi.hu>
-	 <20070417170737.GA14891@sergelap.austin.ibm.com>
-	 <E1Hdrir-0002E8-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 17 Apr 2007 12:28:31 -0700
-Message-Id: <1176838111.2813.109.camel@ram.us.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Tue, 17 Apr 2007 15:36:25 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:58755 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1031157AbXDQTgY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 15:36:24 -0400
+Message-ID: <462521F1.2000806@ru.mvista.com>
+Date: Tue, 17 Apr 2007 23:37:21 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: John Stoffel <john@stoffel.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.21-rc6-mm1 ATA HPT37x regression
+References: <17956.12963.163961.762444@smtp.charter.net>	<4624D4C3.9010109@ru.mvista.com>	<17956.63043.521397.597430@smtp.charter.net>	<4624FE88.2010908@ru.mvista.com>	<20070417181340.7de99868@the-village.bc.nu> <17957.8073.587946.969040@smtp.charter.net>
+In-Reply-To: <17957.8073.587946.969040@smtp.charter.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-17 at 19:44 +0200, Miklos Szeredi wrote:
-> > I'm a bit lost about what is currently done and who advocates for what.
-> > 
-> > It seems to me the MNT_ALLOWUSERMNT (or whatever :) flag should be
-> > propagated.  In the /share rbind+chroot example, I assume the admin
-> > would start by doing
-> > 
-> > 	mount --bind /share /share
-> > 	mount --make-slave /share
-> > 	mount --bind -o allow_user_mounts /share (or whatever)
-> > 	mount --make-shared /share
-> > 
-> > then on login, pam does
-> > 
-> > 	chroot /share/$USER
-> > 
-> > or some sort of
-> > 
-> > 	mount --bind /share /home/$USER/root
-> > 	chroot /home/$USER/root
-> > 
-> > or whatever.  In any case, the user cannot make user mounts except under
-> > /share, and any cloned namespaces will still allow user mounts.
-> 
-> I don't quite understand your method.  This is how I think of it:
-> 
-> mount --make-rshared /
-> mkdir -p /mnt/ns/$USER
-> mount --rbind / /mnt/ns/$USER
-> mount --make-rslave /mnt/ns/$USER
-> mount --set-flags --recursive -oallowusermnt /mnt/ns/$USER
-> chroot /mnt/ns/$USER
-> su - $USER
-> 
-> I did actually try something equivalent (without the fancy mount
-> commands though), and it worked fine.  The only "problem" is the
-> proliferation of mounts in /proc/mounts.  There was a recently posted
-> patch in AppArmor, that at least hides unreachable mounts from
-> /proc/mounts, so the user wouldn't see all those.  But it could still
-> be pretty confusing to the sysadmin.
+Hello.
 
-unbindable mounts were designed to overcome the proliferation problem.
+John Stoffel wrote:
 
-Your steps should be something like this:
+>>>>Ok, so do I need to do anything special with the next -mm release and
+>>>>the next version?
 
-mount --make-rshared /
-mkdir -p /mnt/ns
-mount --bind /mnt/ns /mnt/ns
-mount --make-unbindable /mnt/ns
-mkdir -p /mnt/ns/$USER
-mount --rbind / /mnt/ns/$USER
-mount --make-rslave /mnt/ns/$USER
-mount --set-flags --recursive -oallowusermnt /mnt/ns/$USER
-chroot /mnt/ns/$USER
-su - $USER
+>>>Well, let Alan decide that (2Alan: and I said that HPT code is bogus :-).
 
-try this and your proliferation problem will disappear. :-)
+> Alan> Try drivers/ide/pci/hpt366 - if that works grab a dmesg and let
+> Alan> me know.  It means that Sergei's DPLL sync code seems to work
+> Alan> better than the vendor code and its time to swap it over.
 
-> 
-> So in that sense doing it the complicated way, by first cloning the
-> namespace, and then copying and sharing mounts individually which need
-> to be shared could relieve this somewhat.
+> Ok, I'll give that a whirl under 2.6.21-rc7 tonight.  I'll build them
+> in modular so I can switch around more easily.  I hope.  :]
 
-the unbindable mount will just provide you permanent relief.
+   You can't switch from the old IDE driver -- they're *not* unloadable. :-/
 
-> 
-> Another point: user mounts under /proc and /sys shouldn't be allowed.
-> There are files there (at least in /proc) that are seemingly writable
-> by the user, but they are still not writable in the sense, that
-> "normal" files are.
-> 
-> Anyway, there are lots of userspace policy issues, but those don't
-> impact the kernel part.
-> 
-> As for the original question of propagating the "allowusermnt" flag, I
-> think it doesn't matter, as long as it's consistent and documented.
-> 
-> Propagating some mount flags and not propagating others is
-> inconsistent and confusing, so I wouldn't want that.  Currently
-> remount doesn't propagate mount flags, that may be a bug, 
+> Alan> Oh how I love highpoint PATA
 
-For consistency reason, one can propagate all the flags. But
-propagating only those flags that interfere with shared-subtree
-semantics should suffice.
+   More like PITA. :-D
 
-wait...Dave's read-only bind mounts infact need the ability to
-selectively make some mounts readonly. In such cases propagating
-the read-only flag will just step on Dave's feature. Wont' it?
+> It seemed like a good buy at the time when I was researching these
+> things.  Best bang for the buck I guess.  It's a RocketRaid133 card,
 
-RP
+   As for bang, it's true. You can't imagine how many days/nights I spent bangin' with the driver. :-D
 
+> but obviously I got a bum deal somewhere down the line.
 
+   HPT chips are surely not a good example of how to do things, more like an example how *not* to do. :-)
 
-> 
-> Miklos
+> John
 
+MBR, Sergei
