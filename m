@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031085AbXDQEfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031086AbXDQEgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031085AbXDQEfV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 00:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031086AbXDQEfV
+	id S1031086AbXDQEgZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 00:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031088AbXDQEgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 00:35:21 -0400
-Received: from mx1.suse.de ([195.135.220.2]:35011 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031085AbXDQEfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 00:35:21 -0400
-Date: Tue, 17 Apr 2007 06:34:56 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: "Michael K. Edwards" <medwards.linux@gmail.com>,
-       William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       Matt Mackall <mpm@selenic.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070417043456.GH25513@wotan.suse.de>
-References: <20070415204824.GA25813@elte.hu> <20070415233909.GE2986@holomorphy.com> <4622CC30.6030707@bigpond.net.au> <20070416030405.GI8915@holomorphy.com> <4623050B.8020602@bigpond.net.au> <20070416110439.GH2986@holomorphy.com> <46237239.1070903@bigpond.net.au> <f2b55d220704161610l71c72bc6k364bd9396cd59300@mail.gmail.com> <20070417035528.GE25513@wotan.suse.de> <46244C43.8000607@bigpond.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 17 Apr 2007 00:36:24 -0400
+Received: from wx-out-0506.google.com ([66.249.82.236]:18519 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031086AbXDQEgX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 00:36:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:organization:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=N5TUoi57Xyz20gm6REMCdEfspXVUP1XtsDRGercLiUNuJa0+a8wVkzBlTwYaZOlhhf2V4NY6FhJZVPG0gyg+HDE7eM8Wt5UWBvEW0q3OL6o41W5zWoGQFEgtnYlY9HdL/7KduYl5glWVS+2bEOnm6Q5p6hMRS9iQiR594Bt4I4g=
+Organization: Organization? Not detectable
+To: lkml <linux-kernel@vger.kernel.org>, Alain.Knaff@poboxes.com
+Subject: floppy.ko
+Date: Tue, 17 Apr 2007 00:35:52 -0400
+User-Agent: KMail/1.9.6
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46244C43.8000607@bigpond.net.au>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200704170036.00605.gene.heskett@verizon.net>
+From: Gene Heskett <gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 02:25:39PM +1000, Peter Williams wrote:
-> Nick Piggin wrote:
-> >On Mon, Apr 16, 2007 at 04:10:59PM -0700, Michael K. Edwards wrote:
-> >>On 4/16/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
-> >>>Note that I talk of run queues
-> >>>not CPUs as I think a shift to multiple CPUs per run queue may be a good
-> >>>idea.
-> >>This observation of Peter's is the best thing to come out of this
-> >>whole foofaraw.  Looking at what's happening in CPU-land, I think it's
-> >>going to be necessary, within a couple of years, to replace the whole
-> >>idea of "CPU scheduling" with "run queue scheduling" across a complex,
-> >>possibly dynamic mix of CPU-ish resources.  Ergo, there's not much
-> >>point in churning the mainline scheduler through a design that isn't
-> >>significantly more flexible than any of those now under discussion.
-> >
-> >Why? If you do that, then your load balancer just becomes less flexible
-> >because it is harder to have tasks run on one or the other.
-> >
-> >You can have single-runqueue-per-domain behaviour (or close to) just by
-> >relaxing all restrictions on idle load balancing within that domain. It
-> >is harder to go the other way and place any per-cpu affinity or
-> >restirctions with multiple cpus on a single runqueue.
-> 
-> Allowing N (where N can be one or greater) CPUs per run queue actually 
-> increases flexibility as you can still set N to 1 to get the current 
-> behaviour.
+Greetings everybody;
 
-But you add extra code for that on top of what we have, and are also
-prevented from making per-cpu assumptions.
+At some point in the last, say 6 months or so, some patches have been done to 
+the floppy.c area of the tree, and ever since, I have not been able to build 
+the driver in without wasting around a minute during the bootup with lags and 
+squawks about fd1 showing up in the boot trace on screen, but if I go look, 
+its fd0 that's being pounded on by the driver, mainly bitching about not 
+being able to read the first sector, something it repeats several times, like 
+4 or 5.
 
-And you can get N CPUs per runqueue behaviour by having them in a domain
-with no restrictions on idle balancing. So where does your increased
-flexibilty come from?
+I have the usual fd0, a 3.5" 1.44 drive, and fd1, a 5.25" 720k drive in this 
+machine, both are enabled in the bios with the correct types being set there.
 
-> One advantage of allowing multiple CPUs per run queue would be at the 
-> smaller end of the system scale i.e. a PC with a single hyper threading 
-> chip (i.e. 2 CPUs) would not need to worry about load balancing at all 
-> if both CPUs used the one runqueue and all the nasty side effects that 
-> come with hyper threading would be minimized at the same time.
+If I insert a disk, and attempt to mount it, the correct lights come on 
+according to what I typed, but I have had a hell of a time trying to get it 
+to write good images of a legacy machines disk format using dd, from files 
+that I can read with khexedit, and I know are correct from that inspection.
 
-I don't know about that -- the current load balancer already minimises
-the nasty multi threading effects. SMT is very important for IBM's chips
-for example, and they've never had any problem with that side of it
-since it was introduced and bugs ironed out (at least, none that I've
-heard).
+The only use its getting these days is in the coco/os9 formats, read and 
+written only by dd and some specialty tools from an os9 kit called toolshed, 
+AFAIK.
 
+Built as a module, then modprobed for use, I don't recall seeing this problem.
 
+Is this fixable, or is it that I just don't know how to handle this newer 
+code?
+
+The currently running kernel, 2.6.21-rc7-CFS-v2 has it built in and it gave me 
+static while booting with no disk in either drive.  Naming fd1, while banging 
+on fd0 according to the access leds on the drives.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Nobody wants constructive criticism.  It's all we can do to put up with
+constructive praise.
