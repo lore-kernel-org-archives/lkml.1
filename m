@@ -1,63 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992581AbXDROTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992589AbXDROUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992581AbXDROTd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 10:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992584AbXDROTd
+	id S2992589AbXDROUY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 10:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992588AbXDROUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 10:19:33 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:21395 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992581AbXDROTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 10:19:32 -0400
-X-IronPort-AV: i="4.14,423,1170662400"; 
-   d="scan'208"; a="52283620:sNHT17094049"
-Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Florin Iucha <florin@iucha.net>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070418141722.GI24044@iucha.net>
-References: <1176868485.6796.42.camel@heimdal.trondhjem.org>
-	 <20070418040730.GC24044@iucha.net>
-	 <20070417211350.ebba1493.akpm@linux-foundation.org>
-	 <20070418043040.GD24044@iucha.net>
-	 <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org>
-	 <20070417223738.8f49a39f.akpm@linux-foundation.org>
-	 <20070418123842.GF24044@iucha.net>
-	 <1176902131.6796.62.camel@heimdal.trondhjem.org>
-	 <20070418134225.GG24044@iucha.net>
-	 <1176905506.6796.84.camel@heimdal.trondhjem.org>
-	 <20070418141722.GI24044@iucha.net>
-Content-Type: text/plain
+	Wed, 18 Apr 2007 10:20:24 -0400
+Received: from webmail.ict.ac.cn ([159.226.39.7]:58073 "EHLO ict.ac.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992590AbXDROUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 10:20:22 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 10:20:21 EDT
+Message-ID: <4626276E.3000303@ict.ac.cn>
+Date: Wed, 18 Apr 2007 22:13:02 +0800
+From: Fuxin Zhang <fxzhang@ict.ac.cn>
+User-Agent: Icedove 1.5.0.8 (X11/20061116)
+MIME-Version: 1.0
+To: Ralf Baechle <ralf@linux-mips.org>
+CC: tiansm@lemote.com, perex@suse.cz, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Fuxin Zhang <zhangfx@lemote.com>
+Subject: Re: [PATCH 16/16] alsa sound support for mips
+References: <11766507661684-git-send-email-tiansm@lemote.com> <117665076617-git-send-email-tiansm@lemote.com> <1176650766907-git-send-email-tiansm@lemote.com> <11766507663301-git-send-email-tiansm@lemote.com> <11766507663039-git-send-email-tiansm@lemote.com> <1176650766685-git-send-email-tiansm@lemote.com> <11766507661790-git-send-email-tiansm@lemote.com> <11766507672298-git-send-email-tiansm@lemote.com> <11766507672043-git-send-email-tiansm@lemote.com> <11766507674145-git-send-email-tiansm@lemote.com> <20070418135412.GG3938@linux-mips.org>
+In-Reply-To: <20070418135412.GG3938@linux-mips.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Wed, 18 Apr 2007 10:19:31 -0400
-Message-Id: <1176905971.6796.87.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 18 Apr 2007 14:19:37.0547 (UTC) FILETIME=[988059B0:01C781C4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-18 at 09:17 -0500, Florin Iucha wrote:
-> On Wed, Apr 18, 2007 at 10:11:46AM -0400, Trond Myklebust wrote:
-> > On Wed, 2007-04-18 at 08:42 -0500, Florin Iucha wrote:
-> > > Could the port in CLOSE_WAIT state be the culprit?  (FWIW
-> > > the server has been up for 38 days and subjected to
-> > > this nfs test quite a bit without showing any stress).
-> > 
-> > The port in CLOSE_WAIT shows that a socket was closed down recently, but
-> > once the connection is re-established, the client should start sending
-> > data.
-> > Do you have a copy of wireshark or ethereal on hand? If so, could you
-> > take a look at whether or not any NFS traffic is going between the
-> > client and server once the hang happens?
-> > Note that the timeout value is 60 seconds, so if you see no immediate
-> > traffic, then let the ethereal/wireshark session keep running for a
-> > couple more minutes.
-> 
-> Should I run wireshark/ethereal on the client or on the server?
 
-On the client, please, for the moment.
-
-Cheers
-  Trond
+>>  		vaddr = runtime->dma_area + offset;
+>> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
+>>     
+>
+> Please use CONFIG_MIPS instead of __mips__ in #if / #ifdefs.
+>
+> The question if #ifdefing is the right approach to solve this problem is
+> something else but I think no, ....
+>   
+I would agree that it is quite ugly, but changing virt_to_page for it 
+does not seem right either.
+>   
+>> +		page = virt_to_page(CAC_ADDR(vaddr));
+>> +#else
+>>  		page = virt_to_page(vaddr);
+>> +#endif
+>>     
+>
+> So this is needed because the MIPS virt_to_page is returning a unsuitable
+> value if vaddress is not a KSEG0 (64-bit: cached XKPHYS) address which is
+> what GFP allocations and the slab will return.  So now we have to deciede
+> if
+>
+>  a) the MIPS __pa() should be changed to handle uncached addresses.
+>  b) the sound code here is simply broken.
+>
+> Some drivers seem to allocate runtime->dma_area from vmalloc, so this
+> whole area in the sound code is looking like built on quicksand ...
+>   
+>> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
+>> +	/* all mmap using uncached mode */
+>> +	area->vm_page_prot = pgprot_noncached(area->vm_page_prot);
+>> +	area->vm_flags |= ( VM_RESERVED | VM_IO);
+>>     
+>
+> VM_RESERVED will prevent the buffer from being freed.  I assume that is
+> another workaround for some kernel subsystem blowing up when being fed a
+> pointer to an uncached RAM address?  This smells like a memory leak.
+>
+>   
+Oh, VM_RESERVED should be a memory leak problem, we can remove it.
+I don't remember any case of other subsystem's problem, just did not 
+think much
+to add those flags.
+>> +#endif
+>> +
+>>  	offset = area->vm_pgoff << PAGE_SHIFT;
+>>  	switch (offset) {
+>>  	case SNDRV_PCM_MMAP_OFFSET_STATUS:
+>> diff --git a/sound/core/sgbuf.c b/sound/core/sgbuf.c
+>> index cefd228..535f0bc 100644
+>> --- a/sound/core/sgbuf.c
+>> +++ b/sound/core/sgbuf.c
+>> @@ -91,12 +91,21 @@ void *snd_malloc_sgbuf_pages(struct device *device,
+>>  		}
+>>  		sgbuf->table[i].buf = tmpb.area;
+>>  		sgbuf->table[i].addr = tmpb.addr;
+>> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
+>> +		sgbuf->page_table[i] = virt_to_page(CAC_ADDR(tmpb.area));
+>>     
+>
+> VM_RESERVED will prevent the buffer from being freed.  I assume that is
+> another workaround for some kernel subsystem blowing up when being fed a
+> pointer to an uncached RAM address?  This smells like a memory leak.
+>
+>   
+>> +#else
+>>  		sgbuf->page_table[i] = virt_to_page(tmpb.area);
+>> +#endif
+>>  		sgbuf->pages++;
+>>  	}
+>>  
+>>  	sgbuf->size = size;
+>> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
+>> +	/* maybe we should use uncached accelerated mode */
+>> +	dmab->area = vmap(sgbuf->page_table, sgbuf->pages, VM_MAP | VM_IO, pgprot_noncached(PAGE_KERNEL));
+>> +#else
+>>  	dmab->area = vmap(sgbuf->page_table, sgbuf->pages, VM_MAP, PAGE_KERNEL);
+>> +#endif
+>>     
+>
+> I would suggest to get rid of this ifdef with a new arch-specific function
+> like vmap_io_buffer which will do whatever a platform seems fit for this
+> case?
+>   
+I think arch-specific function is the correct way, but don't know what 
+the alsa gods think.
+>   
+>>  	if (! dmab->area)
+>>  		goto _failed;
+>>  	return dmab->area;
+>>     
+>
+>   Ralf
+>
+>
+>
+>
+>   
