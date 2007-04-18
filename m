@@ -1,83 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422754AbXDRJz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422762AbXDRKDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422754AbXDRJz6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422760AbXDRJz6
+	id S1422762AbXDRKDO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 06:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422764AbXDRKDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:55:58 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:38473 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422754AbXDRJz5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:55:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=HED3vnEpId7VTLcwGNkPTrVET9sQdIO4RgraY/9BuQON7PAEQKXq4g+31JFq1FAxE3bC4ym31T1vWln/ScErU06ylirI9DrKJE9tSSvtQ4hbRywQht0Td7vyR/wv4c2/VVo70nTeVt/gw/GQ8yih7Dy+Vnfq0OC1mnmukBWIzVM=
-Message-ID: <4625EB20.5000306@gmail.com>
-Date: Wed, 18 Apr 2007 18:55:44 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, dmitry.torokhov@gmail.com
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>	<20070417184110.GJ10619@htj.dyndns.org>	<4625169D.9020301@gmail.com>	<20070418101117.73edb302@gondolin.boeblingen.de.ibm.com>	<4625DAD1.2070000@gmail.com> <20070418113506.06df2d21@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070418113506.06df2d21@gondolin.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 06:03:14 -0400
+Received: from av1.karneval.cz ([81.27.192.123]:11681 "EHLO av1.karneval.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422762AbXDRKDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 06:03:13 -0400
+Message-id: <2428225437641930190@karneval.cz>
+Subject: [PATCH 1/11] Char: cyclades, create cy_init_Ze
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Date: Wed, 18 Apr 2007 12:03:07 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Wed, 18 Apr 2007 17:46:09 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> It's debatable but I think things will be safer this way.  If we wait by
->> default, we are forced to check that all references are dropped and will
->> have a stack dump indicating which object is causing problem when
->> something goes wrong, which is better than silent object leaking and/or
->> jumping to non-existent address way later.
-> 
-> I agree that oopsing is bad. However, lingering references are not
-> always coding errors. What if it will just take long for a reference to
-> be given up? You'd have a hanging device_unregister(), with no
-> particular gain.
+cyclades, create cy_init_Ze
 
-It's more like future plan than immediately applicable.  I think most 
-high-level driver related interfaces can be converted as sysfs was 
-converted such that they disconnect immediately from the device - 
-resolving conflicts between higher layer using reference counts and 
-device driver layer which expects immediate disconnect is responsibility 
-of those interfaces - just as sysfs does it.
+Move Ze init code into new cy_init_Ze, because we will need it in another
+place and it will make the code totally unreadable.
 
-If you have lingering reference to struct device after driver is 
-detached, you're already screwed.  If there's outstanding reference to 
-it from the previous driver, how are you gonna load the next one? 
-You're gonna have to wait somewhere for all the references to go away. 
-Actually, your patch series is doing exactly this during module 
-unloading.  Problem is that you'll need to do the same thing before 
-attaching the next driver for the same device.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-Immediate-disconnect from all higher interface for device drivers is my 
-goal for driver model as I wrote in the RFD about lifetime rules.  I 
-think it's doable and should result in easier model to get right, but I 
-might be missing something big time, so please point out if you can spot 
-holes or don't agree.
+---
+commit 1cd1f5e029963fc449c4f84495770611e5c35297
+tree a81b2b0a68303d8dfe616edc4c12c9030723ca12
+parent 6f42cfdf174bdd2c05edf7d192713042bf25339c
+author Jiri Slaby <jirislaby@gmail.com> Tue, 27 Mar 2007 11:25:47 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Tue, 10 Apr 2007 10:47:56 +0200
 
->> I personally think all driver interface should be made this way such
->> that completion of unregister function guarantees no further access to
->> the object or module.  IMHO, it's more intuitive and easier to force
->> correctness.
-> 
-> If we really did this, we should also provide a non-waiting alternative.
+ drivers/char/cyclades.c |  163 ++++++++++++++++++++++++++---------------------
+ 1 files changed, 90 insertions(+), 73 deletions(-)
 
-For transitional purpose, sure.  In the long term, I think it's better 
-if we can do without it.
-
-Thanks.
-
--- 
-tejun
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index abdc3c7..26d9ea7 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -4711,6 +4711,92 @@ static void plx_init(void __iomem * addr, __u32 initctl)
+ 	cy_writel(addr + initctl, readl(addr + initctl) & ~0x20000000);
+ }
+ 
++static int __devinit cy_init_Ze(unsigned long cy_pci_phys0,
++		unsigned long cy_pci_phys2,
++		struct RUNTIME_9060 __iomem *cy_pci_addr0,
++		void __iomem *cy_pci_addr2, int cy_pci_irq,
++		struct pci_dev *pdev)
++{
++	unsigned int j;
++	unsigned short cy_pci_nchan;
++
++	readl(&cy_pci_addr0->mail_box_0);
++#ifdef CY_PCI_DEBUG
++	printk("Cyclades-Z/PCI: relocate winaddr=0x%lx ctladdr=0x%lx\n",
++		(ulong)cy_pci_addr2, (ulong)cy_pci_addr0);
++	printk("Cyclades-Z/PCI: New Cyclades-Z board.  FPGA not "
++			"loaded\n");
++#endif
++	/* This must be the new Cyclades-Ze/PCI. */
++	cy_pci_nchan = ZE_V1_NPORTS;
++
++	if ((cy_next_channel + cy_pci_nchan) > NR_PORTS) {
++		printk("Cyclades-Ze/PCI found at 0x%lx but no channels "
++			"are available.\nChange NR_PORTS in cyclades.c "
++			"and recompile kernel.\n",
++			(ulong) cy_pci_phys2);
++		return -EIO;
++	}
++
++	/* fill the next cy_card structure available */
++	for (j = 0; j < NR_CARDS; j++) {
++		if (cy_card[j].base_addr == 0)
++			break;
++	}
++	if (j == NR_CARDS) {	/* no more cy_cards available */
++		printk("Cyclades-Ze/PCI found at 0x%lx but no more "
++			"cards can be used.\nChange NR_CARDS in "
++			"cyclades.c and recompile kernel.\n",
++			(ulong) cy_pci_phys2);
++		return -EIO;
++	}
++#ifdef CONFIG_CYZ_INTR
++	/* allocate IRQ only if board has an IRQ */
++	if ((cy_pci_irq != 0) && (cy_pci_irq != 255)) {
++		if (request_irq(cy_pci_irq, cyz_interrupt,
++				IRQF_SHARED, "Cyclades-Z",
++				&cy_card[j])) {
++			printk("Cyclom-Ze/PCI found at 0x%lx ",
++				(ulong) cy_pci_phys2);
++			printk("but could not allocate IRQ%d.\n",
++				cy_pci_irq);
++			return -EIO;
++		}
++	}
++#endif				/* CONFIG_CYZ_INTR */
++
++	/* set cy_card */
++	cy_card[j].base_phys = cy_pci_phys2;
++	cy_card[j].ctl_phys = cy_pci_phys0;
++	cy_card[j].base_addr = cy_pci_addr2;
++	cy_card[j].ctl_addr = cy_pci_addr0;
++	cy_card[j].irq = (int)cy_pci_irq;
++	cy_card[j].bus_index = 1;
++	cy_card[j].first_line = cy_next_channel;
++	cy_card[j].num_chips = -1;
++	cy_card[j].pdev = pdev;
++
++	/* print message */
++#ifdef CONFIG_CYZ_INTR
++	/* don't report IRQ if board is no IRQ */
++	if ((cy_pci_irq != 0) && (cy_pci_irq != 255))
++		printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, IRQ%d, ",
++			j + 1, (ulong) cy_pci_phys2,
++			(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1),
++			(int)cy_pci_irq);
++	else
++#endif				/* CONFIG_CYZ_INTR */
++		printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, ",
++			j + 1, (ulong) cy_pci_phys2,
++			(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1));
++
++	printk("%d channels starting from port %d.\n",
++		cy_pci_nchan, cy_next_channel);
++	cy_next_channel += cy_pci_nchan;
++
++	return 0;
++}
++
+ /*
+  * ---------------------------------------------------------------------
+  * cy_detect_pci() - Test PCI bus presence and Cyclom-Ye/PCI.
+@@ -4734,6 +4820,7 @@ static int __init cy_detect_pci(void)
+ 	__u32 Ze_phys0[NR_CARDS], Ze_phys2[NR_CARDS];
+ 	unsigned char Ze_irq[NR_CARDS];
+ 	struct pci_dev *Ze_pdev[NR_CARDS];
++	int retval;
+ 
+ 	for (i = 0; i < NR_CARDS; i++) {
+ 		/* look for a Cyclades card by vendor and device id */
+@@ -5095,80 +5182,10 @@ static int __init cy_detect_pci(void)
+ 			Ze_pdev[j] = Ze_pdev[j + 1];
+ 		}
+ 		ZeIndex--;
+-		mailbox = (__u32)readl(&((struct RUNTIME_9060 __iomem *)
+-						cy_pci_addr0)->mail_box_0);
+-#ifdef CY_PCI_DEBUG
+-		printk("Cyclades-Z/PCI: relocate winaddr=0x%lx ctladdr=0x%lx\n",
+-			(ulong)cy_pci_addr2, (ulong)cy_pci_addr0);
+-		printk("Cyclades-Z/PCI: New Cyclades-Z board.  FPGA not "
+-				"loaded\n");
+-#endif
+-		/* This must be the new Cyclades-Ze/PCI. */
+-		cy_pci_nchan = ZE_V1_NPORTS;
+-
+-		if ((cy_next_channel + cy_pci_nchan) > NR_PORTS) {
+-			printk("Cyclades-Ze/PCI found at 0x%lx but no channels "
+-				"are available.\nChange NR_PORTS in cyclades.c "
+-				"and recompile kernel.\n",
+-				(ulong) cy_pci_phys2);
+-			return i;
+-		}
+-
+-		/* fill the next cy_card structure available */
+-		for (j = 0; j < NR_CARDS; j++) {
+-			if (cy_card[j].base_addr == 0)
+-				break;
+-		}
+-		if (j == NR_CARDS) {	/* no more cy_cards available */
+-			printk("Cyclades-Ze/PCI found at 0x%lx but no more "
+-				"cards can be used.\nChange NR_CARDS in "
+-				"cyclades.c and recompile kernel.\n",
+-				(ulong) cy_pci_phys2);
++		retval = cy_init_Ze(cy_pci_phys0, cy_pci_phys2, cy_pci_addr0,
++					cy_pci_addr2, cy_pci_irq, pdev);
++		if (retval < 0)
+ 			return i;
+-		}
+-#ifdef CONFIG_CYZ_INTR
+-		/* allocate IRQ only if board has an IRQ */
+-		if ((cy_pci_irq != 0) && (cy_pci_irq != 255)) {
+-			if (request_irq(cy_pci_irq, cyz_interrupt,
+-					IRQF_SHARED, "Cyclades-Z",
+-					&cy_card[j])) {
+-				printk("Cyclom-Ze/PCI found at 0x%lx ",
+-					(ulong) cy_pci_phys2);
+-				printk("but could not allocate IRQ%d.\n",
+-					cy_pci_irq);
+-				return i;
+-			}
+-		}
+-#endif				/* CONFIG_CYZ_INTR */
+-
+-		/* set cy_card */
+-		cy_card[j].base_phys = cy_pci_phys2;
+-		cy_card[j].ctl_phys = cy_pci_phys0;
+-		cy_card[j].base_addr = cy_pci_addr2;
+-		cy_card[j].ctl_addr = cy_pci_addr0;
+-		cy_card[j].irq = (int)cy_pci_irq;
+-		cy_card[j].bus_index = 1;
+-		cy_card[j].first_line = cy_next_channel;
+-		cy_card[j].num_chips = -1;
+-		cy_card[j].pdev = pdev;
+-
+-		/* print message */
+-#ifdef CONFIG_CYZ_INTR
+-		/* don't report IRQ if board is no IRQ */
+-		if ((cy_pci_irq != 0) && (cy_pci_irq != 255))
+-			printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, IRQ%d, ",
+-				j + 1, (ulong) cy_pci_phys2,
+-				(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1),
+-				(int)cy_pci_irq);
+-		else
+-#endif				/* CONFIG_CYZ_INTR */
+-			printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, ",
+-				j + 1, (ulong) cy_pci_phys2,
+-				(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1));
+-
+-		printk("%d channels starting from port %d.\n",
+-			cy_pci_nchan, cy_next_channel);
+-		cy_next_channel += cy_pci_nchan;
+ 	}
+ 	if (ZeIndex != 0) {
+ 		printk("Cyclades-Ze/PCI found at 0x%x but no more cards can be "
