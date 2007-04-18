@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422998AbXDRNGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422993AbXDRNGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422998AbXDRNGH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 09:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422997AbXDRNGH
+	id S1422993AbXDRNGN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 09:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422991AbXDRNGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 09:06:07 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:45519 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422987AbXDRNGE (ORCPT
+	Wed, 18 Apr 2007 09:06:10 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:10821 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422993AbXDRNGG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 09:06:04 -0400
-Date: Wed, 18 Apr 2007 07:06:00 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, cmm@us.ibm.com,
-       suparna@in.ibm.com
-Subject: Re: Interface for the new fallocate() system call
-Message-ID: <20070418130600.GW5967@schatzie.adilger.int>
-Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jakub Jelinek <jakub@redhat.com>, torvalds@linux-foundation.org,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, cmm@us.ibm.com,
-	suparna@in.ibm.com
-References: <20070225022326.137b4875.akpm@linux-foundation.org> <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070417125514.GA7574@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+	Wed, 18 Apr 2007 09:06:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Ta4B87wfec7KKR+0KW4mxhl4RjqCFVlbpj9EDI2yag2e4PvcWDORviUaYXcFnbuGbb7z+9XcBamNHKvcxAuFdTXRTb+KumwIxR9z2tj0B1AonsEqXcUpYMc2Lw8AmRKWNQWavDTfa5yi5QQKBNPE+byeGvySCyoizDwkGAtoRsY=
+Message-ID: <462617B5.8050205@gmail.com>
+Date: Wed, 18 Apr 2007 22:05:57 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: 7eggert@gmx.de, Chuck Ebbert <cebbert@redhat.com>,
+       emisca <emisca.ml@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+References: <88SeR-5Sf-15@gated-at.bofh.it>	<88Sov-662-3@gated-at.bofh.it>	<88SHV-6uL-29@gated-at.bofh.it>	<8agVk-3wc-81@gated-at.bofh.it>	<8b3IR-4mE-25@gated-at.bofh.it>	<8b3SA-4z3-5@gated-at.bofh.it>	<8b42g-51N-15@gated-at.bofh.it>	<8bbdm-7iS-27@gated-at.bofh.it>	<E1He8dA-0000mw-LI@be1.lrz>	<46260981.1040109@gmail.com>	<20070418132904.3322ba5f@the-village.bc.nu>	<46261337.3010406@gmail.com> <20070418140346.636879a1@the-village.bc.nu>
+In-Reply-To: <20070418140346.636879a1@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 17, 2007  18:25 +0530, Amit K. Arora wrote:
-> On Fri, Mar 30, 2007 at 02:14:17AM -0500, Jakub Jelinek wrote:
-> > Wouldn't
-> > int fallocate(loff_t offset, loff_t len, int fd, int mode)
-> > work on both s390 and ppc/arm?  glibc will certainly wrap it and
-> > reorder the arguments as needed, so there is no need to keep fd first.
+Alan Cox wrote:
+>> Thought about that and querying power state before doing shutdown 
+>> sequence but things get somewhat ugly because shutdown sequence is 
+>> driven from sd->shutdown().  We'll have to snoop both sync and shutdown 
+>> commands and check whether the system is shutting down.  Also, I felt 
+>> very uneasy about faking successful completion to SYNCHRONIZE_CACHE.
 > 
-> I think more people are comfirtable with this approach.
+> If you see a synchronize cache succeed and you then see the drive
+> shutdown succeed then you know that a sync cache can be faked as ok
+> safely. Any other command in between or after and it doesn't get faked
+> 
+> This seems pretty easy to deal with at command issue.
 
-Really?  I thought from the last postings that "fd first, wrap on s390"
-was better.
+Yeah, right.  I guess I'm too anal about SYNCHRONIZE_CACHE.
 
-> Since glibc
-> will wrap the system call and export the "conventional" interface
-> (with fd first) to applications, we may not worry about keeping fd first
-> in kernel code. I am personally fine with this approach.
+>> I dunno.  It's already too late for 2.6.21.  I was hoping we could get 
+>> distros to update shutdown utilities in not-too-distant future but I 
+>> have no experience with that.  Is that just a wishful thinking?
+> 
+> Probably not, but it will take a year or so and throughout this time
+> period everyone with the wrong combination of shutdown and kernel (which
+> will be a lot of people who compile their own kernels) are going to have
+> problems caused by what is a very obscure piece of libata internal
+> behaviour they'll never even know about.
 
-It would seem to make more sense to wrap the syscall on those architectures
-that can't handle the "conventional" interface (fd first).
+Okay, will do another round of the patch.
 
-> Still, if people have major concerns, we can think of getting rid of the
-> "mode" argument itself. Anyhow we may, in future, need to have a policy
-> based system call (say, for providing the goal block by applications for
-> performance reasons). "mode" can then be made part of it.
+Thanks.
 
-We need at least mode="unallocate" or a separate funallocate() call to
-allow allocated-but-unwritten blocks to be unallocated without actually
-punching out written data.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+-- 
+tejun
