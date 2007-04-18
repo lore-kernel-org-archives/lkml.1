@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423000AbXDRNIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992435AbXDRNPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423000AbXDRNIg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 09:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423001AbXDRNIg
+	id S2992435AbXDRNPj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 09:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992436AbXDRNPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 09:08:36 -0400
-Received: from holomorphy.com ([66.93.40.71]:60037 "EHLO holomorphy.com"
+	Wed, 18 Apr 2007 09:15:39 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:21707 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422999AbXDRNIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 09:08:35 -0400
-Date: Wed, 18 Apr 2007 06:08:13 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+	id S2992435AbXDRNPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 09:15:38 -0400
+X-IronPort-AV: i="4.14,422,1170662400"; 
+   d="scan'208"; a="52267373:sNHT16722699"
+Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Florin Iucha <florin@iucha.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070418130813.GA31925@holomorphy.com>
-References: <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070418055525.GS11115@waste.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070418123842.GF24044@iucha.net>
+References: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
+	 <20070417195823.943f9472.akpm@linux-foundation.org>
+	 <1176865565.6796.16.camel@heimdal.trondhjem.org>
+	 <20070418033055.GA24044@iucha.net>
+	 <1176868485.6796.42.camel@heimdal.trondhjem.org>
+	 <20070418040730.GC24044@iucha.net>
+	 <20070417211350.ebba1493.akpm@linux-foundation.org>
+	 <20070418043040.GD24044@iucha.net>
+	 <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org>
+	 <20070417223738.8f49a39f.akpm@linux-foundation.org>
+	 <20070418123842.GF24044@iucha.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Wed, 18 Apr 2007 09:15:31 -0400
+Message-Id: <1176902131.6796.62.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 18 Apr 2007 13:15:38.0377 (UTC) FILETIME=[A82D7F90:01C781BB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 12:55:25AM -0500, Matt Mackall wrote:
-> Why are processes special? Should user A be able to get more CPU time
-> for his job than user B by splitting it into N parallel jobs? Should
-> we be fair per process, per user, per thread group, per session, per
-> controlling terminal? Some weighted combination of the preceding?[2]
+On Wed, 2007-04-18 at 07:38 -0500, Florin Iucha wrote:
+> On Tue, Apr 17, 2007 at 10:37:38PM -0700, Andrew Morton wrote:
+> > Florin, can we please see /proc/meminfo as well?
+> 
+>    http://iucha.net/nfs/21-rc7-nfs2/meminfo
+> 
+> > Also the result of `echo m > /proc/sysrq-trigger'
+> 
+>    http://iucha.net/nfs/21-rc7-nfs2/big-copy
+> 
+> This has 'echo m > /proc/sysrq-trigger', 'echo t >
+> /proc/sysrq-trigger' and 'echo 0 > /proc/sys/sunrpc/rpc_debug'.
 
-On a side note, I think a combination of all of the above is a very
-good idea, plus process groups (pgrp's). All the make -j loads should
-come up in one pgrp of one session for one user and hence should be
-automatically kept isolated in its own corner by such policies. Thread
-bombs, forkbombs, and so on get handled too, which is good when on e.g.
-a compileserver and someone rudely spawns too many tasks.
+Thanks.
 
-Thinking of the scheduler as a CPU bandwidth allocator, this means
-handing out shares of CPU bandwidth to all users on the system, which
-in turn hand out shares of bandwidth to all sessions, which in turn
-hand out shares of bandwidth to all process groups, which in turn hand
-out shares of bandwidth to all thread groups, which in turn hand out
-shares of bandwidth to threads. The event handlers for the scheduler
-need not deal with this apart from task creation and exit and various
-sorts of process ID changes (e.g. setsid(), setpgrp(), setuid(), etc.).
-They just determine what the scheduler sees as ->load_weight or some
-analogue of ->static_prio, though it is possible to do this by means of
-data structure organization instead of numerical prioritization. It'd
-probably have to be calculated on the fly by, say, doing fixpoint
-arithmetic something like
-    user_share(p)*session_share(p)*pgrp_share(p)*tgrp_share(p)*task_share(p)
-so that readjusting the shares of aggregates doesn't have to traverse
-lists and remains O(1). Each of the share computations can instead just
-do some analogue of the calculation p->load_weight/rq->raw_weighted_load
-in fixpoint, though precision issues with this make me queasy. There is
-maybe a slight nasty point in that the ->raw_weighted_load analogue for
-users or whatever the highest level chosen is ends up being global. One
-might as well get users in there and omit intermediate levels if any are
-to be omitted so that the truly global state is as read-only as possible.
+So it looks as if you have a massive backlog of requests waiting in the
+RPC layer to get sent. That would indeed trigger the BDI congestion
+control stuff, and prevent you from sending more requests. The
+interesting bit is this:
 
-I suppose jacking up the fixpoint precision to 128-bit or 256-bit all
-below the radix point (our max is 1.0 after all) until precision issues
-vanish can be done but the idea of that much number crunching in the
-scheduler makes me rather uncomfortable. I hope u64 or u32 [2] can be
-gotten away with as far as fixpoint goes.
+[  399.665314] -pid- proc flgs status -client- -prog- --rqstp- -timeout -rpcwait -action- ---ops--
+[  399.665338] 40373 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0de0        0 xprt_resend ffffffff804196bf ffffffff80440b10
+[  399.665345] 40391 0001 0001    -11 ffff81007f418508 100003 ffff810078eb05c8        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665351] 40392 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0128        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665358] 40393 0001 0001    -11 ffff81007f418508 100003 ffff810078eb1158        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665364] 40394 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0f08        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665371] 40395 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0000        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665377] 40396 0001 0001    -11 ffff81007f418508 100003 ffff810078eb1030        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665384] 40397 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0cb8        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665390] 40398 0001 0001    -11 ffff81007f418508 100003 ffff810078eb06f0        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665397] 40399 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0940        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665404] 40400 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0818        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665410] 40401 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0378        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.665417] 40402 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0250        0 xprt_sending ffffffff804196bf ffffffff80440b10
+[  399.669252] 41086 0001 0001      0 ffff81007f418508 100003 ffff810078eb0a68    15000 xprt_pending ffffffff804196bf ffffffff80440b10
+[  399.669258] 41087 0001 0001    -11 ffff81007f418508 100003 ffff810078eb0b90        0 xprt_resend ffffffff804196bf ffffffff80440b10
+[  399.669265] 41088 0001 0001    -11 ffff81007f418508 100003 ffff810078eb04a0        0 xprt_sending ffffffff804196bf ffffffff80440b10
 
+There is only one request on the 'pending' queue. That would usually
+indicate that the connection to the server is down. Can you check using
+"netstat -t" whether or not there is a connection in the 'ESTABLISHED'
+state to the server? Please also repeat the command a couple of times in
+order to see if the socket/port number on the connection changes.
 
--- wli
+Cheers
+  Trond
