@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422803AbXDRKIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422799AbXDRKPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422803AbXDRKIc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 06:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422801AbXDRKIc
+	id S1422799AbXDRKPc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 06:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422772AbXDRKPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 06:08:32 -0400
-Received: from mx0.karneval.cz ([81.27.192.123]:14867 "EHLO av1.karneval.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422800AbXDRKIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 06:08:31 -0400
-Message-id: <52729630993628431@karneval.cz>
-In-reply-to: <2428225437641930190@karneval.cz>
-Subject: [PATCH 11/11] Char: cyclades, allow DEBUG_SHIRQ
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Wed, 18 Apr 2007 12:08:28 +0200 (CEST)
+	Wed, 18 Apr 2007 06:15:31 -0400
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:52715 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422799AbXDRKPb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 06:15:31 -0400
+X-Greylist: delayed 1674 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 06:15:30 EDT
+Message-ID: <59090.145.64.134.244.1176889652.squirrel@www.hardeman.nu>
+In-Reply-To: <200704180056.10398.dtor@insightbb.com>
+References: <alpine.DEB.0.83.0704171317580.914@sigma.j-a-k-j.com>
+    <200704180056.10398.dtor@insightbb.com>
+Date: Wed, 18 Apr 2007 11:47:32 +0200 (CEST)
+Subject: Re: [PATCH] general: convert "kernel" subdirectory to UTF-8
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+User-Agent: SquirrelMail/1.4.4
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, allow DEBUG_SHIRQ
+On Wed, April 18, 2007 6:56, Dmitry Torokhov said:
+> On Tuesday 17 April 2007 13:19, John Anthony Kazos Jr. wrote:
+>> Â /*
+>> - * Samma pÃ¥ svenska..
+>> + * Samma pÃƒÂ¥ svenska..
+>> Â  */
+>
+> Translating this comment into english so more people could understand it
+> would be better option.
 
-Test if base addr is non-null in ISR to prove the card has been correctly
-initialized. This is needed for DEBUG_SHIRQ for example.
+The comment says "(The) same in swedish"
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+-- 
+David Härdeman
 
----
-commit 71c2e9b72594f69e4e226006206ffa74b55c1642
-tree 0134ea3532474f2c7bc2deabcf453b83f0747e5f
-parent 73621a789a0482299242ea61c971af6b5f8b828a
-author Jiri Slaby <jirislaby@gmail.com> Wed, 18 Apr 2007 11:59:22 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Wed, 18 Apr 2007 11:59:22 +0200
-
- drivers/char/cyclades.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 5a9e7d6..5d6559e 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -1444,6 +1444,10 @@ static irqreturn_t cyy_interrupt(int irq, void *dev_id)
- 	card_base_addr = cinfo->base_addr;
- 	index = cinfo->bus_index;
- 
-+	/* card was not initialized yet (e.g. DEBUG_SHIRQ) */
-+	if (unlikely(card_base_addr == NULL))
-+		return IRQ_HANDLED;
-+
- 	/* This loop checks all chips in the card.  Make a note whenever
- 	   _any_ chip had some work to do, as this is considered an
- 	   indication that there will be more to do.  Only when no chip
