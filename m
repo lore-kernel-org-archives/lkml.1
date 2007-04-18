@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992874AbXDRRI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992879AbXDRRN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992874AbXDRRI1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 13:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbXDRRI1
+	id S2992879AbXDRRN6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 13:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992878AbXDRRN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 13:08:27 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:1472 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753698AbXDRRI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 13:08:26 -0400
-Message-ID: <46265089.4000409@rtr.ca>
-Date: Wed, 18 Apr 2007 13:08:25 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, 7eggert@gmx.de,
-       Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <88SeR-5Sf-15@gated-at.bofh.it>	<88Sov-662-3@gated-at.bofh.it>	<88SHV-6uL-29@gated-at.bofh.it>	<8agVk-3wc-81@gated-at.bofh.it>	<8b3IR-4mE-25@gated-at.bofh.it>	<8b3SA-4z3-5@gated-at.bofh.it>	<8b42g-51N-15@gated-at.bofh.it>	<8bbdm-7iS-27@gated-at.bofh.it>	<E1He8dA-0000mw-LI@be1.lrz>	<46260981.1040109@gmail.com>	<20070418132904.3322ba5f@the-village.bc.nu>	<46261337.3010406@gmail.com>	<20070418140346.636879a1@the-village.bc.nu>	<46262C0E.9000103@rtr.ca> <20070418160627.7ab77c30@the-village.bc.nu> <46263650.3080705@rtr.ca> <46263859.2060309@gmail.com>
-In-Reply-To: <46263859.2060309@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 13:13:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35734 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992876AbXDRRN5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 13:13:57 -0400
+Date: Wed, 18 Apr 2007 18:13:46 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: David Miller <davem@davemloft.net>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
+       ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+Message-ID: <20070418171346.GA16471@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Vasquez <andrew.vasquez@qlogic.com>,
+	David Miller <davem@davemloft.net>, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
+	ema@debian.org
+References: <20070416.010218.130850966.davem@davemloft.net> <20070416163712.GA10822@andrew-vasquezs-computer.local> <20070416.123743.07452378.davem@davemloft.net> <20070416200857.GH10822@andrew-vasquezs-computer.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070416200857.GH10822@andrew-vasquezs-computer.local>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Mark Lord wrote:
-> ..
->> It would be nice if somebody who can hear the "pop" would also test this,
->> as it will confirm that this is a complete fix for the problem.
+On Mon, Apr 16, 2007 at 01:08:57PM -0700, Andrew Vasquez wrote:
+> Sorry, but in a SATA/SCSI environment that may be true, but in the
+> case of FC that expectation is unrealistic.  There are thousands of FC
+> installations where there are several thousand endpoints (including
+> initiators and targets) all interconnected.  Let's use your case --
+> just connect two sparc machines within the same fabric to your
+> storage, with the old code, there's still a problem.
+
+Multi-initiator setups are probably the majority in the FC world by now.
+But there has been a time around 2000 where various of companies thought
+FC is so l33t that they'd put it in as default.  E.g. the early SGI
+Origin 3000 used to have FC-attached root disks.  I think Sun has similar
+machines.
+
+> > They DON'T
+> > CARE, they want their systems to work and if you don't give them that
+> > you're not being a good driver maintainer.
 > 
-> You'll probably be able to here the "pop" on sleep-to-disk.
-> 
->> My "pop" drives are busy elsewhere right now.
+> Let's push aside attitudes and unrealistic statistics, could we
+> perhaps agree to re-add the use of doctored NVRAM (and thus
+> non-random WWPN/WWNN) when NVRAM is corrupted or non-present with a
+> module-parameter (which defaults to 0) which indicates the user
+> *really* knows what she is doing and recognizes WWPN collisions may
+> occur -- non-zero the parameter value indicates doctored values will
+> be used, zero value (the default) fails initialization.  In both cases
+> a big FAT warning is issued.
 
-The system I do have to test with has a "pop",
-but that's from the speakers not the drive.
+I don't think a module option is a good idea at this point.  The problem
+is you broke some so far perfectly working setups, which is not okay.
+The only first step can be printing a really big warning.  After this
+has been in for a while (at lest half a year) we can make it a non-default
+option or turn if off completely in case the warning never triggered in
+practice.
 
-However, the S.M.A.R.T. data was also shown earlier to provide
-a record of the unnecessary wear and tear.
+The only resonable thing for 2.6.21 is to put in David's patch, possible
+with an even more drastic warning when the rom is invalid and there's
+no prom-fallback available.
 
-Here it is from two hibernates (Linux "suspend-to-disk") before patching:
-
--  4 Start_Stop_Count        0x0032   099   099   020    Old_age   Always       -       1711
-+  4 Start_Stop_Count        0x0032   099   099   020    Old_age   Always       -       1712
-..
-- 12 Power_Cycle_Count       0x0032   099   099   020    Old_age   Always       -       1051
-+ 12 Power_Cycle_Count       0x0032   099   099   020    Old_age   Always       -       1053
-..
--192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       126
--193 Load_Cycle_Count        0x0032   015   015   000    Old_age   Always       -       170404
-+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       128
-+193 Load_Cycle_Count        0x0032   015   015   000    Old_age   Always       -       170405
-
-With the patch applied, I don't see *any* new activity in those S.M.A.R.T.
-attributes over multiple hibernates (Linux "suspend-to-disk").
-
-Next up, I'll try a few shutdowns and see.
-
-But we should still get Stephen Clark or one of the other reporters
-to confirm it on their systems.
-
--ml
-
+Note that I expect Sun put in the invalid ROM intentionally, as we have
+similar cases with other cards that have totally messed up ROMs in
+Sun-branded versions.  Personally I think that's an utterly bad decision
+from Sun's side, but we'll have to live with this.
