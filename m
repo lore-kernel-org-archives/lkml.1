@@ -1,60 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992490AbXDRUNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992513AbXDRUSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992490AbXDRUNj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 16:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992502AbXDRUNj
+	id S2992513AbXDRUSB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 16:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992553AbXDRUSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 16:13:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56639
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2992490AbXDRUNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 16:13:38 -0400
-Date: Wed, 18 Apr 2007 13:13:41 -0700 (PDT)
-Message-Id: <20070418.131341.129061984.davem@davemloft.net>
-To: andrew.vasquez@qlogic.com
-Cc: hch@infradead.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-       ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070418172802.GD12708@andrew-vasquezs-computer.local>
-References: <20070416200857.GH10822@andrew-vasquezs-computer.local>
-	<20070418171346.GA16471@infradead.org>
-	<20070418172802.GD12708@andrew-vasquezs-computer.local>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 18 Apr 2007 16:18:01 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:52412 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992513AbXDRUR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 16:17:59 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: akpm@linux-foundation.org, davej@codemonkey.org.uk, ak@suse.de
+Subject: [patch] cleanup cpufreq kconfig options
+Date: Wed, 18 Apr 2007 16:18:13 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704181618.14084.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Date: Wed, 18 Apr 2007 10:28:02 -0700
+Adds proper lines to help output of kconfig so people can find the module names.
+Also fixed some broken leading spaces versus tabs.
 
-> On Wed, 18 Apr 2007, Christoph Hellwig wrote:
-> 
-> > I don't think a module option is a good idea at this point.  The problem
-> > is you broke some so far perfectly working setups, which is not okay.
-> > The only first step can be printing a really big warning.  After this
-> > has been in for a while (at lest half a year) we can make it a non-default
-> > option or turn if off completely in case the warning never triggered in
-> > practice.
-> > 
-> > The only resonable thing for 2.6.21 is to put in David's patch, possible
-> > with an even more drastic warning when the rom is invalid and there's
-> > no prom-fallback available.
-> > 
-> > Note that I expect Sun put in the invalid ROM intentionally, as we have
-> > similar cases with other cards that have totally messed up ROMs in
-> > Sun-branded versions.  Personally I think that's an utterly bad decision
-> > from Sun's side, but we'll have to live with this.
-> 
-> Fine.  I'll rework an alternate patch for the 2.6.22 timeframe...
-
-We need to fix things now for 2.6.21 and the 2.6.x -stable branches
-because users have unusable systems currently.
-
-If it's just a time issue I can work on and push the patch, especially
-since I have the means to test things here.
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/arch/x86_64/kernel/cpufreq/Kconfig b/arch/x86_64/kernel/cpufreq/Kconfig
+index 40acb67..c0749d2 100644
+--- a/arch/x86_64/kernel/cpufreq/Kconfig
++++ b/arch/x86_64/kernel/cpufreq/Kconfig
+@@ -16,6 +16,9 @@ config X86_POWERNOW_K8
+ 	help
+ 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called powernow-k8.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq/>. 
+ 
+ 	  If in doubt, say N.
+@@ -38,6 +41,9 @@ config X86_SPEEDSTEP_CENTRINO
+ 	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
+ 	  or 64bit enabled Intel Xeons.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called speedstep-centrino.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  If in doubt, say N.
+@@ -55,6 +61,9 @@ config X86_ACPI_CPUFREQ
+ 	  Processor Performance States.
+ 	  This driver also supports Intel Enhanced Speedstep.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called acpi-cpufreq.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  If in doubt, say N.
+@@ -62,7 +71,7 @@ config X86_ACPI_CPUFREQ
+ comment "shared options"
+ 
+ config X86_ACPI_CPUFREQ_PROC_INTF
+-        bool "/proc/acpi/processor/../performance interface (deprecated)"
++	bool "/proc/acpi/processor/../performance interface (deprecated)"
+ 	depends on PROC_FS
+ 	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
+ 	help
+@@ -86,16 +95,18 @@ config X86_P4_CLOCKMOD
+ 	  slowdowns and noticeable latencies.  Normally Speedstep should be used
+ 	  instead.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called p4-clockmod.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  Unless you are absolutely sure say N.
+ 
+ 
+ config X86_SPEEDSTEP_LIB
+-        tristate
+-        default X86_P4_CLOCKMOD
++	tristate
++	default X86_P4_CLOCKMOD
+ 
+ endif
+ 
+ endmenu
+-
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index d155e81..993fa7b 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -9,6 +9,9 @@ config CPU_FREQ
+ 	  clock speed, you need to either enable a dynamic cpufreq governor
+ 	  (see below) after boot, or use a userspace tool.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq>.
+ 
+ 	  If in doubt, say N.
+@@ -16,7 +19,7 @@ config CPU_FREQ
+ if CPU_FREQ
+ 
+ config CPU_FREQ_TABLE
+-       tristate
++	tristate
+ 
+ config CPU_FREQ_DEBUG
+ 	bool "Enable CPUfreq debugging"
+@@ -32,19 +35,26 @@ config CPU_FREQ_DEBUG
+ 	       4 to activate CPUfreq governor debugging
+ 
+ config CPU_FREQ_STAT
+-       tristate "CPU frequency translation statistics"
+-       select CPU_FREQ_TABLE
+-       default y
+-       help
+-         This driver exports CPU frequency statistics information through sysfs
+-         file system
++	tristate "CPU frequency translation statistics"
++	select CPU_FREQ_TABLE
++	default y
++	help
++	  This driver exports CPU frequency statistics information through sysfs
++	  file system.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq_stats.
++
++	  If in doubt, say N.
+ 
+ config CPU_FREQ_STAT_DETAILS
+-       bool "CPU frequency translation statistics details"
+-       depends on CPU_FREQ_STAT
+-       help
+-         This will show detail CPU frequency translation table in sysfs file
+-         system
++	bool "CPU frequency translation statistics details"
++	depends on CPU_FREQ_STAT
++	help
++	  This will show detail CPU frequency translation table in sysfs file
++	  system.
++
++	  If in doubt, say N.
+ 
+ # Note that it is not currently possible to set the other governors (such as ondemand)
+ # as the default, since if they fail to initialise, cpufreq will be
+@@ -78,29 +88,38 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
+ endchoice
+ 
+ config CPU_FREQ_GOV_PERFORMANCE
+-       tristate "'performance' governor"
+-       help
++	tristate "'performance' governor"
++	help
+ 	  This cpufreq governor sets the frequency statically to the
+ 	  highest available CPU frequency.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq_performance.
++
+ 	  If in doubt, say Y.
+ 
+ config CPU_FREQ_GOV_POWERSAVE
+-       tristate "'powersave' governor"
+-       help
++	tristate "'powersave' governor"
++	help
+ 	  This cpufreq governor sets the frequency statically to the
+ 	  lowest available CPU frequency.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq_powersave.
++
+ 	  If in doubt, say Y.
+ 
+ config CPU_FREQ_GOV_USERSPACE
+-       tristate "'userspace' governor for userspace frequency scaling"
+-       help
++	tristate "'userspace' governor for userspace frequency scaling"
++	help
+ 	  Enable this cpufreq governor when you either want to set the
+ 	  CPU frequency manually or when an userspace program shall
+ 	  be able to set the CPU dynamically, like on LART 
+ 	  <http://www.lartmaker.nl/>.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq_userspace.
++
+ 	  For details, take a look at <file:Documentation/cpu-freq/>.
+ 
+ 	  If in doubt, say Y.
+@@ -116,6 +135,9 @@ config CPU_FREQ_GOV_ONDEMAND
+ 	  do fast frequency switching (i.e, very low latency frequency
+ 	  transitions). 
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq_ondemand.
++
+ 	  For details, take a look at linux/Documentation/cpu-freq.
+ 
+ 	  If in doubt, say N.
+@@ -136,6 +158,9 @@ config CPU_FREQ_GOV_CONSERVATIVE
+ 	  step-by-step latency issues between the minimum and maximum frequency
+ 	  transitions in the CPU) you will probably want to use this governor.
+ 
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq_conservative.
++
+ 	  For details, take a look at linux/Documentation/cpu-freq.
+ 
+ 	  If in doubt, say N.
