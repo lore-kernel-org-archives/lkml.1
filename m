@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932764AbXDRHMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbXDRHVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932764AbXDRHMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 03:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932771AbXDRHMc
+	id S932796AbXDRHVY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 03:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbXDRHVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 03:12:32 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44115 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932750AbXDRHMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 03:12:31 -0400
-Date: Wed, 18 Apr 2007 12:49:47 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Shaya Potter <spotter@cs.columbia.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH  0/15] VFS based Union Mount
-Message-ID: <20070418071947.GC5870@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070417131459.GA4001@in.ibm.com> <4624DB46.6040400@cs.columbia.edu> <20070417163055.GA11318@in.ibm.com> <4624FC38.6040503@cs.columbia.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4624FC38.6040503@cs.columbia.edu>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 18 Apr 2007 03:21:23 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:1707 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932768AbXDRHVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 03:21:22 -0400
+Message-ID: <19259.213.222.28.155.1176880873.squirrel@webmail.xs4all.nl>
+In-Reply-To: <1176846917.5946.79.camel@localhost.localdomain>
+References: <20070416213350.GB4030@suse.de>
+    <Line.LNX.4.64.0704161846110.13905@d.namei>
+    <1176846917.5946.79.camel@localhost.localdomain>
+Date: Wed, 18 Apr 2007 09:21:13 +0200 (CEST)
+Subject: Re: AppArmor FAQ
+From: "Rob Meijer" <capibara@xs4all.nl>
+To: "Karl MacMillan" <kmacmill@redhat.com>
+Cc: "James Morris" <jmorris@namei.org>, "John Johansen" <jjohansen@suse.de>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Reply-To: capibara@xs4all.nl
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 12:56:24PM -0400, Shaya Potter wrote:
-> Bharata B Rao wrote:
-> 
-> >No. foo is not visible. While looking for a file in a union mounted
-> >directory, the lookup starts from the topmost directory and proceeds
-> >downwards if the file isn't present the top layers. If a whiteout is
-> >found in any of the top layers, the lookup is abondoned and -ENOENT
-> >is removed. Thus until a whiteout exists in any upper layer for
-> >a corresponding file in the lower layer, the lower layer file remains
-> >hidden until the whiteout is removed.
-> >
-> >However in the case of dir-c containing foo, the foo(from dir-c) will 
-> >become
-> >visible after union mounting dir-c on top of dir-b and dir-a.
-> 
-> ok, so the major limitation of this approach is that the top most layer 
-> has to either be, ext2, ext3 or tmpfs (in patch), and most likely not 
-> NFS (assumption is that NFS has no conception of the whiteout type of 
-> file).
-
-I haven't played with union mounts with NFS. Hence would let Jan answer
-this. However note that union mount provides a writable union only
-if the filesystem supports the notion of whiteouts.
-
-> One thing the unionfs people are doing w/ their ODF approach, is 
-> within the ODF fs, they have a special inode that is the "whiteout" 
-> inode, and when they create a whiteout, they just create a hardlink from 
-> the dentry they want to whiteout to the "whiteout inode".  could that be 
-> a worthwhile approach instead of the whiteout file type?  (i.e. many 
-> file systems support the concept of a hard link).
-
-We we thinking something on similar lines as noted in our documentation.
-Right now we maintain one inode for every whiteout. We were planning to
-have a single whiteout inode and have all whiteout dentries point to this.
-But here again we were thinking of having every filesystem support
-this whiteout inode type.
-
-Anyway I will have a look at ODF from unionfs to see how this is done.
-
+On Tue, April 17, 2007 23:55, Karl MacMillan wrote:
+> On Mon, 2007-04-16 at 20:20 -0400, James Morris wrote:
+>> On Mon, 16 Apr 2007, John Johansen wrote:
+>>
+>> > Label-based security (exemplified by SELinux, and its predecessors in
+>> > MLS systems) attaches security policy to the data. As the data flows
+>> > through the system, the label sticks to the data, and so security
+>> > policy with respect to this data stays intact. This is a good approach
+>> > for ensuring secrecy, the kind of problem that intelligence agencies
+>> have.
+>>
+>> Labels are also a good approach for ensuring integrity, which is one of
+>> the most fundamental aspects of the security model implemented by
+>> SELinux.
+>>
+>> Some may infer otherwise from your document.
+>>
 >
-> I ask, because using union in a diskless environment.  Imagine pxe 
-> booting a kernel/initramfs and then using union to create a real root fs 
->  (shared lower layer, private rw upper layer, ala live cds).  Which 
-> brings up a different point, with unionfs, one can pivot_root into it, 
-> can one do the same for these "union mounts"?  Don't know enough about 
-> the VFS to know if this should "just work" or might be a problem.
+> Not only that, the implication that secrecy is only useful to
+> intelligence agencies is pretty funny. Personally, I think that
+> protecting the confidentiality of my data is important (and my bank and
+> health care providers protecting the data they have about me). Type
+> Enforcement was specifically designed to be able to address integrity
+> _and_ confidentiality in a way acceptable to commercial organizations.
+>
+> Karl
 
-I would assume that it should 'just work'. But right now it is not working.
-Our code is not yet ready to correctly work with move mounts. Since pivot_root
-has semantics similar to move mounts, pivot_root is also not working. Also
-chroot to a union mount point is also not working atm. We will be working
-to get all these right.
+Shouldn't that be _OR_, as I have always understood confidentialy
+models like BLP are by their very nature incompatible with integrity
+models like Biba. Given this incompatibity, I think the idea that
+BLP style use of lables (ss/* property and the likes) is only usefull
+to intelligence agencies may well be correct, while usage for integrity
+models like Biba and CW would be much broader than that.
 
-Regards,
-Bharata.
+A path based 'least priviledge' (POLP) solution would I think on its own
+address neither integity nor confidentiality, and next to this would
+proof to be yet an other 'fat profile' administration hell.
+
+Having said that, I feel a path based solution could have great potential
+if it could be used in conjunction with the object capability model, that
+I would consider a simple and practical alternative integrity model that
+does not require lables in an MLS maner, and that extends on the POLP
+concept in a way that would be largely more practical.
+That is, using 'thin' path based profiles would become very practical if
+all further authority can be communicated using handles in the same way
+that an open file handle can be communicated.
+
+Rob
+
