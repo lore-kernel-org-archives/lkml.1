@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993076AbXDRTZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993080AbXDRT2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993076AbXDRTZo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 15:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993078AbXDRTZo
+	id S2993080AbXDRT2j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 15:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993081AbXDRT2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 15:25:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36633 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993076AbXDRTZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 15:25:43 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: {Spam?} Re: [PATCH][RFC] Kill off legacy power management stuff.
-Date: Wed, 18 Apr 2007 15:24:16 -0400
-User-Agent: KMail/1.9.5
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6> <20070413183054.08ca0dff.sfr@canb.auug.org.au> <Pine.LNX.4.64.0704140855270.10740@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0704140855270.10740@localhost.localdomain>
+	Wed, 18 Apr 2007 15:28:39 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:41702 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993080AbXDRT2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 15:28:38 -0400
+Message-ID: <4626713B.1040206@nortel.com>
+Date: Wed, 18 Apr 2007 13:27:55 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mark Glines <mark@glines.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
+       Bill Huey <billh@gnuppy.monkey.org>, Mike Galbraith <efault@gmx.de>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [ck] Re: [Announce] [patch] Modular Scheduler Core and Completely
+ Fair Scheduler [CFS]
+References: <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>	<20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de>	<20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de>	<20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org> <20070418104814.2c6fdda7@chirp>
+In-Reply-To: <20070418104814.2c6fdda7@chirp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704181524.16980.lenb@kernel.org>
+X-OriginalArrivalTime: 18 Apr 2007 19:28:00.0258 (UTC) FILETIME=[ACF9FE20:01C781EF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 April 2007 09:01, Robert P. J. Day wrote:
-> On Fri, 13 Apr 2007, Stephen Rothwell wrote:
-> 
-> > On Fri, 13 Apr 2007 04:20:10 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
-> > >
-> > > On Fri, 13 Apr 2007, Stephen Rothwell wrote:
-> > > >
-> > > > One thing that comes to mind is that you will need some way to
-> > > > make sure that only one of ACPI and APM get initialized ...
-> > >
-> > > i don't see how that has anything to do with removing legacy PM
-> > > support.  you can select both ACPI and APM *now*.  if that's a bad
-> > > thing, then fixing it is a completely independent issue.
-> >
-> > Except your patch removes this hunk:
-> >
-> > @@ -2264,14 +2248,6 @@ static int __init apm_init(void)
-> >  		apm_info.disabled = 1;
-> >  		return -ENODEV;
-> >  	}
-> > -	if (PM_IS_ACTIVE()) {
-> > -		printk(KERN_NOTICE "apm: overridden by ACPI.\n");
-> > -		apm_info.disabled = 1;
-> > -		return -ENODEV;
-> > -	}
-> > -#ifdef CONFIG_PM_LEGACY
-> > -	pm_active = 1;
-> > -#endif
-> >
-> > in apm.c and a similar piece of the ACPI initialisation that
-> > prevented one initialising if the other had already initialised.
-> 
-> ah, just took a closer look at this.  from <linux/pm_legacy.h>:
-> ...
-> #ifdef CONFIG_PM_LEGACY
-> ...
-> #else
-> #define PM_IS_ACTIVE() 0
-> ...
-> #endif
-> 
-> so if you choose not to configure legacy PM, that macro equates to
-> false and that "if" construct in arch/i386/kernel/apm.c doesn't come
-> into play, anyway.
-> 
-> so i re-iterate what i posted in my earlier e-mail -- if APM and ACPI
-> want to avoid clashing, they have to do it without invoking anything
-> related to legacy PM.
+Mark Glines wrote:
 
-Here is how it should work.
-CONFIG_ACPI and CONFIG_APM should both available in a kernel build.
-However, at boot time, of ACPI is active, then APM should be disabled.
+> One minor question: is it even possible to be completely fair on SMP?
+> For instance, if you have a 2-way SMP box running 3 applications, one of
+> which has 2 threads, will the threaded app have an advantage here?  (The
+> current system seems to try to keep each thread on a specific CPU, to
+> reduce cache thrashing, which means threads and processes alike each
+> get 50% of the CPU.)
 
-The pm_active flag used to handle this, but that method was BROKEN
-when the CONFIG_PM_LEGACY #define was added.  Today, there are systems
-(such as the Thinkpad T30) that will not boot if CONFIG_PM_LEGACY
-is not defined.  The reason nobody is complaining is because the distros
-are currently defining CONFIG_PM_LEGACY.  But when you nuke that option
-and everything under it, this bug will be exposed and some systems will stop booting.
+I think the ideal in this case would be to have both threads on one cpu, 
+with the other app on the other cpu.  This gives inter-process fairness 
+while minimizing the amount of task migration required.
 
--Len
+More interesting is the case of three processes on a 2-cpu system.  Do 
+we constantly migrate one of them back and forth to ensure that each of 
+them gets 66% of a cpu?
+
+Chris
