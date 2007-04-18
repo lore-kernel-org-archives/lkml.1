@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992738AbXDRVNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992748AbXDRVOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992738AbXDRVNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 17:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992744AbXDRVNV
+	id S2992748AbXDRVOg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 17:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992747AbXDRVOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 17:13:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58205 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992738AbXDRVNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 17:13:20 -0400
-Date: Wed, 18 Apr 2007 23:12:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: Christoph Pfister <christophpfister@gmail.com>,
-       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: Kaffeine problem with CFS
-Message-ID: <20070418211257.GA7427@elte.hu>
-References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr> <20070418154811.GA16842@elte.hu> <200704190008.19262.caglar@pardus.org.tr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200704190008.19262.caglar@pardus.org.tr>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Apr 2007 17:14:36 -0400
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:60238 "EHLO
+	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992726AbXDRVOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 17:14:34 -0400
+Date: Wed, 18 Apr 2007 17:14:30 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Crispin Cowan <crispin@novell.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: AppArmor FAQ
+In-Reply-To: <4626746A.9010701@novell.com>
+Message-ID: <Line.LNX.4.64.0704181620130.27545@d.namei>
+References: <20070417181016.GA10903@one.firstfloor.org>
+ <657751.18080.qm@web36614.mail.mud.yahoo.com> <20070417211653.GB11944@one.firstfloor.org>
+ <20070417225815.000b0fdb@the-village.bc.nu> <Line.LNX.4.64.0704180935100.25495@d.namei>
+ <4626746A.9010701@novell.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Apr 2007, Crispin Cowan wrote:
 
-* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
+> James Morris wrote:
+> > On Tue, 17 Apr 2007, Alan Cox wrote:
+> >   
+> >> I'm not sure if AppArmor can be made good security for the general case,
+> >> but it is a model that works in the limited http environment
+> >> (eg .htaccess) and is something people can play with and hack on and may
+> >> be possible to configure to be very secure.
+> >>     
+> > Perhaps -- until your httpd is compromised via a buffer overflow or 
+> > simply misbehaves due to a software or configuration flaw, then the 
+> > assumptions being made about its use of pathnames and their security 
+> > properties are out the window.
+> >   
+> How is it that you think a buffer overflow in httpd could allow an
+> attacker to break out of an AppArmor profile?
 
-> > great! Could you please unapply the hack above and try the proper 
-> > fix below, does this one solve the hangs too?
-> 
-> Instead of that one, i tried CFSv3 and i cannot reproduce the hang 
-> anymore, Thanks!...
+Because you can change the behavior of the application and then bypass 
+policy entirely by utilizing any mechanism other than direct filesystem 
+access: IPC, shared memory, Unix domain sockets, local IP networking, 
+remote networking etc.
 
-cool, thanks for the quick turnaround!
+This not even considering object aliasing (which would allow you to 
+inappropriately access objects with full blessing of policy), as I'm 
+assuming that the limited environment Alan is referring to entirely 
+prevents them.
 
-	Ingo
+Also worth noting here is that you have to consider any limited 
+environment as enforcing security policy, and thus its configuration 
+becomes an additional component of security policy.
+
+So, your real security policy is actually more complicated than it appears 
+to be, is not represented completely in the policy configuration file, and 
+must be managed disparately.  And it's still only capable of controlling 
+access to filesystem objects.
+
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
