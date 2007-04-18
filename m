@@ -1,30 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbXDREvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbXDREwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbXDREvf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 00:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbXDREvf
+	id S1753671AbXDREwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 00:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXDREwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 00:51:35 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:63706 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753635AbXDREvf (ORCPT
+	Wed, 18 Apr 2007 00:52:14 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:59818 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbXDREwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 00:51:35 -0400
-Date: Wed, 18 Apr 2007 00:51:27 -0400
+	Wed, 18 Apr 2007 00:52:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
+        b=cyW/SO6/sACBZOmhNks9unPZ3QKwZzylkukOwpxlQo61kebsrNuIwdTavkqg0oRLqATULl0hK9WiA2ng5uRwJ3t9jAR+7wllbb0Tb+0jNM/F97QyRvuOkaLpeYb7ss+IZazktU4MjFjaSL8vORPEHuq09fi5fmqUk5qCy+384u0=
 From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: floppy.ko
-In-reply-to: <46259E18.6010003@zytor.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Alain.Knaff@poboxes.com
-Message-id: <200704180051.28602.gene.heskett@gmail.com>
 Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200704170036.00605.gene.heskett@verizon.net>
- <200704172312.49787.gene.heskett@gmail.com> <46259E18.6010003@zytor.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: floppy.ko
 User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, Alain.Knaff@poboxes.com
+References: <200704170036.00605.gene.heskett@verizon.net> <200704172312.49787.gene.heskett@gmail.com> <46259E18.6010003@zytor.com>
+In-Reply-To: <46259E18.6010003@zytor.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Wed, 18 Apr 2007 00:52:08 -0400
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704180052.09259.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
