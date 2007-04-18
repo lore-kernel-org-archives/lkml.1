@@ -1,80 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993039AbXDRTF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993038AbXDRTHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993039AbXDRTF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 15:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993041AbXDRTF0
+	id S2993038AbXDRTHa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 15:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993044AbXDRTHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 15:05:26 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1542 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993039AbXDRTF0 (ORCPT
+	Wed, 18 Apr 2007 15:07:30 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52590 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S2993038AbXDRTH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 15:05:26 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 18 Apr 2007 12:05:20 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-Reply-To: <20070418152355.GU11115@waste.org>
-Message-ID: <Pine.LNX.4.64.0704181120480.25880@alien.or.mcafeemobile.com>
-References: <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de>
- <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>
- <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de>
- <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de>
- <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
- <20070418152355.GU11115@waste.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 18 Apr 2007 15:07:29 -0400
+Date: Wed, 18 Apr 2007 15:07:28 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <46263D0E.2000702@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704181219250.12246-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007, Matt Mackall wrote:
+On Thu, 19 Apr 2007, Tejun Heo wrote:
 
-> On Wed, Apr 18, 2007 at 07:48:21AM -0700, Linus Torvalds wrote:
-> > And "fairness by euid" is probably a hell of a lot easier to do than 
-> > trying to figure out the wakeup matrix.
+> More afterthoughts.  If a mutex is used to protect access against
+> removal.  There is no reason to hold reference to it.
 > 
-> For the record, you actually don't need to track a whole NxN matrix
-> (or do the implied O(n**3) matrix inversion!) to get to the same
-> result. You can converge on the same node weightings (ie dynamic
-> priorities) by applying a damped function at each transition point
-> (directed wakeup, preemption, fork, exit).
+> kernel_thread()
+> {
+> 	/* wanna dereference my_obj */
+> 	mutex_lock();
+> 	verify my_obj is there and use it if so.
+> 	mutex_unlock();
+> }
 > 
-> The trouble with any scheme like this is that it needs careful tuning
-> of the damping factor to converge rapidly and not oscillate and
-> precise numerical attention to the transition functions so that the sum of
-> dynamic priorities is conserved.
+> remove()
+> {
+> 	mutex_lock();
+> 	kill_it();
+> 	mutex_unlock();
+> }
+> 
+> I probably have over simplified it but using both mutex and reference
+> counts doesn't make much sense.  IOW, you get an active reference when
+> you grab the mutex excluding its removal and verified it's still there.
+> 
+> There probably are other reasons why things are done that way and we can
+>  and probably will have to resort to mixed solutions in foreseeable
+> future but I don't think there is any inherent problem in applying
+> immediate-disconnect in the described situation.
+> 
+> Feel free to scream at me if I'm getting it totally wrong.  :-)
 
-Doing that inside the boundaries of the time constrains imposed by a 
-scheduler, is the interesting part. Given also that the size (and members) 
-of it (matrix) is dynamic.
-Also, a "wakup matrix" (if the name correctly pictures what it is for) 
-would help with latencies and priority inheritance, but not for 
-global fairness.
-The maniacal fairness focus we're seeing now, is due to the fact the 
-mainline can have extremely unfair behaviour under certain conditions. 
-IMO fairness, although important, should not be main objective of the 
-scheduler rewrite. Simplification and predictability should be on higher 
-priority, with interactivity achievements bound to decent fariness 
-constraints.
+This doesn't solve a related problem: a subsystem wants to register
+devices and to provide a set of mutually-exclusive services to the
+devices' drivers.  The mutual exclusion has to be provided by a mutex or
+something similar, and the drivers need a way to unbind even while waiting
+to acquire the mutex.
+
+The obvious answer is to introduce a different sort of synchronization 
+primitive: a mutex (or semaphore or rwsem) which can be invalidated.
+
+The semantics would be straightforward.  When mutex_invalidate() is
+called, it marks the mutex so that all future lock attempts will fail with
+-ENODEV.  It also wakes up all threads that are blocked trying to lock the
+mutex and causes them to fail with the same error.  Once all that is done
+mutex_invalidate() returns.  In particular, it doesn't wait for the
+current lock to be released -- in fact, you would call it while holding
+the lock.
+
+This would solve a lot of your problems.  But it would also mean making 
+extensive changes to the kernel.  For one thing, mutex_lock() would return 
+int instead of void, and you would want to mark it __must_check.  Every 
+place where a mutex is locked, the code would have to be changed to add an 
+error pathway.  That's the sort of thing I was talking about when I said 
+it was going to be a tremendous job.
 
 
+I thought of something else that could also be done: There should be a way
+to cancel an outstanding workqueue request.  At the moment all you can do
+is call flush_workqueue(), which will hang if you are already executing in
+a workqueue routine.  You should be able to delete a particular entry from
+the workqueue (or wait for it to complete if it has already started
+running).  This could be implemented right away.
 
 
-- Davide
+More problems with immediate detach -- it would have to apply to char
+devices.  When a char device is unregistered you can't force user
+processes to close their open file handles.  Instead something like your
+change to sysfs is needed -- wait for outstanding calls to complete and
+fail any future calls.  This means that registering a device will use up
+more than just a pointer in a table of minor device numbers.  Each entry
+would require at least an rwsem, and device I/O would be slowed down by
+the need to get a read-lock each time before entering the device driver.
 
+The same idea applies to block devices, although here the problems center 
+more around the block core and request queues.
+
+Alan Stern
 
