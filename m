@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992809AbXDRV3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992793AbXDRVe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992809AbXDRV3w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 17:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992797AbXDRV3w
+	id S2992793AbXDRVe0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 17:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992796AbXDRVe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 17:29:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53085 "EHLO mx1.redhat.com"
+	Wed, 18 Apr 2007 17:34:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42391 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992793AbXDRV3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 17:29:51 -0400
-Message-ID: <46268D27.9070809@redhat.com>
-Date: Wed, 18 Apr 2007 17:27:03 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Mark Lord <liml@rtr.ca>, Stephen.Clark@seclark.us,
-       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       7eggert@gmx.de, emisca <emisca.ml@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <88SeR-5Sf-15@gated-at.bofh.it> <46265307.7060405@rtr.ca> <46265966.1040102@redhat.com> <200704182322.20514.bzolnier@gmail.com>
-In-Reply-To: <200704182322.20514.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S2992793AbXDRVeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 17:34:25 -0400
+Date: Wed, 18 Apr 2007 23:33:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, v3
+Message-ID: <20070418213335.GA10333@elte.hu>
+References: <20070418175017.GA5250@elte.hu> <20070418212645.GU2986@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070418212645.GU2986@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 18 April 2007, Chuck Ebbert wrote:
->> Mark Lord wrote:
->>> Mark Lord wrote:
->>>> With the patch applied, I don't see *any* new activity in those
->>>> S.M.A.R.T.
->>>> attributes over multiple hibernates (Linux "suspend-to-disk").
->>> Scratch that -- operator failure.  ;)
->>> The patch makes no difference over hibernates in the SMART logs.
->>>
->>> It's still logging extra Power-Off_Retract_Count pegs,
->>> which it DID NOT USED TO DO not so long ago.
->>>
->> Just to add to the fun, my problems are happening with the "old"
->> IDE drivers...
-> 
-> The issue you are experiencing results in the same problem (disk doing
-> power off retract) but it has a totally different root cause - your notebook
-> loses power on reboot.  It is actually a hardware problem and as you have
-> reported the same problem is present when using "the other" OS.
-> 
 
-My "power off retract count" increases whether I do a halt/poweroff or
-a reboot. The only difference is the volume of the noise.
+* William Lee Irwin III <wli@holomorphy.com> wrote:
 
-And I just noticed my "seek error rate" is increasing.
+> It appears to me that the following can be taken in for mainline (or 
+> rejected for mainline) independently of the rest of the cfs patch.
 
-/me plans purchase of another drive, definitely not Seagate...
+yeah - it's a patch written by Suresh, and this should already be in the 
+for-v2.6.22 -mm queue. See:
 
-> I think that the issue needs to be fixed (by detecting affected notebook(s)
-> using DMI?) in Linux PM handling and not in IDE subsystem because:
->
-> * there may be some other hardware devices affected by the power loss
->   (== they require shutdown sequence)
->
-> * the same problem will bite if somebody decides to use libata (FC7?)
+  Subject: [patch] sched: align rq to cacheline boundary
 
-Yeah, this needs fixing too. I've been playing with another notebook and
-the power does stay on during reboot, so I wonder how widespread the problem is?
+on lkml.
+
+	Ingo
