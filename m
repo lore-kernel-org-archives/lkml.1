@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993008AbXDRXvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030357AbXDRX61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993008AbXDRXvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 19:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993015AbXDRXvn
+	id S1030357AbXDRX61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 19:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030360AbXDRX61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 19:51:43 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:2357 "EHLO
-	mail.rtr.ca" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S2993008AbXDRXvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 19:51:42 -0400
-Message-ID: <4626AF09.8020307@rtr.ca>
-Date: Wed, 18 Apr 2007 19:51:37 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 18 Apr 2007 19:58:27 -0400
+Received: from mail04.syd.optusnet.com.au ([211.29.132.185]:47020 "EHLO
+	mail04.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030357AbXDRX61 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 19:58:27 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>
+Subject: Announce - Staircase Deadline cpu scheduler v0.41
+Date: Thu, 19 Apr 2007 09:59:06 +1000
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>,
-       Stephen.Clark@seclark.us
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <461D4E2C.6000704@redhat.com>	 <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>	 <461D54AF.3060706@redhat.com> <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com> <46253F14.4020304@rtr.ca> <462540CD.9080406@redhat.com> <46254416.6090202@rtr.ca> <4625AF20.7050904@gmail.com> <4626AB77.20709@rtr.ca>
-In-Reply-To: <4626AB77.20709@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704190959.06432.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Tejun Heo wrote:
->>
->> 1. shutdown(8) issues SYNCHRONIZE_CACHE followed by STANDBY_NOW
->> 2. kernel shutdown starts
->> 3. libata shutdown issues SYNCHRONIZE_CACHE
->> 4. power goes off
-> 
-> Okay, after some experimentatino, it's the STANDBY_NOW that
-> is causing the Power-Off_Retract_Count to increment on my machine.
-> 
-> Tell me again why we think we need to issue that command ?
+Since there is so much work currently ongoing with alternative cpu schedulers, 
+as a standard for comparison with the alternative virtual deadline fair 
+designs I've addressed a few issues in the Staircase Deadline cpu scheduler 
+which improve behaviour likely in a noticeable fashion and released version 
+0.41.
 
-Arghh.. okay, removing that from the code has no effect on it either.
-I just don't understand the problem any more, since I don't actually
-have it here (I think).
+http://ck.kolivas.org/patches/staircase-deadline/2.6.20.7-sd-0.41.patch
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.41.patch
 
-Can somebody explain again what the issue was, when it began happening,
-and whatever else?  And what Tejun's fix (2.6.22) does again?
+and an incremental for those on 0.40:
+http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7/sched-implement-staircase-deadline-scheduler-further-improvements.patch
 
-I've lost all of the early postings.
+Remember to renice X to -10 for nicest desktop behaviour :)
 
-Thanks
+Have fun.
+
+-- 
+-ck
