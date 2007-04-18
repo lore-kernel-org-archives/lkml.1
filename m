@@ -1,58 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbXDRQHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992782AbXDRQLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbXDRQHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 12:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXDRQHi
+	id S2992782AbXDRQLl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 12:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992783AbXDRQLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 12:07:38 -0400
-Received: from holomorphy.com ([66.93.40.71]:41705 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbXDRQHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 12:07:38 -0400
-Date: Wed, 18 Apr 2007 09:07:22 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "S.??a??lar Onur" <caglar@pardus.org.tr>,
-       Christoph Pfister <christophpfister@gmail.com>,
-       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
-       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: Kaffeine problem with CFS
-Message-ID: <20070418160722.GB31925@holomorphy.com>
-References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <19a3b7a80704180555q4e0b26d5x54bbf34b4cd9d33e@mail.gmail.com> <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr> <20070418154811.GA16842@elte.hu>
+	Wed, 18 Apr 2007 12:11:41 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43123 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S2992782AbXDRQLk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 12:11:40 -0400
+Date: Wed, 18 Apr 2007 12:11:38 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <46263A82.1030703@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704181149280.12246-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070418154811.GA16842@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 05:48:11PM +0200, Ingo Molnar wrote:
->  static void requeue_task_fair(struct rq *rq, struct task_struct *p)
->  {
->  	dequeue_task_fair(rq, p);
->  	p->on_rq = 0;
-> -	enqueue_task_fair(rq, p);
-> +	/*
-> +	 * Temporarily insert at the last position of the tree:
-> +	 */
-> +	p->fair_key = LLONG_MAX;
-> +	__enqueue_task_fair(rq, p);
->  	p->on_rq = 1;
-> +
-> +	/*
-> +	 * Update the key to the real value, so that when all other
-> +	 * tasks from before the rightmost position have executed,
-> +	 * this task is picked up again:
-> +	 */
-> +	p->fair_key = rq->fair_clock - p->wait_runtime + p->nice_offset;
+On Thu, 19 Apr 2007, Tejun Heo wrote:
 
-At this point you might as well call the requeue operation something
-having to do with yield. I also suspect what goes on during the timer
-tick may eventually become something different from requeueing the
-current task, and furthermore class-dependent.
+> The goal of immediate-disconnect is to remove such lingering reference
+> counts so that device_unregister() or driver detach puts the last
+> reference count.
+
+Yes, I understand.  If you had immediate-disconnect then you wouldn't need 
+device_unregister_wait().  In fact, you wouldn't need any reference counts 
+at all.  It would be guaranteed that when the unregister call returned, 
+all references would be gone.
+
+> You tell a higher layer that a device is going away, on return from the
+> function, that layer isn't gonna access the device anymore.
+
+No, no.  You tell somebody (it might be a higher layer, it might be a 
+lower layer, or it might be a same-height layer -- doesn't matter) that a 
+device is going away.  On return from the function, that layer isn't going 
+to access the device any more, _nor_ will anyone else who has obtained a 
+reference from that layer.  This last clause is very important.
+
+> I don't think this is gonna be too difficult to do.  I think I can
+> convert block layer and IDE/SCSI drivers without too much problem.
+> Dunno much about other layers tho.
+
+You have to convert more than layers (or core subsystems).  You also have 
+to audit and convert drivers.  It will be tremendously difficult to do.
+
+> Dunno if I understood the problem right but can't we do the following?
+> 
+> remove()
+> {
+> 	acquire sem;
+> 	device_del();
+> 	release sem;
+> 	device_put_wait();
+> }
+
+You did misunderstand.  Here's what I was talking about:
+
+Driver A:
+---------
+	unregister_device(dev);
+
+		/* inside the driver core */
+		down(&dev->sem);
+		if (dev->driver)
+			dev->driver->remove(dev);
+		up(&dev->sem);
+		device_put(dev);	/* or device_put_wait */
 
 
--- wli
+Driver B:
+---------
+void remove(struct device *dev)
+{
+	struct my_device *mydev = dev_get_drvdata(dev);
+
+	mydev->gone = 1;
+	kref_put(&mydev->kref, my_device_release);
+}
+
+
+Driver B's kernel thread:
+-------------------------
+	kref_get(&mydev->kref);
+	down(&mydev->dev.sem);
+	if (mydev->gone)
+		goto finished;
+	...
+ finished:
+	up(&mydev->dev.sem);
+	kref_put(&mydev->kref, my_device_release);
+
+Consider what happens if the kernel thread blocks on its down() while the
+remove() method is running.  It will be impossible for Driver B to
+eliminate the reference to dev held by mydev and by the down() routine.
+
+In short, Driver B _can't_ provide an immediate detach.  Not unless 
+someone figures out a way to cancel a blocked down().  And do the same 
+thing for other blocking primitives.
+
+Alan Stern
+
