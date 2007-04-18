@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422740AbXDRJyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422759AbXDRJy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422740AbXDRJyV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422759AbXDRJyV
+	id S1422759AbXDRJy0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 05:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422765AbXDRJy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:54:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51933 "EHLO mx2.mail.elte.hu"
+	Wed, 18 Apr 2007 05:54:26 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:2717 "EHLO parknet.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422740AbXDRJyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:54:20 -0400
-Date: Wed, 18 Apr 2007 11:53:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
+	id S1422759AbXDRJyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 05:54:25 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Steve Fox <drfickle@us.ibm.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070418095334.GA26525@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <46247DAB.1060808@shadowen.org> <20070417093257.GA9267@wotan.suse.de> <20070417095900.GB25553@elte.hu> <20070418085525.GA21194@wotan.suse.de>
-Mime-Version: 1.0
+       Florin Iucha <florin@iucha.net>, Adrian Bunk <bunk@stusta.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
+References: <20070416125905.GA2769@iucha.net>
+	<1176736734.6761.45.camel@heimdal.trondhjem.org>
+	<Pine.LNX.4.64.0704160904560.5473@woody.linux-foundation.org>
+	<1176740307.6761.56.camel@heimdal.trondhjem.org>
+	<1176741408.6761.62.camel@heimdal.trondhjem.org>
+	<1176792399.3035.30.camel@twins> <20070416125905.GA2769@iucha.net>
+	<1176792399.3035.30.camel@twins> <1176796503.3035.33.camel@twins>
+	<87hcrfaqam.fsf@duaron.myhome.or.jp>
+	<20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
+	<20070417195823.943f9472.akpm@linux-foundation.org>
+	<1176865565.6796.16.camel@heimdal.trondhjem.org>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Wed, 18 Apr 2007 18:54:13 +0900
+In-Reply-To: <1176865565.6796.16.camel@heimdal.trondhjem.org> (Trond Myklebust's message of "Tue\, 17 Apr 2007 23\:06\:05 -0400")
+Message-ID: <87bqhm9fei.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070418085525.GA21194@wotan.suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Trond Myklebust <Trond.Myklebust@netapp.com> writes:
 
-* Nick Piggin <npiggin@suse.de> wrote:
+> I was mainly interested in feedback from Peter, Florin and Ogawa-san to
+> find out if this series fixes their problems. You were unfortunate
+> enough to have been on earlier Ccs, so I didn't dare trim you off. :-)
 
-> > > 535.43user 30.62system 2:23.72elapsed 393%CPU
-> > 
-> > Thanks for testing this! Could you please try this also with:
-> > 
-> >    echo 100000000 > /proc/sys/kernel/sched_granularity
-> 
-> 507.68user 31.87system 2:18.05elapsed 390%CPU
-> 507.99user 31.93system 2:18.09elapsed 390%CPU
+Sorry. I'm trying to reproduce that, but unfortunately I can't
+reproduce that on unpatched kernel for now.
 
-> > could you maybe even try a more extreme setting of:
-> > 
-> >    echo 500000000 > /proc/sys/kernel/sched_granularity
+FWIW, syslog is here.
 
-> 506.69user 31.96system 2:17.82elapsed 390%CPU
-> 505.70user 31.84system 2:17.90elapsed 389%CPU
-
-> Again, for comparison 2.6.21-rc7 mainline:
-> 
-> 508.87user 32.47system 2:17.82elapsed 392%CPU
-> 509.05user 32.25system 2:17.84elapsed 392%CPU
-
-thanks for testing this!
-
-> So looking at elapsed time, a granularity of 100ms is just behind the 
-> mainline score. However it is using slightly less user time and 
-> slightly more idle time, which indicates that balancing might have got 
-> a bit less aggressive.
-> 
-> But anyway, it conclusively shows the efficiency impact of such tiny 
-> timeslices.
-
-yeah, the 4% drop in a CPU-cache-sensitive workload like kernbench is 
-not unexpected when going to really frequent preemption. Clearly, the 
-default preemption granularity needs to be tuned up.
-
-I think you said you measured ~3msec average preemption rate per CPU? 
-That would suggest the average cache-trashing cost was 120 usecs per 
-every 3 msec window. Taking that as a ballpark figure, to get the 
-difference back into the noise range we'd have to either use ~5 msec:
-
-    echo 5000000 > /proc/sys/kernel/sched_granularity
-
-or 15 msec:
-
-    echo 15000000 > /proc/sys/kernel/sched_granularity
-
-(depending on whether it's 5x 3msec or 5x 1msec - i'm still not sure i 
-correctly understood your 3msec value. I'd have to know your kernbench 
-workload's approximate 'steady state' context-switch rate to do a more 
-accurate calculation.)
-
-	Ingo
+Apr 17 03:54:55 duaron kernel: [drm] Initialized i915 1.6.0 20060119 on minor 0
+Apr 17 03:58:31 duaron kernel: tun: Universal TUN/TAP device driver, 1.6
+Apr 17 03:58:31 duaron kernel: tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+Apr 17 03:58:44 duaron kernel: tun0: no IPv6 routers present
+Apr 17 13:33:13 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
+Apr 17 13:33:47 duaron last message repeated 16 times
+Apr 17 13:34:49 duaron last message repeated 32 times
+Apr 17 13:35:19 duaron last message repeated 7 times
+Apr 17 13:39:39 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
+Apr 17 13:40:39 duaron last message repeated 3 times
+Apr 17 13:42:26 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
+Apr 17 13:42:30 duaron last message repeated 3 times
+Apr 18 00:58:22 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
+Apr 18 00:59:09 duaron last message repeated 129 times
+Apr 18 01:00:31 duaron last message repeated 24 times
+Apr 18 01:02:16 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
+Apr 18 01:03:25 duaron last message repeated 47 times
+Apr 18 01:04:30 duaron last message repeated 16 times
+Apr 18 01:05:31 duaron last message repeated 28 times
+Apr 18 01:06:33 duaron last message repeated 32 times
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
