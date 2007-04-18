@@ -1,98 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030955AbXDRDPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030966AbXDRDUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030955AbXDRDPl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 23:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030862AbXDRDPl
+	id S1030966AbXDRDUL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 23:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031319AbXDRDUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 23:15:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38273 "EHLO mx1.suse.de"
+	Tue, 17 Apr 2007 23:20:11 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:41489 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030955AbXDRDPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 23:15:40 -0400
-Date: Wed, 18 Apr 2007 05:15:11 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Matt Mackall <mpm@selenic.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070418031511.GA18452@wotan.suse.de>
-References: <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org>
+	id S1030966AbXDRDUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 23:20:08 -0400
+Date: Wed, 18 Apr 2007 08:57:08 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  5/15] Introduce union stack
+Message-ID: <20070418032708.GA5870@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070417131459.GA4001@in.ibm.com> <20070417131920.GF4001@in.ibm.com> <20070417220848.GA22586@sergelap.austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070417213954.GE11166@waste.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070417220848.GA22586@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 04:39:54PM -0500, Matt Mackall wrote:
-> On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
-> > On Mon, Apr 16, 2007 at 11:26:21PM -0700, William Lee Irwin III wrote:
-> > > On Mon, Apr 16, 2007 at 11:09:55PM -0700, William Lee Irwin III wrote:
-> > > >> All things are not equal; they all have different properties. I like
-> > > 
-> > > On Tue, Apr 17, 2007 at 08:15:03AM +0200, Nick Piggin wrote:
-> > > > Exactly. So we have to explore those properties and evaluate performance
-> > > > (in all meanings of the word). That's only logical.
-> > > 
-> > > Any chance you'd be willing to put down a few thoughts on what sorts
-> > > of standards you'd like to set for both correctness (i.e. the bare
-> > > minimum a scheduler implementation must do to be considered valid
-> > > beyond not oopsing) and performance metrics (i.e. things that produce
-> > > numbers for each scheduler you can compare to say "this scheduler is
-> > > better than this other scheduler at this.").
+On Tue, Apr 17, 2007 at 05:08:48PM -0500, Serge E. Hallyn wrote:
+> Quoting Bharata B Rao (bharata@linux.vnet.ibm.com):
+> > From: Jan Blunck <j.blunck@tu-harburg.de>
+> > Subject: Introduce union stack.
 > > 
-> > Yeah I guess that's the hard part :)
+> > Adds union stack infrastructure to the dentry structure and provides
+> > locking routines to walk the union stack.
 > > 
-> > For correctness, I guess fairness is an easy one. I think that unfairness
-> > is basically a bug and that it would be very unfortunate to merge something
-> > unfair. But this is just within the context of a single runqueue... for
-> > better or worse, we allow some unfairness in multiprocessors for performance
-> > reasons of course.
+> > Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
+> > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > ---
+> >  fs/Makefile                  |    2 
+> >  fs/dcache.c                  |    5 
+> >  fs/union.c                   |   53 +++++++++
+> >  include/linux/dcache.h       |   11 +
+> >  include/linux/dcache_union.h |  243 +++++++++++++++++++++++++++++++++++++++++++
+> >  5 files changed, 314 insertions(+)
+> > 
+> > --- a/fs/Makefile
+> > +++ b/fs/Makefile
+> > @@ -49,6 +49,8 @@ obj-$(CONFIG_FS_POSIX_ACL)	+= posix_acl.
+> >  obj-$(CONFIG_NFS_COMMON)	+= nfs_common/
+> >  obj-$(CONFIG_GENERIC_ACL)	+= generic_acl.o
+> > 
+> > +obj-$(CONFIG_UNION_MOUNT)	+= union.o
+> > +
+> >  obj-$(CONFIG_QUOTA)		+= dquot.o
+> >  obj-$(CONFIG_QFMT_V1)		+= quota_v1.o
+> >  obj-$(CONFIG_QFMT_V2)		+= quota_v2.o
+> > --- a/fs/dcache.c
+> > +++ b/fs/dcache.c
+> > @@ -936,6 +936,11 @@ struct dentry *d_alloc(struct dentry * p
+> >  #ifdef CONFIG_PROFILING
+> >  	dentry->d_cookie = NULL;
+> >  #endif
+> > +#ifdef CONFIG_UNION_MOUNT
+> > +	dentry->d_overlaid = NULL;
+> > +	dentry->d_topmost = NULL;
+> > +	dentry->d_union = NULL;
+> > +#endif
+> >  	INIT_HLIST_NODE(&dentry->d_hash);
+> >  	INIT_LIST_HEAD(&dentry->d_lru);
+> >  	INIT_LIST_HEAD(&dentry->d_subdirs);
+> > --- /dev/null
+> > +++ b/fs/union.c
+> > @@ -0,0 +1,53 @@
+> > +/*
+> > + * VFS based union mount for Linux
+> > + *
+> > + * Copyright ? 2004-2007 IBM Corporation
+> > + *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify it
+> > + * under the terms of the GNU General Public License as published by the Free
+> > + * Software Foundation; either version 2 of the License, or (at your option)
+> > + * any later version.
+> > + */
+> > +
+> > +#include <linux/fs.h>
+> > +
+> > +struct union_info * union_alloc(void)
+> > +{
+> > +	struct union_info *info;
+> > +
+> > +	info = kmalloc(sizeof(*info), GFP_ATOMIC);
+> > +	if (!info)
+> > +		return NULL;
+> > +
+> > +	mutex_init(&info->u_mutex);
+> > +	mutex_lock(&info->u_mutex);
+> > +	atomic_set(&info->u_count, 1);
+> > +	UM_DEBUG_LOCK("allocate union %p\n", info);
+> > +	return info;
+> > +}
+> > +
+> > +struct union_info * union_get(struct union_info *info)
+> > +{
+> > +	BUG_ON(!info);
+> > +	BUG_ON(!atomic_read(&info->u_count));
+> > +	atomic_inc(&info->u_count);
+> > +	UM_DEBUG_LOCK("get union %p (count=%d)\n", info,
+> > +		      atomic_read(&info->u_count));
+> > +	return info;
+> > +}
 > 
-> I'm a big fan of fairness, but I think it's a bit early to declare it
-> a mandatory feature. Bounded unfairness is probably something we can
-> agree on, ie "if we decide to be unfair, no process suffers more than
-> a factor of x".
-
-I don't know why this would be a useful feature (of course I'm talking
-about processes at the same nice level). One of the big problems with
-the current scheduler is that it is unfair in some corner cases. It
-works OK for most people, but when it breaks down it really hurts. At
-least if you start with a fair scheduler, you can alter priorities
-until it satisfies your need... with an unfair one your guess is as
-good as mine.
-
-So on what basis would you allow unfairness? On the basis that it doesn't
-seem to harm anyone? It doesn't seem to harm testers?
-
-I think we should aim for something better.
-
-
-> > Latency. Given N tasks in the system, an arbitrary task should get
-> > onto the CPU in a bounded amount of time (excluding events like freak
-> > IRQ holdoffs and such, obviously -- ie. just considering the context
-> > of the scheduler's state machine).
+> The locking here needs to be laid out.  It looks like union_get() needs
+> to be called under union_lock(), while union_get2() (horrible name)
+> grabs that lock itself, and returns with the lock held?
 > 
-> This is a slightly stronger statement than starvation-free (which is
-> obviously mandatory). I think you're looking for something like
-> "worst-case scheduling latency is proportional to the number of
-> runnable tasks". Which I think is quite a reasonable requirement.
+> Similarly union_put clearly needs to be called under union_lock(), so
+> that should be commented here.
 
-Yes, bounded and proportional to.
+Agreed. This whole thing needs a fresh look and we need to establish
+some rules and consistency here. After you pointed out this, even
+union_alloc2() is looking suspect to me. Same goes for union_release()
+also. Thanks for pointing this out.
 
-
-> I'm pretty sure the stock scheduler falls short of both of these
-> guarantees though.
-
-And I think that's what its main problems are. It's interactivity
-obviously can't be too bad for most people. It's performance seems to
-be pretty good.
-
+Regards,
+Bharata.
