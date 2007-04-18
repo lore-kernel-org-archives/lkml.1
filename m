@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXDRG6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbXDRHHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXDRG6m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 02:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXDRG6m
+	id S932700AbXDRHHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 03:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932710AbXDRHHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 02:58:42 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:20743 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932659AbXDRG6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 02:58:41 -0400
-Message-ID: <4625C2A9.6010306@sw.ru>
-Date: Wed, 18 Apr 2007 11:03:05 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Wed, 18 Apr 2007 03:07:01 -0400
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:50783 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932700AbXDRHG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 03:06:59 -0400
+Date: Wed, 18 Apr 2007 09:06:35 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] documentation: convert the Documentation directory to
+ UTF-8
+In-Reply-To: <alpine.DEB.0.83.0704171247230.27446@sigma.j-a-k-j.com>
+Message-ID: <Pine.LNX.4.64.0704180905070.3288@anakin>
+References: <alpine.DEB.0.83.0704171247230.27446@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Linux MM <linux-mm@kvack.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M (v2)
-References: <4624E8F4.2090200@sw.ru> <84144f020704172324u725f6b22u4b1634203d65167c@mail.gmail.com>
-In-Reply-To: <84144f020704172324u725f6b22u4b1634203d65167c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-1528985845-1176879995=:3288"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> On 4/17/07, Pavel Emelianov <xemul@sw.ru> wrote:
->> The out_of_memory() function and SysRq-M handler call
->> show_mem() to show the current memory usage state.
-> 
-> I am still somewhat unhappy about the spinlock, but I don't really
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-What's wrong with the spinlock? It exists there without my
-patch, I just make ++/-- of unatomic variable under this lock :)
+---1463808512-1528985845-1176879995=:3288
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> have a better suggestion either. Other than that, looks good to me.
-> 
-> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
+On Tue, 17 Apr 2007, John Anthony Kazos Jr. wrote:
+> --- linux-2.6.21-rc7.orig/Documentation/fb/framebuffer.txt	2007-02-04 13:44:54.000000000 -0500
+> +++ linux-2.6.21-rc7.mod/Documentation/fb/framebuffer.txt	2007-04-17 12:44:09.000000000 -0400
+> @@ -217,7 +217,7 @@ vsync length.
+>    +----------+---------------------------------------------+----------+-------+
+>    |          |                ^                            |          |       |
+>    |          |                |upper_margin                |          |       |
+> -  |          |                ¥                            |          |       |
+> +  |          |                Â¥                            |          |       |
 
+While you're at it, you may want to use a better suited UTF-8 arrow symbol
+instead of the louse JPY symbol I chose many years ago ;-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808512-1528985845-1176879995=:3288--
