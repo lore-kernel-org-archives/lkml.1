@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993035AbXDRTBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993039AbXDRTF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993035AbXDRTBM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 15:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993037AbXDRTBM
+	id S2993039AbXDRTF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 15:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993041AbXDRTF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 15:01:12 -0400
-Received: from pat.uio.no ([129.240.10.15]:58262 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993036AbXDRTBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 15:01:10 -0400
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
-	namespace" clone flag
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, ebiederm@xmission.com,
-       serue@us.ibm.com, linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, containers@lists.osdl.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070418150110.GA29815@infradead.org>
-References: <20070416195652.GA350@sergelap.austin.ibm.com>
-	 <m1k5wbjrsh.fsf@ebiederm.dsl.xmission.com>
-	 <E1HdlYr-00015O-00@dorka.pomaz.szeredi.hu>
-	 <m1zm56j27m.fsf@ebiederm.dsl.xmission.com>
-	 <E1HdsX6-0002Kl-00@dorka.pomaz.szeredi.hu>
-	 <m1vefuixp5.fsf@ebiederm.dsl.xmission.com>
-	 <E1He6C7-0003Xu-00@dorka.pomaz.szeredi.hu>
-	 <1176904505.6796.79.camel@heimdal.trondhjem.org>
-	 <E1HeAkl-000490-00@dorka.pomaz.szeredi.hu>
-	 <1176906389.6796.96.camel@heimdal.trondhjem.org>
-	 <20070418150110.GA29815@infradead.org>
-Content-Type: text/plain
-Date: Wed, 18 Apr 2007 15:00:47 -0400
-Message-Id: <1176922847.6796.127.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.060)
-X-UiO-Scanned: 7238BF512EC9E9EC63BCC5EB5D8C29D8E42FE73B
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 51 total 1168764 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Wed, 18 Apr 2007 15:05:26 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1542 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993039AbXDRTF0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 15:05:26 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 18 Apr 2007 12:05:20 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+In-Reply-To: <20070418152355.GU11115@waste.org>
+Message-ID: <Pine.LNX.4.64.0704181120480.25880@alien.or.mcafeemobile.com>
+References: <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de>
+ <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>
+ <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de>
+ <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de>
+ <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
+ <20070418152355.GU11115@waste.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-18 at 16:01 +0100, Christoph Hellwig wrote:
-> I suspect the right answer here is to make nfs mount handling smarter.
-> The way mounting works the filesystem is allowed to choose whether it
-> can re-used a superblock or needs a new one.  In the NFS case we probably
-> want to allow multiple superblocks for the same export if important
-> paramaters like the security model mismatch.
+On Wed, 18 Apr 2007, Matt Mackall wrote:
 
-It might also be another application for layering. If I were able to
-share enough of the inode and dentry information between superblocks,
-then all sorts of interesting possibilities arise...
+> On Wed, Apr 18, 2007 at 07:48:21AM -0700, Linus Torvalds wrote:
+> > And "fairness by euid" is probably a hell of a lot easier to do than 
+> > trying to figure out the wakeup matrix.
+> 
+> For the record, you actually don't need to track a whole NxN matrix
+> (or do the implied O(n**3) matrix inversion!) to get to the same
+> result. You can converge on the same node weightings (ie dynamic
+> priorities) by applying a damped function at each transition point
+> (directed wakeup, preemption, fork, exit).
+> 
+> The trouble with any scheme like this is that it needs careful tuning
+> of the damping factor to converge rapidly and not oscillate and
+> precise numerical attention to the transition functions so that the sum of
+> dynamic priorities is conserved.
 
-Cheers
-  Trond
+Doing that inside the boundaries of the time constrains imposed by a 
+scheduler, is the interesting part. Given also that the size (and members) 
+of it (matrix) is dynamic.
+Also, a "wakup matrix" (if the name correctly pictures what it is for) 
+would help with latencies and priority inheritance, but not for 
+global fairness.
+The maniacal fairness focus we're seeing now, is due to the fact the 
+mainline can have extremely unfair behaviour under certain conditions. 
+IMO fairness, although important, should not be main objective of the 
+scheduler rewrite. Simplification and predictability should be on higher 
+priority, with interactivity achievements bound to decent fariness 
+constraints.
+
+
+
+
+- Davide
+
 
