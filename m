@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992982AbXDRSM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992988AbXDRSMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992982AbXDRSM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 14:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992984AbXDRSM2
+	id S2992988AbXDRSMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 14:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992989AbXDRSMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 14:12:28 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41891 "EHLO gaimboi.tmr.com"
+	Wed, 18 Apr 2007 14:12:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46372 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992982AbXDRSM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 14:12:27 -0400
-Message-ID: <46265F60.4040600@tmr.com>
-Date: Wed, 18 Apr 2007 14:11:44 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6> <200704131022.45315.rjw@sisk.pl> <46254666.2020308@tmr.com> <Pine.LNX.4.64.0704172045100.18821@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0704172045100.18821@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S2992988AbXDRSMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 14:12:45 -0400
+Date: Wed, 18 Apr 2007 20:12:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070418181218.GA13628@elte.hu>
+References: <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org> <20070418180203.GC31925@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070418180203.GC31925@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Tue, 17 Apr 2007, Bill Davidsen wrote:
->
->   
->> Rafael J. Wysocki wrote:
->>     
->>> [appropriate CCs added]
->>>
->>> On Friday, 13 April 2007 02:33, Robert P. J. Day wrote:
->>>       
->>>> just something i threw together, not in final form, but it represents
->>>> tossing the legacy PM stuff.  at the moment, the menuconfig entry for
->>>> PM_LEGACY lists it as "DEPRECATED", while the help screen calls it
->>>> "obsolete."  that's a good sign that it's getting close to the time
->>>> for it to go, and the removal is fairly straightforward, but there's
->>>> no mention of its removal in the feature removal schedule file.
->>>>         
->>> It's been like this for a long long time.  I think you're right that it can
->>> be
->>> dropped, but I don't know the details (eg. why it hasn't been dropped yet).
->>>
->>>       
->> One reason was that there are (were?) a number of machines which only powered
->> down properly using apm. It was discussed as part of shutting down after power
->> failure when your UPS is running out of power.
->>     
->
-> um ... what does APM have to do with legacy PM?  two different issues,
-> no?
->   
-Since the patches are going into apm.c and apm was used for suspend and 
-poweroff before ACPI was a feature of the hardware, I assume there's a 
-relationship. As of 2.6.9 ACPI still couldn't power down one of my old 
-boxes, it hasn't been updated since that time, so I can't say what later 
-kernels will do.
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+* William Lee Irwin III <wli@holomorphy.com> wrote:
 
+> It does largely achieve the sort of fairness it set out for itself as 
+> its design goal. One should also note that the queueing mechanism is 
+> more than flexible enough to handle prioritization by a number of 
+> different methods, and the large precision of its priorities is useful 
+> there. So a rather broad variety of policies can be implemented by 
+> changing the ->fair_key calculations.
+
+yeah. Note that i concentrated on the bit that makes the largest 
+interactivity improvement: to implement "precise scheduling" (a'ka 
+complete fairness) between the 100+ user tasks that do a complex 
+scheduling dance on a typical desktop on various workloads.
+
+	Ingo
