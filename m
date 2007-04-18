@@ -1,132 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422774AbXDRKEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422773AbXDRKEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422774AbXDRKEW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 06:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422769AbXDRKEV
+	id S1422773AbXDRKEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 06:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422772AbXDRKEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 06:04:21 -0400
-Received: from av7.karneval.cz ([81.27.192.15]:60207 "EHLO av6.karneval.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422774AbXDRKET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 06:04:19 -0400
-Message-id: <537016251706625678@karneval.cz>
-In-reply-to: <2428225437641930190@karneval.cz>
-Subject: [PATCH 3/11] Char: cyclades, init Ze immediately
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Wed, 18 Apr 2007 12:04:13 +0200 (CEST)
+	Wed, 18 Apr 2007 06:04:40 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:64887 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422773AbXDRKEi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 06:04:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q/SfETYLVzxUf09YxVkrrwcEb9vmyCdVSCxImFoVTo3GCK5aNvZ/jIdiBZv9YolI5SkEsolzJNZlJ3v9BATAsyK3zYyu+8uKHXquCHJYcKm7sT0JLxK8U3X4f/QHh7A+cuca54rZl9AZ7HnInm4HVJD/I9hF5/mBfTsQoTzngbI=
+Message-ID: <19a3b7a80704180304u72cc6612w2e6e0811226f1a52@mail.gmail.com>
+Date: Wed, 18 Apr 2007 12:04:36 +0200
+From: "Christoph Pfister" <christophpfister@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Kaffeine problem with CFS
+Cc: "=?ISO-8859-9?Q?S.=C7a=F0lar_Onur?=" <caglar@pardus.org.tr>,
+       linux-kernel@vger.kernel.org, "Michael Lothian" <mike@fireburn.co.uk>,
+       "Christophe Thommeret" <hftom@free.fr>,
+       "Jurgen Kofler" <kaffeine@gmx.net>,
+       "Ulrich Drepper" <drepper@redhat.com>
+In-Reply-To: <19a3b7a80704180252j72c955bcna5df5cb7057e6756@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200704141959.50076.caglar@pardus.org.tr>
+	 <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com>
+	 <20070418082744.GA14009@elte.hu>
+	 <19a3b7a80704180157g604f4cecna51a49bd1f4c7d38@mail.gmail.com>
+	 <20070418090117.GA20764@elte.hu>
+	 <19a3b7a80704180213i1ac84b2ch2b35220b62e3b67a@mail.gmail.com>
+	 <20070418091714.GA23446@elte.hu>
+	 <19a3b7a80704180225x3c8d6d60g366126862f05150@mail.gmail.com>
+	 <20070418092805.GA23125@elte.hu>
+	 <19a3b7a80704180252j72c955bcna5df5cb7057e6756@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, init Ze immediately
+2007/4/18, Christoph Pfister <christophpfister@gmail.com>:
+> 2007/4/18, Ingo Molnar <mingo@elte.hu>:
+> >
+> > * Christoph Pfister <christophpfister@gmail.com> wrote:
+> >
+> > > >which thread would be the most interesting to you - 9324?
+> > >
+> > > The thread which should wake the main thread - but hmm ... 9303 seems
+> > > to be rather dead-locked than doing pthread_cond_timedwait() ?
+> >
+> > ok, here it is, 9303 with better symbol names:
+> >
+> > #0  0xffffe410 in __kernel_vsyscall ()
+> > #1  0x4a2538ce in __lll_mutex_lock_wait () from /lib/libpthread.so.0
+> > #2  0x4a24f71c in _L_mutex_lock_79 () from /lib/libpthread.so.0
+> > #3  0x4a24f24d in pthread_mutex_lock () from /lib/libpthread.so.0
+> > #4  0xb79f64f9 in xine_play () from /usr/lib/libxine.so.1
+> > #5  0xb7a9b0fb in KXineWidget::slotSeekToPosition ()
+> >    from /usr/lib/kde3/libxinepart.so
+> > #6  0xb7a9b3bc in KXineWidget::wheelEvent () from /usr/lib/kde3/libxinepart.so
+> > #7  0x4b5f9150 in QWidget::event () from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #8  0x4b55353b in QApplication::internalNotify ()
+> >    from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #9  0x4b55526e in QApplication::notify ()
+> >    from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #10 0x4a72065e in KApplication::notify () from /usr/lib/libkdecore.so.4
+> > #11 0x4b4dd5de in QETWidget::translateWheelEvent ()
+> >    from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #12 0x4b4eb41d in QETWidget::translateMouseEvent ()
+> >    from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #13 0x4b4e9766 in QApplication::x11ProcessEvent ()
+> >    from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #14 0x4b4fb38b in QEventLoop::processEvents ()
+> >    from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #15 0x4b56ce30 in QEventLoop::enterLoop ()
+> >    from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #16 0x4b56cce6 in QEventLoop::exec () from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #17 0x4b55317f in QApplication::exec () from /usr/lib/qt-3.3/lib/libqt-mt.so.3
+> > #18 0x0806fc1a in QWidget::setUpdatesEnabled ()
+> > #19 0x49f9df10 in __libc_start_main () from /lib/libc.so.6
+> > #20 0x0806f7e1 in QWidget::setUpdatesEnabled ()
+> >
+> > does this make more sense to you?
+>
+> It's nearly impossible for me to find out which mutex is deadlocking.
+> There are 4 mutexs locked / released during xine_play (or one of the
+> possibly inlined functions) and to be honest I have little idea which
+> other thread is also involved in the deadlock (maybe some xine-lib
+> junkie could help you more with that).
+> It would be great if you could reproduce the same problem with a
+> xine-lib which has been compiled with debug support (so you'd get line
+> numbers in the back trace - that makes life _a lot_ easier and maybe I
+> could identify the problem that way) and the least optimization
+> possible ... :-)
+>
+> >         Ingo
 
-There will be no other choice after introducing pci probing anyway.
+Or I could try playing around a bit with your patchset and trying to
+reproduce it over here. Because I already have debug builds for
+xine-lib and compiling a new kernel can take place in the background
+it wouldn't be much effort for me.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-
----
-commit 15bad81f3abe0638e7ccf34fd14cf6c372146742
-tree 3dfe3a58322b197e80d09757e4049f1221240a6d
-parent 2d99f97963f6a60727c1cc8d21d3bdbf4ba48d7f
-author Jiri Slaby <jirislaby@gmail.com> Sun, 01 Apr 2007 22:20:05 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 10 Apr 2007 10:47:59 +0200
-
- drivers/char/cyclades.c |   59 ++++++-----------------------------------------
- 1 files changed, 8 insertions(+), 51 deletions(-)
-
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 1d5fe9a..43cf832 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -4714,12 +4714,14 @@ static void plx_init(void __iomem * addr, __u32 initctl)
- static int __devinit cy_init_Ze(unsigned long cy_pci_phys0,
- 		unsigned long cy_pci_phys2,
- 		struct RUNTIME_9060 __iomem *cy_pci_addr0,
--		void __iomem *cy_pci_addr2, int cy_pci_irq,
--		struct pci_dev *pdev)
-+		int cy_pci_irq, struct pci_dev *pdev)
- {
-+	void __iomem *cy_pci_addr2;
- 	unsigned int j;
- 	unsigned short cy_pci_nchan;
- 
-+	cy_pci_addr2 = pci_iomap(pdev, 2, CyPCI_Ze_win);
-+
- 	readl(&cy_pci_addr0->mail_box_0);
- #ifdef CY_PCI_DEBUG
- 	printk("Cyclades-Z/PCI: relocate winaddr=0x%lx ctladdr=0x%lx\n",
-@@ -4816,11 +4818,6 @@ static int __init cy_detect_pci(void)
- 	unsigned short i, j, cy_pci_nchan, plx_ver;
- 	unsigned short device_id, dev_index = 0;
- 	__u32 mailbox;
--	__u32 ZeIndex = 0;
--	void __iomem *Ze_addr0[NR_CARDS], *Ze_addr2[NR_CARDS];
--	__u32 Ze_phys0[NR_CARDS], Ze_phys2[NR_CARDS];
--	unsigned char Ze_irq[NR_CARDS];
--	struct pci_dev *Ze_pdev[NR_CARDS];
- 	int retval;
- 
- 	for (i = 0; i < NR_CARDS; i++) {
-@@ -5042,24 +5039,10 @@ static int __init cy_detect_pci(void)
- 			}
- 
- 			if (mailbox == ZE_V1) {
--				cy_pci_addr2 = pci_iomap(pdev, 2, CyPCI_Ze_win);
--				if (ZeIndex == NR_CARDS) {
--					printk("Cyclades-Ze/PCI found at "
--						"0x%lx but no more cards can "
--						"be used.\nChange NR_CARDS in "
--						"cyclades.c and recompile "
--						"kernel.\n",
--						(ulong)cy_pci_phys2);
--				} else {
--					Ze_phys0[ZeIndex] = cy_pci_phys0;
--					Ze_phys2[ZeIndex] = cy_pci_phys2;
--					Ze_addr0[ZeIndex] = cy_pci_addr0;
--					Ze_addr2[ZeIndex] = cy_pci_addr2;
--					Ze_irq[ZeIndex] = cy_pci_irq;
--					Ze_pdev[ZeIndex] = pdev;
--					ZeIndex++;
--				}
--				i--;
-+				retval = cy_init_Ze(cy_pci_phys0, cy_pci_phys2,
-+						cy_pci_addr0, cy_pci_irq, pdev);
-+				if (retval < 0)
-+					i--;
- 				continue;
- 			} else {
- 				cy_pci_addr2 = pci_iomap(pdev, 2, CyPCI_Zwin);
-@@ -5168,32 +5151,6 @@ static int __init cy_detect_pci(void)
- 		}
- 	}
- 
--	for (; ZeIndex != 0 && i < NR_CARDS; i++) {
--		cy_pci_phys0 = Ze_phys0[0];
--		cy_pci_phys2 = Ze_phys2[0];
--		cy_pci_addr0 = Ze_addr0[0];
--		cy_pci_addr2 = Ze_addr2[0];
--		cy_pci_irq = Ze_irq[0];
--		pdev = Ze_pdev[0];
--		for (j = 0; j < ZeIndex - 1; j++) {
--			Ze_phys0[j] = Ze_phys0[j + 1];
--			Ze_phys2[j] = Ze_phys2[j + 1];
--			Ze_addr0[j] = Ze_addr0[j + 1];
--			Ze_addr2[j] = Ze_addr2[j + 1];
--			Ze_irq[j] = Ze_irq[j + 1];
--			Ze_pdev[j] = Ze_pdev[j + 1];
--		}
--		ZeIndex--;
--		retval = cy_init_Ze(cy_pci_phys0, cy_pci_phys2, cy_pci_addr0,
--					cy_pci_addr2, cy_pci_irq, pdev);
--		if (retval < 0)
--			return i;
--	}
--	if (ZeIndex != 0) {
--		printk("Cyclades-Ze/PCI found at 0x%x but no more cards can be "
--			"used.\nChange NR_CARDS in cyclades.c and recompile "
--			"kernel.\n", (unsigned int)Ze_phys2[0]);
--	}
- 	return i;
- #else
- 	return 0;
+Christoph
