@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbXDRF0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbXDRFkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932396AbXDRF0S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 01:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932424AbXDRF0S
+	id S932451AbXDRFkA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 01:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXDRFkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 01:26:18 -0400
-Received: from iucha.net ([209.98.146.184]:57553 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932396AbXDRF0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 01:26:17 -0400
-Date: Wed, 18 Apr 2007 00:26:16 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-Message-ID: <20070418052616.GE24044@iucha.net>
-References: <87hcrfaqam.fsf@duaron.myhome.or.jp> <20070418011946.11679.34920.stgit@heimdal.trondhjem.org> <20070417195823.943f9472.akpm@linux-foundation.org> <1176865565.6796.16.camel@heimdal.trondhjem.org> <20070418033055.GA24044@iucha.net> <1176868485.6796.42.camel@heimdal.trondhjem.org> <20070418040730.GC24044@iucha.net> <20070417211350.ebba1493.akpm@linux-foundation.org> <20070418043040.GD24044@iucha.net> <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org>
+	Wed, 18 Apr 2007 01:40:00 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:35274 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932451AbXDRFj6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 01:39:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=RSiXyyiRl0Ad51biJaoi2D1yHusfK+GwJLJAzuFsxw1sUOnXi5JjNcTF7ikdjzsglR5SBcqQMt+2OQ+xEPM/Zt+2ekXgFeV/QRrDK6IjcTCkTLbXUBt6Law+ZswMsRSvc5g85gkIeXRh+na37oRHoVlqXJoc1CrE+aaJ01ydjOE=
+Message-ID: <4625AF20.7050904@gmail.com>
+Date: Wed, 18 Apr 2007 14:39:44 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7LkOrbQMr4cezO2T"
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+To: Mark Lord <liml@rtr.ca>
+CC: Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+References: <461D4E2C.6000704@redhat.com>	 <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>	 <461D54AF.3060706@redhat.com> <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com> <46253F14.4020304@rtr.ca> <462540CD.9080406@redhat.com> <46254416.6090202@rtr.ca>
+In-Reply-To: <46254416.6090202@rtr.ca>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
+> Chuck Ebbert wrote:
+>> Mark Lord wrote:
+>>> I'll patch it locally on my own machines, but what about the tens
+>>> of thousands of other Seagate notebook drive owners out there?
+>>>
+>>
+>> This is a problem with Seagate specifically, spinning back up
+>> on receipt of some command after spindown?
+> 
+> No, they just seem to be affected worse by it than some other brands.
+> The bug is that libata/SCSI now spin-down the drive before the distro's
+> scripts are done with it, so it spins down, and then gets spun up again
+> by the distro, and then spun down again by the distro.
+> 
+> And along the way, one/both of the two causes a full mechanism "park",
+> which is hard on things if abused (like this).
+> 
+> Or at least that's what I recall for it.  Tejun?
 
---7LkOrbQMr4cezO2T
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This really isn't a regression.  It's been always like that with libata.
+ libata doesn't make devices go into standby mode and shutdown(8) does
+it for libata.  The problem here is that libata does issue
+SYNCHRONIZE_CACHE on shutdown.  So, the sequence of event is...
 
-On Tue, Apr 17, 2007 at 10:14:02PM -0700, Linus Torvalds wrote:
-> On Tue, 17 Apr 2007, Florin Iucha wrote:
-> >=20
-> > Already did.  Traces from vanilla kernel at
-> >    http://iucha.net/nfs/21-rc7/big-copy
->=20
-> Well, there's a pdflush in io_schedule_timeout/congestion_wait, and=20
-> there's a nfsv4-scv in svc_recv/nfs_callback_sv, and a lot of processes=
-=20
-> either just in schedule_timeout or similar "normal" waiting (pollwait=20
-> etc).
->=20
-> [ The call traces could be prettier, but sadly, even if you enable frame=
-=20
->   pointers, the x86-64 kernel is too stupid to follow them. So you kind o=
-f=20
->   just have to ignore the noise) ]
->=20
-> The triggering process looks like it might be that "cp", it is in the=20
-> __wait_on_bit/sync_page/wait_on_page_bit/wait_on_page_writeback_range/=20
-> filemap_fdatawait.
->=20
-> Is this a trace from the "big copy" hang, or from a gnome splashscreen=20
-> hang? It *looks* like it's a big copy. Yes/no?
+1. shutdown(8) issues SYNCHRONIZE_CACHE followed by STANDBY_NOW
+2. kernel shutdown starts
+3. libata shutdown issues SYNCHRONIZE_CACHE
+4. power goes off
 
-It *is* big copy.
+Some drives seem to spin up at step #3 even when its cache is clean and
+power goes off right after the disk finishes the command.  So, it's
+really bad when it happens - spin down, spin up followed by immediate
+power off.
 
-I am monitoring the copy on the server, using "iostat 5".  It writes
-for a while at a fairly constant pace (on ext3 *), then it drops to 0 in 5-=
-10
-seconds and stays there...  Once I left it for a couple of hours and
-it did not pick up.
+SCSI part of the fix is queued in scsi-misc-2.6 tree and libata-dev part
+is acked and waiting to be merged, so the fix will be available in
+2.6.22.  However, it's disabled by default to remain compatible with the
+current behavior and requires userland change to fully fix the problem.
 
-Regards,
-florin
-
-(*) XFS exhibited wild ups and downs in the transaction rate, and JFS
-starts strong then loses steam and slowly settles to about half ext3's
-rate.
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---7LkOrbQMr4cezO2T
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGJav3ND0rFCN2b1sRAv55AJ9aWNV/QgVEO+vJyTny1ZC8unkWSwCgo5BP
-9SgwGGRFFDIh6fm2vk4P8lk=
-=lesM
------END PGP SIGNATURE-----
-
---7LkOrbQMr4cezO2T--
+-- 
+tejun
