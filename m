@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbXDRQGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbXDRQHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbXDRQGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 12:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbXDRQGi
+	id S1754093AbXDRQHj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 12:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXDRQHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 12:06:38 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:39640 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754077AbXDRQGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 12:06:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=qvtA0FOUsvhj2RKej52l1705yjq3ebrvCTQkF4XtT2bQx4F/pO7z6REvrwJ8N4mXL5MwCvw8C6Yed+ptOymVKWnNZhDnTotrsF0Vo1rctNLemUevr6AsGQbvLY7WyiGL9AXdsmVjesNZgxuYr3V0eaS7Hqv0LCuiDMyOK6umcOc=
-Message-ID: <46264201.3060007@gmail.com>
-Date: Thu, 19 Apr 2007 01:06:25 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 18 Apr 2007 12:07:38 -0400
+Received: from holomorphy.com ([66.93.40.71]:41705 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754093AbXDRQHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 12:07:38 -0400
+Date: Wed, 18 Apr 2007 09:07:22 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "S.??a??lar Onur" <caglar@pardus.org.tr>,
+       Christoph Pfister <christophpfister@gmail.com>,
+       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
+       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: Kaffeine problem with CFS
+Message-ID: <20070418160722.GB31925@holomorphy.com>
+References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <19a3b7a80704180555q4e0b26d5x54bbf34b4cd9d33e@mail.gmail.com> <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr> <20070418154811.GA16842@elte.hu>
 MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, dmitry.torokhov@gmail.com
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>	<20070417184110.GJ10619@htj.dyndns.org> <20070418170652.7bee0952@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070418170652.7bee0952@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070418154811.GA16842@elte.hu>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Wed, 18 Apr 2007 03:41:10 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
-> <patch>
-> 
-> OK, I hit a bit on the code. Once I saved a reference to the completion
-> in kobject_cleanup, it seemed to survive a load/unload testloop for a
-> module registering a device. However, I still dislike this "list of
-> waiters" approach, it looks too complex...
+On Wed, Apr 18, 2007 at 05:48:11PM +0200, Ingo Molnar wrote:
+>  static void requeue_task_fair(struct rq *rq, struct task_struct *p)
+>  {
+>  	dequeue_task_fair(rq, p);
+>  	p->on_rq = 0;
+> -	enqueue_task_fair(rq, p);
+> +	/*
+> +	 * Temporarily insert at the last position of the tree:
+> +	 */
+> +	p->fair_key = LLONG_MAX;
+> +	__enqueue_task_fair(rq, p);
+>  	p->on_rq = 1;
+> +
+> +	/*
+> +	 * Update the key to the real value, so that when all other
+> +	 * tasks from before the rightmost position have executed,
+> +	 * this task is picked up again:
+> +	 */
+> +	p->fair_key = rq->fair_clock - p->wait_runtime + p->nice_offset;
 
-Heh heh, I'm amazed it actually works.  Agreed that the list walking
-isn't pretty but adding completion to each kobject still feels like too
-much of overhead just for release waiting.  Any better ideas?
+At this point you might as well call the requeue operation something
+having to do with yield. I also suspect what goes on during the timer
+tick may eventually become something different from requeueing the
+current task, and furthermore class-dependent.
 
-Thanks.
 
--- 
-tejun
+-- wli
