@@ -1,178 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992698AbXDROx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992628AbXDRPAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992698AbXDROx6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 10:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992699AbXDROx6
+	id S2992628AbXDRPAZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 11:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992697AbXDRPAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 10:53:58 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57982 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S2992698AbXDROx5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 10:53:57 -0400
-Date: Wed, 18 Apr 2007 10:53:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-In-Reply-To: <20070417184110.GJ10619@htj.dyndns.org>
-Message-ID: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
+	Wed, 18 Apr 2007 11:00:25 -0400
+Received: from mx2.suse.de ([195.135.220.15]:48240 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992628AbXDRPAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 11:00:24 -0400
+Message-ID: <46263270.9010108@suse.com>
+Date: Wed, 18 Apr 2007 11:00:00 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Vladimir V. Saveliev" <vs@namesys.com>
+Cc: a.righi@cineca.it, linux-kernel@vger.kernel.org, reiserfs-dev@namesys.com,
+       Edward Shishkin <edward@namesys.com>, zam@clusterfs.com
+Subject: Re: Fwd: Fw: [2.6.20.4] BUG: dentry xattrs still in use in shrink_dcache_for_umount()
+ with reiserfs
+References: <20070413095219.02075323.akpm@linux-foundation.org> <462536B2.5060308@users.sourceforge.net> <c04ebacf0704180152qdc72fcdnd0755dbf070b40d2@mail.gmail.com> <200704181816.21166.vs@namesys.com>
+In-Reply-To: <200704181816.21166.vs@namesys.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007, Tejun Heo wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Hello, all.
+Vladimir V. Saveliev wrote:
+> Hello
 > 
-> Agreed with the problem but I'm not very enthusiastic for adding
-> kobj->owner.  How about the following?  exit() routines will have to
-> do device_unregister_wait() instead of device_unregister().  On return
-> from it, it's guaranteed that all references to it are dropped and
-> ->release is finished.  The caller is responsible for avoiding
-> deadlock, of course.
+> On Wednesday 18 April 2007 12:52, ReiserFS Developers Mailing List wrote:
+>> *Forwarded Conversation*
+>> Subject: *[2.6.20.4] BUG: dentry xattrs still in use in
+>> shrink_dcache_for_umount() with reiserfs*
+>> ------------------------
+>>
+>> * From: Andrea Righi* <righiandr@users.sourceforge.net> Reply-To:
+>> righiandr@users.sourceforge.net
+>> To: reiserfs-dev@namesys.com
+>> Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <
+>> akpm@linux-foundation.org>
+>> Date: Fri, Apr 13, 2007 at 3:04 PM
+>> Attachments: config.gz
+>>
+>> I can reproduce the problem umounting my /var (reiserfs), but it doesn't
+>> occur with /usr or /opt, that are reiserfs too.
+>>
+>> It seems very similar to this issue:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/hot-fixes/reiserfs-make-sure-all-dentries-refs-are-released-before-calling-kill_block_super-try-2.patch
+>>
+>> How the xattrs->d_count can be 1 if the dentry is explicitly released
+>> in reiserfs_kill_sb(), before calling kill_super_block()?
+>>
+> 
+> Jeff, in 2.6.20/fs/reiserfs/xattr.c we have get_xa_root,
+> which may increment xattr_root reference count either by 1 or 2:
+> 
+> If REISERFS_SB()->xattr_root != NULL - dentry reference count is incremented by 1 with dget.
+> 
+> If REISERFS_SB()->xattr_root == NULL, __get_xa_root is called which may increase xattr_root dentry reference count by 2:
+> once in lookup_one_len->__lookup_hash->cached_lookup->__d_lookup and once explicitly with dget in __get_xa_root.
 
-There's a problem with this approach.
+__get_xa_root() takes two references because it keeps one associated
+with the superblock to avoid the lookup and locking later and passes one
+back to the caller. When the file system is umounted, the saved
+reference is freed.
 
-Many drivers, especially those for hot-pluggable buses, register and
-unregister devices dynamically.  These events can occur in time-critical
-situations, where the driver cannot afford to wait for all the references
-to be dropped when unregistering a device.  It's okay to wait in a module
-exit routine, but to make things work the routine would have to wait for
-references to _all_ unregistered objects to go away, not just the
-references for the objects it unregisters at exit time.
+The fix Andrea mentioned is unrelated. It's a fix for another patch in
+- -mm. David Howells had a patch to tear down the entire dentry tree
+associated with a superblock, but it depended on there being no live
+references other than s_root at the time generic_shutdown_super is
+called. It just moves the freeing of the dentries to ->put_super rather
+than ->kill_sb.
 
-So let's see what changes are needed to make the approach workable.  We
-will have to maintain a count of objects whose release methods haven't
-been called yet.  The count has to be incremented every time an object is
-unregistered (or registered, it doesn't matter which) and decremented
-_after_ the release method returns -- meaning somewhere in the driver
-core.  When the count goes to zero, the exit routine is then allowed to
-terminate.
+> Do you think that could be a reason of the extra reference count on   xattr_root dentry?
 
-Hmmm, this is beginning to sound like a module-wide refcount which serves
-to block mod->exit().  In fact, it sounds almost identical to what
-Cornelia wrote, except that the refcount refers only to devices rather
-than arbitrary kobjects (and except that the blockage just before
-mod->exit returns instead of just after).  You can see where I'm
-leading...
+No, I don't think it is. Looking at the code now, it seems obvious, but
+I didn't notice it before and nobody else has reported a problem.
 
-BTW, Cornelia, there's a small problem with your patch set.  You have
-kobject_init() try to grab a reference to kobj->owner, but it's quite
-possible for kobj->owner to contain uninitialized garbage since the rest
-of the kernel is still unaware of its existence.  There's a patch below to
-fix things up.  I've got a second patch which makes device_initialize()  
-pass an owner to the embedded kobject, but I want to try it out a little
-before posting it.  :-)
+getxattr() doesn't require any VFS locking. When we get down into the
+reiserfs code, it takes a read lock. If we get two concurrent threads
+looking up an xattr before the root has been saved, there's a window
+where REISERFS_SB(s)->xattr_root is NULL but we've already looked it up
+and taken a reference on it.
 
+I have a patch set to clean up the extended attribute code that fixes
+this problem along the way by killing off the xattr locks and using the
+backing files/dirs i_mutex instead. I'll post them to the reiserfs
+mailing list.
 
-Incidentally, Tejun, I'm all in favor of a immediate-detach driver model 
-approach.  Unfortunately it's impossible to realize fully, although we 
-could come much closer than we are now.
+- -Jeff
 
-Here's an example where immediate-detach cannot be implemented.  A driver 
-binds to a device and uses that device is a kernel thread.  The thread 
-carries out certain operations which require it to hold the device 
-semaphore (because, for example, they need to be mutually exclusive with 
-unbind).
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-The driver's remove() method is called with the semaphore held.  If the
-thread tries to lock the semaphore at the same time and blocks, there is
-no way at all for the remove() method to force the thread to drop its
-reference.
-
-This isn't merely a theoretical example.  The USB hub driver works in
-exactly this way.
-
-Alan Stern
-
-
-
-Index: usb-2.6/include/linux/kobject.h
-===================================================================
---- usb-2.6.orig/include/linux/kobject.h
-+++ usb-2.6/include/linux/kobject.h
-@@ -71,7 +71,8 @@ static inline const char * kobject_name(
- 	return kobj->k_name;
- }
- 
--extern void kobject_init(struct kobject *);
-+extern void kobject_init_owner(struct kobject *, struct module *owner);
-+#define kobject_init(kobj)	kobject_init_owner(kobj, THIS_MODULE)
- extern void kobject_cleanup(struct kobject *);
- 
- extern int __must_check kobject_add(struct kobject *);
-@@ -84,7 +85,9 @@ extern int __must_check kobject_shadow_r
- 						const char *new_name);
- extern int __must_check kobject_move(struct kobject *, struct kobject *);
- 
--extern int __must_check kobject_register(struct kobject *);
-+extern int __must_check kobject_register_owner(struct kobject *,
-+		struct module *owner);
-+#define kobject_register(kobj)	kobject_register_owner(kobj, THIS_MODULE)
- extern void kobject_unregister(struct kobject *);
- 
- extern struct kobject * kobject_get(struct kobject *);
-Index: usb-2.6/lib/kobject.c
-===================================================================
---- usb-2.6.orig/lib/kobject.c
-+++ usb-2.6/lib/kobject.c
-@@ -164,10 +164,11 @@ static void verify_dynamic_kobject_alloc
- #endif
- 
- /**
-- *	kobject_init - initialize object.
-+ *	kobject_init_onwer - initialize object.
-  *	@kobj:	object in question.
-+ *	@owner: module owning @kobj.
-  */
--void kobject_init(struct kobject * kobj)
-+void kobject_init_owner(struct kobject * kobj, struct module *owner)
- {
- 	if (!kobj)
- 		return;
-@@ -178,6 +179,7 @@ void kobject_init(struct kobject * kobj)
- 	init_waitqueue_head(&kobj->poll);
- 	kobj->kset = kset_get(kobj->kset);
- 	/* Attempt to grab reference of owning module's kobject. */
-+	kobj->owner = owner;
- 	mod_kobject_get(kobj->owner);
- }
- 
-@@ -272,15 +274,16 @@ int kobject_add(struct kobject * kobj)
- 
- 
- /**
-- *	kobject_register - initialize and add an object.
-+ *	kobject_register_owner - initialize and add an object.
-  *	@kobj:	object in question.
-+ *	@owner:	module owning @kobj.
-  */
- 
--int kobject_register(struct kobject * kobj)
-+int kobject_register_owner(struct kobject * kobj, struct module *owner)
- {
- 	int error = -EINVAL;
- 	if (kobj) {
--		kobject_init(kobj);
-+		kobject_init_owner(kobj, owner);
- 		error = kobject_add(kobj);
- 		if (!error)
- 			kobject_uevent(kobj, KOBJ_ADD);
-@@ -750,8 +753,8 @@ void subsys_remove_file(struct subsystem
- }
- #endif  /*  0  */
- 
--EXPORT_SYMBOL(kobject_init);
--EXPORT_SYMBOL(kobject_register);
-+EXPORT_SYMBOL(kobject_init_owner);
-+EXPORT_SYMBOL(kobject_register_owner);
- EXPORT_SYMBOL(kobject_unregister);
- EXPORT_SYMBOL(kobject_get);
- EXPORT_SYMBOL(kobject_put);
-
+iD8DBQFGJjJwLPWxlyuTD7IRAle+AJ9erx2RC68KZWfkaIT/YkqFfYRsJgCgpEKA
+fVDdl8KSCE4OUeOQhtpaLEY=
+=YaYd
+-----END PGP SIGNATURE-----
