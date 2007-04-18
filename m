@@ -1,127 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422897AbXDRMhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422966AbXDRMio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422897AbXDRMhF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 08:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422958AbXDRMhE
+	id S1422966AbXDRMio (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 08:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422967AbXDRMio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 08:37:04 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:56379 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1422897AbXDRMhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 08:37:01 -0400
-Date: Wed, 18 Apr 2007 14:42:33 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Miller <davem@davemloft.net>, kaber@trash.net, poemann@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
-Message-ID: <20070418124233.GA2218@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 18 Apr 2007 08:38:44 -0400
+Received: from iucha.net ([209.98.146.184]:35964 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422966AbXDRMin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 08:38:43 -0400
+Date: Wed, 18 Apr 2007 07:38:42 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
+Message-ID: <20070418123842.GF24044@iucha.net>
+References: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org> <20070417195823.943f9472.akpm@linux-foundation.org> <1176865565.6796.16.camel@heimdal.trondhjem.org> <20070418033055.GA24044@iucha.net> <1176868485.6796.42.camel@heimdal.trondhjem.org> <20070418040730.GC24044@iucha.net> <20070417211350.ebba1493.akpm@linux-foundation.org> <20070418043040.GD24044@iucha.net> <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org> <20070417223738.8f49a39f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+jhVVhN62yS6hEJ8"
 Content-Disposition: inline
-In-Reply-To: <17953.30429.220756.818283@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070417223738.8f49a39f.akpm@linux-foundation.org>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I didn't analyse this bug report but probably it
-is nearly connected with one of the bugs visible in
-a log from this submit:
+--+jhVVhN62yS6hEJ8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-http://bugzilla.kernel.org/show_bug.cgi?id=8132
+On Tue, Apr 17, 2007 at 10:37:38PM -0700, Andrew Morton wrote:
+> Florin, can we please see /proc/meminfo as well?
 
-On 15-04-2007 02:50, Paul Mackerras wrote:
-> David Miller writes:
-> 
->> Here is Patrick McHardy's patch:
-> 
-> So this doesn't change process_input_packet(), which treats the case
-> where the first byte is 0xff (PPP_ALLSTATIONS) but the second byte is
-> 0x03 (PPP_UI) as indicating a packet with a PPP protocol number of
-> 0xff.  Arguably that's wrong since PPP protocol 0xff is reserved, and
-> the RFC does envision the possibility of receiving frames where the
-> control field has values other than 0x03.
-> 
-> Therefore I think this patch is probably better.  Could people try it
-> out and let me know if it fixes the problem?
-> 
-> Paul.
-> 
-> diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
-> index 933e2f3..caabbc4 100644
-> --- a/drivers/net/ppp_async.c
-> +++ b/drivers/net/ppp_async.c
-> @@ -802,9 +802,9 @@ process_input_packet(struct asyncppp *ap)
->  
->  	/* check for address/control and protocol compression */
->  	p = skb->data;
-> -	if (p[0] == PPP_ALLSTATIONS && p[1] == PPP_UI) {
-> +	if (p[0] == PPP_ALLSTATIONS) {
->  		/* chop off address/control */
-> -		if (skb->len < 3)
-> +		if (p[1] != PPP_UI || skb->len < 3)
->  			goto err;
->  		p = skb_pull(skb, 2);
->  	}
+   http://iucha.net/nfs/21-rc7-nfs2/meminfo
 
-Let's look farther:
+> Also the result of `echo m > /proc/sysrq-trigger'
 
->        proto = p[0];
->        if (proto & 1) {
->                /* protocol is compressed */
->                skb_push(skb, 1)[0] = 0;
+   http://iucha.net/nfs/21-rc7-nfs2/big-copy
 
-BTW - about Patrick's patch:
+This has 'echo m > /proc/sysrq-trigger', 'echo t >
+/proc/sysrq-trigger' and 'echo 0 > /proc/sys/sunrpc/rpc_debug'.
 
-skb_push seems to be dependent here on the 1-st char of
-skb->data, if above (p[0] != PPP_ALLSTATIONS), but on the
-3-rd char otherwise (after skb_pull). But, Patrick's patch
-reserves the place for this, looking always at 1-st char
-(buf[0]) independently of PPP_ALLSTATIONS char presence,
-or otherwise - always treating this char as protocol char.
-It looks safe because of PPP_ALLSTATION current value,
-but isn't too understandable.
+The output from the server's 'iostat 5' is at
 
-On the other hand, without any reservation in the
-ppp_async_input for the (buf[0] == PPP_ALLSTATIONS) case,
-probably 4-byte alignement isn't achieved as planned. 
+   http://iucha.net/nfs/21-rc7-nfs2/iostat
 
->        } else {
->                if (skb->len < 2)
->                        goto err;
->                proto = (proto << 8) + p[1];
->                if (proto == PPP_LCP)
->                        async_lcp_peek(ap, p, skb->len, 1);
->        }
->
->        /* queue the frame to be processed */
->        skb->cb[0] = ap->state;
->        skb_queue_tail(&ap->rqueue, skb);
->        ap->rpkt = NULL;
->        ap->state = 0;
->        return;
->
-> err:
->        /* frame had an error, remember that, reset SC_TOSS & SC_ESCAPE */
->        ap->state = SC_PREV_ERROR;
->        if (skb) {
->                /* make skb appear as freshly allocated */
-
-Probably this isn't always true and here the problem
-started...
-
->                skb_trim(skb, 0);
->                skb_reserve(skb, - skb_headroom(skb));
-
-Isn't here lost e.g. NET_SKB_PAD probably reserved by
-dev_alloc_skb?
-
-On the other hand - this kind of pad can very good hide
-similar reservation problems in many other places - maybe
-it should be omitted or somehow counted in WARNs when some
-debugging options are active?
+This run it copied 5.6G (vs yesterday's 2.5G).
 
 Regards,
-Jarek P.
+florin
+
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--+jhVVhN62yS6hEJ8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGJhFSND0rFCN2b1sRAvIxAKCgLo11F43vX47b6AJlX+xwc2o8/QCePJ54
+N9/0DIxm7etG+aCP2JOaYFU=
+=7bYR
+-----END PGP SIGNATURE-----
+
+--+jhVVhN62yS6hEJ8--
