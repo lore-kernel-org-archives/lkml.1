@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161430AbXDRBsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161434AbXDRB4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161430AbXDRBsh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 21:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161436AbXDRBsK
+	id S1161434AbXDRB4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 21:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161436AbXDRB4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 21:48:10 -0400
-Received: from c-69-242-210-120.hsd1.mi.comcast.net ([69.242.210.120]:57967
-	"EHLO heimdal.trondhjem.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161430AbXDRBsH (ORCPT
+	Tue, 17 Apr 2007 21:56:52 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:44929 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161434AbXDRB4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 21:48:07 -0400
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH 2/4] NFS: Don't clear PG_writeback until after we've processed unstable writes
-Date: Tue, 17 Apr 2007 21:29:31 -0400
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Florin Iucha <florin@iucha.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-Message-Id: <20070418012931.11679.60451.stgit@heimdal.trondhjem.org>
-In-Reply-To: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
-References: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.11
+	Tue, 17 Apr 2007 21:56:51 -0400
+Date: Tue, 17 Apr 2007 21:56:49 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: David Wagner <daw@cs.berkeley.edu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: AppArmor FAQ
+In-Reply-To: <f03mli$8g8$1@taverner.cs.berkeley.edu>
+Message-ID: <Line.LNX.4.64.0704172143150.21359@d.namei>
+References: <20070416213350.GB4030@suse.de> <1176822230.3366.65.camel@localhost.localdomain>
+ <462553A9.70504@novell.com> <1176852059.5946.128.camel@localhost.localdomain>
+ <f03mli$8g8$1@taverner.cs.berkeley.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+On Tue, 17 Apr 2007, David Wagner wrote:
 
-Ensure that we don't release the PG_writeback lock until after the page has
-either been redirtied, or queued on the nfs_inode 'commit' list.
+> Maybe you'd like to confine the PHP interpreter to limit what it can do.
+> That might be a good application for something like AppArmor.  You don't
+> need comprehensive information flow control for that kind of use, and
+> it would likely just get in the way.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+SELinux can do this, it's policy-flexible.  You can even simulate a 
+pathame-based policy language with a consequential loss of control:
 
- fs/nfs/write.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+http://seedit.sourceforge.net/
 
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 3ed4feb..8e94246 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -920,8 +920,8 @@ out_bad:
- 		list_del(&data->pages);
- 		nfs_writedata_release(data);
- 	}
--	nfs_end_page_writeback(req->wb_page);
- 	nfs_redirty_request(req);
-+	nfs_end_page_writeback(req->wb_page);
- 	nfs_clear_page_writeback(req);
- 	return -ENOMEM;
- }
-@@ -966,8 +966,8 @@ static int nfs_flush_one(struct inode *inode, struct list_head *head, int how)
- 	while (!list_empty(head)) {
- 		struct nfs_page *req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
--		nfs_end_page_writeback(req->wb_page);
- 		nfs_redirty_request(req);
-+		nfs_end_page_writeback(req->wb_page);
- 		nfs_clear_page_writeback(req);
- 	}
- 	return -ENOMEM;
-@@ -1002,8 +1002,8 @@ out_err:
- 	while (!list_empty(head)) {
- 		req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
--		nfs_end_page_writeback(req->wb_page);
- 		nfs_redirty_request(req);
-+		nfs_end_page_writeback(req->wb_page);
- 		nfs_clear_page_writeback(req);
- 	}
- 	return error;
+> might well use AppArmor.  They solve different problems and have different
+> tradeoffs.  There is room for more than one security tool in the world.
+
+That is not the point of this discussion, although we can at least be 
+thankful that Linus didn't request that the networking layer be pluggable 
+to the extent that the security layer is, otherwise we'd have a menagerie 
+of "better" TCP stacks, TOE frameworks, STREAMS modules and whatever other 
+fantastic ideas that people might be inclined to drag out of the kitchen 
+sink.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
