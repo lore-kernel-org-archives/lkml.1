@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXDRJN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422665AbXDRJPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422663AbXDRJN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422673AbXDRJN0
+	id S1422665AbXDRJPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 05:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422692AbXDRJPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:13:26 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:51137 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422672AbXDRJNZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:13:25 -0400
-To: ebiederm@xmission.com
-CC: serue@us.ibm.com, linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, containers@lists.osdl.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-reply-to: <m1vefuixp5.fsf@ebiederm.dsl.xmission.com>
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-References: <20070412164620.588752236@szeredi.hu>
-	<20070412203208.GG27772@sergelap.austin.ibm.com>
-	<m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
-	<1176713221.9488.17.camel@ram.us.ibm.com>
-	<E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
-	<1176716941.9488.57.camel@ram.us.ibm.com>
-	<E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
-	<m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
-	<E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu>
-	<m1zm58jfj3.fsf@ebiederm.dsl.xmission.com>
-	<20070416195652.GA350@sergelap.austin.ibm.com>
-	<m1k5wbjrsh.fsf@ebiederm.dsl.xmission.com>
-	<E1HdlYr-00015O-00@dorka.pomaz.szeredi.hu>
-	<m1zm56j27m.fsf@ebiederm.dsl.xmission.com>
-	<E1HdsX6-0002Kl-00@dorka.pomaz.szeredi.hu> <m1vefuixp5.fsf@ebiederm.dsl.xmission.com>
-Message-Id: <E1He6C7-0003Xu-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 18 Apr 2007 11:11:19 +0200
+	Wed, 18 Apr 2007 05:15:18 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:45765 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422689AbXDRJPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 05:15:16 -0400
+Date: Wed, 18 Apr 2007 13:14:18 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: David Miller <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Patrick McHardy <kaber@trash.net>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
+Message-ID: <20070418091418.GA7117@2ka.mipt.ru>
+References: <4625D3D2.9030507@sw.ru> <20070418081707.GA29267@2ka.mipt.ru> <4625D7A8.5030209@sw.ru> <20070418084416.GB4241@2ka.mipt.ru> <4625DEFC.7040701@sw.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <4625DEFC.7040701@sw.ru>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 18 Apr 2007 13:14:30 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I've tried to make this unprivileged mount thing as simple as
-> > possible, and no simpler.  If we can make it even simpler, all the
-> > better.
+On Wed, Apr 18, 2007 at 01:03:56PM +0400, Pavel Emelianov (xemul@sw.ru) wrote:
+> > Yes, you are right, that it will not be freed in netlink_release(), 
+> > but it will be freed in netlink_dump() after it is processed (in no-error 
+> > path only though).
+> > 
 > 
-> We are certainly much more complex then the code in plan9 (just
-> read through it) so I think we have room for improvement.
+> But error path will leak it. On success path we would have
+> a leaked packet in sk_write_queue, since we did't see it in
+> skb_queue_purge() while doing netlink_release().
 > 
-> Just for reference what I saw in plan 9 was:
-> - No super user checks in it's mount, unmount, or namespace creation paths.
-> - A flag to deny new mounts but not new bind mounts (for administrative purposes
->   the comment said).
-> 
-> Our differences from plan9.
-> - suid capable binaries. (SUID please go away).
-> - A history of programs assuming only root could call mount/unmount.
+> Of course we can place the struts in code to handle the case
+> when we have a released socket with the attached callback, but
+> it is more correct (IMHO) not to allow to attach the callbacks
+> to dead sockets.
 
-I hate suid as well.  _The_ motivation behind this patchset was to get
-rid of "fusermount", a suid mount helper for fuse.
+That is why I've asked why such approach is used but not freeing
+callback in errror (well, no-dump name is better to describe that path)
+path, and more generally, why callback is attached, but not freed in the
+function, but instead is freed next time dump started.
 
-But I don't think suid is going away, and definitely not overnight.
-Also I don't think we want to require auditing userspace before
-enabling user mounts.
-
-If I understand correctly, your proposal is to get rid of MNT_USER and
-MNT_ALLOWUSERMNT and allow/deny unprivileged mounts and umounts based
-on a boolean sysctl flag and on a check if the target namespace is the
-initial namespace or not.  And maybe add some extra checks which
-prevent ugliness from happening with suid programs.  Is this correct?
-
-If so, how are we going to make sure this won't break existing
-userspace without doing a full audit of all suid programs in every
-distro that wants this feature?
-
-Also how are we going to prevent the user from creating millions of
-mounts, and using up all the kernel memory for vfsmounts?
-
-Miklos
+-- 
+	Evgeniy Polyakov
