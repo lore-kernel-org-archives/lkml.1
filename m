@@ -1,89 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbXDRASa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbXDRA2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753072AbXDRASa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 20:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXDRASa
+	id S1753170AbXDRA2H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 20:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXDRA2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 20:18:30 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:54719 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753072AbXDRAST (ORCPT
+	Tue, 17 Apr 2007 20:28:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:24897 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170AbXDRA2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 20:18:19 -0400
-Message-ID: <4624AD08.3030006@vmware.com>
-Date: Tue, 17 Apr 2007 04:18:32 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 17 Apr 2007 20:28:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A78zaoAg/nLfu4Or0isL5Hxe7sHYRK7LetALE/6wUMWYqFzwyVjzRwz3SCbNU7XOTQIyrZW70nysg3TfZLrSFqKzjt46xO+cIFuqiQXgCHH4Wv3RuFwW9FuvFEM5LNWLyEUK92wq7F3DAC5ml1oRmMMlXPM6bpnogi3xG3TGyUQ=
+Message-ID: <b6a2187b0704171728u4f7b7c08o7374fee8a7c3e2a5@mail.gmail.com>
+Date: Wed, 18 Apr 2007 08:28:04 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jasper Spaans" <jasper@vs19.net>
+Subject: Re: 4GB Physical. Less than 3GB in Linux.
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <837c0d330704171126n551010d7v6759fc9a516878ab@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Chris Wright <chrisw@sous-sol.org>, Hugh Dickins <hugh@veritas.com>,
-       David Rientjes <rientjes@google.com>,
-       Michel Lespinasse <walken@vmware.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] Pte drop ptep_get_and_clear paravirt op.patch
-References: <200704120530.l3C5Ubs0022821@zach-dev.vmware.com> <4624CC7C.6040107@goop.org>
-In-Reply-To: <4624CC7C.6040107@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.wZS4ieAkOMvNOj61QiUn9aS+YeM@ifi.uio.no>
+	 <46238936.3060501@shaw.ca>
+	 <b6a2187b0704160752u1c837f33p652c0d431b66459@mail.gmail.com>
+	 <837c0d330704171126n551010d7v6759fc9a516878ab@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Zachary Amsden wrote:
->   
->> In shadow mode hypervisors, ptep_get_and_clear achieves the desired
->> purpose of keeping the shadows in sync by issuing a native_get_and_clear,
->> followed by a call to pte_update, which indicates the PTE has been
->> modified.
->>
->> Direct mode hypervisors (Xen) have no need for this anyway, and will trap
->> the update using writable pagetables.
->>   
->>     
->
-> Jan Beulich just posted a patch for Xen/linux which specialzes
-> ptep_get_and_clear, which apparently improves kernel-compile performance
-> by 25-30% on some configurations.  I think we'll want to keep this.
->   
+On 4/18/07, Jasper Spaans <jasper@vs19.net> wrote:
 
-Are you sure that it still wins even with these patches?  I can't see 
-ptep_get_and_clear getting much faster than a pure non-emulated, and the 
-stress case which wins 25-30% is fork/exit being able to drop the pte 
-updates in zap_pte_range from trapping and / or going into a pte update 
-queue.  That is what my patches addressed for shadow paging performance 
-- the call to pte_update can be dropped - but you should already be 
-getting this benefit for Xen, since there pte_update is a nop.  Are you 
-sure you are unpinning the page tables and mapping them back as writable 
-pages prior to address space destruction?
+> Might be a setting in the bios... look for something like memory hole,
+> memory remapping, 4G DRAM, etc.
 
-Or is there another case which exercises zap_pte_range via munmap?  In 
-which case, you might be able to do things faster than trap and emulate 
-with a hypercall, but a 25-30% speedup sounds rather para-normal for 
-this type of change.  I would like to see a patch and some basic data 
-showing the speedup if possible.
+I checked. BIOS says 4GB. No memory hole setting. But I'll play around
+a bit more.
 
-I certainly have no objection to adding back ptep_get_and_clear hook, 
-but we need to fix the naming to be consistent (raw vs. native), which 
-is one thing the patch (dropping the hook) is trying to do.  We can 
-always re-add specialization for ptep_get_and_clear; the question is 
-what level is appropriate.  Do you allow ptep_get_and_clear itself to be 
-redefined or allow redefine of native_ptep_get_and_clear?
-
-One line of reasoning - for consistency, it seems that 
-native_ptep_get_and_clear should be just that, a non-paravirtualized pte 
-udpate.  Then it follows we should not allow native_ptep_get_and_clear 
-to be overridden.  In this case, for cleanliness is it better to add a 
-midlevel indirection; use raw_ptep_get_and_clear as the paravirt-hook, 
-which is called from ptep_get_and_clear, and allow access to the 
-non-paravirtualized native functions with native_ptep_get_and_clear.  If 
-that sounds agreeable, then this patch should be backed out.  I think 
-backing it out will damage the immediately following patches due to 
-sensitivity from code proximity.
-
-Maybe the best strategy is to just re-add ptep_get_and_clear as a 
-paravirt-op after the whole set of patches and before Jan's speedup patch?
-
-Zach
+Thanks,
+Jeff.
