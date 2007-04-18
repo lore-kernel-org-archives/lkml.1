@@ -1,60 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422824AbXDRKxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422832AbXDRK4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422824AbXDRKxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 06:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422829AbXDRKxS
+	id S1422832AbXDRK4P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 06:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422833AbXDRK4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 06:53:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55362 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422824AbXDRKxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 06:53:17 -0400
-Date: Wed, 18 Apr 2007 12:53:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Pfister <christophpfister@gmail.com>
-Cc: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
-       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
-       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: Kaffeine problem with CFS
-Message-ID: <20070418105310.GA5076@elte.hu>
-References: <20070418082744.GA14009@elte.hu> <19a3b7a80704180157g604f4cecna51a49bd1f4c7d38@mail.gmail.com> <20070418090117.GA20764@elte.hu> <19a3b7a80704180213i1ac84b2ch2b35220b62e3b67a@mail.gmail.com> <20070418091714.GA23446@elte.hu> <19a3b7a80704180225x3c8d6d60g366126862f05150@mail.gmail.com> <20070418092805.GA23125@elte.hu> <19a3b7a80704180252j72c955bcna5df5cb7057e6756@mail.gmail.com> <20070418101706.GA29031@elte.hu> <20070418103252.GA1621@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070418103252.GA1621@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Apr 2007 06:56:15 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:39150 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422832AbXDRK4P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 06:56:15 -0400
+Message-ID: <4625F92D.5000807@s5r6.in-berlin.de>
+Date: Wed, 18 Apr 2007 12:55:41 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+CC: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] include files: convert "include" subdirectory to UTF-8
+References: <alpine.DEB.0.83.0704171345510.914@sigma.j-a-k-j.com> <4625E7BD.6070404@s5r6.in-berlin.de>
+In-Reply-To: <4625E7BD.6070404@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I wrote:
+> Aren't we using ASCII for C sources?
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> hm. I've reviewed all uses of demux_lock. ./src/xine-engine/demux.c 
-> does this:
-> 
->         pthread_mutex_unlock( &stream->demux_lock );
-> 
->         lprintf ("sched_yield\n");
-> 
->         sched_yield();
->         pthread_mutex_lock( &stream->demux_lock );
-> 
-> why is this done? CFS has definitely changed the yield implementation 
-> so there could be some connection.
-> 
-> OTOH, in the 'hung' state none of the straces suggests any yield() 
-> call.
-
-yeah, there's no yield() call in any of the straces so i'd exclude this 
-as a possibility .
-
-	Ingo
+Not anymore, according to http://lkml.org/lkml/2007/4/18/94 .
+-- 
+Stefan Richter
+-=====-=-=== -=-- =--=-
+http://arcgraph.de/sr/
