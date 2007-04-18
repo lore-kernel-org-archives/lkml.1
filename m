@@ -1,91 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992456AbXDRN2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992462AbXDRN2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992456AbXDRN2Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 09:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992452AbXDRN2Q
+	id S2992462AbXDRN2r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 09:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992466AbXDRN2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 09:28:16 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:38715 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992456AbXDRN2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 09:28:15 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: "Christoph Pfister" <christophpfister@gmail.com>
-Subject: Re: Kaffeine problem with CFS
-Date: Wed, 18 Apr 2007 16:25:51 +0300
-User-Agent: KMail/1.9.6
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Michael Lothian" <mike@fireburn.co.uk>,
-       "Christophe Thommeret" <hftom@free.fr>,
-       "Jurgen Kofler" <kaffeine@gmx.net>,
-       "Ulrich Drepper" <drepper@redhat.com>
-References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <19a3b7a80704180555q4e0b26d5x54bbf34b4cd9d33e@mail.gmail.com> <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com>
-In-Reply-To: <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com>
+	Wed, 18 Apr 2007 09:28:47 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:45238 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992462AbXDRN2q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 09:28:46 -0400
+Date: Wed, 18 Apr 2007 18:56:32 +0530
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Subject: [PREEMPT_RT] [PATCH] Fix BUG: using smp_processor_id() in preemptible [00000000] code: nfsd/2852
+Message-ID: <20070418132632.GC10065@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1331041.vAu3ol99Ag";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704181625.51389.caglar@pardus.org.tr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: ankita@in.ibm.com (Ankita Garg)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1331041.vAu3ol99Ag
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi,
 
-18 Nis 2007 =C3=87ar tarihinde, Christoph Pfister =C5=9Funlar=C4=B1 yazm=C4=
-=B1=C5=9Ft=C4=B1:=20
-> Replacing the sched_yield in demux.c with an usleep(10) stopped those
-> seeking hangs here (at least I was able to pull the slider back and
-> forth during 2 mins without trouble compared to the few secs I need
-> earlier to get a hang).
+While running some tests on 2.6.20-rt8 with DEBUG_PREEMPT on, I hit the following BUG:
 
-Index: linux/kernel/sched.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=2D-- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -3785,7 +3785,7 @@ asmlinkage long sys_sched_yield(void)
-        _raw_spin_unlock(&rq->lock);
-        preempt_enable_no_resched();
-=20
-=2D       schedule();
-+       msleep(1);
-=20
-        return 0;
- }
+BUG: using smp_processor_id() in preemptible [00000000] code: nfsd/2852
+caller is drain_array+0x25/0x132
 
-which Ingo sends me to try also has the same effect on me. I cannot reprodu=
-ce=20
-hangs anymore with that patch applied top of CFS while one console checks o=
-ut=20
-SVN repos and other one compiles a small test software.
+Call Trace:
+ [<ffffffff8026d828>] dump_trace+0xbd/0x3d8
+ [<ffffffff8026db87>] show_trace+0x44/0x6d
+ [<ffffffff8026ddc8>] dump_stack+0x13/0x15
+ [<ffffffff80355e2e>] debug_smp_processor_id+0xe3/0xf1
+ [<ffffffff802e01b5>] drain_array+0x25/0x132
+ [<ffffffff802e07ac>] __cache_shrink+0xd5/0x1a6
+ [<ffffffff802e0a47>] kmem_cache_destroy+0x6c/0xe3
+ [<ffffffff8846c809>] :nfsd:nfsd4_free_slab+0x16/0x21
+ [<ffffffff8846c824>] :nfsd:nfsd4_free_slabs+0x10/0x36
+ [<ffffffff8846daf9>] :nfsd:nfs4_state_shutdown+0x1a2/0x1ae
+ [<ffffffff884570f8>] :nfsd:nfsd_last_thread+0x47/0x76
+ [<ffffffff8839463a>] :sunrpc:svc_destroy+0x8d/0xd1
+ [<ffffffff88394738>] :sunrpc:svc_exit_thread+0xba/0xc6
+ [<ffffffff8845795f>] :nfsd:nfsd+0x2a3/0x2b8
+ [<ffffffff802600f8>] child_rip+0xa/0x12
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+---------------------------
+| preempt count: 00000001 ]
+| 1-level deep critical section nesting:
+----------------------------------------
+.. [<ffffffff80355ddb>] .... debug_smp_processor_id+0x90/0xf1
+.....[<ffffffff802e01b5>] ..   ( <= drain_array+0x25/0x132)
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
 
---nextPart1331041.vAu3ol99Ag
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+This patch fixes the above issue which arises due to the call to
+smp_processor_id in drain_array() from mm/slab.c. smp_processor_id()
+invocation is redundant here, as the call to slab_spin_lock_irq() 
+already fills the value of this_cpu using raw_smp_processor_id().
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
 
-iD8DBQBGJhxfy7E6i0LKo6YRAhexAKC7e06ChKIeOsftHsqOo2QflV0xJgCcCjrc
-ZhNUhXbtbzZvUrPrOstfIMg=
-=tkyT
------END PGP SIGNATURE-----
+o Patch to fix BUG in drain_array()
 
---nextPart1331041.vAu3ol99Ag--
+Signed-off-by: Ankita Garg <ankita2in.ibm.com>
+--
+ slab.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+Index: linux-2.6.20-rt8/mm/slab.c
+===================================================================
+--- linux-2.6.20-rt8.orig/mm/slab.c	2007-04-18 18:41:22.000000000 +0530
++++ linux-2.6.20-rt8/mm/slab.c	2007-04-18 18:42:21.000000000 +0530
+@@ -4121,8 +4121,7 @@
+ int drain_array(struct kmem_cache *cachep, struct kmem_list3 *l3,
+ 		 struct array_cache *ac, int force, int node)
+ {
+-	int this_cpu = smp_processor_id();
+-	int tofree;
++	int tofree, this_cpu;
+ 
+ 	if (!ac || !ac->avail)
+ 		return 0;
+
+
+Regards,
+-- 
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
