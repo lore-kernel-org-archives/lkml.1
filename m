@@ -1,32 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992927AbXDRRuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992958AbXDRRvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992927AbXDRRuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 13:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992956AbXDRRuZ
+	id S2992958AbXDRRvK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 13:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992959AbXDRRvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 13:50:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46099 "EHLO mx2.mail.elte.hu"
+	Wed, 18 Apr 2007 13:51:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46175 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992927AbXDRRuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 13:50:24 -0400
-Date: Wed, 18 Apr 2007 19:49:45 +0200
+	id S2992958AbXDRRvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 13:51:08 -0400
+Date: Wed, 18 Apr 2007 19:50:17 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
        Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070418174945.GA7930@elte.hu>
-References: <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
+Subject: [patch] CFS scheduler, v3
+Message-ID: <20070418175017.GA5250@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -40,45 +38,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+this is the third release of the CFS patchset (against v2.6.21-rc7), and 
+can be downloaded from:
+ 
+   http://redhat.com/~mingo/cfs-scheduler/
 
-> The fact is:
-> 
->  - "fairness" is *not* about giving everybody the same amount of CPU 
->    time (scaled by some niceness level or not). Anybody who thinks 
->    that is "fair" is just being silly and hasn't thought it through.
+this is a pure "fix reported regressions" release so there's much less 
+churn:
 
-yeah, very much so.
+   5 files changed, 71 insertions(+), 29 deletions(-)
 
-But note that most of the reported CFS interactivity wins, as surprising 
-as it might be, were due to fairness between _the same user's tasks_. In 
-the typical case, 99% of the desktop CPU time is executed either as X 
-(root user) or under the uid of the logged in user, and X is just one 
-task. Even with a bad hack of making X super-high-prio, interactivity as 
-experienced by users still sucks without having fairness between the 
-other 100-200 user tasks that a desktop system is typically using.
+(the added lines are mostly debug related, not genuine increase in the 
+scheduler's size)
 
-'renicing X to -10' is a broken way of achieving: 'root uid should get 
-its share of CPU time too, no matter how many user tasks are running'. 
-We can do this much cleaner by saying: 'each uid, if it has any tasks 
-running, should get its fair share of CPU time, independently of the 
-number of tasks it is running'.
+Changes since -v2:
 
-In that sense 'fairness' is not global (and in fact it is almost _never_ 
-a global property, as X runs under root uid [*]), it is only the most 
-lowlevel scheduling machinery that can then be built upon. Higher-level 
-controls to allocate CPU power between groups of tasks very much make 
-sense - but according to the CFS interactivity test results i got from 
-people so far, they very much need this basic fairness machinery 
-_within_ the uid group too. So 'fairness' is still a powerful lower 
-level scheduling concept. And this all makes lots of sense to me.
+ - bugfix: the yield() implementation was too naive and broke xine-lib.
+   (this caused the Kaffine problems. Reported by S.Çağlar Onur)
 
-One purpose of doing the hierarchical scheduling classes stuff was to 
-enable such higher scope task group decisions too. Next i'll try to 
-figure out whether 'task group bandwidth' logic should live right within 
-sched_fair.c itself, or whether it should be layered separately as a 
-sched_group.c. Intutively i'd say it should live within sched_fair.c.
+ - performance fix: increased preemption granularity from 1msec to 
+   5msecs, to address the kernbench regression reported by Nick Pigging. 
+   (5msecs is probably still too low. This problem has also been pointed
+    out by Con Kolivas.)
+
+ - cleanup: renamed requeue_task to yield_task. (suggested by William 
+   Lee Irwin III)
+
+ - bugfix: use constant offset factor for nice levels instead of 
+   sched_granularity_ns. Thus nice levels work even if someone sets 
+   sched_granularity_ns to 0. NOTE: nice support is still naive, i'll 
+   address the many nice level related suggestions in -v4.
+
+ - compiler warning fix: get rid of unused variable on UP in sched.c.
+   (reported by Gene Heskett)
+
+ - debug: new /proc/sys/kernel/sysctl_sched_delayed_wakeups flag.
+   Default: off. This is to debug Gene Heskett's box.
+
+as usual, any sort of feedback, bugreports, fixes and suggestions are 
+more than welcome,
 
 	Ingo
-
-[*] There are distributions where X does not run under root uid anymore.
