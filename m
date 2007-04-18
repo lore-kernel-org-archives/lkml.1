@@ -1,94 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992970AbXDRXaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992995AbXDRXg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992970AbXDRXaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 19:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992989AbXDRXaS
+	id S2992995AbXDRXg2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 19:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992989AbXDRXg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 19:30:18 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2961 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992970AbXDRXaQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 19:30:16 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 18 Apr 2007 16:30:04 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-Reply-To: <20070418214816.GA10902@elte.hu>
-Message-ID: <Pine.LNX.4.64.0704181515290.25880@alien.or.mcafeemobile.com>
-References: <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de>
- <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
- <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
- <20070418174945.GA7930@elte.hu> <20070418175936.GA11980@elte.hu>
- <alpine.LFD.0.98.0704181223190.2828@woody.linux-foundation.org>
- <Pine.LNX.4.64.0704181304250.25880@alien.or.mcafeemobile.com>
- <20070418214816.GA10902@elte.hu>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 18 Apr 2007 19:36:28 -0400
+Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:2856 "EHLO
+	mail.rtr.ca" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S2992986AbXDRXg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 19:36:27 -0400
+Message-ID: <4626AB77.20709@rtr.ca>
+Date: Wed, 18 Apr 2007 19:36:23 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tejun Heo <htejun@gmail.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>,
+       Stephen.Clark@seclark.us
+Subject: Re: Loud "pop" coming from hard drive on reboot
+References: <461D4E2C.6000704@redhat.com>	 <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>	 <461D54AF.3060706@redhat.com> <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com> <46253F14.4020304@rtr.ca> <462540CD.9080406@redhat.com> <46254416.6090202@rtr.ca> <4625AF20.7050904@gmail.com>
+In-Reply-To: <4625AF20.7050904@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007, Ingo Molnar wrote:
+Tejun Heo wrote:
+> 
+> 1. shutdown(8) issues SYNCHRONIZE_CACHE followed by STANDBY_NOW
+> 2. kernel shutdown starts
+> 3. libata shutdown issues SYNCHRONIZE_CACHE
+> 4. power goes off
 
-> That's one reason why i dont think it's necessarily a good idea to 
-> group-schedule threads, we dont really want to do a per thread group 
-> percpu_alloc().
+Okay, after some experimentatino, it's the STANDBY_NOW that
+is causing the Power-Off_Retract_Count to increment on my machine.
 
-I still do not have clear how much overhead this will bring into the 
-table, but I think (like Linus was pointing out) the hierarchy should look 
-like:
+Tell me again why we think we need to issue that command ?
 
-Top (VCPU maybe?)
-    User
-        Process
-            Thread
-
-The "run_queue" concept (and data) that now is bound to a CPU, need to be 
-replicated in:
-
-ROOT <- VCPUs add themselves here
-    VCPU <- USERs add themselves here
-        USER <- PROCs add themselves here
-            PROC <- THREADs add themselves here
-                THREAD (ultimate fine grained scheduling unit)
-
-So ROOT, VCPU, USER and PROC will have their own "run_queue". Picking up a 
-new task would mean:
-
-VCPU = ROOT->lookup();
-USER = VCPU->lookup();
-PROC = USER->lookup();
-THREAD = PROC->lookup();
-
-Run-time statistics should propagate back the other way around.
-
-
-> In fact for threads the _reverse_ problem exists, threaded apps tend to 
-> _strive_ for more performance - hence their desperation of using the 
-> threaded programming model to begin with ;) (just think of media 
-> playback apps which are typically multithreaded)
-
-The same user nicing two different multi-threaded processes would expect a 
-predictable CPU distribution too. Doing that efficently (the old per-cpu 
-run-queue is pretty nice from many POVs) is the real challenge.
-
-
-
-- Davide
-
-
+Thanks.
