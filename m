@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbXDRJRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422673AbXDRJRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751682AbXDRJRK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXDRJRK
+	id S1422673AbXDRJRP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 05:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXDRJRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:17:10 -0400
-Received: from stinky.trash.net ([213.144.137.162]:54710 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbXDRJRH (ORCPT
+	Wed, 18 Apr 2007 05:17:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41477 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751690AbXDRJRJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:17:07 -0400
-Message-ID: <4625E202.8040604@trash.net>
-Date: Wed, 18 Apr 2007 11:16:50 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: Pavel Emelianov <xemul@sw.ru>, David Miller <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
-References: <4625D3D2.9030507@sw.ru> <20070418081707.GA29267@2ka.mipt.ru> <4625D637.2040308@trash.net> <20070418084206.GA4241@2ka.mipt.ru> <4625DBE2.5090402@trash.net> <20070418090720.GA25070@2ka.mipt.ru>
-In-Reply-To: <20070418090720.GA25070@2ka.mipt.ru>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 18 Apr 2007 05:17:09 -0400
+Date: Wed, 18 Apr 2007 10:20:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: minyard@acm.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] Provide better abstraction for the serial drivers to
+ xmit buf and tty
+Message-ID: <20070418102027.0e1edb2b@the-village.bc.nu>
+In-Reply-To: <20070418045423.GA12136@localdomain>
+References: <20070418045423.GA12136@localdomain>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> On Wed, Apr 18, 2007 at 10:50:42AM +0200, Patrick McHardy (kaber@trash.net) wrote:
-> 
->>>I thought that with releasing a socket, which will have a callback
->>>attached only results in a leak of the callback? In that case we can
->>>just free it in dump() just like it is done in no-error path already.
->>>Or do I miss something additional?
->>
->>That would only work if there is nothing to dump (cb->dump returns 0).
->>Otherwise it is not freed.
-> 
-> 
-> That is what I referred to as error path. Btw, with positive return
-> value we end up in subsequent call to input which will free callback
-> under lock as expected.
+> The basic reason for all this is to eventually allow the low-level
+> serial drivers to function without a uart_info structure being
+> allocated.  This will allow the serial console, debuggers like kgdb,
+> and the IPMI serial driver to use one interface to the uart code and
 
+Its cheaper to allocate a uart_info that keep doing all the checks, at
+least for port->info. I can see why you want to avoid port->info->tty as
+a debugger can end up running before the tty layer and that would be hard
+to work around.
 
-No, nothing is going to call netlink_dump after the initial call since
-the socket is gone.
+For the other macros - the macros are more efficient than the equivalent
+inline code generation at least for some gccs.
+
+Do you really need any of this change but to check info->tty ?
+
+Alan
 
