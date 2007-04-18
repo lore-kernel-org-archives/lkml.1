@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbXDRMRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393AbXDRM26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbXDRMRj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 08:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbXDRMRj
+	id S1752393AbXDRM26 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 08:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXDRM26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 08:17:39 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:41165 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752387AbXDRMRi (ORCPT
+	Wed, 18 Apr 2007 08:28:58 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44025 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752393AbXDRM25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 08:17:38 -0400
-Message-ID: <46260C5A.2020400@bx.jp.nec.com>
-Date: Wed, 18 Apr 2007 21:17:30 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH -mm take4 0/6] proposal for dynamic configurable netconsole
-Content-Type: text/plain; charset=ISO-2022-JP
+	Wed, 18 Apr 2007 08:28:57 -0400
+Date: Wed, 18 Apr 2007 13:29:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: 7eggert@gmx.de, Chuck Ebbert <cebbert@redhat.com>,
+       emisca <emisca.ml@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+Message-ID: <20070418132904.3322ba5f@the-village.bc.nu>
+In-Reply-To: <46260981.1040109@gmail.com>
+References: <88SeR-5Sf-15@gated-at.bofh.it>
+	<88Sov-662-3@gated-at.bofh.it>
+	<88SHV-6uL-29@gated-at.bofh.it>
+	<8agVk-3wc-81@gated-at.bofh.it>
+	<8b3IR-4mE-25@gated-at.bofh.it>
+	<8b3SA-4z3-5@gated-at.bofh.it>
+	<8b42g-51N-15@gated-at.bofh.it>
+	<8bbdm-7iS-27@gated-at.bofh.it>
+	<E1He8dA-0000mw-LI@be1.lrz>
+	<46260981.1040109@gmail.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+> Not that simple.  Most disks don't spin up on SYNCHRONIZE_CACHE if its 
+> cache is clean.  Sadly some disks actually spin up when it receives spin 
+> down command while spun down to immediately spin down again, so we would 
+> be fixing problem for some number of disks while breaking others.  :-(
 
-The netconsole is a very useful module for collecting kernel message under
-certain circumstances(e.g. disk logging fails, serial port is unavailable).
-
-But current netconsole is not flexible. For example, if you want to change ip
-address for logging agent, in the case of built-in netconsole, you can't change
-config except for changing boot parameter and rebooting your system, or in the
-case of module netconsole, you need to remove it and reload with different
-parameters.
-
-By adopting my patches, the current netconsole becomes a little complex.
-But the kernel messages(especially panic messages) is significant information
- to solve bugs and troubles promptly and we have been losing serial console
-port with PCs and Servers.
-
-I think that we need the environment in which we can collect kernel messages
-flexibly.
-
-So, I propose the following extended features for netconsole.
-
-1) support for multiple logging agents.
-2) add interface to access each parameter of netconsole
-   using sysfs.
-
-[changes since take3]
--changing kernel base from 2.6.21-rc3-mm2 to 2.6.21-rc6-mm1.
--introducing CONFIG_NETCONSOLE_DYNCON.
--cleanup
-
-Your comments are very welcome.
-
-Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
----
-
-
+Snoop the last command sent to the drive, that tells you if you can skip
+the cache flush ?
