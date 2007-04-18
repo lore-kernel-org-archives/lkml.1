@@ -1,116 +1,322 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422926AbXDRMIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422940AbXDRMJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422926AbXDRMIm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 08:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422938AbXDRMIm
+	id S1422940AbXDRMJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 08:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422943AbXDRMJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 08:08:42 -0400
-Received: from duempel.org ([81.209.165.42]:38654 "HELO duempel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1422926AbXDRMIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 08:08:41 -0400
-Date: Wed, 18 Apr 2007 14:08:05 +0200
-From: Max Kellermann <max@duempel.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] libata: add Samsung HD401LJ to the NCQ blacklist
-Message-ID: <20070418120805.GA16989@roonstrasse.net>
-Mail-Followup-To: Tejun Heo <htejun@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <20070418061541.GA11293@roonstrasse.net> <4625BA1A.9030808@gmail.com> <20070418074859.GA21494@roonstrasse.net> <4625CF43.5010704@gmail.com>
+	Wed, 18 Apr 2007 08:09:05 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:43290 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422940AbXDRMJA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 08:09:00 -0400
+Message-ID: <46260A4D.1050005@bx.jp.nec.com>
+Date: Wed, 18 Apr 2007 21:08:45 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
-Content-Disposition: inline
-In-Reply-To: <4625CF43.5010704@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: mpm@selenic.com
+CC: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [RFC][PATCH -mm take4 3/6] add interface for netconsole using sysfs
+References: <462605DC.2080804@bx.jp.nec.com>
+In-Reply-To: <462605DC.2080804@bx.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
 
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This patch contains the following changes.
 
-On 2007/04/18 09:56, Tejun Heo <htejun@gmail.com> wrote:
-> It's more likely your chipset just has busted MSI support.  Please
-> post the result of 'lspci -tv' and 'lspci -nn'.
+create a sysfs entry for netconsole in /sys/class/misc.
+This entry has elements related to netconsole as follows.
+You can change configuration of netconsole(writable attributes such as IP
+address, port number and so on) and check current configuration of netconsole.
 
-See attachments.  I found the "nomsi" workaround in a forum, and
-didn't bother to investigate the real cause yet.
+-+- /sys/class/misc/
+ |-+- netconsole/
+   |-+- port1/
+   | |--- id          [r--r--r--]  unique port id
+   | |--- local_ip    [rw-r--r--]  source IP to use, writable
+   | |--- local_mac   [r--r--r--]  source MAC address
+   | |--- local_port  [rw-r--r--]  source port number for UDP packets, writable
+   | |--- remote_ip   [rw-r--r--]  port number for logging agent, writable
+   | |--- remote_mac  [rw-r--r--]  MAC address for logging agent, writable
+   | ---- remote_port [rw-r--r--]  IP address for logging agent, writable
+   |--- port2/
+   |--- port3/
+   ...
 
-Max
+Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
+---
+Index: mm/drivers/net/netconsole.c
+===================================================================
+--- mm.orig/drivers/net/netconsole.c
++++ mm/drivers/net/netconsole.c
+@@ -45,6 +45,8 @@
+ #include <linux/sysrq.h>
+ #include <linux/smp.h>
+ #include <linux/netpoll.h>
++#include <linux/miscdevice.h>
++#include <linux/inet.h>
+ 
+ MODULE_AUTHOR("Maintainer: Matt Mackall <mpm@selenic.com>");
+ MODULE_DESCRIPTION("Console driver for network interfaces");
+@@ -67,6 +69,7 @@ static struct netpoll np = {
+ #ifdef CONFIG_NETCONSOLE_DYNCON
+ struct netconsole_target {
+ 	struct list_head list;
++	struct kobject obj;
+ 	int id;
+ 	struct netpoll np;
+ };
+@@ -77,6 +80,207 @@ static DEFINE_SPINLOCK(target_list_lock)
+ static int add_target(char* target_config);
+ static void remove_target(struct netconsole_target *nt);
+ static void cleanup_netconsole(void);
++static int setup_target_sysfs(struct netconsole_target *nt);
++
++static int miscdev_configured;
++
++static ssize_t show_id(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%d\n", nt->id);
++}
++
++static ssize_t show_local_port(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%d\n", nt->np.local_port);
++}
++
++static ssize_t show_remote_port(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%d\n", nt->np.remote_port);
++}
++
++static ssize_t show_local_ip(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%d.%d.%d.%d\n", HIPQUAD(nt->np.local_ip));
++}
++
++static ssize_t show_remote_ip(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%d.%d.%d.%d\n", HIPQUAD(nt->np.remote_ip));
++}
++
++static ssize_t show_local_mac(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%02x:%02x:%02x:%02x:%02x:%02x\n",
++		       nt->np.local_mac[0], nt->np.local_mac[1],
++		       nt->np.local_mac[2], nt->np.local_mac[3],
++		       nt->np.local_mac[4], nt->np.local_mac[5]);
++}
++
++static ssize_t show_remote_mac(struct netconsole_target *nt, char *buf)
++{
++	return sprintf(buf, "%02x:%02x:%02x:%02x:%02x:%02x\n",
++		       nt->np.remote_mac[0], nt->np.remote_mac[1],
++		       nt->np.remote_mac[2], nt->np.remote_mac[3],
++		       nt->np.remote_mac[4], nt->np.remote_mac[5]);
++}
++
++static ssize_t store_local_port(struct netconsole_target *nt, const char *buf,
++				size_t count)
++{
++	spin_lock(&target_list_lock);
++	nt->np.local_port = simple_strtol(buf, NULL, 10);
++	spin_unlock(&target_list_lock);
++
++	return count;
++}
++
++static ssize_t store_remote_port(struct netconsole_target *nt, const char *buf,
++				size_t count)
++{
++	spin_lock(&target_list_lock);
++	nt->np.remote_port = simple_strtol(buf, NULL, 10);
++	spin_unlock(&target_list_lock);
++
++	return count;
++}
++
++static ssize_t store_local_ip(struct netconsole_target *nt, const char *buf,
++			      size_t count)
++{
++	spin_lock(&target_list_lock);
++	nt->np.local_ip = ntohl(in_aton(buf));
++	spin_unlock(&target_list_lock);
++
++	return count;
++}
++
++static ssize_t store_remote_ip(struct netconsole_target *nt, const char *buf,
++			       size_t count)
++{
++	spin_lock(&target_list_lock);
++	nt->np.remote_ip = ntohl(in_aton(buf));
++	spin_unlock(&target_list_lock);
++
++	return count;
++}
++
++static ssize_t store_remote_mac(struct netconsole_target *nt, const char *buf,
++			       size_t count)
++{
++	unsigned char input_mac[ETH_ALEN] =
++		{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
++	const char *cur = buf;
++	int i = 0;
++
++	input_mac[i++] = simple_strtol(cur, NULL, 16);
++	while ((cur = strchr(cur, ':')) != NULL) {
++		cur++;
++		input_mac[i++] = simple_strtol(cur, NULL, 16);
++	}
++	if (i != ETH_ALEN)
++		return -EINVAL;
++	spin_lock(&target_list_lock);
++	memcpy(nt->np.remote_mac, input_mac, ETH_ALEN);
++	spin_unlock(&target_list_lock);
++
++	return count;
++}
++
++struct target_attr {
++	struct attribute attr;
++	ssize_t (*show)(struct netconsole_target*, char*);
++	ssize_t (*store)(struct netconsole_target*, const char*,
++			 size_t count);
++};
++
++#define NETCON_CLASS_ATTR(_name, _mode, _show, _store) \
++struct target_attr target_attr_##_name = \
++                           __ATTR(_name, _mode, _show, _store)
++
++static NETCON_CLASS_ATTR(id, S_IRUGO, show_id, NULL);
++static NETCON_CLASS_ATTR(local_port, S_IRUGO | S_IWUSR,
++			 show_local_port, store_local_port);
++static NETCON_CLASS_ATTR(remote_port, S_IRUGO | S_IWUSR,
++			 show_remote_port, store_remote_port);
++static NETCON_CLASS_ATTR(local_ip, S_IRUGO | S_IWUSR,
++			 show_local_ip, store_local_ip);
++static NETCON_CLASS_ATTR(remote_ip, S_IRUGO | S_IWUSR,
++			 show_remote_ip, store_remote_ip);
++static NETCON_CLASS_ATTR(local_mac, S_IRUGO, show_local_mac, NULL);
++static NETCON_CLASS_ATTR(remote_mac, S_IRUGO | S_IWUSR,
++			 show_remote_mac, store_remote_mac);
++
++static struct attribute *target_attrs[] = {
++	&target_attr_id.attr,
++	&target_attr_local_port.attr,
++	&target_attr_remote_port.attr,
++	&target_attr_local_ip.attr,
++	&target_attr_remote_ip.attr,
++	&target_attr_local_mac.attr,
++	&target_attr_remote_mac.attr,
++	NULL
++};
++
++static ssize_t show_target_attr(struct kobject *kobj,
++				    struct attribute *attr,
++				    char *buffer)
++{
++	struct target_attr *na =
++		container_of(attr, struct target_attr, attr);
++	struct netconsole_target * nt =
++		container_of(kobj, struct netconsole_target, obj);
++	if (na->show)
++		return na->show(nt, buffer);
++	else
++		return -EIO;
++}
++
++static ssize_t store_target_attr(struct kobject *kobj,
++				     struct attribute *attr,
++				     const char *buffer, size_t count)
++{
++	struct target_attr *na =
++		container_of(attr, struct target_attr, attr);
++	struct netconsole_target *nt =
++		container_of(kobj, struct netconsole_target, obj);
++	if (na->store)
++		return na->store(nt, buffer, count);
++	else
++		return -EIO;
++}
++
++static void release_target(struct kobject *kobj)
++{
++	struct netconsole_target *nt =
++		container_of(kobj, struct netconsole_target, obj);
++
++	remove_target(nt);
++}
++
++static struct sysfs_ops target_sysfs_ops = {
++	.show = show_target_attr,
++	.store = store_target_attr
++};
++
++static struct kobj_type target_ktype = {
++	.release = release_target,
++	.sysfs_ops = &target_sysfs_ops,
++	.default_attrs = target_attrs,
++};
++
++static struct miscdevice netconsole_miscdev = {
++	.minor = MISC_DYNAMIC_MINOR,
++	.name = "netconsole",
++};
++
++static int setup_target_sysfs(struct netconsole_target *nt)
++{
++	kobject_set_name(&nt->obj, "port%d", nt->id);
++	nt->obj.parent = &netconsole_miscdev.this_device->kobj;
++	nt->obj.ktype = &target_ktype;
++	return kobject_register(&nt->obj);
++}
+ 
+ static int add_target(char* target_config)
+ {
+@@ -117,6 +321,7 @@ static int add_target(char* target_confi
+ 	list_add(&new_target->list, &target_list);
+ 	spin_unlock(&target_list_lock);
+ 
++	retval = setup_target_sysfs(new_target);
+  out:
+ 	return retval;
+ }
+@@ -195,6 +400,15 @@ static int __init init_netconsole(void)
+ #ifdef CONFIG_NETCONSOLE_DYNCON
+ 	char *p;
+ 
++	if (misc_register(&netconsole_miscdev)) {
++		printk(KERN_ERR
++		       "netconsole: failed to register misc device for "
++		       "name = %s, id = %d\n",
++		       netconsole_miscdev.name, netconsole_miscdev.minor);
++		return -EIO;
++	} else
++		miscdev_configured = 1;
++
+ 	register_console(&netconsole);
+ 	if(!strlen(config)) {
+ 		printk(KERN_ERR "netconsole: not configured\n");
+@@ -227,8 +441,10 @@ static void cleanup_netconsole(void)
+ 
+ 	unregister_console(&netconsole);
+ 	list_for_each_entry_safe(nt, tmp, &target_list, list) {
+-		remove_target(nt);
++		kobject_unregister(&nt->obj);
+ 	}
++	if (miscdev_configured)
++		misc_deregister(&netconsole_miscdev);
+ #else
+ 	unregister_console(&netconsole);
+ 	netpoll_cleanup(&np);
+
+-- 
 
 
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="lspci_tv.txt"
-
--[0000:00]-+-00.0  VIA Technologies, Inc. VT3351 Host Bridge
-           +-00.1  VIA Technologies, Inc. VT3351 Host Bridge
-           +-00.2  VIA Technologies, Inc. VT3351 Host Bridge
-           +-00.3  VIA Technologies, Inc. VT3351 Host Bridge
-           +-00.4  VIA Technologies, Inc. VT3351 Host Bridge
-           +-00.5  VIA Technologies, Inc. VT3351 I/O APIC Interrupt Controller
-           +-00.7  VIA Technologies, Inc. VT3351 Host Bridge
-           +-01.0-[0000:01]--
-           +-02.0-[0000:02]--
-           +-03.0-[0000:03]--
-           +-0f.0  VIA Technologies, Inc. VT8251 AHCI/SATA 4-Port Controller
-           +-0f.1  VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE
-           +-10.0  VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
-           +-10.1  VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
-           +-10.2  VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
-           +-10.3  VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller
-           +-10.4  VIA Technologies, Inc. USB 2.0
-           +-11.0  VIA Technologies, Inc. VT8251 PCI to ISA Bridge
-           +-11.7  VIA Technologies, Inc. VT8251 Ultra VLINK Controller
-           +-12.0  VIA Technologies, Inc. VT6102 [Rhine-II]
-           +-13.0-[0000:04-06]--+-00.0-[0000:05]--
-           |                    \-00.1-[0000:06]--
-           +-13.1-[0000:07]--+-0b.0  Matrox Graphics, Inc. MGA 2064W [Millennium]
-           |                 +-0c.0  Intel Corporation 82546GB Gigabit Ethernet Controller
-           |                 +-0c.1  Intel Corporation 82546GB Gigabit Ethernet Controller
-           |                 \-0d.0  Promise Technology, Inc. PDC40718 (SATA 300 TX4)
-           +-18.0  Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
-           +-18.1  Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
-           +-18.2  Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
-           \-18.3  Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
-
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="lspci_nn.txt"
-
-00:00.0 Host bridge [0600]: VIA Technologies, Inc. VT3351 Host Bridge [1106:0351]
-00:00.1 Host bridge [0600]: VIA Technologies, Inc. VT3351 Host Bridge [1106:1351]
-00:00.2 Host bridge [0600]: VIA Technologies, Inc. VT3351 Host Bridge [1106:2351]
-00:00.3 Host bridge [0600]: VIA Technologies, Inc. VT3351 Host Bridge [1106:3351]
-00:00.4 Host bridge [0600]: VIA Technologies, Inc. VT3351 Host Bridge [1106:4351]
-00:00.5 PIC [0800]: VIA Technologies, Inc. VT3351 I/O APIC Interrupt Controller [1106:5351]
-00:00.7 Host bridge [0600]: VIA Technologies, Inc. VT3351 Host Bridge [1106:7351]
-00:01.0 PCI bridge [0604]: VIA Technologies, Inc. [K8T890 North / VT8237 South] PCI Bridge [1106:b999]
-00:02.0 PCI bridge [0604]: VIA Technologies, Inc. K8T890 PCI to PCI Bridge Controller [1106:a238]
-00:03.0 PCI bridge [0604]: VIA Technologies, Inc. K8T890 PCI to PCI Bridge Controller [1106:c238]
-00:0f.0 RAID bus controller [0104]: VIA Technologies, Inc. VT8251 AHCI/SATA 4-Port Controller [1106:3349]
-00:0f.1 IDE interface [0101]: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE [1106:0571] (rev 07)
-00:10.0 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
-00:10.1 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
-00:10.2 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
-00:10.3 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Controller [1106:3038] (rev 90)
-00:10.4 USB Controller [0c03]: VIA Technologies, Inc. USB 2.0 [1106:3104] (rev 90)
-00:11.0 ISA bridge [0601]: VIA Technologies, Inc. VT8251 PCI to ISA Bridge [1106:3287]
-00:11.7 Host bridge [0600]: VIA Technologies, Inc. VT8251 Ultra VLINK Controller [1106:287e]
-00:12.0 Ethernet controller [0200]: VIA Technologies, Inc. VT6102 [Rhine-II] [1106:3065] (rev 7c)
-00:13.0 PCI bridge [0604]: VIA Technologies, Inc. VT8251 Host Bridge [1106:287b]
-00:13.1 PCI bridge [0604]: VIA Technologies, Inc. VT8251 PCI to PCI Bridge [1106:287a]
-00:18.0 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration [1022:1100]
-00:18.1 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map [1022:1101]
-00:18.2 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller [1022:1102]
-00:18.3 Host bridge [0600]: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control [1022:1103]
-04:00.0 PCI bridge [0604]: VIA Technologies, Inc. VT8251 PCIE Root Port [1106:287c]
-04:00.1 PCI bridge [0604]: VIA Technologies, Inc. VT8251 PCIE Root Port [1106:287d]
-07:0b.0 VGA compatible controller [0300]: Matrox Graphics, Inc. MGA 2064W [Millennium] [102b:0519] (rev 01)
-07:0c.0 Ethernet controller [0200]: Intel Corporation 82546GB Gigabit Ethernet Controller [8086:1079] (rev 03)
-07:0c.1 Ethernet controller [0200]: Intel Corporation 82546GB Gigabit Ethernet Controller [8086:1079] (rev 03)
-07:0d.0 Mass storage controller [0180]: Promise Technology, Inc. PDC40718 (SATA 300 TX4) [105a:3d17] (rev 02)
-
---fUYQa+Pmc3FrFX/N--
