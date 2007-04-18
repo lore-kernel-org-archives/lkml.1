@@ -1,37 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932140AbXDRE4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbXDRE4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932140AbXDRE4F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 00:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXDRE4F
+	id S932179AbXDRE4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 00:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbXDRE4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 00:56:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55172 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753774AbXDRE4E (ORCPT
+	Wed, 18 Apr 2007 00:56:13 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:47535 "EHLO
+	asav10.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbXDRE4M convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 00:56:04 -0400
-Date: Tue, 17 Apr 2007 21:56:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-cc: Larry Woodman <lwoodman@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysctl_panic_on_oom broken
-In-Reply-To: <20070418104631.EE4A.Y-GOTO@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0704172154150.2877@schroedinger.engr.sgi.com>
-References: <462515CC.1080107@redhat.com> <Pine.LNX.4.64.0704171438390.8082@schroedinger.engr.sgi.com>
- <20070418104631.EE4A.Y-GOTO@jp.fujitsu.com>
+	Wed, 18 Apr 2007 00:56:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAAhBJUZKhRO4UGdsb2JhbACHN4hHAQEq
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Subject: Re: [PATCH] general: convert "kernel" subdirectory to UTF-8
+Date: Wed, 18 Apr 2007 00:56:09 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+References: <alpine.DEB.0.83.0704171317580.914@sigma.j-a-k-j.com>
+In-Reply-To: <alpine.DEB.0.83.0704171317580.914@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704180056.10398.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007, Yasunori Goto wrote:
+On Tuesday 17 April 2007 13:19, John Anthony Kazos Jr. wrote:
+>  /*
+> - * Samma på svenska..
+> + * Samma pÃ¥ svenska..
+>   */
 
-> If panic_on_oom is 1, only panic if mempolicy/cpuset is not used.
-> And if panic_on_oom is 2, panic on all case.
-> This might be desirable.
+Translating this comment into english so more people could understand it
+would be better option.
 
-Sounds good. Add some documentation mentioned that this may panic your 
-system if there is still plenty of memory available.
-
+-- 
+Dmitry
