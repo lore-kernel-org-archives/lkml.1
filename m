@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081AbXDRG0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbXDRGgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081AbXDRG0m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 02:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932500AbXDRG0l
+	id S1753963AbXDRGgs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 02:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbXDRGgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 02:26:41 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:21838 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932081AbXDRG0k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 02:26:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=HlG0beMY3YR0LnHEk50oV2+UxyTFGPyknaDw77q5/KAQK0xLu54sfuTt1hPVMbxfTZN4f1eB6mwtcVRpuY9BXDacySCq5STfa9yb3f0cEnb+yOhLRZ0Yc4j8Xnst9Ier3SZU6dEgGTBDhMWoDXzMqi96gBzQ7tQSTk4gd/qz3DU=
-Message-ID: <4625BA1A.9030808@gmail.com>
-Date: Wed, 18 Apr 2007 15:26:34 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 18 Apr 2007 02:36:48 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:48412 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016AbXDRGgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 02:36:47 -0400
+Message-ID: <4625BDA9.7080106@sw.ru>
+Date: Wed, 18 Apr 2007 10:41:45 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] libata: add Samsung HD401LJ to the NCQ blacklist
-References: <20070418061541.GA11293@roonstrasse.net>
-In-Reply-To: <20070418061541.GA11293@roonstrasse.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Dave Hansen <hansendc@us.ibm.com>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eric Dumazet <dada1@cosmosbay.com>, Linux MM <linux-mm@kvack.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M (v2)
+References: <4624E8F4.2090200@sw.ru> <1176831473.12599.30.camel@localhost.localdomain>
+In-Reply-To: <1176831473.12599.30.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Kellermann wrote:
-> Yet another hard drive which doesn't seem to get NCQ right.
+Dave Hansen wrote:
+> On Tue, 2007-04-17 at 19:34 +0400, Pavel Emelianov wrote:
+>> +#define SHOW_TOP_SLABS 10 
 > 
->  ata1: EH in ADMA mode, notifier 0x0 notifier_error 0x0 gen_ctl
->  0x1501000 status 0x400 next cpb count 0xB next cpb idx 0x0
->  [...]
->  ata1: timeout waiting for ADMA IDLE, stat=0x400
->  ata1: timeout waiting for ADMA LEGACY, stat=0x400
->  ata1.00: exception Emask 0x0 SAct 0x3fff SErr 0x200000 action 0x2
->  frozen
->  [...]
->  ata1: soft resetting port
+> Real minor nit on this one: SHOW_TOP_SLABS sounds like a bool.  "Should
+> I show the top slabs?"
 > 
-> http://lkml.org/lkml/2007/3/16/184
+> This might be a bit more clear:
 > 
-> Signed-off-by: Max Kellermann <max@duempel.org>
+> #define TOP_NR_SLABS_TO_SHOW 10 
 > 
->  drivers/ata/libata-core.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 0abd72d..39a4c05 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -3374,6 +3374,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
->  	{ "Maxtor 6L250S0",     "BANC1G10",     ATA_HORKAGE_NONCQ },
->  	/* NCQ hard hangs device under heavier load, needs hard power cycle */
->  	{ "Maxtor 6B250S0",	"BANC1B70",	ATA_HORKAGE_NONCQ },
-> +        { "SAMSUNG HD401LJ",	NULL,		ATA_HORKAGE_NONCQ, },
->  	/* Blacklist entries taken from Silicon Image 3124/3132
->  	   Windows driver .inf file - also several Linux problem reports */
->  	{ "HTS541060G9SA00",    "MB3OC60D",     ATA_HORKAGE_NONCQ, },
+> or
+> 
+> #define NR_SLABS_TO_SHOW 10
 
-Can you try it on another controller?  Say, a ahci or sil24?
+Agree :) Will fix in a moment.
 
--- 
-tejun
+> 
+> -- Dave
+> 
+> 
+
