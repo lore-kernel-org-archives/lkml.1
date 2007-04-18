@@ -1,153 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXDRP6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbXDRQAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbXDRP6H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 11:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXDRP6G
+	id S1754085AbXDRQAz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 12:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbXDRQAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 11:58:06 -0400
-Received: from stout.engsoc.carleton.ca ([134.117.69.22]:55767 "EHLO
-	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754069AbXDRP6F (ORCPT
+	Wed, 18 Apr 2007 12:00:55 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:27062 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754085AbXDRQAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 11:58:05 -0400
-Date: Wed, 18 Apr 2007 11:55:52 -0400
-From: Kyle McMartin <kyle@canonical.com>
-To: linux-kernel@vger.kernel.org
-Cc: alan@redhat.com, bcollins@ubuntu.com
-Subject: [RFC] [PATCH] Allow overriding module parameters from kernel command_line
-Message-ID: <20070418155552.GA3744@athena.road.mcmartin.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 18 Apr 2007 12:00:54 -0400
+Date: Wed, 18 Apr 2007 09:03:20 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bbpetkov@yahoo.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [KERNEL-DOC] kill warnings when building mandocs
+Message-Id: <20070418090320.3786edd6.randy.dunlap@oracle.com>
+In-Reply-To: <20070417104907.GA6155@gollum.tnic>
+References: <20070413091422.GA15426@zmei.tnic>
+	<20070414091341.7665d8b0.randy.dunlap@oracle.com>
+	<20070415071050.GA4002@gollum.tnic>
+	<20070417104907.GA6155@gollum.tnic>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the move to initramfs and heavily modular configs, which include
-loading storage drivers from early userspace, it's becoming harder
-to provide users with a way of overriding module parameters at boot.
+On Tue, 17 Apr 2007 12:49:07 +0200 Borislav Petkov wrote:
 
-Currently, users would have to break into the initramfs, edit the
-modprobe options, and then let boot continue. They have a much easier time
-dealing with adding options on the command line from Grub or what have you.
+> On Sun, Apr 15, 2007 at 09:10:50AM +0200, Borislav Petkov wrote:
+> > On Sat, Apr 14, 2007 at 09:13:41AM -0700, Randy Dunlap wrote:
+> > > On Fri, 13 Apr 2007 11:14:22 +0200 Borislav Petkov wrote:
+> > > 
+> > > > This patch shuts warnings of the sort:
+> > > > 
+> > > > make -C /mnt/samsung_200/sam/kernel/trees/21-rc6/build \
+> > > > 	KBUILD_SRC=/mnt/samsung_200/sam/kernel/trees/21-rc6 \
+> > > > 	KBUILD_EXTMOD="" -f /mnt/samsung_200/sam/kernel/trees/21-rc6/Makefile mandocs
+> > > > make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=scripts/basic
+> > > > make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=Documentation/DocBook mandocs
+> > > >   SRCTREE=/mnt/samsung_200/sam/kernel/trees/21-rc6/ /mnt/samsung_200/sam/kernel/trees/21-rc6/build/scripts/basic/docproc doc /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/wanbook.tmpl >Documentation/DocBook/wanbook.xml
+> > > >   if grep -q refentry Documentation/DocBook/wanbook.xml; then xmlto man -m /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/stylesheet.xsl -o Documentation/DocBook/man Documentation/DocBook/wanbook.xml ; gzip -f Documentation/DocBook/man/*.9; fi
+> > > > Note: meta version: No productnumber or alternative     sppp_close
+> > > > Note: meta version: No refmiscinfo@class=version        sppp_close
+> > > > Note: Writing sppp_close.9
+> > > > Note: meta version: No productnumber or alternative     sppp_open
+> > > > Note: meta version: No refmiscinfo@class=version        sppp_open
+> > > > 
+> > > > by adding a RefMiscInfo xml tag in the form of the current kernel version to 
+> > > > the function, struct and enum definitions in files included by kernel-doc when 
+> > > > building 'mandocs'.  However, the version string appears truncated on the manpage
+> > > > due to some constraints in the xml DTD for the man header, I believe, for the
+> > > > troff output is truncated too.
+> > > 
+> > > Hi Borislav,
+> > > 
+> > > I cannot reproduce this error (either, a la the tex error).
+> > > Any hints about how I could do so?
+> > 
+> > Hm, this is strange. IIRC, the refmiscinfo version tag is imposed by the docbook
+> > xsl stylesheets for manpages, see
+> > http://www.oasis-open.org/archives/docbook-apps/200508/msg00111.html and
+> > especially the 'man'-section, subsection 'extra2 field.' According to it, 
+> > the stylesheets check several different locations for version info to be put in
+> > the left footer position in the manpage, and if none is found, they simply state
+> > that there's no version info, so this is not an error message but simply a
+> > notification which, if nothing else, annoys while building the mandocs.
+> > 
+> > The URL cites the changelog of docbook-xsl 1.69.1 and this is also the
+> > version in SLED 10 you're using so you should be getting this, too. I'll
+> > try to dig deeper into this. The relevant packs I use are docbook-xsl:
+> > 1.72.0.dfsg.1-1, xmlto: 0.0.18-5.1 on debian unstable. 
+> 
+> Hi Randi,
+> 
+> I'm pretty sure the reason you cannot reproduce this warning is the line 
+> 
+> <xsl:param name="refentry.version.suppress">1</xsl:param>
+> 
+> which can be found in param.xsl, it being a part of the docbook-xsl
+> distribution. The parameter's name is self-explanatory and a '1' suppresses
+> the version generation. I was able to get this error because in the
+> debian docbook-xsl package this param value is set to 0 by default.
 
-I hacked out this patch quickly to re-parse saved_command_line[] when we
-load a module in an attempt to rectify this.
+Hm, I don't seem to have that file installed (except in
+/usr/share/xml/docbook/stylesheet/...).  Where would it normally
+be installed?
 
-(The specific use-case I was looking at here was HPA commands failing on
- sata_nv controllers, and needing to pass the adma=0 option to the module...
- Users had a hard time testing without an easy way of overriding the module.)
 
-Clearly this is not entirely optimal, because we're parsing command_line
-after the module params are parsed. This ends of being a policy decision,
-whether the /sbin/modprobe commandline should override the kernel
-command_line, or vice versa.
+> This means, some users will get this warning and some will not, depending on the
+> setting in the param.xsl file. What is the way to go here wrt to a solution
+> dealing with all cases:
+> 
+> 1. patch the kernel-doc?
+> 2. issue an info so that the user can suppress the annoying warning by
+> themselves?
+> 3. ...?
 
-Anyway, please comment...
 
-Cheers,
-	Kyle
+Are other people seeing these warning messages ??
+If so, I think that we should patch the kernel-doc.  I don't think
+that many people would read info about how to avoid the warnings.
 
-diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-index c83588c..e8465db 100644
---- a/include/linux/moduleparam.h
-+++ b/include/linux/moduleparam.h
-@@ -98,7 +98,7 @@ struct kparam_array
- extern int parse_args(const char *name,
- 		      char *args,
- 		      struct kernel_param *params,
--		      unsigned num,
-+		      unsigned num, unsigned strip_module,
- 		      int (*unknown)(char *param, char *val));
- 
- /* All the helper functions */
-diff --git a/init/main.c b/init/main.c
-index a92989e..a3d647f 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -478,7 +478,7 @@ void __init parse_early_param(void)
- 
- 	/* All fall through to do_early_param. */
- 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
--	parse_args("early options", tmp_cmdline, NULL, 0, do_early_param);
-+	parse_args("early options", tmp_cmdline, NULL, 0, 0, do_early_param);
- 	done = 1;
- }
- 
-@@ -549,7 +549,7 @@ asmlinkage void __init start_kernel(void)
- 	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
- 	parse_early_param();
- 	parse_args("Booting kernel", static_command_line, __start___param,
--		   __stop___param - __start___param,
-+		   __stop___param - __start___param, 0,
- 		   &unknown_bootoption);
- 	if (!irqs_disabled()) {
- 		printk(KERN_WARNING "start_kernel(): bug: interrupts were "
-diff --git a/kernel/module.c b/kernel/module.c
-index dcdb32b..e576242 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1914,10 +1914,21 @@ static struct module *load_module(void __user *umod,
- 			 sechdrs[setupindex].sh_addr,
- 			 sechdrs[setupindex].sh_size
- 			 / sizeof(struct kernel_param),
--			 NULL);
-+			 0, NULL);
- 	if (err < 0)
- 		goto arch_cleanup;
- 
-+	/* Allow user to override module params from the command line. */
-+	err = parse_args(mod->name, saved_command_line,
-+			 (struct kernel_param *)
-+			 sechdrs[setupindex].sh_addr,
-+			 sechdrs[setupindex].sh_size
-+			 / sizeof(struct kernel_param),
-+			 1, NULL);
-+	if (err < 0)
-+		printk(KERN_WARNING "%s: Ignoring bad module parameters passed on "
-+		       "kernel command line\n", mod->name);
-+
- 	err = mod_sysfs_setup(mod, 
- 			      (struct kernel_param *)
- 			      sechdrs[setupindex].sh_addr,
-diff --git a/kernel/params.c b/kernel/params.c
-index 1fc4ac7..7c9d3a0 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -50,10 +50,17 @@ static int parse_one(char *param,
- 		     char *val,
- 		     struct kernel_param *params, 
- 		     unsigned num_params,
--		     int (*handle_unknown)(char *param, char *val))
-+		     int (*handle_unknown)(char *param, char *val),
-+		     unsigned strip_module)
- {
- 	unsigned int i;
- 
-+	/* If we're parsing command_line[] for the module,
-+	 * strip off the module name before looking the param up.
-+	 */
-+	if (strip_module)
-+		strsep(&param, ".");
-+
- 	/* Find parameter */
- 	for (i = 0; i < num_params; i++) {
- 		if (parameq(param, params[i].name)) {
-@@ -130,7 +137,7 @@ static char *next_arg(char *args, char **param, char **val)
- int parse_args(const char *name,
- 	       char *args,
- 	       struct kernel_param *params,
--	       unsigned num,
-+	       unsigned num, unsigned strip_module,
- 	       int (*unknown)(char *param, char *val))
- {
- 	char *param, *val;
-@@ -147,7 +154,7 @@ int parse_args(const char *name,
- 
- 		args = next_arg(args, &param, &val);
- 		irq_was_disabled = irqs_disabled();
--		ret = parse_one(param, val, params, num, unknown);
-+		ret = parse_one(param, val, params, num, unknown, strip_module);
- 		if (irq_was_disabled && !irqs_disabled()) {
- 			printk(KERN_WARNING "parse_args(): option '%s' enabled "
- 					"irq's!\n", param);
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
