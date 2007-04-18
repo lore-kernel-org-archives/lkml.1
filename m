@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992768AbXDRV0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992790AbXDRV3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992768AbXDRV0g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 17:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992774AbXDRV0g
+	id S2992790AbXDRV3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 17:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992793AbXDRV3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 17:26:36 -0400
-Received: from holomorphy.com ([66.93.40.71]:54706 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992768AbXDRV0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 17:26:35 -0400
-Date: Wed, 18 Apr 2007 14:26:45 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-Message-ID: <20070418212645.GU2986@holomorphy.com>
-References: <20070418175017.GA5250@elte.hu>
+	Wed, 18 Apr 2007 17:29:22 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:39250 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992790AbXDRV3V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 17:29:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TmKaxmHiS1+4CiRUkYrvqrq+ZuaJXp+35X/l6NGywrFdlbQ1vrXMGcIK/uzDDlvSvLNgEF0G1FSpMi7hFXL+o2LbuJLm9hhOHgIALx728jlqfqA98OGE/yGvaNu4SqK8Dp8oF9PUv+Crwq5RfthmOYE/5HXea1Dy95lwwAT9hhU=
+Message-ID: <87f94c370704181429y24a727ffl44aa8f318b4619a3@mail.gmail.com>
+Date: Wed, 18 Apr 2007 17:29:18 -0400
+From: "Greg Freemyer" <greg.freemyer@gmail.com>
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+Cc: "Chuck Ebbert" <cebbert@redhat.com>, "Mark Lord" <liml@rtr.ca>,
+       Stephen.Clark@seclark.us, "Tejun Heo" <htejun@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, 7eggert@gmx.de,
+       emisca <emisca.ml@gmail.com>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       "Adrian Bunk" <bunk@stusta.de>, "Andrew Morton" <akpm@osdl.org>
+In-Reply-To: <200704182322.20514.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070418175017.GA5250@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <88SeR-5Sf-15@gated-at.bofh.it> <46265307.7060405@rtr.ca>
+	 <46265966.1040102@redhat.com> <200704182322.20514.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 07:50:17PM +0200, Ingo Molnar wrote:
-> this is the third release of the CFS patchset (against v2.6.21-rc7), and 
-> can be downloaded from:
->    http://redhat.com/~mingo/cfs-scheduler/
-> this is a pure "fix reported regressions" release so there's much less 
-> churn:
->    5 files changed, 71 insertions(+), 29 deletions(-)
-> (the added lines are mostly debug related, not genuine increase in the 
-> scheduler's size)
+On 4/18/07, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+>
+> On Wednesday 18 April 2007, Chuck Ebbert wrote:
+> > Mark Lord wrote:
+> > > Mark Lord wrote:
+> > >>
+> > >> With the patch applied, I don't see *any* new activity in those
+> > >> S.M.A.R.T.
+> > >> attributes over multiple hibernates (Linux "suspend-to-disk").
+> > >
+> > > Scratch that -- operator failure.  ;)
+> > > The patch makes no difference over hibernates in the SMART logs.
+> > >
+> > > It's still logging extra Power-Off_Retract_Count pegs,
+> > > which it DID NOT USED TO DO not so long ago.
+> > >
+> >
+> > Just to add to the fun, my problems are happening with the "old"
+> > IDE drivers...
+>
+> The issue you are experiencing results in the same problem (disk doing
+> power off retract) but it has a totally different root cause - your notebook
+> loses power on reboot.  It is actually a hardware problem and as you have
+> reported the same problem is present when using "the other" OS.
+>
+> I think that the issue needs to be fixed (by detecting affected notebook(s)
+> using DMI?) in Linux PM handling and not in IDE subsystem because:
+>
+> * there may be some other hardware devices affected by the power loss
+>   (== they require shutdown sequence)
+>
+> * the same problem will bite if somebody decides to use libata (FC7?)
+>
+> Bart
 
-It appears to me that the following can be taken in for mainline
-(or rejected for mainline) independently of the rest of the cfs patch.
+OpenSUSE 10.3 is still in Alpha stage (at least a few months away from
+release), but they too have switched to libata by default.  (You can
+override by adding a boot param).
 
-
--- wli
-
-Mark the runqueues ____cacheline_aligned_in_smp to avoid false sharing.
-
-Index: sched/kernel/sched.c
-===================================================================
---- sched.orig/kernel/sched.c	2007-04-18 14:10:03.593207728 -0700
-+++ sched/kernel/sched.c	2007-04-18 14:11:39.270660075 -0700
-@@ -278,7 +278,7 @@
- 	struct lock_class_key rq_lock_key;
- };
- 
--static DEFINE_PER_CPU(struct rq, runqueues);
-+static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
- 
- static inline int cpu_of(struct rq *rq)
- {
+Greg
+-- 
+Greg Freemyer
+The Norcross Group
+Forensics for the 21st Century
