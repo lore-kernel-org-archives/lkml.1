@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965055AbXDRCjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965379AbXDRDBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965055AbXDRCjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 22:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965122AbXDRCjQ
+	id S965379AbXDRDBq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 23:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXDRDBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 22:39:16 -0400
-Received: from omta05sl.mx.bigpond.com ([144.140.93.195]:57269 "EHLO
-	omta05sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965055AbXDRCjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 22:39:15 -0400
-Message-ID: <462584CB.8060706@bigpond.net.au>
-Date: Wed, 18 Apr 2007 12:39:07 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "Michael K. Edwards" <medwards.linux@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org,
+	Tue, 17 Apr 2007 23:01:46 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:45127 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965379AbXDRDBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 23:01:45 -0400
+Date: Tue, 17 Apr 2007 19:58:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu>	 <200704151327.13589.kernel@kolivas.org>	 <1176619384.6222.70.camel@Homer.simpson.net>	 <46240F98.3020800@bigpond.net.au>	 <1176776941.6222.21.camel@Homer.simpson.net>	 <20070417034050.GD25513@wotan.suse.de>	 <1176782489.13059.15.camel@Homer.simpson.net>	 <20070417041420.GF25513@wotan.suse.de>	 <20070417095140.GB22626@elte.hu> <4624CF3B.6040704@bigpond.net.au> <f2b55d220704171600w2de57cafhc1b2d8d7df67cc6b@mail.gmail.com>
-In-Reply-To: <f2b55d220704171600w2de57cafhc1b2d8d7df67cc6b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+       Florin Iucha <florin@iucha.net>, Adrian Bunk <bunk@stusta.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
+Message-Id: <20070417195823.943f9472.akpm@linux-foundation.org>
+In-Reply-To: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
+References: <20070416125905.GA2769@iucha.net>
+	<1176736734.6761.45.camel@heimdal.trondhjem.org>
+	<Pine.LNX.4.64.0704160904560.5473@woody.linux-foundation.org>
+	<1176740307.6761.56.camel@heimdal.trondhjem.org>
+	<1176741408.6761.62.camel@heimdal.trondhjem.org>
+	<1176792399.3035.30.camel@twins>
+	<20070416125905.GA2769@iucha.net>
+	<1176792399.3035.30.camel@twins>
+	<1176796503.3035.33.camel@twins>
+	<87hcrfaqam.fsf@duaron.myhome.or.jp>
+	<20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Wed, 18 Apr 2007 02:39:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael K. Edwards wrote:
-> On 4/17/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
->> The other way in which the code deviates from the original as that (for
->> a few years now) I no longer calculated CPU bandwidth usage directly.
->> I've found that the overhead is less if I keep a running average of the
->> size of a tasks CPU bursts and the length of its scheduling cycle (i.e.
->> from on CPU one time to on CPU next time) and using the ratio of these
->> values as a measure of bandwidth usage.
->>
->> Anyway it works and gives very predictable allocations of CPU bandwidth
->> based on nice.
-> 
-> Works, that is, right up until you add nonlinear interactions with CPU
-> speed scaling.  From my perspective as an embedded platform
-> integrator, clock/voltage scaling is the elephant in the scheduler's
-> living room.  Patch in DPM (now OpPoint?) to scale the clock based on
-> what task is being scheduled, and suddenly the dynamic priority
-> calculations go wild.  Nip this in the bud by putting an RT priority
-> on the relevant threads (which you have to do anyway if you need
-> remotely audio-grade latency), and the lock affinity heuristics break,
-> so you have to hand-tune all the thread priorities.  Blecch.
-> 
-> Not to mention the likelihood that the task whose clock speed you're
-> trying to crank up (say, a WiFi soft MAC) needs to be _lower_ priority
-> than the application.  (You want to crank the CPU for this task
-> because it runs with the RF hot, which may cost you as much power as
-> the rest of the platform.)  You'd better hope you can remove it from
-> the dynamic priority heuristics with SCHED_BATCH.  Otherwise
-> everything _else_ has to be RT priority (or it'll be starved by the
-> soft MAC) and you've basically tossed SCHED_NORMAL in the bin.  Double
-> blecch!
-> 
-> Is it too much to ask for someone with actual engineering training
-> (not me, unfortunately) to sit down and build a negative-feedback
-> control system that handles soft-real-time _and_ dynamic-priority
-> _and_ batch loads, CPU _and_ I/O scheduling, preemption _and_ clock
-> scaling?  And actually separates the accounting and control mechanisms
-> from the heuristics, so the latter can be tuned (within a well
-> documented stable range) to reflect the expected system usage
-> patterns?
-> 
-> It's not like there isn't a vast literature in this area over the past
-> decade, including some dealing specifically with clock scaling
-> consistent with low-latency applications.  It's a pity that people
-> doing academic work in this area rarely wade into LKML, even when
-> they're hacking on a Linux fork.  But then, there's not much economic
-> incentive for them to do so, and they can usually get their fill of
-> citation politics and dominance games without leaving their home
-> department.  :-P
-> 
-> Seriously, though.  If you're really going to put the mainline
-> scheduler through this kind of churn, please please pretty please knit
-> in per-task clock scaling (possibly even rejigged during the slice;
-> see e. g. Yuan and Nahrstedt's GRACE-OS papers) and some sort of
-> linger mechanism to keep from taking context switch hits when you're
-> confident that an I/O will complete quickly.
+On Tue, 17 Apr 2007 21:19:46 -0400 Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
 
-I think that this doesn't effect the basic design principles of spa_ebs 
-but just means that the statistics that it uses need to be rethought. 
-E.g. instead of measuring average CPU usage per burst in terms of wall 
-clock time spent on the CPU measure it in terms of CPU capacity (for the 
-want of a better word) used per burst.
+> 
+> I've split the issues introduced by the 2.6.21-rcX write code up into 4
+> subproblems.
+> 
+> The first patch is just a cleanup in order to ease review.
+> 
+> Patch number 2 ensures that we never release the PG_writeback flag until
+> _after_ we've either discarded the unstable request altogether, or put it
+> on the nfs_inode's commit or dirty lists.
+> 
+> Patch number 3 fixes the 'desynchronized value of nfs_i.ncommit' error. It
+> uses the PG_NEED_COMMIT flag as an indicator for whether or not the request
+> may be redirtied.
+> 
+> Patch number 4 protects the NFS '.set_page_dirty' address_space operation
+> against races with nfs_inode_add_request.
 
-I don't have suitable hardware for investigating this line of attack 
-further, unfortunately, and have no idea what would be the best way to 
-calculate this new statistic.
+For 2.6.21, yes?
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+I diligently tried to review this code but alas, it seems that my NFS
+knowledge remains not up to the task.  Please avoid buses.
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+At least it compiles with all the configs I could think of ;)
