@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbXDREmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbXDRErF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbXDREmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 00:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbXDREmg
+	id S1753558AbXDRErF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 00:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbXDRErF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 00:42:36 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1772 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbXDREmf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 00:42:35 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 17 Apr 2007 21:42:34 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>, Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Wed, 18 Apr 2007 00:47:05 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43810 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753558AbXDRErE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 00:47:04 -0400
+Date: Wed, 18 Apr 2007 06:46:30 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-Reply-To: <20070418042904.GY8915@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0704172141051.32323@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com>
- <20070417070949.GR8915@holomorphy.com> <20070417073308.GB30559@elte.hu>
- <20070417090538.GU8915@holomorphy.com> <20070417092422.GA19414@elte.hu>
- <20070417220809.GF11166@waste.org> <20070417223256.GP2986@holomorphy.com>
- <20070417223909.GO11115@waste.org> <20070417225902.GQ2986@holomorphy.com>
- <20070417225723.GP11115@waste.org> <20070418042904.GY8915@holomorphy.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070418044630.GD18452@wotan.suse.de>
+References: <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <462467E9.4030509@bigpond.net.au> <20070417064436.GE1057@wotan.suse.de> <46247BE7.2070307@bigpond.net.au> <20070417075611.GC20026@wotan.suse.de> <4624C8C6.4090902@bigpond.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4624C8C6.4090902@bigpond.net.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Apr 2007, William Lee Irwin III wrote:
-
-> 100**(1/39.0) ~= 1.12534 may do if so, but it seems a little weak, and
-> even 1000**(1/39.0) ~= 1.19378 still seems weak.
+On Tue, Apr 17, 2007 at 11:16:54PM +1000, Peter Williams wrote:
+> Nick Piggin wrote:
+> >I don't like the timeslice based nice in mainline. It's too nasty
+> >with latencies. nicksched is far better in that regard IMO.
+> >
+> >But I don't know how you can assert a particular way is the best way
+> >to do something.
 > 
-> I suspect that in order to get low nice numbers strong enough without
-> making high nice numbers too strong something sub-exponential may need
-> to be used. Maybe just picking percentages outright as opposed to some
-> particular function.
+> I should have added "I may be wrong but I think that ...".
 > 
-> We may also be better off defining it in terms of a share weighting as
-> opposed to two tasks in competition. In such a manner the extension to
-> N tasks is more automatic. f(n) would be a univariate function of nice
-> numbers and two tasks in competition with nice numbers n_1 and n_2
-> would get shares f(n_1)/(f(n_1)+f(n_2)) and f(n_2)/(f(n_1)+f(n_2)). In
-> the exponential case f(n) = K*e**(r*n) this ends up as
-> 1/(1+e**(r*(n_2-n_1))) which is indeed a function of n_1-n_2 but for
-> other choices it's not so. f(n) = n+K for K >= 20 results in a share
-> weighting of (n_1+K,n_2+K)/(n_1+n_2+2*K), which is not entirely clear
-> in its impact. My guess is that f(n)=1/(n+1) when n >= 0 and f(n)=1-n
-> when n <= 0 is highly plausible. An exponent or an additive constant
-> may be worthwhile to throw in. In this case, f(-19) = 20, f(20) = 1/21,
-> and the ratio of shares is 420, which is still arithmeticaly feasible.
-> -10 vs. 0 and 0 vs. 10 are both 10:1.
+> My opinion is based on a lot of experience with different types of 
+> scheduler design and the observation from gathering scheduling 
+> statistics while playing with these schedulers that the size of the time 
+> slices we're talking about is much larger than the CPU chunks most tasks 
+> use in any one go so time slice size has no real effect on most tasks 
+> and the faster CPUs become the more this becomes true.
 
-This makes more sense, and the ratio at the extremes is something 
-reasonable.
+For desktop loads, maybe. But for things that are compute bound, the
+cost of context switching I believe still gets worse as CPUs continue
+to be able to execute more instructions per cycle, get clocked faster,
+and get larger caches.
 
 
+> >>In that case I'd go O(1) provided that the k factor for the O(1) wasn't 
+> >>greater than O(logN)'s k factor multiplied by logMaxN.
+> >
+> >Yes, or even significantly greater around typical large sizes of N.
+> 
+> Yes.  In fact its' probably better to use the maximum number of threads 
+> allowed on the system for N.  We know that value don't we?
 
-- Davide
+Well we might be able to work it out by looking at the tunables or
+amount of kernel memory available, but I guess it is hard to just
+pick a number.
 
-
+I'll try running a few more benchmarks.
