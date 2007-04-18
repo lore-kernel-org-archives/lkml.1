@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbXDRHHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXDRHJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932700AbXDRHHB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 03:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932710AbXDRHHB
+	id S932664AbXDRHJq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 03:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932753AbXDRHJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 03:07:01 -0400
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:50783 "EHLO
-	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932700AbXDRHG7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 03:06:59 -0400
-Date: Wed, 18 Apr 2007 09:06:35 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] documentation: convert the Documentation directory to
- UTF-8
-In-Reply-To: <alpine.DEB.0.83.0704171247230.27446@sigma.j-a-k-j.com>
-Message-ID: <Pine.LNX.4.64.0704180905070.3288@anakin>
-References: <alpine.DEB.0.83.0704171247230.27446@sigma.j-a-k-j.com>
+	Wed, 18 Apr 2007 03:09:46 -0400
+Received: from waste.org ([66.93.16.53]:53483 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932664AbXDRHJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 03:09:46 -0400
+Date: Wed, 18 Apr 2007 01:55:34 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070418065534.GT11115@waste.org>
+References: <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org> <20070418063711.GH18452@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-1528985845-1176879995=:3288"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070418063711.GH18452@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, Apr 18, 2007 at 08:37:11AM +0200, Nick Piggin wrote:
+> I don't know how that supports your argument for unfairness,
 
----1463808512-1528985845-1176879995=:3288
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+I never had such an argument. I like fairness.
 
-On Tue, 17 Apr 2007, John Anthony Kazos Jr. wrote:
-> --- linux-2.6.21-rc7.orig/Documentation/fb/framebuffer.txt	2007-02-04 13:44:54.000000000 -0500
-> +++ linux-2.6.21-rc7.mod/Documentation/fb/framebuffer.txt	2007-04-17 12:44:09.000000000 -0400
-> @@ -217,7 +217,7 @@ vsync length.
->    +----------+---------------------------------------------+----------+-------+
->    |          |                ^                            |          |       |
->    |          |                |upper_margin                |          |       |
-> -  |          |                ¥                            |          |       |
-> +  |          |                Â¥                            |          |       |
+My argument is that -you- don't have an argument for making fairness a
+-requirement-.
 
-While you're at it, you may want to use a better suited UTF-8 arrow symbol
-instead of the louse JPY symbol I chose many years ago ;-)
+> processes are special only because that's how we've always done
+> scheduling.  I'm not precluding other groupings for fairness, though.
 
-Gr{oetje,eeting}s,
+If you make one form of fairness a -requirement- for all acceptable
+algorithms, your -are- precluding most other forms of fairness.
 
-						Geert
+If you refuse to define what "fairness" means when specifying your
+requirement, what's the point of requiring it?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> What do you mean optimal? If your criteria is fairness, then of course
+> it is optimal. If your criteria is throughput, then it probably isn't.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
----1463808512-1528985845-1176879995=:3288--
+I don't know what optimal behavior is. And neither do you. It may or
+may not be fair. It very likely includes small deviations from fair.
+
+> > [2] It's trivial to construct two or more perfectly reasonable and
+> > desirable definitions of fairness that are mutually incompatible.
+> 
+> Probably not if you use common sense, and in the context of a replacement
+> for the 2.6 scheduler.
+
+Ok, trivial example. You cannot allocate equal CPU time to
+processes/tasks and simultaneously allocate equal time to thread
+groups. Is it common sense that a heavily-threaded app should be able
+to get hugely more CPU than a well-written app? No. I don't want Joe's
+stupid Java app to make my compile crawl.
+
+On the other hand, if my heavily threaded app is, say, a voicemail
+server serving 30 customers, I probably want it to get 30x the CPU of
+my gzip job.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
