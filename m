@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422743AbXDRJm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422746AbXDRJp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422743AbXDRJm1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422740AbXDRJm1
+	id S1422746AbXDRJp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 05:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422748AbXDRJp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:42:27 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46427 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422743AbXDRJmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:42:14 -0400
-Date: Wed, 18 Apr 2007 15:12:11 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Gautham Shenoy <ego.lkml@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH][EXPERIMENTAL] CPU hotplug with frozen tasks
-Message-ID: <20070418094211.GC6474@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <200704061732.32712.rjw@sisk.pl> <200704160027.58425.rjw@sisk.pl> <c03d1bd00704160250g158de0feqa0c7acd18673969f@mail.gmail.com> <200704162327.59758.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704162327.59758.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Wed, 18 Apr 2007 05:45:26 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43446 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422745AbXDRJpZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 05:45:25 -0400
+Date: Wed, 18 Apr 2007 10:46:22 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, herbert@gondor.apana.org.au, davem@davemloft.net,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: convert "crypto" subdirectory to UTF-8
+Message-ID: <20070418104622.177a6cc1@the-village.bc.nu>
+In-Reply-To: <4625E5E9.5060100@s5r6.in-berlin.de>
+References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
+	<4625E5E9.5060100@s5r6.in-berlin.de>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 18 Apr 2007 11:33:29 +0200
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-The patch looks good to me. 
-
-On Mon, Apr 16, 2007 at 11:27:58PM +0200, Rafael J. Wysocki wrote:
+> John Anthony Kazos Jr. wrote:
+> > Convert the subdirectory "crypto" to UTF-8. The files changed are 
+> > <crypto/fcrypt.c> and <crypto/api.c>.
 > 
-> ---
->  Documentation/cpu-hotplug.txt             |    9 +++++++--
->  arch/i386/kernel/cpu/intel_cacheinfo.c    |    2 ++
->  arch/i386/kernel/cpu/mcheck/therm_throt.c |    2 ++
->  arch/i386/kernel/cpuid.c                  |    2 ++
+> Aren't we using ASCII for C sources?
 
-[snip]
-
-Though I am wondering what might be the usecase for microcode! 
-Guess we'll see that patch soon :-)
-
-Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+We haven't done that for many years - it makes it hard to spell some
+authors names properly for one.
