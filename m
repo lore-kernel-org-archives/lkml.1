@@ -1,150 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992765AbXDRPXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992770AbXDRPZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992765AbXDRPXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 11:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992766AbXDRPXw
+	id S2992770AbXDRPZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 11:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992774AbXDRPZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 11:23:52 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:14416 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992765AbXDRPXv (ORCPT
+	Wed, 18 Apr 2007 11:25:25 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:18578 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992770AbXDRPZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 11:23:51 -0400
-Date: Wed, 18 Apr 2007 17:26:26 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg K-H <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Message-ID: <20070418172626.198b96c2@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
-References: <20070417184110.GJ10619@htj.dyndns.org>
-	<Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Apr 2007 11:25:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=m3angHtIUJ+OaUW3JLtPE+7KjhMxdDtNwmmX+OQ+guofNocHMkG8RVKym8BqaRMulr0dPssKl7T4gYMcBAND40w2vvFHxQRqirDtnbBeDX35/o70o2mYY6f440VNJgBywfkiQq/burh41WrBqlOrtbgeai7UkhcLnW0d7jUYP3s=
+Message-ID: <46263859.2060309@gmail.com>
+Date: Thu, 19 Apr 2007 00:25:13 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Mark Lord <lkml@rtr.ca>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, 7eggert@gmx.de,
+       Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+References: <88SeR-5Sf-15@gated-at.bofh.it>	<88Sov-662-3@gated-at.bofh.it>	<88SHV-6uL-29@gated-at.bofh.it>	<8agVk-3wc-81@gated-at.bofh.it>	<8b3IR-4mE-25@gated-at.bofh.it>	<8b3SA-4z3-5@gated-at.bofh.it>	<8b42g-51N-15@gated-at.bofh.it>	<8bbdm-7iS-27@gated-at.bofh.it>	<E1He8dA-0000mw-LI@be1.lrz>	<46260981.1040109@gmail.com>	<20070418132904.3322ba5f@the-village.bc.nu>	<46261337.3010406@gmail.com>	<20070418140346.636879a1@the-village.bc.nu>	<46262C0E.9000103@rtr.ca> <20070418160627.7ab77c30@the-village.bc.nu> <46263650.3080705@rtr.ca>
+In-Reply-To: <46263650.3080705@rtr.ca>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007 10:53:55 -0400 (EDT),
-Alan Stern <stern@rowland.harvard.edu> wrote:
+Mark Lord wrote:
+> Alan Cox wrote:
+>>> +        if (dev->needs_flush && ata_try_flush_cache(dev)) {
+>>>              return ata_scsi_flush_xlat;
+>>> +            dev->needs_flush = 0;
+>>
+>> Works better if you swap the dev-> and return lines
+> 
+> Heh, yeah, I noticed that!
+> 
+> Here it is, *tested* now, with another fix.
+> 
+> It would be nice if somebody who can hear the "pop" would also test this,
+> as it will confirm that this is a complete fix for the problem.
 
-> Many drivers, especially those for hot-pluggable buses, register and
-> unregister devices dynamically.  These events can occur in time-critical
-> situations, where the driver cannot afford to wait for all the references
-> to be dropped when unregistering a device.  It's okay to wait in a module
-> exit routine, but to make things work the routine would have to wait for
-> references to _all_ unregistered objects to go away, not just the
-> references for the objects it unregisters at exit time.
+You'll probably be able to here the "pop" on sleep-to-disk.
 
-Uh, yes, didn't think of that. I'd even say that's the majority of
-devices allocated in a driver.
+> My "pop" drives are busy elsewhere right now.
+> 
+> Tejun might use something like this, or do something better in libata-core,
+> but it's still helpful to have confirmation that we're on the right track.
 
-> BTW, Cornelia, there's a small problem with your patch set.  You have
-> kobject_init() try to grab a reference to kobj->owner, but it's quite
-> possible for kobj->owner to contain uninitialized garbage since the rest
-> of the kernel is still unaware of its existence.  There's a patch below to
-> fix things up.  I've got a second patch which makes device_initialize()  
-> pass an owner to the embedded kobject, but I want to try it out a little
-> before posting it.  :-)
+Yeap, I was thinking about more conservative check but this looks simple
+and sweet.  :-)
 
-I was relying on the object being zeroed after allocation (and the
-caller of kobject_initialize already setting ->owner), but passing an
-owner via the initializing routine sounds saner. Thanks for looking at
-that.
-
-
-> Index: usb-2.6/include/linux/kobject.h
-> ===================================================================
-> --- usb-2.6.orig/include/linux/kobject.h
-> +++ usb-2.6/include/linux/kobject.h
-> @@ -71,7 +71,8 @@ static inline const char * kobject_name(
->  	return kobj->k_name;
->  }
-> 
-> -extern void kobject_init(struct kobject *);
-> +extern void kobject_init_owner(struct kobject *, struct module *owner);
-> +#define kobject_init(kobj)	kobject_init_owner(kobj, THIS_MODULE)
->  extern void kobject_cleanup(struct kobject *);
-> 
->  extern int __must_check kobject_add(struct kobject *);
-> @@ -84,7 +85,9 @@ extern int __must_check kobject_shadow_r
->  						const char *new_name);
->  extern int __must_check kobject_move(struct kobject *, struct kobject *);
-> 
-> -extern int __must_check kobject_register(struct kobject *);
-> +extern int __must_check kobject_register_owner(struct kobject *,
-> +		struct module *owner);
-> +#define kobject_register(kobj)	kobject_register_owner(kobj, THIS_MODULE)
->  extern void kobject_unregister(struct kobject *);
-> 
->  extern struct kobject * kobject_get(struct kobject *);
-> Index: usb-2.6/lib/kobject.c
-> ===================================================================
-> --- usb-2.6.orig/lib/kobject.c
-> +++ usb-2.6/lib/kobject.c
-> @@ -164,10 +164,11 @@ static void verify_dynamic_kobject_alloc
->  #endif
-> 
->  /**
-> - *	kobject_init - initialize object.
-> + *	kobject_init_onwer - initialize object.
->   *	@kobj:	object in question.
-> + *	@owner: module owning @kobj.
->   */
-> -void kobject_init(struct kobject * kobj)
-> +void kobject_init_owner(struct kobject * kobj, struct module *owner)
->  {
->  	if (!kobj)
->  		return;
-> @@ -178,6 +179,7 @@ void kobject_init(struct kobject * kobj)
->  	init_waitqueue_head(&kobj->poll);
->  	kobj->kset = kset_get(kobj->kset);
->  	/* Attempt to grab reference of owning module's kobject. */
-> +	kobj->owner = owner;
->  	mod_kobject_get(kobj->owner);
->  }
-> 
-> @@ -272,15 +274,16 @@ int kobject_add(struct kobject * kobj)
-> 
-> 
->  /**
-> - *	kobject_register - initialize and add an object.
-> + *	kobject_register_owner - initialize and add an object.
->   *	@kobj:	object in question.
-> + *	@owner:	module owning @kobj.
->   */
-> 
-> -int kobject_register(struct kobject * kobj)
-> +int kobject_register_owner(struct kobject * kobj, struct module *owner)
->  {
->  	int error = -EINVAL;
->  	if (kobj) {
-> -		kobject_init(kobj);
-> +		kobject_init_owner(kobj, owner);
->  		error = kobject_add(kobj);
->  		if (!error)
->  			kobject_uevent(kobj, KOBJ_ADD);
-> @@ -750,8 +753,8 @@ void subsys_remove_file(struct subsystem
->  }
->  #endif  /*  0  */
-> 
-> -EXPORT_SYMBOL(kobject_init);
-> -EXPORT_SYMBOL(kobject_register);
-> +EXPORT_SYMBOL(kobject_init_owner);
-> +EXPORT_SYMBOL(kobject_register_owner);
->  EXPORT_SYMBOL(kobject_unregister);
->  EXPORT_SYMBOL(kobject_get);
->  EXPORT_SYMBOL(kobject_put);
-> 
-
-Hm, this means we always have an owner (until we explicitely call
-kobject_{init,register}_owner(kobj, NULL)) - which may be unneeded in
-some cases. But better to err on the safe side, I suppose.
+-- 
+tejun
