@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993089AbXDRUAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbXDRUDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993089AbXDRUAz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 16:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993100AbXDRUAz
+	id S1753105AbXDRUDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 16:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXDRUDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 16:00:55 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:33355 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993089AbXDRUAy (ORCPT
+	Wed, 18 Apr 2007 16:03:35 -0400
+Received: from takamine.ncl.cs.columbia.edu ([128.59.18.70]:43820 "EHLO
+	takamine.ncl.cs.columbia.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753105AbXDRUDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 16:00:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PFWf7ygptoCj2m1+Vk+nhm4fC5Rlj4DQHkS8uPjaPeNt9gy1D2cvgjKPRoiX59kIwdiAWAr53WKeZvry118RgHwbgw4GK/IUCXj1AHKvfF9MTgSxpCwR5IrsYw3BNasEAhfGZfdaeBZjsYeLd/lOazuCTd0WWD8n17CCmYchtNI=
-Message-ID: <38b3b7c0704181300p78df84f3h8fd4e74428d4e4d8@mail.gmail.com>
-Date: Wed, 18 Apr 2007 22:00:53 +0200
-From: "johann deneux" <johann.deneux@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
-Cc: linux-kernel@vger.kernel.org, "Dmitry Torokhov" <dtor@insightbb.com>,
-       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
-In-Reply-To: <210731960111436322@karneval.cz>
+	Wed, 18 Apr 2007 16:03:34 -0400
+Date: Wed, 18 Apr 2007 16:03:19 -0400 (EDT)
+From: Shaya Potter <spotter@cs.columbia.edu>
+X-X-Sender: spotter@takamine.ncl.cs.columbia.edu
+To: Crispin Cowan <crispin@novell.com>
+cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andi Kleen <andi@firstfloor.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: AppArmor FAQ
+In-Reply-To: <4626746A.9010701@novell.com>
+Message-ID: <Pine.LNX.4.64.0704181552370.10574@takamine.ncl.cs.columbia.edu>
+References: <20070417181016.GA10903@one.firstfloor.org>
+ <657751.18080.qm@web36614.mail.mud.yahoo.com> <20070417211653.GB11944@one.firstfloor.org>
+ <20070417225815.000b0fdb@the-village.bc.nu> <Line.LNX.4.64.0704180935100.25495@d.namei>
+ <4626746A.9010701@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <210731960111436322@karneval.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri,
+On Wed, 18 Apr 2007, Crispin Cowan wrote:
 
-Which solution did you chose to implement? From what I remember, we
-last discussed Dmitry's idea of specifying an axis for an effect, then
-combine several effects to achieve complex effects.
-The implementation would specify the axis using the upper bits of the
-effect type.
+> Please explain why labels are necessary for effective confinement. Many
+> systems besides AppArmor have used non-label schemes for effective
+> confinement: TRON, Janus, LIDS, Systrace, BSD Jail, EROS, PSOS, KeyOS,
+> AS400, to name just a few. This claim seems bogus. Labels may be your
+> method of choice for confinement, but they are far from the only way.
 
-The patches you have sent seem to implement an easier, but in my
-opinion inferior solution. If this FF_RAW effect does not have
-semantics which are meaningful for other kinds of devices, I think
-using the FF API is not a good idea.
+One problem with AppArmor and Janus and Systrace and everything else that 
+relies on pathname resolution is the point where they do the pathname 
+resolution.
 
+If you read the janus, systrace, subdomain (apparmor's predecssor?) 
+papers, you'll see how they have to jump through hoops to handle things 
+like symlinks, when there's no fundamental reason why they have to.
 
-On 4/17/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> So fellows, what about these ones?
->
-> --
->
-> ff, add FF_RAW effect
->
-> Add new FF_RAW effect for devices such Phantom. The new model has up to 6DOF
-> torque force feedback independent on any 3d-or-so value.
->
+If one simply worked at the FS level, all one cares about is lookup() and 
+permission.  You have a set of rules that lookup() is able to use to 
+dynamically tag dentries and permission() then checks that tag.  One 
+doesn't jump through hoops anymore.
+
+So, while I sound like a broken record, something like a stackable file 
+system works wonders here (I know, I implemented one).  Now, stackable 
+file systems aren't perfect here (mount point crossing, additional mounted 
+file systems on top of the stackable file system) can cause problems, 
+overall it seems like a cleaner solution.
+
+Another option would be if the LSM could be extended to allow a simple 
+method of storing "private" data along with every dentry/inode (the main 
+reason one needs a stackable file system).  In this way, if the lookup() 
+oepration was extended to be able to take a function that filled in that 
+data and permission() was able to be extended to take a function that 
+could use that data, one wouldn't even need a stackable file system, but 
+one would still be operating at the simplest layer (which is the file 
+system).
