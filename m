@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422883AbXDRLlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422891AbXDRLmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422883AbXDRLlj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 07:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422887AbXDRLlj
+	id S1422891AbXDRLmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 07:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422890AbXDRLmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 07:41:39 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:39491 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422883AbXDRLli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 07:41:38 -0400
-Message-ID: <462603E0.3050208@free.fr>
-Date: Wed, 18 Apr 2007 13:41:20 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Wed, 18 Apr 2007 07:42:14 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:49363 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422891AbXDRLmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 07:42:13 -0400
+From: Nikita Danilov <nikita@clusterfs.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux.kernel@free.fr
-Subject: Re: Disabling x86 System Management Mode
-References: <46235447.3080000@free.fr> <p73odlo55q2.fsf@bingen.suse.de>
-In-Reply-To: <p73odlo55q2.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17958.1037.284688.350035@gargle.gargle.HOWL>
+Date: Wed, 18 Apr 2007 15:42:05 +0400
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH] Introduce a handy list_first_entry macro
+Newsgroups: gmane.linux.kernel
+In-Reply-To: <4624AD20.6050009@sw.ru>
+References: <4624AD20.6050009@sw.ru>
+X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
+X-SystemSpamProbe: GOOD 0.0000626 deb17e0d9699f0d29eb3b691d31450bb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+Pavel Emelianov writes:
+ > There are many places in the kernel where the construction like
+ > 
+ >    foo = list_entry(head->next, struct foo_struct, list);
+ > 
+ > are used. 
+ > The code might look more descriptive and neat if using the macro
+ > 
+ >    list_first_entry(head, type, member) \
+ >              list_entry((head)->next, type, member)
 
-> There are usually chipset specific bits that can be set to disable
-> SMMs. See the datasheet if you can get them. Unfortunately most
-> chipset vendors don't give out data sheets easily.
+Won't list_next_entry() be more descriptive name for that?
 
-I managed to find the south bridge data sheet.
+Nikita.
 
-http://linux.kernel.free.fr/VT82C686B.pdf
-
-(I'm still looking for the north bridge data sheet.)
-
-Could someone point me in the right direction?
-
-Regards.
