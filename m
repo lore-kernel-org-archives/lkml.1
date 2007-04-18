@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030961AbXDRAhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbXDRApx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030961AbXDRAhw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 20:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030966AbXDRAhv
+	id S1753215AbXDRApx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 20:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXDRApx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 20:37:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50362 "EHLO mx1.redhat.com"
+	Tue, 17 Apr 2007 20:45:53 -0400
+Received: from mga03.intel.com ([143.182.124.21]:35272 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030957AbXDRAhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 20:37:35 -0400
-Date: Tue, 17 Apr 2007 20:35:21 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-Message-ID: <20070418003521.GA20566@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Antonino A. Daplas" <adaplas@gmail.com>,
-	Richard Purdie <rpurdie@rpsys.net>, Adrian Bunk <bunk@stusta.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>
-References: <20070416005446.GB21217@redhat.com> <20070416011636.GO3691@stusta.de> <20070416062921.GB7528@redhat.com> <1176706447.5129.6.camel@daplas> <20070416072326.GA15281@redhat.com> <1176708722.5129.8.camel@daplas> <20070416075543.GB15281@redhat.com> <1176715603.6794.13.camel@localhost.localdomain> <20070417033400.GE22804@redhat.com> <1176853735.8463.9.camel@daplas>
+	id S1753215AbXDRApw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 20:45:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,420,1170662400"; 
+   d="scan'208"; a="215144436:sNHT20189246"
+Date: Tue, 17 Apr 2007 17:44:18 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: clameter@sgi.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch] slab: resize the alien caches too
+Message-ID: <20070418004418.GA30721@linux-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1176853735.8463.9.camel@daplas>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 07:48:55AM +0800, Antonino A. Daplas wrote:
+Christoph,
 
- > > When the backlight doesn't come on, for some reason, nothing else
- > > runs.  Capslock works, so it's at least partially alive, but even
- > > doing..
- > > 
- > > echo mem > /sys/power/state ; echo foo >/bar ; sync
- > > 
- > > results in no /bar being created.
- > > Ethernet remains down when its in this state too.
- > 
- > Have you tried these boot options?
- > 
- > acpi_sleep=s3_mode; or
- > acpi_sleep=s3_bios,s3_mode
+While going through the slab code, I observed that alien caches are
+not getting resized, when user changes the slab tunables. Appended patch
+tries to fix this. Please review and let me know if I missed anything.
 
-Yeah, did nothing. I also tried acpi_sleep=s3_bios on its own.
+thanks,
+suresh
+---
 
-	Dave
+Resize the alien caches too based on the slab tunables.
 
--- 
-http://www.codemonkey.org.uk
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/mm/slab.c b/mm/slab.c
+index 4cbac24..e0dd9af 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -3823,6 +3823,7 @@ static int alloc_kmemlist(struct kmem_cache *cachep)
+ 		l3 = cachep->nodelists[node];
+ 		if (l3) {
+ 			struct array_cache *shared = l3->shared;
++			struct array_cache **alien = l3->alien;
+ 
+ 			spin_lock_irq(&l3->list_lock);
+ 
+@@ -3831,15 +3832,15 @@ static int alloc_kmemlist(struct kmem_cache *cachep)
+ 						shared->avail, node);
+ 
+ 			l3->shared = new_shared;
+-			if (!l3->alien) {
+-				l3->alien = new_alien;
+-				new_alien = NULL;
+-			}
++			l3->alien = new_alien;
+ 			l3->free_limit = (1 + nr_cpus_node(node)) *
+ 					cachep->batchcount + cachep->num;
+ 			spin_unlock_irq(&l3->list_lock);
+ 			kfree(shared);
+-			free_alien_cache(new_alien);
++			if (alien) {
++				drain_alien_cache(cachep, alien);
++				free_alien_cache(alien);
++			}
+ 			continue;
+ 		}
+ 		l3 = kmalloc_node(sizeof(struct kmem_list3), GFP_KERNEL, node);
