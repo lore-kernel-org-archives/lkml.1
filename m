@@ -1,111 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992782AbXDRQLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992788AbXDRQNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992782AbXDRQLl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 12:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992783AbXDRQLl
+	id S2992788AbXDRQNb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 12:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992789AbXDRQNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 12:11:41 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:43123 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S2992782AbXDRQLk (ORCPT
+	Wed, 18 Apr 2007 12:13:31 -0400
+Received: from queue01-pub.suddenlink.net ([208.180.40.86]:37171 "EHLO
+	que01.suddenlink.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992788AbXDRQNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 12:11:40 -0400
-Date: Wed, 18 Apr 2007 12:11:38 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-In-Reply-To: <46263A82.1030703@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0704181149280.12246-100000@iolanthe.rowland.org>
+	Wed, 18 Apr 2007 12:13:30 -0400
+X-Greylist: delayed 1684 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 12:13:30 EDT
+Message-ID: <001601c781d0$9c424d40$6207a8c0@rankinp35>
+From: "david rankin" <drankinatty@suddenlinkmail.com>
+To: "kernel" <linux-kernel@vger.kernel.org>
+Subject: built 2.6.20.7 on suse 10.0, boots fine, no mouse, network or keyboard
+Date: Wed, 18 Apr 2007 10:45:37 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3028
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007, Tejun Heo wrote:
+Mates,
 
-> The goal of immediate-disconnect is to remove such lingering reference
-> counts so that device_unregister() or driver detach puts the last
-> reference count.
+    First post and I am having heck building the vanilla 2.6.20.7 kernel on 
+Suse 10.0. Basically I put 2.6.20.7 in /usr/src, then I did
 
-Yes, I understand.  If you had immediate-disconnect then you wouldn't need 
-device_unregister_wait().  In fact, you wouldn't need any reference counts 
-at all.  It would be guaranteed that when the unregister call returned, 
-all references would be gone.
+cd linux
+(read Documentation/Changes "Current Minimal Requirements")
+zcat /proc/config.gz > .config
+make oldconfig
+make
+make modules
+make modules_install
+make install.
+edit grub to boot from new and old kernels.
 
-> You tell a higher layer that a device is going away, on return from the
-> function, that layer isn't gonna access the device anymore.
+    All current minimal requierments are met *except* udev which is version 
+068. Everything compiled and installed properly and initrd did what it was 
+supposed to:
 
-No, no.  You tell somebody (it might be a higher layer, it might be a 
-lower layer, or it might be a same-height layer -- doesn't matter) that a 
-device is going away.  On return from the function, that layer isn't going 
-to access the device any more, _nor_ will anyone else who has obtained a 
-reference from that layer.  This last clause is very important.
+providence:/usr/src/linux # ll /boot
+total 17184
+-rw-------   1 root root     512 2006-08-12 17:09 backup_mbr
+lrwxrwxrwx   1 root root       1 2006-08-12 16:56 boot -> .
+drwxr-xr-x   2 root root     544 2007-04-17 22:22 grub
+lrwxrwxrwx   1 root root      19 2007-04-17 22:21 initrd -> 
+initrd-2.6.20.7-smp
+-rw-r--r--   1 root root 1800590 2007-04-17 22:21 initrd-2.6.20.7-smp
+lrwxrwxrwx   1 root root      23 2007-04-16 19:59 initrdold -> 
+initrd-2.6.13-15.15-smp
+-rw-r--r--   1 root root   90292 2005-09-09 11:36 memtest.bin
+-rw-r--r--   1 root root  128000 2006-08-12 17:09 message
+-rw-r--r--   1 root root  779055 2007-03-02 10:33 
+System.map-2.6.13-15.15-smp
+-rw-r--r--   1 root root  860395 2007-04-17 22:01 System.map-2.6.20.7-smp
+-rw-r--r--   1 root root 1991337 2007-03-02 10:42 
+vmlinux-2.6.13-15.15-smp.gz
+lrwxrwxrwx   1 root root      20 2007-04-17 22:20 vmlinuz -> 
+vmlinuz-2.6.20.7-smp
+-rw-r--r--   1 root root 1684799 2007-03-02 10:33 vmlinuz-2.6.13-15.15-smp
+-rw-r--r--   1 root root 1562784 2007-04-17 22:01 vmlinuz-2.6.20.7-smp
+lrwxrwxrwx   1 root root      24 2007-04-16 19:59 vmlinuzold -> 
+vmlinuz-2.6.13-15.15-smp
 
-> I don't think this is gonna be too difficult to do.  I think I can
-> convert block layer and IDE/SCSI drivers without too much problem.
-> Dunno much about other layers tho.
+The 2.6.20.7 kernel boots just fine and all services are started *except* 
+keyboard, mouse and network. Is this udev??? If so, can I safely update udev 
+without destroying my 2.6.13-15.15 setup?? Can it be anything else?? Any 
+help would be appreciated.
 
-You have to convert more than layers (or core subsystems).  You also have 
-to audit and convert drivers.  It will be tremendously difficult to do.
-
-> Dunno if I understood the problem right but can't we do the following?
-> 
-> remove()
-> {
-> 	acquire sem;
-> 	device_del();
-> 	release sem;
-> 	device_put_wait();
-> }
-
-You did misunderstand.  Here's what I was talking about:
-
-Driver A:
----------
-	unregister_device(dev);
-
-		/* inside the driver core */
-		down(&dev->sem);
-		if (dev->driver)
-			dev->driver->remove(dev);
-		up(&dev->sem);
-		device_put(dev);	/* or device_put_wait */
-
-
-Driver B:
----------
-void remove(struct device *dev)
-{
-	struct my_device *mydev = dev_get_drvdata(dev);
-
-	mydev->gone = 1;
-	kref_put(&mydev->kref, my_device_release);
-}
+Thanks!
 
 
-Driver B's kernel thread:
--------------------------
-	kref_get(&mydev->kref);
-	down(&mydev->dev.sem);
-	if (mydev->gone)
-		goto finished;
-	...
- finished:
-	up(&mydev->dev.sem);
-	kref_put(&mydev->kref, my_device_release);
-
-Consider what happens if the kernel thread blocks on its down() while the
-remove() method is running.  It will be impossible for Driver B to
-eliminate the reference to dev held by mydev and by the down() routine.
-
-In short, Driver B _can't_ provide an immediate detach.  Not unless 
-someone figures out a way to cancel a blocked down().  And do the same 
-thing for other blocking primitives.
-
-Alan Stern
+--
+David C. Rankin, J.D., P.E.
+510 Ochiltree Street
+Nacogdoches, Texas 75961
+(936) 715-9333
+(936) 715-9339 fax
+www.rankinlawfirm.com
+-- 
 
