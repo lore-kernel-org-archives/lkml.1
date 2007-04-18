@@ -1,126 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992835AbXDRQlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992856AbXDRQqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992835AbXDRQlj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 12:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992848AbXDRQlj
+	id S2992856AbXDRQqu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 12:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992857AbXDRQqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 12:41:39 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:56753 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992835AbXDRQlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 12:41:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p7wIgIqdUm+ofwAPZ97wTsfMQcNMzP5KL4rfKQTWf6CZQUbhsBUXbjdG2PqdTrMfhzAUi/uiaSlF4hDA4OKf+ba2jcyBB2B1+NQbavql5joj8in/dBZtvqp8i445a+n92W693LW2c67Q7EpsMlJg7aDBgB3dnjhDDPq3TpgTz24=
-Message-ID: <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-Date: Wed, 18 Apr 2007 12:41:36 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <46263A82.1030703@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 12:46:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51334 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992856AbXDRQqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 12:46:49 -0400
+Date: Wed, 18 Apr 2007 18:46:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christian Hesse <mail@earthworm.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, suspend2-devel@lists.suspend2.net
+Subject: Re: CFS and suspend2: hang in atomic copy (was: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS])
+Message-ID: <20070418164621.GA30744@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <200704181759.03559.mail@earthworm.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
-	 <46263A82.1030703@gmail.com>
+In-Reply-To: <200704181759.03559.mail@earthworm.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/18/07, Tejun Heo <htejun@gmail.com> wrote:
-> Hello,
->
-> Alan Stern wrote:
-> > On Wed, 18 Apr 2007, Tejun Heo wrote:
-> >
-> >> Hello, all.
-> >>
-> >> Agreed with the problem but I'm not very enthusiastic for adding
-> >> kobj->owner.  How about the following?  exit() routines will have to
-> >> do device_unregister_wait() instead of device_unregister().  On return
-> >> from it, it's guaranteed that all references to it are dropped and
-> >> ->release is finished.  The caller is responsible for avoiding
-> >> deadlock, of course.
-> >
-> > There's a problem with this approach.
-> >
-> > Many drivers, especially those for hot-pluggable buses, register and
-> > unregister devices dynamically.  These events can occur in time-critical
-> > situations, where the driver cannot afford to wait for all the references
-> > to be dropped when unregistering a device.  It's okay to wait in a module
-> > exit routine, but to make things work the routine would have to wait for
-> > references to _all_ unregistered objects to go away, not just the
-> > references for the objects it unregisters at exit time.
-> >
-> > So let's see what changes are needed to make the approach workable.  We
-> > will have to maintain a count of objects whose release methods haven't
-> > been called yet.  The count has to be incremented every time an object is
-> > unregistered (or registered, it doesn't matter which) and decremented
-> > _after_ the release method returns -- meaning somewhere in the driver
-> > core.  When the count goes to zero, the exit routine is then allowed to
-> > terminate.
-> >
-> > Hmmm, this is beginning to sound like a module-wide refcount which serves
-> > to block mod->exit().  In fact, it sounds almost identical to what
-> > Cornelia wrote, except that the refcount refers only to devices rather
-> > than arbitrary kobjects (and except that the blockage just before
-> > mod->exit returns instead of just after).  You can see where I'm
-> > leading...
->
-> The goal of immediate-disconnect is to remove such lingering reference
-> counts so that device_unregister() or driver detach puts the last
-> reference count.
->
-> You tell a higher layer that a device is going away, on return from the
-> function, that layer isn't gonna access the device anymore.  ie. On
-> return from the unregistration function, the upper layer shouldn't have
-> any reference to the device.  If you unregister from all layers a device
-> is registered to, you are left with only 1 reference which you put with
-> device_unregister().  After all are converted, reference count doesn't
-> mean much.  struct device isn't a reference counted object anymore.
->
-> I don't think this is gonna be too difficult to do.  I think I can
-> convert block layer and IDE/SCSI drivers without too much problem.
-> Dunno much about other layers tho.
 
-I am still do not understand why this is needed. Would it not be
-simplier just to use a reference to struct device instead of embedding
-it in a larger structure if their lifetimes are different and one does
-not have a subsystem that takes care of releasing logic.
+* Christian Hesse <mail@earthworm.de> wrote:
 
+> Hi Ingo and all,
+> 
+> On Friday 13 April 2007, Ingo Molnar wrote:
+> > as usual, any sort of feedback, bugreports, fixes and suggestions are
+> > more than welcome,
+> 
+> I just gave CFS a try on my system. From a user's point of view it 
+> looks good so far. Thanks for your work.
 
-Pretty much drivers have 2 options:
+you are welcome!
 
-struct my_device {
-        void *private_data;
-        struct device dev;
-};
+> However I found a problem: When trying to suspend a system patched 
+> with suspend2 2.2.9.11 it hangs with "doing atomic copy". Pressing the 
+> ESC key results in a message that it tries to abort suspend, but then 
+> still hangs.
 
-In this case ->release must live in a subsystem code; individual
-drivers kfree(my_dev->private) and do any additional cleanup after
-calling device_unregister(&my_dev->dev);
+i took a quick look at suspend2 and it makes some use of yield(). 
+There's a bug in CFS's yield code, i've attached a patch that should fix 
+it, does it make any difference to the hang?
 
-Second option:
+	Ingo
 
-struct my_device {
-        type member1;
-        type member2;
-
-       struct device *dev;
-};
-
-dev is coming from _device_create(). Driver core takes care of
-releasing dev structure; driver does cleanup of my_device.
-
-With current sysfs orphaning attributes upon removal request there is
-no issue of accessing driver-private data through references obtained
-via ether embedded or referenced dev structure so everything is fine.
-
--- 
-Dmitry
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -264,15 +264,26 @@ static void dequeue_task_fair(struct rq 
+ 
+ /*
+  * sched_yield() support is very simple via the rbtree, we just
+- * dequeue and enqueue the task, which causes the task to
+- * roundrobin to the end of the tree:
++ * dequeue the task and move it to the rightmost position, which
++ * causes the task to roundrobin to the end of the tree.
+  */
+ static void requeue_task_fair(struct rq *rq, struct task_struct *p)
+ {
+ 	dequeue_task_fair(rq, p);
+ 	p->on_rq = 0;
+-	enqueue_task_fair(rq, p);
++	/*
++	 * Temporarily insert at the last position of the tree:
++	 */
++	p->fair_key = LLONG_MAX;
++	__enqueue_task_fair(rq, p);
+ 	p->on_rq = 1;
++
++	/*
++	 * Update the key to the real value, so that when all other
++	 * tasks from before the rightmost position have executed,
++	 * this task is picked up again:
++	 */
++	p->fair_key = rq->fair_clock - p->wait_runtime + p->nice_offset;
+ }
+ 
+ /*
+@@ -380,7 +391,10 @@ static void task_tick_fair(struct rq *rq
+ 	 * Dequeue and enqueue the task to update its
+ 	 * position within the tree:
+ 	 */
+-	requeue_task_fair(rq, curr);
++	dequeue_task_fair(rq, curr);
++	curr->on_rq = 0;
++	enqueue_task_fair(rq, curr);
++	curr->on_rq = 1;
+ 
+ 	/*
+ 	 * Reschedule if another task tops the current one.
