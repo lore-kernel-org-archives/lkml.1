@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992554AbXDRORY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992561AbXDRORx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992554AbXDRORY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 10:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992570AbXDRORY
+	id S2992561AbXDRORx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 10:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992576AbXDRORx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 10:17:24 -0400
-Received: from iucha.net ([209.98.146.184]:35468 "EHLO mail.iucha.net"
+	Wed, 18 Apr 2007 10:17:53 -0400
+Received: from mail.alkar.net ([195.248.191.95]:58536 "EHLO mail.alkar.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992554AbXDRORX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 10:17:23 -0400
-Date: Wed, 18 Apr 2007 09:17:23 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-Message-ID: <20070418141722.GI24044@iucha.net>
-References: <1176868485.6796.42.camel@heimdal.trondhjem.org> <20070418040730.GC24044@iucha.net> <20070417211350.ebba1493.akpm@linux-foundation.org> <20070418043040.GD24044@iucha.net> <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org> <20070417223738.8f49a39f.akpm@linux-foundation.org> <20070418123842.GF24044@iucha.net> <1176902131.6796.62.camel@heimdal.trondhjem.org> <20070418134225.GG24044@iucha.net> <1176905506.6796.84.camel@heimdal.trondhjem.org>
+	id S2992561AbXDRORw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 10:17:52 -0400
+From: "Vladimir V. Saveliev" <vs@namesys.com>
+To: Jeff Mahoney <jeffm@suse.com>, a.righi@cineca.it
+Subject: Re: Fwd: Fw: [2.6.20.4] BUG: dentry xattrs still in use in shrink_dcache_for_umount() with reiserfs
+Date: Wed, 18 Apr 2007 18:16:20 +0400
+User-Agent: KMail/1.8.2
+Cc: linux-kernel@vger.kernel.org, reiserfs-dev@namesys.com,
+       Edward Shishkin <edward@namesys.com>, zam@clusterfs.com
+References: <20070413095219.02075323.akpm@linux-foundation.org> <462536B2.5060308@users.sourceforge.net> <c04ebacf0704180152qdc72fcdnd0755dbf070b40d2@mail.gmail.com>
+In-Reply-To: <c04ebacf0704180152qdc72fcdnd0755dbf070b40d2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rCb8EA+9TsBVtA92"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1176905506.6796.84.camel@heimdal.trondhjem.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+Message-Id: <200704181816.21166.vs@namesys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello
 
---rCb8EA+9TsBVtA92
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 18 April 2007 12:52, ReiserFS Developers Mailing List wrote:
+> *Forwarded Conversation*
+> Subject: *[2.6.20.4] BUG: dentry xattrs still in use in
+> shrink_dcache_for_umount() with reiserfs*
+> ------------------------
+> 
+> * From: Andrea Righi* <righiandr@users.sourceforge.net> Reply-To:
+> righiandr@users.sourceforge.net
+> To: reiserfs-dev@namesys.com
+> Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <
+> akpm@linux-foundation.org>
+> Date: Fri, Apr 13, 2007 at 3:04 PM
+> Attachments: config.gz
+> 
+> I can reproduce the problem umounting my /var (reiserfs), but it doesn't
+> occur with /usr or /opt, that are reiserfs too.
+> 
+> It seems very similar to this issue:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.18-rc3/2.6.18-rc3-mm2/hot-fixes/reiserfs-make-sure-all-dentries-refs-are-released-before-calling-kill_block_super-try-2.patch
+> 
+> How the xattrs->d_count can be 1 if the dentry is explicitly released
+> in reiserfs_kill_sb(), before calling kill_super_block()?
+> 
 
-On Wed, Apr 18, 2007 at 10:11:46AM -0400, Trond Myklebust wrote:
-> On Wed, 2007-04-18 at 08:42 -0500, Florin Iucha wrote:
-> > Could the port in CLOSE_WAIT state be the culprit?  (FWIW
-> > the server has been up for 38 days and subjected to
-> > this nfs test quite a bit without showing any stress).
->=20
-> The port in CLOSE_WAIT shows that a socket was closed down recently, but
-> once the connection is re-established, the client should start sending
-> data.
-> Do you have a copy of wireshark or ethereal on hand? If so, could you
-> take a look at whether or not any NFS traffic is going between the
-> client and server once the hang happens?
-> Note that the timeout value is 60 seconds, so if you see no immediate
-> traffic, then let the ethereal/wireshark session keep running for a
-> couple more minutes.
+Jeff, in 2.6.20/fs/reiserfs/xattr.c we have get_xa_root,
+which may increment xattr_root reference count either by 1 or 2:
 
-Should I run wireshark/ethereal on the client or on the server?
+If REISERFS_SB()->xattr_root != NULL - dentry reference count is incremented by 1 with dget.
 
-I'll get a trace tonight (10 PM CST) and get back to you.
+If REISERFS_SB()->xattr_root == NULL, __get_xa_root is called which may increase xattr_root dentry reference count by 2:
+once in lookup_one_len->__lookup_hash->cached_lookup->__d_lookup and once explicitly with dget in __get_xa_root.
 
-Thanks,
-florin
+Do you think that could be a reason of the extra reference count on   xattr_root dentry?
 
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
 
---rCb8EA+9TsBVtA92
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGJihyND0rFCN2b1sRAoTvAJ0Q73im7blIfqfWfqF/96gQECdzZwCeMeb6
-dQaZbxXzW3+yBHYlzG4LHWI=
-=mh6w
------END PGP SIGNATURE-----
-
---rCb8EA+9TsBVtA92--
+> (config attached)
+> 
+> -Andrea
+> 
+> BUG: Dentry dfcd2570{i=21bc,n=xattrs} still in use (1) [unmount of reiserfs
+> dm-4]
