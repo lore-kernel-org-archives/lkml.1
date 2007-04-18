@@ -1,180 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992731AbXDRPIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992737AbXDRPJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992731AbXDRPIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 11:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992732AbXDRPIV
+	id S2992737AbXDRPJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 11:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992735AbXDRPJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 11:08:21 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:37959
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2992731AbXDRPIT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 11:08:19 -0400
-Date: Wed, 18 Apr 2007 17:04:58 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: rhdt@bartol.udel.edu
-Cc: len.brown@intel.com, vladimir.p.lebedev@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] SBS ACPI: convert binary semaphore to mutex
-Message-ID: <20070418150458.GC6474@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	rhdt@bartol.udel.edu, len.brown@intel.com,
-	vladimir.p.lebedev@intel.com, linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Wed, 18 Apr 2007 11:09:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45571 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992734AbXDRPJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 11:09:04 -0400
+Date: Wed, 18 Apr 2007 17:08:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Pfister <christophpfister@gmail.com>
+Cc: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
+       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
+       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: Kaffeine problem with CFS
+Message-ID: <20070418150842.GA8546@elte.hu>
+References: <19a3b7a80704180213i1ac84b2ch2b35220b62e3b67a@mail.gmail.com> <20070418091714.GA23446@elte.hu> <19a3b7a80704180225x3c8d6d60g366126862f05150@mail.gmail.com> <20070418092805.GA23125@elte.hu> <19a3b7a80704180252j72c955bcna5df5cb7057e6756@mail.gmail.com> <19a3b7a80704180304u72cc6612w2e6e0811226f1a52@mail.gmail.com> <20070418101041.GA30643@elte.hu> <19a3b7a80704180534w3688af87x78ee68cc1c330a5c@mail.gmail.com> <19a3b7a80704180555q4e0b26d5x54bbf34b4cd9d33e@mail.gmail.com> <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-according to http://lwn.net/Articles/167034/ binary semaphores (which
-aren't given in interrupt context or locked/unlocked in different
-process contexts) should be converted to the new mutex API.
 
-this patch converts the semaphore used by the Smart Battery System
-ACPI interface driver to a mutex.
+* Christoph Pfister <christophpfister@gmail.com> wrote:
 
-please let me know your comments if i misinterpreted the article or if
-you see something wrong in the patch
+> Replacing the sched_yield in demux.c with an usleep(10) stopped those 
+> seeking hangs here (at least I was able to pull the slider back and 
+> forth during 2 mins without trouble compared to the few secs I need 
+> earlier to get a hang).
 
---
+great - thanks for figuring it out!
 
-Smart Battery System ACPI driver: convert binary semaphore to mutex
-
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-
---
-
-diff --git a/drivers/acpi/sbs.c b/drivers/acpi/sbs.c
-index 59640d9..7e90132 100644
---- a/drivers/acpi/sbs.c
-+++ b/drivers/acpi/sbs.c
-@@ -32,6 +32,7 @@
- #include <linux/acpi.h>
- #include <linux/i2c.h>
- #include <linux/delay.h>
-+#include <linux/mutex.h>
- 
- #include "i2c_ec.h"
- 
-@@ -83,7 +84,7 @@ MODULE_AUTHOR("Rich Townsend");
- MODULE_DESCRIPTION("Smart Battery System ACPI interface driver");
- MODULE_LICENSE("GPL");
- 
--static struct semaphore sbs_sem;
-+static DEFINE_MUTEX(sbs_mutex);
- 
- #define	UPDATE_MODE		QUEUE_UPDATE_MODE
- /* REQUEST_UPDATE_MODE  QUEUE_UPDATE_MODE */
-@@ -930,7 +931,7 @@ static int acpi_battery_read_info(struct seq_file *seq, void *offset)
- 		return -ENODEV;
- 	}
- 
--	down(&sbs_sem);
-+	mutex_lock(&sbs_mutex);
- 
- 	if (update_mode == REQUEST_UPDATE_MODE) {
- 		result = acpi_sbs_update_run(battery->sbs, DATA_TYPE_INFO);
-@@ -984,7 +985,7 @@ static int acpi_battery_read_info(struct seq_file *seq, void *offset)
- 
-       end:
- 
--	up(&sbs_sem);
-+	mutex_unlock(&sbs_mutex);
- 
- 	return result;
- }
-@@ -1005,7 +1006,7 @@ static int acpi_battery_read_state(struct seq_file *seq, void *offset)
- 		return -ENODEV;
- 	}
- 
--	down(&sbs_sem);
-+	mutex_lock(&sbs_mutex);
- 
- 	if (update_mode == REQUEST_UPDATE_MODE) {
- 		result = acpi_sbs_update_run(battery->sbs, DATA_TYPE_STATE);
-@@ -1061,7 +1062,7 @@ static int acpi_battery_read_state(struct seq_file *seq, void *offset)
- 
-       end:
- 
--	up(&sbs_sem);
-+	mutex_unlock(&sbs_mutex);
- 
- 	return result;
- }
-@@ -1081,7 +1082,7 @@ static int acpi_battery_read_alarm(struct seq_file *seq, void *offset)
- 		return -ENODEV;
- 	}
- 
--	down(&sbs_sem);
-+	mutex_lock(&sbs_mutex);
- 
- 	if (update_mode == REQUEST_UPDATE_MODE) {
- 		result = acpi_sbs_update_run(battery->sbs, DATA_TYPE_ALARM);
-@@ -1113,7 +1114,7 @@ static int acpi_battery_read_alarm(struct seq_file *seq, void *offset)
- 
-       end:
- 
--	up(&sbs_sem);
-+	mutex_unlock(&sbs_mutex);
- 
- 	return result;
- }
-@@ -1131,7 +1132,7 @@ acpi_battery_write_alarm(struct file *file, const char __user * buffer,
- 		return -ENODEV;
- 	}
- 
--	down(&sbs_sem);
-+	mutex_lock(&sbs_mutex);
- 
- 	if (!acpi_battery_is_present(battery)) {
- 		result = -ENODEV;
-@@ -1169,7 +1170,7 @@ acpi_battery_write_alarm(struct file *file, const char __user * buffer,
- 	}
- 
-       end:
--	up(&sbs_sem);
-+	mutex_unlock(&sbs_mutex);
- 
- 	if (result) {
- 		return result;
-@@ -1221,7 +1222,7 @@ static int acpi_ac_read_state(struct seq_file *seq, void *offset)
- 		return -ENODEV;
- 	}
- 
--	down(&sbs_sem);
-+	mutex_lock(&sbs_mutex);
- 
- 	if (update_mode == REQUEST_UPDATE_MODE) {
- 		result = acpi_sbs_update_run(sbs, DATA_TYPE_AC_STATE);
-@@ -1234,7 +1235,7 @@ static int acpi_ac_read_state(struct seq_file *seq, void *offset)
- 	seq_printf(seq, "state:                   %s\n",
- 		   sbs->ac_present ? "on-line" : "off-line");
- 
--	up(&sbs_sem);
-+	mutex_unlock(&sbs_mutex);
- 
- 	return 0;
- }
-@@ -1719,8 +1720,6 @@ static int __init acpi_sbs_init(void)
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
--	init_MUTEX(&sbs_sem);
--
- 	if (capacity_mode != DEF_CAPACITY_UNIT
- 	    && capacity_mode != MAH_CAPACITY_UNIT
- 	    && capacity_mode != MWH_CAPACITY_UNIT) {
- 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-      Anyone who has never made a mistake has never tried anything new
-                            (Albert Einstein)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+	Ingo
