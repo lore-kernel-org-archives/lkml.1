@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992696AbXDRVIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992713AbXDRVKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992696AbXDRVIL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 17:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964959AbXDRVIL
+	id S2992713AbXDRVKi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 17:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992714AbXDRVKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 17:08:11 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:54516 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964935AbXDRVIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 17:08:10 -0400
-Message-ID: <462688AB.4060707@gmail.com>
-Date: Wed, 18 Apr 2007 23:07:55 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 18 Apr 2007 17:10:38 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:52204 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992713AbXDRVKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 17:10:37 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Kaffeine problem with CFS
+Date: Thu, 19 Apr 2007 00:08:10 +0300
+User-Agent: KMail/1.9.6
+Cc: Christoph Pfister <christophpfister@gmail.com>,
+       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
+       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
+       Ulrich Drepper <drepper@redhat.com>
+References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr> <20070418154811.GA16842@elte.hu>
+In-Reply-To: <20070418154811.GA16842@elte.hu>
 MIME-Version: 1.0
-To: johann deneux <johann.deneux@gmail.com>
-CC: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dtor@insightbb.com>, stenyak@gmail.com,
-       linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
-References: <210731960111436322@karneval.cz> <38b3b7c0704181300p78df84f3h8fd4e74428d4e4d8@mail.gmail.com>
-In-Reply-To: <38b3b7c0704181300p78df84f3h8fd4e74428d4e4d8@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed;
+  boundary="nextPart1227214.ad1YppaAM1";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 18 Apr 2007 23:07:57 +0200 (CEST)
+Message-Id: <200704190008.19262.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-johann deneux napsal(a):
-> Jiri,
-> 
-> Which solution did you chose to implement? From what I remember, we
-> last discussed Dmitry's idea of specifying an axis for an effect, then
-> combine several effects to achieve complex effects.
+--nextPart1227214.ad1YppaAM1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I think you mean motor instead of axis, because I don't push real axes to
-the devices, but motor's torques...
+18 Nis 2007 =C3=87ar tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=C5=
+=9Ft=C4=B1:=20
+> * S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr> wrote:
+> > -       schedule();
+> > +       msleep(1);
+> >
+> > which Ingo sends me to try also has the same effect on me. I cannot
+> > reproduce hangs anymore with that patch applied top of CFS while one
+> > console checks out SVN repos and other one compiles a small test
+> > software.
+>
+> great! Could you please unapply the hack above and try the proper fix
+> below, does this one solve the hangs too?
 
-> The implementation would specify the axis using the upper bits of the
-> effect type.
+Instead of that one, i tried CFSv3 and i cannot reproduce the hang anymore,=
+=20
+Thanks!...
 
-Ok, if this is preferred, I'll post it with the const of having more context
-switches for a single effect.
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-This was just a realization of the idea how I though it with the
-quick'n'dirty FF_RAW.
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+--nextPart1227214.ad1YppaAM1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBGJojCy7E6i0LKo6YRAh8SAKCTFACM2sFKiOi4izmA+i2//9n3VACfWJcx
+gL1dfj2llfgS+fGMnxSVe8U=
+=U3/l
+-----END PGP SIGNATURE-----
+
+--nextPart1227214.ad1YppaAM1--
