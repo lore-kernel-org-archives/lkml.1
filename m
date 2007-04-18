@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422696AbXDRJ2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422720AbXDRJaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422696AbXDRJ2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422714AbXDRJ2P
+	id S1422720AbXDRJaU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 05:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422716AbXDRJaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:28:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60757 "EHLO mx2.mail.elte.hu"
+	Wed, 18 Apr 2007 05:30:19 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:58273 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422696AbXDRJ2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:28:14 -0400
-Date: Wed, 18 Apr 2007 11:28:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Pfister <christophpfister@gmail.com>
-Cc: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
-       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
-       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: Kaffeine problem with CFS
-Message-ID: <20070418092805.GA23125@elte.hu>
-References: <200704141959.50076.caglar@pardus.org.tr> <20070415161348.GA30625@elte.hu> <20070415162508.GA4526@elte.hu> <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <20070418082744.GA14009@elte.hu> <19a3b7a80704180157g604f4cecna51a49bd1f4c7d38@mail.gmail.com> <20070418090117.GA20764@elte.hu> <19a3b7a80704180213i1ac84b2ch2b35220b62e3b67a@mail.gmail.com> <20070418091714.GA23446@elte.hu> <19a3b7a80704180225x3c8d6d60g366126862f05150@mail.gmail.com>
+	id S1422720AbXDRJaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 05:30:18 -0400
+Date: Wed, 18 Apr 2007 13:29:03 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Pavel Emelianov <xemul@sw.ru>, David Miller <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
+Message-ID: <20070418092903.GA16910@2ka.mipt.ru>
+References: <4625D3D2.9030507@sw.ru> <20070418081707.GA29267@2ka.mipt.ru> <4625D637.2040308@trash.net> <20070418084206.GA4241@2ka.mipt.ru> <4625DBE2.5090402@trash.net> <20070418090720.GA25070@2ka.mipt.ru> <4625E202.8040604@trash.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <19a3b7a80704180225x3c8d6d60g366126862f05150@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4625E202.8040604@trash.net>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 18 Apr 2007 13:29:09 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Christoph Pfister <christophpfister@gmail.com> wrote:
-
-> >which thread would be the most interesting to you - 9324?
+On Wed, Apr 18, 2007 at 11:16:50AM +0200, Patrick McHardy (kaber@trash.net) wrote:
+> > That is what I referred to as error path. Btw, with positive return
+> > value we end up in subsequent call to input which will free callback
+> > under lock as expected.
 > 
-> The thread which should wake the main thread - but hmm ... 9303 seems 
-> to be rather dead-locked than doing pthread_cond_timedwait() ?
+> 
+> No, nothing is going to call netlink_dump after the initial call since
+> the socket is gone.
 
-ok, here it is, 9303 with better symbol names:
+Argh, userspace socket's sk_data_rady() if dump returned positive value.
+So, callback is not freed to allow to put several pages before
+NLMSG_DONE via single dump?
 
-#0  0xffffe410 in __kernel_vsyscall ()
-#1  0x4a2538ce in __lll_mutex_lock_wait () from /lib/libpthread.so.0
-#2  0x4a24f71c in _L_mutex_lock_79 () from /lib/libpthread.so.0
-#3  0x4a24f24d in pthread_mutex_lock () from /lib/libpthread.so.0
-#4  0xb79f64f9 in xine_play () from /usr/lib/libxine.so.1
-#5  0xb7a9b0fb in KXineWidget::slotSeekToPosition ()
-   from /usr/lib/kde3/libxinepart.so
-#6  0xb7a9b3bc in KXineWidget::wheelEvent () from /usr/lib/kde3/libxinepart.so
-#7  0x4b5f9150 in QWidget::event () from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#8  0x4b55353b in QApplication::internalNotify ()
-   from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#9  0x4b55526e in QApplication::notify ()
-   from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#10 0x4a72065e in KApplication::notify () from /usr/lib/libkdecore.so.4
-#11 0x4b4dd5de in QETWidget::translateWheelEvent ()
-   from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#12 0x4b4eb41d in QETWidget::translateMouseEvent ()
-   from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#13 0x4b4e9766 in QApplication::x11ProcessEvent ()
-   from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#14 0x4b4fb38b in QEventLoop::processEvents ()
-   from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#15 0x4b56ce30 in QEventLoop::enterLoop ()
-   from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#16 0x4b56cce6 in QEventLoop::exec () from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#17 0x4b55317f in QApplication::exec () from /usr/lib/qt-3.3/lib/libqt-mt.so.3
-#18 0x0806fc1a in QWidget::setUpdatesEnabled ()
-#19 0x49f9df10 in __libc_start_main () from /lib/libc.so.6
-#20 0x0806f7e1 in QWidget::setUpdatesEnabled ()
-
-does this make more sense to you?
-
-	Ingo
+-- 
+	Evgeniy Polyakov
