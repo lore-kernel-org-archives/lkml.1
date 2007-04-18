@@ -1,43 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbXDRIXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751052AbXDRIYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751143AbXDRIXj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 04:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXDRIXj
+	id S1751052AbXDRIYQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 04:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbXDRIYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 04:23:39 -0400
-Received: from smtp2-g19.free.fr ([212.27.42.28]:41477 "EHLO smtp2-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbXDRIXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 04:23:38 -0400
-Message-ID: <4625D546.9010205@tremplin-utc.net>
-Date: Wed, 18 Apr 2007 10:22:30 +0200
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Thunderbird 2.0b2 (X11/20070307)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@insightbb.com>
-CC: mitr@volny.cz, otauber@web.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] wistron_btns: add led support
-References: <4620FCB0.6060603@tremplin-utc.net> <200704180025.46956.dtor@insightbb.com>
-In-Reply-To: <200704180025.46956.dtor@insightbb.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 18 Apr 2007 04:24:16 -0400
+Received: from fgwmail9.fujitsu.co.jp ([192.51.44.39]:41084 "EHLO
+	fgwmail9.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbXDRIYO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 04:24:14 -0400
+Subject: Re: [PATCH][BUG] Fix possible NULL pointer access in 8250 serial
+	driver
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: izumi <izumi2005@soft.fujitsu.com>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20070416225206.cf7d8cd2.akpm@linux-foundation.org>
+References: <46242DD2.7030207@soft.fujitsu.com>
+	 <20070416225206.cf7d8cd2.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 18 Apr 2007 17:21:53 +0900
+Message-Id: <1176884513.3945.54.camel@kane-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-18.04.2007 06:25, Dmitry Torokhov wrote/a écrit:
-> On Saturday 14 April 2007 12:09, Éric Piel wrote:
->> This patch adds support for mail and wifi leds. It modifies the Kconfig 
->> file to automatically pull led_class with wistron_btns, hopefully 
->> everyone is fine with this.
->>
+> I'd imagine that other serial drivers might get upset having their
+> ->get_mcrtl() called prior to being opened.  Perhaps we should be fixing
+> this in uart_read_proc()?
 > 
-> Was there 1/2 file?
 
-Ooops, sorry, this mail was not mean to be sent yet (my thunderbird and 
-I misunderstood each other). It works here but I'll try it on another 
-laptop to confirm the patch is good.
+I looked at other serial drivers and I could not find any other
+drivers which accesses port->info in their ->get_mctrl(). This 
+is why we fix this problem in 8250 driver. But if there is a
+possibility that other drivers accesses port->info in their
+->get_mctrl(), we should be fixing this in uart_read_proc(), as
+you said.
 
-Hopefully, I'll come back to you tomorrow with no changes and a little 
-1/2 patch :-)
+How about the following patch? We've also confirmed the problem
+is fixed by it.
 
-Eric
+Thanks,
+Kenji Kaneshige
+
+
+This patch fixes the problem that uninitialized (NULL) 'info' member
+of uart_port structure can be accessed if serial driver is accessed
+through /proc filesystem before uart_open(), which initializes the
+'info' member', is called.
+
+Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Signed-off-by: Taku Izumi <izumi2005@soft.fujitsu.com>
+
+---
+ drivers/serial/serial_core.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.21-rc5/drivers/serial/serial_core.c
+===================================================================
+--- linux-2.6.21-rc5.orig/drivers/serial/serial_core.c
++++ linux-2.6.21-rc5/drivers/serial/serial_core.c
+@@ -1665,7 +1665,7 @@ static int uart_line_info(char *buf, str
+ 	unsigned int status;
+ 	int mmio, ret;
+ 
+-	if (!port)
++	if (!port || !port->info)
+ 		return 0;
+ 
+ 	mmio = port->iotype >= UPIO_MEM;
+
+
+
