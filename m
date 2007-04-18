@@ -1,64 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992770AbXDRPZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbXDRPem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992770AbXDRPZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 11:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992774AbXDRPZZ
+	id S1753974AbXDRPem (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 11:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXDRPem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 11:25:25 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:18578 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992770AbXDRPZY (ORCPT
+	Wed, 18 Apr 2007 11:34:42 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:17582 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753974AbXDRPel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 11:25:24 -0400
+	Wed, 18 Apr 2007 11:34:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=m3angHtIUJ+OaUW3JLtPE+7KjhMxdDtNwmmX+OQ+guofNocHMkG8RVKym8BqaRMulr0dPssKl7T4gYMcBAND40w2vvFHxQRqirDtnbBeDX35/o70o2mYY6f440VNJgBywfkiQq/burh41WrBqlOrtbgeai7UkhcLnW0d7jUYP3s=
-Message-ID: <46263859.2060309@gmail.com>
-Date: Thu, 19 Apr 2007 00:25:13 +0900
+        b=J7tKjDaQSHmA0Qo6Emmqz6WkTtB7ef8bRCaxVyvSujVej2JfMsWOO6qRJ+qrLvXnjjXjCS4XHmSW8Mp2Dr+JuIysuZYVK5MyU3bGy7P/YIzgMRSqS3dUMs1OoSOY9u2de30ojDeyI6CYFfvtUems1kl21sznF5BA5kX01nsbqAU=
+Message-ID: <46263A82.1030703@gmail.com>
+Date: Thu, 19 Apr 2007 00:34:26 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, 7eggert@gmx.de,
-       Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <88SeR-5Sf-15@gated-at.bofh.it>	<88Sov-662-3@gated-at.bofh.it>	<88SHV-6uL-29@gated-at.bofh.it>	<8agVk-3wc-81@gated-at.bofh.it>	<8b3IR-4mE-25@gated-at.bofh.it>	<8b3SA-4z3-5@gated-at.bofh.it>	<8b42g-51N-15@gated-at.bofh.it>	<8bbdm-7iS-27@gated-at.bofh.it>	<E1He8dA-0000mw-LI@be1.lrz>	<46260981.1040109@gmail.com>	<20070418132904.3322ba5f@the-village.bc.nu>	<46261337.3010406@gmail.com>	<20070418140346.636879a1@the-village.bc.nu>	<46262C0E.9000103@rtr.ca> <20070418160627.7ab77c30@the-village.bc.nu> <46263650.3080705@rtr.ca>
-In-Reply-To: <46263650.3080705@rtr.ca>
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
 X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Alan Cox wrote:
->>> +        if (dev->needs_flush && ata_try_flush_cache(dev)) {
->>>              return ata_scsi_flush_xlat;
->>> +            dev->needs_flush = 0;
+Hello,
+
+Alan Stern wrote:
+> On Wed, 18 Apr 2007, Tejun Heo wrote:
+> 
+>> Hello, all.
 >>
->> Works better if you swap the dev-> and return lines
+>> Agreed with the problem but I'm not very enthusiastic for adding
+>> kobj->owner.  How about the following?  exit() routines will have to
+>> do device_unregister_wait() instead of device_unregister().  On return
+>> from it, it's guaranteed that all references to it are dropped and
+>> ->release is finished.  The caller is responsible for avoiding
+>> deadlock, of course.
 > 
-> Heh, yeah, I noticed that!
+> There's a problem with this approach.
 > 
-> Here it is, *tested* now, with another fix.
+> Many drivers, especially those for hot-pluggable buses, register and
+> unregister devices dynamically.  These events can occur in time-critical
+> situations, where the driver cannot afford to wait for all the references
+> to be dropped when unregistering a device.  It's okay to wait in a module
+> exit routine, but to make things work the routine would have to wait for
+> references to _all_ unregistered objects to go away, not just the
+> references for the objects it unregisters at exit time.
 > 
-> It would be nice if somebody who can hear the "pop" would also test this,
-> as it will confirm that this is a complete fix for the problem.
+> So let's see what changes are needed to make the approach workable.  We
+> will have to maintain a count of objects whose release methods haven't
+> been called yet.  The count has to be incremented every time an object is
+> unregistered (or registered, it doesn't matter which) and decremented
+> _after_ the release method returns -- meaning somewhere in the driver
+> core.  When the count goes to zero, the exit routine is then allowed to
+> terminate.
+> 
+> Hmmm, this is beginning to sound like a module-wide refcount which serves
+> to block mod->exit().  In fact, it sounds almost identical to what
+> Cornelia wrote, except that the refcount refers only to devices rather
+> than arbitrary kobjects (and except that the blockage just before
+> mod->exit returns instead of just after).  You can see where I'm
+> leading...
 
-You'll probably be able to here the "pop" on sleep-to-disk.
+The goal of immediate-disconnect is to remove such lingering reference
+counts so that device_unregister() or driver detach puts the last
+reference count.
 
-> My "pop" drives are busy elsewhere right now.
+You tell a higher layer that a device is going away, on return from the
+function, that layer isn't gonna access the device anymore.  ie. On
+return from the unregistration function, the upper layer shouldn't have
+any reference to the device.  If you unregister from all layers a device
+is registered to, you are left with only 1 reference which you put with
+device_unregister().  After all are converted, reference count doesn't
+mean much.  struct device isn't a reference counted object anymore.
+
+I don't think this is gonna be too difficult to do.  I think I can
+convert block layer and IDE/SCSI drivers without too much problem.
+Dunno much about other layers tho.
+
+> Incidentally, Tejun, I'm all in favor of a immediate-detach driver model 
+> approach.  Unfortunately it's impossible to realize fully, although we 
+> could come much closer than we are now.
 > 
-> Tejun might use something like this, or do something better in libata-core,
-> but it's still helpful to have confirmation that we're on the right track.
+> Here's an example where immediate-detach cannot be implemented.  A driver 
+> binds to a device and uses that device is a kernel thread.  The thread 
+> carries out certain operations which require it to hold the device 
+> semaphore (because, for example, they need to be mutually exclusive with 
+> unbind).
+> 
+> The driver's remove() method is called with the semaphore held.  If the
+> thread tries to lock the semaphore at the same time and blocks, there is
+> no way at all for the remove() method to force the thread to drop its
+> reference.
+> 
+> This isn't merely a theoretical example.  The USB hub driver works in
+> exactly this way.
 
-Yeap, I was thinking about more conservative check but this looks simple
-and sweet.  :-)
+Dunno if I understood the problem right but can't we do the following?
+
+remove()
+{
+	acquire sem;
+	device_del();
+	release sem;
+	device_put_wait();
+}
 
 -- 
 tejun
