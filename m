@@ -1,223 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992513AbXDRUSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992567AbXDRUUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992513AbXDRUSB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 16:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992553AbXDRUSB
+	id S2992567AbXDRUUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 16:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992570AbXDRUUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 16:18:01 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:52412 "EHLO smtp.gentoo.org"
+	Wed, 18 Apr 2007 16:20:01 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40058 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992513AbXDRUR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 16:17:59 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: akpm@linux-foundation.org, davej@codemonkey.org.uk, ak@suse.de
-Subject: [patch] cleanup cpufreq kconfig options
-Date: Wed, 18 Apr 2007 16:18:13 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
+	id S2992567AbXDRUT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 16:19:59 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Stephen.Clark@seclark.us
+Subject: Re: 2.6.21-rc5 from fc7-rc2 problems
+Date: Wed, 18 Apr 2007 16:12:06 -0400
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <460EC109.5070300@seclark.us> <460EFC76.4060808@seclark.us> <460FF40D.2060109@seclark.us>
+In-Reply-To: <460FF40D.2060109@seclark.us>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704181618.14084.vapier@gentoo.org>
+Message-Id: <200704181612.07257.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds proper lines to help output of kconfig so people can find the module names.
-Also fixed some broken leading spaces versus tabs.
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+< Linux version 2.6.20-1.2933.fc6
+< (brewbuilder@hs20-bc2-4.build.redhat.com) (gcc version 4.1.1 20070105
+< (Red Hat 4.1.1-51)) #1 SMP Mon Mar 19 11:38:26 EDT 2007
 ---
-diff --git a/arch/x86_64/kernel/cpufreq/Kconfig b/arch/x86_64/kernel/cpufreq/Kconfig
-index 40acb67..c0749d2 100644
---- a/arch/x86_64/kernel/cpufreq/Kconfig
-+++ b/arch/x86_64/kernel/cpufreq/Kconfig
-@@ -16,6 +16,9 @@ config X86_POWERNOW_K8
- 	help
- 	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called powernow-k8.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq/>. 
- 
- 	  If in doubt, say N.
-@@ -38,6 +41,9 @@ config X86_SPEEDSTEP_CENTRINO
- 	  mobile CPUs.  This means Intel Pentium M (Centrino) CPUs
- 	  or 64bit enabled Intel Xeons.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called speedstep-centrino.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	  If in doubt, say N.
-@@ -55,6 +61,9 @@ config X86_ACPI_CPUFREQ
- 	  Processor Performance States.
- 	  This driver also supports Intel Enhanced Speedstep.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called acpi-cpufreq.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	  If in doubt, say N.
-@@ -62,7 +71,7 @@ config X86_ACPI_CPUFREQ
- comment "shared options"
- 
- config X86_ACPI_CPUFREQ_PROC_INTF
--        bool "/proc/acpi/processor/../performance interface (deprecated)"
-+	bool "/proc/acpi/processor/../performance interface (deprecated)"
- 	depends on PROC_FS
- 	depends on X86_ACPI_CPUFREQ || X86_SPEEDSTEP_CENTRINO_ACPI || X86_POWERNOW_K8_ACPI
- 	help
-@@ -86,16 +95,18 @@ config X86_P4_CLOCKMOD
- 	  slowdowns and noticeable latencies.  Normally Speedstep should be used
- 	  instead.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called p4-clockmod.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	  Unless you are absolutely sure say N.
- 
- 
- config X86_SPEEDSTEP_LIB
--        tristate
--        default X86_P4_CLOCKMOD
-+	tristate
-+	default X86_P4_CLOCKMOD
- 
- endif
- 
- endmenu
--
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index d155e81..993fa7b 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -9,6 +9,9 @@ config CPU_FREQ
- 	  clock speed, you need to either enable a dynamic cpufreq governor
- 	  (see below) after boot, or use a userspace tool.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq>.
- 
- 	  If in doubt, say N.
-@@ -16,7 +19,7 @@ config CPU_FREQ
- if CPU_FREQ
- 
- config CPU_FREQ_TABLE
--       tristate
-+	tristate
- 
- config CPU_FREQ_DEBUG
- 	bool "Enable CPUfreq debugging"
-@@ -32,19 +35,26 @@ config CPU_FREQ_DEBUG
- 	       4 to activate CPUfreq governor debugging
- 
- config CPU_FREQ_STAT
--       tristate "CPU frequency translation statistics"
--       select CPU_FREQ_TABLE
--       default y
--       help
--         This driver exports CPU frequency statistics information through sysfs
--         file system
-+	tristate "CPU frequency translation statistics"
-+	select CPU_FREQ_TABLE
-+	default y
-+	help
-+	  This driver exports CPU frequency statistics information through sysfs
-+	  file system.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq_stats.
-+
-+	  If in doubt, say N.
- 
- config CPU_FREQ_STAT_DETAILS
--       bool "CPU frequency translation statistics details"
--       depends on CPU_FREQ_STAT
--       help
--         This will show detail CPU frequency translation table in sysfs file
--         system
-+	bool "CPU frequency translation statistics details"
-+	depends on CPU_FREQ_STAT
-+	help
-+	  This will show detail CPU frequency translation table in sysfs file
-+	  system.
-+
-+	  If in doubt, say N.
- 
- # Note that it is not currently possible to set the other governors (such as ondemand)
- # as the default, since if they fail to initialise, cpufreq will be
-@@ -78,29 +88,38 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
- endchoice
- 
- config CPU_FREQ_GOV_PERFORMANCE
--       tristate "'performance' governor"
--       help
-+	tristate "'performance' governor"
-+	help
- 	  This cpufreq governor sets the frequency statically to the
- 	  highest available CPU frequency.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq_performance.
-+
- 	  If in doubt, say Y.
- 
- config CPU_FREQ_GOV_POWERSAVE
--       tristate "'powersave' governor"
--       help
-+	tristate "'powersave' governor"
-+	help
- 	  This cpufreq governor sets the frequency statically to the
- 	  lowest available CPU frequency.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq_powersave.
-+
- 	  If in doubt, say Y.
- 
- config CPU_FREQ_GOV_USERSPACE
--       tristate "'userspace' governor for userspace frequency scaling"
--       help
-+	tristate "'userspace' governor for userspace frequency scaling"
-+	help
- 	  Enable this cpufreq governor when you either want to set the
- 	  CPU frequency manually or when an userspace program shall
- 	  be able to set the CPU dynamically, like on LART 
- 	  <http://www.lartmaker.nl/>.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq_userspace.
-+
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
- 	  If in doubt, say Y.
-@@ -116,6 +135,9 @@ config CPU_FREQ_GOV_ONDEMAND
- 	  do fast frequency switching (i.e, very low latency frequency
- 	  transitions). 
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq_ondemand.
-+
- 	  For details, take a look at linux/Documentation/cpu-freq.
- 
- 	  If in doubt, say N.
-@@ -136,6 +158,9 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 	  step-by-step latency issues between the minimum and maximum frequency
- 	  transitions in the CPU) you will probably want to use this governor.
- 
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called cpufreq_conservative.
-+
- 	  For details, take a look at linux/Documentation/cpu-freq.
- 
- 	  If in doubt, say N.
+> Linux version 2.6.20-1.3023.fc7
+> (brewbuilder@ls20-bc1-13.build.redhat.com) (gcc version 4.1.2 20070317
+> (Red Hat 4.1.2-5)) #1 SMP Sun Mar 25 22:12:02 EDT 2007
+
+I agree that the fc7 version string looks strange, because
+there are other things in the fc7 dmesg which are clearly from 2.6.21,
+such as this:
+
+< ACPI: Core revision 20060707
+---
+> ACPI: Core revision 20070126
+
+Perhaps you can try building a kernel.org 2.6.21 kernel and running
+it on your FC6 install?
+
+The ALI15X3 stuff exists only in the working FC6 dmesg:
+
+< Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+< ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+< ALI15X3: IDE controller at PCI slot 0000:00:0f.0
+< ACPI: Unable to derive IRQ for device 0000:00:0f.0
+< ACPI: PCI Interrupt 0000:00:0f.0[A]: no GSI
+< ALI15X3: chipset revision 195
+< ALI15X3: not 100% native mode: will probe irqs later
+<     ide0: BM-DMA at 0x1000-0x1007, BIOS settings: hda:DMA, hdb:pio
+<     ide1: BM-DMA at 0x1008-0x100f, BIOS settings: hdc:DMA, hdd:pio
+< Probing IDE interface ide0...
+< hda: HITACHI_DK23CA-20, ATA DISK drive
+< ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+< Probing IDE interface ide1...
+< hdc: MATSHITADVD-ROM SR-8175, ATAPI CD/DVD-ROM drive
+< ide1 at 0x170-0x177,0x376 on irq 15
+< Probing IDE interface ide2...
+< Probing IDE interface ide3...
+< Probing IDE interface ide4...
+< Probing IDE interface ide5...
+< hda: max request size: 128KiB
+< hda: 39070080 sectors (20003 MB) w/2048KiB Cache, CHS=38760/16/63, UDMA(66)
+< hda: cache flushes not supported
+<  hda: hda1 hda2
+< ide-floppy driver 0.99.newide
+
+FC7 looks like it is using libata instead:
+-Len
+
+> SCSI subsystem initialized
+> libata version 2.20 loaded.
+> ACPI: Unable to derive IRQ for device 0000:00:0f.0
+> ACPI: PCI Interrupt 0000:00:0f.0[A]: no GSI
+> ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x00011000
+> irq 14
+> ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x00011008
+> irq 15
+> scsi0 : pata_ali
+> PM: Adding info for No Bus:host0
+> ata1.00: ATA-5: HITACHI_DK23CA-20, 00H1A0A3, max UDMA/100   <========
+> drive can do 100
+> ata1.00: 39070080 sectors, multi 16: LBA
+> ata1.00: configured for UDMA/33    <=============== configured as 33
+> scsi1 : pata_ali
+> PM: Adding info for No Bus:host1
+> ata2.00: ATAPI, max UDMA/33   <=== cd can't be read now
+> ata2.00: configured for UDMA/33
+> PM: Adding info for No Bus:target0:0:0
+> scsi 0:0:0:0: Direct-Access     ATA      HITACHI_DK23CA-2 00H1 PQ: 0 ANSI: 5
+> PM: Adding info for scsi:0:0:0:0
+> PM: Adding info for No Bus:target1:0:0
+> ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata2.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x12 data 36 in
+>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> ata2: soft resetting port
+> ATA: abnormal status 0xD0 on port 0x00010177
+> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x2)
+> ata2.00: revalidation failed (errno=-5)
+> ata2: failed to recover some devices, retrying in 5 secs
+> ata2: port is slow to respond, please be patient (Status 0xd0)
+> ata2: port failed to respond (30 secs, Status 0xd0)
+> ata2: soft resetting port
+> ATA: abnormal status 0xD0 on port 0x00010177
+> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x2)
+> ata2.00: revalidation failed (errno=-5)
+> ata2.00: limiting speed to UDMA/33:PIO3
+> ata2: failed to recover some devices, retrying in 5 secs
+> ata2: port is slow to respond, please be patient (Status 0xd0)
+> ata2: port failed to respond (30 secs, Status 0xd0)
+> ata2: soft resetting port
+> ATA: abnormal status 0xD0 on port 0x00010177
+> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x2)
+> ata2.00: revalidation failed (errno=-5)
+> ata2.00: disabled
+> ata2: EH complete
+
