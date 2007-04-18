@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422759AbXDRJy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422754AbXDRJz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422759AbXDRJy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422765AbXDRJy0
+	id S1422754AbXDRJz6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 05:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422760AbXDRJz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:54:26 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:2717 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422759AbXDRJyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:54:25 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Florin Iucha <florin@iucha.net>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-References: <20070416125905.GA2769@iucha.net>
-	<1176736734.6761.45.camel@heimdal.trondhjem.org>
-	<Pine.LNX.4.64.0704160904560.5473@woody.linux-foundation.org>
-	<1176740307.6761.56.camel@heimdal.trondhjem.org>
-	<1176741408.6761.62.camel@heimdal.trondhjem.org>
-	<1176792399.3035.30.camel@twins> <20070416125905.GA2769@iucha.net>
-	<1176792399.3035.30.camel@twins> <1176796503.3035.33.camel@twins>
-	<87hcrfaqam.fsf@duaron.myhome.or.jp>
-	<20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
-	<20070417195823.943f9472.akpm@linux-foundation.org>
-	<1176865565.6796.16.camel@heimdal.trondhjem.org>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Wed, 18 Apr 2007 18:54:13 +0900
-In-Reply-To: <1176865565.6796.16.camel@heimdal.trondhjem.org> (Trond Myklebust's message of "Tue\, 17 Apr 2007 23\:06\:05 -0400")
-Message-ID: <87bqhm9fei.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
+	Wed, 18 Apr 2007 05:55:58 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:38473 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422754AbXDRJz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 05:55:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=HED3vnEpId7VTLcwGNkPTrVET9sQdIO4RgraY/9BuQON7PAEQKXq4g+31JFq1FAxE3bC4ym31T1vWln/ScErU06ylirI9DrKJE9tSSvtQ4hbRywQht0Td7vyR/wv4c2/VVo70nTeVt/gw/GQ8yih7Dy+Vnfq0OC1mnmukBWIzVM=
+Message-ID: <4625EB20.5000306@gmail.com>
+Date: Wed, 18 Apr 2007 18:55:44 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, dmitry.torokhov@gmail.com
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>	<20070417184110.GJ10619@htj.dyndns.org>	<4625169D.9020301@gmail.com>	<20070418101117.73edb302@gondolin.boeblingen.de.ibm.com>	<4625DAD1.2070000@gmail.com> <20070418113506.06df2d21@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070418113506.06df2d21@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <Trond.Myklebust@netapp.com> writes:
+Cornelia Huck wrote:
+> On Wed, 18 Apr 2007 17:46:09 +0900,
+> Tejun Heo <htejun@gmail.com> wrote:
+> 
+>> It's debatable but I think things will be safer this way.  If we wait by
+>> default, we are forced to check that all references are dropped and will
+>> have a stack dump indicating which object is causing problem when
+>> something goes wrong, which is better than silent object leaking and/or
+>> jumping to non-existent address way later.
+> 
+> I agree that oopsing is bad. However, lingering references are not
+> always coding errors. What if it will just take long for a reference to
+> be given up? You'd have a hanging device_unregister(), with no
+> particular gain.
 
-> I was mainly interested in feedback from Peter, Florin and Ogawa-san to
-> find out if this series fixes their problems. You were unfortunate
-> enough to have been on earlier Ccs, so I didn't dare trim you off. :-)
+It's more like future plan than immediately applicable.  I think most 
+high-level driver related interfaces can be converted as sysfs was 
+converted such that they disconnect immediately from the device - 
+resolving conflicts between higher layer using reference counts and 
+device driver layer which expects immediate disconnect is responsibility 
+of those interfaces - just as sysfs does it.
 
-Sorry. I'm trying to reproduce that, but unfortunately I can't
-reproduce that on unpatched kernel for now.
+If you have lingering reference to struct device after driver is 
+detached, you're already screwed.  If there's outstanding reference to 
+it from the previous driver, how are you gonna load the next one? 
+You're gonna have to wait somewhere for all the references to go away. 
+Actually, your patch series is doing exactly this during module 
+unloading.  Problem is that you'll need to do the same thing before 
+attaching the next driver for the same device.
 
-FWIW, syslog is here.
+Immediate-disconnect from all higher interface for device drivers is my 
+goal for driver model as I wrote in the RFD about lifetime rules.  I 
+think it's doable and should result in easier model to get right, but I 
+might be missing something big time, so please point out if you can spot 
+holes or don't agree.
 
-Apr 17 03:54:55 duaron kernel: [drm] Initialized i915 1.6.0 20060119 on minor 0
-Apr 17 03:58:31 duaron kernel: tun: Universal TUN/TAP device driver, 1.6
-Apr 17 03:58:31 duaron kernel: tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-Apr 17 03:58:44 duaron kernel: tun0: no IPv6 routers present
-Apr 17 13:33:13 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
-Apr 17 13:33:47 duaron last message repeated 16 times
-Apr 17 13:34:49 duaron last message repeated 32 times
-Apr 17 13:35:19 duaron last message repeated 7 times
-Apr 17 13:39:39 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
-Apr 17 13:40:39 duaron last message repeated 3 times
-Apr 17 13:42:26 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
-Apr 17 13:42:30 duaron last message repeated 3 times
-Apr 18 00:58:22 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
-Apr 18 00:59:09 duaron last message repeated 129 times
-Apr 18 01:00:31 duaron last message repeated 24 times
-Apr 18 01:02:16 duaron kernel: NFS: desynchronized value of nfs_i.ncommit.
-Apr 18 01:03:25 duaron last message repeated 47 times
-Apr 18 01:04:30 duaron last message repeated 16 times
-Apr 18 01:05:31 duaron last message repeated 28 times
-Apr 18 01:06:33 duaron last message repeated 32 times
+>> I personally think all driver interface should be made this way such
+>> that completion of unregister function guarantees no further access to
+>> the object or module.  IMHO, it's more intuitive and easier to force
+>> correctness.
+> 
+> If we really did this, we should also provide a non-waiting alternative.
+
+For transitional purpose, sure.  In the long term, I think it's better 
+if we can do without it.
+
+Thanks.
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+tejun
