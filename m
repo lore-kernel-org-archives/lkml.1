@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992452AbXDRNbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992466AbXDRNde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992452AbXDRNbj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 09:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992466AbXDRNbj
+	id S2992466AbXDRNde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 09:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992475AbXDRNde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 09:31:39 -0400
-Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:38873 "HELO
-	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S2992452AbXDRNbi (ORCPT
+	Wed, 18 Apr 2007 09:33:34 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:51376 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992469AbXDRNdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 09:31:38 -0400
-X-YMail-OSG: qPa0bh0VM1koFUiuP7gv.xkn1znq_PQx999nEuoertjSIfF5eNipScjvM06pLlRPnHy90Rn6dg--
-X-RocketYMMF: rancidfat
-Date: Wed, 18 Apr 2007 06:31:37 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
+	Wed, 18 Apr 2007 09:33:32 -0400
+Date: Wed, 18 Apr 2007 09:33:29 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: David Lang <david.lang@digitalinsight.com>
+cc: Rob Meijer <capibara@xs4all.nl>, Karl MacMillan <kmacmill@redhat.com>,
+       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Subject: Re: AppArmor FAQ
-To: Joshua Brindle <jbrindle@tresys.com>, capibara@xs4all.nl
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <46260BE1.4060509@tresys.com>
+In-Reply-To: <Pine.LNX.4.63.0704180001160.2442@qynat.qvtvafvgr.pbz>
+Message-ID: <Line.LNX.4.64.0704180923260.25495@d.namei>
+References: <20070416213350.GB4030@suse.de>    <Line.LNX.4.64.0704161846110.13905@d.namei>
+    <1176846917.5946.79.camel@localhost.localdomain>
+ <19259.213.222.28.155.1176880873.squirrel@webmail.xs4all.nl>
+ <Pine.LNX.4.63.0704180001160.2442@qynat.qvtvafvgr.pbz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <262350.24656.qm@web36604.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Apr 2007, David Lang wrote:
 
---- Joshua Brindle <jbrindle@tresys.com> wrote:
+> SELinux is designed to be able to make the box safe against root, AA is
+> designed to let the admin harden exposed apps without having to think about
+> the other things on the system.
+
+This is not correct.
+
+SELinux was designed as an access control framework which allows various 
+security models to be composed in a controlled and consistent manner, 
+covering all security-relevant interactions in the system.
+
+The type enforcement model included with it provides a means to address 
+both integrity and confidentiality requirements.  It _can_ protect you 
+against root, if that's what you want (in fact, the Russell Coker "play 
+box" was online for many years with a published root password), but it 
+does not have to.
+
+Indeed, since Fedora Core 3, the default SELinux policy has been 
+"targeted", which is aimed at confining exposed applications.
 
 
-> Biba and BLP are only incompatible if they are using the same label, if 
-> each object has a confidentiality and integrity label they work fine 
-> together
 
-Joshua is correct here, although the original Biba observation was
-that flipping BLP upside down results in an integrity model. Trusted
-Irix uses (used?) both Biba and BLP.
-
-> (as well as MLS systems work in general that is).
-
-Doh! He had to get the dig in.
-
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+- James
+-- 
+James Morris
+<jmorris@namei.org>
