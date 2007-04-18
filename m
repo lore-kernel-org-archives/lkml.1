@@ -1,75 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031335AbXDRDp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031336AbXDRDuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031335AbXDRDp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 23:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031336AbXDRDp3
+	id S1031336AbXDRDuj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 23:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031339AbXDRDuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 23:45:29 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52609 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1031335AbXDRDp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 23:45:28 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+DtmsbrTCDRo/9OBU66iF8Iq7V53Z1our+sG/RSl
-	ShDNE/wMsoungx
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Mike Galbraith <efault@gmx.de>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Matt Mackall <mpm@selenic.com>, William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       linux-kernel@vger.kernel.org,
+	Tue, 17 Apr 2007 23:50:39 -0400
+Received: from iucha.net ([209.98.146.184]:40491 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031336AbXDRDui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 23:50:38 -0400
+X-Greylist: delayed 1182 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Apr 2007 23:50:38 EDT
+Date: Tue, 17 Apr 2007 22:30:55 -0500
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070418031511.GA18452@wotan.suse.de>
-References: <46240F98.3020800@bigpond.net.au>
-	 <1176776941.6222.21.camel@Homer.simpson.net>
-	 <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au>
-	 <20070417042954.GG25513@wotan.suse.de>
-	 <20070417060955.GO8915@holomorphy.com>
-	 <20070417061503.GC1057@wotan.suse.de>
-	 <20070417062621.GL2986@holomorphy.com>
-	 <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org>
-	 <20070418031511.GA18452@wotan.suse.de>
-Content-Type: text/plain
-Date: Wed, 18 Apr 2007 05:45:20 +0200
-Message-Id: <1176867920.6478.14.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+       Adrian Bunk <bunk@stusta.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
+Message-ID: <20070418033055.GA24044@iucha.net>
+References: <1176740307.6761.56.camel@heimdal.trondhjem.org> <1176741408.6761.62.camel@heimdal.trondhjem.org> <1176792399.3035.30.camel@twins> <20070416125905.GA2769@iucha.net> <1176792399.3035.30.camel@twins> <1176796503.3035.33.camel@twins> <87hcrfaqam.fsf@duaron.myhome.or.jp> <20070418011946.11679.34920.stgit@heimdal.trondhjem.org> <20070417195823.943f9472.akpm@linux-foundation.org> <1176865565.6796.16.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Disposition: inline
+In-Reply-To: <1176865565.6796.16.camel@heimdal.trondhjem.org>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-18 at 05:15 +0200, Nick Piggin wrote:
-> On Tue, Apr 17, 2007 at 04:39:54PM -0500, Matt Mackall wrote:
-> > 
-> > I'm a big fan of fairness, but I think it's a bit early to declare it
-> > a mandatory feature. Bounded unfairness is probably something we can
-> > agree on, ie "if we decide to be unfair, no process suffers more than
-> > a factor of x".
-> 
-> I don't know why this would be a useful feature (of course I'm talking
-> about processes at the same nice level). One of the big problems with
-> the current scheduler is that it is unfair in some corner cases. It
-> works OK for most people, but when it breaks down it really hurts. At
-> least if you start with a fair scheduler, you can alter priorities
-> until it satisfies your need... with an unfair one your guess is as
-> good as mine.
-> 
-> So on what basis would you allow unfairness? On the basis that it doesn't
-> seem to harm anyone? It doesn't seem to harm testers?
 
-Well, there's short term fair and long term fair.  Seems to me a burst
-load having to always merge with a steady stream load using a short term
-fairness yardstick absolutely must 'starve' relative to the steady load,
-so to be long term fair, you have to add some short term unfairness.
-The mainline scheduler is more long term fair (discounting the rather
-obnoxious corner cases).
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-Mike
+On Tue, Apr 17, 2007 at 11:06:05PM -0400, Trond Myklebust wrote:
+> > > I've split the issues introduced by the 2.6.21-rcX write code up into=
+ 4
+> > > subproblems.
+> > >=20
+> > > The first patch is just a cleanup in order to ease review.
+> > >=20
+> > > Patch number 2 ensures that we never release the PG_writeback flag un=
+til
+> > > _after_ we've either discarded the unstable request altogether, or pu=
+t it
+> > > on the nfs_inode's commit or dirty lists.
+> > >=20
+> > > Patch number 3 fixes the 'desynchronized value of nfs_i.ncommit' erro=
+r. It
+> > > uses the PG_NEED_COMMIT flag as an indicator for whether or not the r=
+equest
+> > > may be redirtied.
+> > >=20
+> > > Patch number 4 protects the NFS '.set_page_dirty' address_space opera=
+tion
+> > > against races with nfs_inode_add_request.
+> >=20
+> > For 2.6.21, yes?
+>=20
+> Right. A couple of nasty regressions have been sighted. This series
+> attempts to deal with them all.
 
+The good news is that the Gnome session log-in progresses to the point
+where both top and bottom bars are painted (gray) and the bottom bar
+is populated with icons (2.6.21-rc7 vanilla stops after displaying the
+splash).  The bad news is that it stops there.
+
+Big-copy fails as well, after 2.5G transferred.
+
+The process traces are at:
+
+   http://iucha.net/nfs/21-rc7-nfs1/gnome-session
+   http://iucha.net/nfs/21-rc7-nfs1/big-copy
+
+Regards,
+florin
+
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGJZDvND0rFCN2b1sRAg8uAKCTWzPwv7acEOpIVZbvgFubnbJNGQCeNlNp
+5rvRTQdLzdEpg2p7wYkYtds=
+=y0Vx
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
