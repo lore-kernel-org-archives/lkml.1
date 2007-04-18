@@ -1,81 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXDRH3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbXDRHlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXDRH3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 03:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXDRH3U
+	id S932929AbXDRHlj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 03:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbXDRHli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 03:29:20 -0400
-Received: from main.gmane.org ([80.91.229.2]:57127 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752016AbXDRH3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 03:29:19 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: James Bruce <bruce@andrew.cmu.edu>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-Date: Wed, 18 Apr 2007 03:29:00 -0400
-Message-ID: <4625C8BC.9060804@andrew.cmu.edu>
-References: <20070417061503.GC1057@wotan.suse.de> <Pine.LNX.4.64.0704162317330.30516@alien.or.mcafeemobile.com> <20070417070949.GR8915@holomorphy.com> <20070417073308.GB30559@elte.hu> <20070417090538.GU8915@holomorphy.com> <20070417092422.GA19414@elte.hu> <20070417220809.GF11166@waste.org> <20070417223256.GP2986@holomorphy.com> <20070417223909.GO11115@waste.org> <20070417225902.GQ2986@holomorphy.com> <20070417225723.GP11115@waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: dhcp-7-156.dsl.telerama.com
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-In-Reply-To: <20070417225723.GP11115@waste.org>
-Cc: ck@vds.kolivas.org
+	Wed, 18 Apr 2007 03:41:38 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:47574 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S932929AbXDRHlh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 03:41:37 -0400
+Date: Wed, 18 Apr 2007 00:08:43 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Rob Meijer <capibara@xs4all.nl>
+cc: Karl MacMillan <kmacmill@redhat.com>, James Morris <jmorris@namei.org>,
+       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: AppArmor FAQ
+In-Reply-To: <19259.213.222.28.155.1176880873.squirrel@webmail.xs4all.nl>
+Message-ID: <Pine.LNX.4.63.0704180001160.2442@qynat.qvtvafvgr.pbz>
+References: <20070416213350.GB4030@suse.de>    <Line.LNX.4.64.0704161846110.13905@d.namei>
+    <1176846917.5946.79.camel@localhost.localdomain>
+ <19259.213.222.28.155.1176880873.squirrel@webmail.xs4all.nl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, Apr 17, 2007 at 03:59:02PM -0700, William Lee Irwin III wrote:
->> On Tue, Apr 17, 2007 at 03:32:56PM -0700, William Lee Irwin III wrote:
->> I'm working with the following suggestion:
+remember that the windows NT permission model is theoreticly superior to the 
+Unix permission model.
+
+however there are far more insecure windows boxes out there then Unix boxes 
+(even if taken as a percentage of the installed base)
+
+I don't think that anyone is claiming that AA is superior to SELinux
+
+what people are claiming is that the model AA is proposing can improve security 
+in some cases.
+
+to use the example from this thread /etc/resolv.conf
+
+if you have a webserver that wants to do a name lookup you can do one of two 
+things
+
+1. in AA configure the webserver to have ro access to /etc/resolv.conf
+
+2. in SELinux tag /etc/resolv.conf, figure out every program on the sytem that 
+accesses it, and then tag those programs with the right permissions.
+
+SELinux is designed to be able to make the box safe against root, AA is designed 
+to let the admin harden exposed apps without having to think about the other 
+things on the system.
+
+allow people to use each tool for the appropriate task.
+
+David Lang
+
+On Wed, 18 Apr 2007, Rob Meijer wrote:
+
+> Date: Wed, 18 Apr 2007 09:21:13 +0200 (CEST)
+> From: Rob Meijer <capibara@xs4all.nl>
+> To: Karl MacMillan <kmacmill@redhat.com>
+> Cc: James Morris <jmorris@namei.org>, John Johansen <jjohansen@suse.de>,
+>     linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+>     linux-fsdevel@vger.kernel.org
+> Subject: Re: AppArmor FAQ
+> 
+> On Tue, April 17, 2007 23:55, Karl MacMillan wrote:
+>> On Mon, 2007-04-16 at 20:20 -0400, James Morris wrote:
+>>> On Mon, 16 Apr 2007, John Johansen wrote:
+>>>
+>>>> Label-based security (exemplified by SELinux, and its predecessors in
+>>>> MLS systems) attaches security policy to the data. As the data flows
+>>>> through the system, the label sticks to the data, and so security
+>>>> policy with respect to this data stays intact. This is a good approach
+>>>> for ensuring secrecy, the kind of problem that intelligence agencies
+>>> have.
+>>>
+>>> Labels are also a good approach for ensuring integrity, which is one of
+>>> the most fundamental aspects of the security model implemented by
+>>> SELinux.
+>>>
+>>> Some may infer otherwise from your document.
+>>>
 >>
->> On Tue, Apr 17, 2007 at 09:07:49AM -0400, James Bruce wrote:
->>> Nonlinear is a must IMO.  I would suggest X = exp(ln(10)/10) ~= 1.2589
->>> That value has the property that a nice=10 task gets 1/10th the cpu of a
->>> nice=0 task, and a nice=20 task gets 1/100 of nice=0.  I think that
->>> would be fairly easy to explain to admins and users so that they can
->>> know what to expect from nicing tasks.
->> I'm not likely to write the testcase until this upcoming weekend, though.
-> 
-> So that means there's a 10000:1 ratio between nice 20 and nice -19. In
-> that sort of dynamic range, you're likely to have non-trivial
-> numerical accuracy issues in integer/fixed-point math.
-
-Well, you *are* specifying vastly different priorities.  The question is 
-how many nice=20 tasks should it take to interfere with a nice=-19 task? 
-  If you've only got a 100:1 ratio, 100 nice=20 tasks will take ~50% of 
-the CPU away from a nice=-19 task.  I don't think that's ideal, as in my 
-mind a -19 task shouldn't have to care how many nice=20 tasks there are 
-(within reason).  IMHO, if a user is running a CPU hog at nice=-19, and 
-expecting nice=20 tasks to run immediately, I don't think the scheduler 
-is the problem.
-
-> (Especially if your clock is jiffies-scale, which a significant number
-> of machines will continue to be.)
-> 
-> I really think if we want to have vastly different ratios, we probably
-> want to be looking at BATCH and RT scheduling classes instead.
-
-I, like all users, can live with anything, but there should be a clear 
-specification of what the user should expect.  Magic changes in the 
-function at nice=0, or no real clear meaning at all (mainline), are both 
-things that don't help the users to figure that out.  I like the 
-exponential base because shifting all tasks up or down one nice level 
-does not change the relative cpu distribution (i.e. two tasks 
-{nice=-5,nice=0} get the same relative cpu distribution as if they were 
-{nice=0,nice=5}.  An exponential base is the only way that property can 
-hold.
-
-Now, perhaps implementation issues may prevent something like the 
-"1.2589" ratio rule from being realized, but I'm not sure we should 
-throw it out _before_ we know that it's actually a problem.  This is the 
-same sort of resistance that the timekeeping code updates faces (using 
-nanoseconds everywhere instead of "natural" clock bases), but that got 
-addressed eventually.
-
-  - Jim Bruce
-
+>> Not only that, the implication that secrecy is only useful to
+>> intelligence agencies is pretty funny. Personally, I think that
+>> protecting the confidentiality of my data is important (and my bank and
+>> health care providers protecting the data they have about me). Type
+>> Enforcement was specifically designed to be able to address integrity
+>> _and_ confidentiality in a way acceptable to commercial organizations.
+>>
+>> Karl
+>
+> Shouldn't that be _OR_, as I have always understood confidentialy
+> models like BLP are by their very nature incompatible with integrity
+> models like Biba. Given this incompatibity, I think the idea that
+> BLP style use of lables (ss/* property and the likes) is only usefull
+> to intelligence agencies may well be correct, while usage for integrity
+> models like Biba and CW would be much broader than that.
+>
+> A path based 'least priviledge' (POLP) solution would I think on its own
+> address neither integity nor confidentiality, and next to this would
+> proof to be yet an other 'fat profile' administration hell.
+>
+> Having said that, I feel a path based solution could have great potential
+> if it could be used in conjunction with the object capability model, that
+> I would consider a simple and practical alternative integrity model that
+> does not require lables in an MLS maner, and that extends on the POLP
+> concept in a way that would be largely more practical.
+> That is, using 'thin' path based profiles would become very practical if
+> all further authority can be communicated using handles in the same way
+> that an open file handle can be communicated.
+>
+> Rob
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
