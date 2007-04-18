@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXDRIgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030477AbXDRInB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933046AbXDRIgh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 04:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXDRIgh
+	id S1030477AbXDRInB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 04:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030202AbXDRInB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 04:36:37 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:6031 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933046AbXDRIgg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 04:36:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=k1rcY1kBxUo/81AxWR+0HNy6zojQE8X/jgZgYEBQEU2ExnvFx6vIv/tVKwaRsh/ncuKj+p6+xc56FV/j9S7Wyx8KkNnxwiF81zmr2gIP8VnMyF/5JpnoE0nBksLAU7A8enuqZVPA2RJdNBrljx3E8H2JCiizQEb8aqrm1HkacqM=
-Message-ID: <4625D885.7020308@gmail.com>
-Date: Wed, 18 Apr 2007 17:36:21 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, dmitry.torokhov@gmail.com
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>	<20070417184110.GJ10619@htj.dyndns.org> <20070418100709.3c710e00@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070418100709.3c710e00@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 04:43:01 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:58738 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030477AbXDRInA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 04:43:00 -0400
+Date: Wed, 18 Apr 2007 12:42:07 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Pavel Emelianov <xemul@sw.ru>, David Miller <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
+Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
+Message-ID: <20070418084206.GA4241@2ka.mipt.ru>
+References: <4625D3D2.9030507@sw.ru> <20070418081707.GA29267@2ka.mipt.ru> <4625D637.2040308@trash.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <4625D637.2040308@trash.net>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 18 Apr 2007 12:42:16 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Wed, 18 Apr 2007 03:41:10 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
+On Wed, Apr 18, 2007 at 10:26:31AM +0200, Patrick McHardy (kaber@trash.net) wrote:
+> Evgeniy Polyakov wrote:
+> > On Wed, Apr 18, 2007 at 12:16:18PM +0400, Pavel Emelianov (xemul@sw.ru) wrote:
+> > 
+> >>Sorry, I forgot to put netdev and David in Cc when I first sent it.
+> >>
+> >>There is a race between netlink_dump_start() and netlink_release()
+> >>that can lead to the situation when a netlink socket with non-zero
+> >>callback is freed.
+> > 
+> > 
+> > Out of curiosity, why not to fix a netlink_dump_start() to remove
+> > callback in error path, since in 'no-error' path it removes it in
+> > netlink_dump().
 > 
->> Hello, all.
->>
->> Agreed with the problem but I'm not very enthusiastic for adding
->> kobj->owner.  How about the following?  exit() routines will have to
->> do device_unregister_wait() instead of device_unregister().  On return
->> from it, it's guaranteed that all references to it are dropped and
->> ->release is finished.
 > 
-> Sounds interesting. Kind of like the completion approach, but with the
-> dangerous bits outside the module.
-> 
->> The caller is responsible for avoiding
->> deadlock, of course.
-> 
-> I think that wording is a bit too strong. Of course, if the device is
-> unregistered in the exit routine, the module must make sure it gave up
-> all references it itself obtained. However, it doesn't have any control
-> about who obtained a reference during the object's lifetime. If an
-> outsider holds on to a reference, we'll lock up until this reference
-> has been given up (but I guess this is what we want).
+> It already does (netlink_destroy_callback), but that doesn't help
+> with this race though since without this patch we don't enter the
+> error path.
 
-Right, the better wording would be "the caller is responsible for not
-causing deadlocks by dropping all references it owns on entry".
+I thought that with releasing a socket, which will have a callback
+attached only results in a leak of the callback? In that case we can
+just free it in dump() just like it is done in no-error path already.
+Or do I miss something additional?
 
->> +void kobject_put_wait(struct kobject * kobj)
->> +{
->> +	struct kobj_wait kwait;
->> +	unsigned long flags;
->> +
->> +	if (!kobj)
->> +		return;
->> +
->> +	BUG_ON(!list_empty(&kobj->entry));
->> +
->> +	init_completion(&kwait.cmpl);
->> +	kwait.kobj = kobj;
->> +
->> +	spin_lock_irqsave(&kobj_wait_lock, flags);
->> +	list_add(&kwait.list, &kobj_wait_list);
->> +	spin_unlock_irqrestore(&kobj_wait_lock, flags);
->> +
->> +	kobject_put(kobj);
->> +
->> +	if (!wait_for_completion_timeout(&kwait.cmpl, 30 * HZ)) {
->> +		printk(KERN_WARNING "kobject_put_wait: kobject %p is still "
->> +		       "alive after 30s, possible reference count bug\n", kobj);
->> +		dump_stack();
->> +		wait_for_completion(&kwait.cmpl);
->> +	}
->> +}
->>
+> > And, btw, can release method be called while socket is being used, I
+> > thought about proper reference counters should prevent this, but not
+> > 100% sure with RCU dereferencing of the descriptor.
 > 
-> Couldn't this waiting be made simpler?
-> - add completion to kobject in kobject_unregister_wait()
-> - call kobject_put(), then wait_for_completion()
-> - in kobject_cleanup(), save completion from kobject, call release
-> function, then complete() on saved completion
+> 
+> The problem is asynchronous processing of the dump request in the
+> context of a different process. Process requests a dump, message
+> is queued and process returns from sendmsg since some other process
+> is already processing the queue. Then the process closes the socket,
+> resulting in netlink_release being called. When the dump request
+> is finally processed the race Pavel described might happen. This
+> can only happen for netlink families that use mutex_try_lock for
+> queue processing of course.
 
-I was trying to avoid adding a completion to all kobjects.
-
-Thanks.
+Doesn't it called from ->sk_data_ready() which is synchronous with
+respect to sendmsg, not sure about conntrack though, but it looks so?
 
 -- 
-tejun
+	Evgeniy Polyakov
