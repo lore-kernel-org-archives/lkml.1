@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422720AbXDRJaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422716AbXDRJcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422720AbXDRJaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 05:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422716AbXDRJaT
+	id S1422716AbXDRJcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 05:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422721AbXDRJcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 05:30:19 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:58273 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422720AbXDRJaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 05:30:18 -0400
-Date: Wed, 18 Apr 2007 13:29:03 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Pavel Emelianov <xemul@sw.ru>, David Miller <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
-Message-ID: <20070418092903.GA16910@2ka.mipt.ru>
-References: <4625D3D2.9030507@sw.ru> <20070418081707.GA29267@2ka.mipt.ru> <4625D637.2040308@trash.net> <20070418084206.GA4241@2ka.mipt.ru> <4625DBE2.5090402@trash.net> <20070418090720.GA25070@2ka.mipt.ru> <4625E202.8040604@trash.net>
+	Wed, 18 Apr 2007 05:32:33 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:52637 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422716AbXDRJcc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 05:32:32 -0400
+Date: Wed, 18 Apr 2007 11:35:06 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, dmitry.torokhov@gmail.com
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+Message-ID: <20070418113506.06df2d21@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <4625DAD1.2070000@gmail.com>
+References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>
+	<20070417184110.GJ10619@htj.dyndns.org>
+	<4625169D.9020301@gmail.com>
+	<20070418101117.73edb302@gondolin.boeblingen.de.ibm.com>
+	<4625DAD1.2070000@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <4625E202.8040604@trash.net>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 18 Apr 2007 13:29:09 +0400 (MSD)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 11:16:50AM +0200, Patrick McHardy (kaber@trash.net) wrote:
-> > That is what I referred to as error path. Btw, with positive return
-> > value we end up in subsequent call to input which will free callback
-> > under lock as expected.
-> 
-> 
-> No, nothing is going to call netlink_dump after the initial call since
-> the socket is gone.
+On Wed, 18 Apr 2007 17:46:09 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-Argh, userspace socket's sk_data_rady() if dump returned positive value.
-So, callback is not freed to allow to put several pages before
-NLMSG_DONE via single dump?
+> It's debatable but I think things will be safer this way.  If we wait by
+> default, we are forced to check that all references are dropped and will
+> have a stack dump indicating which object is causing problem when
+> something goes wrong, which is better than silent object leaking and/or
+> jumping to non-existent address way later.
 
--- 
-	Evgeniy Polyakov
+I agree that oopsing is bad. However, lingering references are not
+always coding errors. What if it will just take long for a reference to
+be given up? You'd have a hanging device_unregister(), with no
+particular gain.
+
+> 
+> I personally think all driver interface should be made this way such
+> that completion of unregister function guarantees no further access to
+> the object or module.  IMHO, it's more intuitive and easier to force
+> correctness.
+
+If we really did this, we should also provide a non-waiting alternative.
+
