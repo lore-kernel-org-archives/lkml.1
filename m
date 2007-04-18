@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbXDRBQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030962AbXDRBYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbXDRBQU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 21:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbXDRBQU
+	id S1030962AbXDRBYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 21:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030973AbXDRBYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 21:16:20 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7358 "EHLO mga02.intel.com"
+	Tue, 17 Apr 2007 21:24:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32777 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753423AbXDRBQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 21:16:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,420,1170662400"; 
-   d="scan'208"; a="229299790:sNHT16778979"
-Date: Tue, 17 Apr 2007 18:14:45 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+	id S1030962AbXDRBYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 21:24:35 -0400
+Subject: Re: [PATCH] sysctl_panic_on_oom broken
+From: Larry Woodman <lwoodman@redhat.com>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] slab: resize the alien caches too
-Message-ID: <20070418011445.GB30721@linux-os.sc.intel.com>
-References: <20070418004418.GA30721@linux-os.sc.intel.com> <Pine.LNX.4.64.0704171747130.2143@schroedinger.engr.sgi.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704171438390.8082@schroedinger.engr.sgi.com>
+References: <462515CC.1080107@redhat.com>
+	 <Pine.LNX.4.64.0704171438390.8082@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Tue, 17 Apr 2007 20:24:35 -0400
+Message-Id: <1176855875.3959.7.camel@dhcp83-56.boston.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704171747130.2143@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.0.2 (2.0.2-16) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17, 2007 at 05:48:30PM -0700, Christoph Lameter wrote:
-> On Tue, 17 Apr 2007, Siddha, Suresh B wrote:
+On Tue, 2007-04-17 at 14:39 -0700, Christoph Lameter wrote:
+
 > 
-> > While going through the slab code, I observed that alien caches are
-> > not getting resized, when user changes the slab tunables. Appended patch
-> > tries to fix this. Please review and let me know if I missed anything.
-> 
-> Let it be. We have not resized the alien caches ever and doing so may 
-> cause serious memory usage. Size is hardcoded to 12 anyways.
+> It recreates the old problem that we OOM while we still have memory 
+> in other parts of the system.
 
-hmm.. I see.
+How, by the time we get here we have already decided we are going to
+OOMkill or panic.  This change just obeys sysctl_panic_on_oom before
+killing current.
 
-Let me do some experiments and getback to you(with what I am looking
-exactly).
+-----------------------------------------------------------------------
+        /* check if we are going to panic before enything else... */
+        if (sysctl_panic_on_oom)
+                panic("out of memory. panic_on_oom is selected\n");
+        /*
+         * Check if there were limitations on the allocation
+         * NUMA) that may require different handling.
+         */
+        switch (constrained_alloc(zonelist, gfp_mask)) {
+        case CONSTRAINT_MEMORY_POLICY:
+                oom_kill_process(current, points,
+                                "No available memory (MPOL_BIND)");
+                break;
 
-thanks,
-suresh
+        case CONSTRAINT_CPUSET:
+                oom_kill_process(current, points,
+                                "No available memory in cpuset");
+                break;
+
+        case CONSTRAINT_NONE:
+retry:
+                /*
+                 * Rambo mode: Shoot down a process and hope
+                 * issues we may have.
+                 */
+                p = select_bad_process(&points);
+
+                if (PTR_ERR(p) == -1UL)
+                        goto out;
+
+                /* Found nothing?!?! Either we hang or we panic. */
+
+
