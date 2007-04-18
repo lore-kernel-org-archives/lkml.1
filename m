@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992485AbXDRUKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992499AbXDRULY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992485AbXDRUKx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 16:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992490AbXDRUKw
+	id S2992499AbXDRULY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 16:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992502AbXDRULY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 16:10:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56625
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2992481AbXDRUKv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 16:10:51 -0400
-Date: Wed, 18 Apr 2007 13:10:54 -0700 (PDT)
-Message-Id: <20070418.131054.70219428.davem@davemloft.net>
-To: hch@infradead.org
-Cc: andrew.vasquez@qlogic.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-       ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070418171346.GA16471@infradead.org>
-References: <20070416.123743.07452378.davem@davemloft.net>
-	<20070416200857.GH10822@andrew-vasquezs-computer.local>
-	<20070418171346.GA16471@infradead.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 16:11:24 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54659 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992499AbXDRULX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 16:11:23 -0400
+Date: Wed, 18 Apr 2007 22:10:36 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
+Message-ID: <20070418201036.GA2112@elf.ucw.cz>
+References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6> <200704131022.45315.rjw@sisk.pl> <46254666.2020308@tmr.com> <Pine.LNX.4.64.0704172045100.18821@localhost.localdomain> <46265F60.4040600@tmr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46265F60.4040600@tmr.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Hellwig <hch@infradead.org>
-Date: Wed, 18 Apr 2007 18:13:46 +0100
+Hi!
 
-> Note that I expect Sun put in the invalid ROM intentionally, as we have
-> similar cases with other cards that have totally messed up ROMs in
-> Sun-branded versions.  Personally I think that's an utterly bad decision
-> from Sun's side, but we'll have to live with this.
+> >>One reason was that there are (were?) a number of machines which only 
+> >>powered
+> >>down properly using apm. It was discussed as part of shutting down after 
+> >>power
+> >>failure when your UPS is running out of power.
+> >>    
+> >
+> >um ... what does APM have to do with legacy PM?  two different issues,
+> >no?
+> >  
+> Since the patches are going into apm.c and apm was used for suspend and 
+> poweroff before ACPI was a feature of the hardware, I assume there's a 
+> relationship. As of 2.6.9 ACPI still couldn't power down one of my
+>old
 
-The way configuration paramters are provided on Sun systems is via
-openfirmware properties, this is how they do everything and that is
-why they never setup the NVRAMs on various chips.
+There is not. The patches should not affect you unless you use obscure
+68000 driver.
 
-This happens on PowerPC too.  One of many examples is determining the
-clock parameters of the ATI Radeon graphics card, it's provided as an
-openfirmware property not in some config area in the BIOS.
-
-We can either be anti-social and _demand_ that these systems get their
-NVRAMs fixed, which in reality will never happen and is totally
-unreasonable, or we can say ok this is how we get the information we
-need on these platforms we'll look for it there.
+We are removing infrastructure that has no users.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
