@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992828AbXDRVhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbXDRVpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992828AbXDRVhI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 17:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992823AbXDRVhH
+	id S1753983AbXDRVpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 17:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbXDRVpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 17:37:07 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1701 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992815AbXDRVhG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 17:37:06 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: paulus@samba.org (Paul Mackerras)
-Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
-Cc: davem@davemloft.net, kaber@trash.net, poemann@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Organization: Core
-In-Reply-To: <17953.30429.220756.818283@cargo.ozlabs.ibm.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1HeHoZ-0000Y6-00@gondolin.me.apana.org.au>
-Date: Thu, 19 Apr 2007 07:35:47 +1000
+	Wed, 18 Apr 2007 17:45:45 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:47539 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753983AbXDRVpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 17:45:44 -0400
+Date: Wed, 18 Apr 2007 14:45:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kyle McMartin <kyle@canonical.com>
+Cc: linux-kernel@vger.kernel.org, alan@redhat.com, bcollins@ubuntu.com
+Subject: Re: [RFC] [PATCH] Allow overriding module parameters from kernel
+ command_line
+Message-Id: <20070418144512.14528b78.akpm@linux-foundation.org>
+In-Reply-To: <20070418155552.GA3744@athena.road.mcmartin.ca>
+References: <20070418155552.GA3744@athena.road.mcmartin.ca>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul:
-
-Paul Mackerras <paulus@samba.org> wrote:
+> On Wed, 18 Apr 2007 11:55:52 -0400 Kyle McMartin <kyle@canonical.com> wrote:
+> With the move to initramfs and heavily modular configs, which include
+> loading storage drivers from early userspace, it's becoming harder
+> to provide users with a way of overriding module parameters at boot.
 > 
-> So this doesn't change process_input_packet(), which treats the case
-> where the first byte is 0xff (PPP_ALLSTATIONS) but the second byte is
-> 0x03 (PPP_UI) as indicating a packet with a PPP protocol number of
-> 0xff.  Arguably that's wrong since PPP protocol 0xff is reserved, and
-> the RFC does envision the possibility of receiving frames where the
-> control field has values other than 0x03.
+> Currently, users would have to break into the initramfs, edit the
+> modprobe options, and then let boot continue. They have a much easier time
+> dealing with adding options on the command line from Grub or what have you.
+> 
+> I hacked out this patch quickly to re-parse saved_command_line[] when we
+> load a module in an attempt to rectify this.
+> 
+> (The specific use-case I was looking at here was HPA commands failing on
+>  sata_nv controllers, and needing to pass the adma=0 option to the module...
+>  Users had a hard time testing without an easy way of overriding the module.)
+> 
+> Clearly this is not entirely optimal, because we're parsing command_line
+> after the module params are parsed. This ends of being a policy decision,
+> whether the /sbin/modprobe commandline should override the kernel
+> command_line, or vice versa.
 
-Your fix is probably needed too.  However, I think the issue that Patrick
-was trying to fix is the case where p[0] != PPP_ALLSTATIONS and therefore
-we'd still have a problem there.
+Similar-but-different: I was trying to persuade a Fedora system to use ext2
+for the root filesystem the other day.  Turns out that we somehow managed
+to break `rootfstype=' in this situation and it cheerfully continued to use
+ext3.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Fixed by changing /etc/fstab and rebuilding initrd, but IMO rootfstype=
+should have worked.
+
