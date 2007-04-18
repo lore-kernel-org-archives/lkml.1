@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992524AbXDRUMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992490AbXDRUNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992524AbXDRUMl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 16:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992513AbXDRUMl
+	id S2992490AbXDRUNj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 16:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992502AbXDRUNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 16:12:41 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:44963 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992506AbXDRUMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 16:12:39 -0400
-Date: Wed, 18 Apr 2007 13:11:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
-       Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-Reply-To: <Pine.LNX.4.64.0704181254580.25880@alien.or.mcafeemobile.com>
-Message-ID: <alpine.LFD.0.98.0704181302370.2828@woody.linux-foundation.org>
-References: <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>
- <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de>
- <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de>
- <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
- <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
- <20070418174945.GA7930@elte.hu> <alpine.LFD.0.98.0704181215260.2828@woody.linux-foundation.org>
- <Pine.LNX.4.64.0704181254580.25880@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 18 Apr 2007 16:13:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56639
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S2992490AbXDRUNi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 16:13:38 -0400
+Date: Wed, 18 Apr 2007 13:13:41 -0700 (PDT)
+Message-Id: <20070418.131341.129061984.davem@davemloft.net>
+To: andrew.vasquez@qlogic.com
+Cc: hch@infradead.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
+       ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070418172802.GD12708@andrew-vasquezs-computer.local>
+References: <20070416200857.GH10822@andrew-vasquezs-computer.local>
+	<20070418171346.GA16471@infradead.org>
+	<20070418172802.GD12708@andrew-vasquezs-computer.local>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Date: Wed, 18 Apr 2007 10:28:02 -0700
 
-
-On Wed, 18 Apr 2007, Davide Libenzi wrote:
+> On Wed, 18 Apr 2007, Christoph Hellwig wrote:
 > 
-> "Perhaps on the rare occasion pursuing the right course demands an act of 
->  unfairness, unfairness itself can be the right course?"
+> > I don't think a module option is a good idea at this point.  The problem
+> > is you broke some so far perfectly working setups, which is not okay.
+> > The only first step can be printing a really big warning.  After this
+> > has been in for a while (at lest half a year) we can make it a non-default
+> > option or turn if off completely in case the warning never triggered in
+> > practice.
+> > 
+> > The only resonable thing for 2.6.21 is to put in David's patch, possible
+> > with an even more drastic warning when the rom is invalid and there's
+> > no prom-fallback available.
+> > 
+> > Note that I expect Sun put in the invalid ROM intentionally, as we have
+> > similar cases with other cards that have totally messed up ROMs in
+> > Sun-branded versions.  Personally I think that's an utterly bad decision
+> > from Sun's side, but we'll have to live with this.
+> 
+> Fine.  I'll rework an alternate patch for the 2.6.22 timeframe...
 
-I don't think that's the right issue.
+We need to fix things now for 2.6.21 and the 2.6.x -stable branches
+because users have unusable systems currently.
 
-It's just that "fairness" != "equal".
+If it's just a time issue I can work on and push the patch, especially
+since I have the means to test things here.
 
-Do you think it "fair" to pay everybody the same regardless of how good a 
-job they do? I don't think anybody really believes that. 
-
-Equating "fair" and "equal" is simply a very fundamental mistake. They're 
-not the same thing. Never have been, and never will.
-
-Now, there's no question that "equal" is much easier to implement, if only 
-because it's a lot easier to agree what it means. "Equal parts" is 
-somethign everybody can agree on. "Fair parts" automatically involves a 
-balancing act, and people will invariably count things differently and 
-thus disagree about what is "fair" and what is not.
-
-I don't think we can ever get a "perfect" setup for that reason, but I 
-think we can get something that at least gets reasonably close, at least 
-for the obvious cases.
-
-So my suggested test-case of running one process as one user and two 
-processes as another one has a fairly "obviously correct" solution if you 
-have just one CPU's, and you can probably be pretty fair in practice on 
-two CPU's (there's an obvious theoretical solution, whether you can get 
-there with a practical algorithm is another thing). On three or more 
-CPU's, you obviously wouldn't even *want* to be fair, since you can very 
-naturally just give a CPU to each..
-
-			Linus
