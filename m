@@ -1,107 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422942AbXDRMKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422948AbXDRML0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422942AbXDRMKz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 08:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422953AbXDRMKz
+	id S1422948AbXDRML0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 08:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422950AbXDRML0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 08:10:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:44970 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422943AbXDRMKy (ORCPT
+	Wed, 18 Apr 2007 08:11:26 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:44371 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422948AbXDRMLZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 08:10:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=dvBKrJFUCrBXiDfeYeKcYrZIzUBwOjYYrCCwKFEyrktWzAn557eq9DeIdSba2NNMviB9eCJrCG6Cm1qrr4PlYR7rNhaGQAhElIvwSNkE4C0rUza8KuumVMdfO99TeEHbl3xfsvPUiTBxgGtpUvHibPY44hiac8XKUW1hlkhnXQI=
-Message-ID: <2ff216280704180510w28136a6cw6816f834593aff13@mail.gmail.com>
-Date: Wed, 18 Apr 2007 17:40:53 +0530
-From: "=?UTF-8?Q?=E0=A4=85=E0=A4=AD=E0=A4=BF=E0=A4=9C?=
-	=?UTF-8?Q?=E0=A4=BF=E0=A4=A4_=E0=A4=AD?=
-	=?UTF-8?Q?=E0=A5=8B=E0=A4=AA=E0=A4=9F=E0=A4=95=E0=A4=B0_(A?=
-	=?UTF-8?Q?bhijit_Bhopatkar)?=" <bainonline@gmail.com>
-To: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@osdl.org>, akpm@osdl.org, jgarzik@pobox.com
-Subject: [PATCH] [RFC] Throttle swappiness for interactive tasks
+	Wed, 18 Apr 2007 08:11:25 -0400
+Message-ID: <46260AE2.9080107@bx.jp.nec.com>
+Date: Wed, 18 Apr 2007 21:11:14 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: mpm@selenic.com
+CC: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [RFC][PATCH -mm take4 4/6] using symlink for the net_device
+References: <462605DC.2080804@bx.jp.nec.com>
+In-Reply-To: <462605DC.2080804@bx.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mm structures of interactive tasks are marked and
-the pages belonging to them are never shifted to inactive
-list in lru algorithm. Thus keeping interactive tasks in
-memory as long as possible.
-The interactivity is already determined by schedular so
-we reuse that knowledge to mark the mm structures.
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
 
-Signed-off-by: Abhijit Bhopatkar <bainonline@gmail.com>
+We use symbolic link for net_device.
+The link in sysfs represents the corresponding network etherdevice.
+
+-+- /sys/class/misc/
+ |-+- netconsole/
+ |-+- port1/
+ | |--- id             [r--r--r--]  id
+ | |--- net:<net_dev>  [rw-r--r--]  net_dev: eth0,eth1,...
+ | ...
+ |--- port2/
+ ...
+
+Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Signed-off-by: Takayoshi Kochi <t-kochi@bq.jp.nec.com>
 ---
- include/linux/init_task.h |    1 +
- include/linux/sched.h     |    4 ++++
- kernel/sched.c            |    4 ++++
- mm/rmap.c                 |    5 +++++
- 4 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index a2d95ff..12ba3c1 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -54,6 +54,7 @@
-        .page_table_lock =  __SPIN_LOCK_UNLOCKED(name.page_table_lock), \
-        .mmlist         = LIST_HEAD_INIT(name.mmlist),          \
-        .cpu_vm_mask    = CPU_MASK_ALL,                         \
-+       .interactive    = 0,                                    \
- }
-
- #define INIT_SIGNALS(sig) {                                            \
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 49fe299..1f233e7 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -373,6 +373,10 @@ struct mm_struct {
-        /* aio bits */
-        rwlock_t                ioctx_list_lock;
-        struct kioctx           *ioctx_list;
-+
-+       /* interactivity flag */
-+       unsigned char interactive;
-+
+Index: mm/drivers/net/netconsole.c
+===================================================================
+--- mm.orig/drivers/net/netconsole.c
++++ mm/drivers/net/netconsole.c
+@@ -81,6 +81,9 @@ static int add_target(char* target_confi
+ static void remove_target(struct netconsole_target *nt);
+ static void cleanup_netconsole(void);
+ static int setup_target_sysfs(struct netconsole_target *nt);
++static char *make_netdev_class_name(char *netdev_name);
++static int netconsole_event(struct notifier_block *this, unsigned long event,
++			    void *ptr);
+ 
+ static int miscdev_configured;
+ 
+@@ -274,12 +277,77 @@ static struct miscdevice netconsole_misc
+ 	.name = "netconsole",
  };
-
- struct sighand_struct {
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b9a6837..72caf94 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -746,6 +746,10 @@ static inline int __normal_prio(struct task_struct *p)
-                prio = MAX_RT_PRIO;
-        if (prio > MAX_PRIO-1)
-                prio = MAX_PRIO-1;
+ 
++static struct notifier_block netconsole_notifier = {
++	.notifier_call = netconsole_event,
++};
 +
-+       /* Update interactivity flag in mm if interactive. */
-+       if(p->mm && TASK_INTERACTIVE(p))
-+                 p->mm->interactive = 1;
-        return prio;
+ static int setup_target_sysfs(struct netconsole_target *nt)
+ {
++	int retval = 0;
++	char *name;
++
+ 	kobject_set_name(&nt->obj, "port%d", nt->id);
+ 	nt->obj.parent = &netconsole_miscdev.this_device->kobj;
+ 	nt->obj.ktype = &target_ktype;
+-	return kobject_register(&nt->obj);
++	retval = kobject_register(&nt->obj);
++	name = make_netdev_class_name(nt->np.dev_name);
++	if (IS_ERR(name))
++		return PTR_ERR(name);
++	retval = sysfs_create_link(&nt->obj, &nt->np.dev->dev.kobj, name);
++	kfree(name);
++
++	return retval;
++}
++
++static char *make_netdev_class_name(char *netdev_name)
++{
++	int size;
++	char *name;
++	char *netdev_class_prefix = "net:";
++
++	size = strlen(netdev_class_prefix) + strlen(netdev_name) + 1;
++	name = kmalloc(size, GFP_KERNEL);
++	if (!name) {
++		printk(KERN_ERR "netconsole: kmalloc() failed!\n");
++		return ERR_PTR(-ENOMEM);
++	}
++	strcpy(name, netdev_class_prefix);
++	strcat(name, netdev_name);
++
++	return name;
++}
++
++static int netconsole_event(struct notifier_block *this, unsigned long event,
++			    void *ptr)
++{
++	int error = 0;
++	char *old_link_name = NULL, *new_link_name = NULL;
++	struct netconsole_target *nt;
++	struct net_device *dev = ptr;
++
++	if (event == NETDEV_CHANGENAME) {
++		spin_lock(&target_list_lock);
++		list_for_each_entry(nt, &target_list, list) {
++			if (nt->np.dev != dev)
++				continue;
++			new_link_name = make_netdev_class_name(dev->name);
++			old_link_name =
++				make_netdev_class_name(nt->np.dev_name);
++			sysfs_remove_link(&nt->obj, old_link_name);
++			error = sysfs_create_link(&nt->obj,
++						  &nt->np.dev->dev.kobj,
++						  new_link_name);
++			if (error)
++				printk(KERN_ERR "can't create link: %s\n",
++				       new_link_name);
++			strcpy(nt->np.dev_name, dev->name);
++			kfree(new_link_name);
++			kfree(old_link_name);
++		}
++		spin_unlock(&target_list_lock);
++	}
++
++	return NOTIFY_DONE;
  }
+ 
+ static int add_target(char* target_config)
+@@ -409,6 +477,7 @@ static int __init init_netconsole(void)
+ 	} else
+ 		miscdev_configured = 1;
+ 
++	register_netdevice_notifier(&netconsole_notifier);
+ 	register_console(&netconsole);
+ 	if(!strlen(config)) {
+ 		printk(KERN_ERR "netconsole: not configured\n");
+@@ -443,6 +512,7 @@ static void cleanup_netconsole(void)
+ 	list_for_each_entry_safe(nt, tmp, &target_list, list) {
+ 		kobject_unregister(&nt->obj);
+ 	}
++	unregister_netdevice_notifier(&netconsole_notifier);
+ 	if (miscdev_configured)
+ 		misc_deregister(&netconsole_miscdev);
+ #else
 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index b82146e..0735168 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -317,6 +317,11 @@ static int page_referenced_one(struct page *page,
-                        rwsem_is_locked(&mm->mmap_sem))
-                referenced++;
+-- 
 
-+       /* Pretend the page is referenced if the task is
-+          interactive. */
-+       if (mm != current->mm && mm->interactive)
-+               referenced++;
-+
-        (*mapcount)--;
-        pte_unmap_unlock(pte, ptl);
- out:
---
-1.4.4.2
+
