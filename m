@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992717AbXDRPBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992715AbXDRPER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992717AbXDRPBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 11:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992715AbXDRPBp
+	id S2992715AbXDRPER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 11:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992716AbXDRPER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 11:01:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33590 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992711AbXDRPBo (ORCPT
+	Wed, 18 Apr 2007 11:04:17 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:36682 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992715AbXDRPER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 11:01:44 -0400
-Date: Wed, 18 Apr 2007 16:01:10 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, ebiederm@xmission.com,
-       serue@us.ibm.com, linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, containers@lists.osdl.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new namespace" clone flag
-Message-ID: <20070418150110.GA29815@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Miklos Szeredi <miklos@szeredi.hu>, ebiederm@xmission.com,
-	serue@us.ibm.com, linuxram@us.ibm.com,
-	linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
-	containers@lists.osdl.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
-References: <20070416195652.GA350@sergelap.austin.ibm.com> <m1k5wbjrsh.fsf@ebiederm.dsl.xmission.com> <E1HdlYr-00015O-00@dorka.pomaz.szeredi.hu> <m1zm56j27m.fsf@ebiederm.dsl.xmission.com> <E1HdsX6-0002Kl-00@dorka.pomaz.szeredi.hu> <m1vefuixp5.fsf@ebiederm.dsl.xmission.com> <E1He6C7-0003Xu-00@dorka.pomaz.szeredi.hu> <1176904505.6796.79.camel@heimdal.trondhjem.org> <E1HeAkl-000490-00@dorka.pomaz.szeredi.hu> <1176906389.6796.96.camel@heimdal.trondhjem.org>
+	Wed, 18 Apr 2007 11:04:17 -0400
+Date: Wed, 18 Apr 2007 17:06:52 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, dmitry.torokhov@gmail.com
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+Message-ID: <20070418170652.7bee0952@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070417184110.GJ10619@htj.dyndns.org>
+References: <20070416193619.4659a847@gondolin.boeblingen.de.ibm.com>
+	<20070417184110.GJ10619@htj.dyndns.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1176906389.6796.96.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 10:26:29AM -0400, Trond Myklebust wrote:
-> > That doesn't really change my agrument though.  _If_ the flag is per
-> > mount, then it makes sense to be able to change it on a master and not
-> > on a slave.  If mount flags are propagated, this is not possible.
-> 
-> Read-only isn't the only issue. On something like NFS, there are flags
-> to set the security flavour, turn on/off encryption etc.
-> 
-> If I mount your home directory using no encryption in my namespace, for
-> instance, then neither you nor the administrator will be able to turn it
-> on afterwards in yours without first unmounting it from mine so that the
-> superblock is destroyed.
+On Wed, 18 Apr 2007 03:41:10 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-I suspect the right answer here is to make nfs mount handling smarter.
-The way mounting works the filesystem is allowed to choose whether it
-can re-used a superblock or needs a new one.  In the NFS case we probably
-want to allow multiple superblocks for the same export if important
-paramaters like the security model mismatch.
+<patch>
 
-This is however only the technical part of the answer.  There's a more
-important one, and that's the user experience - we need a much better
-way to document which flags are per-superblock and which are per-mount.
+OK, I hit a bit on the code. Once I saved a reference to the completion
+in kobject_cleanup, it seemed to survive a load/unload testloop for a
+module registering a device. However, I still dislike this "list of
+waiters" approach, it looks too complex...
 
-Due to this and some other issues we'll probably need a new mount API
-in some time.
