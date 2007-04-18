@@ -1,129 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992589AbXDROUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992572AbXDROUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992589AbXDROUY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 10:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992588AbXDROUY
+	id S2992572AbXDROUj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 10:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992592AbXDROUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 10:20:24 -0400
-Received: from webmail.ict.ac.cn ([159.226.39.7]:58073 "EHLO ict.ac.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2992590AbXDROUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 10:20:22 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 10:20:21 EDT
-Message-ID: <4626276E.3000303@ict.ac.cn>
-Date: Wed, 18 Apr 2007 22:13:02 +0800
-From: Fuxin Zhang <fxzhang@ict.ac.cn>
-User-Agent: Icedove 1.5.0.8 (X11/20061116)
-MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-CC: tiansm@lemote.com, perex@suse.cz, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Fuxin Zhang <zhangfx@lemote.com>
-Subject: Re: [PATCH 16/16] alsa sound support for mips
-References: <11766507661684-git-send-email-tiansm@lemote.com> <117665076617-git-send-email-tiansm@lemote.com> <1176650766907-git-send-email-tiansm@lemote.com> <11766507663301-git-send-email-tiansm@lemote.com> <11766507663039-git-send-email-tiansm@lemote.com> <1176650766685-git-send-email-tiansm@lemote.com> <11766507661790-git-send-email-tiansm@lemote.com> <11766507672298-git-send-email-tiansm@lemote.com> <11766507672043-git-send-email-tiansm@lemote.com> <11766507674145-git-send-email-tiansm@lemote.com> <20070418135412.GG3938@linux-mips.org>
-In-Reply-To: <20070418135412.GG3938@linux-mips.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 10:20:39 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:56407 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992590AbXDROUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 10:20:38 -0400
+Message-ID: <46262953.3040801@drzeus.cx>
+Date: Wed, 18 Apr 2007 16:21:07 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_hera.drzeus.cx-24213-1176906036-0001-2"
+To: Madhusudhan c <cr.madhusudhan@gmail.com>
+CC: linux-kernel@vger.kernel.org, philipl@overt.org
+Subject: Re: MMCv4 support (8-bit support missing)
+References: <ff1613620704162359w62df9e0ao6c43215a767bd706@mail.gmail.com>	 <4625DAFC.4000208@drzeus.cx> <ff1613620704180453t69585e21h5c31a4fe908d0aac@mail.gmail.com>
+In-Reply-To: <ff1613620704180453t69585e21h5c31a4fe908d0aac@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
->>  		vaddr = runtime->dma_area + offset;
->> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
->>     
->
-> Please use CONFIG_MIPS instead of __mips__ in #if / #ifdefs.
->
-> The question if #ifdefing is the right approach to solve this problem is
-> something else but I think no, ....
->   
-I would agree that it is quite ugly, but changing virt_to_page for it 
-does not seem right either.
->   
->> +		page = virt_to_page(CAC_ADDR(vaddr));
->> +#else
->>  		page = virt_to_page(vaddr);
->> +#endif
->>     
->
-> So this is needed because the MIPS virt_to_page is returning a unsuitable
-> value if vaddress is not a KSEG0 (64-bit: cached XKPHYS) address which is
-> what GFP allocations and the slab will return.  So now we have to deciede
-> if
->
->  a) the MIPS __pa() should be changed to handle uncached addresses.
->  b) the sound code here is simply broken.
->
-> Some drivers seem to allocate runtime->dma_area from vmalloc, so this
-> whole area in the sound code is looking like built on quicksand ...
->   
->> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
->> +	/* all mmap using uncached mode */
->> +	area->vm_page_prot = pgprot_noncached(area->vm_page_prot);
->> +	area->vm_flags |= ( VM_RESERVED | VM_IO);
->>     
->
-> VM_RESERVED will prevent the buffer from being freed.  I assume that is
-> another workaround for some kernel subsystem blowing up when being fed a
-> pointer to an uncached RAM address?  This smells like a memory leak.
->
->   
-Oh, VM_RESERVED should be a memory leak problem, we can remove it.
-I don't remember any case of other subsystem's problem, just did not 
-think much
-to add those flags.
->> +#endif
->> +
->>  	offset = area->vm_pgoff << PAGE_SHIFT;
->>  	switch (offset) {
->>  	case SNDRV_PCM_MMAP_OFFSET_STATUS:
->> diff --git a/sound/core/sgbuf.c b/sound/core/sgbuf.c
->> index cefd228..535f0bc 100644
->> --- a/sound/core/sgbuf.c
->> +++ b/sound/core/sgbuf.c
->> @@ -91,12 +91,21 @@ void *snd_malloc_sgbuf_pages(struct device *device,
->>  		}
->>  		sgbuf->table[i].buf = tmpb.area;
->>  		sgbuf->table[i].addr = tmpb.addr;
->> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
->> +		sgbuf->page_table[i] = virt_to_page(CAC_ADDR(tmpb.area));
->>     
->
-> VM_RESERVED will prevent the buffer from being freed.  I assume that is
-> another workaround for some kernel subsystem blowing up when being fed a
-> pointer to an uncached RAM address?  This smells like a memory leak.
->
->   
->> +#else
->>  		sgbuf->page_table[i] = virt_to_page(tmpb.area);
->> +#endif
->>  		sgbuf->pages++;
->>  	}
->>  
->>  	sgbuf->size = size;
->> +#if defined(__mips__) && defined(CONFIG_DMA_NONCOHERENT)
->> +	/* maybe we should use uncached accelerated mode */
->> +	dmab->area = vmap(sgbuf->page_table, sgbuf->pages, VM_MAP | VM_IO, pgprot_noncached(PAGE_KERNEL));
->> +#else
->>  	dmab->area = vmap(sgbuf->page_table, sgbuf->pages, VM_MAP, PAGE_KERNEL);
->> +#endif
->>     
->
-> I would suggest to get rid of this ifdef with a new arch-specific function
-> like vmap_io_buffer which will do whatever a platform seems fit for this
-> case?
->   
-I think arch-specific function is the correct way, but don't know what 
-the alsa gods think.
->   
->>  	if (! dmab->area)
->>  		goto _failed;
->>  	return dmab->area;
->>     
->
->   Ralf
->
->
->
->
->   
+--=_hera.drzeus.cx-24213-1176906036-0001-2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Madhusudhan c wrote:
+>=20
+> Kyung-ju Hyun from samsung had submitted a patch for MMCPlus support
+> long back, which had the bus testing procedure implemented and it
+> works fine. I am able to write and read the data pattern back
+> successfuly with his patch. I am not sure why his patch was not
+> integrated into the main line kernel.
+>=20
+
+I don't think I've seen that patch. And now we have the work by Philip an=
+d
+myself which adds support for both MMC 4.0 and 4.2. The only missing piec=
+e is
+8-bit data and I'm not that interested in adding it until we have a drive=
+r that
+can use it.
+
+> Why should we be bothered about how controllers respond at the MMC
+> core level. We need to just implement what specification says and
+> leave the controller handling part to the controller driver. Am I
+> correct?
+
+Kindof. The controller drivers should indeed just handle the controller a=
+nd
+leave the protocol stuff to the mmc core. The problem is that this bus te=
+sting
+stuff breaks the previous standards. Sending invalid CRC was not previous=
+ly a
+supported operation, so many controllers just toss the data when that hap=
+pens.
+And since the bus testing is specified as a test, not a required part of =
+the
+wide bus song and dance, we've decided to leave it out.
+
+Rgds
+Pierre
+
+
+
+--=_hera.drzeus.cx-24213-1176906036-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGJilV7b8eESbyJLgRAi+jAJwLK+T4kFn737GakjzBPqg6jYCYNACdH07a
+8JCo+dKIJcv7UenFXuN5g4g=
+=whUV
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-24213-1176906036-0001-2--
