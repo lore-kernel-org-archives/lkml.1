@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992932AbXDRW7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbXDRXBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992932AbXDRW7D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 18:59:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992924AbXDRW7B
+	id S933068AbXDRXBG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 19:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933078AbXDRXBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 18:59:01 -0400
-Received: from 18.208-100-46.steadfast.net ([208.100.46.18]:51185 "EHLO
-	dev.x-plane.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S933068AbXDRW65 (ORCPT
+	Wed, 18 Apr 2007 19:01:06 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:25151 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933068AbXDRXBE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 18:58:57 -0400
-Date: Wed, 18 Apr 2007 19:00:12 -0400 (EDT)
-From: Joshua Wise <joshua@joshuawise.com>
-To: Shaohua Li <shaohua.li@intel.com>
-cc: Mattia Dongili <malattia@linux.it>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: CPU_IDLE prevents resuming from STR [was: Re: 2.6.21-rc6-mm1]
-In-Reply-To: <1176792455.7371.7.camel@sli10-conroe.sh.intel.com>
-Message-ID: <Pine.LNX.4.63.0704181854150.3859@dashnine.joshuawise.com>
-References: <20070408143559.f5014629.akpm@linux-foundation.org> 
- <20070413234513.GA2940@inferi.kami.home>  <1176691227.6993.1.camel@sli10-conroe.sh.intel.com>
-  <Pine.LNX.4.63.0704162243070.3859@dashnine.joshuawise.com>
- <1176792455.7371.7.camel@sli10-conroe.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 18 Apr 2007 19:01:04 -0400
+Date: Wed, 18 Apr 2007 17:00:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+In-reply-to: <fa.jDn5j5GVDwXXnVYH74vVT3m+Gq8@ifi.uio.no>
+To: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Mark Lord <liml@rtr.ca>
+Message-id: <4626A303.80208@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.nTNVZ3bPe8773+gVV7CvcwBT5zY@ifi.uio.no>
+ <fa.r8VLu18GDND9EByYV/EX2mH9V88@ifi.uio.no>
+ <fa.30Zxf5IYhdVc+I5v0caKmHH3HmE@ifi.uio.no>
+ <fa.EFm9zBLufsOlxdviaZmnBDcbYgY@ifi.uio.no>
+ <fa.TBFIUvjBaGbwUHy5JUiGJpvOeMI@ifi.uio.no>
+ <fa.jDn5j5GVDwXXnVYH74vVT3m+Gq8@ifi.uio.no>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Apr 2007, Shaohua Li wrote:
-> Looks there is init order issue of sysfs files. The new refreshed patch
-> should fix your bug.
+Tejun Heo wrote:
+> This really isn't a regression.  It's been always like that with libata.
+>  libata doesn't make devices go into standby mode and shutdown(8) does
+> it for libata.  The problem here is that libata does issue
+> SYNCHRONIZE_CACHE on shutdown.  So, the sequence of event is...
+> 
+> 1. shutdown(8) issues SYNCHRONIZE_CACHE followed by STANDBY_NOW
 
-Yes, that did fix the hang on resume from STR -- that now works fine.
+This part is presumably distribution dependent. I have never seen Fedora 
+or CentOS shut down drives on power down from the shutdown script/utility..
 
-However:
-joshua@rebirth:/sys/devices/system/cpu/cpuidle$ cat available_drivers current_driver
+> 2. kernel shutdown starts
+> 3. libata shutdown issues SYNCHRONIZE_CACHE
+> 4. power goes off
+> 
+> Some drives seem to spin up at step #3 even when its cache is clean and
+> power goes off right after the disk finishes the command.  So, it's
+> really bad when it happens - spin down, spin up followed by immediate
+> power off.
 
-<NULL>
-joshua@rebirth:/sys/devices/system/cpu/cpuidle$ cat available_governors current_governor
-ladder
-ladder
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Is this correct? For reference, my config is http://joshuawise.com/config.gz
--- I didn't see any options for cpuidle drivers to access ACPI states...
-
-joshua
