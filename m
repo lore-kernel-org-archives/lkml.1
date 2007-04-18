@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992634AbXDROfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992644AbXDROgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992634AbXDROfj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 10:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992644AbXDROfj
+	id S2992644AbXDROgA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 10:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992646AbXDROf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 10:35:39 -0400
-Received: from ottawa-hs-64-26-128-89.s-ip.magma.ca ([64.26.128.89]:1338 "EHLO
-	mail.rtr.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992634AbXDROfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 10:35:37 -0400
-Message-ID: <46262CB7.7020004@rtr.ca>
-Date: Wed, 18 Apr 2007 10:35:35 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, 7eggert@gmx.de,
-       Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <88SeR-5Sf-15@gated-at.bofh.it>	<88Sov-662-3@gated-at.bofh.it>	<88SHV-6uL-29@gated-at.bofh.it>	<8agVk-3wc-81@gated-at.bofh.it>	<8b3IR-4mE-25@gated-at.bofh.it>	<8b3SA-4z3-5@gated-at.bofh.it>	<8b42g-51N-15@gated-at.bofh.it>	<8bbdm-7iS-27@gated-at.bofh.it>	<E1He8dA-0000mw-LI@be1.lrz>	<46260981.1040109@gmail.com>	<20070418132904.3322ba5f@the-village.bc.nu>	<46261337.3010406@gmail.com> <20070418140346.636879a1@the-village.bc.nu> <46262C0E.9000103@rtr.ca>
-In-Reply-To: <46262C0E.9000103@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 18 Apr 2007 10:35:59 -0400
+Received: from pat.uio.no ([129.240.10.15]:34848 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992644AbXDROf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 10:35:58 -0400
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
+	namespace" clone flag
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: ebiederm@xmission.com, serue@us.ibm.com, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <E1HeAkl-000490-00@dorka.pomaz.szeredi.hu>
+References: <20070412164620.588752236@szeredi.hu>
+	 <20070412203208.GG27772@sergelap.austin.ibm.com>
+	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
+	 <1176713221.9488.17.camel@ram.us.ibm.com>
+	 <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
+	 <1176716941.9488.57.camel@ram.us.ibm.com>
+	 <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
+	 <m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
+	 <E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu>
+	 <m1zm58jfj3.fsf@ebiederm.dsl.xmission.com>
+	 <20070416195652.GA350@sergelap.austin.ibm.com>
+	 <m1k5wbjrsh.fsf@ebiederm.dsl.xmission.com>
+	 <E1HdlYr-00015O-00@dorka.pomaz.szeredi.hu>
+	 <m1zm56j27m.fsf@ebiederm.dsl.xmission.com>
+	 <E1HdsX6-0002Kl-00@dorka.pomaz.szeredi.hu>
+	 <m1vefuixp5.fsf@ebiederm.dsl.xmission.com>
+	 <E1He6C7-0003Xu-00@dorka.pomaz.szeredi.hu>
+	 <1176904505.6796.79.camel@heimdal.trondhjem.org>
+	 <E1HeAkl-000490-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Wed, 18 Apr 2007 10:26:29 -0400
+Message-Id: <1176906389.6796.96.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.057)
+X-UiO-Scanned: 2DAB06528412A8C0205DCE63D6D79A2D32356145
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 984 total 1163193 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Alan Cox wrote:
->>
->> If you see a synchronize cache succeed and you then see the drive
->> shutdown succeed then you know that a sync cache can be faked as ok
->> safely. Any other command in between or after and it doesn't get faked
->>
->> This seems pretty easy to deal with at command issue.
+On Wed, 2007-04-18 at 16:03 +0200, Miklos Szeredi wrote:
+> > Don't forget that almost all mount flags are per-superblock. How are you
+> > planning on dealing with the case that one user mounts a filesystem
+> > read-only, while another is trying to mount the same one read-write?
 > 
-> Yup.  It could be as trivial as this (untested, and not as nice
-> as Alan's full suggestion).
+> Yeah, I forgot, the per-mount read-only patches are not yet in.
+> 
+> That doesn't really change my agrument though.  _If_ the flag is per
+> mount, then it makes sense to be able to change it on a master and not
+> on a slave.  If mount flags are propagated, this is not possible.
 
-Here it is again, without the borked pathnames.
+Read-only isn't the only issue. On something like NFS, there are flags
+to set the security flavour, turn on/off encryption etc.
 
-Signed-off-by:  Mark Lord <mlord@pobox.com>
----
---- old/include/linux/libata.h	2007-04-18 10:30:25.000000000 -0400
-+++ linux/include/linux/libata.h	2007-04-18 10:30:28.000000000 -0400
-@@ -499,6 +499,7 @@
- 	struct ata_ering	ering;
- 	int			spdn_cnt;
- 	unsigned int		horkage;	/* List of broken features */
-+	int			needs_flush;	/* bool: 1==written since last flush */
- #ifdef CONFIG_SATA_ACPI
- 	/* ACPI objects info */
- 	acpi_handle obj_handle;
---- old/drivers/ata/libata-scsi.c	2007-04-17 22:11:12.000000000 -0400
-+++ linux/drivers/ata/libata-scsi.c	2007-04-18 10:27:29.000000000 -0400
-@@ -2749,18 +2749,20 @@
- 			return atapi_xlat;
- 
- 	switch (cmd) {
--	case READ_6:
--	case READ_10:
--	case READ_16:
--
- 	case WRITE_6:
- 	case WRITE_10:
- 	case WRITE_16:
-+		dev->needs_flush = 1;
-+	case READ_6:
-+	case READ_10:
-+	case READ_16:
- 		return ata_scsi_rw_xlat;
- 
- 	case SYNCHRONIZE_CACHE:
--		if (ata_try_flush_cache(dev))
-+		if (dev->needs_flush && ata_try_flush_cache(dev)) {
- 			return ata_scsi_flush_xlat;
-+			dev->needs_flush = 0;
-+		}
- 		break;
- 
- 	case VERIFY:
+If I mount your home directory using no encryption in my namespace, for
+instance, then neither you nor the administrator will be able to turn it
+on afterwards in yours without first unmounting it from mine so that the
+superblock is destroyed.
+
+Cheers
+  Trond
+
