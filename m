@@ -1,91 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992788AbXDRQNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992789AbXDRQPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992788AbXDRQNb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 12:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992789AbXDRQNb
+	id S2992789AbXDRQPU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 12:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992793AbXDRQPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 12:13:31 -0400
-Received: from queue01-pub.suddenlink.net ([208.180.40.86]:37171 "EHLO
-	que01.suddenlink.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992788AbXDRQNa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 12:13:30 -0400
-X-Greylist: delayed 1684 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 12:13:30 EDT
-Message-ID: <001601c781d0$9c424d40$6207a8c0@rankinp35>
-From: "david rankin" <drankinatty@suddenlinkmail.com>
-To: "kernel" <linux-kernel@vger.kernel.org>
-Subject: built 2.6.20.7 on suse 10.0, boots fine, no mouse, network or keyboard
-Date: Wed, 18 Apr 2007 10:45:37 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+	Wed, 18 Apr 2007 12:15:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57104 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992789AbXDRQPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 12:15:19 -0400
+Date: Wed, 18 Apr 2007 18:14:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: "S.??a??lar Onur" <caglar@pardus.org.tr>,
+       Christoph Pfister <christophpfister@gmail.com>,
+       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
+       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: Kaffeine problem with CFS
+Message-ID: <20070418161459.GA21351@elte.hu>
+References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <19a3b7a80704180555q4e0b26d5x54bbf34b4cd9d33e@mail.gmail.com> <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr> <20070418154811.GA16842@elte.hu> <20070418160722.GB31925@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070418160722.GB31925@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mates,
 
-    First post and I am having heck building the vanilla 2.6.20.7 kernel on 
-Suse 10.0. Basically I put 2.6.20.7 in /usr/src, then I did
+* William Lee Irwin III <wli@holomorphy.com> wrote:
 
-cd linux
-(read Documentation/Changes "Current Minimal Requirements")
-zcat /proc/config.gz > .config
-make oldconfig
-make
-make modules
-make modules_install
-make install.
-edit grub to boot from new and old kernels.
+> At this point you might as well call the requeue operation something 
+> having to do with yield. [...]
 
-    All current minimal requierments are met *except* udev which is version 
-068. Everything compiled and installed properly and initrd did what it was 
-supposed to:
+agreed - i've just done a requeue_task -> yield_task rename in my tree. 
+(patch below)
 
-providence:/usr/src/linux # ll /boot
-total 17184
--rw-------   1 root root     512 2006-08-12 17:09 backup_mbr
-lrwxrwxrwx   1 root root       1 2006-08-12 16:56 boot -> .
-drwxr-xr-x   2 root root     544 2007-04-17 22:22 grub
-lrwxrwxrwx   1 root root      19 2007-04-17 22:21 initrd -> 
-initrd-2.6.20.7-smp
--rw-r--r--   1 root root 1800590 2007-04-17 22:21 initrd-2.6.20.7-smp
-lrwxrwxrwx   1 root root      23 2007-04-16 19:59 initrdold -> 
-initrd-2.6.13-15.15-smp
--rw-r--r--   1 root root   90292 2005-09-09 11:36 memtest.bin
--rw-r--r--   1 root root  128000 2006-08-12 17:09 message
--rw-r--r--   1 root root  779055 2007-03-02 10:33 
-System.map-2.6.13-15.15-smp
--rw-r--r--   1 root root  860395 2007-04-17 22:01 System.map-2.6.20.7-smp
--rw-r--r--   1 root root 1991337 2007-03-02 10:42 
-vmlinux-2.6.13-15.15-smp.gz
-lrwxrwxrwx   1 root root      20 2007-04-17 22:20 vmlinuz -> 
-vmlinuz-2.6.20.7-smp
--rw-r--r--   1 root root 1684799 2007-03-02 10:33 vmlinuz-2.6.13-15.15-smp
--rw-r--r--   1 root root 1562784 2007-04-17 22:01 vmlinuz-2.6.20.7-smp
-lrwxrwxrwx   1 root root      24 2007-04-16 19:59 vmlinuzold -> 
-vmlinuz-2.6.13-15.15-smp
+> [...] I also suspect what goes on during the timer tick may eventually 
+> become something different from requeueing the current task, and 
+> furthermore class-dependent.
 
-The 2.6.20.7 kernel boots just fine and all services are started *except* 
-keyboard, mouse and network. Is this udev??? If so, can I safely update udev 
-without destroying my 2.6.13-15.15 setup?? Can it be anything else?? Any 
-help would be appreciated.
+it already is, scheduler tick processing is done in class->task_tick().
 
-Thanks!
+	Ingo
 
+---
+ include/linux/sched.h |    2 +-
+ kernel/sched.c        |    7 +------
+ kernel/sched_fair.c   |    4 ++--
+ kernel/sched_rt.c     |    2 +-
+ 4 files changed, 5 insertions(+), 10 deletions(-)
 
---
-David C. Rankin, J.D., P.E.
-510 Ochiltree Street
-Nacogdoches, Texas 75961
-(936) 715-9333
-(936) 715-9339 fax
-www.rankinlawfirm.com
--- 
-
+Index: linux/include/linux/sched.h
+===================================================================
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -796,7 +796,7 @@ struct sched_class {
+ 
+ 	void (*enqueue_task) (struct rq *rq, struct task_struct *p);
+ 	void (*dequeue_task) (struct rq *rq, struct task_struct *p);
+-	void (*requeue_task) (struct rq *rq, struct task_struct *p);
++	void (*yield_task) (struct rq *rq, struct task_struct *p);
+ 
+ 	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p);
+ 
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -560,11 +560,6 @@ static void dequeue_task(struct rq *rq, 
+ 	p->on_rq = 0;
+ }
+ 
+-static void requeue_task(struct rq *rq, struct task_struct *p)
+-{
+-	p->sched_class->requeue_task(rq, p);
+-}
+-
+ /*
+  * __normal_prio - return the priority that is based on the static prio
+  */
+@@ -3773,7 +3768,7 @@ asmlinkage long sys_sched_yield(void)
+ 	schedstat_inc(rq, yld_cnt);
+ 	if (rq->nr_running == 1)
+ 		schedstat_inc(rq, yld_act_empty);
+-	requeue_task(rq, current);
++	current->sched_class->yield_task(rq, current);
+ 
+ 	/*
+ 	 * Since we are going to call schedule() anyway, there's
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -273,7 +273,7 @@ static void dequeue_task_fair(struct rq 
+  * dequeue the task and move it to the rightmost position, which
+  * causes the task to roundrobin to the end of the tree.
+  */
+-static void requeue_task_fair(struct rq *rq, struct task_struct *p)
++static void yield_task_fair(struct rq *rq, struct task_struct *p)
+ {
+ 	dequeue_task_fair(rq, p);
+ 	p->on_rq = 0;
+@@ -509,7 +509,7 @@ static void task_init_fair(struct rq *rq
+ struct sched_class fair_sched_class __read_mostly = {
+ 	.enqueue_task		= enqueue_task_fair,
+ 	.dequeue_task		= dequeue_task_fair,
+-	.requeue_task		= requeue_task_fair,
++	.yield_task		= yield_task_fair,
+ 
+ 	.check_preempt_curr	= check_preempt_curr_fair,
+ 
+Index: linux/kernel/sched_rt.c
+===================================================================
+--- linux.orig/kernel/sched_rt.c
++++ linux/kernel/sched_rt.c
+@@ -165,7 +165,7 @@ static void task_init_rt(struct rq *rq, 
+ static struct sched_class rt_sched_class __read_mostly = {
+ 	.enqueue_task		= enqueue_task_rt,
+ 	.dequeue_task		= dequeue_task_rt,
+-	.requeue_task		= requeue_task_rt,
++	.yield_task		= requeue_task_rt,
+ 
+ 	.check_preempt_curr	= check_preempt_curr_rt,
+ 
