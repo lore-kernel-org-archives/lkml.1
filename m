@@ -1,100 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbXDRPsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXDRP6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbXDRPsX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 11:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbXDRPsX
+	id S1754069AbXDRP6H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 11:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXDRP6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 11:48:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34004 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754037AbXDRPsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 11:48:22 -0400
-Date: Wed, 18 Apr 2007 17:48:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: Christoph Pfister <christophpfister@gmail.com>,
-       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
-       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: Kaffeine problem with CFS
-Message-ID: <20070418154811.GA16842@elte.hu>
-References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <19a3b7a80704180555q4e0b26d5x54bbf34b4cd9d33e@mail.gmail.com> <19a3b7a80704180621m1b343b4eif02a7930a5edf2fc@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 18 Apr 2007 11:58:06 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:55767 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754069AbXDRP6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 11:58:05 -0400
+Date: Wed, 18 Apr 2007 11:55:52 -0400
+From: Kyle McMartin <kyle@canonical.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@redhat.com, bcollins@ubuntu.com
+Subject: [RFC] [PATCH] Allow overriding module parameters from kernel command_line
+Message-ID: <20070418155552.GA3744@athena.road.mcmartin.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200704181625.51389.caglar@pardus.org.tr>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With the move to initramfs and heavily modular configs, which include
+loading storage drivers from early userspace, it's becoming harder
+to provide users with a way of overriding module parameters at boot.
 
-* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
+Currently, users would have to break into the initramfs, edit the
+modprobe options, and then let boot continue. They have a much easier time
+dealing with adding options on the command line from Grub or what have you.
 
-> -       schedule();
-> +       msleep(1);
+I hacked out this patch quickly to re-parse saved_command_line[] when we
+load a module in an attempt to rectify this.
 
-> which Ingo sends me to try also has the same effect on me. I cannot 
-> reproduce hangs anymore with that patch applied top of CFS while one 
-> console checks out SVN repos and other one compiles a small test 
-> software.
+(The specific use-case I was looking at here was HPA commands failing on
+ sata_nv controllers, and needing to pass the adma=0 option to the module...
+ Users had a hard time testing without an easy way of overriding the module.)
 
-great! Could you please unapply the hack above and try the proper fix 
-below, does this one solve the hangs too?
+Clearly this is not entirely optimal, because we're parsing command_line
+after the module params are parsed. This ends of being a policy decision,
+whether the /sbin/modprobe commandline should override the kernel
+command_line, or vice versa.
 
-	Ingo
+Anyway, please comment...
 
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -264,15 +264,26 @@ static void dequeue_task_fair(struct rq 
+Cheers,
+	Kyle
+
+diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
+index c83588c..e8465db 100644
+--- a/include/linux/moduleparam.h
++++ b/include/linux/moduleparam.h
+@@ -98,7 +98,7 @@ struct kparam_array
+ extern int parse_args(const char *name,
+ 		      char *args,
+ 		      struct kernel_param *params,
+-		      unsigned num,
++		      unsigned num, unsigned strip_module,
+ 		      int (*unknown)(char *param, char *val));
  
- /*
-  * sched_yield() support is very simple via the rbtree, we just
-- * dequeue and enqueue the task, which causes the task to
-- * roundrobin to the end of the tree:
-+ * dequeue the task and move it to the rightmost position, which
-+ * causes the task to roundrobin to the end of the tree.
-  */
- static void requeue_task_fair(struct rq *rq, struct task_struct *p)
- {
- 	dequeue_task_fair(rq, p);
- 	p->on_rq = 0;
--	enqueue_task_fair(rq, p);
-+	/*
-+	 * Temporarily insert at the last position of the tree:
-+	 */
-+	p->fair_key = LLONG_MAX;
-+	__enqueue_task_fair(rq, p);
- 	p->on_rq = 1;
-+
-+	/*
-+	 * Update the key to the real value, so that when all other
-+	 * tasks from before the rightmost position have executed,
-+	 * this task is picked up again:
-+	 */
-+	p->fair_key = rq->fair_clock - p->wait_runtime + p->nice_offset;
+ /* All the helper functions */
+diff --git a/init/main.c b/init/main.c
+index a92989e..a3d647f 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -478,7 +478,7 @@ void __init parse_early_param(void)
+ 
+ 	/* All fall through to do_early_param. */
+ 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+-	parse_args("early options", tmp_cmdline, NULL, 0, do_early_param);
++	parse_args("early options", tmp_cmdline, NULL, 0, 0, do_early_param);
+ 	done = 1;
  }
  
- /*
-@@ -380,7 +391,10 @@ static void task_tick_fair(struct rq *rq
- 	 * Dequeue and enqueue the task to update its
- 	 * position within the tree:
- 	 */
--	requeue_task_fair(rq, curr);
-+	dequeue_task_fair(rq, curr);
-+	curr->on_rq = 0;
-+	enqueue_task_fair(rq, curr);
-+	curr->on_rq = 1;
+@@ -549,7 +549,7 @@ asmlinkage void __init start_kernel(void)
+ 	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+ 	parse_early_param();
+ 	parse_args("Booting kernel", static_command_line, __start___param,
+-		   __stop___param - __start___param,
++		   __stop___param - __start___param, 0,
+ 		   &unknown_bootoption);
+ 	if (!irqs_disabled()) {
+ 		printk(KERN_WARNING "start_kernel(): bug: interrupts were "
+diff --git a/kernel/module.c b/kernel/module.c
+index dcdb32b..e576242 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1914,10 +1914,21 @@ static struct module *load_module(void __user *umod,
+ 			 sechdrs[setupindex].sh_addr,
+ 			 sechdrs[setupindex].sh_size
+ 			 / sizeof(struct kernel_param),
+-			 NULL);
++			 0, NULL);
+ 	if (err < 0)
+ 		goto arch_cleanup;
  
- 	/*
- 	 * Reschedule if another task tops the current one.
++	/* Allow user to override module params from the command line. */
++	err = parse_args(mod->name, saved_command_line,
++			 (struct kernel_param *)
++			 sechdrs[setupindex].sh_addr,
++			 sechdrs[setupindex].sh_size
++			 / sizeof(struct kernel_param),
++			 1, NULL);
++	if (err < 0)
++		printk(KERN_WARNING "%s: Ignoring bad module parameters passed on "
++		       "kernel command line\n", mod->name);
++
+ 	err = mod_sysfs_setup(mod, 
+ 			      (struct kernel_param *)
+ 			      sechdrs[setupindex].sh_addr,
+diff --git a/kernel/params.c b/kernel/params.c
+index 1fc4ac7..7c9d3a0 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -50,10 +50,17 @@ static int parse_one(char *param,
+ 		     char *val,
+ 		     struct kernel_param *params, 
+ 		     unsigned num_params,
+-		     int (*handle_unknown)(char *param, char *val))
++		     int (*handle_unknown)(char *param, char *val),
++		     unsigned strip_module)
+ {
+ 	unsigned int i;
+ 
++	/* If we're parsing command_line[] for the module,
++	 * strip off the module name before looking the param up.
++	 */
++	if (strip_module)
++		strsep(&param, ".");
++
+ 	/* Find parameter */
+ 	for (i = 0; i < num_params; i++) {
+ 		if (parameq(param, params[i].name)) {
+@@ -130,7 +137,7 @@ static char *next_arg(char *args, char **param, char **val)
+ int parse_args(const char *name,
+ 	       char *args,
+ 	       struct kernel_param *params,
+-	       unsigned num,
++	       unsigned num, unsigned strip_module,
+ 	       int (*unknown)(char *param, char *val))
+ {
+ 	char *param, *val;
+@@ -147,7 +154,7 @@ int parse_args(const char *name,
+ 
+ 		args = next_arg(args, &param, &val);
+ 		irq_was_disabled = irqs_disabled();
+-		ret = parse_one(param, val, params, num, unknown);
++		ret = parse_one(param, val, params, num, unknown, strip_module);
+ 		if (irq_was_disabled && !irqs_disabled()) {
+ 			printk(KERN_WARNING "parse_args(): option '%s' enabled "
+ 					"irq's!\n", param);
