@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993060AbXDRTPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993061AbXDRTSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993060AbXDRTPx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 15:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993059AbXDRTPw
+	id S2993061AbXDRTSZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 15:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993063AbXDRTSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 15:15:52 -0400
-Received: from omta05ps.mx.bigpond.com ([144.140.83.195]:26282 "EHLO
-	omta05ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993057AbXDRTPv (ORCPT
+	Wed, 18 Apr 2007 15:18:25 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4661 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993061AbXDRTSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 15:15:51 -0400
-Message-ID: <46266E5F.4060205@bigpond.net.au>
-Date: Thu, 19 Apr 2007 05:15:43 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] CFS (Completely Fair Scheduler), v2
-References: <20070416220715.GA4071@elte.hu> <46246D61.8010300@bigpond.net.au> <20070417075146.GM2986@holomorphy.com> <462485B8.8090404@bigpond.net.au>
-In-Reply-To: <462485B8.8090404@bigpond.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Wed, 18 Apr 2007 19:15:48 +0000
+	Wed, 18 Apr 2007 15:18:24 -0400
+Date: Wed, 18 Apr 2007 20:18:12 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       izumi <izumi2005@soft.fujitsu.com>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Subject: Re: [PATCH][BUG] Fix possible NULL pointer access in 8250 serial driver
+Message-ID: <20070418191812.GA21211@flint.arm.linux.org.uk>
+Mail-Followup-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	izumi <izumi2005@soft.fujitsu.com>, linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org
+References: <46242DD2.7030207@soft.fujitsu.com> <20070416225206.cf7d8cd2.akpm@linux-foundation.org> <1176884513.3945.54.camel@kane-linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1176884513.3945.54.camel@kane-linux>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
-> William Lee Irwin III wrote:
->> Ingo Molnar wrote:
->>>> this is the second release of the CFS (Completely Fair Scheduler) 
->>>> patchset, against v2.6.21-rc7:
->>>>    http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.patch
->>>> i'd like to thank everyone for the tremendous amount of feedback and 
->>>> testing the v1 patch got - i could hardly keep up with just reading 
->>>> the mails! Some of the stuff people addressed i couldnt implement 
->>>> yet, i mostly concentrated on bugs, regressions and debuggability.
->>
->> On Tue, Apr 17, 2007 at 04:46:57PM +1000, Peter Williams wrote:
->>> Have you considered using rq->raw_weighted_load instead of 
->>> rq->nr_running in calculating fair_clock?  This would take the nice 
->>> value (or RT priority) of the other tasks into account when 
->>> determining what's fair.
->>
->> I suspect you mean (curr->load_weight*delta_exec)/rq->raw_weighted_load
->> in update_curr().
+On Wed, Apr 18, 2007 at 05:21:53PM +0900, Kenji Kaneshige wrote:
+> > I'd imagine that other serial drivers might get upset having their
+> > ->get_mcrtl() called prior to being opened.  Perhaps we should be fixing
+> > this in uart_read_proc()?
+> > 
 > 
-> Or something like that, yes. :-)
+> I looked at other serial drivers and I could not find any other
+> drivers which accesses port->info in their ->get_mctrl(). This 
+> is why we fix this problem in 8250 driver. But if there is a
+> possibility that other drivers accesses port->info in their
+> ->get_mctrl(), we should be fixing this in uart_read_proc(), as
+> you said.
 
-Actually, this formula can't be used for the migration thread itself as 
-its load_weight isn't an accurate reflection of its static priority. 
-But as the migration thread is a real time task this probably isn't an 
-issue, right?
+NAK.  This means that you change the list of ports available on the
+machine to be limited to only those which are currently open.  Utterly
+useless for debugging, where you normally want people to dump the
+contents of /proc/tty/driver/*.
 
-If this assumption is correct (i.e. curr is never a real time task) then 
-my earlier caveat re division by zero being possible is invalid because 
-the migration task will never be the only task on the runqueue when this 
-code is called.
+The original patch was better.
 
-I'm also assuming here that (because of its name) curr is already on the 
-runqueue when this code is called.  If it isn't the divisor in the above 
-expression should be (rq->raw_weighted_load + curr->load_weight).  This 
-would also preclude the possibility of divide by zero.
-
-Peter
 -- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
