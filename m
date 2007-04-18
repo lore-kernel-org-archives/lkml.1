@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbXDRGM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXDRGNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbXDRGM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 02:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXDRGM5
+	id S1754017AbXDRGNz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 02:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXDRGNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 02:12:57 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45695 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753981AbXDRGM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 02:12:56 -0400
-Date: Wed, 18 Apr 2007 09:12:54 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Dave Hansen <hansendc@us.ibm.com>
-cc: Pavel Emelianov <xemul@sw.ru>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Linux MM <linux-mm@kvack.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M (v2)
-In-Reply-To: <1176831473.12599.30.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704180912130.11014@sbz-30.cs.Helsinki.FI>
-References: <4624E8F4.2090200@sw.ru> <1176831473.12599.30.camel@localhost.localdomain>
+	Wed, 18 Apr 2007 02:13:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44188 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754017AbXDRGNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 02:13:54 -0400
+Date: Wed, 18 Apr 2007 08:13:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, gud@eth.net,
+       arjan@linux.intel.com, milindchoudhary@gmail.com
+Subject: Re: [PATCH] Document SPIN_LOCK_UNLOCKED/RW_LOCK_UNLOCKED deprecation
+Message-ID: <20070418061330.GD23497@elte.hu>
+References: <20070418014118.3F073DDE9F@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070418014118.3F073DDE9F@ozlabs.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-17 at 19:34 +0400, Pavel Emelianov wrote:
-> > +#define SHOW_TOP_SLABS 10 
 
-On Tue, 17 Apr 2007, Dave Hansen wrote:
-> Real minor nit on this one: SHOW_TOP_SLABS sounds like a bool.  "Should
-> I show the top slabs?"
-> 
-> This might be a bit more clear:
-> 
-> #define TOP_NR_SLABS_TO_SHOW 10 
-> 
-> or
-> 
-> #define NR_SLABS_TO_SHOW 10
+* Michael Ellerman <michael@ellerman.id.au> wrote:
 
-Yes. Looks much better.
+> Apparently it's not cool anymore to use SPIN/RW_LOCK_UNLOCKED. There's 
+> some mention of this in Documentation/spinlocks.txt, but that only 
+> talks about dynamic initialisation.
+> 
+> A comment in the code mentioning the preferred usage would be good 
+> IMHO.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-				Pekka
+thanks,
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
