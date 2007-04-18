@@ -1,68 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422953AbXDRMea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422897AbXDRMhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422953AbXDRMea (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 08:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422963AbXDRMea
+	id S1422897AbXDRMhF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 08:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422958AbXDRMhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 08:34:30 -0400
-Received: from mail13.syd.optusnet.com.au ([211.29.132.194]:54175 "EHLO
-	mail13.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422953AbXDRMe3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 08:34:29 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Date: Wed, 18 Apr 2007 22:33:26 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Steve Fox <drfickle@us.ibm.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>
-References: <20070413202100.GA9957@elte.hu> <200704181933.57057.kernel@kolivas.org> <20070418121421.GB878@wotan.suse.de>
-In-Reply-To: <20070418121421.GB878@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 08:37:04 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:56379 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1422897AbXDRMhB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 08:37:01 -0400
+Date: Wed, 18 Apr 2007 14:42:33 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: David Miller <davem@davemloft.net>, kaber@trash.net, poemann@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+Message-ID: <20070418124233.GA2218@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704182233.27378.kernel@kolivas.org>
+In-Reply-To: <17953.30429.220756.818283@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 April 2007 22:14, Nick Piggin wrote:
-> On Wed, Apr 18, 2007 at 07:33:56PM +1000, Con Kolivas wrote:
-> > On Wednesday 18 April 2007 18:55, Nick Piggin wrote:
-> > > Again, for comparison 2.6.21-rc7 mainline:
-> > >
-> > > 508.87user 32.47system 2:17.82elapsed 392%CPU
-> > > 509.05user 32.25system 2:17.84elapsed 392%CPU
-> > > 508.75user 32.26system 2:17.83elapsed 392%CPU
-> > > 508.63user 32.17system 2:17.88elapsed 392%CPU
-> > > 509.01user 32.26system 2:17.90elapsed 392%CPU
-> > > 509.08user 32.20system 2:17.95elapsed 392%CPU
-> > >
-> > > So looking at elapsed time, a granularity of 100ms is just behind the
-> > > mainline score. However it is using slightly less user time and
-> > > slightly more idle time, which indicates that balancing might have got
-> > > a bit less aggressive.
-> > >
-> > > But anyway, it conclusively shows the efficiency impact of such tiny
-> > > timeslices.
-> >
-> > See test.kernel.org for how (the now defunct) SD was performing on
-> > kernbench. It had low latency _and_ equivalent throughput to mainline.
-> > Set the standard appropriately on both counts please.
+Hi,
+
+I didn't analyse this bug report but probably it
+is nearly connected with one of the bugs visible in
+a log from this submit:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=8132
+
+On 15-04-2007 02:50, Paul Mackerras wrote:
+> David Miller writes:
+> 
+>> Here is Patrick McHardy's patch:
+> 
+> So this doesn't change process_input_packet(), which treats the case
+> where the first byte is 0xff (PPP_ALLSTATIONS) but the second byte is
+> 0x03 (PPP_UI) as indicating a packet with a PPP protocol number of
+> 0xff.  Arguably that's wrong since PPP protocol 0xff is reserved, and
+> the RFC does envision the possibility of receiving frames where the
+> control field has values other than 0x03.
+> 
+> Therefore I think this patch is probably better.  Could people try it
+> out and let me know if it fixes the problem?
+> 
+> Paul.
+> 
+> diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
+> index 933e2f3..caabbc4 100644
+> --- a/drivers/net/ppp_async.c
+> +++ b/drivers/net/ppp_async.c
+> @@ -802,9 +802,9 @@ process_input_packet(struct asyncppp *ap)
+>  
+>  	/* check for address/control and protocol compression */
+>  	p = skb->data;
+> -	if (p[0] == PPP_ALLSTATIONS && p[1] == PPP_UI) {
+> +	if (p[0] == PPP_ALLSTATIONS) {
+>  		/* chop off address/control */
+> -		if (skb->len < 3)
+> +		if (p[1] != PPP_UI || skb->len < 3)
+>  			goto err;
+>  		p = skb_pull(skb, 2);
+>  	}
+
+Let's look farther:
+
+>        proto = p[0];
+>        if (proto & 1) {
+>                /* protocol is compressed */
+>                skb_push(skb, 1)[0] = 0;
+
+BTW - about Patrick's patch:
+
+skb_push seems to be dependent here on the 1-st char of
+skb->data, if above (p[0] != PPP_ALLSTATIONS), but on the
+3-rd char otherwise (after skb_pull). But, Patrick's patch
+reserves the place for this, looking always at 1-st char
+(buf[0]) independently of PPP_ALLSTATIONS char presence,
+or otherwise - always treating this char as protocol char.
+It looks safe because of PPP_ALLSTATION current value,
+but isn't too understandable.
+
+On the other hand, without any reservation in the
+ppp_async_input for the (buf[0] == PPP_ALLSTATIONS) case,
+probably 4-byte alignement isn't achieved as planned. 
+
+>        } else {
+>                if (skb->len < 2)
+>                        goto err;
+>                proto = (proto << 8) + p[1];
+>                if (proto == PPP_LCP)
+>                        async_lcp_peek(ap, p, skb->len, 1);
+>        }
 >
-> I can give it a run. Got an updated patch against -rc7?
+>        /* queue the frame to be processed */
+>        skb->cb[0] = ap->state;
+>        skb_queue_tail(&ap->rqueue, skb);
+>        ap->rpkt = NULL;
+>        ap->state = 0;
+>        return;
+>
+> err:
+>        /* frame had an error, remember that, reset SC_TOSS & SC_ESCAPE */
+>        ap->state = SC_PREV_ERROR;
+>        if (skb) {
+>                /* make skb appear as freshly allocated */
 
-I said I wasn't pursuing it but since you're offering, the rc6 patch should 
-apply ok.
+Probably this isn't always true and here the problem
+started...
 
-http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc6-sd-0.40.patch
+>                skb_trim(skb, 0);
+>                skb_reserve(skb, - skb_headroom(skb));
 
--- 
--ck
+Isn't here lost e.g. NET_SKB_PAD probably reserved by
+dev_alloc_skb?
+
+On the other hand - this kind of pad can very good hide
+similar reservation problems in many other places - maybe
+it should be omitted or somehow counted in WARNs when some
+debugging options are active?
+
+Regards,
+Jarek P.
