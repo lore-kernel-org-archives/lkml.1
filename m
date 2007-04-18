@@ -1,78 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422966AbXDRMio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422954AbXDRMjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422966AbXDRMio (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 08:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422967AbXDRMio
+	id S1422954AbXDRMjG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 08:39:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422969AbXDRMjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 08:38:44 -0400
-Received: from iucha.net ([209.98.146.184]:35964 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422966AbXDRMin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 08:38:43 -0400
-Date: Wed, 18 Apr 2007 07:38:42 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-Message-ID: <20070418123842.GF24044@iucha.net>
-References: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org> <20070417195823.943f9472.akpm@linux-foundation.org> <1176865565.6796.16.camel@heimdal.trondhjem.org> <20070418033055.GA24044@iucha.net> <1176868485.6796.42.camel@heimdal.trondhjem.org> <20070418040730.GC24044@iucha.net> <20070417211350.ebba1493.akpm@linux-foundation.org> <20070418043040.GD24044@iucha.net> <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org> <20070417223738.8f49a39f.akpm@linux-foundation.org>
+	Wed, 18 Apr 2007 08:39:06 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16633 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422968AbXDRMjE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 08:39:04 -0400
+Date: Wed, 18 Apr 2007 14:37:57 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Brad Campbell <brad@wasp.net.au>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+Message-ID: <20070418123757.GC3796@kernel.dk>
+References: <4621FAF0.7000705@wasp.net.au> <46220339.9080205@wasp.net.au> <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+jhVVhN62yS6hEJ8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070417223738.8f49a39f.akpm@linux-foundation.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+In-Reply-To: <17956.22235.574867.179016@notabene.brown>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Apr 17 2007, Neil Brown wrote:
+> On Monday April 16, cebbert@redhat.com wrote:
+> > 
+> > cfq_dispatch_insert() was called with rq == 0. This one is getting really
+> > annoying... and md is involved again (RAID0 this time.)
+> 
+> Yeah... weird.
+> RAID0 is so light-weight and so different from RAID1 or RAID5 that I
+> feel fairly safe concluding that the problem isn't in or near md.
+> But that doesn't help you.
 
---+jhVVhN62yS6hEJ8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well the fact is that we have 3-4 distinct reports of this oops, and all
+of them are using md. No reports have been filed where md isn't managing
+the disks. While this doesn't conclusively put the finger of blame on
+md, it is still likely. It could bug a CFQ bug too of course, or (more
+likely), some bad interaction between md and CFQ.
 
-On Tue, Apr 17, 2007 at 10:37:38PM -0700, Andrew Morton wrote:
-> Florin, can we please see /proc/meminfo as well?
+> This really feels like a locking problem.
 
-   http://iucha.net/nfs/21-rc7-nfs2/meminfo
+Very much.
 
-> Also the result of `echo m > /proc/sysrq-trigger'
+> The problem occurs when ->next_rq is NULL, but ->sort_list.rb_node is
+> not NULL.  That happens plenty of times in the code (particularly as
+> the first request is inserted) but always under ->queue_lock so it
+> should never be visible to cfq_dispatch_insert..
+> 
+> Except that drivers/scsi/ide-scsi.c:idescsi_eh_reset calls
+> elv_next_request which could ultimately call __cfq_dispatch_requests
+> without taking ->queue_lock (that I can see).  But you probably aren't
+> using ide-scsi (does anyone?).
+> 
+> Given that interrupts are always disabled when queue_lock is taken, it
+> might be useful to add
+>    WARN_ON(!irqs_disabled());
+> every time ->next_rq is set.
+> Something like the following.
+> 
+> It might show something useful.... if we are lucky.
 
-   http://iucha.net/nfs/21-rc7-nfs2/big-copy
+I had something similar for generic_unplug_request() as well, but didn't
+see/hear any reports of it being tried out. Here's a complete debugging
+patch for this and other potential dangers.
 
-This has 'echo m > /proc/sysrq-trigger', 'echo t >
-/proc/sysrq-trigger' and 'echo 0 > /proc/sys/sunrpc/rpc_debug'.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index b6491c0..8f749aa 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -587,8 +587,11 @@ static void cfq_remove_request(struct request *rq)
+ {
+ 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
+ 
+-	if (cfqq->next_rq == rq)
++	BUG_ON(!irqs_disabled());
++	if (cfqq->next_rq == rq) {
+ 		cfqq->next_rq = cfq_find_next_rq(cfqq->cfqd, cfqq, rq);
++		BUG_ON(!cfqq->next_rq && !RB_EMPTY_ROOT(&cfqq->sort_list));
++	}
+ 
+ 	list_del_init(&rq->queuelist);
+ 	cfq_del_rq_rb(rq);
+@@ -1637,6 +1640,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	/*
+ 	 * check if this request is a better next-serve candidate)) {
+ 	 */
++	BUG_ON(!irqs_disabled());
+ 	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
+ 	BUG_ON(!cfqq->next_rq);
+ 
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index 3de0695..c16863e 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -1602,6 +1602,8 @@ EXPORT_SYMBOL(__generic_unplug_device);
+  **/
+ void generic_unplug_device(request_queue_t *q)
+ {
++	BUG_ON(irqs_disabled());
++
+ 	spin_lock_irq(q->queue_lock);
+ 	__generic_unplug_device(q);
+ 	spin_unlock_irq(q->queue_lock);
 
-The output from the server's 'iostat 5' is at
+-- 
+Jens Axboe
 
-   http://iucha.net/nfs/21-rc7-nfs2/iostat
-
-This run it copied 5.6G (vs yesterday's 2.5G).
-
-Regards,
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---+jhVVhN62yS6hEJ8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGJhFSND0rFCN2b1sRAvIxAKCgLo11F43vX47b6AJlX+xwc2o8/QCePJ54
-N9/0DIxm7etG+aCP2JOaYFU=
-=7bYR
------END PGP SIGNATURE-----
-
---+jhVVhN62yS6hEJ8--
