@@ -1,36 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbXDRGRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbXDRGYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbXDRGRW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 02:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbXDRGRW
+	id S1752274AbXDRGYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 02:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbXDRGYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 02:17:22 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45126 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753589AbXDRGRV (ORCPT
+	Wed, 18 Apr 2007 02:24:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:26950 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752209AbXDRGYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 02:17:21 -0400
-Date: Wed, 18 Apr 2007 09:17:19 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Pavel Emelianov <xemul@sw.ru>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>, linux-mm@kvack.org
-Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M
-In-Reply-To: <20070417171213.e3cbc260.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0704180915520.11160@sbz-30.cs.Helsinki.FI>
-References: <4624C3C1.9040709@sw.ru> <84144f020704170622h2b16f0f6m47ffdbb3b5686758@mail.gmail.com>
- <20070417171213.e3cbc260.dada1@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 18 Apr 2007 02:24:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=STCX1I+6jDNXntTbmjZNqzs1yXxKUqzlDswKiv6zUElcZp8Exldg2vzJjs4VrUHdVj5W46itReRdFz0JnvDaN4p7uvG/fUG1XhPZCPa5j1nIE0XFrYV18TSmablSkiQLUq7E35Z80kY6toKMUYoqJzcFpq9kogmyR/dpAFZ8w/4=
+Message-ID: <84144f020704172324u725f6b22u4b1634203d65167c@mail.gmail.com>
+Date: Wed, 18 Apr 2007 09:24:15 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Pavel Emelianov" <xemul@sw.ru>
+Subject: Re: [PATCH] Show slab memory usage on OOM and SysRq-M (v2)
+Cc: "Andrew Morton" <akpm@osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Eric Dumazet" <dada1@cosmosbay.com>, "Linux MM" <linux-mm@kvack.org>,
+       devel@openvz.org, "Kirill Korotaev" <dev@openvz.org>
+In-Reply-To: <4624E8F4.2090200@sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4624E8F4.2090200@sw.ru>
+X-Google-Sender-Auth: 41ecbf9a99062ac9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Apr 2007, Eric Dumazet wrote:
-> This nr_pages should be in struct kmem_list3, not in struct kmem_cache, 
-> or else you defeat NUMA optimizations if touching a field in kmem_cache 
-> at kmem_getpages()/kmem_freepages() time.
+On 4/17/07, Pavel Emelianov <xemul@sw.ru> wrote:
+> The out_of_memory() function and SysRq-M handler call
+> show_mem() to show the current memory usage state.
 
-We already touch ->flags, ->gfpflags, and ->gfporder in kmem_getpages(). 
-Sorry for my ignorance, but how is this different?
+I am still somewhat unhappy about the spinlock, but I don't really
+have a better suggestion either. Other than that, looks good to me.
+
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
