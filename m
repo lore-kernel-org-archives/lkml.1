@@ -1,226 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422762AbXDRKDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422765AbXDRKD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422762AbXDRKDO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 06:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422764AbXDRKDO
+	id S1422765AbXDRKD0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 06:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422768AbXDRKD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 06:03:14 -0400
-Received: from av1.karneval.cz ([81.27.192.123]:11681 "EHLO av1.karneval.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422762AbXDRKDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 06:03:13 -0400
-Message-id: <2428225437641930190@karneval.cz>
-Subject: [PATCH 1/11] Char: cyclades, create cy_init_Ze
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Wed, 18 Apr 2007 12:03:07 +0200 (CEST)
+	Wed, 18 Apr 2007 06:03:26 -0400
+Received: from alpha.retecivica.milano.it ([212.239.120.182]:34808 "EHLO
+	alpha.retecivica.milano.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422765AbXDRKDY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 06:03:24 -0400
+Message-id: <fc.000f4a4a077986dd000f4a4a07756028.77988d3@rcm.inet.it>
+Date: Wed, 18 Apr 2007 12:03:17 +0200
+Subject: Re: PROBLEM: kernel BUG at mm/rmap.c:522!
+X-FC-SERVER-TZ: 181272840
+To: "Hugh Dickins" <hugh@veritas.com>
+Cc: linux-kernel@vger.kernel.org
+From: "Francesco Ricci" <francesco.ricci@rcm.inet.it>
+References: <fc.000f4a4a07756028000f4a4a07756028.7756a2e@rcm.inet.it>
+ <Pine.LNX.4.64.0704131308370.21507@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0704131308370.21507@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, create cy_init_Ze
+>That by itself would suggest a single-bit error, which would point
+>you to running memtest86 overnight to check your RAM.  Worth a try.
 
-Move Ze init code into new cy_init_Ze, because we will need it in another
-place and it will make the code totally unreadable.
+ok,
+I've finished today the long testing on my ram with memtest86+ 1.65
+(distributed in debian): no errors.
+so I think the problem is somewere else...
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+tnx for your time!
 
----
-commit 1cd1f5e029963fc449c4f84495770611e5c35297
-tree a81b2b0a68303d8dfe616edc4c12c9030723ca12
-parent 6f42cfdf174bdd2c05edf7d192713042bf25339c
-author Jiri Slaby <jirislaby@gmail.com> Tue, 27 Mar 2007 11:25:47 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 10 Apr 2007 10:47:56 +0200
+Hugh Dickins <hugh@veritas.com> writes:
+>On Fri, 13 Apr 2007, Francesco Ricci wrote:
+>> 
+>> [7.7.] Other information that might be relevant to the problem
+>>        (please look in /proc and include all information that you
+>>        think to be relevant):
+>
+>Thanks for your report, and for your patience in supplying all that
+>scarcely relevant info you were asked for.
+>
+>> 
+>> from dmesg:
+>> Apr 13 11:31:35 localhost kernel: Bad pte = 461b43d4, process = ???,
+>> vm_flags = 75, vaddr = b7868000
+>
+>Oh dear, one of your page tables has got corrupted, the page table
+>entry for virtual address b7868000 contains 461b43d4 - nonsense.
+>
+>> Apr 13 11:31:35 localhost kernel:  [<c014b0ea>] vm_normal_page+0x3e/0x53
+>> Apr 13 11:31:35 localhost kernel:  [<c014b6fa>] unmap_vmas+0x183/0x4af
+>> Apr 13 11:31:35 localhost kernel:  [<c014de31>] exit_mmap+0x6a/0xd7
+>> Apr 13 11:31:35 localhost kernel:  [<c011b217>] mmput+0x20/0x76
+>> Apr 13 11:31:35 localhost kernel:  [<c011fa05>] do_exit+0x193/0x71b
+>> Apr 13 11:31:35 localhost kernel:  [<c0120003>] sys_exit_group+0x0/0xd
+>> Apr 13 11:31:35 localhost kernel:  [<c0127a6d>]
+>> get_signal_to_deliver+0x395/0x3bc
+>> Apr 13 11:31:35 localhost kernel:  [<c01023a6>]
+>do_notify_resume+0x71/0x5d7
+>> Apr 13 11:31:35 localhost kernel:  [<c0117778>]
+>> default_wake_function+0x0/0xc
+>> Apr 13 11:31:35 localhost kernel:  [<c0124657>]
+>do_gettimeofday+0x31/0xce
+>> Apr 13 11:31:35 localhost kernel:  [<c0131ffc>] sys_futex+0xdc/0xf1
+>> Apr 13 11:31:35 localhost kernel:  [<c0102d0a>] work_notifysig+0x13/0x19
+>> Apr 13 11:31:35 localhost kernel: ------------[ cut here ]------------
+>> Apr 13 11:31:35 localhost kernel: kernel BUG at mm/rmap.c:522!
+>> Apr 13 11:31:35 localhost kernel: invalid opcode: 0000 [#1]
+>> Apr 13 11:31:35 localhost kernel: SMP 
+>> Apr 13 11:31:35 localhost kernel: Modules linked in: smbfs ext3 jbd
+>> mbcache mga drm ppdev lp button ac battery ipv6 fuse dm_snapshot
+>dm_mirror
+>> dm_mod loop tsdev snd_via82xx gameport snd_ac97_codec snd_ac97_bus
+>> snd_pcm_oss snd_mixer_oss snd_pcm snd_page_alloc snd_mpu401_uart
+>> snd_seq_dummy snd_seq_oss snd_seq_midi snd_seq_midi_event snd_seq
+>> i2c_viapro i2c_core snd_timer snd_rawmidi snd_seq_device via_agp
+>> parport_pc parport via_ircc psmouse serio_raw floppy snd soundcore
+>pcspkr
+>> rtc agpgart shpchp pci_hotplug irda crc_ccitt evdev reiserfs ide_cd
+>cdrom
+>> ide_disk generic via_rhine mii ehci_hcd uhci_hcd via82cxxx ide_core
+>> usbcore thermal processor fan
+>> Apr 13 11:31:35 localhost kernel: CPU:    0
+>> Apr 13 11:31:35 localhost kernel: EIP:    0060:[<c01506c9>]    Not
+>tainted
+>> VLI
+>> Apr 13 11:31:35 localhost kernel: EFLAGS: 00210286   (2.6.18-4-686 #1) 
+>> Apr 13 11:31:35 localhost kernel: EIP is at page_remove_rmap+0x14/0x2d
+>> Apr 13 11:31:35 localhost kernel: eax: ffffffff   ebx: c1000000   ecx:
+>> c1000000   edx: 00000000
+>> Apr 13 11:31:35 localhost kernel: esi: b7869000   edi: 00000000   ebp:
+>> d08011a4   esp: c9be9e14
+>> Apr 13 11:31:35 localhost kernel: ds: 007b   es: 007b   ss: 0068
+>> Apr 13 11:31:35 localhost kernel: Process iceape-bin (pid: 20500,
+>> ti=c9be8000 task=c2128aa0 task.ti=c9be8000)
+>> Apr 13 11:31:35 localhost kernel: Stack: c014b7d5 00000000 df10d278
+>> c9be9e7c 00000000 00000001 b7884000 c4bc7b78 
+>> Apr 13 11:31:35 localhost kernel:        e80fbe40 c16058a0 00000000
+>> ffffffe2 c121002c c4bc7b78 0011ed07 b7884000 
+>> Apr 13 11:31:35 localhost kernel:        00000000 c9be9e7c df4c7710
+>> e80fbe40 c9be9eb8 c014de31 ffffffff c9be9e78 
+>
+>And the next page table entry, for virtual address b7869000, has also
+>got corrupted: I'm rather guessing, but I believe the c1000000 implies
+>it's looking at pfn 0, so the page table entry in question would be
+>that 00000001 seen on the stack (1 for present).
+>
+>That by itself would suggest a single-bit error, which would point
+>you to running memtest86 overnight to check your RAM.  Worth a try.
+>
+>But the 461b43d4 before it suggests corruption from elsewhere in
+>the kernel: sorry, I've no clue on that.  Just wait and see if this
+>happens again, and whether a pattern emerges - unless someone else
+>can suggest something better.
+>
+>Hugh
+>
+>> Apr 13 11:31:35 localhost kernel: Call Trace:
+>> Apr 13 11:31:35 localhost kernel:  [<c014b7d5>] unmap_vmas+0x25e/0x4af
+>> Apr 13 11:31:35 localhost kernel:  [<c014de31>] exit_mmap+0x6a/0xd7
+>> Apr 13 11:31:35 localhost kernel:  [<c011b217>] mmput+0x20/0x76
+>> Apr 13 11:31:35 localhost kernel:  [<c011fa05>] do_exit+0x193/0x71b
+>> Apr 13 11:31:35 localhost kernel:  [<c0120003>] sys_exit_group+0x0/0xd
+>> Apr 13 11:31:35 localhost kernel:  [<c0127a6d>]
+>> get_signal_to_deliver+0x395/0x3bc
+>> Apr 13 11:31:35 localhost kernel:  [<c01023a6>]
+>do_notify_resume+0x71/0x5d7
+>> Apr 13 11:31:35 localhost kernel:  [<c0117778>]
+>> default_wake_function+0x0/0xc
+>> Apr 13 11:31:35 localhost kernel:  [<c0124657>]
+>do_gettimeofday+0x31/0xce
+>> Apr 13 11:31:35 localhost kernel:  [<c0131ffc>] sys_futex+0xdc/0xf1
+>> Apr 13 11:31:35 localhost kernel:  [<c0102d0a>] work_notifysig+0x13/0x19
+>> Apr 13 11:31:35 localhost kernel: Code: ff ff 85 c0 89 c6 75 c9 b0 01 86
+>> 43 28 83 c4 20 89 e8 5b 5e 5f 5d c3 89 c1 90 83 40 08 ff 0f 98 c0 84 c0
+>74
+>> 1e 8b 41 08 40 79 08 <0f> 0b 0a 02 40 ab 29 c0 8b 51 10 89 c8 83 f2 01
+>83
+>> e2 01 e9 97 
+>> Apr 13 11:31:35 localhost kernel: EIP: [<c01506c9>]
+>> page_remove_rmap+0x14/0x2d SS:ESP 0068:c9be9e14
+>> Apr 13 11:31:35 localhost kernel:  <1>Fixing recursive fault but reboot
+>is
+>> needed!
 
- drivers/char/cyclades.c |  163 ++++++++++++++++++++++++++---------------------
- 1 files changed, 90 insertions(+), 73 deletions(-)
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index abdc3c7..26d9ea7 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -4711,6 +4711,92 @@ static void plx_init(void __iomem * addr, __u32 initctl)
- 	cy_writel(addr + initctl, readl(addr + initctl) & ~0x20000000);
- }
- 
-+static int __devinit cy_init_Ze(unsigned long cy_pci_phys0,
-+		unsigned long cy_pci_phys2,
-+		struct RUNTIME_9060 __iomem *cy_pci_addr0,
-+		void __iomem *cy_pci_addr2, int cy_pci_irq,
-+		struct pci_dev *pdev)
-+{
-+	unsigned int j;
-+	unsigned short cy_pci_nchan;
-+
-+	readl(&cy_pci_addr0->mail_box_0);
-+#ifdef CY_PCI_DEBUG
-+	printk("Cyclades-Z/PCI: relocate winaddr=0x%lx ctladdr=0x%lx\n",
-+		(ulong)cy_pci_addr2, (ulong)cy_pci_addr0);
-+	printk("Cyclades-Z/PCI: New Cyclades-Z board.  FPGA not "
-+			"loaded\n");
-+#endif
-+	/* This must be the new Cyclades-Ze/PCI. */
-+	cy_pci_nchan = ZE_V1_NPORTS;
-+
-+	if ((cy_next_channel + cy_pci_nchan) > NR_PORTS) {
-+		printk("Cyclades-Ze/PCI found at 0x%lx but no channels "
-+			"are available.\nChange NR_PORTS in cyclades.c "
-+			"and recompile kernel.\n",
-+			(ulong) cy_pci_phys2);
-+		return -EIO;
-+	}
-+
-+	/* fill the next cy_card structure available */
-+	for (j = 0; j < NR_CARDS; j++) {
-+		if (cy_card[j].base_addr == 0)
-+			break;
-+	}
-+	if (j == NR_CARDS) {	/* no more cy_cards available */
-+		printk("Cyclades-Ze/PCI found at 0x%lx but no more "
-+			"cards can be used.\nChange NR_CARDS in "
-+			"cyclades.c and recompile kernel.\n",
-+			(ulong) cy_pci_phys2);
-+		return -EIO;
-+	}
-+#ifdef CONFIG_CYZ_INTR
-+	/* allocate IRQ only if board has an IRQ */
-+	if ((cy_pci_irq != 0) && (cy_pci_irq != 255)) {
-+		if (request_irq(cy_pci_irq, cyz_interrupt,
-+				IRQF_SHARED, "Cyclades-Z",
-+				&cy_card[j])) {
-+			printk("Cyclom-Ze/PCI found at 0x%lx ",
-+				(ulong) cy_pci_phys2);
-+			printk("but could not allocate IRQ%d.\n",
-+				cy_pci_irq);
-+			return -EIO;
-+		}
-+	}
-+#endif				/* CONFIG_CYZ_INTR */
-+
-+	/* set cy_card */
-+	cy_card[j].base_phys = cy_pci_phys2;
-+	cy_card[j].ctl_phys = cy_pci_phys0;
-+	cy_card[j].base_addr = cy_pci_addr2;
-+	cy_card[j].ctl_addr = cy_pci_addr0;
-+	cy_card[j].irq = (int)cy_pci_irq;
-+	cy_card[j].bus_index = 1;
-+	cy_card[j].first_line = cy_next_channel;
-+	cy_card[j].num_chips = -1;
-+	cy_card[j].pdev = pdev;
-+
-+	/* print message */
-+#ifdef CONFIG_CYZ_INTR
-+	/* don't report IRQ if board is no IRQ */
-+	if ((cy_pci_irq != 0) && (cy_pci_irq != 255))
-+		printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, IRQ%d, ",
-+			j + 1, (ulong) cy_pci_phys2,
-+			(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1),
-+			(int)cy_pci_irq);
-+	else
-+#endif				/* CONFIG_CYZ_INTR */
-+		printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, ",
-+			j + 1, (ulong) cy_pci_phys2,
-+			(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1));
-+
-+	printk("%d channels starting from port %d.\n",
-+		cy_pci_nchan, cy_next_channel);
-+	cy_next_channel += cy_pci_nchan;
-+
-+	return 0;
-+}
-+
- /*
-  * ---------------------------------------------------------------------
-  * cy_detect_pci() - Test PCI bus presence and Cyclom-Ye/PCI.
-@@ -4734,6 +4820,7 @@ static int __init cy_detect_pci(void)
- 	__u32 Ze_phys0[NR_CARDS], Ze_phys2[NR_CARDS];
- 	unsigned char Ze_irq[NR_CARDS];
- 	struct pci_dev *Ze_pdev[NR_CARDS];
-+	int retval;
- 
- 	for (i = 0; i < NR_CARDS; i++) {
- 		/* look for a Cyclades card by vendor and device id */
-@@ -5095,80 +5182,10 @@ static int __init cy_detect_pci(void)
- 			Ze_pdev[j] = Ze_pdev[j + 1];
- 		}
- 		ZeIndex--;
--		mailbox = (__u32)readl(&((struct RUNTIME_9060 __iomem *)
--						cy_pci_addr0)->mail_box_0);
--#ifdef CY_PCI_DEBUG
--		printk("Cyclades-Z/PCI: relocate winaddr=0x%lx ctladdr=0x%lx\n",
--			(ulong)cy_pci_addr2, (ulong)cy_pci_addr0);
--		printk("Cyclades-Z/PCI: New Cyclades-Z board.  FPGA not "
--				"loaded\n");
--#endif
--		/* This must be the new Cyclades-Ze/PCI. */
--		cy_pci_nchan = ZE_V1_NPORTS;
--
--		if ((cy_next_channel + cy_pci_nchan) > NR_PORTS) {
--			printk("Cyclades-Ze/PCI found at 0x%lx but no channels "
--				"are available.\nChange NR_PORTS in cyclades.c "
--				"and recompile kernel.\n",
--				(ulong) cy_pci_phys2);
--			return i;
--		}
--
--		/* fill the next cy_card structure available */
--		for (j = 0; j < NR_CARDS; j++) {
--			if (cy_card[j].base_addr == 0)
--				break;
--		}
--		if (j == NR_CARDS) {	/* no more cy_cards available */
--			printk("Cyclades-Ze/PCI found at 0x%lx but no more "
--				"cards can be used.\nChange NR_CARDS in "
--				"cyclades.c and recompile kernel.\n",
--				(ulong) cy_pci_phys2);
-+		retval = cy_init_Ze(cy_pci_phys0, cy_pci_phys2, cy_pci_addr0,
-+					cy_pci_addr2, cy_pci_irq, pdev);
-+		if (retval < 0)
- 			return i;
--		}
--#ifdef CONFIG_CYZ_INTR
--		/* allocate IRQ only if board has an IRQ */
--		if ((cy_pci_irq != 0) && (cy_pci_irq != 255)) {
--			if (request_irq(cy_pci_irq, cyz_interrupt,
--					IRQF_SHARED, "Cyclades-Z",
--					&cy_card[j])) {
--				printk("Cyclom-Ze/PCI found at 0x%lx ",
--					(ulong) cy_pci_phys2);
--				printk("but could not allocate IRQ%d.\n",
--					cy_pci_irq);
--				return i;
--			}
--		}
--#endif				/* CONFIG_CYZ_INTR */
--
--		/* set cy_card */
--		cy_card[j].base_phys = cy_pci_phys2;
--		cy_card[j].ctl_phys = cy_pci_phys0;
--		cy_card[j].base_addr = cy_pci_addr2;
--		cy_card[j].ctl_addr = cy_pci_addr0;
--		cy_card[j].irq = (int)cy_pci_irq;
--		cy_card[j].bus_index = 1;
--		cy_card[j].first_line = cy_next_channel;
--		cy_card[j].num_chips = -1;
--		cy_card[j].pdev = pdev;
--
--		/* print message */
--#ifdef CONFIG_CYZ_INTR
--		/* don't report IRQ if board is no IRQ */
--		if ((cy_pci_irq != 0) && (cy_pci_irq != 255))
--			printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, IRQ%d, ",
--				j + 1, (ulong) cy_pci_phys2,
--				(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1),
--				(int)cy_pci_irq);
--		else
--#endif				/* CONFIG_CYZ_INTR */
--			printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, ",
--				j + 1, (ulong) cy_pci_phys2,
--				(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1));
--
--		printk("%d channels starting from port %d.\n",
--			cy_pci_nchan, cy_next_channel);
--		cy_next_channel += cy_pci_nchan;
- 	}
- 	if (ZeIndex != 0) {
- 		printk("Cyclades-Ze/PCI found at 0x%x but no more cards can be "
