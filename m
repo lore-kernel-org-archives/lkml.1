@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030990AbXDRCCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030995AbXDRCDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030990AbXDRCCg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Apr 2007 22:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030995AbXDRCCg
+	id S1030995AbXDRCDM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Apr 2007 22:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031007AbXDRCDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Apr 2007 22:02:36 -0400
-Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:41816 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030990AbXDRCCf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Apr 2007 22:02:35 -0400
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: AppArmor FAQ
-Date: Wed, 18 Apr 2007 01:55:53 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <f03tr9$buk$1@taverner.cs.berkeley.edu>
-References: <20070417181016.GA10903@one.firstfloor.org> <1176846088.5946.62.camel@localhost.localdomain> <f03fgh$2o1$1@taverner.cs.berkeley.edu> <Line.LNX.4.64.0704172036370.21359@d.namei>
-Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1176861353 12244 128.32.168.222 (18 Apr 2007 01:55:53 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Wed, 18 Apr 2007 01:55:53 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Tue, 17 Apr 2007 22:03:11 -0400
+Received: from holomorphy.com ([66.93.40.71]:46402 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030995AbXDRCDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Apr 2007 22:03:10 -0400
+Date: Tue, 17 Apr 2007 19:03:29 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070418020329.GS2986@holomorphy.com>
+References: <46241677.7060909@bigpond.net.au> <20070417025704.GM8915@holomorphy.com> <462445EC.1060306@bigpond.net.au> <20070417053147.GN8915@holomorphy.com> <46246A7C.8050501@bigpond.net.au> <20070417064109.GP8915@holomorphy.com> <46247E86.5090706@bigpond.net.au> <20070417104141.GV8915@holomorphy.com> <4624D027.4040500@bigpond.net.au> <462565EF.4030200@bigpond.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462565EF.4030200@bigpond.net.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris  wrote:
->I would challenge the claim that AppArmor offers any magic bullet for
->ease of use.
+> Peter Williams wrote:
+> >William Lee Irwin III wrote:
+> >>I was tempted to restart from scratch given Ingo's comments, but I
+> >>reconsidered and I'll be working with your code (and the German
+> >>students' as well). If everything has to change, so be it, but it'll
+> >>still be a derived work. It would be ignoring precedent and failure to
+> >>properly attribute if I did otherwise.
+> >
+> >I can give you a patch (or set of patches) against the latest git 
+> >vanilla kernel version if that would help.  There have been changes to 
+> >the vanilla scheduler code since 2.6.20 so the latest patch on 
+> >sourceforge won't apply cleanly.  I've found that implementing this as a 
+> >series of patches rather than one big patch makes it easier fro me to 
+> >cope with changes to the underlying code.
+> 
+On Wed, Apr 18, 2007 at 10:27:27AM +1000, Peter Williams wrote:
+> I've just placed a single patch for plugsched against 2.6.21-rc7 updated 
+> to Linus's git tree as of an hour or two ago on sourceforge:
+> <http://downloads.sourceforge.net/cpuse/plugsched-6.5-for-2.6.21-rc7.patch>
+> This should at least enable you to get it to apply cleanly to the latest 
+> kernel sources.  Let me know if you'd also like this as a quilt/mq 
+> friendly patch series?
 
-There are, of course, no magic bullets for ease of use.
-I would not make such a strong claim.  I simply stated that it
-is plausible that AppArmor might have some advantages in some
-deployment environments.
+A quilt-friendly series would be most excellent if you could arrange it.
 
-The purpose of LSM was to enable multiple different approaches to
-security, so that we don't have to fight over the One True Way to
-do it.  There might not be one best way for all situations.
+Thanks.
 
-These systems probably have different tradeoffs.  Consequently, it seems
-to me that arguing over whether SELinux is superior to AppArmor makes
-about as much sense as arguing over whether emacs is superior to vim,
-or whether Python is superior to Perl.  The answer is likely to be
-"it depends".
 
-It's to be expected that SELinux developers prefer their own system
-over AppArmor, or that AppArmor developers prefer AppArmor to SELinux.
-(Have you ever seen any new parent who thinks their own baby is ugly?)
-SELinux developers are likely to have built a system that addresses
-the problems that seem important to them; other systems might set
-priorities differently.
-
-I think in this case the best remedy is to let many flowers bloom,
-and let the users decide for themselves.
+-- wli
