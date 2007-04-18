@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbXDRFkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932473AbXDRFkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932451AbXDRFkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 01:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932473AbXDRFkA
+	id S932473AbXDRFkf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 01:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932478AbXDRFke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 01:40:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:35274 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932451AbXDRFj6 (ORCPT
+	Wed, 18 Apr 2007 01:40:34 -0400
+Received: from mexforward.lss.emc.com ([128.222.32.20]:32697 "EHLO
+	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932473AbXDRFk1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 01:39:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=RSiXyyiRl0Ad51biJaoi2D1yHusfK+GwJLJAzuFsxw1sUOnXi5JjNcTF7ikdjzsglR5SBcqQMt+2OQ+xEPM/Zt+2ekXgFeV/QRrDK6IjcTCkTLbXUBt6Law+ZswMsRSvc5g85gkIeXRh+na37oRHoVlqXJoc1CrE+aaJ01ydjOE=
-Message-ID: <4625AF20.7050904@gmail.com>
-Date: Wed, 18 Apr 2007 14:39:44 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 18 Apr 2007 01:40:27 -0400
+From: Buytaert_Steven@emc.com
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-References: <461D4E2C.6000704@redhat.com>	 <Pine.LNX.4.61.0704112315480.20436@yvahk01.tjqt.qr>	 <461D54AF.3060706@redhat.com> <414cba4e0704150907r215bf196n637070dd40bccc3b@mail.gmail.com> <46253F14.4020304@rtr.ca> <462540CD.9080406@redhat.com> <46254416.6090202@rtr.ca>
-In-Reply-To: <46254416.6090202@rtr.ca>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE:  Re: sched_yield proposals/rationale
+Date: Wed, 18 Apr 2007 01:40:14 -0400
+Message-ID: <585DC2133F7C974F87D4EC432896F1720313698E@CORPUSMX10A.corp.emc.com>
+In-Reply-To: A<4625220C.2060201@tmr.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: sched_yield proposals/rationale
+Thread-Index: AceBKOFupBT9MYpeQTOHr9LHodbETQAT9mJg
+References: <585DC2133F7C974F87D4EC432896F1720309F1EA@CORPUSMX10A.corp.emc.com> <p737ish90ss.fsf@bingen.suse.de> <585DC2133F7C974F87D4EC432896F1720309F3DB@CORPUSMX10A.corp.emc.com> <20070412133158.GB31455@one.firstfloor.org> <585DC2133F7C974F87D4EC432896F1720309F485@CORPUSMX10A.corp.emc.com> <461EB367.1050405@tmr.com> <585DC2133F7C974F87D4EC432896F1720309F645@CORPUSMX10A.corp.emc.com> <461FDDF9.7040503@rtr.ca> A<4625220C.2060201@tmr.com>
+To: <davidsen@tmr.com>, <linux-kernel@vger.kernel.org>
+Cc: <andi@firstfloor.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Apr 2007 05:40:15.0924 (UTC) FILETIME=[0ABA0740:01C7817C]
+X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.4.17.220434
+X-PerlMx-Spam: Gauge=, SPAM=1%, Reason='EMC_FROM_0+ -3, SUPERLONG_LINE 0.05, NO_REAL_NAME 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __IMS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0'
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Chuck Ebbert wrote:
->> Mark Lord wrote:
->>> I'll patch it locally on my own machines, but what about the tens
->>> of thousands of other Seagate notebook drive owners out there?
->>>
->>
->> This is a problem with Seagate specifically, spinning back up
->> on receipt of some command after spindown?
+
+
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+> owner@vger.kernel.org] On Behalf Of Bill Davidsen
+> Sent: dinsdag 17 april 2007 21:38
+> To: linux-kernel@vger.kernel.org
+> Cc: Buytaert, Steven; andi@firstfloor.org; linux-kernel@vger.kernel.org
+> Subject: Re: sched_yield proposals/rationale
 > 
-> No, they just seem to be affected worse by it than some other brands.
-> The bug is that libata/SCSI now spin-down the drive before the distro's
-> scripts are done with it, so it spins down, and then gets spun up again
-> by the distro, and then spun down again by the distro.
-> 
-> And along the way, one/both of the two causes a full mechanism "park",
-> which is hard on things if abused (like this).
-> 
-> Or at least that's what I recall for it.  Tejun?
+> Mark Lord wrote:
+> >
+> > Cool.  You *do know* that there is a brand new CPU scheduler
+> > scheduled to replace the current one for the 2.6.22 Kernel, right?
+> >
+> Having tried both nicksched and Con's fair sched on some normal loads,
+> as opposed to benchmarks, I sure hope Linus changes his mind about
+> having several schedulers in the kernel. The "one perfect and
+> self-adjusting scheduler" isn't here yet.
 
-This really isn't a regression.  It's been always like that with libata.
- libata doesn't make devices go into standby mode and shutdown(8) does
-it for libata.  The problem here is that libata does issue
-SYNCHRONIZE_CACHE on shutdown.  So, the sequence of event is...
+I have the same opinion, and it is still a long time out I'm afraid. Probably people only read my suggestion for a 'fix' diagonally, let alone they read my footer. Too bad the archives only go back to 95, I would love to retrieve my posts from 93. Anybody still have these?
 
-1. shutdown(8) issues SYNCHRONIZE_CACHE followed by STANDBY_NOW
-2. kernel shutdown starts
-3. libata shutdown issues SYNCHRONIZE_CACHE
-4. power goes off
+Now a bit more on topic:
 
-Some drives seem to spin up at step #3 even when its cache is clean and
-power goes off right after the disk finishes the command.  So, it's
-really bad when it happens - spin down, spin up followed by immediate
-power off.
+1) My problem is/was solved by making the default time slice much smaller than the default 100 in a 250Hz system. But that's only masking it away.
 
-SCSI part of the fix is queued in scsi-misc-2.6 tree and libata-dev part
-is acked and waiting to be merged, so the fix will be available in
-2.6.22.  However, it's disabled by default to remain compatible with the
-current behavior and requires userland change to fully fix the problem.
+2) I made a schedstat program sort of like vmstat that samples and prints deltas each second (from /proc/schedstat). Just printing the jiffies delta and the # times schedule is called per CPU, is already thought provoking; a small 12 second example:
 
--- 
-tejun
+2.6.16 vanilla scheduler
+
+   Jiffies CPU0    CPU1
+    Delta 
+    250  | 1756 |  7301 |
+    252  | 1730 |  2638 |
+    254  | 1963 |  1663 |
+    385  |  868 |   658 | <--- stall starts
+    325  |  138 |   112 |
+    330  |  184 |   130 |
+    339  |  682 |   122 |
+    335  |  367 |   159 |
+    334  |  653 |   127 |
+    345  |  467 |   137 |
+    335  |  673 |   128 |
+    337  |  471 |   131 |
+    334  |  673 |   127 |
+    332  |  321 |   144 |
+    333  |  523 |   129 |
+    332  |   98 |   123 |
+    356  |  496 |   124 |
+    270  |   96 |    87 |
+    277  | 5878 | 26228 | <-- yes 26K
+    252  |18263 | 19130 | ...
+    255  | 2024 |  5747 | <-- back to normal
+
+Let's talk about fairness when we get the basics right. And yes, the real physical elapsed time per line IS 1 second, so the jiffies jumping up from the normal expected value of 250 to up to 356 is not normal; it's in fact very very bad. This box was unusable for 13 seconds in a row.
+
+But this doesn't look serious enough to most people, it seems. 
+
+Steven Buytaert
+--
+La perfection est atteinte non quand il ne reste rien ajouter, mais quand il ne reste rien à enlever. (Antoine de Saint-Exupéry)
