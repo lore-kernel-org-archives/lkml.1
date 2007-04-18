@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992911AbXDRW67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992932AbXDRW7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992911AbXDRW67 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 18:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933075AbXDRW66
+	id S2992932AbXDRW7D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 18:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992924AbXDRW7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 18:58:58 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:43591 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933079AbXDRW64 (ORCPT
+	Wed, 18 Apr 2007 18:59:01 -0400
+Received: from 18.208-100-46.steadfast.net ([208.100.46.18]:51185 "EHLO
+	dev.x-plane.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S933068AbXDRW65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 18:58:56 -0400
-Date: Wed, 18 Apr 2007 16:58:17 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-In-reply-to: <fa.kwrK207qOU0rARQuJJKqsJ7Nk4w@ifi.uio.no>
-To: Stephen.Clark@seclark.us, linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Message-id: <4626A289.2080208@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.C4axrtm0R4NUqTWfuNUHmUuWy3s@ifi.uio.no>
- <fa.VWJWPLq+/tQvH9AK4UjcjZqbJe4@ifi.uio.no>
- <fa.EnoRw2EXyWNvVcFxHrcbfZBCcsg@ifi.uio.no>
- <fa.M3hXdZRYWoxu+2mG+LfZsZs6AKA@ifi.uio.no>
- <fa.9O8bUjY5F4TzNzCQp6dHXDtOIR0@ifi.uio.no>
- <fa.kwrK207qOU0rARQuJJKqsJ7Nk4w@ifi.uio.no>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 18 Apr 2007 18:58:57 -0400
+Date: Wed, 18 Apr 2007 19:00:12 -0400 (EDT)
+From: Joshua Wise <joshua@joshuawise.com>
+To: Shaohua Li <shaohua.li@intel.com>
+cc: Mattia Dongili <malattia@linux.it>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: CPU_IDLE prevents resuming from STR [was: Re: 2.6.21-rc6-mm1]
+In-Reply-To: <1176792455.7371.7.camel@sli10-conroe.sh.intel.com>
+Message-ID: <Pine.LNX.4.63.0704181854150.3859@dashnine.joshuawise.com>
+References: <20070408143559.f5014629.akpm@linux-foundation.org> 
+ <20070413234513.GA2940@inferi.kami.home>  <1176691227.6993.1.camel@sli10-conroe.sh.intel.com>
+  <Pine.LNX.4.63.0704162243070.3859@dashnine.joshuawise.com>
+ <1176792455.7371.7.camel@sli10-conroe.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark wrote:
-> So this is the pop I hear on my new laptop that is using 
-> libata=combined_mode
-> when I shut my system down. I didn't get the pop with the same disk 
-> drive in an older
-> laptop that was only ide. It sounds like a relay closing or opening, but 
-> is really my
-> drive head doing an emergency retract/park?
+On Tue, 17 Apr 2007, Shaohua Li wrote:
+> Looks there is init order issue of sysfs files. The new refreshed patch
+> should fix your bug.
 
-Yes, that would be what it is, and why.
+Yes, that did fix the hang on resume from STR -- that now works fine.
 
-I would vote that the sd stop-on-shutdown patch should go in, and 
-possibly with the new behavior enabled by default. Surely the number of 
-people running Linux on a laptop (or any other system with load/unload 
-head technology drives) is much greater than the number of people 
-running a SAN, multi-initiator, etc. environment where you might not 
-want this..
+However:
+joshua@rebirth:/sys/devices/system/cpu/cpuidle$ cat available_drivers current_driver
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+<NULL>
+joshua@rebirth:/sys/devices/system/cpu/cpuidle$ cat available_governors current_governor
+ladder
+ladder
 
+Is this correct? For reference, my config is http://joshuawise.com/config.gz
+-- I didn't see any options for cpuidle drivers to access ACPI states...
+
+joshua
