@@ -1,75 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXDRHJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbXDRHKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932664AbXDRHJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 03:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932753AbXDRHJq
+	id S932760AbXDRHKI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 03:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932764AbXDRHKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 03:09:46 -0400
-Received: from waste.org ([66.93.16.53]:53483 "EHLO waste.org"
+	Wed, 18 Apr 2007 03:10:07 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:43863 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932664AbXDRHJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 03:09:46 -0400
-Date: Wed, 18 Apr 2007 01:55:34 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070418065534.GT11115@waste.org>
-References: <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org> <20070418063711.GH18452@wotan.suse.de>
+	id S932760AbXDRHKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 03:10:05 -0400
+Message-ID: <4625C4FD.9020600@sw.ru>
+Date: Wed, 18 Apr 2007 11:13:01 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070418063711.GH18452@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, Eric Dumazet <dada1@cosmosbay.com>,
+       Dave Hansen <hansendc@us.ibm.com>, devel@openvz.org,
+       Kirill Korotaev <dev@openvz.org>
+Subject: [PATCH] Show slab memory usage on OOM and SysRq-M (v3)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 08:37:11AM +0200, Nick Piggin wrote:
-> I don't know how that supports your argument for unfairness,
+The out_of_memory() function and SysRq-M handler call
+show_mem() to show the current memory usage state.
 
-I never had such an argument. I like fairness.
+This is also helpful to see which slabs are the largest
+in the system.
 
-My argument is that -you- don't have an argument for making fairness a
--requirement-.
+Thanks Pekka for good idea of how to make it better.
 
-> processes are special only because that's how we've always done
-> scheduling.  I'm not precluding other groupings for fairness, though.
+The nr_pages is stored on kmem_list3 because:
 
-If you make one form of fairness a -requirement- for all acceptable
-algorithms, your -are- precluding most other forms of fairness.
+1. as Eric pointed out, we do not want to defeat 
+   NUMA optimizations;
+2. we do not need for additional LOCK-ed operation on
+   altering this field - l3->list_lock is already taken
+   where needed.
 
-If you refuse to define what "fairness" means when specifying your
-requirement, what's the point of requiring it?
+Made naming more descriptive according to Dave.
 
-> What do you mean optimal? If your criteria is fairness, then of course
-> it is optimal. If your criteria is throughput, then it probably isn't.
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+Signed-off-by: Kirill Korotaev <dev@openvz.org>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Dave Hansen <hansendc@us.ibm.com>
 
-I don't know what optimal behavior is. And neither do you. It may or
-may not be fair. It very likely includes small deviations from fair.
+---
 
-> > [2] It's trivial to construct two or more perfectly reasonable and
-> > desirable definitions of fairness that are mutually incompatible.
-> 
-> Probably not if you use common sense, and in the context of a replacement
-> for the 2.6 scheduler.
-
-Ok, trivial example. You cannot allocate equal CPU time to
-processes/tasks and simultaneously allocate equal time to thread
-groups. Is it common sense that a heavily-threaded app should be able
-to get hugely more CPU than a well-written app? No. I don't want Joe's
-stupid Java app to make my compile crawl.
-
-On the other hand, if my heavily threaded app is, say, a voicemail
-server serving 30 customers, I probably want it to get 30x the CPU of
-my gzip job.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+index 39cc318..7c27647 100644
+--- a/drivers/char/sysrq.c
++++ b/drivers/char/sysrq.c
+@@ -234,6 +234,7 @@ static struct sysrq_key_op sysrq_showsta
+ static void sysrq_handle_showmem(int key, struct tty_struct *tty)
+ {
+ 	show_mem();
++	show_slabs();
+ }
+ static struct sysrq_key_op sysrq_showmem_op = {
+ 	.handler	= sysrq_handle_showmem,
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 67425c2..1e2919d 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -170,6 +170,12 @@ static inline void *kzalloc(size_t size,
+ }
+ #endif
+ 
++#ifdef CONFIG_SLAB
++extern void show_slabs(void);
++#else
++#define show_slabs(void)	do { } while (0)
++#endif
++
+ #ifndef CONFIG_NUMA
+ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index 4bdc7c0..aefdd06 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -409,6 +409,7 @@ void out_of_memory(struct zonelist *zone
+ 			current->comm, gfp_mask, order, current->oomkilladj);
+ 		dump_stack();
+ 		show_mem();
++		show_slabs();
+ 	}
+ 
+ 	cpuset_lock();
+diff --git a/mm/slab.c b/mm/slab.c
+index 21b3c61..fe2f597 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -299,6 +299,7 @@ struct kmem_list3 {
+ 	struct array_cache **alien;	/* on other nodes */
+ 	unsigned long next_reap;	/* updated without locking */
+ 	int free_touched;		/* updated without locking */
++	unsigned long nr_pages;		/* pages allocated for this l3 */
+ };
+ 
+ /*
+@@ -357,6 +358,7 @@ static void kmem_list3_init(struct kmem_
+ 	spin_lock_init(&parent->list_lock);
+ 	parent->free_objects = 0;
+ 	parent->free_touched = 0;
++	parent->nr_pages = 0;
+ }
+ 
+ #define MAKE_LIST(cachep, listp, slab, nodeid)				\
+@@ -747,8 +749,18 @@ static inline void init_lock_keys(void)
+ /*
+  * 1. Guard access to the cache-chain.
+  * 2. Protect sanity of cpu_online_map against cpu hotplug events
++ *
++ * cache_chain_lock is needed to protect the cache chain list only.
++ * This is needed by show_slabs() only to be sure kmem_caches won't disappear
++ * from under it. The additional spinlock is used because:
++ *  1. mutex_trylock() may fail if we race with cache_reap;
++ *  2. show_slabs() may be called with this mutex already locked
++ *     (do_tune_cpucache -> kmalloc -> out_of_memory) and thus lock will
++ *     deadlock and trylock will fail for sure.
++ * In both cases we are risking of loosing the info that might be usefull
+  */
+ static DEFINE_MUTEX(cache_chain_mutex);
++static DEFINE_SPINLOCK(cache_chain_lock);
+ static struct list_head cache_chain;
+ 
+ /*
+@@ -2377,7 +2389,9 @@ kmem_cache_create (const char *name, siz
+ 	}
+ 
+ 	/* cache setup completed, link it into the list */
++	spin_lock_irq(&cache_chain_lock);
+ 	list_add(&cachep->next, &cache_chain);
++	spin_unlock_irq(&cache_chain_lock);
+ oops:
+ 	if (!cachep && (flags & SLAB_PANIC))
+ 		panic("kmem_cache_create(): failed to create slab `%s'\n",
+@@ -2492,6 +2506,7 @@ static int drain_freelist(struct kmem_ca
+ 		 * to the cache.
+ 		 */
+ 		l3->free_objects -= cache->num;
++		l3->nr_pages--;
+ 		spin_unlock_irq(&l3->list_lock);
+ 		slab_destroy(cache, slabp);
+ 		nr_freed++;
+@@ -2566,10 +2581,14 @@ void kmem_cache_destroy(struct kmem_cach
+ 	/*
+ 	 * the chain is never empty, cache_cache is never destroyed
+ 	 */
++	spin_lock_irq(&cache_chain_lock);
+ 	list_del(&cachep->next);
++	spin_unlock_irq(&cache_chain_lock);
+ 	if (__cache_shrink(cachep)) {
+ 		slab_error(cachep, "Can't free all objects");
++		spin_lock_irq(&cache_chain_lock);
+ 		list_add(&cachep->next, &cache_chain);
++		spin_unlock_irq(&cache_chain_lock);
+ 		mutex_unlock(&cache_chain_mutex);
+ 		return;
+ 	}
+@@ -2825,6 +2844,7 @@ static int cache_grow(struct kmem_cache 
+ 	list_add_tail(&slabp->list, &(l3->slabs_free));
+ 	STATS_INC_GROWN(cachep);
+ 	l3->free_objects += cachep->num;
++	l3->nr_pages++;
+ 	spin_unlock(&l3->list_lock);
+ 	return 1;
+ opps1:
+@@ -3520,6 +3540,7 @@ static void free_block(struct kmem_cache
+ 				 * a different cache, refer to comments before
+ 				 * alloc_slabmgmt.
+ 				 */
++				l3->nr_pages--;
+ 				slab_destroy(cachep, slabp);
+ 			} else {
+ 				list_add(&slabp->list, &l3->slabs_free);
+@@ -4543,6 +4564,61 @@ const struct seq_operations slabstats_op
+ #endif
+ #endif
+ 
++#define NR_SLABS_TO_SHOW 10
++
++static unsigned long get_cache_size(struct kmem_cache *cachep)
++{
++	unsigned long pages;
++	int node;
++	struct kmem_list3 *l3;
++
++	pages = 0;
++	for_each_online_node (node) {
++		l3 = cachep->nodelists[node];
++		if (l3 != NULL)
++			pages += l3->nr_pages;
++	}
++
++	return pages << cachep->gfporder;
++}
++
++void show_slabs(void)
++{
++	int i, j;
++	unsigned long size;
++	struct kmem_cache *ptr;
++	unsigned long sizes[NR_SLABS_TO_SHOW];
++	struct kmem_cache *top[NR_SLABS_TO_SHOW];
++	unsigned long flags;
++
++	printk("Top %d caches:\n", NR_SLABS_TO_SHOW);
++	memset(top, 0, sizeof(top));
++	memset(sizes, 0, sizeof(sizes));
++
++	spin_lock_irqsave(&cache_chain_lock, flags);
++	list_for_each_entry (ptr, &cache_chain, next) {
++		size = get_cache_size(ptr);
++
++		/* find and replace the smallest size seen so far */
++		j = 0;
++		for (i = 1; i < NR_SLABS_TO_SHOW; i++)
++			if (sizes[i] < sizes[j])
++				j = i;
++
++		if (size > sizes[j]) {
++			sizes[j] = size;
++			top[j] = ptr;
++		}
++	}
++
++	for (i = 0; i < NR_SLABS_TO_SHOW; i++)
++		if (top[i])
++			printk("%-21s: pages %10lu buffer_size %10u\n",
++					top[i]->name, sizes[i],
++					top[i]->buffer_size);
++	spin_unlock_irqrestore(&cache_chain_lock, flags);
++}
++
+ /**
+  * ksize - get the actual amount of memory allocated for a given object
+  * @objp: Pointer to the object
