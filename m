@@ -1,78 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992879AbXDRRN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992878AbXDRROy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992879AbXDRRN6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 13:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992878AbXDRRN6
+	id S2992878AbXDRROy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 13:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992883AbXDRROy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 13:13:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35734 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992876AbXDRRN5 (ORCPT
+	Wed, 18 Apr 2007 13:14:54 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:16808 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992878AbXDRROx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 13:13:57 -0400
-Date: Wed, 18 Apr 2007 18:13:46 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: David Miller <davem@davemloft.net>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-       ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-Message-ID: <20070418171346.GA16471@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Vasquez <andrew.vasquez@qlogic.com>,
-	David Miller <davem@davemloft.net>, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-	ema@debian.org
-References: <20070416.010218.130850966.davem@davemloft.net> <20070416163712.GA10822@andrew-vasquezs-computer.local> <20070416.123743.07452378.davem@davemloft.net> <20070416200857.GH10822@andrew-vasquezs-computer.local>
+	Wed, 18 Apr 2007 13:14:53 -0400
+Date: Wed, 18 Apr 2007 10:16:54 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bbpetkov@yahoo.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [KERNEL-DOC] kill warnings when building mandocs
+Message-Id: <20070418101654.7c7906c1.randy.dunlap@oracle.com>
+In-Reply-To: <20070413092943.GA16491@zmei.tnic>
+References: <20070413091422.GA15426@zmei.tnic>
+	<20070413092943.GA16491@zmei.tnic>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070416200857.GH10822@andrew-vasquezs-computer.local>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 01:08:57PM -0700, Andrew Vasquez wrote:
-> Sorry, but in a SATA/SCSI environment that may be true, but in the
-> case of FC that expectation is unrealistic.  There are thousands of FC
-> installations where there are several thousand endpoints (including
-> initiators and targets) all interconnected.  Let's use your case --
-> just connect two sparc machines within the same fabric to your
-> storage, with the old code, there's still a problem.
+On Fri, 13 Apr 2007 11:29:43 +0200 Borislav Petkov wrote:
 
-Multi-initiator setups are probably the majority in the FC world by now.
-But there has been a time around 2000 where various of companies thought
-FC is so l33t that they'd put it in as default.  E.g. the early SGI
-Origin 3000 used to have FC-attached root disks.  I think Sun has similar
-machines.
-
-> > They DON'T
-> > CARE, they want their systems to work and if you don't give them that
-> > you're not being a good driver maintainer.
+> Sorry for the improper whitespaces, here's a correct version.
 > 
-> Let's push aside attitudes and unrealistic statistics, could we
-> perhaps agree to re-add the use of doctored NVRAM (and thus
-> non-random WWPN/WWNN) when NVRAM is corrupted or non-present with a
-> module-parameter (which defaults to 0) which indicates the user
-> *really* knows what she is doing and recognizes WWPN collisions may
-> occur -- non-zero the parameter value indicates doctored values will
-> be used, zero value (the default) fails initialization.  In both cases
-> a big FAT warning is issued.
+> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> 
+> 
+> Index: 21-rc6/scripts/kernel-doc
+> ===================================================================
+> --- 21-rc6.orig/scripts/kernel-doc
+> +++ 21-rc6/scripts/kernel-doc
+> @@ -326,6 +326,32 @@ while ($ARGV[0] =~ m/^-(.*)/) {
+>      }
+>  }
+>  
+> +# get kernel version
+> +sub get_kernel_version() {
+> +    my $version;
+> +    open (FILE, "../Makefile") || die "Can't open man kernel Makefile: $!";
 
-I don't think a module option is a good idea at this point.  The problem
-is you broke some so far perfectly working setups, which is not okay.
-The only first step can be printing a really big warning.  After this
-has been in for a while (at lest half a year) we can make it a non-default
-option or turn if off completely in case the warning never triggered in
-practice.
+How are you running scripts/kernel-doc ?
+I had to change "../Makefile" to just "Makefile" when using
+'make htmldocs;.
 
-The only resonable thing for 2.6.21 is to put in David's patch, possible
-with an even more drastic warning when the rom is invalid and there's
-no prom-fallback available.
+> +    EOF: while (my $line = <FILE>)
+> +    {
+> +	if ($line =~ /VERSION\s+=\s+(\d+)/) {
+> +	     $version .= $1;
+> +	     next;
+> +	}
+> +	if ($line =~ /PATCHLEVEL\s+=\s+(\d+)/) {
+> +	     $version .= ".$1";
+> +	     next;
+> +	}
+> +	if ($line =~ /SUBLEVEL\s+=\s+(\d+)/) {
+> +	     $version .= ".$1";
+> +	     next;
+> +	}
+> +	if ($line =~ /EXTRAVERSION\s+=\s+(.*)$/) {
+> +	     $version .= $1;
+> +	     last EOF;
+> +	}
+> +    }
+> +    return $version;
+> +}
+>  
+>  # generate a sequence of code that will splice in highlighting information
+>  # using the s// operator.
+> @@ -592,6 +618,7 @@ sub output_function_xml(%) {
+>      print "<refmeta>\n";
+>      print " <refentrytitle><phrase>".$args{'function'}."</phrase></refentrytitle>\n";
+>      print " <manvolnum>9</manvolnum>\n";
+> +    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+>      print "</refmeta>\n";
+>      print "<refnamediv>\n";
+>      print " <refname>".$args{'function'}."</refname>\n";
+> @@ -668,6 +695,7 @@ sub output_struct_xml(%) {
+>      print "<refmeta>\n";
+>      print " <refentrytitle><phrase>".$args{'type'}." ".$args{'struct'}."</phrase></refentrytitle>\n";
+>      print " <manvolnum>9</manvolnum>\n";
+> +    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+>      print "</refmeta>\n";
+>      print "<refnamediv>\n";
+>      print " <refname>".$args{'type'}." ".$args{'struct'}."</refname>\n";
+> @@ -752,6 +780,7 @@ sub output_enum_xml(%) {
+>      print "<refmeta>\n";
+>      print " <refentrytitle><phrase>enum ".$args{'enum'}."</phrase></refentrytitle>\n";
+>      print " <manvolnum>9</manvolnum>\n";
+> +    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+>      print "</refmeta>\n";
+>      print "<refnamediv>\n";
+>      print " <refname>enum ".$args{'enum'}."</refname>\n";
+> -
 
-Note that I expect Sun put in the invalid ROM intentionally, as we have
-similar cases with other cards that have totally messed up ROMs in
-Sun-branded versions.  Personally I think that's an utterly bad decision
-from Sun's side, but we'll have to live with this.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
