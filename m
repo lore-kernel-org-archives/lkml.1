@@ -1,116 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422954AbXDRMjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422969AbXDRMqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422954AbXDRMjG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 08:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422969AbXDRMjG
+	id S1422969AbXDRMqz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 08:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422971AbXDRMqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 08:39:06 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:16633 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422968AbXDRMjE (ORCPT
+	Wed, 18 Apr 2007 08:46:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:48639 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422969AbXDRMqy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 08:39:04 -0400
-Date: Wed, 18 Apr 2007 14:37:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Brad Campbell <brad@wasp.net.au>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-Message-ID: <20070418123757.GC3796@kernel.dk>
-References: <4621FAF0.7000705@wasp.net.au> <46220339.9080205@wasp.net.au> <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown>
+	Wed, 18 Apr 2007 08:46:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=sVuqNkfW8NyLuMRE3t6JxBc4OQ71/eNKwZK3OI5ZeDS4u6yd8r5Tix44sW1hq44T/ylwjIrI/FGD5naBqYMo3I4weAVO+D5kwbemJn3u2ss9wK7xf97lR9XdZ9A9OX7dGYn2nBjuyauDT/xdZkWzGlubFsEikDKchkm3U9yoIeE=
+Message-ID: <46261337.3010406@gmail.com>
+Date: Wed, 18 Apr 2007 21:46:47 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17956.22235.574867.179016@notabene.brown>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: 7eggert@gmx.de, Chuck Ebbert <cebbert@redhat.com>,
+       emisca <emisca.ml@gmail.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+References: <88SeR-5Sf-15@gated-at.bofh.it>	<88Sov-662-3@gated-at.bofh.it>	<88SHV-6uL-29@gated-at.bofh.it>	<8agVk-3wc-81@gated-at.bofh.it>	<8b3IR-4mE-25@gated-at.bofh.it>	<8b3SA-4z3-5@gated-at.bofh.it>	<8b42g-51N-15@gated-at.bofh.it>	<8bbdm-7iS-27@gated-at.bofh.it>	<E1He8dA-0000mw-LI@be1.lrz>	<46260981.1040109@gmail.com> <20070418132904.3322ba5f@the-village.bc.nu>
+In-Reply-To: <20070418132904.3322ba5f@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 17 2007, Neil Brown wrote:
-> On Monday April 16, cebbert@redhat.com wrote:
-> > 
-> > cfq_dispatch_insert() was called with rq == 0. This one is getting really
-> > annoying... and md is involved again (RAID0 this time.)
+Alan Cox wrote:
+>> Not that simple.  Most disks don't spin up on SYNCHRONIZE_CACHE if its 
+>> cache is clean.  Sadly some disks actually spin up when it receives spin 
+>> down command while spun down to immediately spin down again, so we would 
+>> be fixing problem for some number of disks while breaking others.  :-(
 > 
-> Yeah... weird.
-> RAID0 is so light-weight and so different from RAID1 or RAID5 that I
-> feel fairly safe concluding that the problem isn't in or near md.
-> But that doesn't help you.
+> Snoop the last command sent to the drive, that tells you if you can skip
+> the cache flush ?
 
-Well the fact is that we have 3-4 distinct reports of this oops, and all
-of them are using md. No reports have been filed where md isn't managing
-the disks. While this doesn't conclusively put the finger of blame on
-md, it is still likely. It could bug a CFQ bug too of course, or (more
-likely), some bad interaction between md and CFQ.
+Thought about that and querying power state before doing shutdown 
+sequence but things get somewhat ugly because shutdown sequence is 
+driven from sd->shutdown().  We'll have to snoop both sync and shutdown 
+commands and check whether the system is shutting down.  Also, I felt 
+very uneasy about faking successful completion to SYNCHRONIZE_CACHE.
 
-> This really feels like a locking problem.
-
-Very much.
-
-> The problem occurs when ->next_rq is NULL, but ->sort_list.rb_node is
-> not NULL.  That happens plenty of times in the code (particularly as
-> the first request is inserted) but always under ->queue_lock so it
-> should never be visible to cfq_dispatch_insert..
-> 
-> Except that drivers/scsi/ide-scsi.c:idescsi_eh_reset calls
-> elv_next_request which could ultimately call __cfq_dispatch_requests
-> without taking ->queue_lock (that I can see).  But you probably aren't
-> using ide-scsi (does anyone?).
-> 
-> Given that interrupts are always disabled when queue_lock is taken, it
-> might be useful to add
->    WARN_ON(!irqs_disabled());
-> every time ->next_rq is set.
-> Something like the following.
-> 
-> It might show something useful.... if we are lucky.
-
-I had something similar for generic_unplug_request() as well, but didn't
-see/hear any reports of it being tried out. Here's a complete debugging
-patch for this and other potential dangers.
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index b6491c0..8f749aa 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -587,8 +587,11 @@ static void cfq_remove_request(struct request *rq)
- {
- 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
- 
--	if (cfqq->next_rq == rq)
-+	BUG_ON(!irqs_disabled());
-+	if (cfqq->next_rq == rq) {
- 		cfqq->next_rq = cfq_find_next_rq(cfqq->cfqd, cfqq, rq);
-+		BUG_ON(!cfqq->next_rq && !RB_EMPTY_ROOT(&cfqq->sort_list));
-+	}
- 
- 	list_del_init(&rq->queuelist);
- 	cfq_del_rq_rb(rq);
-@@ -1637,6 +1640,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	/*
- 	 * check if this request is a better next-serve candidate)) {
- 	 */
-+	BUG_ON(!irqs_disabled());
- 	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
- 	BUG_ON(!cfqq->next_rq);
- 
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 3de0695..c16863e 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -1602,6 +1602,8 @@ EXPORT_SYMBOL(__generic_unplug_device);
-  **/
- void generic_unplug_device(request_queue_t *q)
- {
-+	BUG_ON(irqs_disabled());
-+
- 	spin_lock_irq(q->queue_lock);
- 	__generic_unplug_device(q);
- 	spin_unlock_irq(q->queue_lock);
+I dunno.  It's already too late for 2.6.21.  I was hoping we could get 
+distros to update shutdown utilities in not-too-distant future but I 
+have no experience with that.  Is that just a wishful thinking?
 
 -- 
-Jens Axboe
-
+tejun
