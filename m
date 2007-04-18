@@ -1,84 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbXDREwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbXDREw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbXDREwP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 00:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXDREwO
+	id S1753675AbXDREw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 00:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbXDREw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 00:52:14 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:59818 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753671AbXDREwN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 00:52:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
-        b=cyW/SO6/sACBZOmhNks9unPZ3QKwZzylkukOwpxlQo61kebsrNuIwdTavkqg0oRLqATULl0hK9WiA2ng5uRwJ3t9jAR+7wllbb0Tb+0jNM/F97QyRvuOkaLpeYb7ss+IZazktU4MjFjaSL8vORPEHuq09fi5fmqUk5qCy+384u0=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: floppy.ko
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, Alain.Knaff@poboxes.com
-References: <200704170036.00605.gene.heskett@verizon.net> <200704172312.49787.gene.heskett@gmail.com> <46259E18.6010003@zytor.com>
-In-Reply-To: <46259E18.6010003@zytor.com>
+	Wed, 18 Apr 2007 00:52:58 -0400
+Received: from waste.org ([66.93.16.53]:59614 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753670AbXDREw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 00:52:57 -0400
+Date: Tue, 17 Apr 2007 23:38:31 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070418043831.GR11115@waste.org>
+References: <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Date: Wed, 18 Apr 2007 00:52:08 -0400
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704180052.09259.gene.heskett@gmail.com>
+In-Reply-To: <20070418031511.GA18452@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 April 2007, H. Peter Anvin wrote:
->Gene Heskett wrote:
->> On Tuesday 17 April 2007, H. Peter Anvin wrote:
->>> Gene Heskett wrote:
->>>> I have the usual fd0, a 3.5" 1.44 drive, and fd1, a 5.25" 720k drive in
->>>> this machine, both are enabled in the bios with the correct types being
->>>> set there.
->>>
->>> A 5.25" 720k drive?!  That's not a PC standard drive -- 5.25" came in
->>> 180K, 360K and 1200K varieties, whereas 3.5" came in 720K, 1440K and
->>> 2880K varieties (not including superfloppies.)
->>>
->>> 	-hpa
->>
->> It sure is a std drive, Peter, although many of the later ones that were
->> set up as 1.2 megger's by the pc crowd who have access to a 500 kilobaud
->> controller, could have the 360 rpm spindle jumper'd back to 300 rpm, and
->> when fed with a 250 kilobaud controller (WD177x/277x/279x family, which
->> includes the Fujitsu MB8877), they are perfect 720k devices and are
->> spec'ed that way by the makers.  Many of the older full height Tandon
->> 100-4's could also step quite a few tracks closer to the spindle & I ran
->> them as 765k drives by using 84 tracks.  I even have a chinon that will
->> make 86 tracks most of the time.
->>
->> These were all quite common in the middle '80's.  Before your time I
->> suspect.
->
->I know they were quite common, but they were not a standard *PC*
->accessory.  (FWIW, 1200K PC drives could also read/write 720K, which
->allowed you to use non-HD-rated media.)
->
-Chuckle, see how you are?  You keep quoting the 'PC', and 20 years ago the PC 
-term included a lot of machinery that didn't always run M$ code.  TRS-80 
-Color Computers and such, or Apple II, Commode-door etc.
+On Wed, Apr 18, 2007 at 05:15:11AM +0200, Nick Piggin wrote:
+> On Tue, Apr 17, 2007 at 04:39:54PM -0500, Matt Mackall wrote:
+> > On Tue, Apr 17, 2007 at 09:01:55AM +0200, Nick Piggin wrote:
+> > > On Mon, Apr 16, 2007 at 11:26:21PM -0700, William Lee Irwin III wrote:
+> > > > On Mon, Apr 16, 2007 at 11:09:55PM -0700, William Lee Irwin III wrote:
+> > > > >> All things are not equal; they all have different properties. I like
+> > > > 
+> > > > On Tue, Apr 17, 2007 at 08:15:03AM +0200, Nick Piggin wrote:
+> > > > > Exactly. So we have to explore those properties and evaluate performance
+> > > > > (in all meanings of the word). That's only logical.
+> > > > 
+> > > > Any chance you'd be willing to put down a few thoughts on what sorts
+> > > > of standards you'd like to set for both correctness (i.e. the bare
+> > > > minimum a scheduler implementation must do to be considered valid
+> > > > beyond not oopsing) and performance metrics (i.e. things that produce
+> > > > numbers for each scheduler you can compare to say "this scheduler is
+> > > > better than this other scheduler at this.").
+> > > 
+> > > Yeah I guess that's the hard part :)
+> > > 
+> > > For correctness, I guess fairness is an easy one. I think that unfairness
+> > > is basically a bug and that it would be very unfortunate to merge something
+> > > unfair. But this is just within the context of a single runqueue... for
+> > > better or worse, we allow some unfairness in multiprocessors for performance
+> > > reasons of course.
+> > 
+> > I'm a big fan of fairness, but I think it's a bit early to declare it
+> > a mandatory feature. Bounded unfairness is probably something we can
+> > agree on, ie "if we decide to be unfair, no process suffers more than
+> > a factor of x".
+> 
+> I don't know why this would be a useful feature (of course I'm talking
+> about processes at the same nice level). One of the big problems with
+> the current scheduler is that it is unfair in some corner cases. It
+> works OK for most people, but when it breaks down it really hurts. At
+> least if you start with a fair scheduler, you can alter priorities
+> until it satisfies your need... with an unfair one your guess is as
+> good as mine.
+> 
+> So on what basis would you allow unfairness? On the basis that it doesn't
+> seem to harm anyone? It doesn't seem to harm testers?
 
->(And no, this wasn't "before my time".)
+On the basis that there's only anecdotal evidence thus far that
+fairness is the right approach.
 
-Figure of speech, Peter, considering that I could be the oldest subscriber to 
-this list.  I've been around since '34.
+It's not yet clear that a fair scheduler can do the right thing with X,
+with various kernel threads, etc. without fiddling with nice levels.
+Which makes it no longer "completely fair".
 
->	-hpa
+It's also not yet clear that a scheduler can't be taught to do the
+right thing with X without fiddling with nice levels.
+
+So I'm just not yet willing to completely rule out systems that aren't
+"completely fair".
+
+But I think we should rule out schedulers that don't have rigid bounds on
+that unfairness. That's where the really ugly behavior lies.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Randal can write one-liners again.  Everyone is happy, and peace spreads
-over the whole Earth.
-             -- Larry Wall in <199705101952.MAA00756@wall.org>
+Mathematics is the supreme nostalgia of our time.
