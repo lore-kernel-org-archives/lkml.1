@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXDRRBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXDRRDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbXDRRBl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 13:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbXDRRBl
+	id S1753648AbXDRRDa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 13:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbXDRRDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 13:01:41 -0400
-Received: from adelie.ubuntu.com ([82.211.81.139]:51188 "EHLO
-	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753381AbXDRRBk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 13:01:40 -0400
-X-Greylist: delayed 2151 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 13:01:40 EDT
-Subject: Re: [RFC] [PATCH] Allow overriding module parameters from kernel
-	command_line
-From: Ben Collins <ben.collins@ubuntu.com>
-To: Kyle McMartin <kyle@canonical.com>
-Cc: linux-kernel@vger.kernel.org, alan@redhat.com
-In-Reply-To: <20070418155552.GA3744@athena.road.mcmartin.ca>
-References: <20070418155552.GA3744@athena.road.mcmartin.ca>
-Content-Type: text/plain
-Date: Wed, 18 Apr 2007 12:25:48 -0400
-Message-Id: <1176913548.6036.193.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 18 Apr 2007 13:03:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40008 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753650AbXDRRD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 13:03:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ego@in.ibm.com
+Subject: Re: [RFC][PATCH][EXPERIMENTAL] CPU hotplug with frozen tasks
+Date: Wed, 18 Apr 2007 19:07:09 +0200
+User-Agent: KMail/1.9.5
+Cc: Gautham Shenoy <ego.lkml@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+References: <200704061732.32712.rjw@sisk.pl> <200704162327.59758.rjw@sisk.pl> <20070418094211.GC6474@in.ibm.com>
+In-Reply-To: <20070418094211.GC6474@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704181907.10288.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-18 at 11:55 -0400, Kyle McMartin wrote:
-> With the move to initramfs and heavily modular configs, which include
-> loading storage drivers from early userspace, it's becoming harder
-> to provide users with a way of overriding module parameters at boot.
+On Wednesday, 18 April 2007 11:42, Gautham R Shenoy wrote:
+> Hi,
 > 
-> Currently, users would have to break into the initramfs, edit the
-> modprobe options, and then let boot continue. They have a much easier time
-> dealing with adding options on the command line from Grub or what have you.
+> The patch looks good to me. 
 > 
-> I hacked out this patch quickly to re-parse saved_command_line[] when we
-> load a module in an attempt to rectify this.
+> On Mon, Apr 16, 2007 at 11:27:58PM +0200, Rafael J. Wysocki wrote:
+> > 
+> > ---
+> >  Documentation/cpu-hotplug.txt             |    9 +++++++--
+> >  arch/i386/kernel/cpu/intel_cacheinfo.c    |    2 ++
+> >  arch/i386/kernel/cpu/mcheck/therm_throt.c |    2 ++
+> >  arch/i386/kernel/cpuid.c                  |    2 ++
 > 
-> (The specific use-case I was looking at here was HPA commands failing on
->  sata_nv controllers, and needing to pass the adma=0 option to the module...
->  Users had a hard time testing without an easy way of overriding the module.)
+> [snip]
 > 
-> Clearly this is not entirely optimal, because we're parsing command_line
-> after the module params are parsed. This ends of being a policy decision,
-> whether the /sbin/modprobe commandline should override the kernel
-> command_line, or vice versa.
-> 
-> Anyway, please comment...
+> Though I am wondering what might be the usecase for microcode! 
 
-Just pasting my comments to kyle on IRC for benefit of discussion:
+Well, for 2.6.21-rc I had to introduce the variable suspend_cpu_hotplug (in
+cpu.c) and make the microcode driver use it to distinguish between the 'normal'
+and suspend-related CPU hotplug.  I'd like to get rid of this ugliness ASAP.
 
-"I'm of the opinion that cmdline args from the kernel should override
-modprobe args...mainly because adding those args to the kernel cmdline
-is clearly an attempt to override userspace"
+> Guess we'll see that patch soon :-)
 
-"maybe have some sysfs attr to disable this feature, so userspace can go
-back to normal after whatever needed fixing"
+Yes, in a couple of days.  I have to make both patches apply to -mm first. :-)
 
-The use case for us is that we've had to add a couple of initramfs
-scripts to parse common module params (all_generic_ide for example).
-
-We'd like to move away from this and have a clear way of passing any
-module param on the kernel command line. Workarounds for users are much
-easier than having to roll new CDs for every little quirk. Plus it's
-easier for testing (if the quirk is a bug that keeps them from
-installing at all, then we can't just hand them new kernels very
-easily).
-
-
--- 
-Ubuntu:    http://www.ubuntu.com/
-Linux1394: http://www.linux1394.org/
-
+Greetings,
+Rafael
