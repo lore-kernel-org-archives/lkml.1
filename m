@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992724AbXDRPEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992729AbXDRPHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992724AbXDRPEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 11:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992716AbXDRPEl
+	id S2992729AbXDRPHu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 11:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992730AbXDRPHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 11:04:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55612 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992723AbXDRPEk (ORCPT
+	Wed, 18 Apr 2007 11:07:50 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:53935 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992728AbXDRPHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 11:04:40 -0400
-Date: Wed, 18 Apr 2007 16:06:27 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Tejun Heo <htejun@gmail.com>, 7eggert@gmx.de,
-       Chuck Ebbert <cebbert@redhat.com>, emisca <emisca.ml@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-Message-ID: <20070418160627.7ab77c30@the-village.bc.nu>
-In-Reply-To: <46262C0E.9000103@rtr.ca>
-References: <88SeR-5Sf-15@gated-at.bofh.it>
-	<88Sov-662-3@gated-at.bofh.it>
-	<88SHV-6uL-29@gated-at.bofh.it>
-	<8agVk-3wc-81@gated-at.bofh.it>
-	<8b3IR-4mE-25@gated-at.bofh.it>
-	<8b3SA-4z3-5@gated-at.bofh.it>
-	<8b42g-51N-15@gated-at.bofh.it>
-	<8bbdm-7iS-27@gated-at.bofh.it>
-	<E1He8dA-0000mw-LI@be1.lrz>
-	<46260981.1040109@gmail.com>
-	<20070418132904.3322ba5f@the-village.bc.nu>
-	<46261337.3010406@gmail.com>
-	<20070418140346.636879a1@the-village.bc.nu>
-	<46262C0E.9000103@rtr.ca>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Apr 2007 11:07:49 -0400
+To: trond.myklebust@fys.uio.no
+CC: ebiederm@xmission.com, serue@us.ibm.com, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, viro@ftp.linux.org.uk,
+       containers@lists.osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <1176906389.6796.96.camel@heimdal.trondhjem.org> (message from
+	Trond Myklebust on Wed, 18 Apr 2007 10:26:29 -0400)
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
+	namespace" clone flag
+References: <20070412164620.588752236@szeredi.hu>
+	 <20070412203208.GG27772@sergelap.austin.ibm.com>
+	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
+	 <1176713221.9488.17.camel@ram.us.ibm.com>
+	 <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
+	 <1176716941.9488.57.camel@ram.us.ibm.com>
+	 <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
+	 <m18xcsl3yc.fsf@ebiederm.dsl.xmission.com>
+	 <E1HdTag-0007bd-00@dorka.pomaz.szeredi.hu>
+	 <m1zm58jfj3.fsf@ebiederm.dsl.xmission.com>
+	 <20070416195652.GA350@sergelap.austin.ibm.com>
+	 <m1k5wbjrsh.fsf@ebiederm.dsl.xmission.com>
+	 <E1HdlYr-00015O-00@dorka.pomaz.szeredi.hu>
+	 <m1zm56j27m.fsf@ebiederm.dsl.xmission.com>
+	 <E1HdsX6-0002Kl-00@dorka.pomaz.szeredi.hu>
+	 <m1vefuixp5.fsf@ebiederm.dsl.xmission.com>
+	 <E1He6C7-0003Xu-00@dorka.pomaz.szeredi.hu>
+	 <1176904505.6796.79.camel@heimdal.trondhjem.org>
+	 <E1HeAkl-000490-00@dorka.pomaz.szeredi.hu> <1176906389.6796.96.camel@heimdal.trondhjem.org>
+Message-Id: <E1HeBjt-0004G8-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 18 Apr 2007 17:06:33 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +		if (dev->needs_flush && ata_try_flush_cache(dev)) {
->  			return ata_scsi_flush_xlat;
-> +			dev->needs_flush = 0;
+> > > Don't forget that almost all mount flags are per-superblock. How are you
+> > > planning on dealing with the case that one user mounts a filesystem
+> > > read-only, while another is trying to mount the same one read-write?
+> > 
+> > Yeah, I forgot, the per-mount read-only patches are not yet in.
+> > 
+> > That doesn't really change my agrument though.  _If_ the flag is per
+> > mount, then it makes sense to be able to change it on a master and not
+> > on a slave.  If mount flags are propagated, this is not possible.
+> 
+> Read-only isn't the only issue. On something like NFS, there are flags
+> to set the security flavour, turn on/off encryption etc.
+> 
+> If I mount your home directory using no encryption in my namespace, for
+> instance, then neither you nor the administrator will be able to turn it
+> on afterwards in yours without first unmounting it from mine so that the
+> superblock is destroyed.
 
-Works better if you swap the dev-> and return lines
+OK, that's interesting, but I fail to grasp the relevance of this to
+unprivileged mounts.
 
-Alan
+Or are you thinking of unprivileged NFS mounts?  Well, think again,
+because that involves _much_ more than it seems at first glance.
+
+Miklos
