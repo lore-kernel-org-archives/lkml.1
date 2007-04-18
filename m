@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752976AbXDRVxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbXDRV6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752976AbXDRVxo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 17:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbXDRVxo
+	id S1754054AbXDRV6F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 17:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbXDRV6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 17:53:44 -0400
-Received: from mail36.syd.optusnet.com.au ([211.29.133.76]:57323 "EHLO
-	mail36.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752976AbXDRVxn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 17:53:43 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Date: Thu, 19 Apr 2007 07:49:42 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>,
-       linux-kernel@vger.kernel.org,
+	Wed, 18 Apr 2007 17:58:04 -0400
+Received: from lugor.de ([212.112.242.222]:38746 "EHLO solar.vpn.lugor.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754054AbXDRV6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 17:58:02 -0400
+From: Christian Hesse <mail@earthworm.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: CFS and suspend2: hang in atomic copy
+Date: Wed, 18 Apr 2007 23:57:21 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
        Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Steve Fox <drfickle@us.ibm.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>
-References: <20070413202100.GA9957@elte.hu> <20070418121421.GB878@wotan.suse.de> <200704182233.27378.kernel@kolivas.org>
-In-Reply-To: <200704182233.27378.kernel@kolivas.org>
+       Thomas Gleixner <tglx@linutronix.de>, suspend2-devel@lists.suspend2.net
+References: <20070413202100.GA9957@elte.hu> <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu>
+In-Reply-To: <20070418211632.GA7610@elte.hu>
+X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/signed;
+  boundary="nextPart1221021.De0KSsqXfv";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704190749.43621.kernel@kolivas.org>
+Message-Id: <200704182357.28107.mail@earthworm.de>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.0 (solar.vpn.lugor.de [10.5.1.1]); Wed, 18 Apr 2007 23:57:29 +0200 (CEST)
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 April 2007 22:33, Con Kolivas wrote:
-> On Wednesday 18 April 2007 22:14, Nick Piggin wrote:
-> > On Wed, Apr 18, 2007 at 07:33:56PM +1000, Con Kolivas wrote:
-> > > On Wednesday 18 April 2007 18:55, Nick Piggin wrote:
-> > > > Again, for comparison 2.6.21-rc7 mainline:
-> > > >
-> > > > 508.87user 32.47system 2:17.82elapsed 392%CPU
-> > > > 509.05user 32.25system 2:17.84elapsed 392%CPU
-> > > > 508.75user 32.26system 2:17.83elapsed 392%CPU
-> > > > 508.63user 32.17system 2:17.88elapsed 392%CPU
-> > > > 509.01user 32.26system 2:17.90elapsed 392%CPU
-> > > > 509.08user 32.20system 2:17.95elapsed 392%CPU
-> > > >
-> > > > So looking at elapsed time, a granularity of 100ms is just behind the
-> > > > mainline score. However it is using slightly less user time and
-> > > > slightly more idle time, which indicates that balancing might have
-> > > > got a bit less aggressive.
-> > > >
-> > > > But anyway, it conclusively shows the efficiency impact of such tiny
-> > > > timeslices.
-> > >
-> > > See test.kernel.org for how (the now defunct) SD was performing on
-> > > kernbench. It had low latency _and_ equivalent throughput to mainline.
-> > > Set the standard appropriately on both counts please.
+--nextPart1221021.De0KSsqXfv
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+On Wednesday 18 April 2007, Ingo Molnar wrote:
+> * Christian Hesse <mail@earthworm.de> wrote:
+> > > i took a quick look at suspend2 and it makes some use of yield().
+> > > There's a bug in CFS's yield code, i've attached a patch that should
+> > > fix it, does it make any difference to the hang?
 > >
-> > I can give it a run. Got an updated patch against -rc7?
+> > This patch should apply cleanly against what? The second hunk is
+> > ignored as it has already been applied. Is this correct?
 >
-> I said I wasn't pursuing it but since you're offering, the rc6 patch should
-> apply ok.
+> hm, i think you might have had one of the earlier CFS patches.
+
+You are right.
+
+> > But no, it does not change anything. Let me know if you have any other
+> > patches to test.
 >
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc6-sd-0.40.patch
+> could you try the -v3 patch i released a few hours ago:
+>
+>    http://redhat.com/~mingo/cfs-scheduler/
+>
+> although probably your suspend2 problem is still not fixed, it's worth a
+> try nevertheless. Which suspend2 patch did you apply, and was it against
+> -rc6 or -rc7?
 
-Oh and if you go to the effort of trying you may as well try the timeslice 
-tweak to see what effect it has on SD as well.
+You are right again. ;-)
 
-/proc/sys/kernel/rr_interval
+Linux 2.6.21-rc7
+Suspend2 2.2.9.11 (applies cleanly to -rc7)
+CFS v3 (without any additional patches)
 
-100 is the highest.
+And it still hangs on suspend.
+=2D-=20
+Regards,
+Chris
 
--- 
--ck
+--nextPart1221021.De0KSsqXfv
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGJpRHlZfG2c8gdSURAgG8AKDjAlVLZpVkeUgbwb71NqIsaR8s/gCgi2KO
+aRio/METgUZgZLv7RaVLQeE=
+=MDL2
+-----END PGP SIGNATURE-----
+
+--nextPart1221021.De0KSsqXfv--
