@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbXDRRDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992853AbXDRREc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbXDRRDa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 13:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbXDRRDa
+	id S2992853AbXDRREc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 13:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992861AbXDRREc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 13:03:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40008 "EHLO ogre.sisk.pl"
+	Wed, 18 Apr 2007 13:04:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59076 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753650AbXDRRD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 13:03:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ego@in.ibm.com
-Subject: Re: [RFC][PATCH][EXPERIMENTAL] CPU hotplug with frozen tasks
-Date: Wed, 18 Apr 2007 19:07:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Gautham Shenoy <ego.lkml@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-References: <200704061732.32712.rjw@sisk.pl> <200704162327.59758.rjw@sisk.pl> <20070418094211.GC6474@in.ibm.com>
-In-Reply-To: <20070418094211.GC6474@in.ibm.com>
+	id S2992853AbXDRREb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 13:04:31 -0400
+Message-ID: <46264F91.4070106@redhat.com>
+Date: Wed, 18 Apr 2007 13:04:17 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704181907.10288.rjw@sisk.pl>
+To: =?UTF-8?B?IuCkheCkreCkv+CknOCkv+CkpCDgpK3gpYvgpKrgpJ/gpJXgpLAgKEFiaGlq?=
+	 =?UTF-8?B?aXQgQmhvcGF0a2FyKSI=?= <bainonline@gmail.com>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, akpm@osdl.org, jgarzik@pobox.com
+Subject: Re: [PATCH] [RFC] Throttle swappiness for interactive tasks
+References: <2ff216280704180510w28136a6cw6816f834593aff13@mail.gmail.com>
+In-Reply-To: <2ff216280704180510w28136a6cw6816f834593aff13@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 18 April 2007 11:42, Gautham R Shenoy wrote:
-> Hi,
+अभिजित भोपटकर (Abhijit Bhopatkar) wrote:
+> The mm structures of interactive tasks are marked and
+> the pages belonging to them are never shifted to inactive
+> list in lru algorithm. Thus keeping interactive tasks in
+> memory as long as possible.
+> The interactivity is already determined by schedular so
+> we reuse that knowledge to mark the mm structures.
 > 
-> The patch looks good to me. 
-> 
-> On Mon, Apr 16, 2007 at 11:27:58PM +0200, Rafael J. Wysocki wrote:
-> > 
-> > ---
-> >  Documentation/cpu-hotplug.txt             |    9 +++++++--
-> >  arch/i386/kernel/cpu/intel_cacheinfo.c    |    2 ++
-> >  arch/i386/kernel/cpu/mcheck/therm_throt.c |    2 ++
-> >  arch/i386/kernel/cpuid.c                  |    2 ++
-> 
-> [snip]
-> 
-> Though I am wondering what might be the usecase for microcode! 
+> Signed-off-by: Abhijit Bhopatkar <bainonline@gmail.com>
+> ---
 
-Well, for 2.6.21-rc I had to introduce the variable suspend_cpu_hotplug (in
-cpu.c) and make the microcode driver use it to distinguish between the 'normal'
-and suspend-related CPU hotplug.  I'd like to get rid of this ugliness ASAP.
+Lying to the VM doesn't seem like the best way to handle this.  A lot of tasks, 
+including interactive ones have some/many pages that they touch once during 
+startup, and don't touch again for a very long time, if ever.  We want these 
+pages swapped out long before the box swaps out the working set of our 
+non-interactive processes.
 
-> Guess we'll see that patch soon :-)
+I like the general idea of swap priority influenced by scheduler priority, but 
+if we're going to do that, we should do it in a general way that's independent 
+of scheduler implementation, so it'll be useful to soft real-time users and 
+still relevant if (when?) we replace the current scheduler with something else 
+lacking a special "interactive" flag.
 
-Yes, in a couple of days.  I have to make both patches apply to -mm first. :-)
-
-Greetings,
-Rafael
+	-- Chris
