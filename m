@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767013AbXDSUHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767011AbXDSUKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767013AbXDSUHr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 16:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767012AbXDSUHr
+	id S1767011AbXDSUKM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 16:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767014AbXDSUKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 16:07:47 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46161
+	Thu, 19 Apr 2007 16:10:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46165
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1766983AbXDSUHq (ORCPT
+	by vger.kernel.org with ESMTP id S1767011AbXDSUKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 16:07:46 -0400
-Date: Thu, 19 Apr 2007 13:07:49 -0700 (PDT)
-Message-Id: <20070419.130749.121296555.davem@davemloft.net>
-To: paulus@samba.org
-Cc: kaber@trash.net, poemann@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: kernel BUG at net/core/skbuff.c in linux-2.6.21-rc6
+	Thu, 19 Apr 2007 16:10:11 -0400
+Date: Thu, 19 Apr 2007 13:10:14 -0700 (PDT)
+Message-Id: <20070419.131014.31605466.davem@davemloft.net>
+To: ak@suse.de
+Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Subject: Re: Dropping CONFIG_REORDER on x86-64 for 2.6.22
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <17953.31345.138748.170210@cargo.ozlabs.ibm.com>
-References: <20070414.100441.15000708.davem@davemloft.net>
-	<17953.30429.220756.818283@cargo.ozlabs.ibm.com>
-	<17953.31345.138748.170210@cargo.ozlabs.ibm.com>
+In-Reply-To: <200704191354.52985.ak@suse.de>
+References: <200704191354.52985.ak@suse.de>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,15 +25,14 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Sun, 15 Apr 2007 11:05:53 +1000
+From: Andi Kleen <ak@suse.de>
+Date: Thu, 19 Apr 2007 13:54:52 +0200
 
-> I wrote:
-> 
-> > So this doesn't change process_input_packet(), which treats the case
-> > where the first byte is 0xff (PPP_ALLSTATIONS) but the second byte is
-> > 0x03 (PPP_UI) as indicating a packet with a PPP protocol number of
-> 
-> I meant "the second byte is NOT 0x03", of course.
+> So I'm planning to drop the option and arch/x86_64/kernel/functionlist
 
-I've applied this patch, thanks Paul.
+Please do so, I'm tired of editing that file every time I remove
+something from the tree.
+
+That file had alloc_skb_from_cache() in it, which nothing in the
+vanilla kernel ever invoked.  How did it even get there?  If it was
+put there for Xen's sake, that stinks because Xen is out of tree.
