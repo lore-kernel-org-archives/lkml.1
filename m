@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637749AbXDSMtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031239AbXDSMtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637749AbXDSMtG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 08:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637747AbXDSMtF
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 08:49:05 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:20929 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031249AbXDSMtD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1031239AbXDSMtD (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 19 Apr 2007 08:49:03 -0400
-Date: Thu, 19 Apr 2007 14:51:33 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Tejun Heo" <htejun@gmail.com>, "Alan Stern" <stern@rowland.harvard.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Message-ID: <20070419145133.2f7ed45a@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
-	<46263A82.1030703@gmail.com>
-	<d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031241AbXDSMtC
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 19 Apr 2007 08:49:02 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:1754 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031239AbXDSMtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 08:49:00 -0400
+Date: Thu, 19 Apr 2007 14:46:30 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Valerie Clement <valerie.clement@bull.net>
+Cc: ext4 development <linux-ext4@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Performance degradation with FFSB between 2.6.20 and 2.6.21-rc7
+Message-ID: <20070419124630.GD11780@kernel.dk>
+References: <462622F8.10107@bull.net> <20070419090346.GE20928@kernel.dk> <462736FC.3090902@bull.net> <20070419115840.GA11780@kernel.dk> <4627644E.7010002@bull.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4627644E.7010002@bull.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007 12:41:36 -0400,
-"Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
-
-> I am still do not understand why this is needed. Would it not be
-> simplier just to use a reference to struct device instead of embedding
-> it in a larger structure if their lifetimes are different and one does
-> not have a subsystem that takes care of releasing logic.
-
-Why are their lifetimes different? Usually, if I hold on to the device,
-I also want to be able to use the structure that embeds the device.
- 
-> Pretty much drivers have 2 options:
+On Thu, Apr 19 2007, Valerie Clement wrote:
+> Jens Axboe wrote:
+> >On Thu, Apr 19 2007, Valerie Clement wrote:
+> >>Jens Axboe wrote:
+> >>>Please tell me how you are running ffsb, and also please include a
+> >>>dmessg from a booted system.
+> >>>
+> >>Hi,
+> >>our mails crossed! please see my response to Andrew.
+> >>You could reproduce the problem with dd command as suggested, it's more 
+> >>easy.
+> >>I'm sending you the dmesg info. For my tests I used the scsci sdc device.
+> >
+> >Thanks, it does. Can you try one thing for me? If you run the test on
+> >sdc, try doing:
+> >
+> ># echo 64 > /sys/block/sdc/queue/iosched/quantum
+> >
+> >and repeat the test.
+> >
 > 
-> struct my_device {
->         void *private_data;
->         struct device dev;
-> };
+> OK, that's done.
 > 
-> In this case ->release must live in a subsystem code; individual
-> drivers kfree(my_dev->private) and do any additional cleanup after
-> calling device_unregister(&my_dev->dev);
+> With the change of quantum, the throughput scores are now a little bit 
+> better in 2.6.21 than in 2.6.20.
 
-They must do this in the ->remove callback.
+Wonderful, now try the patch I sent in the next mail and repeat the
+test.
 
-> 
-> Second option:
-> 
-> struct my_device {
->         type member1;
->         type member2;
-> 
->        struct device *dev;
-> };
-> 
-> dev is coming from _device_create(). Driver core takes care of
-> releasing dev structure; driver does cleanup of my_device.
+-- 
+Jens Axboe
 
-device_create() would need to not expect a class then, or it's not
-universally usable. Also, the driver would need a method to get back
-from the device to my_device. We're practically back at the first
-option again, only that now the ->release function is sitting in the
-driver core instead of the subsystem.
-
-> With current sysfs orphaning attributes upon removal request there is
-> no issue of accessing driver-private data through references obtained
-> via ether embedded or referenced dev structure so everything is fine.
-
-Discoupling of sysfs and kobject lifetime rules definetly eliminates a
-lot of issues.
