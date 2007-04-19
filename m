@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993208AbXDSINp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXDSIOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993208AbXDSINp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993201AbXDSINh
+	id S964784AbXDSIOe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDSIOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:13:37 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45817 "EHLO
+	Thu, 19 Apr 2007 04:14:33 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33963 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993174AbXDSIEj (ORCPT
+	with ESMTP id S964784AbXDSIOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:04:39 -0400
+	Thu, 19 Apr 2007 04:14:21 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH] bluetooth cmtp: Convert to use kthread API.
-Date: Thu, 19 Apr 2007 01:58:52 -0600
-Message-Id: <11769696001000-git-send-email-ebiederm@xmission.com>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] macintosh/mediabay: Convert to kthread API.
+Date: Thu, 19 Apr 2007 01:58:50 -0600
+Message-Id: <11769695954018-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,56 +28,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch modifies the kcmptd_ctr_%d daemon using kthread_run
-instead of a combination of kernel_thread and daemonize making
-the code a little simpler and more maintainable.
+This patch modifies the startup of the media_bay_task
+to use kthread_run and not a combination of kernel_thread,
+deamonize and sigfillset.
 
-Cc: Marcel Holtmann <marcel@holtmann.org>
+In addition since we now always want to ignore signals
+the MB_IGNORE_SIGNALS define is removed along with the
+test for signal_pending.
+
+The result is slightly simpler code that is more
+maintainable.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/bluetooth/cmtp/core.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/macintosh/mediabay.c |   11 ++---------
+ 1 files changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/net/bluetooth/cmtp/core.c b/net/bluetooth/cmtp/core.c
-index e1b9db9..993303f 100644
---- a/net/bluetooth/cmtp/core.c
-+++ b/net/bluetooth/cmtp/core.c
-@@ -35,6 +35,7 @@
- #include <linux/file.h>
+diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
+index c803d2b..90c853e 100644
+--- a/drivers/macintosh/mediabay.c
++++ b/drivers/macintosh/mediabay.c
+@@ -20,6 +20,7 @@
+ #include <linux/stddef.h>
  #include <linux/init.h>
- #include <linux/freezer.h>
+ #include <linux/ide.h>
 +#include <linux/kthread.h>
- #include <net/sock.h>
+ #include <asm/prom.h>
+ #include <asm/pgtable.h>
+ #include <asm/io.h>
+@@ -35,7 +36,6 @@
  
- #include <linux/isdn/capilli.h>
-@@ -286,7 +287,6 @@ static int cmtp_session(void *arg)
  
- 	BT_DBG("session %p", session);
+ #define MB_DEBUG
+-#define MB_IGNORE_SIGNALS
  
--	daemonize("kcmtpd_ctr_%d", session->num);
- 	set_user_nice(current, -15);
- 
- 	init_waitqueue_entry(&wait, current);
-@@ -329,6 +329,7 @@ static int cmtp_session(void *arg)
- int cmtp_add_connection(struct cmtp_connadd_req *req, struct socket *sock)
+ #ifdef MB_DEBUG
+ #define MBDBG(fmt, arg...)	printk(KERN_INFO fmt , ## arg)
+@@ -622,11 +622,6 @@ static int media_bay_task(void *x)
  {
- 	struct cmtp_session *session, *s;
-+	struct task_struct *task;
- 	bdaddr_t src, dst;
- 	int i, err;
+ 	int	i;
  
-@@ -375,8 +376,9 @@ int cmtp_add_connection(struct cmtp_connadd_req *req, struct socket *sock)
+-	strcpy(current->comm, "media-bay");
+-#ifdef MB_IGNORE_SIGNALS
+-	sigfillset(&current->blocked);
+-#endif
+-
+ 	for (;;) {
+ 		for (i = 0; i < media_bay_count; ++i) {
+ 			down(&media_bays[i].lock);
+@@ -636,8 +631,6 @@ static int media_bay_task(void *x)
+ 		}
  
- 	__cmtp_link_session(session);
+ 		msleep_interruptible(MB_POLL_DELAY);
+-		if (signal_pending(current))
+-			return 0;
+ 	}
+ }
  
--	err = kernel_thread(cmtp_session, session, CLONE_KERNEL);
--	if (err < 0)
-+	task = kthread_run(cmtp_session, session, "kcmtpd_ctr_%d", session->num);
-+	err = PTR_ERR(task);
-+	if (IS_ERR(task))
- 		goto unlink;
+@@ -699,7 +692,7 @@ static int __devinit media_bay_attach(struct macio_dev *mdev, const struct of_de
  
- 	if (!(session->flags & (1 << CMTP_LOOPBACK))) {
+ 	/* Startup kernel thread */
+ 	if (i == 0)
+-		kernel_thread(media_bay_task, NULL, CLONE_KERNEL);
++		kthread_run(media_bay_task, NULL, "media-bay");
+ 
+ 	return 0;
+ 
 -- 
 1.5.0.g53756
 
