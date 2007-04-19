@@ -1,77 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031153AbXDSG37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031156AbXDSGew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031153AbXDSG37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 02:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031155AbXDSG37
+	id S1031156AbXDSGew (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 02:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031159AbXDSGew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 02:29:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48680 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Apr 2007 02:34:52 -0400
+Received: from mail.bmlv.gv.at ([193.171.152.37]:53178 "EHLO mail.bmlv.gv.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031153AbXDSG36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 02:29:58 -0400
-Date: Thu, 19 Apr 2007 08:29:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bob Picco <bob.picco@hp.com>
-Cc: Christian Hesse <mail@earthworm.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, suspend2-devel@lists.suspend2.net
-Subject: Re: CFS and suspend2: hang in atomic copy
-Message-ID: <20070419062936.GE18894@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <20070418225652.GC10564@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1031156AbXDSGew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 02:34:52 -0400
+X-Greylist: delayed 1315 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Apr 2007 02:34:51 EDT
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+Date: Thu, 19 Apr 2007 08:11:16 +0200
+User-Agent: KMail/1.9.5
+References: <E1HOuCl-0000K8-3c@mx1.bon.at>
+In-Reply-To: <E1HOuCl-0000K8-3c@mx1.bon.at>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070418225652.GC10564@localhost>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200704190811.17290.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pine.LNX.4.64.0704181515290.25880 () alien ! or ! mcafeemobile ! com
 
-* Bob Picco <bob.picco@hp.com> wrote:
+Davide Libenzi wrote:
+> On Wed, 18 Apr 2007, Ingo Molnar wrote:
+> > That's one reason why i dont think it's necessarily a good idea to
+> > group-schedule threads, we dont really want to do a per thread group
+> > percpu_alloc().
+>
+> I still do not have clear how much overhead this will bring into the
+> table, but I think (like Linus was pointing out) the hierarchy should look
+> like:
+...
+> The "run_queue" concept (and data) that now is bound to a CPU, need to be
+> replicated in:
+>
+> ROOT <- VCPUs add themselves here
+>     VCPU <- USERs add themselves here
+>         USER <- PROCs add themselves here
+>             PROC <- THREADs add themselves here
+>                 THREAD (ultimate fine grained scheduling unit)
+>
+> So ROOT, VCPU, USER and PROC will have their own "run_queue". 
+...
 
-> I had hoped to collect more data with CFS V2. It crashes in 
-> scale_nice_down for s2ram when attempting to disable_nonboot_cpus. So 
-> part of traceback looks like (typed by hand with obvious omissions):
-> 
-> scale_nice_down
-> update_stats_wait_end - not shown in traceback because inlined
-> pick_next_task_fair
-> migration_call
-> task_rq_lock
-> notifier_call_chain
-> _cpu_down
-> disable_nonboot_cpus
+I can't comment on the internals about run_queues, overhead and so on, but 
+these discussion leads me to the idea about a dynamic *tree* of scheduler 
+queues.
 
-ok, this looks similar to the jpeg Christian did. Does the patch below 
-fix the crash for you?
+With dynamic I mean that they are configured in user-space - be it with 
+something like CLONE_NEW_SCHEDULER_CLASS, or possibly better some other 
+interface to allow an *arbitrary* tree that is not coupled on the 
+user/process/thread borders. New threads and processes are per default 
+created in the parents queue, just like now.
 
-	Ingo
+So user-space could build an tree like this (eg with a pam module):
 
----
- kernel/sched.c |    2 ++
- 1 file changed, 2 insertions(+)
+ Default queue - init
+   +- kernel-thread queue (to avoid having kernel threads being blocked by
+   |               user-space)
+   +- cron, atd, sshd, .... unless they change their "class"
+   +- user1
+   |  +- X
+   |  +- kde
+   |  |  + konsole
+   |  |  \ kmail
+   |  |    + mail fetch thread
+   |  |    + mail filter thread
+   |  |    + GUI thread
+   |  |  \- mplayer 
+   \- user2
+      +.....
 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -4425,6 +4425,8 @@ static void migrate_dead_tasks(unsigned 
- 	struct task_struct *next;
- 
- 	for (;;) {
-+		if (!rq->nr_running)
-+			break;
- 		next = pick_next_task(rq, rq->curr);
- 		if (!next)
- 			break;
+Whether the queues are handled with some staircase behaviour, or CFS, or just 
+get CPU time distributed by nice level, is another question - but they have 
+to be "fair" only locally.
+
+Of course, that's simply some sort of moving the problem into user-space - but 
+I think (and read that often enough) that the needs vary so much that a 
+single, hardcoded system won't suffice. And we can try to get the "right" 
+behaviour in each queue, just like now.
+
+Walking the tree might make the scheduler not fully O(1) - but per default 
+only one queue is defined (or possibly two queues, one for kernel threads), 
+and everything else can be done by user-space.
+
+
+The mentioned case of a web-server with gzip started would be done with having 
+each httpd being in a queue just below init, and having everything else in 
+another - or by nicing the webserver, as it's defined as "important".
+(I believe that's called "moving policy into userspace" :-)
+
+
+Regards,
+
+Phil
