@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993144AbXDSHIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993152AbXDSHI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993144AbXDSHIO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993139AbXDSHIO
+	id S2993152AbXDSHI1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993148AbXDSHIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:08:14 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46317 "EHLO
+	Thu, 19 Apr 2007 03:08:24 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46305 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161309AbXDSHA2 (ORCPT
+	with ESMTP id S1161264AbXDSHAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:00:28 -0400
+	Thu, 19 Apr 2007 03:00:17 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] net/rxrpc: Convert to kthread API.
-Date: Thu, 19 Apr 2007 00:55:51 -0600
-Message-Id: <11769658071102-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] bluetooth bnep: Convert to kthread API.
+Date: Thu, 19 Apr 2007 00:55:46 -0600
+Message-Id: <11769657942558-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,202 +26,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patch modifies the startup of krxtimod, krxiod, and krxsecd
-to use kthread_run instead of a combination of kernel_thread
-and daemonize making the code slightly simpler and more maintainable.
+This patch starts kbenpd using kthread_run replacing
+a combination of kernel_thread and daemonize.  Making
+the code a little simpler and more maintainable.
 
-In addition since by default all signals are ignored when delivered
-to a kernel thread the code to flush signals has been removed.
-
-Cc: David Howells <dhowells@redhat.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/rxrpc/internal.h |   11 -----------
- net/rxrpc/krxiod.c   |   16 ++++++++--------
- net/rxrpc/krxsecd.c  |   16 ++++++++--------
- net/rxrpc/krxtimod.c |   15 ++++++---------
- 4 files changed, 22 insertions(+), 36 deletions(-)
+ net/bluetooth/bnep/core.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/net/rxrpc/internal.h b/net/rxrpc/internal.h
-index cc0c579..1dd69aa 100644
---- a/net/rxrpc/internal.h
-+++ b/net/rxrpc/internal.h
-@@ -49,17 +49,6 @@ __RXACCT_DECL(extern atomic_t rxrpc_message_count);
- #define _net(FMT, a...)		do { if (rxrpc_knet)   knet  (FMT , ##a); } while(0)
- #endif
+diff --git a/net/bluetooth/bnep/core.c b/net/bluetooth/bnep/core.c
+index a9f1e88..de3caed 100644
+--- a/net/bluetooth/bnep/core.c
++++ b/net/bluetooth/bnep/core.c
+@@ -32,6 +32,7 @@
+ #include <linux/module.h>
  
--static inline void rxrpc_discard_my_signals(void)
--{
--	while (signal_pending(current)) {
--		siginfo_t sinfo;
--
--		spin_lock_irq(&current->sighand->siglock);
--		dequeue_signal(current, &current->blocked, &sinfo);
--		spin_unlock_irq(&current->sighand->siglock);
--	}
--}
--
- /*
-  * call.c
-  */
-diff --git a/net/rxrpc/krxiod.c b/net/rxrpc/krxiod.c
-index bbbcd6c..c590ccd 100644
---- a/net/rxrpc/krxiod.c
-+++ b/net/rxrpc/krxiod.c
-@@ -14,6 +14,7 @@
- #include <linux/spinlock.h>
- #include <linux/init.h>
- #include <linux/freezer.h>
+ #include <linux/kernel.h>
 +#include <linux/kthread.h>
- #include <rxrpc/krxiod.h>
- #include <rxrpc/transport.h>
- #include <rxrpc/peer.h>
-@@ -43,8 +44,6 @@ static int rxrpc_krxiod(void *arg)
- 
- 	printk("Started krxiod %d\n",current->pid);
- 
--	daemonize("krxiod");
--
- 	/* loop around waiting for work to do */
- 	do {
- 		/* wait for work or to be told to exit */
-@@ -57,8 +56,7 @@ static int rxrpc_krxiod(void *arg)
- 			for (;;) {
- 				set_current_state(TASK_INTERRUPTIBLE);
- 				if (atomic_read(&rxrpc_krxiod_qcount) ||
--				    rxrpc_krxiod_die ||
--				    signal_pending(current))
-+				    rxrpc_krxiod_die)
- 					break;
- 
- 				schedule();
-@@ -141,9 +139,6 @@ static int rxrpc_krxiod(void *arg)
- 
- 		try_to_freeze();
- 
--		/* discard pending signals */
--		rxrpc_discard_my_signals();
--
- 	} while (!rxrpc_krxiod_die);
- 
- 	/* and that's all */
-@@ -157,7 +152,12 @@ static int rxrpc_krxiod(void *arg)
-  */
- int __init rxrpc_krxiod_init(void)
- {
--	return kernel_thread(rxrpc_krxiod, NULL, 0);
-+	struct task_struct *task;
-+	int ret = 0;
-+	task = kthread_run(rxrpc_krxiod, NULL, "krxiod");
-+	if (IS_ERR(task))
-+		ret = PTR_ERR(task);
-+	return ret;
- 
- } /* end rxrpc_krxiod_init() */
- 
-diff --git a/net/rxrpc/krxsecd.c b/net/rxrpc/krxsecd.c
-index 9a1e7f5..150cd39 100644
---- a/net/rxrpc/krxsecd.c
-+++ b/net/rxrpc/krxsecd.c
-@@ -19,6 +19,7 @@
- #include <linux/completion.h>
- #include <linux/spinlock.h>
- #include <linux/init.h>
-+#include <linux/kthread.h>
- #include <rxrpc/krxsecd.h>
- #include <rxrpc/transport.h>
- #include <rxrpc/connection.h>
-@@ -56,8 +57,6 @@ static int rxrpc_krxsecd(void *arg)
- 
- 	printk("Started krxsecd %d\n", current->pid);
- 
--	daemonize("krxsecd");
--
- 	/* loop around waiting for work to do */
- 	do {
- 		/* wait for work or to be told to exit */
-@@ -70,8 +69,7 @@ static int rxrpc_krxsecd(void *arg)
- 			for (;;) {
- 				set_current_state(TASK_INTERRUPTIBLE);
- 				if (atomic_read(&rxrpc_krxsecd_qcount) ||
--				    rxrpc_krxsecd_die ||
--				    signal_pending(current))
-+				    rxrpc_krxsecd_die)
- 					break;
- 
- 				schedule();
-@@ -110,9 +108,6 @@ static int rxrpc_krxsecd(void *arg)
- 
- 		try_to_freeze();
- 
--		/* discard pending signals */
--		rxrpc_discard_my_signals();
--
- 	} while (!die);
- 
- 	/* and that's all */
-@@ -126,7 +121,12 @@ static int rxrpc_krxsecd(void *arg)
-  */
- int __init rxrpc_krxsecd_init(void)
- {
--	return kernel_thread(rxrpc_krxsecd, NULL, 0);
-+	struct task_struct *task;
-+	int ret = 0;
-+	task = kthread_run(rxrpc_krxsecd, NULL, "krxsecd");
-+	if (IS_ERR(task))
-+		ret = PTR_ERR(task);
-+	return ret;
- 
- } /* end rxrpc_krxsecd_init() */
- 
-diff --git a/net/rxrpc/krxtimod.c b/net/rxrpc/krxtimod.c
-index 9a9b613..3b5f062 100644
---- a/net/rxrpc/krxtimod.c
-+++ b/net/rxrpc/krxtimod.c
-@@ -14,6 +14,7 @@
  #include <linux/sched.h>
- #include <linux/completion.h>
- #include <linux/freezer.h>
-+#include <linux/kthread.h>
- #include <rxrpc/rxrpc.h>
- #include <rxrpc/krxtimod.h>
- #include <asm/errno.h>
-@@ -35,11 +36,12 @@ static int krxtimod(void *arg);
-  */
- int rxrpc_krxtimod_start(void)
+ #include <linux/signal.h>
+ #include <linux/init.h>
+@@ -473,7 +474,6 @@ static int bnep_session(void *arg)
+ 
+ 	BT_DBG("");
+ 
+-	daemonize("kbnepd %s", dev->name);
+ 	set_user_nice(current, -15);
+ 
+ 	init_waitqueue_entry(&wait, current);
+@@ -539,6 +539,7 @@ static struct device *bnep_get_device(struct bnep_session *session)
+ 
+ int bnep_add_connection(struct bnep_connadd_req *req, struct socket *sock)
  {
--	int ret;
 +	struct task_struct *task;
-+	int ret = 0;
+ 	struct net_device *dev;
+ 	struct bnep_session *s, *ss;
+ 	u8 dst[ETH_ALEN], src[ETH_ALEN];
+@@ -598,9 +599,10 @@ int bnep_add_connection(struct bnep_connadd_req *req, struct socket *sock)
  
--	ret = kernel_thread(krxtimod, NULL, 0);
--	if (ret < 0)
--		return ret;
-+	task = kthread_run(krxtimod, NULL, "krxtimod");
-+	if (IS_ERR(task))
-+		ret = PTR_ERR(task);
+ 	__bnep_link_session(s);
  
- 	wait_for_completion(&krxtimod_alive);
- 
-@@ -71,8 +73,6 @@ static int krxtimod(void *arg)
- 
- 	printk("Started krxtimod %d\n", current->pid);
- 
--	daemonize("krxtimod");
--
- 	complete(&krxtimod_alive);
- 
- 	/* loop around looking for things to attend to */
-@@ -93,9 +93,6 @@ static int krxtimod(void *arg)
- 
- 		try_to_freeze();
- 
--		/* discard pending signals */
--		rxrpc_discard_my_signals();
--
- 		/* work out the time to elapse before the next event */
- 		spin_lock(&krxtimod_lock);
- 		if (list_empty(&krxtimod_list)) {
+-	err = kernel_thread(bnep_session, s, CLONE_KERNEL);
+-	if (err < 0) {
++	task = kthread_run(bnep_session, s, "kbnepd %s", dev->name);
++	if (IS_ERR(task)) {
+ 		/* Session thread start failed, gotta cleanup. */
++		err = PTR_ERR(task);
+ 		unregister_netdev(dev);
+ 		__bnep_unlink_session(s);
+ 		goto failed;
 -- 
 1.5.0.g53756
 
