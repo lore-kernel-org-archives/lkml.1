@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993171AbXDSIHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993182AbXDSIHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993171AbXDSIHD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993182AbXDSIG3
+	id S2993182AbXDSIHE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993191AbXDSIG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:06:29 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45845 "EHLO
+	Thu, 19 Apr 2007 04:06:26 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45846 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993171AbXDSIGB (ORCPT
+	with ESMTP id S2993182AbXDSIGC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:06:01 -0400
+	Thu, 19 Apr 2007 04:06:02 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Swen Schillig <swen@vnet.ibm.com>
-Subject: [PATCH] s390/scsi/zfcp_erp: Convert to use the kthread API
-Date: Thu, 19 Apr 2007 01:58:42 -0600
-Message-Id: <1176969571980-git-send-email-ebiederm@xmission.com>
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] cpqphp: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 01:58:36 -0600
+Message-Id: <11769695592278-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,64 +27,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Modify zfcperp%s to be started with kthread_run not
-a combination of kernel_thread, daemonize and siginitsetinv
-making the code slightly simpler and more maintainable.
+This patch changes cpqphp to use kthread_run and not
+kernel_thread and daemonize to startup and setup
+the cpqphp thread.
 
-Cc: Swen Schillig <swen@vnet.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/s390/scsi/zfcp_erp.c |   13 ++++++-------
- 1 files changed, 6 insertions(+), 7 deletions(-)
+ drivers/pci/hotplug/cpqphp_ctrl.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/s390/scsi/zfcp_erp.c b/drivers/s390/scsi/zfcp_erp.c
-index 66c0b09..f26536d 100644
---- a/drivers/s390/scsi/zfcp_erp.c
-+++ b/drivers/s390/scsi/zfcp_erp.c
-@@ -21,6 +21,7 @@
- 
- #define ZFCP_LOG_AREA			ZFCP_LOG_AREA_ERP
- 
+diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
+index 79ff6b4..c2c06c4 100644
+--- a/drivers/pci/hotplug/cpqphp_ctrl.c
++++ b/drivers/pci/hotplug/cpqphp_ctrl.c
+@@ -37,6 +37,7 @@
+ #include <linux/smp_lock.h>
+ #include <linux/pci.h>
+ #include <linux/pci_hotplug.h>
 +#include <linux/kthread.h>
- #include "zfcp_ext.h"
+ #include "cpqphp.h"
  
- static int zfcp_erp_adisc(struct zfcp_port *);
-@@ -985,12 +986,13 @@ static void zfcp_erp_action_dismiss(struct zfcp_erp_action *erp_action)
- int
- zfcp_erp_thread_setup(struct zfcp_adapter *adapter)
+ static u32 configure_new_device(struct controller* ctrl, struct pci_func *func,
+@@ -1746,10 +1747,6 @@ static void pushbutton_helper_thread(unsigned long data)
+ static int event_thread(void* data)
  {
--	int retval = 0;
+ 	struct controller *ctrl;
+-	lock_kernel();
+-	daemonize("phpd_event");
+-	
+-	unlock_kernel();
+ 
+ 	while (1) {
+ 		dbg("!!!!event_thread sleeping\n");
+@@ -1771,7 +1768,7 @@ static int event_thread(void* data)
+ 
+ int cpqhp_event_start_thread(void)
+ {
+-	int pid;
 +	struct task_struct *task;
  
- 	atomic_clear_mask(ZFCP_STATUS_ADAPTER_ERP_THREAD_UP, &adapter->status);
+ 	/* initialize our semaphores */
+ 	init_MUTEX(&delay_sem);
+@@ -1779,12 +1776,11 @@ int cpqhp_event_start_thread(void)
+ 	init_MUTEX_LOCKED(&event_exit);
+ 	event_finished=0;
  
--	retval = kernel_thread(zfcp_erp_thread, adapter, SIGCHLD);
--	if (retval < 0) {
-+	task = kthread_run(zfcp_erp_thread, adapter,
-+			   "zfcperp%s", zfcp_get_busid_by_adapter(adapter));
+-	pid = kernel_thread(event_thread, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(event_thread, NULL, "phpd_event");
 +	if (IS_ERR(task)) {
- 		ZFCP_LOG_NORMAL("error: creation of erp thread failed for "
- 				"adapter %s\n",
- 				zfcp_get_busid_by_adapter(adapter));
-@@ -1002,7 +1004,7 @@ zfcp_erp_thread_setup(struct zfcp_adapter *adapter)
- 		debug_text_event(adapter->erp_dbf, 5, "a_thset_ok");
+ 		err ("Can't start up our event thread\n");
+ 		return -1;
  	}
- 
--	return (retval < 0);
-+	return IS_ERR(task);
+-	dbg("Our event thread pid = %d\n", pid);
+ 	return 0;
  }
  
- /*
-@@ -1054,9 +1056,6 @@ zfcp_erp_thread(void *data)
- 	struct zfcp_erp_action *erp_action;
- 	unsigned long flags;
- 
--	daemonize("zfcperp%s", zfcp_get_busid_by_adapter(adapter));
--	/* Block all signals */
--	siginitsetinv(&current->blocked, 0);
- 	atomic_set_mask(ZFCP_STATUS_ADAPTER_ERP_THREAD_UP, &adapter->status);
- 	debug_text_event(adapter->erp_dbf, 5, "a_th_run");
- 	wake_up(&adapter->erp_thread_wqh);
 -- 
 1.5.0.g53756
 
