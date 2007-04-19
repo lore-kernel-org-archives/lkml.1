@@ -1,37 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637748AbXDSN4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766711AbXDSOCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637748AbXDSN4A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 09:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637772AbXDSNz7
+	id S1766711AbXDSOCu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 10:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766709AbXDSOCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 09:55:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:43239 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S637748AbXDSNz7 (ORCPT
+	Thu, 19 Apr 2007 10:02:50 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:40634 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766697AbXDSOCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 09:55:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ZvmfAu11xWEesdCFdyD2pxJjkY5yv8F9sH6VnNc8NxgXRcPMh4x+zzkmZMay1b4f+/2hjvQ/sLFAHf/HtXL3u+zQq2nuonmWw8g4xbHBTjeWw0q77+kdu+YdYGHrNqXZDnzisLsuL82+IBEO/3ep4j2Na464N8lJ++YLne781jc=
-Message-ID: <698310e10704190655j1263035bi77c5f551db510646@mail.gmail.com>
-Date: Thu, 19 Apr 2007 17:55:57 +0400
-From: "Marat Buharov" <marat.buharov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: why UDF have so ugly filesize limit?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Apr 2007 10:02:49 -0400
+Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Josef Bacik <jwhiter@redhat.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070419132459.GB1481@korben.rdu.redhat.com>
+References: <20070419132459.GB1481@korben.rdu.redhat.com>
+Content-Type: text/plain
+Date: Thu, 19 Apr 2007 10:02:36 -0400
+Message-Id: <1176991356.31764.3.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-from fs/udf/super.c:
-in function udf_fill_super
-sb->s_maxbytes = 1<<30; (1 GB)
+On Thu, 2007-04-19 at 09:25 -0400, Josef Bacik wrote:
+> Looking through everything I came to the conclusion that we don't really need
+> the scsi_sysfs_add_devices in scsi_finish_async_scan, which gets run everytime
+> we do a do_scan_async.  In doing the scanning, if we come upon anything we will
+> already be registering the device with sysfs so the scsi_sysfs_add_devices step
+> is kind of useless.
 
-Why sb->s_maxbytes is not equal to MAX_LFS_FILESIZE?
+Unfortunately, it isn't.  The registration step while scanning is at the
+end of scsi_add_lun():
 
-So, in include/linux/fs.h written that the filesystems should put that
-(MAX_LFS_FILESIZE) into their s_maxbytes, otherwise bad things can
-happen in VM.
+
+	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
+		return SCSI_SCAN_NO_RESPONSE;
+
+	return SCSI_SCAN_LUN_PRESENT;
+
+The !async should mean that the addition *only* occurs for the non async
+scan case ... if you remove the post async scan add, we'll lose devices.
+
+>   I tested this and it worked fine on my UP box (where the
+> problem was happening) and my SMP box (where the problem wasn't happening).  Now
+> I'm not entirely sure if this is correct, but I'm attaching the patch that I
+> used to fix it for me, please point out if I've done something wrong or if there
+> is a different way this needs to be fixed.  Thank you,
+
+Could you add some debugging first to see if we're actually adding the
+device twice (and also, if we are, what the value of the async is).
+
+James
+
+
