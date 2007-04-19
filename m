@@ -1,117 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993166AbXDSICL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993173AbXDSIDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993166AbXDSICL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993164AbXDSICK
+	id S2993173AbXDSIDI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993167AbXDSICU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:02:10 -0400
-Received: from smtp1.osdl.org ([65.172.181.25]:48195 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993165AbXDSICG (ORCPT
+	Thu, 19 Apr 2007 04:02:20 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45726 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993164AbXDSICO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:02:06 -0400
-Date: Thu, 19 Apr 2007 01:01:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       reiserfs-dev@namesys.com, "Vladimir V. Saveliev" <vs@namesys.com>,
-       linux-mm@kvack.org
-Subject: Re: dio_get_page() lockdep complaints
-Message-Id: <20070419010142.5b7b00cd.akpm@linux-foundation.org>
-In-Reply-To: <20070419073828.GB20928@kernel.dk>
-References: <20070419073828.GB20928@kernel.dk>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 04:02:14 -0400
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "<Andrew Morton" <akpm@osdl.org>
+Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jyoti Shah <jshah@us.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] ibmphp: Convert to use the kthreads API
+Date: Thu, 19 Apr 2007 01:58:35 -0600
+Message-Id: <11769695573440-git-send-email-ebiederm@xmission.com>
+X-Mailer: git-send-email 1.5.1.1.g2de0
+In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 09:38:30 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-> Hi,
-> 
-> Doing some testing on CFQ, I ran into this 100% reproducible report:
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.21-rc7 #5
-> -------------------------------------------------------
-> fio/9741 is trying to acquire lock:
->  (&mm->mmap_sem){----}, at: [<b018cb34>] dio_get_page+0x54/0x161
-> 
-> but task is already holding lock:
->  (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
-> 
-> which lock already depends on the new lock.
-> 
+kthread_run replaces kernel_thread and dameonize.
 
-This is the correct ranking: i_mutex outside mmap_sem.
+allow_signal is unnecessary and has been removed.
+tid_poll was unused and has been removed.
 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #1 (&inode->i_mutex){--..}:
->        [<b013e3fb>] __lock_acquire+0xdee/0xf9c
->        [<b013e600>] lock_acquire+0x57/0x70
->        [<b038c4a5>] __mutex_lock_slowpath+0x73/0x297
->        [<b038c6e5>] mutex_lock+0x1c/0x1f
->        [<b01b17e9>] reiserfs_file_release+0x54/0x447
->        [<b016afe7>] __fput+0x53/0x101
->        [<b016b0ee>] fput+0x19/0x1c
->        [<b015bcd5>] remove_vma+0x3b/0x4d
->        [<b015c659>] do_munmap+0x17f/0x1cf
->        [<b015c6db>] sys_munmap+0x32/0x42
->        [<b0103f04>] sysenter_past_esp+0x5d/0x99
->        [<ffffffff>] 0xffffffff
-> 
-> -> #0 (&mm->mmap_sem){----}:
->        [<b013e259>] __lock_acquire+0xc4c/0xf9c
->        [<b013e600>] lock_acquire+0x57/0x70
->        [<b0137b92>] down_read+0x3a/0x4c
->        [<b018cb34>] dio_get_page+0x54/0x161
->        [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
->        [<b01cf449>] ext3_direct_IO+0x98/0x1e5
->        [<b014e8df>] generic_file_direct_IO+0x63/0x133
->        [<b01500e9>] generic_file_aio_read+0x16b/0x222
->        [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
->        [<b0180147>] aio_run_iocb+0x69/0x129
->        [<b0180a78>] io_submit_one+0x194/0x2eb
->        [<b0181331>] sys_io_submit+0x92/0xe7
->        [<b0103f90>] syscall_call+0x7/0xb
->        [<ffffffff>] 0xffffffff
+Cc: Jyoti Shah <jshah@us.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ drivers/pci/hotplug/ibmphp_hpc.c |   14 +++++---------
+ 1 files changed, 5 insertions(+), 9 deletions(-)
 
-But here reiserfs is taking i_mutex in its file_operations.release(), which
-can be called under mmap_sem.
-
-Vladimir's recent de14569f94513279e3d44d9571a421e9da1759ae.  "resierfs:
-avoid tail packing if an inode was ever mmapped" comes real close to this
-code, but afaict it did not cause this bug.
-
-I can't think of anything which we've done in the 2.6.21 cycle which would have
-caused this to start happening.  Odd.
-
-
-> The test run was fio, the job file used is:
-> 
-> # fio job file snip below
-> [global]
-> bs=4k
-> buffered=0
-> ioengine=libaio
-> iodepth=4
-> thread
-> 
-> [readers]
-> numjobs=8
-> size=128m
-> rw=read
-> # fio job file snip above
-> 
-> Filesystem was ext3, default mkfs and mount options. Kernel was
-> 2.6.21-rc7 as of this morning, with some CFQ patches applied.
-> 
-
-It's interesting that lockdep learned the (wrong) ranking from a reiserfs
-operation then later detected it being violated by ext3.
+diff --git a/drivers/pci/hotplug/ibmphp_hpc.c b/drivers/pci/hotplug/ibmphp_hpc.c
+index 46abaa8..27e12f1 100644
+--- a/drivers/pci/hotplug/ibmphp_hpc.c
++++ b/drivers/pci/hotplug/ibmphp_hpc.c
+@@ -34,6 +34,7 @@
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
++#include <linux/kthread.h>
+ 
+ #include "ibmphp.h"
+ 
+@@ -101,7 +102,6 @@ static int to_debug = 0;
+ // global variables
+ //----------------------------------------------------------------------------
+ static int ibmphp_shutdown;
+-static int tid_poll;
+ static struct mutex sem_hpcaccess;	// lock access to HPC
+ static struct semaphore semOperations;	// lock all operations and
+ 					// access to data structures
+@@ -137,7 +137,6 @@ void __init ibmphp_hpc_initvars (void)
+ 	init_MUTEX_LOCKED (&sem_exit);
+ 	to_debug = 0;
+ 	ibmphp_shutdown = 0;
+-	tid_poll = 0;
+ 
+ 	debug ("%s - Exit\n", __FUNCTION__);
+ }
+@@ -1060,12 +1059,8 @@ static int hpc_poll_thread (void *data)
+ {
+ 	debug ("%s - Entry\n", __FUNCTION__);
+ 
+-	daemonize("hpc_poll");
+-	allow_signal(SIGKILL);
+-
+ 	poll_hpc ();
+ 
+-	tid_poll = 0;
+ 	debug ("%s - Exit\n", __FUNCTION__);
+ 	return 0;
+ }
+@@ -1078,17 +1073,18 @@ static int hpc_poll_thread (void *data)
+ *---------------------------------------------------------------------*/
+ int __init ibmphp_hpc_start_poll_thread (void)
+ {
++	struct task_struct *task;
+ 	int rc = 0;
+ 
+ 	debug ("%s - Entry\n", __FUNCTION__);
+ 
+-	tid_poll = kernel_thread (hpc_poll_thread, NULL, 0);
+-	if (tid_poll < 0) {
++	task = kthread_run(hpc_poll_thread, NULL, "hpc_poll");
++	if (IS_ERR(task)) {
+ 		err ("%s - Error, thread not started\n", __FUNCTION__);
+ 		rc = -1;
+ 	}
+ 
+-	debug ("%s - Exit tid_poll[%d] rc[%d]\n", __FUNCTION__, tid_poll, rc);
++	debug ("%s - Exit rc[%d]\n", __FUNCTION__, rc);
+ 	return rc;
+ }
+ 
+-- 
+1.5.0.g53756
 
