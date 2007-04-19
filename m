@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766846AbXDSQbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766857AbXDSQfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766846AbXDSQbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766853AbXDSQbr
+	id S1766857AbXDSQfK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766855AbXDSQfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:31:47 -0400
-Received: from ccerelbas02.cce.hp.com ([161.114.21.105]:44713 "EHLO
-	ccerelbas02.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932212AbXDSQbq convert rfc822-to-8bit (ORCPT
+	Thu, 19 Apr 2007 12:35:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48133 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766857AbXDSQfJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:31:46 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] cciss: Fix warnings during compilation under 32bitenvironment
-Date: Thu, 19 Apr 2007 16:27:26 -0000
-Message-ID: <558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] cciss: Fix warnings during compilation under 32bitenvironment
-Thread-Index: AceCnuPYAqCJgAPlQbqiwXIy9WoStAAALpEI
-References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2><226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net><1176995934.31764.7.camel@mulgrave.il.steeleye.com><226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net> <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
-From: "Cameron, Steve" <Steve.Cameron@hp.com>
-To: "James Bottomley" <James.Bottomley@SteelEye.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: "Hisashi Hifumi" <hifumi.hisashi@oss.ntt.co.jp>,
-       <akpm@linux-foundation.org>, <jens.axboe@oracle.com>,
-       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
-X-OriginalArrivalTime: 19 Apr 2007 16:30:58.0104 (UTC) FILETIME=[1C17AB80:01C782A0]
+	Thu, 19 Apr 2007 12:35:09 -0400
+From: Christoph Lameter <clameter@sgi.com>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>, Andi Kleen <ak@suse.de>
+Message-Id: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+Subject: [RFC 0/8] Variable Order Page Cache
+Date: Thu, 19 Apr 2007 09:35:04 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Variable Order Page Cache Patchset
 
-Something like 
+This patchset modifies the core VM so that higher order page cache pages
+become possible. The higher order page cache pages are compound pages
+and can be handled in the same way as regular pages.
 
-if (sizeof(blah) > 4) {
-   do all the assignments with shifts
-}
+The order of the pages is determined by the order set up in the mapping
+(struct address_space). By default the order is set to zero.
+This means that higher order pages are optional. There is no attempt here
+to generally change the page order of the page cache. 4K pages are effective
+for small files.
 
-might be slighly better since the CDB is already zeroed
-by cmd_alloc() and doesn't need to be zeroed a 2nd time.
+However, it would be good if the VM would support I/O to higher order pages
+to enable efficient support for large scale I/O. If one wants to write a
+long file of a few gigabytes then the filesystem should have a choice of
+selecting a larger page size for that file and handle larger chunks of
+memory at once.
 
--- steve
+The support here is only for buffered I/O and only for one filesystem (ramfs).
+Modification of other filesystems to support higher order pages may require
+extensive work of other components of the kernel. But I hope this shows that
+there is a relatively easy way to that goal that could be taken in steps..
 
------Original Message-----
-From: James Bottomley [mailto:James.Bottomley@SteelEye.com]
-Sent: Thu 4/19/2007 11:22 AM
-To: Miller, Mike (OS Dev)
-Cc: Hisashi Hifumi; akpm@linux-foundation.org; jens.axboe@oracle.com; linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Cameron, Steve
-Subject: RE: [PATCH] cciss: Fix warnings during compilation under 32bitenvironment
- 
-On Thu, 2007-04-19 at 16:12 +0000, Miller, Mike (OS Dev) wrote:
-> > > Nak. You still haven't told where you saw these warnings. What 
-> > > compiler are you using? I do not see these in my 32-bit environment.
-> > 
-> > I think it's seen with CONFIG_LBD=n on 32 bits
-> > 
-> > In that configuration, sector_t is a u32 (it's u64 even on 32 
-> > bits with CONFIG_LBD=y).  The proposed code change is a 
-> > simple cut and paste from the sd driver.
-> 
-> Isn't there a better way than testing each one?
+Note that the higher order pages are subject to reclaim. This works in general
+since we are always operating on a single page struct. Reclaim is fooled to
+think that it is touching page sized objects (there are likely issues to be
+fixed there if we want to go down this road).
 
-It's not such a bad option.  The sizeof() test is compile time
-determinable, so the compiler simply zeros the fields in the
-CONFIG_LBD=n case and does the shift for CONFIG_LBD=y.  It certainly
-never compiles to four inline condition checks.
+What is currently not supported:
+- Buffer heads for higher order pages (possible with the compound pages in mm
+  that do not use page->private requires upgrade of the buffer cache layers).
+- Higher order pages in the block layer etc.
+- Mmapping higher order pages
 
-James
+Note that this is proof-of-concept. Lots of functionality is missing and
+various issues have not been dealt with. Use of higher order pages may cause
+memory fragmentation. Mel Gorman's anti-fragmentation work is probably
+essential if we want to do this. We likely need actual defragmentation
+support.
 
+The main point of this patchset is to demonstrates that it is basically
+possible to have higher order support with straightforward changes to the
+VM.
 
+The ramfs driver can be used to test higher order page cache functionality
+(and may help troubleshoot the VM support until we get some real filesystem
+and real devices supporting higher order pages).
+
+If you apply this patch and then you can f.e. try this:
+
+mount -tramfs -o10 none /media
+
+	Mounts a ramfs filesystem with order 10 pages (4 MB)
+
+cp linux-2.6.21-rc7.tar.gz /media
+
+	Populate the ramfs. Note that we allocate 14 pages of 4M each
+	instead of 13508..
+
+umount /media
+
+	Gets rid of the large pages again
+
+Comments appreciated.
 
