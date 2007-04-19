@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423005AbXDSXzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161110AbXDSXzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423005AbXDSXzA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 19:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422987AbXDSXy6
+	id S1161110AbXDSXzj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 19:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161205AbXDSXzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 19:54:58 -0400
-Received: from ns2.suse.de ([195.135.220.15]:36624 "EHLO mx2.suse.de"
+	Thu, 19 Apr 2007 19:55:08 -0400
+Received: from mail.suse.de ([195.135.220.2]:35291 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422829AbXDSXyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 19:54:55 -0400
-Message-Id: <20070419234704.556814255@schurl.suse.de>
+	id S1422838AbXDSXy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 19:54:56 -0400
+Message-Id: <20070419234703.909398619@schurl.suse.de>
 User-Agent: quilt/0.46-1
-Date: Fri, 20 Apr 2007 01:23:10 +0200
+Date: Fri, 20 Apr 2007 01:23:04 +0200
 From: Andreas Gruenbacher <agruen@suse.de>
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
@@ -19,63 +19,276 @@ Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
        chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
 References: <20070412090809.917795000@suse.de> <200704170335.21805.agruen@suse.de> <20070417182126.2327d89d@the-village.bc.nu> <20070419232303.300441585@schurl.suse.de>
 In-Reply-To: <20070417182126.2327d89d@the-village.bc.nu>
-Subject: [d_path 7/7] Distinguish between connected and disconnected paths in d_path()
-Content-Disposition: inline; filename=fix-d_path.diff
+Subject: [d_path 1/7] Fix __d_path() for lazy unmounts and make it unambiguous
+Content-Disposition: inline; filename=unambiguous-__d_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change d_path() so that it will never return a path starting with '/' if
-the path doesn't lead up to the chroot directory. Also ensure that the
-path returned never is the empty string: this would only occur with a lazily unmounted file system; return "." in that case instead.
+First, when __d_path() hits a lazily unmounted mount point, it tries to prepend
+the name of the lazily unmounted dentry to the path name.  It gets this wrong,
+and also overwrites the slash that separates the name from the following
+pathname component. This patch fixes that; if a process was in directory
+/foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
+missing slash), while the new result with this patch is ``foo/bar''.
+
+Second, it isn't always possible to tell from the __d_path() result whether the
+specified root and rootmnt (i.e., the chroot) was reached.  We need an
+unambiguous result for AppArmor at least though, so we make sure that paths
+will only start with a slash if the path leads all the way up to the root.
+
+We also add a @fail_deleted argument, which allows to get rid of some of the
+mess in sys_getcwd().
+
+This patch leaves getcwd() and d_path() as they were before for everything
+except for bind-mounted directories; for them, it reports ``/foo/bar'' instead
+of ``foobar'' in the example described above.  Subsequent patches propose to
+make getcwd() fail instead of reporting unreachable paths like this one and
+hide unreachable mount points from /proc/mounts.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- fs/dcache.c |   18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
+ fs/dcache.c |  169 ++++++++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 98 insertions(+), 71 deletions(-)
 
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
-@@ -1829,8 +1829,11 @@ global_root:
- 			buffer++;
- 			buflen++;
- 		}
--		if (is_slash)
-+		if (is_slash) {
-+			if (*buffer == '\0')
-+				*--buffer = '.';
- 			goto out;
-+		}
- 	}
- 	if (buflen < namelen)
- 		goto Elong;
-@@ -1843,18 +1846,6 @@ Elong:
- 	goto out;
+@@ -1732,52 +1732,51 @@ shouldnt_be_hashed:
  }
  
--static char *__connect_d_path(char *path, char *buffer)
+ /**
+- * d_path - return the path of a dentry
++ * __d_path - return the path of a dentry
+  * @dentry: dentry to report
+  * @vfsmnt: vfsmnt to which the dentry belongs
+  * @root: root dentry
+  * @rootmnt: vfsmnt to which the root dentry belongs
+  * @buffer: buffer to return value in
+  * @buflen: buffer length
++ * @fail_deleted: what to return for deleted files
+  *
+- * Convert a dentry into an ASCII path name. If the entry has been deleted
++ * Convert a dentry into an ASCII path name. If the entry has been deleted,
++ * then if @fail_deleted is true, ERR_PTR(-ENOENT) is returned. Otherwise,
+  * the string " (deleted)" is appended. Note that this is ambiguous.
+  *
+- * Returns the buffer or an error code if the path was too long.
++ * If @dentry is not connected to @root, the path returned will be relative
++ * (i.e., it will not start with a slash).
+  *
+- * "buflen" should be positive. Caller holds the dcache_lock.
++ * Returns the buffer or an error code.
+  */
+-static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
+-			struct dentry *root, struct vfsmount *rootmnt,
+-			char *buffer, int buflen)
 -{
--	if (!IS_ERR(path) && *path != '/') {
--		/* Pretend that disconnected paths are hanging off the root. */
--		if (path == buffer)
--			path = ERR_PTR(-ENAMETOOLONG);
--		else
--			*--path = '/';
--	}
--	return path;
--}
+-	char * end = buffer+buflen;
+-	char * retval;
+-	int namelen;
++static char *__d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
++		      struct dentry *root, struct vfsmount *rootmnt,
++		      char *buffer, int buflen, int fail_deleted)
++{
++	int namelen, is_slash;
++
++	if (buflen < 2)
++		return ERR_PTR(-ENAMETOOLONG);
++	buffer += --buflen;
++	*buffer = '\0';
+ 
+-	*--end = '\0';
+-	buflen--;
++	spin_lock(&dcache_lock);
+ 	if (!IS_ROOT(dentry) && d_unhashed(dentry)) {
+-		buflen -= 10;
+-		end -= 10;
+-		if (buflen < 0)
++		if (fail_deleted) {
++			buffer = ERR_PTR(-ENOENT);
++			goto out;
++		}
++		if (buflen < 10)
+ 			goto Elong;
+-		memcpy(end, " (deleted)", 10);
++		buflen -= 10;
++		buffer -= 10;
++		memcpy(buffer, " (deleted)", 10);
+ 	}
 -
+-	if (buflen < 1)
+-		goto Elong;
+-	/* Get '/' right */
+-	retval = end-1;
+-	*retval = '/';
+-
+-	for (;;) {
++	while (dentry != root || vfsmnt != rootmnt) {
+ 		struct dentry * parent;
+ 
+-		if (dentry == root && vfsmnt == rootmnt)
+-			break;
+ 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+-			/* Global root? */
+ 			spin_lock(&vfsmount_lock);
+ 			if (vfsmnt->mnt_parent == vfsmnt) {
+ 				spin_unlock(&vfsmount_lock);
+@@ -1791,33 +1790,72 @@ static char * __d_path( struct dentry *d
+ 		parent = dentry->d_parent;
+ 		prefetch(parent);
+ 		namelen = dentry->d_name.len;
+-		buflen -= namelen + 1;
+-		if (buflen < 0)
++		if (buflen < namelen + 1)
+ 			goto Elong;
+-		end -= namelen;
+-		memcpy(end, dentry->d_name.name, namelen);
+-		*--end = '/';
+-		retval = end;
++		buflen -= namelen + 1;
++		buffer -= namelen;
++		memcpy(buffer, dentry->d_name.name, namelen);
++		*--buffer = '/';
+ 		dentry = parent;
+ 	}
++	/* Get '/' right. */
++	if (*buffer != '/')
++		*--buffer = '/';
+ 
+-	return retval;
++out:
++	spin_unlock(&dcache_lock);
++	return buffer;
+ 
+ global_root:
++	/*
++	 * We went past the (vfsmount, dentry) we were looking for and have
++	 * either hit a root dentry, a lazily unmounted dentry, an
++	 * unconnected dentry, or the file is on a pseudo filesystem.
++	 */
+ 	namelen = dentry->d_name.len;
+-	buflen -= namelen;
+-	if (buflen < 0)
++	is_slash = (namelen == 1 && *dentry->d_name.name == '/');
++	if (is_slash || (dentry->d_sb->s_flags & MS_NOUSER)) {
++		/*
++		 * Make sure we won't return a pathname starting with '/'.
++		 *
++		 * Historically, we also glue together the root dentry and
++		 * remaining name for pseudo filesystems like pipefs, which
++		 * have the MS_NOUSER flag set. This results in pathnames
++		 * like "pipe:[439336]".
++		 */
++		if (*buffer == '/') {
++			buffer++;
++			buflen++;
++		}
++		if (is_slash)
++			goto out;
++	}
++	if (buflen < namelen)
+ 		goto Elong;
+-	retval -= namelen-1;	/* hit the slash */
+-	memcpy(retval, dentry->d_name.name, namelen);
+-	return retval;
++	buffer -= namelen;
++	memcpy(buffer, dentry->d_name.name, namelen);
++	goto out;
++
+ Elong:
+-	return ERR_PTR(-ENAMETOOLONG);
++	buffer = ERR_PTR(-ENAMETOOLONG);
++	goto out;
++}
++
++static char *__connect_d_path(char *path, char *buffer)
++{
++	if (!IS_ERR(path) && *path != '/') {
++		/* Pretend that disconnected paths are hanging off the root. */
++		if (path == buffer)
++			path = ERR_PTR(-ENAMETOOLONG);
++		else
++			*--path = '/';
++	}
++	return path;
+ }
+ 
  /* write full pathname into buffer and return start of pathname */
- char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
- 	     int buflen)
-@@ -1868,7 +1859,6 @@ char *d_path(struct dentry *dentry, stru
+-char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
+-				char *buf, int buflen)
++char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
++	     int buflen)
+ {
+ 	char *res;
+ 	struct vfsmount *rootmnt;
+@@ -1827,9 +1865,8 @@ char * d_path(struct dentry *dentry, str
+ 	rootmnt = mntget(current->fs->rootmnt);
  	root = dget(current->fs->root);
  	read_unlock(&current->fs->lock);
- 	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen, 0);
--	res = __connect_d_path(res, buf);
+-	spin_lock(&dcache_lock);
+-	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen);
+-	spin_unlock(&dcache_lock);
++	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen, 0);
++	res = __connect_d_path(res, buf);
  	dput(root);
  	mntput(rootmnt);
  	return res;
+@@ -1855,10 +1892,10 @@ char * d_path(struct dentry *dentry, str
+  */
+ asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
+ {
+-	int error;
++	int error, len;
+ 	struct vfsmount *pwdmnt, *rootmnt;
+ 	struct dentry *pwd, *root;
+-	char *page = (char *) __get_free_page(GFP_USER);
++	char *page = (char *) __get_free_page(GFP_USER), *cwd;
+ 
+ 	if (!page)
+ 		return -ENOMEM;
+@@ -1870,29 +1907,19 @@ asmlinkage long sys_getcwd(char __user *
+ 	root = dget(current->fs->root);
+ 	read_unlock(&current->fs->lock);
+ 
+-	error = -ENOENT;
+-	/* Has the current directory has been unlinked? */
+-	spin_lock(&dcache_lock);
+-	if (pwd->d_parent == pwd || !d_unhashed(pwd)) {
+-		unsigned long len;
+-		char * cwd;
+-
+-		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE);
+-		spin_unlock(&dcache_lock);
+-
+-		error = PTR_ERR(cwd);
+-		if (IS_ERR(cwd))
+-			goto out;
+-
+-		error = -ERANGE;
+-		len = PAGE_SIZE + page - cwd;
+-		if (len <= size) {
+-			error = len;
+-			if (copy_to_user(buf, cwd, len))
+-				error = -EFAULT;
+-		}
+-	} else
+-		spin_unlock(&dcache_lock);
++	cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE, 1);
++	cwd = __connect_d_path(cwd, page);
++	error = PTR_ERR(cwd);
++	if (IS_ERR(cwd))
++		goto out;
++
++	error = -ERANGE;
++	len = PAGE_SIZE + page - cwd;
++	if (len <= size) {
++		error = len;
++		if (copy_to_user(buf, cwd, len))
++			error = -EFAULT;
++	}
+ 
+ out:
+ 	dput(pwd);
 
 -- 
 Andreas Gruenbacher <agruen@suse.de>
