@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993127AbXDSHCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993120AbXDSHDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993127AbXDSHCf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993124AbXDSHBm
+	id S2993120AbXDSHDQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993133AbXDSHC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:01:42 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46349 "EHLO
+	Thu, 19 Apr 2007 03:02:56 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34571 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161340AbXDSHBZ (ORCPT
+	with ESMTP id S2993123AbXDSHCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:01:25 -0400
+	Thu, 19 Apr 2007 03:02:41 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] bluetooth rfcomm: Convert to kthread API.
-Date: Thu, 19 Apr 2007 00:55:49 -0600
-Message-Id: <11769658043877-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] s390/net/lcs: Convert to the kthread API
+Date: Thu, 19 Apr 2007 00:55:35 -0600
+Message-Id: <11769657794115-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,45 +26,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patch starts krfcommd using kthread_run instead of a combination
-of kernel_thread and daemonize making the code slightly simpler
-and more maintainable.
+Use kthread_run to start the lcs kernel threads not a
+combination of kernel_thread and daemonize.  This makes
+the code slightly simpler and more maintainable.
 
-Cc: Marcel Holtmann <marcel@holtmann.org>
+Cc: Frank Pavlic <fpavlic@de.ibm.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/bluetooth/rfcomm/core.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/s390/net/lcs.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
-index 34f993a..baaad49 100644
---- a/net/bluetooth/rfcomm/core.c
-+++ b/net/bluetooth/rfcomm/core.c
-@@ -38,6 +38,7 @@
- #include <linux/net.h>
- #include <linux/mutex.h>
- #include <linux/freezer.h>
+diff --git a/drivers/s390/net/lcs.c b/drivers/s390/net/lcs.c
+index 08a994f..0300d87 100644
+--- a/drivers/s390/net/lcs.c
++++ b/drivers/s390/net/lcs.c
+@@ -36,6 +36,7 @@
+ #include <linux/in.h>
+ #include <linux/igmp.h>
+ #include <linux/delay.h>
 +#include <linux/kthread.h>
+ #include <net/arp.h>
+ #include <net/ip.h>
  
- #include <net/sock.h>
- #include <asm/uaccess.h>
-@@ -1938,7 +1939,6 @@ static int rfcomm_run(void *unused)
+@@ -1248,7 +1249,6 @@ lcs_register_mc_addresses(void *data)
+ 	struct in_device *in4_dev;
  
- 	atomic_inc(&running);
+ 	card = (struct lcs_card *) data;
+-	daemonize("regipm");
  
--	daemonize("krfcommd");
- 	set_user_nice(current, -10);
+ 	if (!lcs_do_run_thread(card, LCS_SET_MC_THREAD))
+ 		return 0;
+@@ -1728,11 +1728,10 @@ lcs_start_kernel_thread(struct work_struct *work)
+ 	struct lcs_card *card = container_of(work, struct lcs_card, kernel_thread_starter);
+ 	LCS_DBF_TEXT(5, trace, "krnthrd");
+ 	if (lcs_do_start_thread(card, LCS_RECOVERY_THREAD))
+-		kernel_thread(lcs_recovery, (void *) card, SIGCHLD);
++		kthread_run(lcs_recovery, card, "lcs_recover");
+ #ifdef CONFIG_IP_MULTICAST
+ 	if (lcs_do_start_thread(card, LCS_SET_MC_THREAD))
+-		kernel_thread(lcs_register_mc_addresses,
+-				(void *) card, SIGCHLD);
++		kernel_run(lcs_register_mc_addresses, card, "regipm");
+ #endif
+ }
  
- 	BT_DBG("");
-@@ -2058,7 +2058,7 @@ static int __init rfcomm_init(void)
+@@ -2232,7 +2231,6 @@ lcs_recovery(void *ptr)
+         int rc;
  
- 	hci_register_cb(&rfcomm_cb);
+ 	card = (struct lcs_card *) ptr;
+-	daemonize("lcs_recover");
  
--	kernel_thread(rfcomm_run, NULL, CLONE_KERNEL);
-+	kthread_run(rfcomm_run, NULL, "krfcommd");
- 
- 	if (class_create_file(bt_class, &class_attr_rfcomm_dlc) < 0)
- 		BT_ERR("Failed to create RFCOMM info file");
+ 	LCS_DBF_TEXT(4, trace, "recover1");
+ 	if (!lcs_do_run_thread(card, LCS_RECOVERY_THREAD))
 -- 
 1.5.0.g53756
 
