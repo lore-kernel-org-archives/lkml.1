@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766873AbXDSQsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766868AbXDSQtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766873AbXDSQsK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766868AbXDSQsK
+	id S1766868AbXDSQtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766876AbXDSQty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:48:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44613 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766873AbXDSQsJ (ORCPT
+	Thu, 19 Apr 2007 12:49:54 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38653 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766868AbXDSQty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:48:09 -0400
-Date: Thu, 19 Apr 2007 17:47:46 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd_blkdevs: Convert to use the kthread API
-Message-ID: <20070419164746.GA19469@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769657692046-git-send-email-ebiederm@xmission.com>
-Mime-Version: 1.0
+	Thu, 19 Apr 2007 12:49:54 -0400
+Date: Thu, 19 Apr 2007 10:49:53 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Jan-Benedict Glaw <jbglaw@lug-owl.de>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] add two SCSI command opcodes
+Message-ID: <20070419164952.GA19438@parisc-linux.org>
+References: <20070419151053.GA10199@localdomain> <20070419154743.GA18325@lug-owl.de> <20070419163959.GA25595@localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <11769657692046-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070419163959.GA25595@localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 12:55:28AM -0600, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+On Thu, Apr 19, 2007 at 07:39:59PM +0300, Dan Aloni wrote:
+> On Thu, Apr 19, 2007 at 05:47:43PM +0200, Jan-Benedict Glaw wrote:
+> > Where's the user?
 > 
-> thread_run is used intead of kernel_thread, daemonize, and mucking
-> around blocking signals directly.
+> A privately maintained kernel driver.
+> 
+> Do we _must_ have in-tree users? I'd consider the change for completion's
+> sake.
 
-Please don't do incomplete transitions like that.  We don't really
-want people to use kthread_run, but not the kthread stopping
-mechanisms, because people will simply forget about that bit and
-we'll never get rid of the enormous amount of, erm creativity, in
-handling kernel thread stopping.
-
-This is just the first patch in your series where the thread is mutable,
-but it equally applies to all following patches where this is the case
-aswell.
+I agree with Dan -- if they're published in a SCSI spec, we should
+include them in this header file.
