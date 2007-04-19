@@ -1,158 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766994AbXDSVMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766986AbXDSVPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766994AbXDSVMt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 17:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422667AbXDSVMt
+	id S1766986AbXDSVPp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 17:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbXDSVPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 17:12:49 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:48233
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422636AbXDSVMs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 17:12:48 -0400
-Date: Thu, 19 Apr 2007 23:16:00 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers/base/attribute_container.c: use mutex instead of binary semaphore
-Message-ID: <20070419211600.GH5013@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	gregkh@suse.de, linux-kernel@vger.kernel.org
+	Thu, 19 Apr 2007 17:15:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46484 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753785AbXDSVPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 17:15:44 -0400
+Message-ID: <4627DBF0.1080303@redhat.com>
+Date: Thu, 19 Apr 2007 17:15:28 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jakub Jelinek <jakub@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE 2/2
+References: <46247427.6000902@redhat.com>
+In-Reply-To: <46247427.6000902@redhat.com>
+Content-Type: multipart/mixed;
+ boundary="------------080907040107030804000708"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use mutex instead of binary semaphore in
-drivers/base/attribute_container.c
+This is a multi-part message in MIME format.
+--------------080907040107030804000708
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com> 
+Restore MADV_DONTNEED to its original Linux behaviour.  This is still
+not the same behaviour as POSIX, but applications may be depending on
+the Linux behaviour already. Besides, glibc catches POSIX_MADV_DONTNEED
+and makes sure nothing is done...
 
---
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
-diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
-index 2222073..1ec0654 100644
---- a/drivers/base/attribute_container.c
-+++ b/drivers/base/attribute_container.c
-@@ -62,7 +62,7 @@ EXPORT_SYMBOL_GPL(attribute_container_classdev_to_container);
- 
- static struct list_head attribute_container_list;
- 
--static DECLARE_MUTEX(attribute_container_mutex);
-+static DEFINE_MUTEX(attribute_container_mutex);
- 
- /**
-  * attribute_container_register - register an attribute container
-@@ -77,9 +77,9 @@ attribute_container_register(struct attribute_container *cont)
- 	klist_init(&cont->containers,internal_container_klist_get,
- 		   internal_container_klist_put);
- 		
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_add_tail(&cont->node, &attribute_container_list);
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- 
+---
+This is to be applied over of the original MADV_FREE patch.
+It turns out that the current glibc patch already falls back
+to MADV_DONTNEED if it gets an -EINVAL.
+
+--------------080907040107030804000708
+Content-Type: text/x-patch;
+ name="linux-2.6-madv-dontneed-restore.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6-madv-dontneed-restore.patch"
+
+--- linux-2.6.20.x86_64/mm/madvise.c.madv_free	2007-04-19 16:46:22.000000000 -0400
++++ linux-2.6.20.x86_64/mm/madvise.c	2007-04-19 16:52:19.000000000 -0400
+@@ -130,7 +130,8 @@ static long madvise_willneed(struct vm_a
+  */
+ static long madvise_dontneed(struct vm_area_struct * vma,
+ 			     struct vm_area_struct ** prev,
+-			     unsigned long start, unsigned long end)
++			     unsigned long start, unsigned long end,
++			     int behavior)
+ {
+ 	*prev = vma;
+ 	if (vma->vm_flags & (VM_LOCKED|VM_HUGETLB|VM_PFNMAP))
+@@ -142,12 +143,14 @@ static long madvise_dontneed(struct vm_a
+ 			.last_index = ULONG_MAX,
+ 		};
+ 		zap_page_range(vma, start, end - start, &details);
+-	} else {
++	} else if (behavior == MADV_FREE) {
+ 		struct zap_details details = {
+ 			.madv_free = 1,
+ 		};
+ 		zap_page_range(vma, start, end - start, &details);
+-	}
++	} else /* behavior == MADV_DONTNEED */
++		zap_page_range(vma, start, end - start, NULL);
++
  	return 0;
  }
-@@ -94,7 +94,7 @@ int
- attribute_container_unregister(struct attribute_container *cont)
- {
- 	int retval = -EBUSY;
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	spin_lock(&cont->containers.k_lock);
- 	if (!list_empty(&cont->containers.k_list))
- 		goto out;
-@@ -102,7 +102,7 @@ attribute_container_unregister(struct attribute_container *cont)
- 	list_del(&cont->node);
-  out:
- 	spin_unlock(&cont->containers.k_lock);
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- 	return retval;
- 		
- }
-@@ -145,7 +145,7 @@ attribute_container_add_device(struct device *dev,
- {
- 	struct attribute_container *cont;
  
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		struct internal_container *ic;
+@@ -219,10 +222,9 @@ madvise_vma(struct vm_area_struct *vma, 
+ 		error = madvise_willneed(vma, prev, start, end);
+ 		break;
  
-@@ -173,7 +173,7 @@ attribute_container_add_device(struct device *dev,
- 			attribute_container_add_class_device(&ic->classdev);
- 		klist_add_tail(&ic->node, &cont->containers);
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
+-	/* FIXME: POSIX says that MADV_DONTNEED cannot throw away data. */
+ 	case MADV_DONTNEED:
+ 	case MADV_FREE:
+-		error = madvise_dontneed(vma, prev, start, end);
++		error = madvise_dontneed(vma, prev, start, end, behavior);
+ 		break;
  
- /* FIXME: can't break out of this unless klist_iter_exit is also
-@@ -211,7 +211,7 @@ attribute_container_remove_device(struct device *dev,
- {
- 	struct attribute_container *cont;
- 
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		struct internal_container *ic;
- 		struct klist_iter iter;
-@@ -234,7 +234,7 @@ attribute_container_remove_device(struct device *dev,
- 			}
- 		}
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
- 
- /**
-@@ -255,7 +255,7 @@ attribute_container_device_trigger(struct device *dev,
- {
- 	struct attribute_container *cont;
- 
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		struct internal_container *ic;
- 		struct klist_iter iter;
-@@ -273,7 +273,7 @@ attribute_container_device_trigger(struct device *dev,
- 				fn(cont, dev, &ic->classdev);
- 		}
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
- 
- /**
-@@ -295,12 +295,12 @@ attribute_container_trigger(struct device *dev,
- {
- 	struct attribute_container *cont;
- 
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		if (cont->match(cont, dev))
- 			fn(cont, dev);
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
- 
- /**
+ 	default:
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-     The assumption that what currently exists must necessarily
-      exist is the acid that corrodes all visionary thinking
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+--------------080907040107030804000708--
