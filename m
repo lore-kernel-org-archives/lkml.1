@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767004AbXDSVfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767008AbXDSVh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767004AbXDSVfZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 17:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422708AbXDSVfZ
+	id S1767008AbXDSVh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 17:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767007AbXDSVh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 17:35:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:44451 "EHLO mail.goop.org"
+	Thu, 19 Apr 2007 17:37:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:44496 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422667AbXDSVfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 17:35:24 -0400
-Message-ID: <4627E099.209@goop.org>
-Date: Thu, 19 Apr 2007 14:35:21 -0700
+	id S1767006AbXDSVh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 17:37:56 -0400
+Message-ID: <4627E131.5070801@goop.org>
+Date: Thu, 19 Apr 2007 14:37:53 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Matt Mackall <mpm@selenic.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
        virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
- mappings
-References: <20070414204154.871250608@goop.org> <200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com> <200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com> <4627DDAD.4070805@redhat.com>
-In-Reply-To: <4627DDAD.4070805@redhat.com>
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@waste.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 20/20] Add apply_to_page_range() which applies a function
+ to a pte range.
+References: <20070404191151.009821039@goop.org> <20070404191206.675793431@goop.org> <20070405044133.GE4892@waste.org> <46149CC9.2070903@goop.org> <20070417205652.GM11115@waste.org> <4627C6B9.7000605@goop.org> <20070419195957.GF11115@waste.org>
+In-Reply-To: <20070419195957.GF11115@waste.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> H. Peter Anvin wrote:
->   
->> Andi Kleen wrote:
->>     
->>> Then we would have seen reports surely?
->>>       
-
-Yes, I would have thought so.  It surprised me that such an obvious bug
-could be there, apparently for a long time.  But it's real, and
-potentially affects everyone.  It probably doesn't affect highly modular
-distros much, since the kernel itself will be relatively small.
-
-> I never saw a description of the symptoms of encountering this bug.
-> Does it just hang, or what?
+Matt Mackall wrote:
+> Haven't thought a huge amount about that. Perhaps it's best done with
+> the level 3 callback?
 >   
 
-You get an early-fault message on-screen, assuming that's enabled;
-otherwise it will just appear to hang.  It happens in pagetable_init,
-when it allocates a new pagetable above the head.S mapping (8M in my
-case).  It will only hit if the kernel size approaches a 4M boundary,
-since it won't leave enough space mapped to construct the lowmem mappings.
-
-It only affects native booting, since under Xen all those mappings have
-already been constructed.  It happened to me with a paravirt kernel that
-happened to Xen compiled into it, but that was irrelevent (though
-misleading; the 40k difference in kernel size was enough to make it not
-happen in a non-Xen kernel).
+Level 2, I think, assuming you count the pte pages as level 1.  I think
+it can be dealt with, so long as it correctly skips level 1 callbacks
+for superpages, and does the test after the level 2 callback has returned.
 
     J
