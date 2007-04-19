@@ -1,97 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbXDSWmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbXDSWmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbXDSWmj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXDSWmj
+	id S1754170AbXDSWmr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXDSWmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:42:39 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:59924 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbXDSWmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:42:38 -0400
-Message-ID: <03f401c782d4$95c323e0$eeeea8c0@aldipc>
-From: "roland" <devzero@web.de>
-To: <linux-kernel@vger.kernel.org>
-Subject: VMWare Workstation 6 for debugging Linux Kernel (!)
-Date: Fri, 20 Apr 2007 00:46:34 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2869
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
-X-Provags-ID: V01U2FsdGVkX1/vep1rEH9xBxHWnW+1B/B3gbWpVqpE7khTyf6p
-	X7lXspwanSZt0lfNoEt8yozPiYX3V7KxkA5afJjJiofTys+8ar
-	gIoW8wEUM=
+	Thu, 19 Apr 2007 18:42:47 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41584 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754170AbXDSWmq (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 18:42:46 -0400
+Date: Fri, 20 Apr 2007 08:42:25 +1000
+From: David Chinner <dgc@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [RFC 0/8] Variable Order Page Cache
+Message-ID: <20070419224225.GJ32602149@melbourne.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi !
+On Thu, Apr 19, 2007 at 09:35:04AM -0700, Christoph Lameter wrote:
+> Variable Order Page Cache Patchset
+> 
+> This patchset modifies the core VM so that higher order page cache pages
+> become possible. The higher order page cache pages are compound pages
+> and can be handled in the same way as regular pages.
+> 
+> The order of the pages is determined by the order set up in the mapping
+> (struct address_space). By default the order is set to zero.
+> This means that higher order pages are optional. There is no attempt here
+> to generally change the page order of the page cache. 4K pages are effective
+> for small files.
+> 
+> However, it would be good if the VM would support I/O to higher order pages
+> to enable efficient support for large scale I/O. If one wants to write a
+> long file of a few gigabytes then the filesystem should have a choice of
+> selecting a larger page size for that file and handle larger chunks of
+> memory at once.
+> 
+> The support here is only for buffered I/O and only for one filesystem (ramfs).
+> Modification of other filesystems to support higher order pages may require
+> extensive work of other components of the kernel. But I hope this shows that
+> there is a relatively easy way to that goal that could be taken in steps..
 
-I think this one is damn interestig for linux kernel development:
+So looking at this the main thing for converting a filesystem is some extra
+bits in the mount process and replacing PAGE_CACHE_* macros with
+page_cache_*() wrapper functions.
 
-link: http://stackframe.blogspot.com/
-contents: see below
+We can probably set all this up trivially with XFS by allowing block size > page
+size filesystems to be mounted and modifying the way we feed pages to a bio
+to be aware of compound pages.
 
-regards
-roland
+> Note that the higher order pages are subject to reclaim. This works in general
+> since we are always operating on a single page struct. Reclaim is fooled to
+> think that it is touching page sized objects (there are likely issues to be
+> fixed there if we want to go down this road).
+> 
+> What is currently not supported:
+> - Buffer heads for higher order pages (possible with the compound pages in mm
+>   that do not use page->private requires upgrade of the buffer cache layers).
 
-ps:
-i`m not directly related to vmware - so this is no advertisement!
+Does this mean that the -mm code will currently support bufferheads on compound
+pages? We need that before we can get XFS to work with compound pages.
 
+> - Higher order pages in the block layer etc.
 
-Tuesday, April 17, 2007
-Debugging Linux kernels with Workstation 6.0
-We just quietly added an exciting feature to Workstation 6.0. I believe it 
-will make WS6 a great tool for Linux kernel development. You can now debug 
-kernel of Linux VM with gdb running on the Host without changing anything in 
-the Guest VM. No kdb, no recompiling and no need for second machine. All you 
-need is a single line in VM's configuration file.
+It's more drivers that we have to worry about, I think.  We don't need to
+modify bios to explicitly support compound pages. From bio.h:
 
-To use the new feature, grab the latest build of WS6 here:
+/*
+ * was unsigned short, but we might as well be ready for > 64kB I/O pages
+ */
+struct bio_vec {
+        struct page     *bv_page;
+        unsigned int    bv_len;
+        unsigned int    bv_offset;
+};
 
-http://www.vmware.com/products/beta/ws/
+So compound pages should be transparent to anything that doesn't
+look at the contents of bio_vecs....
 
-Put this line into configuration file of your Linux VM:
+> - Mmapping higher order pages
 
-debugStub.listen.guest32=1
+*nod*
 
-Now whenever you run the virtual machine, you'll see the following on the 
-Host console:
+hmmm - what about the way we do copyin and copyout from the page cache? ie
+we kmap_atomic() them before we access them. Does this need to change?
 
-VMware Workstation is listening for debug connection on port 8832.
+> The ramfs driver can be used to test higher order page cache functionality
+> (and may help troubleshoot the VM support until we get some real filesystem
+> and real devices supporting higher order pages).
 
-Run gdb on the Host, reference it to the kernel with symbols and attach to 
-the virtual machine:
+I don't think it will take much to get XFS to work with a high order
+page cache and we can probably insulate the block layer initially with some
+kind of bio_add_compound_page() wrapper and some similar
+wrapper on the io completion side.
 
-% gdb
-(gdb) file vmlinux-2.4.21-27.EL.debug
-(gdb) target remote localhost:8832
+> Comments appreciated.
 
-That's it. The VM is blocked now, so you can "continue" it and "^C" back to 
-gdb. Breakpoints, single step, memory inspection - all this works as usual. 
-If you have SMP VM, then each VCPU is mapped on a thread, so use "info 
-threads" and "thread NN" to switch between them.
+So far it's much less intrusive than I expected ;)
 
-The kernels with symbols are sadly lacking on most distributions, but if you 
-use RHEL then this website may help (look for kernel-debuginfo rpm):
+Cheers,
 
-http://people.redhat.com/duffy/debuginfo/index-js.html
-
-The gdb support in WS6 is experimental, so there may be rough edges here and 
-there. Please post on community forums if something doesn't work right or if 
-you have a suggestion:
-
-http://www.vmware.com/community/
-
-There are more debugging specific features in WS6 (for example, you can use 
-gdb hand-in-hand with Record/Replay!). I will describe them shortly.
-
-
-
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
