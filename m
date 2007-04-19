@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766826AbXDSQCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766833AbXDSQDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766826AbXDSQCX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766828AbXDSQCX
+	id S1766833AbXDSQDG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766835AbXDSQDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:02:23 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:22934 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766826AbXDSQCW (ORCPT
+	Thu, 19 Apr 2007 12:03:06 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:35797 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766833AbXDSQDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:02:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=r8E5hsP3gHylQryVLjULpgEEt342wEMQpRRz+bLQNZsZST8MrO2PHtCT2D035WxUJiKWLP4xvdHv0SVD/troAyUriLRo+q61MKHgzPdWTY1rESRprMSZWf24BZCAT7ceSc++Jmw+riRiQRrXvZUAKEixPJlcz3GtiVMdbhxJ8dg=
-Message-ID: <d120d5000704190902o60aa4b19y77728585e22b2e84@mail.gmail.com>
-Date: Thu, 19 Apr 2007 12:02:21 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
-Cc: "johann deneux" <johann.deneux@gmail.com>, linux-kernel@vger.kernel.org,
-       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
-In-Reply-To: <46278CDD.2000007@gmail.com>
+	Thu, 19 Apr 2007 12:03:04 -0400
+X-Greylist: delayed 1494 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Apr 2007 12:03:04 EDT
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: ck@vds.kolivas.org
+Subject: Re: [ck] [ANNOUNCE] Staircase Deadline cpu scheduler version 0.43
+Date: Thu, 19 Apr 2007 17:37:34 +0200
+User-Agent: KMail/1.9.5
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Al Boldi <a1426z@gawab.com>, Peter Williams <pwil3058@bigpond.net.au>,
+       Nick Piggin <npiggin@suse.de>, Matt Mackall <mpm@selenic.com>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
+       Gene Heskett <gene.heskett@gmail.com>
+References: <200704200112.36465.kernel@kolivas.org>
+In-Reply-To: <200704200112.36465.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart8659506.KgYSzxqXL3";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com>
-	 <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
-	 <200704190058.11625.dtor@insightbb.com> <46278CDD.2000007@gmail.com>
+Message-Id: <200704191737.55990.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1176998584;4409cebc;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/19/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Dmitry Torokhov napsal(a):
-> > I have been thinking about this and I don't think that exporting motor
-> > data is a good idea, at least not in case of Phantom driver. The fact
-> > that there are 3 motors is a hardware implementation detail and it
-> > is not interesting for general application.
->
-> Ok, so what about torques (despite it's still something like FF_RAW or motor
-> descriptor)? It seems not to be so bad called effect name -- not only
-> phantom uses torques on motors as an unit of force, for example I get this
-> by quick googling:
-> http://www.caip.rutgers.edu/~bouzit/lrp/glove.html
-> They use there some motors with 14 torque values too, so the phantom isn't
-> the only device which uses this approach.
->
-> > My understanding that the end result of controlling these 3 motors
->
-> Actually there is also a version with 6 motors :).
->
-> > is a force vector (I don't know if there is such english term, this
-> > is a literal translation from russian) applied to user's hand.
->
-> Better say torques vector. You must compute a torque for each place from the
-> 3d (or bigger) vector of forces in different way for each device that exists
-> -- this means forces are not independent unit, torques are in the meaning of
-> layer which doesn't care about what is connected above and below it.
->
-> > If we are interested in using FF API we need to come up with a way
-> > to express this effect without exposing implementation details of
-> > one particular device.
->
-> Still, torques are better named raw/motor values, which goes to the device
-> and I'm sceptic about inventing something class-better than this.
->
+--nextPart8659506.KgYSzxqXL3
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Well, I guess we need to make a decision whether moving this kind of
-devices into a force feedback layer is possible or whether every
-device needs to have an application specifically tailored to that
-particular device.
+> In order to keep raising the standard for comparison for the alternative =
+new=20
+> scheduler developments, here is an updated version of the staircase deadl=
+ine=20
+> cpu scheduler.
 
-If we say that it is feasible to plug a device into FF layer then we
-must not expose hardware implementation details. That means that
-device-sepcific translation between 3d vector of forces into motor
-torques must be done by the driver itself.
+I very much appreciate your continued work on SD.
 
-For devices that require tailored application (for example that glove
-- I am not sure how a generic application could control it) old
-phantom way of controlling via ioctl will suffice. The device may
-still use input layer to report back coordinates.
+Over the last days I had used 26.21-rc7-ck1 and -ck2. Today I have
+given sd0.42 a try and my system "feels" more responsive with my
+everyday tasks. No hard facts just my very subjective usage experience.
 
--- 
-Dmitry
+I'm on an Intel Core2 T7600 2.33GHz, 4GB, openSUSE 10.2, KDE
+
+Workload are occasional compilejobs as well as regular Perl
+numbercrunching scripts while having amarok playing music.
+
+No noticeable desktop freezes or anything else. With -ck1/2 I had
+occasional visual freezes/delays.
+
+I think I still like SD better than the "old" -ck.
+
+I'll give 2.6.21-rc7-sd0.43 a try later today (i.e. when it has
+finished been built).
+
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart8659506.KgYSzxqXL3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGJ4zTUYYhyuxDQc4RAkEKAKCCvq02rKFDgd3e8gy0HGRD0ku+wACgqWyO
+QwPsQKEsXtYNCGu6mOVWHIU=
+=c8hn
+-----END PGP SIGNATURE-----
+
+--nextPart8659506.KgYSzxqXL3--
