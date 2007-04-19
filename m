@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993133AbXDSHFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993138AbXDSHHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993133AbXDSHFR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993144AbXDSHFQ
+	id S2993138AbXDSHHR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993141AbXDSHFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:05:16 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34609 "EHLO
+	Thu, 19 Apr 2007 03:05:18 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34608 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993141AbXDSHFG (ORCPT
+	with ESMTP id S2993138AbXDSHFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Apr 2007 03:05:06 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -15,9 +15,9 @@ To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] s390/scsi/zfcp_erp: Convert to use the kthread API
-Date: Thu, 19 Apr 2007 00:55:37 -0600
-Message-Id: <11769657811624-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] s390 qeth: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 00:55:36 -0600
+Message-Id: <11769657801219-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,64 +26,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Modify zfcperp%s to be started with kthread_run not
-a combination of kernel_thread, daemonize and siginitsetinv
-making the code slightly simpler and more maintainable.
+This patch modifies the qeth_recover thread to be started
+with kthread_run not a combination of kernel_thread and
+daemonize.  Resulting in slightly simpler and more maintainable
+code.
 
-Cc: Swen Schillig <swen@vnet.ibm.com>
+Cc: Frank Pavlic <fpavlic@de.ibm.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/s390/scsi/zfcp_erp.c |   13 ++++++-------
- 1 files changed, 6 insertions(+), 7 deletions(-)
+ drivers/s390/net/qeth_main.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/s390/scsi/zfcp_erp.c b/drivers/s390/scsi/zfcp_erp.c
-index 66c0b09..f26536d 100644
---- a/drivers/s390/scsi/zfcp_erp.c
-+++ b/drivers/s390/scsi/zfcp_erp.c
-@@ -21,6 +21,7 @@
- 
- #define ZFCP_LOG_AREA			ZFCP_LOG_AREA_ERP
- 
+diff --git a/drivers/s390/net/qeth_main.c b/drivers/s390/net/qeth_main.c
+index ad7792d..8234846 100644
+--- a/drivers/s390/net/qeth_main.c
++++ b/drivers/s390/net/qeth_main.c
+@@ -50,6 +50,7 @@
+ #include <linux/mii.h>
+ #include <linux/rcupdate.h>
+ #include <linux/ethtool.h>
 +#include <linux/kthread.h>
- #include "zfcp_ext.h"
  
- static int zfcp_erp_adisc(struct zfcp_port *);
-@@ -985,12 +986,13 @@ static void zfcp_erp_action_dismiss(struct zfcp_erp_action *erp_action)
- int
- zfcp_erp_thread_setup(struct zfcp_adapter *adapter)
- {
--	int retval = 0;
-+	struct task_struct *task;
+ #include <net/arp.h>
+ #include <net/ip.h>
+@@ -957,7 +958,6 @@ qeth_recover(void *ptr)
+ 	int rc = 0;
  
- 	atomic_clear_mask(ZFCP_STATUS_ADAPTER_ERP_THREAD_UP, &adapter->status);
- 
--	retval = kernel_thread(zfcp_erp_thread, adapter, SIGCHLD);
--	if (retval < 0) {
-+	task = kthread_run(zfcp_erp_thread, adapter,
-+			   "zfcperp%s", zfcp_get_busid_by_adapter(adapter));
-+	if (IS_ERR(task)) {
- 		ZFCP_LOG_NORMAL("error: creation of erp thread failed for "
- 				"adapter %s\n",
- 				zfcp_get_busid_by_adapter(adapter));
-@@ -1002,7 +1004,7 @@ zfcp_erp_thread_setup(struct zfcp_adapter *adapter)
- 		debug_text_event(adapter->erp_dbf, 5, "a_thset_ok");
- 	}
- 
--	return (retval < 0);
-+	return IS_ERR(task);
+ 	card = (struct qeth_card *) ptr;
+-	daemonize("qeth_recover");
+ 	QETH_DBF_TEXT(trace,2,"recover1");
+ 	QETH_DBF_HEX(trace, 2, &card, sizeof(void *));
+ 	if (!qeth_do_run_thread(card, QETH_RECOVER_THREAD))
+@@ -1014,7 +1014,7 @@ qeth_start_kernel_thread(struct work_struct *work)
+ 	    card->write.state != CH_STATE_UP)
+ 		return;
+ 	if (qeth_do_start_thread(card, QETH_RECOVER_THREAD))
+-		kernel_thread(qeth_recover, (void *) card, SIGCHLD);
++		kthread_run(qeth_recover, card, "qeth_recover");
  }
  
- /*
-@@ -1054,9 +1056,6 @@ zfcp_erp_thread(void *data)
- 	struct zfcp_erp_action *erp_action;
- 	unsigned long flags;
  
--	daemonize("zfcperp%s", zfcp_get_busid_by_adapter(adapter));
--	/* Block all signals */
--	siginitsetinv(&current->blocked, 0);
- 	atomic_set_mask(ZFCP_STATUS_ADAPTER_ERP_THREAD_UP, &adapter->status);
- 	debug_text_event(adapter->erp_dbf, 5, "a_th_run");
- 	wake_up(&adapter->erp_thread_wqh);
 -- 
 1.5.0.g53756
 
