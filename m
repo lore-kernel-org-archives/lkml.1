@@ -1,71 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031192AbXDSHdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030188AbXDSHk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031192AbXDSHdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDSHdU
+	id S1030188AbXDSHk7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDSHk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:33:20 -0400
-Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:2170 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031192AbXDSHdT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:33:19 -0400
-Date: Thu, 19 Apr 2007 09:33:27 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Milind Arun Choudhary <milindchoudhary@gmail.com>
-Cc: Kernel Janitors <kernel-janitors@lists.osdl.org>, i2c <i2c@lm-sensors.org>,
-       Andrw Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [KJ][PATCH] i2c: SPIN_LOCK_UNLOCKED cleanup
-Message-ID: <20070419093327.7112d515@hyperion.delvare>
-In-Reply-To: <20070419040557.GA14283@arun.site>
-References: <20070419040557.GA14283@arun.site>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Thu, 19 Apr 2007 03:40:58 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:2092 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030188AbXDSHk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 03:40:57 -0400
+Date: Thu, 19 Apr 2007 09:38:30 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-aio@kvack.org
+Subject: dio_get_page() lockdep complaints
+Message-ID: <20070419073828.GB20928@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 09:35:58 +0530, Milind Arun Choudhary wrote:
-> SPIN_LOCK_UNLOCKED cleanup,use __SPIN_LOCK_UNLOCKED instead 
-> 
-> Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
-> 
-> ---
->  i2c-pxa.c     |    2 +-
->  i2c-s3c2410.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
-> index 14e83d0..d5d44ed 100644
-> --- a/drivers/i2c/busses/i2c-pxa.c
-> +++ b/drivers/i2c/busses/i2c-pxa.c
-> @@ -825,7 +825,7 @@ static const struct i2c_algorithm i2c_pxa_algorithm = {
->  };
->  
->  static struct pxa_i2c i2c_pxa = {
-> -	.lock	= SPIN_LOCK_UNLOCKED,
-> +	.lock	= __SPIN_LOCK_UNLOCKED(i2c_pxa.lock),
->  	.adap	= {
->  		.owner		= THIS_MODULE,
->  		.algo		= &i2c_pxa_algorithm,
-> diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
-> index 556f244..3eb5958 100644
-> --- a/drivers/i2c/busses/i2c-s3c2410.c
-> +++ b/drivers/i2c/busses/i2c-s3c2410.c
-> @@ -570,7 +570,7 @@ static const struct i2c_algorithm s3c24xx_i2c_algorithm = {
->  };
->  
->  static struct s3c24xx_i2c s3c24xx_i2c = {
-> -	.lock	= SPIN_LOCK_UNLOCKED,
-> +	.lock	= __SPIN_LOCK_UNLOCKED(s3c24xx_i2c.lock),
->  	.wait	= __WAIT_QUEUE_HEAD_INITIALIZER(s3c24xx_i2c.wait),
->  	.adap	= {
->  		.name			= "s3c2410-i2c",
-> 
+Hi,
 
-Applied, thanks.
+Doing some testing on CFQ, I ran into this 100% reproducible report:
+
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.21-rc7 #5
+-------------------------------------------------------
+fio/9741 is trying to acquire lock:
+ (&mm->mmap_sem){----}, at: [<b018cb34>] dio_get_page+0x54/0x161
+
+but task is already holding lock:
+ (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&inode->i_mutex){--..}:
+       [<b013e3fb>] __lock_acquire+0xdee/0xf9c
+       [<b013e600>] lock_acquire+0x57/0x70
+       [<b038c4a5>] __mutex_lock_slowpath+0x73/0x297
+       [<b038c6e5>] mutex_lock+0x1c/0x1f
+       [<b01b17e9>] reiserfs_file_release+0x54/0x447
+       [<b016afe7>] __fput+0x53/0x101
+       [<b016b0ee>] fput+0x19/0x1c
+       [<b015bcd5>] remove_vma+0x3b/0x4d
+       [<b015c659>] do_munmap+0x17f/0x1cf
+       [<b015c6db>] sys_munmap+0x32/0x42
+       [<b0103f04>] sysenter_past_esp+0x5d/0x99
+       [<ffffffff>] 0xffffffff
+
+-> #0 (&mm->mmap_sem){----}:
+       [<b013e259>] __lock_acquire+0xc4c/0xf9c
+       [<b013e600>] lock_acquire+0x57/0x70
+       [<b0137b92>] down_read+0x3a/0x4c
+       [<b018cb34>] dio_get_page+0x54/0x161
+       [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
+       [<b01cf449>] ext3_direct_IO+0x98/0x1e5
+       [<b014e8df>] generic_file_direct_IO+0x63/0x133
+       [<b01500e9>] generic_file_aio_read+0x16b/0x222
+       [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
+       [<b0180147>] aio_run_iocb+0x69/0x129
+       [<b0180a78>] io_submit_one+0x194/0x2eb
+       [<b0181331>] sys_io_submit+0x92/0xe7
+       [<b0103f90>] syscall_call+0x7/0xb
+       [<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+1 lock held by fio/9741:
+ #0:  (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
+
+stack backtrace:
+ [<b0104f54>] show_trace_log_lvl+0x1a/0x30
+ [<b0105626>] show_trace+0x12/0x14
+ [<b01056ad>] dump_stack+0x16/0x18
+ [<b013c48d>] print_circular_bug_tail+0x68/0x71
+ [<b013e259>] __lock_acquire+0xc4c/0xf9c
+ [<b013e600>] lock_acquire+0x57/0x70
+ [<b0137b92>] down_read+0x3a/0x4c
+ [<b018cb34>] dio_get_page+0x54/0x161
+ [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
+ [<b01cf449>] ext3_direct_IO+0x98/0x1e5
+ [<b014e8df>] generic_file_direct_IO+0x63/0x133
+ [<b01500e9>] generic_file_aio_read+0x16b/0x222
+ [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
+ [<b0180147>] aio_run_iocb+0x69/0x129
+ [<b0180a78>] io_submit_one+0x194/0x2eb
+ [<b0181331>] sys_io_submit+0x92/0xe7
+ [<b0103f90>] syscall_call+0x7/0xb
+ =======================
+
+The test run was fio, the job file used is:
+
+# fio job file snip below
+[global]
+bs=4k
+buffered=0
+ioengine=libaio
+iodepth=4
+thread
+
+[readers]
+numjobs=8
+size=128m
+rw=read
+# fio job file snip above
+
+Filesystem was ext3, default mkfs and mount options. Kernel was
+2.6.21-rc7 as of this morning, with some CFQ patches applied.
 
 -- 
-Jean Delvare
+Jens Axboe
+
