@@ -1,124 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993181AbXDSIS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993184AbXDSIEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993181AbXDSIS3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993187AbXDSISY
+	id S2993184AbXDSIEO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993167AbXDSIDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:18:24 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:17294 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993180AbXDSIEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:04:25 -0400
-Date: Thu, 19 Apr 2007 10:01:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       reiserfs-dev@namesys.com, "Vladimir V. Saveliev" <vs@namesys.com>,
-       linux-mm@kvack.org
-Subject: Re: dio_get_page() lockdep complaints
-Message-ID: <20070419080157.GC20928@kernel.dk>
-References: <20070419073828.GB20928@kernel.dk> <20070419010142.5b7b00cd.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070419010142.5b7b00cd.akpm@linux-foundation.org>
+	Thu, 19 Apr 2007 04:03:13 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45730 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993169AbXDSICR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 04:02:17 -0400
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "<Andrew Morton" <akpm@osdl.org>
+Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Scott Murray <scottm@somanetworks.com>
+Subject: [PATCH] cpci_hotplug: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 01:58:34 -0600
+Message-Id: <11769695563598-git-send-email-ebiederm@xmission.com>
+X-Mailer: git-send-email 1.5.1.1.g2de0
+In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19 2007, Andrew Morton wrote:
-> On Thu, 19 Apr 2007 09:38:30 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > Hi,
-> > 
-> > Doing some testing on CFQ, I ran into this 100% reproducible report:
-> > 
-> > =======================================================
-> > [ INFO: possible circular locking dependency detected ]
-> > 2.6.21-rc7 #5
-> > -------------------------------------------------------
-> > fio/9741 is trying to acquire lock:
-> >  (&mm->mmap_sem){----}, at: [<b018cb34>] dio_get_page+0x54/0x161
-> > 
-> > but task is already holding lock:
-> >  (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
-> > 
-> > which lock already depends on the new lock.
-> > 
-> 
-> This is the correct ranking: i_mutex outside mmap_sem.
-> 
-> > 
-> > the existing dependency chain (in reverse order) is:
-> > 
-> > -> #1 (&inode->i_mutex){--..}:
-> >        [<b013e3fb>] __lock_acquire+0xdee/0xf9c
-> >        [<b013e600>] lock_acquire+0x57/0x70
-> >        [<b038c4a5>] __mutex_lock_slowpath+0x73/0x297
-> >        [<b038c6e5>] mutex_lock+0x1c/0x1f
-> >        [<b01b17e9>] reiserfs_file_release+0x54/0x447
-> >        [<b016afe7>] __fput+0x53/0x101
-> >        [<b016b0ee>] fput+0x19/0x1c
-> >        [<b015bcd5>] remove_vma+0x3b/0x4d
-> >        [<b015c659>] do_munmap+0x17f/0x1cf
-> >        [<b015c6db>] sys_munmap+0x32/0x42
-> >        [<b0103f04>] sysenter_past_esp+0x5d/0x99
-> >        [<ffffffff>] 0xffffffff
-> > 
-> > -> #0 (&mm->mmap_sem){----}:
-> >        [<b013e259>] __lock_acquire+0xc4c/0xf9c
-> >        [<b013e600>] lock_acquire+0x57/0x70
-> >        [<b0137b92>] down_read+0x3a/0x4c
-> >        [<b018cb34>] dio_get_page+0x54/0x161
-> >        [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
-> >        [<b01cf449>] ext3_direct_IO+0x98/0x1e5
-> >        [<b014e8df>] generic_file_direct_IO+0x63/0x133
-> >        [<b01500e9>] generic_file_aio_read+0x16b/0x222
-> >        [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
-> >        [<b0180147>] aio_run_iocb+0x69/0x129
-> >        [<b0180a78>] io_submit_one+0x194/0x2eb
-> >        [<b0181331>] sys_io_submit+0x92/0xe7
-> >        [<b0103f90>] syscall_call+0x7/0xb
-> >        [<ffffffff>] 0xffffffff
-> 
-> But here reiserfs is taking i_mutex in its file_operations.release(),
-> which can be called under mmap_sem.
-> 
-> Vladimir's recent de14569f94513279e3d44d9571a421e9da1759ae.
-> "resierfs: avoid tail packing if an inode was ever mmapped" comes real
-> close to this code, but afaict it did not cause this bug.
-> 
-> I can't think of anything which we've done in the 2.6.21 cycle which
-> would have caused this to start happening.  Odd.
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-The bug may be holder, let me know if you want me to check 2.6.20 or
-earlier.
+kthread_run replaces the kernel_thread and  daemonize calls
+during thread startup.
 
-> > The test run was fio, the job file used is:
-> > 
-> > # fio job file snip below
-> > [global]
-> > bs=4k
-> > buffered=0
-> > ioengine=libaio
-> > iodepth=4
-> > thread
-> > 
-> > [readers]
-> > numjobs=8
-> > size=128m
-> > rw=read
-> > # fio job file snip above
-> > 
-> > Filesystem was ext3, default mkfs and mount options. Kernel was
-> > 2.6.21-rc7 as of this morning, with some CFQ patches applied.
-> > 
-> 
-> It's interesting that lockdep learned the (wrong) ranking from a reiserfs
-> operation then later detected it being violated by ext3.
+Calls to signal_pending were also removed as it is currently
+impossible for the cpci_hotplug thread to receive signals.
 
-It's a scratch test box, which for some reason has reiserfs as the
-rootfs. So reiser gets to run first :-)
+CC: Scott Murray <scottm@somanetworks.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ drivers/pci/hotplug/cpci_hotplug_core.c |   22 +++++++---------------
+ 1 files changed, 7 insertions(+), 15 deletions(-)
 
+diff --git a/drivers/pci/hotplug/cpci_hotplug_core.c b/drivers/pci/hotplug/cpci_hotplug_core.c
+index 6845515..c620c7e 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_core.c
++++ b/drivers/pci/hotplug/cpci_hotplug_core.c
+@@ -33,6 +33,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/smp_lock.h>
++#include <linux/kthread.h>
+ #include <asm/atomic.h>
+ #include <linux/delay.h>
+ #include "cpci_hotplug.h"
+@@ -521,17 +522,13 @@ event_thread(void *data)
+ {
+ 	int rc;
+ 
+-	lock_kernel();
+-	daemonize("cpci_hp_eventd");
+-	unlock_kernel();
+-
+ 	dbg("%s - event thread started", __FUNCTION__);
+ 	while (1) {
+ 		dbg("event thread sleeping");
+ 		down_interruptible(&event_semaphore);
+ 		dbg("event thread woken, thread_finished = %d",
+ 		    thread_finished);
+-		if (thread_finished || signal_pending(current))
++		if (thread_finished)
+ 			break;
+ 		do {
+ 			rc = check_slots();
+@@ -562,12 +559,8 @@ poll_thread(void *data)
+ {
+ 	int rc;
+ 
+-	lock_kernel();
+-	daemonize("cpci_hp_polld");
+-	unlock_kernel();
+-
+ 	while (1) {
+-		if (thread_finished || signal_pending(current))
++		if (thread_finished)
+ 			break;
+ 		if (controller->ops->query_enum()) {
+ 			do {
+@@ -592,7 +585,7 @@ poll_thread(void *data)
+ static int
+ cpci_start_thread(void)
+ {
+-	int pid;
++	struct task_struct *task;
+ 
+ 	/* initialize our semaphores */
+ 	init_MUTEX_LOCKED(&event_semaphore);
+@@ -600,14 +593,13 @@ cpci_start_thread(void)
+ 	thread_finished = 0;
+ 
+ 	if (controller->irq)
+-		pid = kernel_thread(event_thread, NULL, 0);
++		task = kthread_run(event_thread, NULL, "cpci_hp_eventd");
+ 	else
+-		pid = kernel_thread(poll_thread, NULL, 0);
+-	if (pid < 0) {
++		task = kthread_run(poll_thread, NULL, "cpci_hp_polld");
++	if (IS_ERR(task)) {
+ 		err("Can't start up our thread");
+ 		return -1;
+ 	}
+-	dbg("Our thread pid = %d", pid);
+ 	return 0;
+ }
+ 
 -- 
-Jens Axboe
+1.5.0.g53756
 
