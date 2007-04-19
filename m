@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993179AbXDSIEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993188AbXDSIFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993179AbXDSIEO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993184AbXDSIEN
+	id S2993188AbXDSIFR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993170AbXDSIEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:04:13 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45796 "EHLO
+	Thu, 19 Apr 2007 04:04:46 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45753 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993179AbXDSIEE (ORCPT
+	with ESMTP id S2993169AbXDSIDc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:04:04 -0400
+	Thu, 19 Apr 2007 04:03:32 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Neil Brown <neilb@suse.de>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: [PATCH] nfsd/nfs4state: Remove unnecessary daemonize call.
-Date: Thu, 19 Apr 2007 01:59:01 -0600
-Message-Id: <11769696352131-git-send-email-ebiederm@xmission.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: [PATCH] bluetooth hidp: Convert to kthread API.
+Date: Thu, 19 Apr 2007 01:58:53 -0600
+Message-Id: <1176969605114-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,26 +27,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Cc: Neil Brown <neilb@suse.de>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+This patch starts up khidp using kthread_run instead
+of kernel_thread and daemonize, resulting is slightly
+simpler and more maintainable code.
+
+Cc: Marcel Holtmann <marcel@holtmann.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/nfsd/nfs4state.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ net/bluetooth/hidp/core.c |   29 ++++++++++++++++-------------
+ 1 files changed, 16 insertions(+), 13 deletions(-)
 
-diff --git a/fs/nfsd/nfs4state.c b/fs/nfsd/nfs4state.c
-index 678f3be..3cc8ce4 100644
---- a/fs/nfsd/nfs4state.c
-+++ b/fs/nfsd/nfs4state.c
-@@ -1326,8 +1326,6 @@ do_recall(void *__dp)
- {
- 	struct nfs4_delegation *dp = __dp;
+diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
+index df2c471..1c9b202 100644
+--- a/net/bluetooth/hidp/core.c
++++ b/net/bluetooth/hidp/core.c
+@@ -36,6 +36,7 @@
+ #include <linux/init.h>
+ #include <linux/wait.h>
+ #include <linux/freezer.h>
++#include <linux/kthread.h>
+ #include <net/sock.h>
  
--	daemonize("nfsv4-recall");
+ #include <linux/input.h>
+@@ -531,22 +532,11 @@ static int hidp_session(void *arg)
+ 	struct sock *ctrl_sk = session->ctrl_sock->sk;
+ 	struct sock *intr_sk = session->intr_sock->sk;
+ 	struct sk_buff *skb;
+-	int vendor = 0x0000, product = 0x0000;
+ 	wait_queue_t ctrl_wait, intr_wait;
+ 
+ 	BT_DBG("session %p", session);
+ 
+-	if (session->input) {
+-		vendor  = session->input->id.vendor;
+-		product = session->input->id.product;
+-	}
 -
- 	nfsd4_cb_recall(dp);
- 	return 0;
- }
+-	if (session->hid) {
+-		vendor  = session->hid->vendor;
+-		product = session->hid->product;
+-	}
+ 
+-	daemonize("khidpd_%04x%04x", vendor, product);
+ 	set_user_nice(current, -15);
+ 
+ 	init_waitqueue_entry(&ctrl_wait, current);
+@@ -747,7 +737,9 @@ static inline void hidp_setup_hid(struct hidp_session *session, struct hidp_conn
+ 
+ int hidp_add_connection(struct hidp_connadd_req *req, struct socket *ctrl_sock, struct socket *intr_sock)
+ {
++	int vendor = 0x0000, product = 0x0000;
+ 	struct hidp_session *session, *s;
++	struct task_struct *task;
+ 	int err;
+ 
+ 	BT_DBG("");
+@@ -834,8 +826,19 @@ int hidp_add_connection(struct hidp_connadd_req *req, struct socket *ctrl_sock,
+ 
+ 	hidp_set_timer(session);
+ 
+-	err = kernel_thread(hidp_session, session, CLONE_KERNEL);
+-	if (err < 0)
++	if (session->input) {
++		vendor  = session->input->id.vendor;
++		product = session->input->id.product;
++	}
++
++	if (session->hid) {
++		vendor  = session->hid->vendor;
++		product = session->hid->product;
++	}
++	task = kthread_run(hidp_session, session,
++			   "khidpd_%04x%04x", vendor, product);
++	err = PTR_ERR(task);
++	if (IS_ERR(task))
+ 		goto unlink;
+ 
+ 	if (session->input) {
 -- 
 1.5.0.g53756
 
