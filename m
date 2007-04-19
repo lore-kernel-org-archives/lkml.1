@@ -1,86 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766876AbXDSQzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766878AbXDSQ4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766876AbXDSQzW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766877AbXDSQzW
+	id S1766878AbXDSQ4c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766879AbXDSQ4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:55:22 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2153 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766876AbXDSQzU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:55:20 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 19 Apr 2007 09:55:04 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Mike Galbraith <efault@gmx.de>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-Reply-To: <1176967937.6408.81.camel@Homer.simpson.net>
-Message-ID: <Pine.LNX.4.64.0704190845430.31693@alien.or.mcafeemobile.com>
-References: <20070418055525.GS11115@waste.org> 
- <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> 
- <20070418152355.GU11115@waste.org>  <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
-  <20070418174945.GA7930@elte.hu> <20070418175936.GA11980@elte.hu> 
- <alpine.LFD.0.98.0704181223190.2828@woody.linux-foundation.org> 
- <Pine.LNX.4.64.0704181304250.25880@alien.or.mcafeemobile.com> 
- <20070418214816.GA10902@elte.hu>  <1176965560.6408.60.camel@Homer.simpson.net>
-  <20070419070921.GA28528@elte.hu> <1176967937.6408.81.camel@Homer.simpson.net>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 19 Apr 2007 12:56:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46325 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766878AbXDSQ4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 12:56:31 -0400
+Message-ID: <46279F3B.8050807@redhat.com>
+Date: Thu, 19 Apr 2007 12:56:27 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marat Buharov <marat.buharov@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: why UDF have so ugly filesize limit?
+References: <698310e10704190655j1263035bi77c5f551db510646@mail.gmail.com>
+In-Reply-To: <698310e10704190655j1263035bi77c5f551db510646@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007, Mike Galbraith wrote:
-
-> On Thu, 2007-04-19 at 09:09 +0200, Ingo Molnar wrote:
-> > * Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > With a heavily reniced X (perfectly fine), that should indeed solve my 
-> > > daily usage pattern nicely (always need godmode for shells, but not 
-> > > for mozilla and ilk. 50/50 split automatic without renice of entire 
-> > > gui)
-> > 
-> > how about the first-approximation solution i suggested in the previous 
-> > mail: to add a per UID default nice level? (With this default defaulting 
-> > to '-10' for all root-owned processes, and defaulting to '0' for 
-> > everything else.) That would solve most of the current CFS regressions 
-> > at hand.
+Marat Buharov wrote:
+> from fs/udf/super.c:
+> in function udf_fill_super
+> sb->s_maxbytes = 1<<30; (1 GB)
 > 
-> That would make my kernel builds etc interfere with my other self's
-> surfing and whatnot.  With it by EUID, when I'm surfing or whatnot, the
-> X portion of my Joe-User activity pushes the compile portion of root
-> down in bandwidth utilization automagically, which is exactly the right
-> thing, because the root me in not as important as the Joe-User me using
-> the GUI at that time.  If the idea of X disturbing root upsets some,
-> they can move X to another UID.  Generally, it seems perfect for here.
+> Why sb->s_maxbytes is not equal to MAX_LFS_FILESIZE?
+> 
 
-Now guys, I did not follow the whole lengthy and feisty thread, but IIRC 
-Con's scheduler has been attacked because, among other argouments, was 
-requiring X to be reniced. This happened like a month ago IINM.
-I did not have time to look at Con's scheduler, and I only had a brief 
-look at Ingo's one (looks very promising IMO, but so was the initial O(1) 
-post before all the corner-cases fixes went in).
-But this is not a about technical merit, this is about applying the same 
-rules of judgement to others as well to ourselves.
-We went from a "renicing X to -10 is bad because the scheduler should 
-be able to correctly handle the problem w/out additional external plugs" 
-to a totally opposite "let's renice -10 X, the whole SCHED_NORMAL kthreads 
-class, on top of all the tasks owned by root" [1].
->From a spectator POV like myself in this case, this looks rather "unfair".
-
-
-
-[1] I think, before and now, that that's more a duck tape patch than a 
-    real solution. OTOH if the "solution" is gonna be another maze of 
-    macros and heuristics filled with pretty bad corner cases, I may 
-    prefer the former.
-
-
-- Davide
-
-
+Patches to fix that are in the -mm kernel already (and in
+Fedora Core 6 latest update.)
