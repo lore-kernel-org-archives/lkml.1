@@ -1,630 +1,447 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766964AbXDSTcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766965AbXDSTeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766964AbXDSTcF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 15:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766960AbXDSTcE
+	id S1766965AbXDSTeA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 15:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766966AbXDSTeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 15:32:04 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:43089 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766957AbXDSTcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 15:32:00 -0400
-Date: Thu, 19 Apr 2007 15:31:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] net driver fixes
-Message-ID: <20070419193156.GA6734@havoc.gtf.org>
+	Thu, 19 Apr 2007 15:34:00 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:57927 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766965AbXDSTd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 15:33:59 -0400
+Date: Thu, 19 Apr 2007 12:33:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-kernel@vger.kernel.org, holger@eiboeck.de
+Subject: Re: RFC: drivers/char/watchdog/pcwd.c +
+ drivers/char/watchdog/pcwd_pci.c
+Message-Id: <20070419123310.6a7a2193.akpm@linux-foundation.org>
+In-Reply-To: <20070419190055.GA31632@infomag.infomag.iguana.be>
+References: <20070417185849.GA2632@infomag.infomag.iguana.be>
+	<20070417131624.5ae58d63.akpm@linux-foundation.org>
+	<20070419190055.GA31632@infomag.infomag.iguana.be>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Apr 2007 21:00:55 +0200
+Wim Van Sebroeck <wim@iguana.be> wrote:
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
+> Hi Andrew,
+> 
+> > > On Tue, 17 Apr 2007 20:58:49 +0200 Wim Van Sebroeck <wim@iguana.be> wrote:
+> > > Would anyone object if we would merge the "full bells and whistles" drivers for
+> > > the pcwd isa and pci cards in the kernel tree. (It basically only adds some extra
+> > > /proc routines). This would make it easier to maintain the "full bells and whistles"
+> > > driver.
+> > 
+> > It's hard to answer that question.  Please send the patches out in the
+> > usual manner for review and comment.
+> 
+> for the pcwd.c driver the patch would be as follows (see below).
+> I'll create the patch for pcwd_pci.c later this week.
+> 
+>  #include <linux/module.h>	/* For module specific items */
+> @@ -65,13 +73,18 @@
+>  #include <linux/fs.h>		/* For file operations */
+>  #include <linux/ioport.h>	/* For io-port access */
+>  #include <linux/spinlock.h>	/* For spin_lock/spin_unlock/... */
+> +#include <linux/string.h>	/* For string manipulations */
+> +#ifdef CONFIG_PROC_FS
+> +#include <linux/stat.h>		/* For S_IFREG/S_IRUGO/S_IWUSR */
+> +#include <linux/proc_fs.h>	/* For create_proc_entry/remove_proc_entry/ ... */
+> +#endif
 
-to receive the following updates:
+Please avoid the ifdefs here if at all possible.  They increase the chances
+of the build failing as people change configs.
 
- drivers/net/Kconfig               |    1 +
- drivers/net/cxgb3/cxgb3_defs.h    |    5 +-
- drivers/net/cxgb3/cxgb3_offload.c |   69 +++++++++++----
- drivers/net/cxgb3/t3_hw.c         |   18 +++--
- drivers/net/sky2.c                |  176 +++++++++++++++++++++++--------------
- drivers/net/sky2.h                |   11 +++
- drivers/net/spider_net.c          |    2 +-
- 7 files changed, 190 insertions(+), 92 deletions(-)
+>  /* module parameters */
+> +#define CELSIUS		0
+> +#define FAHRENHEIT	1
+> +static int proc_temp_mode = CELSIUS;
+> +module_param(proc_temp_mode, int, 0);
+> +MODULE_PARM_DESC(proc_temp_mode, "which temperature mode to use in /proc/ 0=Celsius, 1=Fahrenheit (default=0)");
 
-Dave Jiang (1):
-      gianfar needs crc32 lib dependency
+hm, is that a good idea?  Making the contents of /proc files dependent upon
+some module parameter?
 
-Divy Le Ray (2):
-      cxgb3 - Fix low memory conditions
-      cxgb3 - PHY interrupts and GPIO pins.
+I'd have thought that it would be better to remove this option and either
 
-Linas Vepstas (1):
-      spidernet: Fix problem sending IP fragments
+a) offer two /proc files: one for Celcius, one for Fahrenheit
 
-Stephen Hemminger (6):
-      sky2: disable support for 88E8056
-      sky2: handle descriptor errors
-      sky2: disable ASF on all chip types
-      sky2: EC-U performance and jumbo support
-      sky2: no jumbo on Yukon FE
-      sky2: version 1.14
+b) Put both values into the same /proc file (one per line)
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index c3f9f59..a3d46ea 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2263,6 +2263,7 @@ config GIANFAR
- 	tristate "Gianfar Ethernet"
- 	depends on 85xx || 83xx || PPC_86xx
- 	select PHYLIB
-+	select CRC32
- 	help
- 	  This driver supports the Gigabit TSEC on the MPC83xx, MPC85xx,
- 	  and MPC86xx family of chips, and the FEC on the 8540.
-diff --git a/drivers/net/cxgb3/cxgb3_defs.h b/drivers/net/cxgb3/cxgb3_defs.h
-index e14862b..483a594 100644
---- a/drivers/net/cxgb3/cxgb3_defs.h
-+++ b/drivers/net/cxgb3/cxgb3_defs.h
-@@ -67,7 +67,10 @@ static inline union listen_entry *stid2entry(const struct tid_info *t,
- static inline struct t3c_tid_entry *lookup_tid(const struct tid_info *t,
- 					       unsigned int tid)
- {
--	return tid < t->ntids ? &(t->tid_tab[tid]) : NULL;
-+	struct t3c_tid_entry *t3c_tid = tid < t->ntids ?
-+	    &(t->tid_tab[tid]) : NULL;
-+
-+	return (t3c_tid && t3c_tid->client) ? t3c_tid : NULL;
- }
- 
- /*
-diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
-index 4864924..199e506 100644
---- a/drivers/net/cxgb3/cxgb3_offload.c
-+++ b/drivers/net/cxgb3/cxgb3_offload.c
-@@ -508,6 +508,7 @@ void cxgb3_queue_tid_release(struct t3cdev *tdev, unsigned int tid)
- 
- 	spin_lock_bh(&td->tid_release_lock);
- 	p->ctx = (void *)td->tid_release_list;
-+	p->client = NULL;
- 	td->tid_release_list = p;
- 	if (!p->ctx)
- 		schedule_work(&td->tid_release_task);
-@@ -623,7 +624,8 @@ static int do_act_open_rpl(struct t3cdev *dev, struct sk_buff *skb)
- 	struct t3c_tid_entry *t3c_tid;
- 
- 	t3c_tid = lookup_atid(&(T3C_DATA(dev))->tid_maps, atid);
--	if (t3c_tid->ctx && t3c_tid->client && t3c_tid->client->handlers &&
-+	if (t3c_tid && t3c_tid->ctx && t3c_tid->client &&
-+	    t3c_tid->client->handlers &&
- 	    t3c_tid->client->handlers[CPL_ACT_OPEN_RPL]) {
- 		return t3c_tid->client->handlers[CPL_ACT_OPEN_RPL] (dev, skb,
- 								    t3c_tid->
-@@ -642,7 +644,7 @@ static int do_stid_rpl(struct t3cdev *dev, struct sk_buff *skb)
- 	struct t3c_tid_entry *t3c_tid;
- 
- 	t3c_tid = lookup_stid(&(T3C_DATA(dev))->tid_maps, stid);
--	if (t3c_tid->ctx && t3c_tid->client->handlers &&
-+	if (t3c_tid && t3c_tid->ctx && t3c_tid->client->handlers &&
- 	    t3c_tid->client->handlers[p->opcode]) {
- 		return t3c_tid->client->handlers[p->opcode] (dev, skb,
- 							     t3c_tid->ctx);
-@@ -660,7 +662,7 @@ static int do_hwtid_rpl(struct t3cdev *dev, struct sk_buff *skb)
- 	struct t3c_tid_entry *t3c_tid;
- 
- 	t3c_tid = lookup_tid(&(T3C_DATA(dev))->tid_maps, hwtid);
--	if (t3c_tid->ctx && t3c_tid->client->handlers &&
-+	if (t3c_tid && t3c_tid->ctx && t3c_tid->client->handlers &&
- 	    t3c_tid->client->handlers[p->opcode]) {
- 		return t3c_tid->client->handlers[p->opcode]
- 		    (dev, skb, t3c_tid->ctx);
-@@ -689,6 +691,28 @@ static int do_cr(struct t3cdev *dev, struct sk_buff *skb)
- 	}
- }
- 
-+/*
-+ * Returns an sk_buff for a reply CPL message of size len.  If the input
-+ * sk_buff has no other users it is trimmed and reused, otherwise a new buffer
-+ * is allocated.  The input skb must be of size at least len.  Note that this
-+ * operation does not destroy the original skb data even if it decides to reuse
-+ * the buffer.
-+ */
-+static struct sk_buff *cxgb3_get_cpl_reply_skb(struct sk_buff *skb, size_t len,
-+					       int gfp)
-+{
-+	if (likely(!skb_cloned(skb))) {
-+		BUG_ON(skb->len < len);
-+		__skb_trim(skb, len);
-+		skb_get(skb);
-+	} else {
-+		skb = alloc_skb(len, gfp);
-+		if (skb)
-+			__skb_put(skb, len);
-+	}
-+	return skb;
-+}
-+
- static int do_abort_req_rss(struct t3cdev *dev, struct sk_buff *skb)
- {
- 	union opcode_tid *p = cplhdr(skb);
-@@ -696,30 +720,39 @@ static int do_abort_req_rss(struct t3cdev *dev, struct sk_buff *skb)
- 	struct t3c_tid_entry *t3c_tid;
- 
- 	t3c_tid = lookup_tid(&(T3C_DATA(dev))->tid_maps, hwtid);
--	if (t3c_tid->ctx && t3c_tid->client->handlers &&
-+	if (t3c_tid && t3c_tid->ctx && t3c_tid->client->handlers &&
- 	    t3c_tid->client->handlers[p->opcode]) {
- 		return t3c_tid->client->handlers[p->opcode]
- 		    (dev, skb, t3c_tid->ctx);
- 	} else {
- 		struct cpl_abort_req_rss *req = cplhdr(skb);
- 		struct cpl_abort_rpl *rpl;
-+		struct sk_buff *reply_skb;
-+		unsigned int tid = GET_TID(req);
-+		u8 cmd = req->status;
-+
-+		if (req->status == CPL_ERR_RTX_NEG_ADVICE ||
-+		    req->status == CPL_ERR_PERSIST_NEG_ADVICE)
-+			goto out;
- 
--		struct sk_buff *skb =
--		    alloc_skb(sizeof(struct cpl_abort_rpl), GFP_ATOMIC);
--		if (!skb) {
-+		reply_skb = cxgb3_get_cpl_reply_skb(skb,
-+						    sizeof(struct
-+							   cpl_abort_rpl),
-+						    GFP_ATOMIC);
-+
-+		if (!reply_skb) {
- 			printk("do_abort_req_rss: couldn't get skb!\n");
- 			goto out;
- 		}
--		skb->priority = CPL_PRIORITY_DATA;
--		__skb_put(skb, sizeof(struct cpl_abort_rpl));
--		rpl = cplhdr(skb);
-+		reply_skb->priority = CPL_PRIORITY_DATA;
-+		__skb_put(reply_skb, sizeof(struct cpl_abort_rpl));
-+		rpl = cplhdr(reply_skb);
- 		rpl->wr.wr_hi =
- 		    htonl(V_WR_OP(FW_WROPCODE_OFLD_HOST_ABORT_CON_RPL));
--		rpl->wr.wr_lo = htonl(V_WR_TID(GET_TID(req)));
--		OPCODE_TID(rpl) =
--		    htonl(MK_OPCODE_TID(CPL_ABORT_RPL, GET_TID(req)));
--		rpl->cmd = req->status;
--		cxgb3_ofld_send(dev, skb);
-+		rpl->wr.wr_lo = htonl(V_WR_TID(tid));
-+		OPCODE_TID(rpl) = htonl(MK_OPCODE_TID(CPL_ABORT_RPL, tid));
-+		rpl->cmd = cmd;
-+		cxgb3_ofld_send(dev, reply_skb);
- out:
- 		return CPL_RET_BUF_DONE;
- 	}
-@@ -732,7 +765,7 @@ static int do_act_establish(struct t3cdev *dev, struct sk_buff *skb)
- 	struct t3c_tid_entry *t3c_tid;
- 
- 	t3c_tid = lookup_atid(&(T3C_DATA(dev))->tid_maps, atid);
--	if (t3c_tid->ctx && t3c_tid->client->handlers &&
-+	if (t3c_tid && t3c_tid->ctx && t3c_tid->client->handlers &&
- 	    t3c_tid->client->handlers[CPL_ACT_ESTABLISH]) {
- 		return t3c_tid->client->handlers[CPL_ACT_ESTABLISH]
- 		    (dev, skb, t3c_tid->ctx);
-@@ -762,7 +795,7 @@ static int do_term(struct t3cdev *dev, struct sk_buff *skb)
- 	struct t3c_tid_entry *t3c_tid;
- 
- 	t3c_tid = lookup_tid(&(T3C_DATA(dev))->tid_maps, hwtid);
--	if (t3c_tid->ctx && t3c_tid->client->handlers &&
-+	if (t3c_tid && t3c_tid->ctx && t3c_tid->client->handlers &&
- 	    t3c_tid->client->handlers[opcode]) {
- 		return t3c_tid->client->handlers[opcode] (dev, skb,
- 							  t3c_tid->ctx);
-@@ -961,7 +994,7 @@ void cxgb_redirect(struct dst_entry *old, struct dst_entry *new)
- 	for (tid = 0; tid < ti->ntids; tid++) {
- 		te = lookup_tid(ti, tid);
- 		BUG_ON(!te);
--		if (te->ctx && te->client && te->client->redirect) {
-+		if (te && te->ctx && te->client && te->client->redirect) {
- 			update_tcb = te->client->redirect(te->ctx, old, new, e);
- 			if (update_tcb) {
- 				l2t_hold(L2DATA(tdev), e);
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index d83f075..fb485d0 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -1523,19 +1523,25 @@ static int mac_intr_handler(struct adapter *adap, unsigned int idx)
-  */
- int t3_phy_intr_handler(struct adapter *adapter)
- {
--	static const int intr_gpio_bits[] = { 8, 0x20 };
--
-+	u32 mask, gpi = adapter_info(adapter)->gpio_intr;
- 	u32 i, cause = t3_read_reg(adapter, A_T3DBG_INT_CAUSE);
- 
- 	for_each_port(adapter, i) {
--		if (cause & intr_gpio_bits[i]) {
--			struct cphy *phy = &adap2pinfo(adapter, i)->phy;
--			int phy_cause = phy->ops->intr_handler(phy);
-+		struct port_info *p = adap2pinfo(adapter, i);
-+
-+		mask = gpi - (gpi & (gpi - 1));
-+		gpi -= mask;
-+
-+		if (!(p->port_type->caps & SUPPORTED_IRQ))
-+			continue;
-+
-+		if (cause & mask) {
-+			int phy_cause = p->phy.ops->intr_handler(&p->phy);
- 
- 			if (phy_cause & cphy_cause_link_change)
- 				t3_link_changed(adapter, i);
- 			if (phy_cause & cphy_cause_fifo_error)
--				phy->fifo_errors++;
-+				p->phy.fifo_errors++;
- 		}
- 	}
- 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 4a009b7..ac36152 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -49,7 +49,7 @@
- #include "sky2.h"
- 
- #define DRV_NAME		"sky2"
--#define DRV_VERSION		"1.13"
-+#define DRV_VERSION		"1.14"
- #define PFX			DRV_NAME " "
- 
- /*
-@@ -123,7 +123,10 @@ static const struct pci_device_id sky2_id_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4361) }, /* 88E8050 */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4362) }, /* 88E8053 */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4363) }, /* 88E8055 */
-+#ifdef broken
-+	/* This device causes data corruption problems that are not resolved */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4364) }, /* 88E8056 */
-+#endif
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4366) }, /* 88EC036 */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4367) }, /* 88EC032 */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4368) }, /* 88EC034 */
-@@ -740,12 +743,17 @@ static void sky2_mac_init(struct sky2_hw *hw, unsigned port)
- 	if (hw->chip_id == CHIP_ID_YUKON_EC_U || hw->chip_id == CHIP_ID_YUKON_EX) {
- 		sky2_write8(hw, SK_REG(port, RX_GMF_LP_THR), 768/8);
- 		sky2_write8(hw, SK_REG(port, RX_GMF_UP_THR), 1024/8);
--		if (hw->dev[port]->mtu > ETH_DATA_LEN) {
--			/* set Tx GMAC FIFO Almost Empty Threshold */
--			sky2_write32(hw, SK_REG(port, TX_GMF_AE_THR), 0x180);
--			/* Disable Store & Forward mode for TX */
--			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_DIS);
--		}
-+
-+		/* set Tx GMAC FIFO Almost Empty Threshold */
-+		sky2_write32(hw, SK_REG(port, TX_GMF_AE_THR),
-+			     (ECU_JUMBO_WM << 16) | ECU_AE_THR);
-+
-+		if (hw->dev[port]->mtu > ETH_DATA_LEN)
-+			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
-+				     TX_JUMBO_ENA | TX_STFW_DIS);
-+		else
-+			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
-+				     TX_JUMBO_DIS | TX_STFW_ENA);
- 	}
- 
- }
-@@ -1278,7 +1286,7 @@ static int sky2_up(struct net_device *dev)
- 	/* Set almost empty threshold */
- 	if (hw->chip_id == CHIP_ID_YUKON_EC_U
- 	    && hw->chip_rev == CHIP_REV_YU_EC_U_A0)
--		sky2_write16(hw, Q_ADDR(txqaddr[port], Q_AL), 0x1a0);
-+		sky2_write16(hw, Q_ADDR(txqaddr[port], Q_AL), ECU_TXFF_LEV);
- 
- 	sky2_prefetch_init(hw, txqaddr[port], sky2->tx_le_map,
- 			   TX_RING_SIZE - 1);
-@@ -1584,13 +1592,6 @@ static int sky2_down(struct net_device *dev)
- 	sky2_write32(hw, RB_ADDR(txqaddr[port], RB_CTRL),
- 		     RB_RST_SET | RB_DIS_OP_MD);
- 
--	/* WA for dev. #4.209 */
--	if (hw->chip_id == CHIP_ID_YUKON_EC_U
--	    && (hw->chip_rev == CHIP_REV_YU_EC_U_A1 || hw->chip_rev == CHIP_REV_YU_EC_U_B0))
--		sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
--			     sky2->speed != SPEED_1000 ?
--			     TX_STFW_ENA : TX_STFW_DIS);
--
- 	ctrl = gma_read16(hw, port, GM_GP_CTRL);
- 	ctrl &= ~(GM_GPCR_TX_ENA | GM_GPCR_RX_ENA);
- 	gma_write16(hw, port, GM_GP_CTRL, ctrl);
-@@ -1890,6 +1891,7 @@ static int sky2_change_mtu(struct net_device *dev, int new_mtu)
- {
- 	struct sky2_port *sky2 = netdev_priv(dev);
- 	struct sky2_hw *hw = sky2->hw;
-+	unsigned port = sky2->port;
- 	int err;
- 	u16 ctl, mode;
- 	u32 imask;
-@@ -1897,9 +1899,8 @@ static int sky2_change_mtu(struct net_device *dev, int new_mtu)
- 	if (new_mtu < ETH_ZLEN || new_mtu > ETH_JUMBO_MTU)
- 		return -EINVAL;
- 
--	/* TSO on Yukon Ultra and MTU > 1500 not supported */
--	if (hw->chip_id == CHIP_ID_YUKON_EC_U && new_mtu > ETH_DATA_LEN)
--		dev->features &= ~NETIF_F_TSO;
-+	if (new_mtu > ETH_DATA_LEN && hw->chip_id == CHIP_ID_YUKON_FE)
-+		return -EINVAL;
- 
- 	if (!netif_running(dev)) {
- 		dev->mtu = new_mtu;
-@@ -1915,8 +1916,18 @@ static int sky2_change_mtu(struct net_device *dev, int new_mtu)
- 
- 	synchronize_irq(hw->pdev->irq);
- 
--	ctl = gma_read16(hw, sky2->port, GM_GP_CTRL);
--	gma_write16(hw, sky2->port, GM_GP_CTRL, ctl & ~GM_GPCR_RX_ENA);
-+	if (hw->chip_id == CHIP_ID_YUKON_EC_U || hw->chip_id == CHIP_ID_YUKON_EX) {
-+		if (new_mtu > ETH_DATA_LEN) {
-+			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
-+				     TX_JUMBO_ENA | TX_STFW_DIS);
-+			dev->features &= NETIF_F_TSO | NETIF_F_SG | NETIF_F_IP_CSUM;
-+		} else
-+			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
-+				     TX_JUMBO_DIS | TX_STFW_ENA);
-+	}
-+
-+	ctl = gma_read16(hw, port, GM_GP_CTRL);
-+	gma_write16(hw, port, GM_GP_CTRL, ctl & ~GM_GPCR_RX_ENA);
- 	sky2_rx_stop(sky2);
- 	sky2_rx_clean(sky2);
- 
-@@ -1928,9 +1939,9 @@ static int sky2_change_mtu(struct net_device *dev, int new_mtu)
- 	if (dev->mtu > ETH_DATA_LEN)
- 		mode |= GM_SMOD_JUMBO_ENA;
- 
--	gma_write16(hw, sky2->port, GM_SERIAL_MODE, mode);
-+	gma_write16(hw, port, GM_SERIAL_MODE, mode);
- 
--	sky2_write8(hw, RB_ADDR(rxqaddr[sky2->port], RB_CTRL), RB_ENA_OP_MD);
-+	sky2_write8(hw, RB_ADDR(rxqaddr[port], RB_CTRL), RB_ENA_OP_MD);
- 
- 	err = sky2_rx_start(sky2);
- 	sky2_write32(hw, B0_IMSK, imask);
-@@ -1938,7 +1949,7 @@ static int sky2_change_mtu(struct net_device *dev, int new_mtu)
- 	if (err)
- 		dev_close(dev);
- 	else {
--		gma_write16(hw, sky2->port, GM_GP_CTRL, ctl);
-+		gma_write16(hw, port, GM_GP_CTRL, ctl);
- 
- 		netif_poll_enable(hw->dev[0]);
- 		netif_wake_queue(dev);
-@@ -2340,26 +2351,22 @@ static void sky2_mac_intr(struct sky2_hw *hw, unsigned port)
- 	}
- }
- 
--/* This should never happen it is a fatal situation */
--static void sky2_descriptor_error(struct sky2_hw *hw, unsigned port,
--				  const char *rxtx, u32 mask)
-+/* This should never happen it is a bug. */
-+static void sky2_le_error(struct sky2_hw *hw, unsigned port,
-+			  u16 q, unsigned ring_size)
- {
- 	struct net_device *dev = hw->dev[port];
- 	struct sky2_port *sky2 = netdev_priv(dev);
--	u32 imask;
--
--	printk(KERN_ERR PFX "%s: %s descriptor error (hardware problem)\n",
--	       dev ? dev->name : "<not registered>", rxtx);
-+	unsigned idx;
-+	const u64 *le = (q == Q_R1 || q == Q_R2)
-+		? (u64 *) sky2->rx_le : (u64 *) sky2->tx_le;
- 
--	imask = sky2_read32(hw, B0_IMSK);
--	imask &= ~mask;
--	sky2_write32(hw, B0_IMSK, imask);
-+	idx = sky2_read16(hw, Y2_QADDR(q, PREF_UNIT_GET_IDX));
-+	printk(KERN_ERR PFX "%s: descriptor error q=%#x get=%u [%llx] put=%u\n",
-+	       dev->name, (unsigned) q, idx, (unsigned long long) le[idx],
-+	       (unsigned) sky2_read16(hw, Y2_QADDR(q, PREF_UNIT_PUT_IDX)));
- 
--	if (dev) {
--		spin_lock(&sky2->phy_lock);
--		sky2_link_down(sky2);
--		spin_unlock(&sky2->phy_lock);
--	}
-+	sky2_write32(hw, Q_ADDR(q, Q_CSR), BMU_CLR_IRQ_CHK);
- }
- 
- /* If idle then force a fake soft NAPI poll once a second
-@@ -2383,23 +2390,15 @@ static void sky2_idle(unsigned long arg)
- 	mod_timer(&hw->idle_timer, jiffies + msecs_to_jiffies(idle_timeout));
- }
- 
--
--static int sky2_poll(struct net_device *dev0, int *budget)
-+/* Hardware/software error handling */
-+static void sky2_err_intr(struct sky2_hw *hw, u32 status)
- {
--	struct sky2_hw *hw = ((struct sky2_port *) netdev_priv(dev0))->hw;
--	int work_limit = min(dev0->quota, *budget);
--	int work_done = 0;
--	u32 status = sky2_read32(hw, B0_Y2_SP_EISR);
-+	if (net_ratelimit())
-+		dev_warn(&hw->pdev->dev, "error interrupt status=%#x\n", status);
- 
- 	if (status & Y2_IS_HW_ERR)
- 		sky2_hw_intr(hw);
- 
--	if (status & Y2_IS_IRQ_PHY1)
--		sky2_phy_intr(hw, 0);
--
--	if (status & Y2_IS_IRQ_PHY2)
--		sky2_phy_intr(hw, 1);
--
- 	if (status & Y2_IS_IRQ_MAC1)
- 		sky2_mac_intr(hw, 0);
- 
-@@ -2407,16 +2406,33 @@ static int sky2_poll(struct net_device *dev0, int *budget)
- 		sky2_mac_intr(hw, 1);
- 
- 	if (status & Y2_IS_CHK_RX1)
--		sky2_descriptor_error(hw, 0, "receive", Y2_IS_CHK_RX1);
-+		sky2_le_error(hw, 0, Q_R1, RX_LE_SIZE);
- 
- 	if (status & Y2_IS_CHK_RX2)
--		sky2_descriptor_error(hw, 1, "receive", Y2_IS_CHK_RX2);
-+		sky2_le_error(hw, 1, Q_R2, RX_LE_SIZE);
- 
- 	if (status & Y2_IS_CHK_TXA1)
--		sky2_descriptor_error(hw, 0, "transmit", Y2_IS_CHK_TXA1);
-+		sky2_le_error(hw, 0, Q_XA1, TX_RING_SIZE);
- 
- 	if (status & Y2_IS_CHK_TXA2)
--		sky2_descriptor_error(hw, 1, "transmit", Y2_IS_CHK_TXA2);
-+		sky2_le_error(hw, 1, Q_XA2, TX_RING_SIZE);
-+}
-+
-+static int sky2_poll(struct net_device *dev0, int *budget)
-+{
-+	struct sky2_hw *hw = ((struct sky2_port *) netdev_priv(dev0))->hw;
-+	int work_limit = min(dev0->quota, *budget);
-+	int work_done = 0;
-+	u32 status = sky2_read32(hw, B0_Y2_SP_EISR);
-+
-+	if (unlikely(status & Y2_IS_ERROR))
-+		sky2_err_intr(hw, status);
-+
-+	if (status & Y2_IS_IRQ_PHY1)
-+		sky2_phy_intr(hw, 0);
-+
-+	if (status & Y2_IS_IRQ_PHY2)
-+		sky2_phy_intr(hw, 1);
- 
- 	work_done = sky2_status_intr(hw, work_limit);
- 	if (work_done < work_limit) {
-@@ -2534,16 +2550,14 @@ static void sky2_reset(struct sky2_hw *hw)
- 	int i;
- 
- 	/* disable ASF */
--	if (hw->chip_id <= CHIP_ID_YUKON_EC) {
--		if (hw->chip_id == CHIP_ID_YUKON_EX) {
--			status = sky2_read16(hw, HCU_CCSR);
--			status &= ~(HCU_CCSR_AHB_RST | HCU_CCSR_CPU_RST_MODE |
--				    HCU_CCSR_UC_STATE_MSK);
--			sky2_write16(hw, HCU_CCSR, status);
--		} else
--			sky2_write8(hw, B28_Y2_ASF_STAT_CMD, Y2_ASF_RESET);
--		sky2_write16(hw, B0_CTST, Y2_ASF_DISABLE);
--	}
-+	if (hw->chip_id == CHIP_ID_YUKON_EX) {
-+		status = sky2_read16(hw, HCU_CCSR);
-+		status &= ~(HCU_CCSR_AHB_RST | HCU_CCSR_CPU_RST_MODE |
-+			    HCU_CCSR_UC_STATE_MSK);
-+		sky2_write16(hw, HCU_CCSR, status);
-+	} else
-+		sky2_write8(hw, B28_Y2_ASF_STAT_CMD, Y2_ASF_RESET);
-+	sky2_write16(hw, B0_CTST, Y2_ASF_DISABLE);
- 
- 	/* do a SW reset */
- 	sky2_write8(hw, B0_CTST, CS_RST_SET);
-@@ -3328,6 +3342,36 @@ static void sky2_get_regs(struct net_device *dev, struct ethtool_regs *regs,
- 		      regs->len - B3_RI_WTO_R1);
- }
- 
-+/* In order to do Jumbo packets on these chips, need to turn off the
-+ * transmit store/forward. Therefore checksum offload won't work.
-+ */
-+static int no_tx_offload(struct net_device *dev)
-+{
-+	const struct sky2_port *sky2 = netdev_priv(dev);
-+	const struct sky2_hw *hw = sky2->hw;
-+
-+	return dev->mtu > ETH_DATA_LEN &&
-+		(hw->chip_id == CHIP_ID_YUKON_EX
-+		 || hw->chip_id == CHIP_ID_YUKON_EC_U);
-+}
-+
-+static int sky2_set_tx_csum(struct net_device *dev, u32 data)
-+{
-+	if (data && no_tx_offload(dev))
-+		return -EINVAL;
-+
-+	return ethtool_op_set_tx_csum(dev, data);
-+}
-+
-+
-+static int sky2_set_tso(struct net_device *dev, u32 data)
-+{
-+	if (data && no_tx_offload(dev))
-+		return -EINVAL;
-+
-+	return ethtool_op_set_tso(dev, data);
-+}
-+
- static const struct ethtool_ops sky2_ethtool_ops = {
- 	.get_settings = sky2_get_settings,
- 	.set_settings = sky2_set_settings,
-@@ -3343,9 +3387,9 @@ static const struct ethtool_ops sky2_ethtool_ops = {
- 	.get_sg = ethtool_op_get_sg,
- 	.set_sg = ethtool_op_set_sg,
- 	.get_tx_csum = ethtool_op_get_tx_csum,
--	.set_tx_csum = ethtool_op_set_tx_csum,
-+	.set_tx_csum = sky2_set_tx_csum,
- 	.get_tso = ethtool_op_get_tso,
--	.set_tso = ethtool_op_set_tso,
-+	.set_tso = sky2_set_tso,
- 	.get_rx_csum = sky2_get_rx_csum,
- 	.set_rx_csum = sky2_set_rx_csum,
- 	.get_strings = sky2_get_strings,
-diff --git a/drivers/net/sky2.h b/drivers/net/sky2.h
-index ac24bdc..5efb5af 100644
---- a/drivers/net/sky2.h
-+++ b/drivers/net/sky2.h
-@@ -288,6 +288,9 @@ enum {
- 		          | Y2_IS_CHK_TXA1 | Y2_IS_CHK_RX1,
- 	Y2_IS_PORT_2	= Y2_IS_IRQ_PHY2 | Y2_IS_IRQ_MAC2
- 			  | Y2_IS_CHK_TXA2 | Y2_IS_CHK_RX2,
-+	Y2_IS_ERROR     = Y2_IS_HW_ERR |
-+			  Y2_IS_IRQ_MAC1 | Y2_IS_CHK_TXA1 | Y2_IS_CHK_RX1 |
-+			  Y2_IS_IRQ_MAC2 | Y2_IS_CHK_TXA2 | Y2_IS_CHK_RX2,
- };
- 
- /*	B2_IRQM_HWE_MSK	32 bit	IRQ Moderation HW Error Mask */
-@@ -738,6 +741,11 @@ enum {
- 	TX_GMF_RP	= 0x0d70,/* 32 bit 	Tx GMAC FIFO Read Pointer */
- 	TX_GMF_RSTP	= 0x0d74,/* 32 bit 	Tx GMAC FIFO Restart Pointer */
- 	TX_GMF_RLEV	= 0x0d78,/* 32 bit 	Tx GMAC FIFO Read Level */
-+
-+	/* Threshold values for Yukon-EC Ultra and Extreme */
-+	ECU_AE_THR	= 0x0070, /* Almost Empty Threshold */
-+	ECU_TXFF_LEV	= 0x01a0, /* Tx BMU FIFO Level */
-+	ECU_JUMBO_WM	= 0x0080, /* Jumbo Mode Watermark */
- };
- 
- /* Descriptor Poll Timer Registers */
-@@ -1631,6 +1639,9 @@ enum {
- 	TX_VLAN_TAG_ON	= 1<<25,/* enable  VLAN tagging */
- 	TX_VLAN_TAG_OFF	= 1<<24,/* disable VLAN tagging */
- 
-+	TX_JUMBO_ENA	= 1<<23,/* PCI Jumbo Mode enable (Yukon-EC Ultra) */
-+	TX_JUMBO_DIS	= 1<<22,/* PCI Jumbo Mode enable (Yukon-EC Ultra) */
-+
- 	GMF_WSP_TST_ON	= 1<<18,/* Write Shadow Pointer Test On */
- 	GMF_WSP_TST_OFF	= 1<<17,/* Write Shadow Pointer Test Off */
- 	GMF_WSP_STEP	= 1<<16,/* Write Shadow Pointer Step/Increment */
-diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
-index 3b91af8..e3019d5 100644
---- a/drivers/net/spider_net.c
-+++ b/drivers/net/spider_net.c
-@@ -719,7 +719,7 @@ spider_net_prepare_tx_descr(struct spider_net_card *card,
- 			SPIDER_NET_DESCR_CARDOWNED | SPIDER_NET_DMAC_NOCS;
- 	spin_unlock_irqrestore(&chain->lock, flags);
- 
--	if (skb->protocol == htons(ETH_P_IP))
-+	if (skb->protocol == htons(ETH_P_IP) && skb->ip_summed == CHECKSUM_PARTIAL)
- 		switch (skb->nh.iph->protocol) {
- 		case IPPROTO_TCP:
- 			hwdescr->dmac_cmd_status |= SPIDER_NET_DMAC_TCP;
+c) Just remove the Fahrenheit option altogether - let it join cubits,
+   furlongs, etc.
+
+I mean, how is an application to make sense of that information if its units
+depend upon some module parameter, or a kernel boot option?
+
+> +	pcwd_private.card_status=ENABLED;
+
+Missing a ' ' around the '='.  Several instances.
+
+> -static int pcwd_get_temperature(int *temperature)
+> +static int pcwd_get_temperature(int *temperature, int temp_mode)
+>  {
+>  	/* check that port 0 gives temperature info and no command results */
+>  	if (pcwd_private.command_mode)
+> @@ -543,22 +577,358 @@
+>  	if (!pcwd_private.supports_temp)
+>  		return -ENODEV;
+>  
+> +	spin_lock(&pcwd_private.io_lock);
+> +	*temperature = inb(pcwd_private.io_addr);
+> +	spin_unlock(&pcwd_private.io_lock);
+
+I doubt if the locking here does anything useful.
+
+> +
+>  	/*
+> -	 * Convert celsius to fahrenheit, since this was
+> +	 * Convert celsius to fahrenheit, this is normally
+>  	 * the decided 'standard' for this return value.
+>  	 */
+> -	spin_lock(&pcwd_private.io_lock);
+> -	*temperature = ((inb(pcwd_private.io_addr)) * 9 / 5) + 32;
+> -	spin_unlock(&pcwd_private.io_lock);
+> +	if (temp_mode == FAHRENHEIT)
+> +		*temperature = (*temperature * 9 / 5) + 32;
+>  
+>  	if (debug >= DEBUG) {
+> -		printk(KERN_DEBUG PFX "temperature is: %d F\n",
+> -			*temperature);
+> +		printk(KERN_DEBUG PFX "temperature is: %d %s\n",
+> +			*temperature, (temp_mode == CELSIUS) ? "C" :"F");
+>  	}
+>  
+>  	return 0;
+>  }
+>  
+> +#ifdef CONFIG_PROC_FS
+> +static int
+> +pcwd_reset_pc(void)
+
+	static int pcwd_reset_pc(void)
+
+please.
+
+
+> +static int
+> +pcwd_set_timeout(char *sub_command)
+
+Ditto (whole patchset (perhaps whole subsystem ;)))
+
+> +{
+> +	char *new_sub_command = sub_command;
+> +	int i;
+> +
+> +	while (*sub_command == ' ')
+> +		sub_command++;
+> +	if (sub_command == new_sub_command) {
+> +		printk(KERN_ERR PFX "illegal timeout argument '%s'\n", sub_command);
+> +		return 1;
+> +	}
+> +	i = simple_strtoul(sub_command, NULL, 0);
+
+darn, we do this sort of gunk in a lot of places.  Isn't there some library
+function somewhere we can use?
+
+> +	if (!pcwd_set_heartbeat(i)) {
+> +		if (debug >= VERBOSE)
+> +			printk(KERN_INFO PFX "timeout %d\n", heartbeat);
+> +	} else {
+> +		printk(KERN_ERR PFX
+> +			"illegal timeout argument '%s', should be a number between 2 and 7200\n",
+
+
+80 columns?
+
+> +			sub_command);
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+>
+> ..
+>
+> +static void
+> +pcwd_user_help(void)
+> +{
+> +	printk(" pcwd proc command interface help:\n");
+> +	printk("   ping, pong, tickle - tickle the timer\n");
+> +	printk("   hardreset - reset pc\n");
+> +	printk("   enable, start - start the watchdog\n");
+> +	printk("   disable, stop - stop the watchdog\n");
+> +	printk("   clear - clear trip status and led\n");
+> +	printk("   verbose, debug, quiet - command reponse\n");
+> +	printk("   fahrenheit, celsius - display temp in\n");
+> +	printk(" extended commands:\n");
+> +	printk("   arm [val] - isa [30,60,90]\n");
+> +	printk("   timeout [val]\n");
+> +}
+
+This could all be done with a single printk() statement.
+
+It's missing a KERN_FOO facility level.
+
+> +static int
+> +pcwd_user_command(char *user_command)
+> +{
+> +	if ((strcmp(user_command, "ping") == 0)
+> +	    || (strcmp(user_command, "pong") == 0)
+> +	    || (strcmp(user_command, "tickle") == 0)) {
+> +		pcwd_keepalive();
+> +		if (debug >= VERBOSE)
+> +			printk(KERN_INFO PFX "ping...\n");
+> +	} else if ((strcmp(user_command, "enable") == 0)
+> +	    || (strcmp(user_command, "start") == 0)) {
+> +		if (!pcwd_start()) {
+> +			if (debug >= VERBOSE)
+> +				printk(KERN_INFO PFX "watchdog enabled.\n");
+> +		}
+> +	} else if ((strcmp(user_command, "disable") == 0)
+> +	    || (strcmp(user_command, "stop") == 0)) {
+> +		if (!pcwd_stop()) {
+> +			if (debug >= VERBOSE)
+> +				printk(KERN_INFO PFX "watchdog disabled!\n");
+> +		}
+> +	} else if (strcmp(user_command, "clear") == 0) {
+> +		pcwd_clear_status();
+> +		if (debug >= VERBOSE)
+> +			printk(KERN_INFO PFX "cleared trip status\n");
+> +	} else if (strcmp(user_command, "hardreset") == 0) {
+> +		pcwd_reset_pc();
+> +		if (debug >= VERBOSE)
+> +			printk(KERN_INFO PFX "hardreset PC!\n");
+> +	} else if (strcmp(user_command, "quiet") == 0) {
+> +		debug = QUIET;
+> +	} else if (strcmp(user_command, "verbose") == 0) {
+> +		debug = VERBOSE;
+> +		printk(KERN_INFO PFX "verbose mode on.\n");
+> +	} else if (strcmp(user_command, "debug") == 0) {
+> +		debug = DEBUG;
+> +		printk(KERN_INFO PFX "debug mode on.\n");
+> +	} else if (strcmp(user_command, "celsius") == 0) {
+> +		proc_temp_mode = CELSIUS;
+> +		if (debug >= VERBOSE)
+> +			printk(KERN_INFO PFX "display temp in Celsius.\n");
+> +	} else if (strcmp(user_command, "fahrenheit") == 0) {
+> +		proc_temp_mode = FAHRENHEIT;
+> +		if (debug >= VERBOSE)
+> +			printk(KERN_INFO PFX "display temp in Fahrenheit.\n");
+> +	} else if (strcmp(user_command, "help") == 0) {
+> +		pcwd_user_help();
+> +	} else if (strncmp(user_command, "arm", 3) == 0) {
+> +		if ((pcwd_private.fw_ver_str[0] >= '1')
+> +		    && (pcwd_private.fw_ver_str[2] >= '2')) {
+> +			if (pcwd_set_arm(&user_command[3])) {
+> +				printk(KERN_ERR PFX "arm FAILED.\n");
+> +				return 0;
+> +			}
+> +		} else {
+> +			printk(KERN_ERR
+> +			       "pcwd: ISA Card and firmware > 1.20 needed.\n");
+> +			return 0;
+> +		}
+> +	} else if (strncmp(user_command, "timeout", 7) == 0) {
+> +		if (pcwd_set_timeout(&user_command[7])) {
+> +			printk(KERN_ERR PFX "timeout FAILED.\n");
+> +			return 0;
+> +		}
+> +	} else {
+> +		printk(KERN_ERR "illegal user command: '%s'\n", user_command);
+> +		pcwd_user_help();
+> +		return 0;
+> +	}
+> +	return 1;
+> +}
+
+parse, parse, parse, parse.  We really do need stronger libraries for this
+sort of thing.
+
+> +static int
+> +pcwd_write_proc(struct file *file, const char *buffer,
+> +		unsigned long count, void *data)
+> +{
+> +	char command_buffer[80];
+> +	int rc, length;
+> +
+> +	/* write only allowed for root users */
+> +	if (current->euid != 0)
+> +		return -EACCES;
+
+Are the permissions on the /proc file not sufficient?
+
+Surely it's wrong to be testing for root anyway.  capable(CAP_SYS_ADMIN)
+would be more typical.  Or CAP_RAW_IO or something.
+
+But not this.
+
+> +	if (count > sizeof (command_buffer) - 1)
+> +		return -EINVAL;
+> +
+> +	if (copy_from_user(command_buffer, buffer, count))
+> +		return -EFAULT;
+> +
+> +	command_buffer[count] = '\0';
+> +	length = strlen(command_buffer);
+> +	if (command_buffer[length - 1] == '\n')
+> +		command_buffer[--length] = '\0';
+> +
+> +	spin_lock(&pcwd_private.proc_lock);
+> +	rc = pcwd_user_command(command_buffer);
+> +	spin_unlock(&pcwd_private.proc_lock);
+> +	return (rc ? count : -EBUSY);
+> +}
+> +
+> +/* This macro frees the machine specific function from bounds checking and
+> + *  * this like that... [from nvram.c]*/
+> +#define PRINT_PROC(fmt,args...)                         \
+> +    do {                                                \
+> +        *len += sprintf( buffer+*len, fmt, ##args );    \
+> +        if (*begin + *len > offset + size)              \
+> +            return( 0 );                                \
+> +        if (*begin + *len < offset) {                   \
+> +            *begin += *len;                             \
+> +            *len = 0;                                   \
+> +        }                                               \
+> +    } while(0)
+
+A `return' hidden in a macro like this is pretty foul.  We'd prefer that
+new instances not be added to the kernel.
+
+Can we please find a tasteful way of reimplementing this?  Cannot the
+seq_file interface be used?
+
+> +static int
+> +pcwd_proc_info(unsigned char *buf, char *buffer, int *len,
+> +	       off_t * begin, off_t offset, int size)
+> +{
+> +	int sw, i;
+> +
+> +	PRINT_PROC("%s\n", DRIVER_VERSION);
+> +
+> +	if (pcwd_private.revision == PCWD_REVISION_C) {
+> +		PRINT_PROC("Firmware     : Version %s\n", pcwd_private.fw_ver_str);
+> +		PRINT_PROC("Option Switch: Delay Time ");
+> +		sw = pcwd_get_option_switches();
+> +		switch (sw & 0x07) {
+> +		case 0:
+> +			PRINT_PROC("20 s");
+> +			break;
+> +		case 1:
+> +			PRINT_PROC("40 s");
+> +			break;
+> +		case 2:
+> +			PRINT_PROC("1 min");
+> +			break;
+> +		case 3:
+> +			PRINT_PROC("5 min");
+> +			break;
+> +		case 4:
+> +			PRINT_PROC("10 min");
+> +			break;
+> +		case 5:
+> +			PRINT_PROC("30 min");
+> +			break;
+> +		case 6:
+> +			PRINT_PROC("1 h");
+> +			break;
+> +		case 7:
+> +			PRINT_PROC("2 h");
+> +			break;
+> +		}
+> +		PRINT_PROC((sw & 0x08) ? ", POD on" : ", POD off");
+> +		PRINT_PROC((sw & 0x10) ? ", TRE on" : ", TRE off");
+> +		PRINT_PROC((sw & 0x20) ? ", R2M on" : ", R2M off");
+> +		PRINT_PROC((sw & 0x40) ? ", R1M on" : ", R1M off");
+> +		PRINT_PROC((sw & 0x80) ? ", RTM on\n" : ", RTM off\n");
+> +	} else {
+> +		PRINT_PROC("Firmware ROM not present\n");
+> +	}
+> +
+> +	PRINT_PROC("Temperature  : ");
+> +	if (pcwd_private.supports_temp && (!pcwd_get_temperature(&i, proc_temp_mode))) {
+> +		PRINT_PROC("%d ", i);
+> +		PRINT_PROC((proc_temp_mode == CELSIUS) ? "__C\n" : "__F\n");
+> +	} else {
+> +		PRINT_PROC("Card without temp option\n");
+> +	}
+> +
+> +	if (pcwd_private.card_status == ENABLED)
+> +		PRINT_PROC("Card status  : Timer enabled\n");
+> +	else
+> +		PRINT_PROC("Card status  : Timer disabled\n");
+> +
+> +	spin_lock(&pcwd_private.io_lock);
+> +	if (pcwd_private.revision == PCWD_REVISION_A) {
+> +		sw = inb_p(pcwd_private.io_addr) & WD_WDRST;
+> +	} else {
+> +		sw = inb_p(pcwd_private.io_addr + 1) & WD_REVC_WTRP;
+> +	}
+> +	spin_unlock(&pcwd_private.io_lock);
+> +	PRINT_PROC("Reboot status: ");
+> +	PRINT_PROC(sw ? "Tripped\n" : "Not tripped\n");
+> +
+> +	if ((pcwd_private.boot_status & WDIOF_CARDRESET) && (pcwd_private.boot_status & WDIOF_OVERHEAT)) {
+> +		PRINT_PROC("Boot status  : CPU Overheat  + Watchdog caused reboot\n");
+> +	} else if (pcwd_private.boot_status & WDIOF_CARDRESET) {
+> +		PRINT_PROC("Boot status  : Watchdog caused reboot\n");
+> +	} else if (pcwd_private.boot_status & WDIOF_OVERHEAT) {
+> +		PRINT_PROC("Boot status  : CPU Overheat\n");
+> +	} else {
+> +		PRINT_PROC("Boot status  : Cold boot or reset\n");
+> +	}
+
+Lots of braces can (shold) be removed in here.
+
+> +	// PRINT_PROC("Ping Count   : %d\n", ping_counter);
+> +	return 1;
+> +}
+> +
+> +static int
+> +pcwd_read_proc(char *buffer, char **start, off_t offset,
+> +	       int size, int *eof, void *data)
+> +{
+> +	int len = 0;
+> +	off_t begin = 0;
+> +
+> +	spin_lock(&pcwd_private.proc_lock);
+> +	*eof = pcwd_proc_info(NULL, buffer, &len, &begin, offset, size);
+> +	spin_unlock(&pcwd_private.proc_lock);
+> +
+> +	if (offset >= begin + len)
+> +		return (0);
+> +	*start = buffer + (offset - begin);	// CORRECTED !!!!
+> +	return (size < begin + len - offset ? size : begin + len - offset);
+> +}
+> +#endif				/* PROC_FS */
+> +
+>  
+> ...
+>
+> +#ifdef CONFIG_PROC_FS
+> +	if ((pcwd_private.proc_pcwd =
+> +	     create_proc_entry(WATCHDOG_NAME, S_IFREG | S_IRUGO | S_IWUSR, 0))) {
+> +		pcwd_private.proc_pcwd->read_proc = pcwd_read_proc;
+> +		pcwd_private.proc_pcwd->write_proc = pcwd_write_proc;
+> +	}
+> +#endif
+
+We prefer
+
+	a = b();
+	if (a)
+
+over
+
+	if ((a = b())
+
+
+
