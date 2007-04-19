@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767018AbXDSUOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767023AbXDSUPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767018AbXDSUOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 16:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767023AbXDSUOq
+	id S1767023AbXDSUPD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 16:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDSUPC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 16:14:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58455
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1767018AbXDSUOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 16:14:45 -0400
-Date: Thu, 19 Apr 2007 13:14:48 -0700 (PDT)
-Message-Id: <20070419.131448.71554303.davem@davemloft.net>
-To: dhowells@redhat.com
-Cc: ebiederm@xmission.com, akpm@osdl.org, containers@lists.osdl.org,
-       oleg@tv-sign.ru, hch@infradead.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Getting the new RxRPC patches upstream
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <2969.1176992303@redhat.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<29341.1176975158@redhat.com>
-	<2969.1176992303@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 16:15:02 -0400
+Received: from waste.org ([66.93.16.53]:57243 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964935AbXDSUPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 16:15:00 -0400
+Date: Thu, 19 Apr 2007 15:02:26 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/13] maps#2: Add /proc/kpagemap interface
+Message-ID: <20070419200226.GG11115@waste.org>
+References: <14.469046093@selenic.com> <1177009598.12599.152.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177009598.12599.152.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
-Date: Thu, 19 Apr 2007 15:18:23 +0100
-
-> Eric W. Biederman <ebiederm@xmission.com> wrote:
+On Thu, Apr 19, 2007 at 12:06:38PM -0700, Dave Hansen wrote:
+> On Fri, 2007-04-06 at 17:03 -0500, Matt Mackall wrote:
+> > 
+> > +static ssize_t kpagemap_read(struct file *file, char __user *buf,
+> > +                            size_t count, loff_t *ppos)
+> > +{
+> ...
+> > +               for (; i < 2 * chunk / KPMSIZE; i += 2, pfn++) {
+> > +                       ppage = pfn_to_page(pfn);
+> > +                       if (!ppage) {
+> > +                               page[i] = 0;
+> > +                               page[i + 1] = 0;
+> > +                       } else {
+> > +                               page[i] = ppage->flags;
+> > +                               page[i + 1] = atomic_read(&ppage->_count);
+> > +                       }
+> > +               } 
 > 
-> > What is the ETA on your patches?
-> 
-> That depends on Dave Miller now, I think.  I'm assuming they need to go
-> through the network GIT tree to get to Linus.  Certainly Andrew Morton seems
-> to think so.
+> I think this needs a pfn_valid() check for sparse/discontig systems.  I
+> think we'll oops if we have holes because we don't check pfn_valid()
+> inside of pfn_to_page().
 
-I applied already the patches I thought were appropriate,
-you had some crypto layer changes that you need to work
-out with Herbert Xu before the rest can be applied.
+Are there cases where pfn_valid is true but pfn_to_page doesn't work?
+In other words, do I still only need two cases?
 
-Let me know what the status is of that stuff.
-
-Either way, I don't think it should block Eric's work here.
-If his stuff is more ready first, it should go in and then
-you have a little bit of patch merging to do that's all.
-
+-- 
+Mathematics is the supreme nostalgia of our time.
