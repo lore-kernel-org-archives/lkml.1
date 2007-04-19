@@ -1,76 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637787AbXDSOta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766724AbXDSO51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637787AbXDSOta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 10:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637790AbXDSOta
+	id S1766724AbXDSO51 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 10:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766748AbXDSO51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 10:49:30 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:61016 "EHLO
-	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S637787AbXDSOt3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 10:49:29 -0400
-X-BigFish: VP
-X-FB-SS: 0
-X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
-Date: Thu, 19 Apr 2007 08:27:46 -0600
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "David Brownell" <david-b@pacbell.net>,
-       "Bryan Wu" <bryan.wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Deepak Saxena" <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
-       "Christer Weinigel" <wingel@nano-system.com>
-Subject: Re: Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070419142746.GF11323@cosmic.amd.com>
-References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
- <20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
- <20070414192807.60bdf84b@hyperion.delvare>
- <20070418174256.GB5577@csclub.uwaterloo.ca>
- <20070419085413.1520feef@hyperion.delvare>
+	Thu, 19 Apr 2007 10:57:27 -0400
+Received: from mail.alkar.net ([195.248.191.95]:53797 "EHLO mail.alkar.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766724AbXDSO50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 10:57:26 -0400
+From: "Vladimir V. Saveliev" <vs@namesys.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: dio_get_page() lockdep complaints
+Date: Thu, 19 Apr 2007 18:55:57 +0400
+User-Agent: KMail/1.8.2
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-aio@kvack.org, reiserfs-dev@namesys.com, linux-mm@kvack.org
+References: <20070419073828.GB20928@kernel.dk> <20070419083407.GD20928@kernel.dk> <20070419141510.GG11780@kernel.dk>
+In-Reply-To: <20070419141510.GG11780@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <20070419085413.1520feef@hyperion.delvare>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 19 Apr 2007 14:27:38.0097 (UTC)
- FILETIME=[E1583610:01C7828E]
-X-WSS-ID: 6A39A3D02EG5748960-01-01
 Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+  charset="koi8-u"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704191855.57893.vs@namesys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/04/07 08:54 +0200, Jean Delvare wrote:
-> Hi Len,
-> 
-> On Wed, 18 Apr 2007 13:42:56 -0400, Lennart Sorensen wrote:
-> > On Sat, Apr 14, 2007 at 07:28:07PM +0200, Jean Delvare wrote:
-> > > Otherwise it looks OK to me, I take the patch. If others have comments
-> > > or objections, just speak up and submit incremental patches as needed.
-> > > 
-> > > Now I would like to see platform code actually using this.
+Hello
+
+On Thursday 19 April 2007 18:15, Jens Axboe wrote:
+> On Thu, Apr 19 2007, Jens Axboe wrote:
+> > > Is it possible that fio was changed?  That it was changed to close() the fd
+> > > before doing the munmapping whereas it used to hold the file open?
 > > 
-> > Any idea how similar this new driver is to the scx200_i2c driver?  As
-> > far as I can tell that driver is already a bit banged i2c over gpio
-> > lines.
+> > It's been a while since I tested on this box, so I don't really recall.
+> > But fio does close() the fd before doing munmap(). This particular test
+> > case doesn't use mmap(), though.
 > 
-> The major difference is that the implementation in scx200_i2c is
-> hardware-specific, while the i2c-gpio driver is a generic one, so it's
-> a lot better.
+> Ah wait, but it does use mmap! Fio sets up a semaphore my mmap'ing a
+> file in /tmp (which is reiserfs). Here's a test case that triggers it
+> 100% reliably, adjust /tmp to some other location that is reiserfs.
+> lockdep from that run attached.
 > 
-> What this means is that i2c-gpio obsoletes scx200_i2c, so I am inclined
-> to delete scx200_i2c right away. I'm not even sure anyone still uses it
-> now that scx200_acb has been fixed and is reported to work very well.
-> If anyone really needs to do I2C over GPIO pins on SCx200, this should
-> be reimplemented on top of i2c-gpio.
+> #include <stdlib.h>
+> #include <stdio.h>
+> #include <unistd.h>
+> #include <fcntl.h>
+> #include <sys/mman.h>
+> 
+> int main(int argc, char *argv[])
+> {
+> 	char fname[] = "/tmp/some_file";	/* /tmp on reiserfs */
+> 	void *p;
+> 	int fd;
+> 
+> 	fd = open(fname, O_RDWR|O_CREAT, 0644);
+> 	if (fd < 0) {
+> 		perror("open");
+> 		return 1;
+> 	}
+> 
+> 	if (ftruncate(fd, 64) < 0) {
+> 		perror("ftruncate");
+> 		return 1;
+> 	}
+> 
+> 	p = mmap(NULL, 64, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+> 	if (p == MAP_FAILED) {
+> 		perror("mmap");
+> 		return 1;
+> 	}
+> 
+> 	unlink(fname);
+> 	close(fd);
+> 	munmap(p, 64);
+> 	return 0;
+> }
+> 
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.21-rc7 #18
+> -------------------------------------------------------
+> reiser-mmap/9643 is trying to acquire lock:
+>  (&inode->i_mutex){--..}, at: [<b038c625>] mutex_lock+0x1c/0x1f
+> 
+> but task is already holding lock:
+>  (&mm->mmap_sem){----}, at: [<b015c6cf>] sys_munmap+0x26/0x42
+> 
 
-It would also force us to move the Geode GPIO pins to the generic 
-infrastructure, so that would be good.  I say delete it - if anybody needs
-that functionality, then we'll do it the right way.
-
-Jordan
+So, it looks like the problem is that reiserfs_file_release() locks inode's mutex while mm's mmap_sem is locked?
 
 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&mm->mmap_sem){----}:
+>        [<b013e3fb>] __lock_acquire+0xdee/0xf9c
+>        [<b013e600>] lock_acquire+0x57/0x70
+>        [<b0137b92>] down_read+0x3a/0x4c
+>        [<b01b6b88>] reiserfs_remount+0x176/0x42a
+>        [<b016ba21>] do_remount_sb+0xb9/0x10f
+>        [<b017ebe7>] do_mount+0x1b6/0x616
+>        [<b017f0b6>] sys_mount+0x6f/0xa9
+>        [<b0103f04>] sysenter_past_esp+0x5d/0x99
+>        [<ffffffff>] 0xffffffff
+> 
+
+> -> #0 (&inode->i_mutex){--..}:
+>        [<b013e259>] __lock_acquire+0xc4c/0xf9c
+>        [<b013e600>] lock_acquire+0x57/0x70
+>        [<b038c3e5>] __mutex_lock_slowpath+0x73/0x297
+>        [<b038c625>] mutex_lock+0x1c/0x1f
+>        [<b01b17e9>] reiserfs_file_release+0x54/0x447
+>        [<b016afe7>] __fput+0x53/0x101
+>        [<b016b0ee>] fput+0x19/0x1c
+>        [<b015bcd5>] remove_vma+0x3b/0x4d
+>        [<b015c659>] do_munmap+0x17f/0x1cf
+>        [<b015c6db>] sys_munmap+0x32/0x42
+>        [<b0103f04>] sysenter_past_esp+0x5d/0x99
+>        [<ffffffff>] 0xffffffff
+> 
+> other info that might help us debug this:
+> 
+> 1 lock held by reiser-mmap/9643:
+>  #0:  (&mm->mmap_sem){----}, at: [<b015c6cf>] sys_munmap+0x26/0x42
+> 
+> stack backtrace:
+>  [<b0104f54>] show_trace_log_lvl+0x1a/0x30
+>  [<b0105626>] show_trace+0x12/0x14
+>  [<b01056ad>] dump_stack+0x16/0x18
+>  [<b013c48d>] print_circular_bug_tail+0x68/0x71
+>  [<b013e259>] __lock_acquire+0xc4c/0xf9c
+>  [<b013e600>] lock_acquire+0x57/0x70
+>  [<b038c3e5>] __mutex_lock_slowpath+0x73/0x297
+>  [<b038c625>] mutex_lock+0x1c/0x1f
+>  [<b01b17e9>] reiserfs_file_release+0x54/0x447
+>  [<b016afe7>] __fput+0x53/0x101
+>  [<b016b0ee>] fput+0x19/0x1c
+>  [<b015bcd5>] remove_vma+0x3b/0x4d
+>  [<b015c659>] do_munmap+0x17f/0x1cf
+>  [<b015c6db>] sys_munmap+0x32/0x42
+>  [<b0103f04>] sysenter_past_esp+0x5d/0x99
+>  =======================
+> 
