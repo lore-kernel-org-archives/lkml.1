@@ -1,116 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993234AbXDSLqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993237AbXDSLr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993234AbXDSLqL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 07:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993236AbXDSLqL
+	id S2993237AbXDSLr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 07:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993238AbXDSLr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 07:46:11 -0400
-Received: from mail06.syd.optusnet.com.au ([211.29.132.187]:47665 "EHLO
-	mail06.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993234AbXDSLqK (ORCPT
+	Thu, 19 Apr 2007 07:47:56 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57028 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2993237AbXDSLry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 07:46:10 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Renice X for cpu schedulers
-Date: Thu, 19 Apr 2007 21:59:35 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070417062621.GL2986@holomorphy.com> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu>
-In-Reply-To: <20070419063810.GA22418@elte.hu>
+	Thu, 19 Apr 2007 07:47:54 -0400
+Message-ID: <462756E1.2060100@sgi.com>
+Date: Thu, 19 Apr 2007 13:47:45 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 5849
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704192159.35546.kernel@kolivas.org>
+To: rja@sgi.com
+Cc: holt@sgi.com, Andrew Morton <akpm@osdl.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [Fwd: [PATCH] ia64 sn xpc: Convert to use kthread API.]
+Content-Type: multipart/mixed;
+ boundary="------------090300060901070307060306"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, there are 3 known schedulers currently being "promoted" as solid 
-replacements for the mainline scheduler which address most of the issues with 
-mainline (and about 10 other ones not currently being promoted). The main way 
-they do this is through attempting to maintain solid fairness. There is 
-enough evidence mounting now from the numerous test cases fixed by much 
-fairer designs that this is the way forward for a general purpose cpu 
-scheduler which is what linux needs. 
+This is a multi-part message in MIME format.
+--------------090300060901070307060306
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Interactivity of just about everything that needs low latency (ie audio and 
-video players) are easily managed by maintaining low latency between wakeups 
-and scheduling of all these low cpu users. The one fly in the ointment for 
-linux remains X. I am still, to this moment, completely and utterly stunned 
-at why everyone is trying to find increasingly complex unique ways to manage 
-X when all it needs is more cpu[1]. Now most of these are actually very good 
-ideas about _extra_ features that would be desirable in the long run for 
-linux, but given the ludicrous simplicity of renicing X I cannot fathom why 
-people keep promoting these alternatives. At the time of 2.6.0 coming out we 
-were desparately trying to get half decent interactivity within a reasonable 
-time frame to release 2.6.0 without rewiring the whole scheduler. So I 
-tweaked the crap out of the tunables that were already there[2].
+Russ, Robin,
 
-So let's hear from the 3 people who generated the schedulers under the 
-spotlight. These are recent snippets and by no means the only time these 
-comments have been said. Without sounding too bold, we do know a thing or two 
-about scheduling.
+Any objections to this patch?
 
-CFS:
-On Thursday 19 April 2007 16:38, Ingo Molnar wrote:
-> hmmmm. How about the following then: default to nice -10 for all
-> (SCHED_NORMAL) kernel threads and all root-owned tasks. Root _is_
-> special: root already has disk space reserved to it, root has special
-> memory allocation allowances, etc. I dont see a reason why we couldnt by
-> default make all root tasks have nice -10. This would be instantly loved
-> by sysadmins i suspect ;-)
->
-> (distros that go the extra mile of making Xorg run under non-root could
-> also go another extra one foot to renice that X server to -10.)
+Eric, please send such patches to the appropriate list, it's in ia64
+file after all.
 
-Nicksched:
-On Wednesday 18 April 2007 15:00, Nick Piggin wrote:
-> What's wrong with allowing X to get more than it's fair share of CPU
-> time by "fiddling with nice levels"? That's what they're there for.
-
-and
-
-Staircase-Deadline:
-On Thursday 19 April 2007 09:59, Con Kolivas wrote:
-> Remember to renice X to -10 for nicest desktop behaviour :)
+Thanks,
+Jes
 
 
-[1]The one caveat I can think of is that when you share X sessions across 
-multiple users -with a fair cpu scheduler-, having them all nice 0 also makes 
-the distribution of cpu across the multiple users very even and smooth, 
-without the expense of burning away the other person's cpu time they'd like 
-for compute intensive non gui things. If you make a scheduler that always 
-favours X this becomes impossible. I've had enough users offlist ask me to 
-help them set up multiuser environments just like this with my schedulers 
-because they were unable to do it with mainline, even with SCHED_BATCH, short 
-of nicing everything +19. This makes the argument for not favouring X within 
-the scheduler with tweaks even stronger.
+--------------090300060901070307060306
+Content-Type: message/rfc822;
+ name="[PATCH] ia64 sn xpc: Convert to use kthread API."
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="[PATCH] ia64 sn xpc: Convert to use kthread API."
 
-[2] Nick was promoting renicing X with his Nicksched alternative at the time 
-of 2.6.0 and while we were not violently opposed to renicing X, Nicksched was 
-still very new on the scene and didn't have the luxury of extended testing 
-and reiteration in time for 2.6 and he put the project on hold for some time 
-after that. The correctness of his views on renicing certainly have become 
-more obvious over time.
+Return-Path: <eric@ebiederm.dsl.xmission.com>
+X-Original-To: jes@estes.americas.sgi.com
+Delivered-To: jes@estes.americas.sgi.com
+Received: from relay.sgi.com (netops-testserver-4.corp.sgi.com [192.26.58.214])
+	by estes.americas.sgi.com (Postfix) with ESMTP id CAC3870001D5
+	for <jes@estes.americas.sgi.com>; Thu, 19 Apr 2007 03:10:16 -0500 (CDT)
+Received: from cuda.sgi.com (cuda3.sgi.com [192.48.176.15])
+	by netops-testserver-4.corp.sgi.com (Postfix) with ESMTP id 6BF9A61B76
+	for <jes@sgi.com>; Thu, 19 Apr 2007 01:10:16 -0700 (PDT)
+X-ASG-Debug-ID: 1176970214-79dd00600000-q765qN
+X-Barracuda-URL: http://cuda.sgi.com:80/cgi-bin/mark.cgi
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com [166.70.28.69])
+	by cuda.sgi.com (Spam Firewall) with ESMTP id D2B31161F326
+	for <jes@sgi.com>; Thu, 19 Apr 2007 01:10:14 -0700 (PDT)
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com [166.70.28.69]) by cuda.sgi.com with ESMTP id ECUFfuAYyG6NpNmY for <jes@sgi.com>; Thu, 19 Apr 2007 01:10:14 -0700 (PDT)
+Received: from ebiederm.dsl.xmission.com (localhost [127.0.0.1])
+	by ebiederm.dsl.xmission.com (8.13.8/8.13.8/Debian-3) with ESMTP id l3J7xZQq010539;
+	Thu, 19 Apr 2007 01:59:35 -0600
+Received: (from eric@localhost)
+	by ebiederm.dsl.xmission.com (8.13.8/8.13.8/Submit) id l3J7xYvc010538;
+	Thu, 19 Apr 2007 01:59:34 -0600
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "<Andrew Morton" <akpm@osdl.org>
+Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+	Christoph Hellwig <hch@infradead.org>,
+	<linux-kernel@vger.kernel.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Jes Sorensen <jes@sgi.com>, Tony Luck <tony.luck@intel.com>
+X-ASG-Orig-Subj: [PATCH] ia64 sn xpc: Convert to use kthread API.
+Subject: [PATCH] ia64 sn xpc: Convert to use kthread API.
+Date: Thu, 19 Apr 2007 01:58:44 -0600
+Message-Id: <1176969574439-git-send-email-ebiederm@xmission.com>
+X-Mailer: git-send-email 1.5.1.1.g2de0
+In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+X-Barracuda-Connect: ebiederm.dsl.xmission.com[166.70.28.69]
+X-Barracuda-Start-Time: 1176970214
+X-Barracuda-Bayes: INNOCENT GLOBAL 0.0384 1.0000 -1.7733
+X-Barracuda-Virus-Scanned: by cuda.sgi.com at sgi.com
+X-Barracuda-Spam-Score: -1.77
+X-Barracuda-Spam-Status: No, SCORE=-1.77 using per-user scores of TAG_LEVEL=3.5 QUARANTINE_LEVEL=4.5 KILL_LEVEL=9.0 tests=
+X-Barracuda-Spam-Report: Code version 3.1, rules version 3.1.14628
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
 
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-So yes go ahead and think up great ideas for other ways of metering out cpu 
-bandwidth for different purposes, but for X, given the absurd simplicity of 
-renicing, why keep fighting it? Again I reiterate that most users of SD have 
-not found the need to renice X anyway except if they stick to old habits of 
-make -j4 on uniprocessor and the like, and I expect that those on CFS and 
-Nicksched would also have similar experiences.
+This patch starts the xpc kernel threads using kthread_run
+not a combination of kernel_thread and daemonize.  Resuling
+in slightly simpler and more maintainable code.
 
+Cc: Jes Sorensen <jes@sgi.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/ia64/sn/kernel/xpc_main.c |   31 +++++++++++++------------------
+ 1 files changed, 13 insertions(+), 18 deletions(-)
+
+diff --git a/arch/ia64/sn/kernel/xpc_main.c b/arch/ia64/sn/kernel/xpc_main.c
+index e336e16..5b53642 100644
+--- a/arch/ia64/sn/kernel/xpc_main.c
++++ b/arch/ia64/sn/kernel/xpc_main.c
+@@ -56,6 +56,7 @@
+ #include <linux/reboot.h>
+ #include <linux/completion.h>
+ #include <linux/kdebug.h>
++#include <linux/kthread.h>
+ #include <asm/sn/intr.h>
+ #include <asm/sn/sn_sal.h>
+ #include <asm/uaccess.h>
+@@ -253,8 +254,6 @@ xpc_hb_checker(void *ignore)
+ 
+ 	/* this thread was marked active by xpc_hb_init() */
+ 
+-	daemonize(XPC_HB_CHECK_THREAD_NAME);
+-
+ 	set_cpus_allowed(current, cpumask_of_cpu(XPC_HB_CHECK_CPU));
+ 
+ 	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
+@@ -324,8 +323,6 @@ xpc_hb_checker(void *ignore)
+ static int
+ xpc_initiate_discovery(void *ignore)
+ {
+-	daemonize(XPC_DISCOVERY_THREAD_NAME);
+-
+ 	xpc_discovery();
+ 
+ 	dev_dbg(xpc_part, "discovery thread is exiting\n");
+@@ -494,8 +491,6 @@ xpc_activating(void *__partid)
+ 
+ 	dev_dbg(xpc_part, "bringing partition %d up\n", partid);
+ 
+-	daemonize("xpc%02d", partid);
+-
+ 	/*
+ 	 * This thread needs to run at a realtime priority to prevent a
+ 	 * significant performance degradation.
+@@ -559,7 +554,7 @@ xpc_activate_partition(struct xpc_partition *part)
+ {
+ 	partid_t partid = XPC_PARTID(part);
+ 	unsigned long irq_flags;
+-	pid_t pid;
++	struct task_struct *task;
+ 
+ 
+ 	spin_lock_irqsave(&part->act_lock, irq_flags);
+@@ -571,9 +566,10 @@ xpc_activate_partition(struct xpc_partition *part)
+ 
+ 	spin_unlock_irqrestore(&part->act_lock, irq_flags);
+ 
+-	pid = kernel_thread(xpc_activating, (void *) ((u64) partid), 0);
++	task = kthread_run(xpc_activating, (void *) ((u64) partid),
++			  "xpc%02d", partid);
+ 
+-	if (unlikely(pid <= 0)) {
++	if (unlikely(IS_ERR(task))) {
+ 		spin_lock_irqsave(&part->act_lock, irq_flags);
+ 		part->act_state = XPC_P_INACTIVE;
+ 		XPC_SET_REASON(part, xpcCloneKThreadFailed, __LINE__);
+@@ -724,8 +720,6 @@ xpc_daemonize_kthread(void *args)
+ 	unsigned long irq_flags;
+ 
+ 
+-	daemonize("xpc%02dc%d", partid, ch_number);
+-
+ 	dev_dbg(xpc_chan, "kthread starting, partid=%d, channel=%d\n",
+ 		partid, ch_number);
+ 
+@@ -844,8 +838,9 @@ xpc_create_kthreads(struct xpc_channel *ch, int needed,
+ 		(void) xpc_part_ref(part);
+ 		xpc_msgqueue_ref(ch);
+ 
+-		pid = kernel_thread(xpc_daemonize_kthread, (void *) args, 0);
+-		if (pid < 0) {
++		task = kthread_run(xpc_daemonize_kthread, args,
++				   "xpc%02dc%d", partid, ch_number);
++		if (IS_ERR(task)) {
+ 			/* the fork failed */
+ 
+ 			/*
+@@ -1222,7 +1217,7 @@ xpc_init(void)
+ 	int ret;
+ 	partid_t partid;
+ 	struct xpc_partition *part;
+-	pid_t pid;
++	struct task_struct *task;
+ 	size_t buf_size;
+ 
+ 
+@@ -1353,8 +1348,8 @@ xpc_init(void)
+ 	 * The real work-horse behind xpc.  This processes incoming
+ 	 * interrupts and monitors remote heartbeats.
+ 	 */
+-	pid = kernel_thread(xpc_hb_checker, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(xpc_hb_checker, NULL, XPC_HB_CHECK_THREAD_NAME);
++	if (IS_ERR(task)) {
+ 		dev_err(xpc_part, "failed while forking hb check thread\n");
+ 
+ 		/* indicate to others that our reserved page is uninitialized */
+@@ -1384,8 +1379,8 @@ xpc_init(void)
+ 	 * activate based on info provided by SAL. This new thread is short
+ 	 * lived and will exit once discovery is complete.
+ 	 */
+-	pid = kernel_thread(xpc_initiate_discovery, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(xpc_initiate_discovery, NULL, XPC_DISCOVERY_THREAD_NAME);
++	if (IS_ERR(task)) {
+ 		dev_err(xpc_part, "failed while forking discovery thread\n");
+ 
+ 		/* mark this new thread as a non-starter */
 -- 
--ck
+1.5.0.g53756
+
+--------------090300060901070307060306--
