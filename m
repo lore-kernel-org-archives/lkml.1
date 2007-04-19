@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766867AbXDSQzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766876AbXDSQzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766867AbXDSQzF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766876AbXDSQzF
+	id S1766876AbXDSQzW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766877AbXDSQzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:55:05 -0400
-Received: from msen.com ([148.59.86.2]:60981 "EHLO shell.msen.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766867AbXDSQzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:55:03 -0400
-X-Popauth-Info: 1177003289
-X-Sent-To: linux-kernel@vger.kernel.org
-Date: Thu, 19 Apr 2007 12:55:00 -0400 (EDT)
-From: Lou Poppler <lwp@mail.msen.com>
-X-X-Sender: lwp@shell.msen.com
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-cc: linux-kernel@vger.kernel.org, 419950@bugs.debian.org
-Subject: Re: NETDEV WATCHDOG, tulip, 2.6.18
-In-Reply-To: <4627412D.5010504@wpkg.org>
-Message-ID: <20070419114641.C61052@shell.msen.com>
-References: <4627412D.5010504@wpkg.org>
+	Thu, 19 Apr 2007 12:55:22 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2153 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766876AbXDSQzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 12:55:20 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 19 Apr 2007 09:55:04 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Mike Galbraith <efault@gmx.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+In-Reply-To: <1176967937.6408.81.camel@Homer.simpson.net>
+Message-ID: <Pine.LNX.4.64.0704190845430.31693@alien.or.mcafeemobile.com>
+References: <20070418055525.GS11115@waste.org> 
+ <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> 
+ <20070418152355.GU11115@waste.org>  <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
+  <20070418174945.GA7930@elte.hu> <20070418175936.GA11980@elte.hu> 
+ <alpine.LFD.0.98.0704181223190.2828@woody.linux-foundation.org> 
+ <Pine.LNX.4.64.0704181304250.25880@alien.or.mcafeemobile.com> 
+ <20070418214816.GA10902@elte.hu>  <1176965560.6408.60.camel@Homer.simpson.net>
+  <20070419070921.GA28528@elte.hu> <1176967937.6408.81.camel@Homer.simpson.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Milter: Spamilter (Reciever: shell.msen.com; Sender-ip: 148.59.86.2; Sender-helo: shell.msen.com;)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007, Tomasz Chmielewski wrote:
+On Thu, 19 Apr 2007, Mike Galbraith wrote:
 
->> I also have recurrent problems with
->> NETDEV WATCHDOG: eth0: transmit timed out
+> On Thu, 2007-04-19 at 09:09 +0200, Ingo Molnar wrote:
+> > * Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > With a heavily reniced X (perfectly fine), that should indeed solve my 
+> > > daily usage pattern nicely (always need godmode for shells, but not 
+> > > for mozilla and ilk. 50/50 split automatic without renice of entire 
+> > > gui)
+> > 
+> > how about the first-approximation solution i suggested in the previous 
+> > mail: to add a per UID default nice level? (With this default defaulting 
+> > to '-10' for all root-owned processes, and defaulting to '0' for 
+> > everything else.) That would solve most of the current CFS regressions 
+> > at hand.
+> 
+> That would make my kernel builds etc interfere with my other self's
+> surfing and whatnot.  With it by EUID, when I'm surfing or whatnot, the
+> X portion of my Joe-User activity pushes the compile portion of root
+> down in bandwidth utilization automagically, which is exactly the right
+> thing, because the root me in not as important as the Joe-User me using
+> the GUI at that time.  If the idea of X disturbing root upsets some,
+> they can move X to another UID.  Generally, it seems perfect for here.
 
-> If you search the list, you'll find several similar reports about the tulip 
-> driver (NETDEV WATCHDOG: eth0: transmit timed out).
->
-> Adding nopaic/nolapic/noacpi options to the kernel command line helped in my 
-> case.
+Now guys, I did not follow the whole lengthy and feisty thread, but IIRC 
+Con's scheduler has been attacked because, among other argouments, was 
+requiring X to be reniced. This happened like a month ago IINM.
+I did not have time to look at Con's scheduler, and I only had a brief 
+look at Ingo's one (looks very promising IMO, but so was the initial O(1) 
+post before all the corner-cases fixes went in).
+But this is not a about technical merit, this is about applying the same 
+rules of judgement to others as well to ourselves.
+We went from a "renicing X to -10 is bad because the scheduler should 
+be able to correctly handle the problem w/out additional external plugs" 
+to a totally opposite "let's renice -10 X, the whole SCHED_NORMAL kthreads 
+class, on top of all the tasks owned by root" [1].
+>From a spectator POV like myself in this case, this looks rather "unfair".
 
-Yes, I've looked at many similar complaints on this list and on Debian's
-BTS, going back several years.  It seems that it happens with more drivers
-than just tulip, all with basicly the same symptoms.  The pattern seems to
-be: (1) a period of problem-free operation, minutes to days duration;
-(2) something bad happens, probably APIC or APCI related, probably
-interfering with seeing an interrupt; (3) the kernel doesn't ever
-completely recover from the bad event, and the affected interface
-remains crippled until reboot.
 
-I will continue to experiment with noapic,nolapic,acpi=off,pci=routeirq
-plus variations of BIOS setup options.  This is slow experimentation,
-since it can take days to see the problem -- but luckily this machine
-is not critical to anything now, and I don't mind taking some time
-to try to figure this out.  When I find some settings that avoid the
-problem, I think this will mean we have avoided the "something bad"
-in step (2) above, possibly by disabling some functionality of the
-hardware.  The possibility remains that some part of the kernel could
-be coping better with whatever this is, and recovering the normal
-operation of the interface after the "something bad".  I think I
-remember other peoples' NETDEV WATCHDOG trouble reports where they
-say their setup used to work OK under some earlier 2.4 (or 2.2 ?)
-kernels, or even under other OSes.
 
-Any other suggestions for boot options I should try are welcome,
-as are any requests for other specific info about this system
-while it is still in failure mode.
+[1] I think, before and now, that that's more a duck tape patch than a 
+    real solution. OTOH if the "solution" is gonna be another maze of 
+    macros and heuristics filled with pretty bad corner cases, I may 
+    prefer the former.
+
+
+- Davide
+
+
