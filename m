@@ -1,93 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161260AbXDSHJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993131AbXDSHJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161260AbXDSHJM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161227AbXDSHJH
+	id S2993131AbXDSHJx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993145AbXDSHJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:09:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36473 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161175AbXDSHIl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:08:41 -0400
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: "<Andrew Morton" <akpm@osdl.org>
-Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] macintosh/therm_pm72.c: Convert to kthread API.
-Date: Thu, 19 Apr 2007 00:55:42 -0600
-Message-Id: <11769657871691-git-send-email-ebiederm@xmission.com>
-X-Mailer: git-send-email 1.5.0.rc1.gb60d
-In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	Thu, 19 Apr 2007 03:09:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40865 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993131AbXDSHJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 03:09:31 -0400
+Date: Thu, 19 Apr 2007 09:09:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070419070921.GA28528@elte.hu>
+References: <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org> <20070418174945.GA7930@elte.hu> <20070418175936.GA11980@elte.hu> <alpine.LFD.0.98.0704181223190.2828@woody.linux-foundation.org> <Pine.LNX.4.64.0704181304250.25880@alien.or.mcafeemobile.com> <20070418214816.GA10902@elte.hu> <1176965560.6408.60.camel@Homer.simpson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1176965560.6408.60.camel@Homer.simpson.net>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patch modifies startup of the kfand to use kthread_run
-not a combination of kernel_thread and daemonize, making
-the code a little simpler and more maintaintable.
+* Mike Galbraith <efault@gmx.de> wrote:
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/macintosh/therm_pm72.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+> With a heavily reniced X (perfectly fine), that should indeed solve my 
+> daily usage pattern nicely (always need godmode for shells, but not 
+> for mozilla and ilk. 50/50 split automatic without renice of entire 
+> gui)
 
-diff --git a/drivers/macintosh/therm_pm72.c b/drivers/macintosh/therm_pm72.c
-index b002a4b..7e9cbb7 100644
---- a/drivers/macintosh/therm_pm72.c
-+++ b/drivers/macintosh/therm_pm72.c
-@@ -121,6 +121,7 @@
- #include <linux/reboot.h>
- #include <linux/kmod.h>
- #include <linux/i2c.h>
-+#include <linux/kthread.h>
- #include <asm/prom.h>
- #include <asm/machdep.h>
- #include <asm/io.h>
-@@ -161,7 +162,7 @@ static struct slots_pid_state		slots_state;
- static int				state;
- static int				cpu_count;
- static int				cpu_pid_type;
--static pid_t				ctrl_task;
-+static int				ctrl_task;
- static struct completion		ctrl_complete;
- static int				critical_state;
- static int				rackmac;
-@@ -1779,8 +1780,6 @@ static int call_critical_overtemp(void)
-  */
- static int main_control_loop(void *x)
- {
--	daemonize("kfand");
--
- 	DBG("main_control_loop started\n");
- 
- 	down(&driver_lock);
-@@ -1859,7 +1858,6 @@ static int main_control_loop(void *x)
- 			machine_power_off();
- 		}
- 
--		// FIXME: Deal with signals
- 		elapsed = jiffies - start;
- 		if (elapsed < HZ)
- 			schedule_timeout_interruptible(HZ - elapsed);
-@@ -1954,9 +1952,12 @@ static int create_control_loops(void)
-  */
- static void start_control_loops(void)
- {
-+	struct task_struct *task;
- 	init_completion(&ctrl_complete);
- 
--	ctrl_task = kernel_thread(main_control_loop, NULL, SIGCHLD | CLONE_KERNEL);
-+	task = kthread_run(main_control_loop, NULL, "kfand");
-+	if (!IS_ERR(task))
-+		ctrl_task = 1;
- }
- 
- /*
--- 
-1.5.0.g53756
+how about the first-approximation solution i suggested in the previous 
+mail: to add a per UID default nice level? (With this default defaulting 
+to '-10' for all root-owned processes, and defaulting to '0' for 
+everything else.) That would solve most of the current CFS regressions 
+at hand.
 
+	Ingo
