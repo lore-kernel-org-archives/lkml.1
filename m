@@ -1,57 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbXDSWfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbXDSWhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbXDSWfj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXDSWfj
+	id S1754223AbXDSWhS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXDSWhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:35:39 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:44878 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754219AbXDSWfi (ORCPT
+	Thu, 19 Apr 2007 18:37:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47956 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754223AbXDSWhQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:35:38 -0400
-Date: Thu, 19 Apr 2007 15:34:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       Andrew de Quincey <adq_dvb@lidskialf.net>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH] dvb_en_50221: Convert to kthread API
-Message-Id: <20070419153413.8768fd1d.akpm@linux-foundation.org>
-In-Reply-To: <1176969639190-git-send-email-ebiederm@xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<1176969639190-git-send-email-ebiederm@xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 18:37:16 -0400
+Date: Thu, 19 Apr 2007 18:37:14 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <d120d5000704191139m3caf4cfeqd95047d1c33faf64@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704191744380.6354-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 01:59:04 -0600
-"Eric W. Biederman" <ebiederm@xmission.com> wrote:
+On Thu, 19 Apr 2007, Dmitry Torokhov wrote:
 
-> This patch is a minimal transformation to use the kthread API
-> doing it's best to preserve the existing logic.
+> On 4/19/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Wed, 18 Apr 2007, Dmitry Torokhov wrote:
+> >
+> > > I am still do not understand why this is needed. Would it not be
+> > > simplier just to use a reference to struct device instead of embedding
+> > > it in a larger structure if their lifetimes are different and one does
+> > > not have a subsystem that takes care of releasing logic.
+> > >
+> > >
+> > > Pretty much drivers have 2 options:
+> > >
+> > > struct my_device {
+> > >         void *private_data;
+> > >         struct device dev;
+> > > };
+> >
+> > Actually people use dev_[gs]et_drvdata() instead of a separate
+> > private_data pointer.  That way there's no need for the my_device
+> > container.
+> >
 > 
-> Instead of starting kdvb-ca by calling kernel_thread,
-> daemonize and sigfillset we kthread_run is used.
-> 
-> Instead of tracking the pid of the running thread we instead
-> simply keep a flag to indicate that the current thread is
-> running, as that is all the pid is really used for.
-> 
-> And finally the kill_proc sending signal 0 to the kernel thread to
-> ensure it is alive before we wait for it to shutdown is removed.
-> The kthread API does not provide the pid so we don't have that
-> information readily available and the test is just silly.  If there
-> is no shutdown race the test is a useless confirmation of that the
-> thread is running.  If there is a race the test doesn't fix it and
-> we should fix the race properly.
+> No, drvdata belongs to driver that is bound to a device. We are
+> talking about private data created and managed by driver that provides
+> device.
 
-urgh, yes, this is just sad.  We should convert this driver fully to
-the kthread API - it will end up much better.
+Oh, sorry, I misunderstood.
 
-I'll queue this up as a -mm-only thing as a gentle reminder that
-we should do it properly.
+> Again, if we are talking about driver bound to a device then devices
+> ->release() is irrelevant. If we are talking about driver that created
+> device then driver's ->remove() is irrelevant.
+
+The problem is that device structures carry references to their parents.  
+So even if a driver does use this option and is able to give up its own 
+references immediately, it can't make any guarantees about drivers of 
+child devices.  If every driver followed your scheme we'd be okay; until 
+then any ancestor of a device with a non-immediate-detach driver would not 
+be able to do immediate detach.
+
+There's also another problem.  Even though all the references to
+my_dev->dev may be gone, there will probably still be outstanding
+references to private_data structure.  The driver's exit() routine will 
+have to wait until all those references are gone.  How can it do that 
+safely?  Presumably the private_data will include its own refcount and 
+some release routine will run when the count drops to 0.  That routine 
+will be part of the driver's module -- so how can it enable itself to be 
+unloaded?
+
+
+> > > With current sysfs orphaning attributes upon removal request there is
+> > > no issue of accessing driver-private data through references obtained
+> > > via ether embedded or referenced dev structure so everything is fine.
+> >
+> > Not so.  There are other pathways besides sysfs which can cause a driver
+> > to access its data structures.
+> >
+> 
+> Which ones? These needs to be identified and treated with "immediate
+> disconnect" that you advocated earlier. Once active users of device's
+> services are gone you can zap it.
+
+Among the worst offenders are character devices.  None of the subsystem
+providers offering char device registration performs immediate detach --
+they are a lot like sysfs used to be.  (In fact, they probably _can't_
+provide it since read() or write() calls can block indefinitely in the
+lower-level driver; the subsystem may have no way to force them to
+fail-fast.)  So every lower-level driver which registers a char device
+needs to provide its own synchronization and immediate detach, and at the
+moment I doubt very many of them do.  And of those which do, a large
+percentage rely on the BKL for synchronization!
+
+Here's another awkward possibility.  Suppose a workqueue routine tries to 
+unregister a device.  Suppose the device's driver needs to do something in 
+a process context, so it has a work item pending in the same workqueue.  
+The driver's remove() method would need to flush the workqueue (in order 
+to perform immediate detach), but doing so would cause a deadlock.
+
+Alan Stern
+
