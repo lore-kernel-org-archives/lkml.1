@@ -1,89 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766896AbXDSR2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766891AbXDSRcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766896AbXDSR2u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 13:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766895AbXDSR2u
+	id S1766891AbXDSRcO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 13:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766895AbXDSRcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 13:28:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41164 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766890AbXDSR2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 13:28:46 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
-Date: Thu, 19 Apr 2007 13:27:17 -0400
-User-Agent: KMail/1.9.5
-Cc: Dave Jones <davej@redhat.com>, davej@codemonkey.org.uk,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6> <20070418235806.GD20204@redhat.com> <Pine.LNX.4.64.0704182028320.5826@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0704182028320.5826@localhost.localdomain>
+	Thu, 19 Apr 2007 13:32:14 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:15294 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766891AbXDSRcN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 13:32:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=fJ8kaoWJHT9AaydCjV2+f0ApwwCxkpVSk0uBhvMyvfu/OpLipPJkVNi2hNXtpSB2HkFBz9lsNGtN7njVHxjopRNIYgT/tVTIyB4tj/uL4nrsbeKM+s80oEWpGPt5GmIRa6UhJ2ctDu3vIVSxCVHBYahmJNbrFiRmYYifOXqs8Gs=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Date: Thu, 19 Apr 2007 13:32:08 -0400
+User-Agent: KMail/1.9.6
+Cc: Willy Tarreau <w@1wt.eu>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20070413202100.GA9957@elte.hu> <20070414130101.GA2538@1wt.eu> <20070419090144.GA17100@elte.hu>
+In-Reply-To: <20070419090144.GA17100@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704191327.17500.lenb@kernel.org>
+Message-Id: <200704191332.08701.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 April 2007 20:35, Robert P. J. Day wrote:
-> On Wed, 18 Apr 2007, Dave Jones wrote:
-> 
-> > On Wed, Apr 18, 2007 at 05:23:15PM -0400, Len Brown wrote:
-> >
-> >  > > p.p.s.  patch improvements that will let me avoid doing any of that
-> >  > > myself always welcome. :-)
-> >  >
-> >  > well, I'm sorry that I've known about the APM issue for a long time
-> >  > and done nothing about it.  I did ping davej when he broke it,
-> >  > but his to-do list is probably even longer than mine.
-> >
-> > ping timeout.
-> >
-> > I don't recall too many of the details surrounding those changes,
-> > but I certainly won't stand in the way of anyone trying to fix it.
-> > It sounds like you and Robert are on top of it, or do you want me to
-> > poke at it ?
-> 
-> well, before i get even more confused by what was (once upon a time) a
-> fairly straightforward removal patch, the first obvious question is --
-> are there *any* circumstances that *require* a config selection of
-> CONFIG_PM_LEGACY, as opposed to a selection of APM and/or ACPI?  if
-> there are, then it can't simply be removed.  my original patch
-> submission was based on the assumption that absolutely no one needed
-> the legacy stuff anymore and absolutely everything related to it could
-> be scrapped.
-> 
-> so, first things first:  what *needs* legacy PM at the moment?
-> 
-> rday
-> 
-> p.s.  i'm confused by the header file include/linux/pm_legacy.h,
-> especially this part:
-> 
-> ========================
-> #ifdef CONFIG_PM_LEGACY
-> ...
-> # else /* CONFIG_PM_LEGACY */
-> 
-> #define PM_IS_ACTIVE() 0
-> ...
-> #endif
-> =======================
-> 
->   so the macro "PM_IS_ACTIVE()" represents whether *legacy* PM has
-> been selected.  in other words, it makes no (apparent) sense that the
-> value of that macro would represent some kind of contention mechanism
-> between APM and ACPI, which is entirely independent from the legacy
-> stuff.  right?
+On Thursday 19 April 2007, Ingo Molnar wrote:
+>* Willy Tarreau <w@1wt.eu> wrote:
+>> Good idea. The machine I'm typing from now has 1000 scheddos running
+>> at +19, and 12 gears at nice 0. [...]
+>>
+>> From time to time, one of the 12 aligned gears will quickly perform a
+>> full quarter of round while others slowly turn by a few degrees. In
+>> fact, while I don't know this process's CPU usage pattern, there's
+>> something useful in it : it allows me to visually see when process
+>> accelerate/decelerate. [...]
+>
+>cool idea - i have just tried this and it rocks - you can easily see the
+>'nature' of CPU time distribution just via visual feedback. (Is there
+>any easy way to start up 12 glxgears fully aligned, or does one always
+>have to mouse around to get them into proper position?)
+>
+>btw., i am using another method to quickly judge X's behavior: i started
+>the 'snowflakes' plugin in Beryl on Fedora 7, which puts a nice smooth
+>opengl-rendered snow fall on the desktop background. That gives me an
+>idea about how well X is scheduling under various workloads, without
+>having to instrument it explicitly.
+>
+yes, its a  cute idea, till you switch away from that screen to check progress 
+on something else, like to compose this message.
+
+===========
+5913 frames in 5.0 seconds = 1182.499 FPS
+6238 frames in 5.0 seconds = 1247.556 FPS
+11380 frames in 5.0 seconds = 2275.905 FPS
+10691 frames in 5.0 seconds = 2138.173 FPS
+8707 frames in 5.0 seconds = 1741.305 FPS
+10669 frames in 5.0 seconds = 2133.708 FPS
+11392 frames in 5.0 seconds = 2278.037 FPS
+11379 frames in 5.0 seconds = 2275.711 FPS
+11310 frames in 5.0 seconds = 2261.861 FPS
+11386 frames in 5.0 seconds = 2277.081 FPS
+11292 frames in 5.0 seconds = 2258.353 FPS
+11352 frames in 5.0 seconds = 2270.297 FPS
+11415 frames in 5.0 seconds = 2282.886 FPS
+11406 frames in 5.0 seconds = 2281.037 FPS
+11483 frames in 5.0 seconds = 2296.533 FPS
+11510 frames in 5.0 seconds = 2301.883 FPS
+11123 frames in 5.0 seconds = 2224.266 FPS
+8980 frames in 5.0 seconds = 1795.861 FPS
+=======
+The over 2000fps reports were while I was either looking at htop, or starting 
+this message, both on different screens.  htop said it was using 95+ % of the 
+cpu even when its display was going to /dev/null.  So 'Kewl' doesn't seem to 
+get us apples to apples numbers we can go to the window and bet 
+win-place-show based on them alone.
+
+FWIW, running the nvidia-9755 drivers here.
+
+So if we are going to use that as a judgement operator, it obviously needs 
+some intelligently applied scaling before they are worth more than a 
+subjective feel is.
+
+>	Ingo
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
 
-yep, the problem is that PM_IS_ACTIVE() got mixed up in CONFIG_PM_LEGACY.
-how about i send a patch to fix this first -- when i get back tomorrow.
-and then the CONFIG_PM_LEGACY patch will not be tangled in this?
 
--Len
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The confusion of a staff member is measured by the length of his memos.
+		-- New York Times, Jan. 20, 1981
