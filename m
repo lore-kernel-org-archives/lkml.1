@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbXDSQ05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXDSQ1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750930AbXDSQ05 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXDSQ05
+	id S932097AbXDSQ1k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXDSQ1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:26:57 -0400
-Received: from pat.uio.no ([129.240.10.15]:57149 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbXDSQ04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:26:56 -0400
-Subject: Re: [PATCH] nfs4state reclaimer: Remove unnecessary allow_signal
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-In-Reply-To: <1176969636656-git-send-email-ebiederm@xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	 <1176969636656-git-send-email-ebiederm@xmission.com>
-Content-Type: text/plain
-Date: Thu, 19 Apr 2007 12:26:42 -0400
-Message-Id: <1177000002.6663.16.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.161)
-X-UiO-Scanned: DD606DE1EC4F51597528EDF030809722537D7E27
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 533 total 1195355 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Thu, 19 Apr 2007 12:27:40 -0400
+Received: from ccerelbas02.cce.hp.com ([161.114.21.105]:41842 "EHLO
+	ccerelbas02.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932097AbXDSQ1i convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 12:27:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] cciss: Fix warnings during compilation under 32bitenvironment
+Date: Thu, 19 Apr 2007 16:26:22 -0000
+Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8CF4632C@G3W0639.americas.hpqcorp.net>
+In-Reply-To: <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] cciss: Fix warnings during compilation under 32bitenvironment
+thread-index: AceCnuPS06Q7uK7wSCmLjH8PQmbuMgAAGfpA
+References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2> <226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net> <1176995934.31764.7.camel@mulgrave.il.steeleye.com> <226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net> <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: "James Bottomley" <James.Bottomley@SteelEye.com>
+Cc: "Hisashi Hifumi" <hifumi.hisashi@oss.ntt.co.jp>,
+       <akpm@linux-foundation.org>, <jens.axboe@oracle.com>,
+       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       "Cameron, Steve" <steve.cameron@hp.com>
+X-OriginalArrivalTime: 19 Apr 2007 16:27:13.0371 (UTC) FILETIME=[962422B0:01C7829F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-19 at 01:59 -0600, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
+ 
+
+> -----Original Message-----
+> From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
+> Sent: Thursday, April 19, 2007 11:22 AM
+> To: Miller, Mike (OS Dev)
+> Cc: Hisashi Hifumi; akpm@linux-foundation.org; 
+> jens.axboe@oracle.com; linux-kernel@vger.kernel.org; 
+> linux-scsi@vger.kernel.org; Cameron, Steve
+> Subject: RE: [PATCH] cciss: Fix warnings during compilation 
+> under 32bitenvironment
 > 
-> Cc: Neil Brown <neilb@suse.de>
-> Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  fs/nfs/nfs4state.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
+> On Thu, 2007-04-19 at 16:12 +0000, Miller, Mike (OS Dev) wrote:
+> > > > Nak. You still haven't told where you saw these warnings. What 
+> > > > compiler are you using? I do not see these in my 32-bit 
+> environment.
+> > > 
+> > > I think it's seen with CONFIG_LBD=n on 32 bits
+> > > 
+> > > In that configuration, sector_t is a u32 (it's u64 even 
+> on 32 bits 
+> > > with CONFIG_LBD=y).  The proposed code change is a simple cut and 
+> > > paste from the sd driver.
+> > 
+> > Isn't there a better way than testing each one?
 > 
-> diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
-> index 5fffbdf..d16393f 100644
-> --- a/fs/nfs/nfs4state.c
-> +++ b/fs/nfs/nfs4state.c
-> @@ -775,8 +775,6 @@ static int reclaimer(void *ptr)
->  	struct rpc_cred *cred;
->  	int status = 0;
->  
-> -	allow_signal(SIGKILL);
-> -
->  	/* Ensure exclusive access to NFSv4 state */
->  	lock_kernel();
->  	down_write(&clp->cl_sem);
+> It's not such a bad option.  The sizeof() test is compile 
+> time determinable, so the compiler simply zeros the fields in 
+> the CONFIG_LBD=n case and does the shift for CONFIG_LBD=y.  
+> It certainly never compiles to four inline condition checks.
+> 
+OKIE-DOKIE then, add the change.
 
-Ditto...
-
-
-
+Acked-by: Mike Miller <mike.miller@hp.com>
