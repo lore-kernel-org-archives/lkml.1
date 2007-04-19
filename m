@@ -1,71 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993165AbXDSICP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993166AbXDSICL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993165AbXDSICP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993169AbXDSICP
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:02:15 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45717 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993165AbXDSICL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S2993166AbXDSICL (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 19 Apr 2007 04:02:11 -0400
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: "<Andrew Morton" <akpm@osdl.org>
-Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH] i386 voyager: Convert the monitor thread to use the kthread API
-Date: Thu, 19 Apr 2007 01:58:32 -0600
-Message-Id: <11769695543419-git-send-email-ebiederm@xmission.com>
-X-Mailer: git-send-email 1.5.1.1.g2de0
-In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993164AbXDSICK
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 19 Apr 2007 04:02:10 -0400
+Received: from smtp1.osdl.org ([65.172.181.25]:48195 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2993165AbXDSICG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 04:02:06 -0400
+Date: Thu, 19 Apr 2007 01:01:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       reiserfs-dev@namesys.com, "Vladimir V. Saveliev" <vs@namesys.com>,
+       linux-mm@kvack.org
+Subject: Re: dio_get_page() lockdep complaints
+Message-Id: <20070419010142.5b7b00cd.akpm@linux-foundation.org>
+In-Reply-To: <20070419073828.GB20928@kernel.dk>
+References: <20070419073828.GB20928@kernel.dk>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+On Thu, 19 Apr 2007 09:38:30 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-This patch just trivially replaces kernel_thread and daemonize
-with a single call to kthread_run.
+> Hi,
+> 
+> Doing some testing on CFQ, I ran into this 100% reproducible report:
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.21-rc7 #5
+> -------------------------------------------------------
+> fio/9741 is trying to acquire lock:
+>  (&mm->mmap_sem){----}, at: [<b018cb34>] dio_get_page+0x54/0x161
+> 
+> but task is already holding lock:
+>  (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
+> 
+> which lock already depends on the new lock.
+> 
 
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- arch/i386/mach-voyager/voyager_thread.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+This is the correct ranking: i_mutex outside mmap_sem.
 
-diff --git a/arch/i386/mach-voyager/voyager_thread.c b/arch/i386/mach-voyager/voyager_thread.c
-index ebfd913..ee23d9b 100644
---- a/arch/i386/mach-voyager/voyager_thread.c
-+++ b/arch/i386/mach-voyager/voyager_thread.c
-@@ -23,6 +23,7 @@
- #include <linux/kmod.h>
- #include <linux/completion.h>
- #include <linux/sched.h>
-+#include <linux/kthread.h>
- #include <asm/desc.h>
- #include <asm/voyager.h>
- #include <asm/vic.h>
-@@ -43,7 +44,7 @@ static __u8 set_timeout = 0;
- static int __init
- voyager_thread_start(void)
- {
--	if(kernel_thread(thread, NULL, CLONE_KERNEL) < 0) {
-+	if (IS_ERR(kthread_run(thread, NULL, "%s", THREAD_NAME))) {
- 		/* This is serious, but not fatal */
- 		printk(KERN_ERR "Voyager: Failed to create system monitor thread!!!\n");
- 		return 1;
-@@ -122,8 +123,6 @@ thread(void *unused)
- 
- 	kvoyagerd_running = 1;
- 
--	daemonize(THREAD_NAME);
--
- 	set_timeout = 0;
- 
- 	init_timer(&wakeup_timer);
--- 
-1.5.0.g53756
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&inode->i_mutex){--..}:
+>        [<b013e3fb>] __lock_acquire+0xdee/0xf9c
+>        [<b013e600>] lock_acquire+0x57/0x70
+>        [<b038c4a5>] __mutex_lock_slowpath+0x73/0x297
+>        [<b038c6e5>] mutex_lock+0x1c/0x1f
+>        [<b01b17e9>] reiserfs_file_release+0x54/0x447
+>        [<b016afe7>] __fput+0x53/0x101
+>        [<b016b0ee>] fput+0x19/0x1c
+>        [<b015bcd5>] remove_vma+0x3b/0x4d
+>        [<b015c659>] do_munmap+0x17f/0x1cf
+>        [<b015c6db>] sys_munmap+0x32/0x42
+>        [<b0103f04>] sysenter_past_esp+0x5d/0x99
+>        [<ffffffff>] 0xffffffff
+> 
+> -> #0 (&mm->mmap_sem){----}:
+>        [<b013e259>] __lock_acquire+0xc4c/0xf9c
+>        [<b013e600>] lock_acquire+0x57/0x70
+>        [<b0137b92>] down_read+0x3a/0x4c
+>        [<b018cb34>] dio_get_page+0x54/0x161
+>        [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
+>        [<b01cf449>] ext3_direct_IO+0x98/0x1e5
+>        [<b014e8df>] generic_file_direct_IO+0x63/0x133
+>        [<b01500e9>] generic_file_aio_read+0x16b/0x222
+>        [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
+>        [<b0180147>] aio_run_iocb+0x69/0x129
+>        [<b0180a78>] io_submit_one+0x194/0x2eb
+>        [<b0181331>] sys_io_submit+0x92/0xe7
+>        [<b0103f90>] syscall_call+0x7/0xb
+>        [<ffffffff>] 0xffffffff
+
+But here reiserfs is taking i_mutex in its file_operations.release(), which
+can be called under mmap_sem.
+
+Vladimir's recent de14569f94513279e3d44d9571a421e9da1759ae.  "resierfs:
+avoid tail packing if an inode was ever mmapped" comes real close to this
+code, but afaict it did not cause this bug.
+
+I can't think of anything which we've done in the 2.6.21 cycle which would have
+caused this to start happening.  Odd.
+
+
+> The test run was fio, the job file used is:
+> 
+> # fio job file snip below
+> [global]
+> bs=4k
+> buffered=0
+> ioengine=libaio
+> iodepth=4
+> thread
+> 
+> [readers]
+> numjobs=8
+> size=128m
+> rw=read
+> # fio job file snip above
+> 
+> Filesystem was ext3, default mkfs and mount options. Kernel was
+> 2.6.21-rc7 as of this morning, with some CFQ patches applied.
+> 
+
+It's interesting that lockdep learned the (wrong) ranking from a reiserfs
+operation then later detected it being violated by ext3.
 
