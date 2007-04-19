@@ -1,85 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031054AbXDSBwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031068AbXDSBw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031054AbXDSBwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 21:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031058AbXDSBwe
+	id S1031068AbXDSBw7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 21:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031055AbXDSBw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 21:52:34 -0400
-Received: from iucha.net ([209.98.146.184]:55530 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031054AbXDSBwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 21:52:34 -0400
-Date: Wed, 18 Apr 2007 20:52:33 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 18 Apr 2007 21:52:59 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:35675 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031065AbXDSBw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 21:52:58 -0400
+Subject: Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-Message-ID: <20070419015232.GO24044@iucha.net>
-References: <1176868485.6796.42.camel@heimdal.trondhjem.org> <20070418040730.GC24044@iucha.net> <20070417211350.ebba1493.akpm@linux-foundation.org> <20070418043040.GD24044@iucha.net> <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org> <20070417223738.8f49a39f.akpm@linux-foundation.org> <20070418123842.GF24044@iucha.net> <1176902131.6796.62.camel@heimdal.trondhjem.org> <20070418134225.GG24044@iucha.net> <1176905506.6796.84.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="wxIXENaY2CYUgF8u"
-Content-Disposition: inline
-In-Reply-To: <1176905506.6796.84.camel@heimdal.trondhjem.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20070418220228.GA14536@elte.hu>
+References: <20070413202100.GA9957@elte.hu>
+	 <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu>
+	 <200704182357.28107.mail@earthworm.de>  <20070418220228.GA14536@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YbP/YtG+oADPCxklN5Ro"
+Date: Thu, 19 Apr 2007 11:52:56 +1000
+Message-Id: <1176947576.5906.21.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---wxIXENaY2CYUgF8u
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-YbP/YtG+oADPCxklN5Ro
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 18, 2007 at 10:11:46AM -0400, Trond Myklebust wrote:
-> Do you have a copy of wireshark or ethereal on hand? If so, could you
-> take a look at whether or not any NFS traffic is going between the
-> client and server once the hang happens?
+Hi.
 
-I used the following command=20
+On Thu, 2007-04-19 at 00:02 +0200, Ingo Molnar wrote:
+> * Christian Hesse <mail@earthworm.de> wrote:
+>=20
+> > > although probably your suspend2 problem is still not fixed, it's=20
+> > > worth a try nevertheless. Which suspend2 patch did you apply, and=20
+> > > was it against -rc6 or -rc7?
+> >=20
+> > You are right again. ;-)
+> >=20
+> > Linux 2.6.21-rc7
+> > Suspend2 2.2.9.11 (applies cleanly to -rc7)
+> > CFS v3 (without any additional patches)
+> >=20
+> > And it still hangs on suspend.
+>=20
+> what's the easiest way for me to try suspend2? Apply the patch, reboot=20
+> into the kernel, then execute what command to suspend? (there's a=20
+> confusing mismash of initiators of all the suspend variants. Can i drive=20
+> this by echoing to /sys/power/state?)
 
-   tcpdump -w nfs-traffic -i eth0 -vv -tt dst port nfs
+=46rom subsequent emails, I think you already got your answer, but just in
+case...
 
-to capture
-
-   http://iucha.net/nfs/21-rc7-nfs4/nfs-traffic.bz2
-
-I started the capture before starting the copy and left it to run for
-a few minutes after the traffic slowed to a crawl.
-
-The iostat and vmstat are at:
-
-   http://iucha.net/nfs/21-rc7-nfs4/iostat
-   http://iucha.net/nfs/21-rc7-nfs4/vmstat
-  =20
-It seems that my original problem report had a big mistake!  There is
-no hang, but at some point the write slows down to a trickle (from
-40,000 blocks/s to 22 blocks/s) as can be seen from the iostat log.
+Yes, if you enabled "Replace swsusp by default" and you already had it
+set up for getting swsusp to resume. If not, and you're using an
+initrd/ramfs, you'll need to modify it to echo
+> /sys/power/suspend2/do_resume after /sys and /proc are mounted but
+prior to mounting / and so on.
 
 Regards,
-florin
 
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
+Nigel
 
---wxIXENaY2CYUgF8u
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+--=-YbP/YtG+oADPCxklN5Ro
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGJstgND0rFCN2b1sRAoQVAJ4qyHnoWVhmtWl5ZPlrJNsMT6RKMgCfXIWv
-Yg4UqU+uiWpAS2eKqzSvY3M=
-=uE6N
+iD8DBQBGJst4N0y+n1M3mo0RAsycAKDNi7oYH3c8zSeBtsiB0OFlE89VBwCcDVWh
+la+JROBvVa7h6M6jTPDAu+Q=
+=BvPv
 -----END PGP SIGNATURE-----
 
---wxIXENaY2CYUgF8u--
+--=-YbP/YtG+oADPCxklN5Ro--
+
