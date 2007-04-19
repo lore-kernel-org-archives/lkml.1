@@ -1,92 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161255AbXDSIUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993187AbXDSITb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161255AbXDSIUe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161337AbXDSIUX
+	id S2993187AbXDSITb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993167AbXDSIET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:20:23 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:60745 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161217AbXDSIUF (ORCPT
+	Thu, 19 Apr 2007 04:04:19 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45789 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993178AbXDSIEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:20:05 -0400
-Date: Thu, 19 Apr 2007 10:19:55 +0200
-From: Frank Pavlic <fpavlic@de.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] s390/net/lcs: Convert to the kthread API
-Message-ID: <20070419081955.GA14586@de.ibm.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769695682070-git-send-email-ebiederm@xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11769695682070-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 19 Apr 2007 04:04:00 -0400
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "<Andrew Morton" <akpm@osdl.org>
+Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Wensong Zhang <wensong@linux-vs.org>, Julian Anastasov <ja@ssi.bg>,
+       Simon Horman <horms@verge.net.au>
+Subject: [PATCH] ipv4/ipvs: Convert to kthread API
+Date: Thu, 19 Apr 2007 01:58:57 -0600
+Message-Id: <11769696262330-git-send-email-ebiederm@xmission.com>
+X-Mailer: git-send-email 1.5.1.1.g2de0
+In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK  for both patches,  
-thank you Eric for the patches, will add them to my patchset
-for Jeff.
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-Frank
+Modify startup of ipvs sync threads to use kthread_run
+instead of a weird combination of calling kernel_thread
+to start a fork_sync_thread whose hole purpose in life was
+to call kernel_thread again starting the actually sync thread
+which called daemonize.
 
-On Thu, Apr 19, 2007 at 01:58:40AM -0600, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> Use kthread_run to start the lcs kernel threads not a
-> combination of kernel_thread and daemonize.  This makes
-> the code slightly simpler and more maintainable.
-> 
-> Cc: Frank Pavlic <fpavlic@de.ibm.com>
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  drivers/s390/net/lcs.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/s390/net/lcs.c b/drivers/s390/net/lcs.c
-> index 08a994f..0300d87 100644
-> --- a/drivers/s390/net/lcs.c
-> +++ b/drivers/s390/net/lcs.c
-> @@ -36,6 +36,7 @@
->  #include <linux/in.h>
->  #include <linux/igmp.h>
->  #include <linux/delay.h>
-> +#include <linux/kthread.h>
->  #include <net/arp.h>
->  #include <net/ip.h>
-> 
-> @@ -1248,7 +1249,6 @@ lcs_register_mc_addresses(void *data)
->  	struct in_device *in4_dev;
-> 
->  	card = (struct lcs_card *) data;
-> -	daemonize("regipm");
-> 
->  	if (!lcs_do_run_thread(card, LCS_SET_MC_THREAD))
->  		return 0;
-> @@ -1728,11 +1728,10 @@ lcs_start_kernel_thread(struct work_struct *work)
->  	struct lcs_card *card = container_of(work, struct lcs_card, kernel_thread_starter);
->  	LCS_DBF_TEXT(5, trace, "krnthrd");
->  	if (lcs_do_start_thread(card, LCS_RECOVERY_THREAD))
-> -		kernel_thread(lcs_recovery, (void *) card, SIGCHLD);
-> +		kthread_run(lcs_recovery, card, "lcs_recover");
->  #ifdef CONFIG_IP_MULTICAST
->  	if (lcs_do_start_thread(card, LCS_SET_MC_THREAD))
-> -		kernel_thread(lcs_register_mc_addresses,
-> -				(void *) card, SIGCHLD);
-> +		kernel_run(lcs_register_mc_addresses, card, "regipm");
->  #endif
->  }
-> 
-> @@ -2232,7 +2231,6 @@ lcs_recovery(void *ptr)
->          int rc;
-> 
->  	card = (struct lcs_card *) ptr;
-> -	daemonize("lcs_recover");
-> 
->  	LCS_DBF_TEXT(4, trace, "recover1");
->  	if (!lcs_do_run_thread(card, LCS_RECOVERY_THREAD))
-> -- 
-> 1.5.0.g53756
+To use kthread_run I had to move the name calcuation from
+sync_thread into start_sync_thread resulting in a small
+amount of code motion.
+
+The result is simpler and more maintainable piece of code.
+
+Cc: Wensong Zhang <wensong@linux-vs.org>
+Cc: Julian Anastasov <ja@ssi.bg>
+Cc: Simon Horman <horms@verge.net.au>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ net/ipv4/ipvs/ip_vs_sync.c |   49 ++++++++++---------------------------------
+ 1 files changed, 12 insertions(+), 37 deletions(-)
+
+diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
+index 7ea2d98..c4be9dc 100644
+--- a/net/ipv4/ipvs/ip_vs_sync.c
++++ b/net/ipv4/ipvs/ip_vs_sync.c
+@@ -29,6 +29,7 @@
+ #include <linux/in.h>
+ #include <linux/igmp.h>                 /* for ip_mc_join_group */
+ #include <linux/udp.h>
++#include <linux/kthread.h>
+ 
+ #include <net/ip.h>
+ #include <net/sock.h>
+@@ -750,34 +751,23 @@ static int sync_thread(void *startup)
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	mm_segment_t oldmm;
+ 	int state;
+-	const char *name;
+ 
+ 	/* increase the module use count */
+ 	ip_vs_use_count_inc();
+ 
+-	if (ip_vs_sync_state & IP_VS_STATE_MASTER && !sync_master_pid) {
++	if (ip_vs_sync_state & IP_VS_STATE_MASTER && !sync_master_pid)
+ 		state = IP_VS_STATE_MASTER;
+-		name = "ipvs_syncmaster";
+-	} else if (ip_vs_sync_state & IP_VS_STATE_BACKUP && !sync_backup_pid) {
++	else if (ip_vs_sync_state & IP_VS_STATE_BACKUP && !sync_backup_pid)
+ 		state = IP_VS_STATE_BACKUP;
+-		name = "ipvs_syncbackup";
+-	} else {
++	else {
+ 		IP_VS_BUG();
+ 		ip_vs_use_count_dec();
+ 		return -EINVAL;
+ 	}
+ 
+-	daemonize(name);
+-
+ 	oldmm = get_fs();
+ 	set_fs(KERNEL_DS);
+ 
+-	/* Block all signals */
+-	spin_lock_irq(&current->sighand->siglock);
+-	siginitsetinv(&current->blocked, 0);
+-	recalc_sigpending();
+-	spin_unlock_irq(&current->sighand->siglock);
+-
+ 	/* set the maximum length of sync message */
+ 	set_sync_mesg_maxlen(state);
+ 
+@@ -815,29 +805,11 @@ static int sync_thread(void *startup)
+ 	return 0;
+ }
+ 
+-
+-static int fork_sync_thread(void *startup)
+-{
+-	pid_t pid;
+-
+-	/* fork the sync thread here, then the parent process of the
+-	   sync thread is the init process after this thread exits. */
+-  repeat:
+-	if ((pid = kernel_thread(sync_thread, startup, 0)) < 0) {
+-		IP_VS_ERR("could not create sync_thread due to %d... "
+-			  "retrying.\n", pid);
+-		msleep_interruptible(1000);
+-		goto repeat;
+-	}
+-
+-	return 0;
+-}
+-
+-
+ int start_sync_thread(int state, char *mcast_ifn, __u8 syncid)
+ {
+ 	DECLARE_COMPLETION_ONSTACK(startup);
+-	pid_t pid;
++	struct task_struct *task;
++	const char *name;
+ 
+ 	if ((state == IP_VS_STATE_MASTER && sync_master_pid) ||
+ 	    (state == IP_VS_STATE_BACKUP && sync_backup_pid))
+@@ -852,16 +824,19 @@ int start_sync_thread(int state, char *mcast_ifn, __u8 syncid)
+ 		strlcpy(ip_vs_master_mcast_ifn, mcast_ifn,
+ 			sizeof(ip_vs_master_mcast_ifn));
+ 		ip_vs_master_syncid = syncid;
++		name = "ipvs_syncmaster";
+ 	} else {
+ 		strlcpy(ip_vs_backup_mcast_ifn, mcast_ifn,
+ 			sizeof(ip_vs_backup_mcast_ifn));
+ 		ip_vs_backup_syncid = syncid;
++		name = "ipvs_syncbackup";
+ 	}
+ 
+   repeat:
+-	if ((pid = kernel_thread(fork_sync_thread, &startup, 0)) < 0) {
+-		IP_VS_ERR("could not create fork_sync_thread due to %d... "
+-			  "retrying.\n", pid);
++	task = kthread_run(sync_thread, &startup, name);
++	if (IS_ERR(task)) {
++		IP_VS_ERR("could not create sync_thread due to %ld... "
++			  "retrying.\n", PTR_ERR(task));
+ 		msleep_interruptible(1000);
+ 		goto repeat;
+ 	}
+-- 
+1.5.0.g53756
+
