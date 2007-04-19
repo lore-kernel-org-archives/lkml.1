@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161482AbXDSJcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161485AbXDSJdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161482AbXDSJcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 05:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161484AbXDSJcy
+	id S1161485AbXDSJdE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 05:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161484AbXDSJdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 19 Apr 2007 05:33:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49976 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161485AbXDSJcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Apr 2007 05:32:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:6576 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161482AbXDSJcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 05:32:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=j2dxyVeLS3K61wK4OXQR/uk8RL6igC+nGQMdek9MS394X2c4H0yR+//hjMoJpa5EY7iv1JqSqV1Hv14eyLb6t6LHJ+S7tWAeLFY73S6bFbWI52Euo+49Bk32HSV6832ZMmx+mYPny5TYvbca83+wlMyWLOuScWPQ9sYXvmRoTfQ=
-Date: Thu, 19 Apr 2007 15:05:16 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: Kernel Janitors <kernel-janitors@lists.osdl.org>,
-       MIPS <linux-mips@linux-mips.org>
-Cc: Andrw Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, thomas.koeller@baslerweb.com,
-       ralf@linux-mips.org
-Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in arch/mips
-Message-ID: <20070419093516.GA9486@arun.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <11769696123525-git-send-email-ebiederm@xmission.com> 
+References: <11769696123525-git-send-email-ebiederm@xmission.com>  <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> 
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs/afs: Convert to kthread API. 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Thu, 19 Apr 2007 10:32:07 +0100
+Message-ID: <29317.1176975127@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SPIN_LOCK_UNLOCKED cleanup,use DEFINE_SPINLOCK instead 
+Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
----
- excite_setup.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+> This patch modifies the startup of kafscmd, kafsasyncd, and kafstimod
+> to use kthread_run instead of a combination of kernel_thread and
+> daemonize making the code slightly simpler and more maintainable.
 
-diff --git a/arch/mips/basler/excite/excite_setup.c b/arch/mips/basler/excite/excite_setup.c
-index 42f0eda..2f0e4c0 100644
---- a/arch/mips/basler/excite/excite_setup.c
-+++ b/arch/mips/basler/excite/excite_setup.c
-@@ -63,7 +63,7 @@ volatile void __iomem * const ocd_base = (void *) (EXCITE_ADDR_OCD);
- volatile void __iomem * const titan_base = (void *) (EXCITE_ADDR_TITAN);
- 
- /* Protect access to shared GPI registers */
--spinlock_t titan_lock = SPIN_LOCK_UNLOCKED;
-+DEFINE_SPINLOCK(titan_lock);
- int titan_irqflags;
- 
- 
--- 
-Milind Arun Choudhary
+Please drop this patch for the moment as I have my own patches to convert them
+to keventd-type threads, in addition to implementing a host of other changes.
+
+David
