@@ -1,49 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766945AbXDSTJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766942AbXDSTKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766945AbXDSTJi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 15:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766947AbXDSTJi
+	id S1766942AbXDSTKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 15:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766944AbXDSTKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 15:09:38 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60067 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766945AbXDSTJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 15:09:37 -0400
-Message-ID: <4627BE6B.8030006@garzik.org>
-Date: Thu, 19 Apr 2007 15:09:31 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 19 Apr 2007 15:10:37 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58309 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766942AbXDSTKg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 15:10:36 -0400
+Date: Thu, 19 Apr 2007 12:10:34 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Adam Litke <aglitke@gmail.com>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 4/8] Enhance fallback functions in libs to support higher
+ order pages
+In-Reply-To: <a0a62dfc0704191148v15434469kc3130821cb251072@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0704191208340.12936@schroedinger.engr.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+  <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com>
+ <a0a62dfc0704191148v15434469kc3130821cb251072@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [GIT PULL] kvm oops fix
-References: <1176997839110-git-send-email-avi@qumranet.com> <alpine.LFD.0.98.0704190949580.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704190949580.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Thu, 19 Apr 2007, Adam Litke wrote:
+
+> On 4/19/07, Christoph Lameter <clameter@sgi.com> wrote:
+> > @@ -331,11 +331,15 @@ int simple_prepare_write(struct file *fi
+> >                         unsigned from, unsigned to)
+> >  {
+> >         if (!PageUptodate(page)) {
+> > -               if (to - from != PAGE_CACHE_SIZE) {
+> > +               if (to - from != page_cache_size(file->f_mapping)) {
 > 
-> On Thu, 19 Apr 2007, Avi Kivity wrote:
->> Please pull from the 'linus' branch of
->>
->>   git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git
-> 
-> *please* put the branch-name after the git repo, so that I can 
-> cut-and-paste without noticing only afterwards that the diffstat doesn't 
-> match what it was supposed to, and I got the wrong commits, and have to 
-> undo and re-do the pull..
+> Where do you introduce page_cache_size()?  Is this added by a
+> different set of patches I should have applied first?
 
-What is the easiest way to completely undo a pull, reverting the branch 
-to the HEAD present before the pull?
-
-	Jeff
+Yuck. Missed that one in the control file. Insert this patch before this 
+one.
 
 
 
+Variable Order Page Cache: Add functions to establish sizes
+
+We use the macros PAGE_CACHE_SIZE PAGE_CACHE_SHIFT PAGE_CACHE_MASK
+and PAGE_CACHE_ALIGN in various places in the kernel. These are now
+the base page size but we do not have a means to calculating these
+values for higher order pages.
+
+Provide these functions. An address_space pointer must be passed
+to them.
+
+New function			Related base page constant
+---------------------------------------------------
+page_cache_shift(a)		PAGE_CACHE_SHIFT
+page_cache_size(a)		PAGE_CACHE_SIZE
+page_cache_mask(a)		PAGE_CACHE_MASK
+page_cache_align(addr,a)	PAGE_CACHE_ALIGN(addr)
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/pagemap.h |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+Index: linux-2.6.21-rc7/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.21-rc7.orig/include/linux/pagemap.h	2007-04-18 23:01:09.000000000 -0700
++++ linux-2.6.21-rc7/include/linux/pagemap.h	2007-04-18 23:03:32.000000000 -0700
+@@ -49,6 +49,27 @@ static inline void mapping_set_gfp_mask(
+ #define PAGE_CACHE_MASK		PAGE_MASK
+ #define PAGE_CACHE_ALIGN(addr)	(((addr)+PAGE_CACHE_SIZE-1)&PAGE_CACHE_MASK)
+ 
++static inline int page_cache_shift(struct address_space *a)
++{
++	return a->order + PAGE_CACHE_SHIFT;
++}
++
++static inline unsigned long page_cache_size(struct address_space *a)
++{
++	return PAGE_CACHE_SIZE << a->order;
++}
++
++static inline unsigned long page_cache_mask(struct address_space *a)
++{
++	return PAGE_CACHE_MASK << a->order;
++}
++
++static inline unsigned long page_cache_align(unsigned long addr,
++		struct address_space *a)
++{
++	return (((addr) + page_cache_size(a) - 1) & page_cache_mask(a));
++}
++
+ #define page_cache_get(page)		get_page(page)
+ #define page_cache_release(page)	put_page(page)
+ void release_pages(struct page **pages, int nr, int cold);
