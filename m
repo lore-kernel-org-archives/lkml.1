@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXDSGyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161130AbXDSGy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161140AbXDSGyJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 02:54:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161130AbXDSGyJ
+	id S1161130AbXDSGy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 02:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161175AbXDSGy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 02:54:09 -0400
-Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:2287 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161140AbXDSGyI (ORCPT
+	Thu, 19 Apr 2007 02:54:28 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57900 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161130AbXDSGyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 02:54:08 -0400
-Date: Thu, 19 Apr 2007 08:54:13 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
-       Christer Weinigel <wingel@nano-system.com>,
-       Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: [PATCH v3] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070419085413.1520feef@hyperion.delvare>
-In-Reply-To: <20070418174256.GB5577@csclub.uwaterloo.ca>
-References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
-	<20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
-	<20070414192807.60bdf84b@hyperion.delvare>
-	<20070418174256.GB5577@csclub.uwaterloo.ca>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 02:54:23 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Remaining straight forward kthread API conversions...
+Date: Thu, 19 Apr 2007 00:52:28 -0600
+Message-ID: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len,
 
-On Wed, 18 Apr 2007 13:42:56 -0400, Lennart Sorensen wrote:
-> On Sat, Apr 14, 2007 at 07:28:07PM +0200, Jean Delvare wrote:
-> > Otherwise it looks OK to me, I take the patch. If others have comments
-> > or objections, just speak up and submit incremental patches as needed.
-> > 
-> > Now I would like to see platform code actually using this.
-> 
-> Any idea how similar this new driver is to the scx200_i2c driver?  As
-> far as I can tell that driver is already a bit banged i2c over gpio
-> lines.
+The following patches are against 2.6.21.rc6-mm1.
+Hopefully that is enough to catch most of the recent development
+activity.
 
-The major difference is that the implementation in scx200_i2c is
-hardware-specific, while the i2c-gpio driver is a generic one, so it's
-a lot better.
+I am aiming to remove all kernel threads that handle signals
+from user space, to remove all calls to daemonize and kernel_thread
+from non-core kernel code.
 
-What this means is that i2c-gpio obsoletes scx200_i2c, so I am inclined
-to delete scx200_i2c right away. I'm not even sure anyone still uses it
-now that scx200_acb has been fixed and is reported to work very well.
-If anyone really needs to do I2C over GPIO pins on SCx200, this should
-be reimplemented on top of i2c-gpio.
+kernel thrreads handling signals from user space is a problem because
+it makes the kernel thread part of the user/kernel API which make
+changing things difficult and it breaks as soon as you are inside of
+a pid namespace because you won't be able to see your kernel thread.
 
-It also looks to me like i2c-ixp2000 and i2c-ixp4xx are obsoleted by
-i2c-gpio. Deepak, can you please try using i2c-gpio instead and confirm
-that i2c-ixp2000 and i2c-ixp4xx can be deleted?
+Calling kernel_thread has problems because it returns a pid_t value
+which once we get to the pid namespace is context depending so it
+cannot be used to globally identify a process.  kernel_thread is
+also a problem because it traps user space state and requires us
+to call daemonize to free that state.
 
-Thanks,
--- 
-Jean Delvare
+daemonize is a maintenance problem because every time you play with
+user space state and limiting things you need to remember to update
+daemonize.  Occasionally it has taken years like in the case of the
+mount namespace before someone realizes they need to update it.
+With the kthread api we no longer need daemonize.
+
+In addition we don't want kernel threads visible in anything but
+the initial pid namespace or they will hold a reference to a
+child pid namespace.  However calling kernel_thread from a non-kernel
+parent in a child pid namespace will give the thread a pid in
+the child pid namespace, and there is nothing daemonize can do about
+it.  So daemonize appears impossible to support going forward, and
+I choose to remove all of it's callers rather than attempt to support
+it.
+
+Eric
