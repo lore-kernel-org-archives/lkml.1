@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993135AbXDSHDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993126AbXDSHDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993135AbXDSHDR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993128AbXDSHCy
+	id S2993126AbXDSHDa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993133AbXDSHDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:02:54 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34576 "EHLO
+	Thu, 19 Apr 2007 03:03:19 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34582 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993119AbXDSHCn (ORCPT
+	with ESMTP id S2993123AbXDSHC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:02:43 -0400
+	Thu, 19 Apr 2007 03:02:59 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] sparc64/power.c: Convert to use the kthread API
-Date: Thu, 19 Apr 2007 00:55:34 -0600
-Message-Id: <11769657771939-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] sas_scsi_host: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 00:55:33 -0600
+Message-Id: <1176965775834-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,57 +26,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This starts the sparc64 powerd using kthread_run
-instead of kernel_thread and daemonize.  Making the
-code slightly simpler and more maintainable.
+This patch modifies the sas scsi host thread startup
+to use kthread_run not kernel_thread and deamonize.
+kthread_run is slightly simpler and more maintainable.
 
-In addition the unnecessary flush_signals is removed.
-
-Cc: David S. Miller <davem@davemloft.net>
+Cc: Darrick J. Wong <djwong@us.ibm.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/sparc64/kernel/power.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/scsi/libsas/sas_scsi_host.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/sparc64/kernel/power.c b/arch/sparc64/kernel/power.c
-index 699b24b..03feb8b 100644
---- a/arch/sparc64/kernel/power.c
-+++ b/arch/sparc64/kernel/power.c
-@@ -13,6 +13,7 @@
- #include <linux/interrupt.h>
- #include <linux/pm.h>
- #include <linux/syscalls.h>
+diff --git a/drivers/scsi/libsas/sas_scsi_host.c b/drivers/scsi/libsas/sas_scsi_host.c
+index 46ba3a7..7a38ac5 100644
+--- a/drivers/scsi/libsas/sas_scsi_host.c
++++ b/drivers/scsi/libsas/sas_scsi_host.c
+@@ -40,6 +40,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/scatterlist.h>
+ #include <linux/freezer.h>
 +#include <linux/kthread.h>
  
- #include <asm/system.h>
- #include <asm/auxio.h>
-@@ -81,15 +82,12 @@ static int powerd(void *__unused)
- 	char *argv[] = { "/sbin/shutdown", "-h", "now", NULL };
- 	DECLARE_WAITQUEUE(wait, current);
+ /* ---------- SCSI Host glue ---------- */
  
--	daemonize("powerd");
--
- 	add_wait_queue(&powerd_wait, &wait);
- again:
- 	for (;;) {
- 		set_task_state(current, TASK_INTERRUPTIBLE);
- 		if (button_pressed)
- 			break;
--		flush_signals(current);
- 		schedule();
- 	}
- 	__set_current_state(TASK_RUNNING);
-@@ -128,7 +126,9 @@ static int __devinit power_probe(struct of_device *op, const struct of_device_id
- 	poweroff_method = machine_halt;  /* able to use the standard halt */
+@@ -870,7 +871,6 @@ static int sas_queue_thread(void *_sas_ha)
+ 	struct sas_ha_struct *sas_ha = _sas_ha;
+ 	struct scsi_core *core = &sas_ha->core;
  
- 	if (has_button_interrupt(irq, op->node)) {
--		if (kernel_thread(powerd, NULL, CLONE_FS) < 0) {
-+		struct task_struct *task;
-+		task = kthread_urn(powerd, NULL, "powerd");
-+		if (IS_ERR(task)) {
- 			printk("Failed to start power daemon.\n");
- 			return 0;
- 		}
+-	daemonize("sas_queue_%d", core->shost->host_no);
+ 	current->flags |= PF_NOFREEZE;
+ 
+ 	complete(&queue_th_comp);
+@@ -891,19 +891,20 @@ static int sas_queue_thread(void *_sas_ha)
+ 
+ int sas_init_queue(struct sas_ha_struct *sas_ha)
+ {
+-	int res;
+ 	struct scsi_core *core = &sas_ha->core;
++	struct task_struct *task;
+ 
+ 	spin_lock_init(&core->task_queue_lock);
+ 	core->task_queue_size = 0;
+ 	INIT_LIST_HEAD(&core->task_queue);
+ 	init_MUTEX_LOCKED(&core->queue_thread_sema);
+ 
+-	res = kernel_thread(sas_queue_thread, sas_ha, 0);
+-	if (res >= 0)
++	task = kthread_run(sas_queue_thread, sas_ha,
++			   "sas_queue_%d", core->shost->host_no);
++	if (!IS_ERR(task))
+ 		wait_for_completion(&queue_th_comp);
+ 
+-	return res < 0 ? res : 0;
++	return IS_ERR(task) ? PTR_ERR(task) : 0;
+ }
+ 
+ void sas_shutdown_queue(struct sas_ha_struct *sas_ha)
 -- 
 1.5.0.g53756
 
