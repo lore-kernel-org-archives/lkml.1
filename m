@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030839AbXDSENi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031102AbXDSEZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030839AbXDSENi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 00:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031102AbXDSENh
+	id S1031102AbXDSEZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 00:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031111AbXDSEZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 00:13:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:38954 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030839AbXDSENg (ORCPT
+	Thu, 19 Apr 2007 00:25:43 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:43402 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031102AbXDSEZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 00:13:36 -0400
+	Thu, 19 Apr 2007 00:25:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=Zgo2N+54P81I3+Tp1dOjq/lloTil+n71KfbbeGJ6NqCGOdCL7VFzmbX3hWcXlpS2HmEqtddkd+eZw/Ijm7jMTEYIqq7NvJQPJIKgSePDmnAuKtOLSQyO/Z1swR3GrzuzR8LUg+iQiyn5qHZAHPImisKnesJ++qgjzzaCJdOV5RY=
-Date: Thu, 19 Apr 2007 09:45:59 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: Kernel Janitors <kernel-janitors@lists.osdl.org>,
-       S390 <linux-s390@vger.kernel.org>
-Cc: Andrw Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in drivers/s390
-Message-ID: <20070419041440.GB14283@arun.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kRJ1luQSkA+OnfTi1ZbVPQk2vzXMbiwImLZUXPAsysgb1MjL3Y1ZsjRnCvrinVFUJO3AAqZmTanRNvNvG9gdPStzlhxzhR2oVM7YTv5UiMoY2zVh1GhTo/s1takhK6u1/2iNoUrkafSeFOzXptZeB/9B1cSDajli6vlddlNORAI=
+Message-ID: <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
+Date: Thu, 19 Apr 2007 06:25:41 +0200
+From: "johann deneux" <johann.deneux@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
+Cc: linux-kernel@vger.kernel.org, "Dmitry Torokhov" <dtor@insightbb.com>,
+       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+In-Reply-To: <462688AB.4060707@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+References: <210731960111436322@karneval.cz>
+	 <38b3b7c0704181300p78df84f3h8fd4e74428d4e4d8@mail.gmail.com>
+	 <462688AB.4060707@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SPIN_LOCK_UNLOCKED cleanup,use __SPIN_LOCK_UNLOCKED instead.
- 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+On 4/18/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> johann deneux napsal(a):
+> > Jiri,
+> >
+> > Which solution did you chose to implement? From what I remember, we
+> > last discussed Dmitry's idea of specifying an axis for an effect, then
+> > combine several effects to achieve complex effects.
+>
+> I think you mean motor instead of axis, because I don't push real axes to
+> the devices, but motor's torques...
+>
 
----
- char/vmlogrdr.c |    6 +++---
- cio/cmf.c       |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Yes, sorry, I meant motor.
 
-
-diff --git a/drivers/s390/char/vmlogrdr.c b/drivers/s390/char/vmlogrdr.c
-index b87d3b0..75d61a4 100644
---- a/drivers/s390/char/vmlogrdr.c
-+++ b/drivers/s390/char/vmlogrdr.c
-@@ -125,7 +125,7 @@ static struct vmlogrdr_priv_t sys_ser[] = {
- 	  .recording_name = "EREP",
- 	  .minor_num      = 0,
- 	  .buffer_free    = 1,
--	  .priv_lock      = SPIN_LOCK_UNLOCKED,
-+	  .priv_lock      = __SPIN_LOCK_UNLOCKED(sys_ser[0].priv_lock),
- 	  .autorecording  = 1,
- 	  .autopurge      = 1,
- 	},
-@@ -134,7 +134,7 @@ static struct vmlogrdr_priv_t sys_ser[] = {
- 	  .recording_name = "ACCOUNT",
- 	  .minor_num      = 1,
- 	  .buffer_free    = 1,
--	  .priv_lock      = SPIN_LOCK_UNLOCKED,
-+	  .priv_lock      = __SPIN_LOCK_UNLOCKED(sys_ser[1].priv_lock),
- 	  .autorecording  = 1,
- 	  .autopurge      = 1,
- 	},
-@@ -143,7 +143,7 @@ static struct vmlogrdr_priv_t sys_ser[] = {
- 	  .recording_name = "SYMPTOM",
- 	  .minor_num      = 2,
- 	  .buffer_free    = 1,
--	  .priv_lock      = SPIN_LOCK_UNLOCKED,
-+	  .priv_lock      = __SPIN_LOCK_UNLOCKED(sys_ser[2].priv_lock),
- 	  .autorecording  = 1,
- 	  .autopurge      = 1,
- 	}
-diff --git a/drivers/s390/cio/cmf.c b/drivers/s390/cio/cmf.c
-index 90b22fa..28abd69 100644
---- a/drivers/s390/cio/cmf.c
-+++ b/drivers/s390/cio/cmf.c
-@@ -476,7 +476,7 @@ struct cmb_area {
- };
- 
- static struct cmb_area cmb_area = {
--	.lock = SPIN_LOCK_UNLOCKED,
-+	.lock = __SPIN_LOCK_UNLOCKED(cmb_area.lock),
- 	.list = LIST_HEAD_INIT(cmb_area.list),
- 	.num_channels  = 1024,
- };
 -- 
-Milind Arun Choudhary
+Johann
