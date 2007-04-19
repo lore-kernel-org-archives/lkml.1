@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766948AbXDSTMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766947AbXDSTP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766948AbXDSTMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 15:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766950AbXDSTMh
+	id S1766947AbXDSTP0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 15:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766949AbXDSTPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 15:12:37 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60205 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766951AbXDSTMg (ORCPT
+	Thu, 19 Apr 2007 15:15:25 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39253 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766947AbXDSTPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 15:12:36 -0400
-Subject: Re: [PATCH 12/13] maps#2: Add /proc/pid/pagemap interface
-From: Dave Hansen <hansendc@us.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <13.469046093@selenic.com>
-References: <13.469046093@selenic.com>
-Content-Type: text/plain
-Date: Thu, 19 Apr 2007 12:12:29 -0700
-Message-Id: <1177009949.12599.154.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 15:15:24 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mtd_blkdevs: Convert to use the kthread API
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769657692046-git-send-email-ebiederm@xmission.com>
+	<20070419164746.GA19469@infradead.org>
+Date: Thu, 19 Apr 2007 13:13:22 -0600
+In-Reply-To: <20070419164746.GA19469@infradead.org> (Christoph Hellwig's
+	message of "Thu, 19 Apr 2007 17:47:46 +0100")
+Message-ID: <m11wigmb3h.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-06 at 17:03 -0500, Matt Mackall wrote:
-> 
-> +static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned
-> long end,
-> +                            void *private)
-> +{
-> +       struct pagemapread *pm = private;
-> +       pte_t *pte;
-> +       int err;
-> +
-> +       pte = pte_offset_map(pmd, addr);
-> +       for (; addr != end; pte++, addr += PAGE_SIZE) {
-> +               if (addr < pm->next)
-> +                       continue;
-> +               if (!pte_present(*pte))
-> +                       err = add_to_pagemap(addr, -1, pm);
-> +               else
-> +                       err = add_to_pagemap(addr, pte_pfn(*pte), pm);
-> +               if (err)
-> +                       return err;
-> +       }
-> +       pte_unmap(pte - 1);
-> +       return 0;
-> +} 
+Christoph Hellwig <hch@infradead.org> writes:
 
-Sorry for the horribly late reply. ;)
+> On Thu, Apr 19, 2007 at 12:55:28AM -0600, Eric W. Biederman wrote:
+>> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+>> 
+>> thread_run is used intead of kernel_thread, daemonize, and mucking
+>> around blocking signals directly.
+>
+> Please don't do incomplete transitions like that.  We don't really
+> want people to use kthread_run, but not the kthread stopping
+> mechanisms, because people will simply forget about that bit and
+> we'll never get rid of the enormous amount of, erm creativity, in
+> handling kernel thread stopping.
+>
+> This is just the first patch in your series where the thread is mutable,
+> but it equally applies to all following patches where this is the case
+> aswell.
 
-Would you have any problems with this being extended for the !
-pte_present() case to show pages that happen to be in swap?
+I don't really care about the creativity.  Although it would
+be nice if it wasn't there.  I deliberately left it in so I would be
+certain my patches were correct.
 
-I'm playing with some process checkpoint/restart code, and using the
-existing swap mechanisms to get the current memory contents out of the
-process.  I've also created a hackish syscall to make a pretty raw dump
-of pte contents.
+I care about killing the maintenance and forward development roadblocks
+that are kernel_thread and daemonize.  And the user interface problem
+that is handling signals in kernel threads.
 
-Perhaps we could steal the high bits of the pfn and have its presence in
-swap, plus some handle to which swapfile it is in.  Or, would you rather
-I just create a new /proc file that utilizes most of the code you
-already put in place, and _just_ deals with swap?
+Eric
 
--- Dave
+
 
