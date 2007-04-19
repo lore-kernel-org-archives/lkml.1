@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993122AbXDSHBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993123AbXDSHFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993122AbXDSHBk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161337AbXDSHBG
+	id S2993123AbXDSHFQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161219AbXDSHA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:01:06 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46320 "EHLO
+	Thu, 19 Apr 2007 03:00:58 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46329 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161326AbXDSHAd (ORCPT
+	with ESMTP id S1161340AbXDSHAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:00:33 -0400
+	Thu, 19 Apr 2007 03:00:36 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] ipv4/ipvs: Convert to kthread API
-Date: Thu, 19 Apr 2007 00:55:52 -0600
-Message-Id: <11769658083101-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] fs/afs: Convert to kthread API.
+Date: Thu, 19 Apr 2007 00:55:50 -0600
+Message-Id: <11769658052932-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,131 +26,198 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Modify startup of ipvs sync threads to use kthread_run
-instead of a weird combination of calling kernel_thread
-to start a fork_sync_thread whose hole purpose in life was
-to call kernel_thread again starting the actually sync thread
-which called daemonize.
+This patch modifies the startup of kafscmd, kafsasyncd, and kafstimod
+to use kthread_run instead of a combination of kernel_thread and
+daemonize making the code slightly simpler and more maintainable.
 
-To use kthread_run I had to move the name calcuation from
-sync_thread into start_sync_thread resulting in a small
-amount of code motion.
+In addition since by default all signals are ignored when delivered
+to a kernel thread the code to flush signals has been removed.
 
-The result is simpler and more maintainable piece of code.
-
-Cc: Wensong Zhang <wensong@linux-vs.org>
-Cc: Julian Anastasov <ja@ssi.bg>
-Cc: Simon Horman <horms@verge.net.au>
+Cc: David Howells <dhowells@redhat.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/ipv4/ipvs/ip_vs_sync.c |   49 ++++++++++---------------------------------
- 1 files changed, 12 insertions(+), 37 deletions(-)
+ fs/afs/cmservice.c  |   10 +++++-----
+ fs/afs/internal.h   |   11 -----------
+ fs/afs/kafsasyncd.c |   17 ++++++-----------
+ fs/afs/kafstimod.c  |   16 ++++++----------
+ 4 files changed, 17 insertions(+), 37 deletions(-)
 
-diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
-index 7ea2d98..c4be9dc 100644
---- a/net/ipv4/ipvs/ip_vs_sync.c
-+++ b/net/ipv4/ipvs/ip_vs_sync.c
-@@ -29,6 +29,7 @@
- #include <linux/in.h>
- #include <linux/igmp.h>                 /* for ip_mc_join_group */
- #include <linux/udp.h>
+diff --git a/fs/afs/cmservice.c b/fs/afs/cmservice.c
+index 3d097fd..f7e2355 100644
+--- a/fs/afs/cmservice.c
++++ b/fs/afs/cmservice.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/sched.h>
+ #include <linux/completion.h>
 +#include <linux/kthread.h>
+ #include "server.h"
+ #include "cell.h"
+ #include "transport.h"
+@@ -120,8 +121,6 @@ static int kafscmd(void *arg)
  
- #include <net/ip.h>
- #include <net/sock.h>
-@@ -750,34 +751,23 @@ static int sync_thread(void *startup)
- 	DECLARE_WAITQUEUE(wait, current);
- 	mm_segment_t oldmm;
- 	int state;
--	const char *name;
+ 	printk(KERN_INFO "kAFS: Started kafscmd %d\n", current->pid);
  
- 	/* increase the module use count */
- 	ip_vs_use_count_inc();
- 
--	if (ip_vs_sync_state & IP_VS_STATE_MASTER && !sync_master_pid) {
-+	if (ip_vs_sync_state & IP_VS_STATE_MASTER && !sync_master_pid)
- 		state = IP_VS_STATE_MASTER;
--		name = "ipvs_syncmaster";
--	} else if (ip_vs_sync_state & IP_VS_STATE_BACKUP && !sync_backup_pid) {
-+	else if (ip_vs_sync_state & IP_VS_STATE_BACKUP && !sync_backup_pid)
- 		state = IP_VS_STATE_BACKUP;
--		name = "ipvs_syncbackup";
--	} else {
-+	else {
- 		IP_VS_BUG();
- 		ip_vs_use_count_dec();
- 		return -EINVAL;
- 	}
- 
--	daemonize(name);
+-	daemonize("kafscmd");
 -
- 	oldmm = get_fs();
- 	set_fs(KERNEL_DS);
+ 	complete(&kafscmd_alive);
  
--	/* Block all signals */
--	spin_lock_irq(&current->sighand->siglock);
--	siginitsetinv(&current->blocked, 0);
--	recalc_sigpending();
--	spin_unlock_irq(&current->sighand->siglock);
--
- 	/* set the maximum length of sync message */
- 	set_sync_mesg_maxlen(state);
+ 	/* loop around looking for things to attend to */
+@@ -133,7 +132,6 @@ static int kafscmd(void *arg)
+ 			for (;;) {
+ 				set_current_state(TASK_INTERRUPTIBLE);
+ 				if (!list_empty(&kafscmd_attention_list) ||
+-				    signal_pending(current) ||
+ 				    kafscmd_die)
+ 					break;
  
-@@ -815,29 +805,11 @@ static int sync_thread(void *startup)
- 	return 0;
- }
+@@ -297,8 +295,10 @@ int afscm_start(void)
  
--
--static int fork_sync_thread(void *startup)
+ 	down_write(&afscm_sem);
+ 	if (!afscm_usage) {
+-		ret = kernel_thread(kafscmd, NULL, 0);
+-		if (ret < 0)
++		struct task_struct *task;
++		task = kthread_run(kafscmd, NULL, "kafscmd");
++		ret = PTR_ERR(task);
++		if (IS_ERR(task))
+ 			goto out;
+ 
+ 		wait_for_completion(&kafscmd_alive);
+diff --git a/fs/afs/internal.h b/fs/afs/internal.h
+index 5151d5d..2d667b7 100644
+--- a/fs/afs/internal.h
++++ b/fs/afs/internal.h
+@@ -40,17 +40,6 @@
+ #define _net(FMT, a...)		do { } while(0)
+ #endif
+ 
+-static inline void afs_discard_my_signals(void)
 -{
--	pid_t pid;
+-	while (signal_pending(current)) {
+-		siginfo_t sinfo;
 -
--	/* fork the sync thread here, then the parent process of the
--	   sync thread is the init process after this thread exits. */
--  repeat:
--	if ((pid = kernel_thread(sync_thread, startup, 0)) < 0) {
--		IP_VS_ERR("could not create sync_thread due to %d... "
--			  "retrying.\n", pid);
--		msleep_interruptible(1000);
--		goto repeat;
+-		spin_lock_irq(&current->sighand->siglock);
+-		dequeue_signal(current,&current->blocked, &sinfo);
+-		spin_unlock_irq(&current->sighand->siglock);
 -	}
--
--	return 0;
 -}
 -
--
- int start_sync_thread(int state, char *mcast_ifn, __u8 syncid)
+ /*
+  * cell.c
+  */
+diff --git a/fs/afs/kafsasyncd.c b/fs/afs/kafsasyncd.c
+index 615df24..ead025f 100644
+--- a/fs/afs/kafsasyncd.c
++++ b/fs/afs/kafsasyncd.c
+@@ -21,6 +21,7 @@
+ #include <linux/sched.h>
+ #include <linux/completion.h>
+ #include <linux/freezer.h>
++#include <linux/kthread.h>
+ #include "cell.h"
+ #include "server.h"
+ #include "volume.h"
+@@ -56,15 +57,15 @@ static void kafsasyncd_null_call_error_func(struct rxrpc_call *call)
+  */
+ int afs_kafsasyncd_start(void)
  {
- 	DECLARE_COMPLETION_ONSTACK(startup);
--	pid_t pid;
+-	int ret;
 +	struct task_struct *task;
-+	const char *name;
  
- 	if ((state == IP_VS_STATE_MASTER && sync_master_pid) ||
- 	    (state == IP_VS_STATE_BACKUP && sync_backup_pid))
-@@ -852,16 +824,19 @@ int start_sync_thread(int state, char *mcast_ifn, __u8 syncid)
- 		strlcpy(ip_vs_master_mcast_ifn, mcast_ifn,
- 			sizeof(ip_vs_master_mcast_ifn));
- 		ip_vs_master_syncid = syncid;
-+		name = "ipvs_syncmaster";
- 	} else {
- 		strlcpy(ip_vs_backup_mcast_ifn, mcast_ifn,
- 			sizeof(ip_vs_backup_mcast_ifn));
- 		ip_vs_backup_syncid = syncid;
-+		name = "ipvs_syncbackup";
- 	}
+-	ret = kernel_thread(kafsasyncd, NULL, 0);
+-	if (ret < 0)
+-		return ret;
++	task = kthread_run(kafsasyncd, NULL, "kafsasyncd");
++	if (IS_ERR(task))
++		return PTR_ERR(task);
  
-   repeat:
--	if ((pid = kernel_thread(fork_sync_thread, &startup, 0)) < 0) {
--		IP_VS_ERR("could not create fork_sync_thread due to %d... "
--			  "retrying.\n", pid);
-+	task = kthread_run(sync_thread, &startup, name);
-+	if (IS_ERR(task)) {
-+		IP_VS_ERR("could not create sync_thread due to %ld... "
-+			  "retrying.\n", PTR_ERR(task));
- 		msleep_interruptible(1000);
- 		goto repeat;
- 	}
+ 	wait_for_completion(&kafsasyncd_alive);
+ 
+-	return ret;
++	return 0;
+ } /* end afs_kafsasyncd_start() */
+ 
+ /*****************************************************************************/
+@@ -95,8 +96,6 @@ static int kafsasyncd(void *arg)
+ 
+ 	printk("kAFS: Started kafsasyncd %d\n", current->pid);
+ 
+-	daemonize("kafsasyncd");
+-
+ 	complete(&kafsasyncd_alive);
+ 
+ 	/* loop around looking for things to attend to */
+@@ -106,7 +105,6 @@ static int kafsasyncd(void *arg)
+ 
+ 		for (;;) {
+ 			if (!list_empty(&kafsasyncd_async_attnq) ||
+-			    signal_pending(current) ||
+ 			    kafsasyncd_die)
+ 				break;
+ 
+@@ -119,9 +117,6 @@ static int kafsasyncd(void *arg)
+ 
+ 		try_to_freeze();
+ 
+-		/* discard pending signals */
+-		afs_discard_my_signals();
+-
+ 		die = kafsasyncd_die;
+ 
+ 		/* deal with the next asynchronous operation requiring
+diff --git a/fs/afs/kafstimod.c b/fs/afs/kafstimod.c
+index 694344e..caeac88 100644
+--- a/fs/afs/kafstimod.c
++++ b/fs/afs/kafstimod.c
+@@ -14,6 +14,7 @@
+ #include <linux/sched.h>
+ #include <linux/completion.h>
+ #include <linux/freezer.h>
++#include <linux/kthread.h>
+ #include "cell.h"
+ #include "volume.h"
+ #include "kafstimod.h"
+@@ -36,15 +37,15 @@ static int kafstimod(void *arg);
+  */
+ int afs_kafstimod_start(void)
+ {
+-	int ret;
++	struct task_struct *task;
+ 
+-	ret = kernel_thread(kafstimod, NULL, 0);
+-	if (ret < 0)
+-		return ret;
++	task = kthread_run(kafstimod, NULL, "kafstimod");
++	if (IS_ERR(task))
++		return PTR_ERR(task);
+ 
+ 	wait_for_completion(&kafstimod_alive);
+ 
+-	return ret;
++	return 0;
+ } /* end afs_kafstimod_start() */
+ 
+ /*****************************************************************************/
+@@ -72,8 +73,6 @@ static int kafstimod(void *arg)
+ 
+ 	printk("kAFS: Started kafstimod %d\n", current->pid);
+ 
+-	daemonize("kafstimod");
+-
+ 	complete(&kafstimod_alive);
+ 
+ 	/* loop around looking for things to attend to */
+@@ -94,9 +93,6 @@ static int kafstimod(void *arg)
+ 
+ 		try_to_freeze();
+ 
+-		/* discard pending signals */
+-		afs_discard_my_signals();
+-
+ 		/* work out the time to elapse before the next event */
+ 		spin_lock(&kafstimod_lock);
+ 		if (list_empty(&kafstimod_list)) {
 -- 
 1.5.0.g53756
 
