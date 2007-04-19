@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161404AbXDSJYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161473AbXDSJ1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161404AbXDSJYn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 05:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161469AbXDSJYn
+	id S1161473AbXDSJ1q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 05:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161474AbXDSJ1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 05:24:43 -0400
-Received: from mail36.syd.optusnet.com.au ([211.29.133.76]:43186 "EHLO
-	mail36.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161404AbXDSJYm (ORCPT
+	Thu, 19 Apr 2007 05:27:45 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:63266 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161473AbXDSJ1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 05:24:42 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Nick Piggin <npiggin@suse.de>
-Subject: Re: Announce - Staircase Deadline cpu scheduler v0.42
-Date: Thu, 19 Apr 2007 19:40:04 +1000
-User-Agent: KMail/1.9.5
-Cc: ck@vds.kolivas.org, Al Boldi <a1426z@gawab.com>,
-       Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200704190959.06432.kernel@kolivas.org> <200704191212.15151.kernel@kolivas.org> <20070419032204.GA487@wotan.suse.de>
-In-Reply-To: <20070419032204.GA487@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704191940.04715.kernel@kolivas.org>
+	Thu, 19 Apr 2007 05:27:45 -0400
+From: Balbir Singh <balbir@in.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, jlan@sgi.com,
+       Balbir Singh <balbir@in.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Date: Thu, 19 Apr 2007 14:56:36 +0530
+Message-Id: <20070419092636.24538.20798.sendpatchset@balbir-laptop>
+Subject: [PATCH -mm] Taskstats fix getdelays usage information
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 April 2007 13:22, Nick Piggin wrote:
-> On Thu, Apr 19, 2007 at 12:12:14PM +1000, Con Kolivas wrote:
-> > Version 0.42
-> >
-> > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.42.patch
->
-> OK, I run some tests later today...
 
 
-Thank you very much.
+Add usage to getdelays.c. This patch was originally posted by Randy Dunlap
+http://lkml.org/lkml/2007/3/19/168
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: <balbir@in.ibm.com>
+---
+
+ Documentation/accounting/getdelays.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff -puN Documentation/accounting/getdelays.c~fix-getdelays-usage Documentation/accounting/getdelays.c
+--- linux-2.6.20/Documentation/accounting/getdelays.c~fix-getdelays-usage	2007-04-19 14:41:45.000000000 +0530
++++ linux-2.6.20-balbir/Documentation/accounting/getdelays.c	2007-04-19 14:42:26.000000000 +0530
+@@ -72,6 +72,16 @@ struct msgtemplate {
+ 
+ char cpumask[100+6*MAX_CPUS];
+ 
++static void usage(void)
++{
++	fprintf(stderr, "getdelays [-dilv] [-w logfile] [-r bufsize] "
++			"[-m cpumask] [-t tgid] [-p pid]\n");
++	fprintf(stderr, "  -d: print delayacct stats\n");
++	fprintf(stderr, "  -i: print IO accounting (works only with -p)\n");
++	fprintf(stderr, "  -l: listen forever\n");
++	fprintf(stderr, "  -v: debug on\n");
++}
++
+ /*
+  * Create a raw netlink socket and bind
+  */
+@@ -227,7 +237,7 @@ int main(int argc, char *argv[])
+ 	struct msgtemplate msg;
+ 
+ 	while (1) {
+-		c = getopt(argc, argv, "diw:r:m:t:p:v:l");
++		c = getopt(argc, argv, "diw:r:m:t:p:vl");
+ 		if (c < 0)
+ 			break;
+ 
+@@ -277,7 +287,7 @@ int main(int argc, char *argv[])
+ 			loop = 1;
+ 			break;
+ 		default:
+-			printf("Unknown option %d\n", c);
++			usage();
+ 			exit(-1);
+ 		}
+ 	}
+_
 
 -- 
--ck
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
