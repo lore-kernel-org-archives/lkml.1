@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161268AbXDSIOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161175AbXDSIOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161268AbXDSIOv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161175AbXDSIOg
+	id S1161175AbXDSIOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993175AbXDSINe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:14:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33961 "EHLO
+	Thu, 19 Apr 2007 04:13:34 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33950 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965013AbXDSIOT (ORCPT
+	with ESMTP id S2993201AbXDSINb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:14:19 -0400
+	Thu, 19 Apr 2007 04:13:31 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc pseries rtasd: Convert to kthread API.
-Date: Thu, 19 Apr 2007 01:58:46 -0600
-Message-Id: <1176969582987-git-send-email-ebiederm@xmission.com>
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [PATCH] arm ecard: Conver to use the kthread API.
+Date: Thu, 19 Apr 2007 01:58:43 -0600
+Message-Id: <11769695722834-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,46 +27,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch modifies the startup of rtasd to use kthread_run instaed of
-a combination of kernel_thread and daemonize.  Making the code a little
-simpler and more maintainble.
+This patch modifies the startup of kecardd to use
+kthread_run not a kernel_thread combination of kernel_thread
+and daemonize.  Making the code slightly simpler and more
+maintainable.
 
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/powerpc/platforms/pseries/rtasd.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ arch/arm/kernel/ecard.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/rtasd.c b/arch/powerpc/platforms/pseries/rtasd.c
-index 77d0937..919a374 100644
---- a/arch/powerpc/platforms/pseries/rtasd.c
-+++ b/arch/powerpc/platforms/pseries/rtasd.c
-@@ -20,6 +20,7 @@
- #include <linux/spinlock.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
+diff --git a/arch/arm/kernel/ecard.c b/arch/arm/kernel/ecard.c
+index f1c0fb9..6c15f5f 100644
+--- a/arch/arm/kernel/ecard.c
++++ b/arch/arm/kernel/ecard.c
+@@ -40,6 +40,7 @@
+ #include <linux/device.h>
+ #include <linux/init.h>
+ #include <linux/mutex.h>
 +#include <linux/kthread.h>
  
- #include <asm/uaccess.h>
- #include <asm/io.h>
-@@ -429,8 +430,6 @@ static int rtasd(void *unused)
- 	int event_scan = rtas_token("event-scan");
- 	int rc;
- 
--	daemonize("rtasd");
+ #include <asm/dma.h>
+ #include <asm/ecard.h>
+@@ -263,8 +264,6 @@ static int ecard_init_mm(void)
+ static int
+ ecard_task(void * unused)
+ {
+-	daemonize("kecardd");
 -
- 	if (event_scan == RTAS_UNKNOWN_SERVICE || get_eventscan_parms() == -1)
- 		goto error;
+ 	/*
+ 	 * Allocate a mm.  We're not a lazy-TLB kernel task since we need
+ 	 * to set page table entries where the user space would be.  Note
+@@ -1058,13 +1057,14 @@ ecard_probe(int slot, card_type_t type)
+  */
+ static int __init ecard_init(void)
+ {
+-	int slot, irqhw, ret;
++	struct task_struct *task;
++	int slot, irqhw;
  
-@@ -497,7 +496,7 @@ static int __init rtas_init(void)
- 	else
- 		printk(KERN_ERR "Failed to create error_log proc entry\n");
+-	ret = kernel_thread(ecard_task, NULL, CLONE_KERNEL);
+-	if (ret < 0) {
++	task = kthread_run(ecard_task, NULL, "kecardd");
++	if (IS_ERR(task)) {
+ 		printk(KERN_ERR "Ecard: unable to create kernel thread: %d\n",
+-		       ret);
+-		return ret;
++		       PTR_ERR(task));
++		return PTR_ERR(task);
+ 	}
  
--	if (kernel_thread(rtasd, NULL, CLONE_FS) < 0)
-+	if (IS_ERR(kthread_run(rtasd, NULL, "rtasd")))
- 		printk(KERN_ERR "Failed to start RTAS daemon\n");
- 
- 	return 0;
+ 	printk("Probing expansion cards\n");
 -- 
 1.5.0.g53756
 
