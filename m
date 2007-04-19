@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637741AbXDSMKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031220AbXDSMYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637741AbXDSMKj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 08:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993255AbXDSMKj
+	id S1031220AbXDSMYp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 08:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031221AbXDSMYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 08:10:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:48768 "EHLO
+	Thu, 19 Apr 2007 08:24:45 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:64300 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993248AbXDSMKi (ORCPT
+	with ESMTP id S1031220AbXDSMYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 08:10:38 -0400
+	Thu, 19 Apr 2007 08:24:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=aznwhxgiMSS9Wga4tF3fvxFV08S7qSz41roisPYDis2hgg7PNsEW1TSPpWRn4F4Oi5daSmPrbfcFVv5mEQ5XenyOunmRNVMqSR9KcDlqmo92COWIZ4hjI5MByEDS8QHZu4HQZ7V14Fueyl7Rb7RxHTFUWi7J6J7agxH+fGNStWs=
-Date: Thu, 19 Apr 2007 17:43:03 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: Kernel Janitors <kernel-janitors@lists.osdl.org>
-Cc: Andrw Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in init_task.h
-Message-ID: <20070419121303.GB12373@arun.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+        h=received:message-id:date:reply-to:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:from;
+        b=SlhlqQkCcgAvJt4pIRKSmlZOtJqy8Hf4YRLqTdsb23RgcONJVXxSSO+xoTy0Q4Cl+eE0mseHoLWXVNni6keDwyhIY/lCKZdH/7EmP9pQLRdnYTEGAPIUHmKVskPLKEeKWjgewWvZmvLNOox2N3YkoLLPxVWDChbUowjGoOXQFoU=
+Message-ID: <46275F9D.4040408@innova-card.com>
+Date: Thu, 19 Apr 2007 14:25:01 +0200
+Reply-To: Franck <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: linux-mips <linux-mips@linux-mips.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Ralf Baechle <ralf@linux-mips.org>
+Subject: [PATCH] Don't force frame pointers for lockdep on MIPS
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SPIN_LOCK_UNLOCKED cleanup,use __SPIN_LOCK_UNLOCKED instead 
+From: Franck Bui-Huu <fbuihuu@gmail.com>
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+Stacktrace support on MIPS doesn't use frame pointers. Since this
+option considerably increases the size of the kernel code, force
+lockdep to not use it.
+
+Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
 ---
- init_task.h |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ lib/Kconfig.debug |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index a2d95ff..7951023 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -138,7 +138,7 @@ extern struct group_info init_groups;
- 	.journal_info	= NULL,						\
- 	.cpu_timers	= INIT_CPU_TIMERS(tsk.cpu_timers),		\
- 	.fs_excl	= ATOMIC_INIT(0),				\
--	.pi_lock	= SPIN_LOCK_UNLOCKED,				\
-+	.pi_lock	= __SPIN_LOCK_UNLOCKED(tsk.pi_lock),		\
- 	INIT_TRACE_IRQFLAGS						\
- 	INIT_LOCKDEP							\
- }
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 3f3e740..79afd00 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -261,7 +261,7 @@ config LOCKDEP
+ 	bool
+ 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+ 	select STACKTRACE
+-	select FRAME_POINTER if !X86
++	select FRAME_POINTER if !X86 && !MIPS
+ 	select KALLSYMS
+ 	select KALLSYMS_ALL
+ 
 -- 
-Milind Arun Choudhary
+1.5.1.1
+
