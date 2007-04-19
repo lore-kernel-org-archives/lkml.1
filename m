@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637761AbXDSNBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766630AbXDSNHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637761AbXDSNBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 09:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637759AbXDSNBS
+	id S1766630AbXDSNHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 09:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766669AbXDSNHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 09:01:18 -0400
-Received: from 1wt.eu ([62.212.114.60]:2017 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S637761AbXDSNBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 09:01:17 -0400
-Date: Thu, 19 Apr 2007 14:54:38 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070419125438.GA27584@1wt.eu>
-References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070419090144.GA17100@elte.hu>
-Mime-Version: 1.0
+	Thu, 19 Apr 2007 09:07:33 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45667 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766630AbXDSNHc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 09:07:32 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: David Howells <dhowells@redhat.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net/rxrpc: Convert to kthread API.
+References: <11769696211263-git-send-email-ebiederm@xmission.com>
+	<m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<29341.1176975158@redhat.com>
+Date: Thu, 19 Apr 2007 07:05:32 -0600
+In-Reply-To: <29341.1176975158@redhat.com> (David Howells's message of "Thu,
+	19 Apr 2007 10:32:38 +0100")
+Message-ID: <m1lkgoms4j.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070419090144.GA17100@elte.hu>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+David Howells <dhowells@redhat.com> writes:
 
-On Thu, Apr 19, 2007 at 11:01:44AM +0200, Ingo Molnar wrote:
-> 
-> * Willy Tarreau <w@1wt.eu> wrote:
-> 
-> > Good idea. The machine I'm typing from now has 1000 scheddos running 
-> > at +19, and 12 gears at nice 0. [...]
-> 
-> > From time to time, one of the 12 aligned gears will quickly perform a 
-> > full quarter of round while others slowly turn by a few degrees. In 
-> > fact, while I don't know this process's CPU usage pattern, there's 
-> > something useful in it : it allows me to visually see when process 
-> > accelerate/decelerate. [...]
-> 
-> cool idea - i have just tried this and it rocks - you can easily see the 
-> 'nature' of CPU time distribution just via visual feedback. (Is there 
-> any easy way to start up 12 glxgears fully aligned, or does one always 
-> have to mouse around to get them into proper position?)
+> Eric W. Biederman <ebiederm@xmission.com> wrote:
+>
+>> This patch modifies the startup of krxtimod, krxiod, and krxsecd
+>> to use kthread_run instead of a combination of kernel_thread
+>> and daemonize making the code slightly simpler and more maintainable.
+>
+> Again, please drop in favour of my RxRPC patches.
 
--- Replying quickly, I'm short in time --
+What is the ETA on your patches?
 
-You can certainly script it with -geometry. But it is the wrong application
-for this matter, because you benchmark X more than glxgears itself. What would
-be better is something like a line rotating 360 degrees and doing some short
-stuff between each degree, so that X is not much sollicitated, but the CPU
-would be spent more on the processes themselves.
-
-Benchmarking interactions between X and multiple clients is a completely
-different test IMHO. Glxgears is between those two, making it inappropriate
-for scheduler tuning.
-
-Regards,
-Willy
-
+Eric
