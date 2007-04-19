@@ -1,107 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbXDSWhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbXDSWmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbXDSWhS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXDSWhR
+	id S1754247AbXDSWmj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXDSWmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:37:17 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:47956 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754223AbXDSWhQ (ORCPT
+	Thu, 19 Apr 2007 18:42:39 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:59924 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbXDSWmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:37:16 -0400
-Date: Thu, 19 Apr 2007 18:37:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-In-Reply-To: <d120d5000704191139m3caf4cfeqd95047d1c33faf64@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0704191744380.6354-100000@iolanthe.rowland.org>
+	Thu, 19 Apr 2007 18:42:38 -0400
+Message-ID: <03f401c782d4$95c323e0$eeeea8c0@aldipc>
+From: "roland" <devzero@web.de>
+To: <linux-kernel@vger.kernel.org>
+Subject: VMWare Workstation 6 for debugging Linux Kernel (!)
+Date: Fri, 20 Apr 2007 00:46:34 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2869
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
+X-Provags-ID: V01U2FsdGVkX1/vep1rEH9xBxHWnW+1B/B3gbWpVqpE7khTyf6p
+	X7lXspwanSZt0lfNoEt8yozPiYX3V7KxkA5afJjJiofTys+8ar
+	gIoW8wEUM=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007, Dmitry Torokhov wrote:
+Hi !
 
-> On 4/19/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Wed, 18 Apr 2007, Dmitry Torokhov wrote:
-> >
-> > > I am still do not understand why this is needed. Would it not be
-> > > simplier just to use a reference to struct device instead of embedding
-> > > it in a larger structure if their lifetimes are different and one does
-> > > not have a subsystem that takes care of releasing logic.
-> > >
-> > >
-> > > Pretty much drivers have 2 options:
-> > >
-> > > struct my_device {
-> > >         void *private_data;
-> > >         struct device dev;
-> > > };
-> >
-> > Actually people use dev_[gs]et_drvdata() instead of a separate
-> > private_data pointer.  That way there's no need for the my_device
-> > container.
-> >
-> 
-> No, drvdata belongs to driver that is bound to a device. We are
-> talking about private data created and managed by driver that provides
-> device.
+I think this one is damn interestig for linux kernel development:
 
-Oh, sorry, I misunderstood.
+link: http://stackframe.blogspot.com/
+contents: see below
 
-> Again, if we are talking about driver bound to a device then devices
-> ->release() is irrelevant. If we are talking about driver that created
-> device then driver's ->remove() is irrelevant.
+regards
+roland
 
-The problem is that device structures carry references to their parents.  
-So even if a driver does use this option and is able to give up its own 
-references immediately, it can't make any guarantees about drivers of 
-child devices.  If every driver followed your scheme we'd be okay; until 
-then any ancestor of a device with a non-immediate-detach driver would not 
-be able to do immediate detach.
-
-There's also another problem.  Even though all the references to
-my_dev->dev may be gone, there will probably still be outstanding
-references to private_data structure.  The driver's exit() routine will 
-have to wait until all those references are gone.  How can it do that 
-safely?  Presumably the private_data will include its own refcount and 
-some release routine will run when the count drops to 0.  That routine 
-will be part of the driver's module -- so how can it enable itself to be 
-unloaded?
+ps:
+i`m not directly related to vmware - so this is no advertisement!
 
 
-> > > With current sysfs orphaning attributes upon removal request there is
-> > > no issue of accessing driver-private data through references obtained
-> > > via ether embedded or referenced dev structure so everything is fine.
-> >
-> > Not so.  There are other pathways besides sysfs which can cause a driver
-> > to access its data structures.
-> >
-> 
-> Which ones? These needs to be identified and treated with "immediate
-> disconnect" that you advocated earlier. Once active users of device's
-> services are gone you can zap it.
+Tuesday, April 17, 2007
+Debugging Linux kernels with Workstation 6.0
+We just quietly added an exciting feature to Workstation 6.0. I believe it 
+will make WS6 a great tool for Linux kernel development. You can now debug 
+kernel of Linux VM with gdb running on the Host without changing anything in 
+the Guest VM. No kdb, no recompiling and no need for second machine. All you 
+need is a single line in VM's configuration file.
 
-Among the worst offenders are character devices.  None of the subsystem
-providers offering char device registration performs immediate detach --
-they are a lot like sysfs used to be.  (In fact, they probably _can't_
-provide it since read() or write() calls can block indefinitely in the
-lower-level driver; the subsystem may have no way to force them to
-fail-fast.)  So every lower-level driver which registers a char device
-needs to provide its own synchronization and immediate detach, and at the
-moment I doubt very many of them do.  And of those which do, a large
-percentage rely on the BKL for synchronization!
+To use the new feature, grab the latest build of WS6 here:
 
-Here's another awkward possibility.  Suppose a workqueue routine tries to 
-unregister a device.  Suppose the device's driver needs to do something in 
-a process context, so it has a work item pending in the same workqueue.  
-The driver's remove() method would need to flush the workqueue (in order 
-to perform immediate detach), but doing so would cause a deadlock.
+http://www.vmware.com/products/beta/ws/
 
-Alan Stern
+Put this line into configuration file of your Linux VM:
+
+debugStub.listen.guest32=1
+
+Now whenever you run the virtual machine, you'll see the following on the 
+Host console:
+
+VMware Workstation is listening for debug connection on port 8832.
+
+Run gdb on the Host, reference it to the kernel with symbols and attach to 
+the virtual machine:
+
+% gdb
+(gdb) file vmlinux-2.4.21-27.EL.debug
+(gdb) target remote localhost:8832
+
+That's it. The VM is blocked now, so you can "continue" it and "^C" back to 
+gdb. Breakpoints, single step, memory inspection - all this works as usual. 
+If you have SMP VM, then each VCPU is mapped on a thread, so use "info 
+threads" and "thread NN" to switch between them.
+
+The kernels with symbols are sadly lacking on most distributions, but if you 
+use RHEL then this website may help (look for kernel-debuginfo rpm):
+
+http://people.redhat.com/duffy/debuginfo/index-js.html
+
+The gdb support in WS6 is experimental, so there may be rough edges here and 
+there. Please post on community forums if something doesn't work right or if 
+you have a suggestion:
+
+http://www.vmware.com/community/
+
+There are more debugging specific features in WS6 (for example, you can use 
+gdb hand-in-hand with Record/Replay!). I will describe them shortly.
+
+
+
 
