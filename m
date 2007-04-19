@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766885AbXDSRPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766886AbXDSRP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766885AbXDSRPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 13:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161510AbXDSRPn
+	id S1766886AbXDSRP6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 13:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766888AbXDSRP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 13:15:43 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:26992 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161508AbXDSRPl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 13:15:41 -0400
-Date: Thu, 19 Apr 2007 10:15:37 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: David Miller <davem@davemloft.net>
-Cc: hch@infradead.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
-       ema@debian.org
-Subject: Re: Major qla2xxx regression on sparc64
-Message-ID: <20070419171537.GA14604@dmccrory-d810.qlogic.org>
-References: <20070416200857.GH10822@andrew-vasquezs-computer.local> <20070418171346.GA16471@infradead.org> <20070418172802.GD12708@andrew-vasquezs-computer.local> <20070418.131341.129061984.davem@davemloft.net>
+	Thu, 19 Apr 2007 13:15:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53567 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766886AbXDSRP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 13:15:56 -0400
+Message-ID: <4627A3C3.8050108@redhat.com>
+Date: Thu, 19 Apr 2007 13:15:47 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070418.131341.129061984.davem@davemloft.net>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 19 Apr 2007 17:15:24.0314 (UTC) FILETIME=[514707A0:01C782A6]
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Marat Buharov <marat.buharov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: why UDF have so ugly filesize limit?
+References: <698310e10704190655j1263035bi77c5f551db510646@mail.gmail.com>	<46279F3B.8050807@redhat.com> <20070419181221.59c3c7bd@the-village.bc.nu>
+In-Reply-To: <20070419181221.59c3c7bd@the-village.bc.nu>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007, David Miller wrote:
-
-> > On Wed, 18 Apr 2007, Christoph Hellwig wrote:
-> > 
-> > > I don't think a module option is a good idea at this point.  The problem
-> > > is you broke some so far perfectly working setups, which is not okay.
-> > > The only first step can be printing a really big warning.  After this
-> > > has been in for a while (at lest half a year) we can make it a non-default
-> > > option or turn if off completely in case the warning never triggered in
-> > > practice.
-> > > 
-> > > The only resonable thing for 2.6.21 is to put in David's patch, possible
-> > > with an even more drastic warning when the rom is invalid and there's
-> > > no prom-fallback available.
-> > > 
-> > > Note that I expect Sun put in the invalid ROM intentionally, as we have
-> > > similar cases with other cards that have totally messed up ROMs in
-> > > Sun-branded versions.  Personally I think that's an utterly bad decision
-> > > from Sun's side, but we'll have to live with this.
-> > 
-> > Fine.  I'll rework an alternate patch for the 2.6.22 timeframe...
+Alan Cox wrote:
+> On Thu, 19 Apr 2007 12:56:27 -0400
+> Chuck Ebbert <cebbert@redhat.com> wrote:
 > 
-> We need to fix things now for 2.6.21 and the 2.6.x -stable branches
-> because users have unusable systems currently.
+>> Marat Buharov wrote:
+>>> from fs/udf/super.c:
+>>> in function udf_fill_super
+>>> sb->s_maxbytes = 1<<30; (1 GB)
+>>>
+>>> Why sb->s_maxbytes is not equal to MAX_LFS_FILESIZE?
+>>>
+>> Patches to fix that are in the -mm kernel already (and in
+>> Fedora Core 6 latest update.)
+> 
+> Good to know, presumably these also fix the underlying UDF problems in the
+> UDF filesystem code that caused it to be put there in the first pace ?
+> 
+> (Security CVE-2006-4145)
 
-Yes, and I'm fine with the original patch you provided which reverts
-the change and adds the firmware-upcalls to retrieve the wwpn/wwnn.
-
-> If it's just a time issue I can work on and push the patch, especially
-> since I have the means to test things here.
-
-I'll start with the final 2.6.21 -- add modify to add the *flashing*
-light warning and some additional bits based on other archs I can test
-with embedded ISPs.  Thanks again for the SPARC tips.
-
-Regards,
-Andrew Vasquez
+Yeah, the patches are by Jan Kara who put the original limitation
+in there as a temporary band-aid.
