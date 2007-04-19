@@ -1,71 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993094AbXDSCIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993107AbXDSCOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993094AbXDSCIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 22:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993108AbXDSCIs
+	id S2993107AbXDSCOb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 22:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993109AbXDSCOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 22:08:48 -0400
-Received: from mail35.syd.optusnet.com.au ([211.29.133.51]:51331 "EHLO
-	mail35.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993094AbXDSCIr (ORCPT
+	Wed, 18 Apr 2007 22:14:31 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2691 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2993107AbXDSCOa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 22:08:47 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org, Al Boldi <a1426z@gawab.com>
-Subject: Announce - Staircase Deadline cpu scheduler v0.42
-Date: Thu, 19 Apr 2007 12:12:14 +1000
-User-Agent: KMail/1.9.5
-Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Matt Mackall <mpm@selenic.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200704190959.06432.kernel@kolivas.org> <200704191041.13352.kernel@kolivas.org>
-In-Reply-To: <200704191041.13352.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704191212.15151.kernel@kolivas.org>
+	Wed, 18 Apr 2007 22:14:30 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: davem@davemloft.net (David Miller)
+Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
+Cc: xemul@sw.ru, netdev@vger.kernel.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, devel@openvz.org, kaber@trash.net,
+       dev@openvz.org
+Organization: Core
+In-Reply-To: <20070418.170636.77057313.davem@davemloft.net>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1HeM9f-0001Dt-00@gondolin.me.apana.org.au>
+Date: Thu, 19 Apr 2007 12:13:51 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 April 2007 10:41, Con Kolivas wrote:
-> On Thursday 19 April 2007 09:59, Con Kolivas wrote:
-> > Since there is so much work currently ongoing with alternative cpu
-> > schedulers, as a standard for comparison with the alternative virtual
-> > deadline fair designs I've addressed a few issues in the Staircase
-> > Deadline cpu scheduler which improve behaviour likely in a noticeable
-> > fashion and released version 0.41.
-> >
-> > http://ck.kolivas.org/patches/staircase-deadline/2.6.20.7-sd-0.41.patch
-> > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.41.patch
-> >
-> > and an incremental for those on 0.40:
-> > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7/sched-impleme
-> >nt -staircase-deadline-scheduler-further-improvements.patch
-> >
-> > Remember to renice X to -10 for nicest desktop behaviour :)
-> >
-> > Have fun.
->
-> Oops forgot to cc a few people
->
-> Nick you said I should still have something to offer so here it is.
-> Peter you said you never saw this design (it's a dual array affair sorry).
-> Gene and Willy you were some of the early testers that noticed the
-> advantages of the earlier designs,
-> Matt you did lots of great earlier testing.
-> WLI you inspired a lot of design ideas.
-> Mike you were the stick.
-> And a few others I've forgotten to mention and include.
+David Miller <davem@davemloft.net> wrote:
+> 
+> As discussed in this thread there might be other ways to a
+> approach this, but this fix is good for now.
+> 
+> Patch applied, thank you.
 
-Version 0.42
+Actually I was going to suggest something like this:
 
-http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.42.patch
+[NETLINK]: Kill CB only when socket is unused
 
+Since we can still receive packets until all references to the
+socket are gone, we don't need to kill the CB until that happens.
+This also aligns ourselves with the receive queue purging which
+happens at that point.
+
+Original patch by Pavel Emelianov who noticed this race condition.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
 -- 
--ck
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
+index 0be19b7..914884c 100644
+--- a/net/netlink/af_netlink.c
++++ b/net/netlink/af_netlink.c
+@@ -139,6 +139,15 @@ static struct hlist_head *nl_pid_hashfn(struct nl_pid_hash *hash, u32 pid)
+ 
+ static void netlink_sock_destruct(struct sock *sk)
+ {
++	struct netlink_sock *nlk = nlk_sk(sk);
++
++	WARN_ON(mutex_is_locked(nlk_sk(sk)->cb_mutex));
++	if (nlk->cb) {
++		if (nlk->cb->done)
++			nlk->cb->done(nlk->cb);
++		netlink_destroy_callback(nlk->cb);
++	}
++
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 
+ 	if (!sock_flag(sk, SOCK_DEAD)) {
+@@ -147,7 +156,6 @@ static void netlink_sock_destruct(struct sock *sk)
+ 	}
+ 	BUG_TRAP(!atomic_read(&sk->sk_rmem_alloc));
+ 	BUG_TRAP(!atomic_read(&sk->sk_wmem_alloc));
+-	BUG_TRAP(!nlk_sk(sk)->cb);
+ 	BUG_TRAP(!nlk_sk(sk)->groups);
+ }
+ 
+@@ -450,17 +458,7 @@ static int netlink_release(struct socket *sock)
+ 	netlink_remove(sk);
+ 	nlk = nlk_sk(sk);
+ 
+-	mutex_lock(nlk->cb_mutex);
+-	if (nlk->cb) {
+-		if (nlk->cb->done)
+-			nlk->cb->done(nlk->cb);
+-		netlink_destroy_callback(nlk->cb);
+-		nlk->cb = NULL;
+-	}
+-	mutex_unlock(nlk->cb_mutex);
+-
+-	/* OK. Socket is unlinked, and, therefore,
+-	   no new packets will arrive */
++	/* OK. Socket is unlinked. */
+ 
+ 	sock_orphan(sk);
+ 	sock->sk = NULL;
