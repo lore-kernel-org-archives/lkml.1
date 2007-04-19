@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993123AbXDSHFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993137AbXDSHFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993123AbXDSHFQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161219AbXDSHA6
+	id S2993137AbXDSHFw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993144AbXDSHF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:00:58 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46329 "EHLO
+	Thu, 19 Apr 2007 03:05:27 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34602 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161340AbXDSHAg (ORCPT
+	with ESMTP id S2993137AbXDSHFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:00:36 -0400
+	Thu, 19 Apr 2007 03:05:00 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] fs/afs: Convert to kthread API.
-Date: Thu, 19 Apr 2007 00:55:50 -0600
-Message-Id: <11769658052932-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] ia64 sn xpc: Convert to use kthread API.
+Date: Thu, 19 Apr 2007 00:55:39 -0600
+Message-Id: <11769657833898-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,198 +26,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patch modifies the startup of kafscmd, kafsasyncd, and kafstimod
-to use kthread_run instead of a combination of kernel_thread and
-daemonize making the code slightly simpler and more maintainable.
+This patch starts the xpc kernel threads using kthread_run
+not a combination of kernel_thread and daemonize.  Resuling
+in slightly simpler and more maintainable code.
 
-In addition since by default all signals are ignored when delivered
-to a kernel thread the code to flush signals has been removed.
-
-Cc: David Howells <dhowells@redhat.com>
+Cc: Jes Sorensen <jes@sgi.com>
+Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/afs/cmservice.c  |   10 +++++-----
- fs/afs/internal.h   |   11 -----------
- fs/afs/kafsasyncd.c |   17 ++++++-----------
- fs/afs/kafstimod.c  |   16 ++++++----------
- 4 files changed, 17 insertions(+), 37 deletions(-)
+ arch/ia64/sn/kernel/xpc_main.c |   31 +++++++++++++------------------
+ 1 files changed, 13 insertions(+), 18 deletions(-)
 
-diff --git a/fs/afs/cmservice.c b/fs/afs/cmservice.c
-index 3d097fd..f7e2355 100644
---- a/fs/afs/cmservice.c
-+++ b/fs/afs/cmservice.c
-@@ -13,6 +13,7 @@
- #include <linux/init.h>
- #include <linux/sched.h>
+diff --git a/arch/ia64/sn/kernel/xpc_main.c b/arch/ia64/sn/kernel/xpc_main.c
+index e336e16..5b53642 100644
+--- a/arch/ia64/sn/kernel/xpc_main.c
++++ b/arch/ia64/sn/kernel/xpc_main.c
+@@ -56,6 +56,7 @@
+ #include <linux/reboot.h>
  #include <linux/completion.h>
+ #include <linux/kdebug.h>
 +#include <linux/kthread.h>
- #include "server.h"
- #include "cell.h"
- #include "transport.h"
-@@ -120,8 +121,6 @@ static int kafscmd(void *arg)
+ #include <asm/sn/intr.h>
+ #include <asm/sn/sn_sal.h>
+ #include <asm/uaccess.h>
+@@ -253,8 +254,6 @@ xpc_hb_checker(void *ignore)
  
- 	printk(KERN_INFO "kAFS: Started kafscmd %d\n", current->pid);
+ 	/* this thread was marked active by xpc_hb_init() */
  
--	daemonize("kafscmd");
+-	daemonize(XPC_HB_CHECK_THREAD_NAME);
 -
- 	complete(&kafscmd_alive);
+ 	set_cpus_allowed(current, cpumask_of_cpu(XPC_HB_CHECK_CPU));
  
- 	/* loop around looking for things to attend to */
-@@ -133,7 +132,6 @@ static int kafscmd(void *arg)
- 			for (;;) {
- 				set_current_state(TASK_INTERRUPTIBLE);
- 				if (!list_empty(&kafscmd_attention_list) ||
--				    signal_pending(current) ||
- 				    kafscmd_die)
- 					break;
- 
-@@ -297,8 +295,10 @@ int afscm_start(void)
- 
- 	down_write(&afscm_sem);
- 	if (!afscm_usage) {
--		ret = kernel_thread(kafscmd, NULL, 0);
--		if (ret < 0)
-+		struct task_struct *task;
-+		task = kthread_run(kafscmd, NULL, "kafscmd");
-+		ret = PTR_ERR(task);
-+		if (IS_ERR(task))
- 			goto out;
- 
- 		wait_for_completion(&kafscmd_alive);
-diff --git a/fs/afs/internal.h b/fs/afs/internal.h
-index 5151d5d..2d667b7 100644
---- a/fs/afs/internal.h
-+++ b/fs/afs/internal.h
-@@ -40,17 +40,6 @@
- #define _net(FMT, a...)		do { } while(0)
- #endif
- 
--static inline void afs_discard_my_signals(void)
--{
--	while (signal_pending(current)) {
--		siginfo_t sinfo;
--
--		spin_lock_irq(&current->sighand->siglock);
--		dequeue_signal(current,&current->blocked, &sinfo);
--		spin_unlock_irq(&current->sighand->siglock);
--	}
--}
--
- /*
-  * cell.c
-  */
-diff --git a/fs/afs/kafsasyncd.c b/fs/afs/kafsasyncd.c
-index 615df24..ead025f 100644
---- a/fs/afs/kafsasyncd.c
-+++ b/fs/afs/kafsasyncd.c
-@@ -21,6 +21,7 @@
- #include <linux/sched.h>
- #include <linux/completion.h>
- #include <linux/freezer.h>
-+#include <linux/kthread.h>
- #include "cell.h"
- #include "server.h"
- #include "volume.h"
-@@ -56,15 +57,15 @@ static void kafsasyncd_null_call_error_func(struct rxrpc_call *call)
-  */
- int afs_kafsasyncd_start(void)
+ 	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
+@@ -324,8 +323,6 @@ xpc_hb_checker(void *ignore)
+ static int
+ xpc_initiate_discovery(void *ignore)
  {
--	int ret;
+-	daemonize(XPC_DISCOVERY_THREAD_NAME);
+-
+ 	xpc_discovery();
+ 
+ 	dev_dbg(xpc_part, "discovery thread is exiting\n");
+@@ -494,8 +491,6 @@ xpc_activating(void *__partid)
+ 
+ 	dev_dbg(xpc_part, "bringing partition %d up\n", partid);
+ 
+-	daemonize("xpc%02d", partid);
+-
+ 	/*
+ 	 * This thread needs to run at a realtime priority to prevent a
+ 	 * significant performance degradation.
+@@ -559,7 +554,7 @@ xpc_activate_partition(struct xpc_partition *part)
+ {
+ 	partid_t partid = XPC_PARTID(part);
+ 	unsigned long irq_flags;
+-	pid_t pid;
 +	struct task_struct *task;
  
--	ret = kernel_thread(kafsasyncd, NULL, 0);
--	if (ret < 0)
--		return ret;
-+	task = kthread_run(kafsasyncd, NULL, "kafsasyncd");
-+	if (IS_ERR(task))
-+		return PTR_ERR(task);
  
- 	wait_for_completion(&kafsasyncd_alive);
+ 	spin_lock_irqsave(&part->act_lock, irq_flags);
+@@ -571,9 +566,10 @@ xpc_activate_partition(struct xpc_partition *part)
  
--	return ret;
-+	return 0;
- } /* end afs_kafsasyncd_start() */
+ 	spin_unlock_irqrestore(&part->act_lock, irq_flags);
  
- /*****************************************************************************/
-@@ -95,8 +96,6 @@ static int kafsasyncd(void *arg)
+-	pid = kernel_thread(xpc_activating, (void *) ((u64) partid), 0);
++	task = kthread_run(xpc_activating, (void *) ((u64) partid),
++			  "xpc%02d", partid);
  
- 	printk("kAFS: Started kafsasyncd %d\n", current->pid);
+-	if (unlikely(pid <= 0)) {
++	if (unlikely(IS_ERR(task))) {
+ 		spin_lock_irqsave(&part->act_lock, irq_flags);
+ 		part->act_state = XPC_P_INACTIVE;
+ 		XPC_SET_REASON(part, xpcCloneKThreadFailed, __LINE__);
+@@ -724,8 +720,6 @@ xpc_daemonize_kthread(void *args)
+ 	unsigned long irq_flags;
  
--	daemonize("kafsasyncd");
+ 
+-	daemonize("xpc%02dc%d", partid, ch_number);
 -
- 	complete(&kafsasyncd_alive);
+ 	dev_dbg(xpc_chan, "kthread starting, partid=%d, channel=%d\n",
+ 		partid, ch_number);
  
- 	/* loop around looking for things to attend to */
-@@ -106,7 +105,6 @@ static int kafsasyncd(void *arg)
+@@ -844,8 +838,9 @@ xpc_create_kthreads(struct xpc_channel *ch, int needed,
+ 		(void) xpc_part_ref(part);
+ 		xpc_msgqueue_ref(ch);
  
- 		for (;;) {
- 			if (!list_empty(&kafsasyncd_async_attnq) ||
--			    signal_pending(current) ||
- 			    kafsasyncd_die)
- 				break;
+-		pid = kernel_thread(xpc_daemonize_kthread, (void *) args, 0);
+-		if (pid < 0) {
++		task = kthread_run(xpc_daemonize_kthread, args,
++				   "xpc%02dc%d", partid, ch_number);
++		if (IS_ERR(task)) {
+ 			/* the fork failed */
  
-@@ -119,9 +117,6 @@ static int kafsasyncd(void *arg)
- 
- 		try_to_freeze();
- 
--		/* discard pending signals */
--		afs_discard_my_signals();
--
- 		die = kafsasyncd_die;
- 
- 		/* deal with the next asynchronous operation requiring
-diff --git a/fs/afs/kafstimod.c b/fs/afs/kafstimod.c
-index 694344e..caeac88 100644
---- a/fs/afs/kafstimod.c
-+++ b/fs/afs/kafstimod.c
-@@ -14,6 +14,7 @@
- #include <linux/sched.h>
- #include <linux/completion.h>
- #include <linux/freezer.h>
-+#include <linux/kthread.h>
- #include "cell.h"
- #include "volume.h"
- #include "kafstimod.h"
-@@ -36,15 +37,15 @@ static int kafstimod(void *arg);
-  */
- int afs_kafstimod_start(void)
- {
--	int ret;
+ 			/*
+@@ -1222,7 +1217,7 @@ xpc_init(void)
+ 	int ret;
+ 	partid_t partid;
+ 	struct xpc_partition *part;
+-	pid_t pid;
 +	struct task_struct *task;
+ 	size_t buf_size;
  
--	ret = kernel_thread(kafstimod, NULL, 0);
--	if (ret < 0)
--		return ret;
-+	task = kthread_run(kafstimod, NULL, "kafstimod");
-+	if (IS_ERR(task))
-+		return PTR_ERR(task);
  
- 	wait_for_completion(&kafstimod_alive);
+@@ -1353,8 +1348,8 @@ xpc_init(void)
+ 	 * The real work-horse behind xpc.  This processes incoming
+ 	 * interrupts and monitors remote heartbeats.
+ 	 */
+-	pid = kernel_thread(xpc_hb_checker, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(xpc_hb_checker, NULL, XPC_HB_CHECK_THREAD_NAME);
++	if (IS_ERR(task)) {
+ 		dev_err(xpc_part, "failed while forking hb check thread\n");
  
--	return ret;
-+	return 0;
- } /* end afs_kafstimod_start() */
+ 		/* indicate to others that our reserved page is uninitialized */
+@@ -1384,8 +1379,8 @@ xpc_init(void)
+ 	 * activate based on info provided by SAL. This new thread is short
+ 	 * lived and will exit once discovery is complete.
+ 	 */
+-	pid = kernel_thread(xpc_initiate_discovery, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(xpc_initiate_discovery, NULL, XPC_DISCOVERY_THREAD_NAME);
++	if (IS_ERR(task)) {
+ 		dev_err(xpc_part, "failed while forking discovery thread\n");
  
- /*****************************************************************************/
-@@ -72,8 +73,6 @@ static int kafstimod(void *arg)
- 
- 	printk("kAFS: Started kafstimod %d\n", current->pid);
- 
--	daemonize("kafstimod");
--
- 	complete(&kafstimod_alive);
- 
- 	/* loop around looking for things to attend to */
-@@ -94,9 +93,6 @@ static int kafstimod(void *arg)
- 
- 		try_to_freeze();
- 
--		/* discard pending signals */
--		afs_discard_my_signals();
--
- 		/* work out the time to elapse before the next event */
- 		spin_lock(&kafstimod_lock);
- 		if (list_empty(&kafstimod_list)) {
+ 		/* mark this new thread as a non-starter */
 -- 
 1.5.0.g53756
 
