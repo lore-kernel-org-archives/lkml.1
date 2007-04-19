@@ -1,76 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767030AbXDSVte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767010AbXDSVul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767030AbXDSVte (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 17:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767015AbXDSVte
+	id S1767010AbXDSVul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 17:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767015AbXDSVul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 17:49:34 -0400
-Received: from iucha.net ([209.98.146.184]:33644 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767030AbXDSVtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 17:49:33 -0400
-Date: Thu, 19 Apr 2007 16:49:32 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: chuck.lever@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Failure! Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-Message-ID: <20070419214931.GX24044@iucha.net>
-References: <20070418134225.GG24044@iucha.net> <1176905506.6796.84.camel@heimdal.trondhjem.org> <20070419015232.GO24044@iucha.net> <1176950713.6422.95.camel@heimdal.trondhjem.org> <462786C9.7090405@oracle.com> <1176995848.6663.1.camel@heimdal.trondhjem.org> <20070419155046.GR24044@iucha.net> <1176998982.6663.10.camel@heimdal.trondhjem.org> <20070419195844.GT24044@iucha.net> <1177018242.6628.10.camel@heimdal.trondhjem.org>
+	Thu, 19 Apr 2007 17:50:41 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:45987 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767010AbXDSVuk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 17:50:40 -0400
+Date: Thu, 19 Apr 2007 17:50:36 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Nagendra Singh Tomar <nagendra_tomar@adaptec.com>
+cc: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [RFC PATCH] Re: BUG in sysfs_remove_group
+In-Reply-To: <20070417100756.32454f9d.akpm@linux-foundation.org>
+Message-ID: <Line.LNX.4.64.0704191222460.1633@d.namei>
+References: <20070417100756.32454f9d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="QQ0dNM4HnH4+xgqD"
-Content-Disposition: inline
-In-Reply-To: <1177018242.6628.10.camel@heimdal.trondhjem.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Apr 2007, Nagendra Singh Tomar wrote:
 
---QQ0dNM4HnH4+xgqD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> The return value of lookup_one_len() is used without testing for error return. 
+> This results in the following oops when SELinux is enabled and enforced.  The 
+> reason for the Oops is as follows.
+> 	The shell's (bash) SELinux domain is not allowed "search" permission in sysfs 
+> filesystem (type sysfs_t in the default SELinux policy), due to which the 
+> lookup_one_len->__lookup_hash->permission->security_inode_permission 
+> returns -EACCESS. This -ve number is passed as the 'dir' argument to 
+> remove_files()  and then to sysfs_hash_and_remove() which accesses this bogus 
+> pointer resulting in the crash.
+> 	A simple fix will be to check for IS_ERR(dir) in sysfs_remove_group() and 
+> return (without doing anything) if true, but this will result in the 
+> corresponding sysfs dirent entries to be leaked. IMHO the proper fix will be 
+> to not check for "search" permissions in such cases where the internal kernel 
+> code is trying to free up sysfs entries like the current case.
 
-On Thu, Apr 19, 2007 at 05:30:42PM -0400, Trond Myklebust wrote:
-> > I'm far from the machine right now, so I will do some more tests
-> > tonight, but right now, the new patchset is not good.  What is the
-> > difference between reverting the patch you sent yesterday and your
-> > current fifth patch?  I assume the other four are identical, right?
->=20
-> The only difference is the way in which we handle retries of an NFSv4
-> request: the new patch disconnects if and only if a timeout has
-> occurred, or the server sends us garbage.
+I hit the same issue a couple of days before with MLS policy, and your 
+report and analysis proved most useful, thanks.
 
-I have to mention that I rebased to the head of the tree
-(895e1fc7226e6732bc77138955b6c7dfa279f57a) before applying your
-patches, in order to test what I expect the official tree to be.
+A preliminary patch for this is below, based on suggestions from Stephen 
+Smalley.
 
-Tonight I'll test this kernel once more, then go back to 21-rc7 and
-apply your 5 patches and re-test.
+Please review, and Nagendra, let me know if this works for you.
 
-florin
 
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
+Prevent permission checking from being peformed when the kernel wants to 
+unconditionally remove a sysfs group, by introducing an kernel-only 
+variant of lookup_one_len(), lookup_one_len_kern().
 
---QQ0dNM4HnH4+xgqD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Additionally, as sysfs_remove_group() does not check the return value of 
+the lookup before using it, a BUG_ON has been added to pinpoint the cause 
+of any problems potentially caused by this (and as a form of annotation).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Signed-off-by: James Morris <jmorris@namei.org>
 
-iD8DBQFGJ+PrND0rFCN2b1sRAijkAJ41DvDoMYJqs7A8P3iL4GwjB55/CwCeNfO3
-2m+upqv1iov+UpNJzmzsHwM=
-=h19d
------END PGP SIGNATURE-----
 
---QQ0dNM4HnH4+xgqD--
+---
+
+ fs/namei.c            |   29 +++++++++++++++++++++--------
+ fs/sysfs/group.c      |    6 ++++--
+ include/linux/namei.h |    1 +
+ 3 files changed, 26 insertions(+), 10 deletions(-)
+
+
+diff --git a/fs/namei.c b/fs/namei.c
+index ee60cc4..70d3c46 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1248,17 +1248,20 @@ int __user_path_lookup_open(const char __user *name, unsigned int lookup_flags,
+  * needs parent already locked. Doesn't follow mounts.
+  * SMP-safe.
+  */
+-static struct dentry * __lookup_hash(struct qstr *name, struct dentry * base, struct nameidata *nd)
++static struct dentry * __lookup_hash(struct qstr *name, struct dentry * base, struct nameidata *nd, int kern)
+ {
+ 	struct dentry * dentry;
+ 	struct inode *inode;
+ 	int err;
+ 
+ 	inode = base->d_inode;
+-	err = permission(inode, MAY_EXEC, nd);
+-	dentry = ERR_PTR(err);
+-	if (err)
+-		goto out;
++	
++	if (likely(!kern)) {
++		err = permission(inode, MAY_EXEC, nd);
++		dentry = ERR_PTR(err);
++		if (err)
++			goto out;
++	}
+ 
+ 	/*
+ 	 * See if the low-level filesystem might want
+@@ -1289,11 +1292,11 @@ out:
+ 
+ static struct dentry *lookup_hash(struct nameidata *nd)
+ {
+-	return __lookup_hash(&nd->last, nd->dentry, nd);
++	return __lookup_hash(&nd->last, nd->dentry, nd, 0);
+ }
+ 
+ /* SMP-safe */
+-struct dentry * lookup_one_len(const char * name, struct dentry * base, int len)
++static inline struct dentry * __lookup_one_len(const char * name, struct dentry * base, int len, int kern)
+ {
+ 	unsigned long hash;
+ 	struct qstr this;
+@@ -1313,11 +1316,21 @@ struct dentry * lookup_one_len(const char * name, struct dentry * base, int len)
+ 	}
+ 	this.hash = end_name_hash(hash);
+ 
+-	return __lookup_hash(&this, base, NULL);
++	return __lookup_hash(&this, base, NULL, kern);
+ access:
+ 	return ERR_PTR(-EACCES);
+ }
+ 
++struct dentry * lookup_one_len(const char * name, struct dentry * base, int len)
++{
++	return __lookup_one_len(name, base, len, 0);
++}
++
++struct dentry * lookup_one_len_kern(const char * name, struct dentry * base, int len)
++{
++	return __lookup_one_len(name, base, len, 1);
++}
++
+ /*
+  *	namei()
+  *
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index b20951c..52eed2a 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -70,9 +70,11 @@ void sysfs_remove_group(struct kobject * kobj,
+ {
+ 	struct dentry * dir;
+ 
+-	if (grp->name)
+-		dir = lookup_one_len(grp->name, kobj->dentry,
++	if (grp->name) {
++		dir = lookup_one_len_kern(grp->name, kobj->dentry,
+ 				strlen(grp->name));
++		BUG_ON(IS_ERR(dir));
++	}
+ 	else
+ 		dir = dget(kobj->dentry);
+ 
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index d39a5a6..d4031ff 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -82,6 +82,7 @@ extern struct file *nameidata_to_filp(struct nameidata *nd, int flags);
+ extern void release_open_intent(struct nameidata *);
+ 
+ extern struct dentry * lookup_one_len(const char *, struct dentry *, int);
++extern struct dentry * lookup_one_len_kern(const char *, struct dentry *, int);
+ 
+ extern int follow_down(struct vfsmount **, struct dentry **);
+ extern int follow_up(struct vfsmount **, struct dentry **);
