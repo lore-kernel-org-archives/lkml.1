@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993193AbXDSIKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993189AbXDSIK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993193AbXDSIKm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993200AbXDSIKI
+	id S2993189AbXDSIK6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993198AbXDSIKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:10:08 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33926 "EHLO
+	Thu, 19 Apr 2007 04:10:47 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33929 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993196AbXDSIJz (ORCPT
+	with ESMTP id S2993192AbXDSIKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:09:55 -0400
+	Thu, 19 Apr 2007 04:10:13 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Frank Pavlic <fpavlic@de.ibm.com>
-Subject: [PATCH] s390/net/lcs: Convert to the kthread API
-Date: Thu, 19 Apr 2007 01:58:40 -0600
-Message-Id: <11769695682070-git-send-email-ebiederm@xmission.com>
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc pseries eeh: Convert to kthread API
+Date: Thu, 19 Apr 2007 01:58:45 -0600
+Message-Id: <11769695763104-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,58 +27,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Use kthread_run to start the lcs kernel threads not a
-combination of kernel_thread and daemonize.  This makes
+This patch modifies the startup of eehd to use kthread_run
+not a combination of kernel_thread and daemonize.  Making
 the code slightly simpler and more maintainable.
 
-Cc: Frank Pavlic <fpavlic@de.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/s390/net/lcs.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/pseries/eeh_event.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/s390/net/lcs.c b/drivers/s390/net/lcs.c
-index 08a994f..0300d87 100644
---- a/drivers/s390/net/lcs.c
-+++ b/drivers/s390/net/lcs.c
-@@ -36,6 +36,7 @@
- #include <linux/in.h>
- #include <linux/igmp.h>
- #include <linux/delay.h>
+diff --git a/arch/powerpc/platforms/pseries/eeh_event.c b/arch/powerpc/platforms/pseries/eeh_event.c
+index 221dec8..fe7c2e0 100644
+--- a/arch/powerpc/platforms/pseries/eeh_event.c
++++ b/arch/powerpc/platforms/pseries/eeh_event.c
+@@ -23,6 +23,7 @@
+ #include <linux/mutex.h>
+ #include <linux/pci.h>
+ #include <linux/workqueue.h>
 +#include <linux/kthread.h>
- #include <net/arp.h>
- #include <net/ip.h>
+ #include <asm/eeh_event.h>
+ #include <asm/ppc-pci.h>
  
-@@ -1248,7 +1249,6 @@ lcs_register_mc_addresses(void *data)
- 	struct in_device *in4_dev;
+@@ -59,7 +60,6 @@ static int eeh_event_handler(void * dummy)
+ 	struct eeh_event	*event;
+ 	struct pci_dn *pdn;
  
- 	card = (struct lcs_card *) data;
--	daemonize("regipm");
+-	daemonize ("eehd");
+ 	set_current_state(TASK_INTERRUPTIBLE);
  
- 	if (!lcs_do_run_thread(card, LCS_SET_MC_THREAD))
- 		return 0;
-@@ -1728,11 +1728,10 @@ lcs_start_kernel_thread(struct work_struct *work)
- 	struct lcs_card *card = container_of(work, struct lcs_card, kernel_thread_starter);
- 	LCS_DBF_TEXT(5, trace, "krnthrd");
- 	if (lcs_do_start_thread(card, LCS_RECOVERY_THREAD))
--		kernel_thread(lcs_recovery, (void *) card, SIGCHLD);
-+		kthread_run(lcs_recovery, card, "lcs_recover");
- #ifdef CONFIG_IP_MULTICAST
- 	if (lcs_do_start_thread(card, LCS_SET_MC_THREAD))
--		kernel_thread(lcs_register_mc_addresses,
--				(void *) card, SIGCHLD);
-+		kernel_run(lcs_register_mc_addresses, card, "regipm");
- #endif
+ 	spin_lock_irqsave(&eeh_eventlist_lock, flags);
+@@ -105,7 +105,7 @@ static int eeh_event_handler(void * dummy)
+  */
+ static void eeh_thread_launcher(struct work_struct *dummy)
+ {
+-	if (kernel_thread(eeh_event_handler, NULL, CLONE_KERNEL) < 0)
++	if (IS_ERR(kthread_run(eeh_event_handler, NULL, "eehd")))
+ 		printk(KERN_ERR "Failed to start EEH daemon\n");
  }
  
-@@ -2232,7 +2231,6 @@ lcs_recovery(void *ptr)
-         int rc;
- 
- 	card = (struct lcs_card *) ptr;
--	daemonize("lcs_recover");
- 
- 	LCS_DBF_TEXT(4, trace, "recover1");
- 	if (!lcs_do_run_thread(card, LCS_RECOVERY_THREAD))
 -- 
 1.5.0.g53756
 
