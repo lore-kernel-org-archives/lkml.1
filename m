@@ -1,163 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766805AbXDSPOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766777AbXDSPQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766805AbXDSPOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 11:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766810AbXDSPOV
+	id S1766777AbXDSPQk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 11:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766811AbXDSPQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 11:14:21 -0400
-Received: from qsrv01sl.mx.bigpond.com ([144.140.92.181]:51344 "EHLO
-	qsrv01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766805AbXDSPOT (ORCPT
+	Thu, 19 Apr 2007 11:16:39 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:16600 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766777AbXDSPQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 11:14:19 -0400
-Message-ID: <462763A4.8080601@bigpond.net.au>
-Date: Thu, 19 Apr 2007 22:42:12 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
+	Thu, 19 Apr 2007 11:16:38 -0400
+Message-ID: <462786C9.7090405@oracle.com>
+Date: Thu, 19 Apr 2007 11:12:09 -0400
+From: Chuck Lever <chuck.lever@oracle.com>
+Reply-To: chuck.lever@oracle.com
+Organization: Oracle Corporation
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: Florin Iucha <florin@iucha.net>, Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Renice X for cpu schedulers
-References: <20070417062621.GL2986@holomorphy.com> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu> <200704192159.35546.kernel@kolivas.org>
-In-Reply-To: <200704192159.35546.kernel@kolivas.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta01sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Thu, 19 Apr 2007 12:42:17 +0000
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
+References: <1176868485.6796.42.camel@heimdal.trondhjem.org>	 <20070418040730.GC24044@iucha.net>	 <20070417211350.ebba1493.akpm@linux-foundation.org>	 <20070418043040.GD24044@iucha.net>	 <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org>	 <20070417223738.8f49a39f.akpm@linux-foundation.org>	 <20070418123842.GF24044@iucha.net>	 <1176902131.6796.62.camel@heimdal.trondhjem.org>	 <20070418134225.GG24044@iucha.net>	 <1176905506.6796.84.camel@heimdal.trondhjem.org>	 <20070419015232.GO24044@iucha.net> <1176950713.6422.95.camel@heimdal.trondhjem.org>
+In-Reply-To: <1176950713.6422.95.camel@heimdal.trondhjem.org>
+Content-Type: multipart/mixed;
+ boundary="------------000703050809000605000802"
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> Ok, there are 3 known schedulers currently being "promoted" as solid 
-> replacements for the mainline scheduler which address most of the issues with 
-> mainline (and about 10 other ones not currently being promoted). The main way 
-> they do this is through attempting to maintain solid fairness. There is 
-> enough evidence mounting now from the numerous test cases fixed by much 
-> fairer designs that this is the way forward for a general purpose cpu 
-> scheduler which is what linux needs. 
-> 
-> Interactivity of just about everything that needs low latency (ie audio and 
-> video players) are easily managed by maintaining low latency between wakeups 
-> and scheduling of all these low cpu users.
+This is a multi-part message in MIME format.
+--------------000703050809000605000802
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On a "fair" scheduler these will all get high priority (and good 
-response) because their CPU bandwidth usage will be much smaller than 
-their entitlement and the scheduler will be trying to help them "catch 
-up".  So (as you say) they shouldn't be a problem.
-
-> The one fly in the ointment for 
-> linux remains X. I am still, to this moment, completely and utterly stunned 
-> at why everyone is trying to find increasingly complex unique ways to manage 
-> X when all it needs is more cpu[1]. Now most of these are actually very good 
-> ideas about _extra_ features that would be desirable in the long run for 
-> linux, but given the ludicrous simplicity of renicing X I cannot fathom why 
-> people keep promoting these alternatives. At the time of 2.6.0 coming out we 
-> were desparately trying to get half decent interactivity within a reasonable 
-> time frame to release 2.6.0 without rewiring the whole scheduler. So I 
-> tweaked the crap out of the tunables that were already there[2].
-
-X's needs are more complex than that (from my observations) in that the 
-part of X that processes input doesn't use much CPU but the part that 
-does output can be quite a heavy user of CPU (e.g. do a "ls -lR /" in an 
-xterm and watch X chew up the CPU).  At the same time, the part of X 
-that processes input needs quick responsiveness as it's part of the 
-interactive chain where this is less so for the output part.
-
-Where X comes unstuck in the current scheduler is that when the output 
-part goes on one of its CPU storms it ceases to look like an interactive 
-task and gets given lower priority.  Ironically, this doesn't effect the 
-output part of X but it does effect the input part and is manifest as 
-crappy interactive response.  One wonders whether modifying X so that it 
-has two threads: one for output and one for input; that could be 
-scheduled separately might help.  I guess it would depend on whether 
-there is insufficient independence between the two halves.
-
-Part of this issue is that giving X a high static priority runs the risk 
-of the CPU hog output part disrupting scheduling of other important 
-tasks.  So don't give it too big a boost.
-
-> 
-> So let's hear from the 3 people who generated the schedulers under the 
-> spotlight. These are recent snippets and by no means the only time these 
-> comments have been said. Without sounding too bold, we do know a thing or two 
-> about scheduling.
-> 
-> CFS:
-> On Thursday 19 April 2007 16:38, Ingo Molnar wrote:
->> hmmmm. How about the following then: default to nice -10 for all
->> (SCHED_NORMAL) kernel threads and all root-owned tasks. Root _is_
->> special: root already has disk space reserved to it, root has special
->> memory allocation allowances, etc. I dont see a reason why we couldnt by
->> default make all root tasks have nice -10. This would be instantly loved
->> by sysadmins i suspect ;-)
-
-It's worth noting that the -10 mentioned is roughly equivalent (in the 
-old scheduler) to restoring interactive task status to X in those cases 
-where it loses it due to a CPU storm in its output part.
-
+Trond Myklebust wrote:
+> On Wed, 2007-04-18 at 20:52 -0500, Florin Iucha wrote:
+>> On Wed, Apr 18, 2007 at 10:11:46AM -0400, Trond Myklebust wrote:
+>>> Do you have a copy of wireshark or ethereal on hand? If so, could you
+>>> take a look at whether or not any NFS traffic is going between the
+>>> client and server once the hang happens?
+>> I used the following command 
 >>
->> (distros that go the extra mile of making Xorg run under non-root could
->> also go another extra one foot to renice that X server to -10.)
+>>    tcpdump -w nfs-traffic -i eth0 -vv -tt dst port nfs
+>>
+>> to capture
+>>
+>>    http://iucha.net/nfs/21-rc7-nfs4/nfs-traffic.bz2
+>>
+>> I started the capture before starting the copy and left it to run for
+>> a few minutes after the traffic slowed to a crawl.
+>>
+>> The iostat and vmstat are at:
+>>
+>>    http://iucha.net/nfs/21-rc7-nfs4/iostat
+>>    http://iucha.net/nfs/21-rc7-nfs4/vmstat
+>>    
+>> It seems that my original problem report had a big mistake!  There is
+>> no hang, but at some point the write slows down to a trickle (from
+>> 40,000 blocks/s to 22 blocks/s) as can be seen from the iostat log.
 > 
-> Nicksched:
-> On Wednesday 18 April 2007 15:00, Nick Piggin wrote:
->> What's wrong with allowing X to get more than it's fair share of CPU
->> time by "fiddling with nice levels"? That's what they're there for.
+> Yeah. You only captured the outgoing traffic to the server, but already
+> it looks as if there were 'interesting' things going on. In frames 29346
+> to 29350, the traffic stops altogether for 5 seconds (I only see
+> keepalives) then it starts up again. Ditto for frames 40477-40482
+> (another 5 seconds). ...
+> Then at around frame 92072, the client starts to send a bunch of RSTs.
+> Aha.... I'll bet that reverting the appended patch fixes the problem.
 > 
-> and
-> 
-> Staircase-Deadline:
-> On Thursday 19 April 2007 09:59, Con Kolivas wrote:
->> Remember to renice X to -10 for nicest desktop behaviour :)
+> The assumption Chuck makes is that if _no_ request bytes have been sent,
+> yet the request is on the 'receive list' then it must be a resend is
+> patently false in the case where the send queue just happens to be full.
 
-I'd like to add the EBS scheduler (posted by Aurema Pty Ltd a couple of 
-years back) to this list as it also recommended running X at nice -5 to -10.
+There are other places in the RPC client where "zero bytes sent" implies 
+that the request has been sent.  The real problem here is that zeroing 
+the "bytes sent" field is overloaded.
 
-Also some of the "interactive bonus" mechanisms in my SPA schedulers 
-could be removed if X was reniced.  In fact, with a reniced X the 
-spa_svr (server oriented scheduler which attempts to minimise the time 
-tasks spend on the queue waiting for CPU access and which doesn't have 
-interactive bonuses) might be usable on a work station.
+Perhaps instead of looking at the number of bytes sent, the logic in the 
+last hunk of this patch should check which queue the request is sitting on.
 
-> 
-> 
-> [1]The one caveat I can think of is that when you share X sessions across 
-> multiple users -with a fair cpu scheduler-, having them all nice 0 also makes 
-> the distribution of cpu across the multiple users very even and smooth, 
-> without the expense of burning away the other person's cpu time they'd like 
-> for compute intensive non gui things. If you make a scheduler that always 
-> favours X this becomes impossible. I've had enough users offlist ask me to 
-> help them set up multiuser environments just like this with my schedulers 
-> because they were unable to do it with mainline, even with SCHED_BATCH, short 
-> of nicing everything +19. This makes the argument for not favouring X within 
-> the scheduler with tweaks even stronger.
-> 
-> [2] Nick was promoting renicing X with his Nicksched alternative at the time 
-> of 2.6.0 and while we were not violently opposed to renicing X, Nicksched was 
-> still very new on the scene and didn't have the luxury of extended testing 
-> and reiteration in time for 2.6 and he put the project on hold for some time 
-> after that. The correctness of his views on renicing certainly have become 
-> more obvious over time.
-> 
-> 
-> So yes go ahead and think up great ideas for other ways of metering out cpu 
-> bandwidth for different purposes, but for X, given the absurd simplicity of 
-> renicing, why keep fighting it? Again I reiterate that most users of SD have 
-> not found the need to renice X anyway except if they stick to old habits of 
-> make -j4 on uniprocessor and the like, and I expect that those on CFS and 
-> Nicksched would also have similar experiences.
-> 
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+> -------------------------------------------
+> commit 43d78ef2ba5bec26d0315859e8324bfc0be23766
+> Author: Chuck Lever <chuck.lever@oracle.com>
+> Date:   Tue Feb 6 18:26:11 2007 -0500
+> 
+>     NFS: disconnect before retrying NFSv4 requests over TCP
+>     
+>     RFC3530 section 3.1.1 states an NFSv4 client MUST NOT send a request
+>     twice on the same connection unless it is the NULL procedure.  Section
+>     3.1.1 suggests that the client should disconnect and reconnect if it
+>     wants to retry a request.
+>     
+>     Implement this by adding an rpc_clnt flag that an ULP can use to
+>     specify that the underlying transport should be disconnected on a
+>     major timeout.  The NFSv4 client asserts this new flag, and requests
+>     no retries after a minor retransmit timeout.
+>     
+>     Note that disconnecting on a retransmit is in general not safe to do
+>     if the RPC client does not reuse the TCP port number when reconnecting.
+>     
+>     See http://bugzilla.linux-nfs.org/show_bug.cgi?id=6
+>     
+>     Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+>     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> 
+> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+> index a3191f0..c46e94f 100644
+> --- a/fs/nfs/client.c
+> +++ b/fs/nfs/client.c
+> @@ -394,7 +394,8 @@ static void nfs_init_timeout_values(struct rpc_timeout *to, int proto,
+>  static int nfs_create_rpc_client(struct nfs_client *clp, int proto,
+>  						unsigned int timeo,
+>  						unsigned int retrans,
+> -						rpc_authflavor_t flavor)
+> +						rpc_authflavor_t flavor,
+> +						int flags)
+>  {
+>  	struct rpc_timeout	timeparms;
+>  	struct rpc_clnt		*clnt = NULL;
+> @@ -407,6 +408,7 @@ static int nfs_create_rpc_client(struct nfs_client *clp, int proto,
+>  		.program	= &nfs_program,
+>  		.version	= clp->rpc_ops->version,
+>  		.authflavor	= flavor,
+> +		.flags		= flags,
+>  	};
+>  
+>  	if (!IS_ERR(clp->cl_rpcclient))
+> @@ -548,7 +550,7 @@ static int nfs_init_client(struct nfs_client *clp, const struct nfs_mount_data *
+>  	 * - RFC 2623, sec 2.3.2
+>  	 */
+>  	error = nfs_create_rpc_client(clp, proto, data->timeo, data->retrans,
+> -			RPC_AUTH_UNIX);
+> +					RPC_AUTH_UNIX, 0);
+>  	if (error < 0)
+>  		goto error;
+>  	nfs_mark_client_ready(clp, NFS_CS_READY);
+> @@ -868,7 +870,8 @@ static int nfs4_init_client(struct nfs_client *clp,
+>  	/* Check NFS protocol revision and initialize RPC op vector */
+>  	clp->rpc_ops = &nfs_v4_clientops;
+>  
+> -	error = nfs_create_rpc_client(clp, proto, timeo, retrans, authflavour);
+> +	error = nfs_create_rpc_client(clp, proto, timeo, retrans, authflavour,
+> +					RPC_CLNT_CREATE_DISCRTRY);
+>  	if (error < 0)
+>  		goto error;
+>  	memcpy(clp->cl_ipaddr, ip_addr, sizeof(clp->cl_ipaddr));
+> diff --git a/include/linux/sunrpc/clnt.h b/include/linux/sunrpc/clnt.h
+> index a1be89d..c7a78ee 100644
+> --- a/include/linux/sunrpc/clnt.h
+> +++ b/include/linux/sunrpc/clnt.h
+> @@ -40,6 +40,7 @@ struct rpc_clnt {
+>  
+>  	unsigned int		cl_softrtry : 1,/* soft timeouts */
+>  				cl_intr     : 1,/* interruptible */
+> +				cl_discrtry : 1,/* disconnect before retry */
+>  				cl_autobind : 1,/* use getport() */
+>  				cl_oneshot  : 1,/* dispose after use */
+>  				cl_dead     : 1;/* abandoned */
+> @@ -111,6 +112,7 @@ struct rpc_create_args {
+>  #define RPC_CLNT_CREATE_ONESHOT		(1UL << 3)
+>  #define RPC_CLNT_CREATE_NONPRIVPORT	(1UL << 4)
+>  #define RPC_CLNT_CREATE_NOPING		(1UL << 5)
+> +#define RPC_CLNT_CREATE_DISCRTRY	(1UL << 6)
+>  
+>  struct rpc_clnt *rpc_create(struct rpc_create_args *args);
+>  struct rpc_clnt	*rpc_bind_new_program(struct rpc_clnt *,
+> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+> index 393e70a..c21aa0a 100644
+> --- a/net/sunrpc/clnt.c
+> +++ b/net/sunrpc/clnt.c
+> @@ -249,6 +249,8 @@ struct rpc_clnt *rpc_create(struct rpc_create_args *args)
+>  		clnt->cl_autobind = 1;
+>  	if (args->flags & RPC_CLNT_CREATE_ONESHOT)
+>  		clnt->cl_oneshot = 1;
+> +	if (args->flags & RPC_CLNT_CREATE_DISCRTRY)
+> +		clnt->cl_discrtry = 1;
+>  
+>  	return clnt;
+>  }
+> diff --git a/net/sunrpc/xprt.c b/net/sunrpc/xprt.c
+> index cf59f7d..1975139 100644
+> --- a/net/sunrpc/xprt.c
+> +++ b/net/sunrpc/xprt.c
+> @@ -735,6 +735,16 @@ void xprt_transmit(struct rpc_task *task)
+>  			xprt_reset_majortimeo(req);
+>  			/* Turn off autodisconnect */
+>  			del_singleshot_timer_sync(&xprt->timer);
+> +		} else {
+> +			/* If all request bytes have been sent,
+> +			 * then we must be retransmitting this one */
+> +			if (!req->rq_bytes_sent) {
+> +				if (task->tk_client->cl_discrtry) {
+> +					xprt_disconnect(xprt);
+> +					task->tk_status = -ENOTCONN;
+> +					return;
+> +				}
+> +			}
+>  		}
+>  	} else if (!req->rq_bytes_sent)
+>  		return;
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+
+--------------000703050809000605000802
+Content-Type: text/x-vcard; charset=utf-8;
+ name="chuck.lever.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="chuck.lever.vcf"
+
+begin:vcard
+fn:Chuck Lever
+n:Lever;Chuck
+org:Oracle Corporation;Corporate Architecture: Linux Projects Group
+adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
+email;internet:chuck dot lever at nospam oracle dot com
+title:Principal Member of Staff
+tel;work:+1 248 614 5091
+x-mozilla-html:FALSE
+version:2.1
+end:vcard
+
+
+--------------000703050809000605000802--
