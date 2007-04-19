@@ -1,148 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXDSXNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbXDSXNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbXDSXNZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 19:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXDSXNZ
+	id S1753965AbXDSXNl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 19:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbXDSXNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 19:13:25 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42623 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753899AbXDSXNY (ORCPT
+	Thu, 19 Apr 2007 19:13:41 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:39595 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753971AbXDSXNj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 19:13:24 -0400
-Date: Thu, 19 Apr 2007 16:12:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH] bluetooth rfcomm: Convert to kthread API.
-Message-Id: <20070419161253.301f1b80.akpm@linux-foundation.org>
-In-Reply-To: <11769696103071-git-send-email-ebiederm@xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769696103071-git-send-email-ebiederm@xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 19 Apr 2007 19:13:39 -0400
+Subject: Re: [linux-dvb] Re: [video4linux-cvs] [hg:v4l-dvb] Add support for
+	Opera S1- DVB-USB
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Markus Rechberger <mrechberger@gmail.com>,
+       Michael Krufky <mkrufky@linuxtv.org>, linux-dvb@linuxtv.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4627F283.6030009@gmail.com>
+References: <E1HeXiw-0001Ct-0o@www.linuxtv.org>
+	 <4627858A.6060209@linuxtv.org>	 <4627B959.8070601@freenet.de>
+	 <4627D407.10105@linuxtv.org>
+	 <1177015513.6002.40.camel@matwk009568.brasiltelecom.intra.corp>
+	 <4627D74A.4090304@gmail.com> <1177019927.3166.8.camel@pc06.localdom.local>
+	 <4627F076.4050105@gmail.com>
+	 <d9def9db0704191547l49358b74l9d81304f537fe6d6@mail.gmail.com>
+	 <4627F283.6030009@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 20 Apr 2007 01:16:50 +0200
+Message-Id: <1177024610.4513.9.camel@pc06.localdom.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.6.3 (2.6.3-2.fc5) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 01:58:54 -0600
-"Eric W. Biederman" <ebiederm@xmission.com> wrote:
-
-> From: Eric W. Biederman <ebiederm@xmission.com>
+Am Freitag, den 20.04.2007, 02:51 +0400 schrieb Manu Abraham:
+> Markus Rechberger wrote:
+> > On 4/20/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> >> hermann pitton wrote:
+> >> > Am Freitag, den 20.04.2007, 00:55 +0400 schrieb Manu Abraham:
+> >> >> Mauro Carvalho Chehab wrote:
+> >> >>> Em Qui, 2007-04-19 às 16:41 -0400, Michael Krufky escreveu:
+> >> >>>> Marco Gittler wrote:
+> >> >>>>> this patch has applied the hints from mkrufky (dvb_attach,
+> >> >>>>> firmware-naming)
+> >> >>>>> and also one working rewrite of the i2c addresses stuff to fit the
+> >> >>>>> kernel i2c reqs.
+> >> >>>>>
+> >> >>>>> Signed-off-by: Marco Gittler<g.marco@freenet.de>
+> >> >>>>> diff -r c8b73ec18b42 linux/drivers/media/dvb/dvb-usb/opera1.c
+> >> >>>>> --- a/linux/drivers/media/dvb/dvb-usb/opera1.c    Thu Apr 19
+> >> 12:04:50
+> >> 2007 -0300
+> >> >>>>> +++ b/linux/drivers/media/dvb/dvb-usb/opera1.c    Thu Apr 19
+> >> 20:38:01
+> >> 2007 +0200
+> >> >>>>> @@ -25,6 +25,13 @@
+> >> >>>>>  #define REG_20_SYMBOLRATE_BYTE1 0x20
+> >> >>>>>  #define REG_21_SYMBOLRATE_BYTE2 0x21
+> >> >>>>>
+> >> >>>>> +#define ADDR_C0_TUNER (0xc0>>1)
+> >> >>>>> +#define ADDR_D0_PLL (0xd0>>1)
+> >> >>>>>
+> >> >>>> I don't like these two #define's.  These i2c addresses need only be
+> >> >>>> specified once, in the config structs / frontendfoo_attach calls for
+> >> the
+> >> >>>> tuner / demod.
+> >> >>>>
+> >> >>>> Better to just put them in as constants like all of the other dvb
+> >> drivers.
+> >> >>> I prefer the way it is. We should really avoid having magic numbers
+> >> >>> inside the code. The alias here helps to know that 0x60 is tuner
+> >> addres
+> >> >>> and 0x68 the pll.
+> >> >>
+> >> >> Following a project's coding styles and conventions is "respecting" a
+> >> >> project
+> >> >>
+> >> >> Manu
+> >> >>
+> >> >
+> >> > Hi,
+> >> >
+> >> > the other natural place for this should be the LKML to get more _good_
+> >> > arguments, instead of hanging soon in some "respect" stuff again.
+> >>
+> >>
+> >> DVB drivers generally have device addresses such as tuner_addresses and
+> >> demod_adresses defined in a config struct least to prevent them from
+> >> being global, wherever the header is included, since the very same
+> >> device can have multiple addresses and so on, which are non-probable
+> >> since being behind a repeater which is switched by a demod (private) and
+> >> hence.
+> >>
+> >> Those are some of the reasons to follow a certain coding
+> >> style/conventions. They are _not_ for fun.
+> >>
+> > 
+> > cat *priv.h says something else too...
+> > there are also many global register defines in DVB drivers, they just
+> > don't include the register value in the define name.
 > 
-> This patch starts krfcommd using kthread_run instead of a combination
-> of kernel_thread and daemonize making the code slightly simpler
-> and more maintainable.
-
-gargh, the more I look at these things, the more I agree with Christoph.
-
-> Cc: Marcel Holtmann <marcel@holtmann.org>
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  net/bluetooth/rfcomm/core.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
-> index 34f993a..baaad49 100644
-> --- a/net/bluetooth/rfcomm/core.c
-> +++ b/net/bluetooth/rfcomm/core.c
-> @@ -38,6 +38,7 @@
->  #include <linux/net.h>
->  #include <linux/mutex.h>
->  #include <linux/freezer.h>
-> +#include <linux/kthread.h>
->  
->  #include <net/sock.h>
->  #include <asm/uaccess.h>
-> @@ -1938,7 +1939,6 @@ static int rfcomm_run(void *unused)
->  
->  	atomic_inc(&running);
->  
-> -	daemonize("krfcommd");
->  	set_user_nice(current, -10);
->  
->  	BT_DBG("");
-> @@ -2058,7 +2058,7 @@ static int __init rfcomm_init(void)
->  
->  	hci_register_cb(&rfcomm_cb);
->  
-> -	kernel_thread(rfcomm_run, NULL, CLONE_KERNEL);
-> +	kthread_run(rfcomm_run, NULL, "krfcommd");
->  
->  	if (class_create_file(bt_class, &class_attr_rfcomm_dlc) < 0)
->  		BT_ERR("Failed to create RFCOMM info file");
+> *_priv.h from what i understand means private .. i don't know what you
+> make out from that.
+> 
+> 
+> HTH,
+> Manu
 
-We should remove the file-wide `terminate' and `running' and switch the
-thread management over to kthread_run(), kthread_stop() and
-kthread_should_stop().
+;)
 
-btw, this:
+That means that I had to post the actual headers to every single tester
+on a distro kernel, and we got them only rarely on hybrid devices
+for several years and that for I always did it.
 
-static void rfcomm_worker(void)
-{
-	BT_DBG("");
+Thanks again ;)
 
-	while (!atomic_read(&terminate)) {
-		try_to_freeze();
-
-		if (!test_bit(RFCOMM_SCHED_WAKEUP, &rfcomm_event)) {
-			/* No pending events. Let's sleep.
-			 * Incoming connections and data will wake us up. */
-			set_current_state(TASK_INTERRUPTIBLE);
-			schedule();
-		}
-
-		/* Process stuff */
-		clear_bit(RFCOMM_SCHED_WAKEUP, &rfcomm_event);
-		rfcomm_process_sessions();
-	}
-	set_current_state(TASK_RUNNING);
-	return;
-}
-
-appears to have the classic sleep/wakeup bug: if the wakeup happens after
-we tested RFCOMM_SCHED_WAKEUP we will miss it.
-
-Easy fix:
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- net/bluetooth/rfcomm/core.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff -puN net/bluetooth/rfcomm/core.c~rfcomm_worker-fix-wakeup-race net/bluetooth/rfcomm/core.c
---- a/net/bluetooth/rfcomm/core.c~rfcomm_worker-fix-wakeup-race
-+++ a/net/bluetooth/rfcomm/core.c
-@@ -1855,18 +1855,18 @@ static void rfcomm_worker(void)
- 	while (!atomic_read(&terminate)) {
- 		try_to_freeze();
- 
-+		set_current_state(TASK_INTERRUPTIBLE);
- 		if (!test_bit(RFCOMM_SCHED_WAKEUP, &rfcomm_event)) {
- 			/* No pending events. Let's sleep.
- 			 * Incoming connections and data will wake us up. */
--			set_current_state(TASK_INTERRUPTIBLE);
- 			schedule();
- 		}
-+		set_current_state(TASK_RUNNING);
- 
- 		/* Process stuff */
- 		clear_bit(RFCOMM_SCHED_WAKEUP, &rfcomm_event);
- 		rfcomm_process_sessions();
- 	}
--	set_current_state(TASK_RUNNING);
- 	return;
- }
- 
-_
+Hermann
 
 
-(I think it's safer and saner to always run rfcomm_process_sessions() while
-in state TASK_RUNNING, not maybe-in-state-TASK_INTERRUPTIBLE)
+
+
 
