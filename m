@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766903AbXDSRuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766905AbXDSRwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766903AbXDSRuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 13:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766910AbXDSRuo
+	id S1766905AbXDSRwI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 13:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766909AbXDSRwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 13:50:44 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:53392 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766903AbXDSRuo (ORCPT
+	Thu, 19 Apr 2007 13:52:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53438 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766905AbXDSRwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 13:50:44 -0400
-To: a.p.zijlstra@chello.nl
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-In-reply-to: <20070417071703.959920360@chello.nl> (message from Peter Zijlstra
-	on Tue, 17 Apr 2007 09:10:57 +0200)
-Subject: Re: [PATCH 11/12] mm: per device dirty threshold
-References: <20070417071046.318415445@chello.nl> <20070417071703.959920360@chello.nl>
-Message-Id: <E1Heakt-0006jg-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 19 Apr 2007 19:49:15 +0200
+	Thu, 19 Apr 2007 13:52:07 -0400
+Date: Thu, 19 Apr 2007 10:52:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 6/8] Account for pages in the page cache in terms of base
+ pages
+In-Reply-To: <29495f1d0704191045u77e8d7e1g87954549b82a0306@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0704191051190.12576@schroedinger.engr.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+  <20070419163535.11948.91100.sendpatchset@schroedinger.engr.sgi.com>
+ <29495f1d0704191045u77e8d7e1g87954549b82a0306@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static inline unsigned long bdi_stat_delta(void)
-> +{
-> +#ifdef CONFIG_SMP
-> +	return NR_CPUS * FBC_BATCH;
+On Thu, 19 Apr 2007, Nish Aravamudan wrote:
 
-Shouln't this be multiplied by the number of counters to sum?  I.e. 3
-if dirty and unstable are separate, and 2 if they are not.
+> > NR_FILE_PAGES,
+> > +                                       1 << mappig->order);
+> 
+> Typo? should be mapping->order?
 
-Miklos
+Correct. Sigh. Why do these things creep in at the last minute before 
+posting???
+
