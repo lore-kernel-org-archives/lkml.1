@@ -1,101 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993107AbXDSCOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993111AbXDSCUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993107AbXDSCOb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 22:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993109AbXDSCOb
+	id S2993111AbXDSCUP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 22:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993112AbXDSCUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 22:14:31 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2691 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993107AbXDSCOa (ORCPT
+	Wed, 18 Apr 2007 22:20:15 -0400
+Received: from omta01sl.mx.bigpond.com ([144.140.92.153]:27320 "EHLO
+	omta01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993111AbXDSCUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 22:14:30 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: davem@davemloft.net (David Miller)
-Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
-Cc: xemul@sw.ru, netdev@vger.kernel.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, devel@openvz.org, kaber@trash.net,
-       dev@openvz.org
-Organization: Core
-In-Reply-To: <20070418.170636.77057313.davem@davemloft.net>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1HeM9f-0001Dt-00@gondolin.me.apana.org.au>
-Date: Thu, 19 Apr 2007 12:13:51 +1000
+	Wed, 18 Apr 2007 22:20:14 -0400
+Message-ID: <4626D1D5.4040508@bigpond.net.au>
+Date: Thu, 19 Apr 2007 12:20:05 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <462467E9.4030509@bigpond.net.au> <20070417084405.GA13661@elte.hu>
+In-Reply-To: <20070417084405.GA13661@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta01sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Thu, 19 Apr 2007 02:20:10 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> wrote:
+Ingo Molnar wrote:
+> * Peter Williams <pwil3058@bigpond.net.au> wrote:
 > 
-> As discussed in this thread there might be other ways to a
-> approach this, but this fix is good for now.
+>>> And my scheduler for example cuts down the amount of policy code and 
+>>> code size significantly.
+>> Yours is one of the smaller patches mainly because you perpetuate (or 
+>> you did in the last one I looked at) the (horrible to my eyes) dual 
+>> array (active/expired) mechanism.  That this idea was bad should have 
+>> been apparent to all as soon as the decision was made to excuse some 
+>> tasks from being moved from the active array to the expired array.  
+>> This essentially meant that there would be circumstances where extreme 
+>> unfairness (to the extent of starvation in some cases) -- the very 
+>> things that the mechanism was originally designed to ensure (as far as 
+>> I can gather).  Right about then in the development of the O(1) 
+>> scheduler alternative solutions should have been sought.
 > 
-> Patch applied, thank you.
+> in hindsight i'd agree.
 
-Actually I was going to suggest something like this:
+Hindsight's a wonderful place isn't it :-) and, of course, it's where I 
+was making my comments from.
 
-[NETLINK]: Kill CB only when socket is unused
+> But back then we were clearly not ready for 
+> fine-grained accurate statistics + trees (cpus are alot faster at more 
+> complex arithmetics today, plus people still believed that low-res can 
+> be done well enough),  and taking out any of these two concepts from CFS
+> would result in a similarly complex runqueue implementation.
 
-Since we can still receive packets until all references to the
-socket are gone, we don't need to kill the CB until that happens.
-This also aligns ourselves with the receive queue purging which
-happens at that point.
+I disagree.  The single priority array with a promotion mechanism that I 
+use in the SPA schedulers can do the job of avoiding starvation with no 
+measurable increase in the overhead.  Fairness, nice, good interactive 
+responsiveness can then be managed by how you determine tasks' dynamic 
+priorities.
 
-Original patch by Pavel Emelianov who noticed this race condition.
+> Also, the 
+> array switch was just thought to be of another piece of 'if the 
+> heuristics go wrong, we fall back to an array switch' logic, right in 
+> line with the other heuristics. And you have to accept it, mainline's 
+> ability to auto-renice make -j jobs (and other CPU hogs) was quite a 
+> plus for developers, so it had (and probably still has) quite some 
+> inertia.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+I agree, it wasn't totally useless especially for the average user.  My 
+main problem with it was that the effect of "nice" wasn't consistent or 
+predictable enough for reliable resource allocation.
 
-Cheers,
+I also agree with the aims of the various heuristics i.e. you have to be 
+unfair and give some tasks preferential treatment in order to give the 
+users the type of responsiveness that they want.  It's just a shame that 
+it got broken in the process but as you say it's easier to see these 
+things in hindsight than in the middle of the melee.
+
+Peter
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
-index 0be19b7..914884c 100644
---- a/net/netlink/af_netlink.c
-+++ b/net/netlink/af_netlink.c
-@@ -139,6 +139,15 @@ static struct hlist_head *nl_pid_hashfn(struct nl_pid_hash *hash, u32 pid)
- 
- static void netlink_sock_destruct(struct sock *sk)
- {
-+	struct netlink_sock *nlk = nlk_sk(sk);
-+
-+	WARN_ON(mutex_is_locked(nlk_sk(sk)->cb_mutex));
-+	if (nlk->cb) {
-+		if (nlk->cb->done)
-+			nlk->cb->done(nlk->cb);
-+		netlink_destroy_callback(nlk->cb);
-+	}
-+
- 	skb_queue_purge(&sk->sk_receive_queue);
- 
- 	if (!sock_flag(sk, SOCK_DEAD)) {
-@@ -147,7 +156,6 @@ static void netlink_sock_destruct(struct sock *sk)
- 	}
- 	BUG_TRAP(!atomic_read(&sk->sk_rmem_alloc));
- 	BUG_TRAP(!atomic_read(&sk->sk_wmem_alloc));
--	BUG_TRAP(!nlk_sk(sk)->cb);
- 	BUG_TRAP(!nlk_sk(sk)->groups);
- }
- 
-@@ -450,17 +458,7 @@ static int netlink_release(struct socket *sock)
- 	netlink_remove(sk);
- 	nlk = nlk_sk(sk);
- 
--	mutex_lock(nlk->cb_mutex);
--	if (nlk->cb) {
--		if (nlk->cb->done)
--			nlk->cb->done(nlk->cb);
--		netlink_destroy_callback(nlk->cb);
--		nlk->cb = NULL;
--	}
--	mutex_unlock(nlk->cb_mutex);
--
--	/* OK. Socket is unlinked, and, therefore,
--	   no new packets will arrive */
-+	/* OK. Socket is unlinked. */
- 
- 	sock_orphan(sk);
- 	sock->sk = NULL;
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
