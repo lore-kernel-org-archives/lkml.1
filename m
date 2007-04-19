@@ -1,53 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767014AbXDSUNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767022AbXDSUN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767014AbXDSUNQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 16:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767018AbXDSUNQ
+	id S1767022AbXDSUN0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 16:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767019AbXDSUNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 16:13:16 -0400
-Received: from waste.org ([66.93.16.53]:39384 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767014AbXDSUNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 16:13:15 -0400
-Date: Thu, 19 Apr 2007 14:59:57 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@waste.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 20/20] Add apply_to_page_range() which applies a function to a pte range.
-Message-ID: <20070419195957.GF11115@waste.org>
-References: <20070404191151.009821039@goop.org> <20070404191206.675793431@goop.org> <20070405044133.GE4892@waste.org> <46149CC9.2070903@goop.org> <20070417205652.GM11115@waste.org> <4627C6B9.7000605@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4627C6B9.7000605@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 19 Apr 2007 16:13:23 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:57633 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767018AbXDSUNV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 16:13:21 -0400
+Date: Thu, 19 Apr 2007 13:12:49 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>, Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: sky2 X86-64 PCI synchronization problems
+Message-ID: <20070419131249.3482e6df@dxpl.pdx.osdl.net>
+Organization: The Linux Foundation
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 12:44:57PM -0700, Jeremy Fitzhardinge wrote:
-> Matt Mackall wrote:
-> > I think adding a flags field and an allocate flag to my callback
-> > struct would be sufficient here.
-> >   
-> 
-> Yes, probably.
-> 
-> What about something that wants to shatter superpages?
+I am testing a Gigabyte 965P-S3 motherboard with onboard Marvell
+88E8056 Ethernet controller (sky2 driver). The CPU is a Core-2 Duo.
+Strange errors occur under moderate load with X86-64 kernel.
+Surprisingly, with i386 kernel the controller runs fine without errors.
 
-Haven't thought a huge amount about that. Perhaps it's best done with
-the level 3 callback?
+These look bus/PCI related because:
+* there is also 88E8052 on an PCI-E X1 card, it has no problem.
+  Similar chip but different bus interface internally (no ram buffer).
 
-> Don't know that that's a huge concern.  The typedef namespace (*_t) is
-> pretty empty, and its not like we're talking about something that's
-> visible outside the kernel.  And the syntax is *really* ugly.
+* the errors look like the controller didn't access memory correctly:
+	1. receive status arrives but data buffer not updated
+	2. transmit descriptor errors, implying that controller read
+           a non-initialized memory.
+  the command blocks look okay, it's like the device didn't read them.
 
-Don't really care about this much.
+It looks like a PCI bus synchronization issue. Any ideas for driver
+workarounds?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+This is the working controller:
+
+03:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8052 PCI-E ASF Gigabit Ethernet Controller (rev 22)
+	Subsystem: Marvell Technology Group Ltd. Marvell RDK-8052
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 217
+	Region 0: Memory at f8000000 (64-bit, non-prefetchable) [size=16K]
+	Region 2: I/O ports at 7000 [size=256]
+	[virtual] Expansion ROM at 80000000 [disabled] [size=128K]
+	Capabilities: [48] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [50] Vital Product Data
+	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+		Address: 00000000fee0300c  Data: 417a
+	Capabilities: [e0] Express Legacy Endpoint IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s, Port 0
+		Link: Latency L0s <256ns, L1 unlimited
+		Link: ASPM Disabled RCB 128 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x1
+	Capabilities: [100] Advanced Error Reporting
+00: ab 11 60 43 07 04 10 00 22 00 00 02 08 00 00 00
+10: 04 00 00 f8 00 00 00 00 01 70 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 ab 11 21 52
+30: 00 00 00 00 48 00 00 00 00 00 00 00 0b 01 00 00
+
+
+This is the non-working controller:
+
+05:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 12)
+	Subsystem: Giga-byte Technology Unknown device e000
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 216
+	Region 0: Memory at fa000000 (64-bit, non-prefetchable) [size=16K]
+	Region 2: I/O ports at a000 [size=256]
+	[virtual] Expansion ROM at 80100000 [disabled] [size=128K]
+	Capabilities: [48] Power Management version 3
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [50] Vital Product Data
+	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+		Address: 00000000fee0300c  Data: 4182
+	Capabilities: [e0] Express Legacy Endpoint IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 0
+		Link: Latency L0s <256ns, L1 unlimited
+		Link: ASPM Disabled RCB 128 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x1
+	Capabilities: [100] Advanced Error Reporting
+00: ab 11 64 43 07 04 10 00 12 00 00 02 08 00 00 00
+10: 04 00 00 fa 00 00 00 00 01 a0 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 58 14 00 e0
+30: 00 00 00 00 48 00 00 00 00 00 00 00 0e 01 00 00
+
