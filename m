@@ -1,97 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993177AbXDSIGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993169AbXDSIHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993177AbXDSIGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993190AbXDSIGd
+	id S2993169AbXDSIHD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993171AbXDSIGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:06:33 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:1948 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993177AbXDSIFU (ORCPT
+	Thu, 19 Apr 2007 04:06:30 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45843 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993168AbXDSIGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:05:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cefDZIC+EypOzkAovBxced8lsq8B6vCTQCsKIMZ9/35aXfe37udaYavi9QjwG+Eoj26XfAdwzzZ3BVRURgs3z3BsOETcN4HpExMRu87r1TFDL6MWAGVcHVndCbVNqiSxST2xIIoHckRICBWmZOnLC/S5Y9VzobJun0qmQOE/4qI=
-Message-ID: <38b2ab8a0704190105x68414f34w51f109f1f289ca7d@mail.gmail.com>
-Date: Thu, 19 Apr 2007 10:05:19 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: question on generic gpio interface
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200704170942.49626.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0704131351la5085vf0ab58e85cf49879@mail.gmail.com>
-	 <200704160646.59407.david-b@pacbell.net>
-	 <38b2ab8a0704170004h12c4ea41we6bdab3a1b443a18@mail.gmail.com>
-	 <200704170942.49626.david-b@pacbell.net>
+	Thu, 19 Apr 2007 04:06:01 -0400
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "<Andrew Morton" <akpm@osdl.org>
+Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] sparc64/power.c: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 01:58:39 -0600
+Message-Id: <1176969564948-git-send-email-ebiederm@xmission.com>
+X-Mailer: git-send-email 1.5.1.1.g2de0
+In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/17/07, David Brownell <david-b@pacbell.net> wrote:
-> In this case I'm not entirely sure how it'd work.  I've seen a few
-> drivers which let userspace peek and poke at GPIO signals -- like
-> one for Gumstix boards -- but generalizing the model isn't simple.
-> Sub-problems include:
->
->  - Configuring the relevant pins.  Especially for SOC cases, GPIO
->    roles are multiplexed with several others.  So there are two
->    issues:  (a) the platform-specific setup of that multiplexing,
->    plus (b) the board-specific knowledge of what pins are truly
->    available for use as GPIOs, and not otherwise in use.
->
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-what about create a module "user-gpio" for example that could request
-some gpios that the board could have declared using resource
-subsystem, like this:
+This starts the sparc64 powerd using kthread_run
+instead of kernel_thread and daemonize.  Making the
+code slightly simpler and more maintainable.
 
-static struct resource foo_gpio_resource[] = {
-        [0] = {
-                .start = 10,
-                .end  = 11,
-                .flags = IORESOURCE_GPIO,
-        },
-       [1] = {
-                .start = 26,
-                .end  = 31,
-                .flags = IORESOURCE_GPIO,
-        },
-};
+In addition the unnecessary flush_signals is removed.
 
-struct platform_device foo_device_usergpio = {
-        .name           = "user-gpio",
-        .id             = -1,
-        .num_resources  = ARRAY_SIZE(foo_gpio_resource),
-        .resource       = foo_gpio_resource,
-};
+Cc: David S. Miller <davem@davemloft.net>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/sparc64/kernel/power.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-This way "user-gpio" module knows which pins are avalaible to userspace.
-
->  - Enumerating those GPIOs to userspace.  One SOC might have just
->    a few dozen, another might have a few hundred; and then there
->    are all the board-specific ones, on FPGA or I2C chips etc.
->
-
-This point is actully the one where I'm really not sure...
-
-Enumerating user GPIOs would always start from 0 to GPIO_USER_NR - 1
-and an application that need to be portable should use a config file
-to specify which GPIO num to use...
-
->  - Exposing those pins to userspace.  It'd be unsafe to let pins
->    claimed by drivers be managed by userspace; the default should
->    be that only unclaimed GPIOs can be accessed.
->
-
-Well an extreme solution would be to test in gpio_request(), if the
-passed gpio nr is a user one then gpio_request() would return an
-error. We could use is_user_gpio() function implemented by user-gpio
-module
-
-Thanks
+diff --git a/arch/sparc64/kernel/power.c b/arch/sparc64/kernel/power.c
+index 699b24b..03feb8b 100644
+--- a/arch/sparc64/kernel/power.c
++++ b/arch/sparc64/kernel/power.c
+@@ -13,6 +13,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/pm.h>
+ #include <linux/syscalls.h>
++#include <linux/kthread.h>
+ 
+ #include <asm/system.h>
+ #include <asm/auxio.h>
+@@ -81,15 +82,12 @@ static int powerd(void *__unused)
+ 	char *argv[] = { "/sbin/shutdown", "-h", "now", NULL };
+ 	DECLARE_WAITQUEUE(wait, current);
+ 
+-	daemonize("powerd");
+-
+ 	add_wait_queue(&powerd_wait, &wait);
+ again:
+ 	for (;;) {
+ 		set_task_state(current, TASK_INTERRUPTIBLE);
+ 		if (button_pressed)
+ 			break;
+-		flush_signals(current);
+ 		schedule();
+ 	}
+ 	__set_current_state(TASK_RUNNING);
+@@ -128,7 +126,9 @@ static int __devinit power_probe(struct of_device *op, const struct of_device_id
+ 	poweroff_method = machine_halt;  /* able to use the standard halt */
+ 
+ 	if (has_button_interrupt(irq, op->node)) {
+-		if (kernel_thread(powerd, NULL, CLONE_FS) < 0) {
++		struct task_struct *task;
++		task = kthread_urn(powerd, NULL, "powerd");
++		if (IS_ERR(task)) {
+ 			printk("Failed to start power daemon.\n");
+ 			return 0;
+ 		}
 -- 
-Francis
+1.5.0.g53756
+
