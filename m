@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993182AbXDSIHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993156AbXDSIIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993182AbXDSIHE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993191AbXDSIG0
+	id S2993156AbXDSIIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993192AbXDSIGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:06:26 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45846 "EHLO
+	Thu, 19 Apr 2007 04:06:23 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45852 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993182AbXDSIGC (ORCPT
+	with ESMTP id S2993190AbXDSIGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:06:02 -0400
+	Thu, 19 Apr 2007 04:06:04 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] cpqphp: Convert to use the kthread API
-Date: Thu, 19 Apr 2007 01:58:36 -0600
-Message-Id: <11769695592278-git-send-email-ebiederm@xmission.com>
+       David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH] mtd_blkdevs: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 01:58:33 -0600
+Message-Id: <11769695552000-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,63 +27,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch changes cpqphp to use kthread_run and not
-kernel_thread and daemonize to startup and setup
-the cpqphp thread.
+thread_run is used intead of kernel_thread, daemonize, and mucking
+around blocking signals directly.
 
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+CC: David Woodhouse <dwmw2@infradead.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/pci/hotplug/cpqphp_ctrl.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/mtd/mtd_blkdevs.c |   19 +++++--------------
+ 1 files changed, 5 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
-index 79ff6b4..c2c06c4 100644
---- a/drivers/pci/hotplug/cpqphp_ctrl.c
-+++ b/drivers/pci/hotplug/cpqphp_ctrl.c
-@@ -37,6 +37,7 @@
- #include <linux/smp_lock.h>
- #include <linux/pci.h>
- #include <linux/pci_hotplug.h>
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index db7397c..ed71d5e 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -21,6 +21,7 @@
+ #include <linux/init.h>
+ #include <linux/mutex.h>
+ #include <linux/freezer.h>
 +#include <linux/kthread.h>
- #include "cpqphp.h"
+ #include <asm/uaccess.h>
  
- static u32 configure_new_device(struct controller* ctrl, struct pci_func *func,
-@@ -1746,10 +1747,6 @@ static void pushbutton_helper_thread(unsigned long data)
- static int event_thread(void* data)
+ static LIST_HEAD(blktrans_majors);
+@@ -84,17 +85,6 @@ static int mtd_blktrans_thread(void *arg)
+ 	/* we might get involved when memory gets low, so use PF_MEMALLOC */
+ 	current->flags |= PF_MEMALLOC | PF_NOFREEZE;
+ 
+-	daemonize("%sd", tr->name);
+-
+-	/* daemonize() doesn't do this for us since some kernel threads
+-	   actually want to deal with signals. We can't just call
+-	   exit_sighand() since that'll cause an oops when we finally
+-	   do exit. */
+-	spin_lock_irq(&current->sighand->siglock);
+-	sigfillset(&current->blocked);
+-	recalc_sigpending();
+-	spin_unlock_irq(&current->sighand->siglock);
+-
+ 	spin_lock_irq(rq->queue_lock);
+ 
+ 	while (!tr->blkcore_priv->exiting) {
+@@ -368,6 +358,7 @@ static struct mtd_notifier blktrans_notifier = {
+ 
+ int register_mtd_blktrans(struct mtd_blktrans_ops *tr)
  {
- 	struct controller *ctrl;
--	lock_kernel();
--	daemonize("phpd_event");
--	
--	unlock_kernel();
- 
- 	while (1) {
- 		dbg("!!!!event_thread sleeping\n");
-@@ -1771,7 +1768,7 @@ static int event_thread(void* data)
- 
- int cpqhp_event_start_thread(void)
- {
--	int pid;
 +	struct task_struct *task;
+ 	int ret, i;
  
- 	/* initialize our semaphores */
- 	init_MUTEX(&delay_sem);
-@@ -1779,12 +1776,11 @@ int cpqhp_event_start_thread(void)
- 	init_MUTEX_LOCKED(&event_exit);
- 	event_finished=0;
+ 	/* Register the notifier if/when the first device type is
+@@ -406,13 +397,13 @@ int register_mtd_blktrans(struct mtd_blktrans_ops *tr)
+ 	blk_queue_hardsect_size(tr->blkcore_priv->rq, tr->blksize);
+ 	tr->blkshift = ffs(tr->blksize) - 1;
  
--	pid = kernel_thread(event_thread, NULL, 0);
--	if (pid < 0) {
-+	task = kthread_run(event_thread, NULL, "phpd_event");
+-	ret = kernel_thread(mtd_blktrans_thread, tr, CLONE_KERNEL);
+-	if (ret < 0) {
++	task = kthread_run(mtd_blktrans_thread, tr, "%sd", tr->name);
 +	if (IS_ERR(task)) {
- 		err ("Can't start up our event thread\n");
- 		return -1;
+ 		blk_cleanup_queue(tr->blkcore_priv->rq);
+ 		unregister_blkdev(tr->major, tr->name);
+ 		kfree(tr->blkcore_priv);
+ 		mutex_unlock(&mtd_table_mutex);
+-		return ret;
++		return PTR_ERR(task);
  	}
--	dbg("Our event thread pid = %d\n", pid);
- 	return 0;
- }
  
+ 	INIT_LIST_HEAD(&tr->devs);
 -- 
 1.5.0.g53756
 
