@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766792AbXDSPlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766821AbXDSPoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766792AbXDSPlW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 11:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766823AbXDSPlW
+	id S1766821AbXDSPoD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 11:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766823AbXDSPoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 11:41:22 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41547 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766792AbXDSPlU (ORCPT
+	Thu, 19 Apr 2007 11:44:01 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4297 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766821AbXDSPoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 11:41:20 -0400
-Date: Thu, 19 Apr 2007 08:43:39 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jiri Bohac <jbohac@suse.cz>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
-Message-Id: <20070419084339.418dbe69.randy.dunlap@oracle.com>
-In-Reply-To: <20070419092339.GA13569@dwarf.suse.cz>
-References: <20070419092339.GA13569@dwarf.suse.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Thu, 19 Apr 2007 11:44:00 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 19 Apr 2007 08:43:41 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+In-Reply-To: <20070419080053.GA4106@elte.hu>
+Message-ID: <Pine.LNX.4.64.0704190837420.31693@alien.or.mcafeemobile.com>
+References: <20070418055525.GS11115@waste.org>
+ <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
+ <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
+ <20070418174945.GA7930@elte.hu> <20070418175936.GA11980@elte.hu>
+ <alpine.LFD.0.98.0704181223190.2828@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0704181304250.25880@alien.or.mcafeemobile.com>
+ <20070418214816.GA10902@elte.hu> <Pine.LNX.4.64.0704181515290.25880@alien.or.mcafeemobile.com>
+ <20070419080053.GA4106@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 11:23:39 +0200 Jiri Bohac wrote:
+On Thu, 19 Apr 2007, Ingo Molnar wrote:
 
-> Hi,
+> i disagree that the user 'would expect' this. Some users might. Others 
+> would say: 'my 10-thread rendering engine is more important than a 
+> 1-thread job because it's using 10 threads for a reason'. And the CFS 
+> feedback so far strengthens this point: the default behavior of treating 
+> the thread as a single scheduling (and CPU time accounting) unit works 
+> pretty well on the desktop.
 > 
-> is there any reason to use an explicit int instead of a typeof in
-> the abs() macro? The current implementation will return bogus
-> results when used with longs.
+> think about it in another, 'kernel policy' way as well: we'd like to 
+> _encourage_ more parallel user applications. Hurting them by accounting 
+> all threads together sends the exact opposite message.
 
-I think it's like it is just to be consistent with abs() in C,
-which also contains labs() and llabs().
+There are counter argouments too. Like, not every user knows if a certain 
+process is MT or not. I agree though that doing accounting and fairness at 
+a depth lower then USER is messy, and not only for performance.
 
-> How about changing the int to a typeof like this?:
-> 
-> 
-> 
-> Fix the abs() macro to work with wider types than int.
-> 
-> Signed-off-by: Jiri Bohac <jbohac@suse.cz>
-> 
-> --- linux-2.6.21-rc5.orig/include/linux/kernel.h
-> +++ linux-2.6.21-rc5/include/linux/kernel.h
-> @@ -89,7 +89,7 @@ extern int cond_resched(void);
->  #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
->  
->  #define abs(x) ({				\
-> -		int __x = (x);			\
-> +		typeof(x) __x = (x);			\
->  		(__x < 0) ? -__x : __x;		\
->  	})
->  
-> 
-> 
-> 
-> -- 
-> Jiri Bohac <jbohac@suse.cz>
-> SUSE Labs, SUSE CZ
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+- Davide
+
+
