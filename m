@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbXDSPgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766791AbXDSPiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbXDSPgc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 11:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXDSPgc
+	id S1766791AbXDSPiK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 11:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766819AbXDSPiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 11:36:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46921 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753810AbXDSPgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 11:36:31 -0400
-Message-ID: <46278C79.10902@redhat.com>
-Date: Thu, 19 Apr 2007 11:36:25 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 19 Apr 2007 11:38:09 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:51417 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1766791AbXDSPiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 11:38:08 -0400
+Message-ID: <46278CDD.2000007@gmail.com>
+Date: Thu, 19 Apr 2007 17:38:05 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Upgraded to 2.6.20.7 - positives
-References: <fa.M5h51dPMfh17XaHbDXZukR22BGc@ifi.uio.no> <fa.dWJkYfdvni7+ThJwFcV+shx+7TQ@ifi.uio.no> <4626BC13.4060301@shaw.ca>
-In-Reply-To: <4626BC13.4060301@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: johann deneux <johann.deneux@gmail.com>, linux-kernel@vger.kernel.org,
+       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
+References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com> <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com> <200704190058.11625.dtor@insightbb.com>
+In-Reply-To: <200704190058.11625.dtor@insightbb.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Chuck Ebbert wrote:
->> Denis Vlasenko wrote:
->>> * From make menuconfig questions it looks like SATA/PATA
->>>   rewrite (in the form of libata) is almost finished. Hehe,
->>>   untangling IDE mess was quite a feat, and Jeff did it. Kudos.
->>>
->>
->> ADMA mode on nvidia chipsets still seems broken despite massive
->> amount of SATA fixes backported from 2.6.21...
-> 
-> News to me.. pleast post details.
-> 
+Dmitry Torokhov napsal(a):
+> I have been thinking about this and I don't think that exporting motor
+> data is a good idea, at least not in case of Phantom driver. The fact
+> that there are 3 motors is a hardware implementation detail and it
+> is not interesting for general application.
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=232811
+Ok, so what about torques (despite it's still something like FF_RAW or motor
+descriptor)? It seems not to be so bad called effect name -- not only
+phantom uses torques on motors as an unit of force, for example I get this
+by quick googling:
+http://www.caip.rutgers.edu/~bouzit/lrp/glove.html
+They use there some motors with 14 torque values too, so the phantom isn't
+the only device which uses this approach.
 
-Comments 24,25 and 26. Apparently setting adma=0 fixes everything.
+> My understanding that the end result of controlling these 3 motors
 
-Kernel 2944 is based on 2.6.20.7 which has tons of SATA fixes from
-2.6.21 (maybe still not enough?)
+Actually there is also a version with 6 motors :).
+
+> is a force vector (I don't know if there is such english term, this
+> is a literal translation from russian) applied to user's hand.
+
+Better say torques vector. You must compute a torque for each place from the
+3d (or bigger) vector of forces in different way for each device that exists
+-- this means forces are not independent unit, torques are in the meaning of
+layer which doesn't care about what is connected above and below it.
+
+> If we are interested in using FF API we need to come up with a way
+> to express this effect without exposing implementation details of
+> one particular device.
+
+Still, torques are better named raw/motor values, which goes to the device
+and I'm sceptic about inventing something class-better than this.
+
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+
 
