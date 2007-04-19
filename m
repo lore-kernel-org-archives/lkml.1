@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766785AbXDSPLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766801AbXDSPMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766785AbXDSPLO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 11:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766794AbXDSPLO
+	id S1766801AbXDSPMP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 11:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766794AbXDSPMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 11:11:14 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:51621 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766785AbXDSPLN (ORCPT
+	Thu, 19 Apr 2007 11:12:15 -0400
+Received: from mail07.syd.optusnet.com.au ([211.29.132.188]:51868 "EHLO
+	mail07.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766801AbXDSPMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 11:11:13 -0400
-Date: Thu, 19 Apr 2007 18:10:54 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Cc: linux-scsi@vger.kernel.org
-Subject: [PATCH] add two SCSI command opcodes
-Message-ID: <20070419151053.GA10199@localdomain>
+	Thu, 19 Apr 2007 11:12:14 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: Renice X for cpu schedulers
+Date: Fri, 20 Apr 2007 01:10:47 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20070417062621.GL2986@holomorphy.com> <200704192159.35546.kernel@kolivas.org> <46276BE5.7020001@rtr.ca>
+In-Reply-To: <46276BE5.7020001@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Message-Id: <200704200110.47974.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applies for 2.6.20.7 and beyond.
+On Thursday 19 April 2007 23:17, Mark Lord wrote:
+> Con Kolivas wrote:
+> s go ahead and think up great ideas for other ways of metering out cpu
+>
+> > bandwidth for different purposes, but for X, given the absurd simplicity
+> > of renicing, why keep fighting it? Again I reiterate that most users of
+> > SD have not found the need to renice X anyway except if they stick to old
+> > habits of make -j4 on uniprocessor and the like, and I expect that those
+> > on CFS and Nicksched would also have similar experiences.
+>
+> Just plain "make" (no -j2 or -j9999) is enough to kill interactivity
+> on my 2GHz P-M single-core non-HT machine with SD.
+>
+> But with the very first posted version of CFS by Ingo,
+> I can do "make -j2" no problem and still have a nicely interactive destop.
 
-Signed-off-by: Dan Aloni <da-x@monatomic.org>
+Cool. Then there's clearly a bug with SD that manifests on your machine as it 
+should not have that effect at all (and doesn't on other people's machines). 
+I suggest trying the latest version which fixes some bugs.
 
-diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-index 5c0e979..dff842a 100644
---- a/include/scsi/scsi.h
-+++ b/include/scsi/scsi.h
-@@ -103,6 +103,7 @@ extern const unsigned char scsi_command_size[8];
- #define READ_12               0xa8
- #define WRITE_12              0xaa
- #define WRITE_VERIFY_12       0xae
-+#define VERIFY_12             0xaf
- #define SEARCH_HIGH_12        0xb0
- #define SEARCH_EQUAL_12       0xb1
- #define SEARCH_LOW_12         0xb2
-@@ -111,6 +112,7 @@ extern const unsigned char scsi_command_size[8];
- #define WRITE_LONG_2          0xea
- #define READ_16               0x88
- #define WRITE_16              0x8a
-+#define WRITE_VERIFY_16       0x8e
- #define VERIFY_16	      0x8f
- #define SERVICE_ACTION_IN     0x9e
- /* values for service action in */
-
+Thanks.
 
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+-ck
