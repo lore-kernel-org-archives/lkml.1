@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993126AbXDSHDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993119AbXDSHEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993126AbXDSHDa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993133AbXDSHDT
+	id S2993119AbXDSHEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993138AbXDSHDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:03:19 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34582 "EHLO
+	Thu, 19 Apr 2007 03:03:17 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34584 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993123AbXDSHC7 (ORCPT
+	with ESMTP id S2993119AbXDSHDC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:02:59 -0400
+	Thu, 19 Apr 2007 03:03:02 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] sas_scsi_host: Convert to use the kthread API
-Date: Thu, 19 Apr 2007 00:55:33 -0600
-Message-Id: <1176965775834-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] cpqphp: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 00:55:31 -0600
+Message-Id: <1176965773676-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,62 +26,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patch modifies the sas scsi host thread startup
-to use kthread_run not kernel_thread and deamonize.
-kthread_run is slightly simpler and more maintainable.
+This patch changes cpqphp to use kthread_run and not
+kernel_thread and daemonize to startup and setup
+the cpqphp thread.
 
-Cc: Darrick J. Wong <djwong@us.ibm.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/scsi/libsas/sas_scsi_host.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/pci/hotplug/cpqphp_ctrl.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/scsi/libsas/sas_scsi_host.c b/drivers/scsi/libsas/sas_scsi_host.c
-index 46ba3a7..7a38ac5 100644
---- a/drivers/scsi/libsas/sas_scsi_host.c
-+++ b/drivers/scsi/libsas/sas_scsi_host.c
-@@ -40,6 +40,7 @@
- #include <linux/blkdev.h>
- #include <linux/scatterlist.h>
- #include <linux/freezer.h>
+diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
+index 79ff6b4..c2c06c4 100644
+--- a/drivers/pci/hotplug/cpqphp_ctrl.c
++++ b/drivers/pci/hotplug/cpqphp_ctrl.c
+@@ -37,6 +37,7 @@
+ #include <linux/smp_lock.h>
+ #include <linux/pci.h>
+ #include <linux/pci_hotplug.h>
 +#include <linux/kthread.h>
+ #include "cpqphp.h"
  
- /* ---------- SCSI Host glue ---------- */
- 
-@@ -870,7 +871,6 @@ static int sas_queue_thread(void *_sas_ha)
- 	struct sas_ha_struct *sas_ha = _sas_ha;
- 	struct scsi_core *core = &sas_ha->core;
- 
--	daemonize("sas_queue_%d", core->shost->host_no);
- 	current->flags |= PF_NOFREEZE;
- 
- 	complete(&queue_th_comp);
-@@ -891,19 +891,20 @@ static int sas_queue_thread(void *_sas_ha)
- 
- int sas_init_queue(struct sas_ha_struct *sas_ha)
+ static u32 configure_new_device(struct controller* ctrl, struct pci_func *func,
+@@ -1746,10 +1747,6 @@ static void pushbutton_helper_thread(unsigned long data)
+ static int event_thread(void* data)
  {
--	int res;
- 	struct scsi_core *core = &sas_ha->core;
+ 	struct controller *ctrl;
+-	lock_kernel();
+-	daemonize("phpd_event");
+-	
+-	unlock_kernel();
+ 
+ 	while (1) {
+ 		dbg("!!!!event_thread sleeping\n");
+@@ -1771,7 +1768,7 @@ static int event_thread(void* data)
+ 
+ int cpqhp_event_start_thread(void)
+ {
+-	int pid;
 +	struct task_struct *task;
  
- 	spin_lock_init(&core->task_queue_lock);
- 	core->task_queue_size = 0;
- 	INIT_LIST_HEAD(&core->task_queue);
- 	init_MUTEX_LOCKED(&core->queue_thread_sema);
+ 	/* initialize our semaphores */
+ 	init_MUTEX(&delay_sem);
+@@ -1779,12 +1776,11 @@ int cpqhp_event_start_thread(void)
+ 	init_MUTEX_LOCKED(&event_exit);
+ 	event_finished=0;
  
--	res = kernel_thread(sas_queue_thread, sas_ha, 0);
--	if (res >= 0)
-+	task = kthread_run(sas_queue_thread, sas_ha,
-+			   "sas_queue_%d", core->shost->host_no);
-+	if (!IS_ERR(task))
- 		wait_for_completion(&queue_th_comp);
- 
--	return res < 0 ? res : 0;
-+	return IS_ERR(task) ? PTR_ERR(task) : 0;
+-	pid = kernel_thread(event_thread, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(event_thread, NULL, "phpd_event");
++	if (IS_ERR(task)) {
+ 		err ("Can't start up our event thread\n");
+ 		return -1;
+ 	}
+-	dbg("Our event thread pid = %d\n", pid);
+ 	return 0;
  }
  
- void sas_shutdown_queue(struct sas_ha_struct *sas_ha)
 -- 
 1.5.0.g53756
 
