@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbXDSW6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbXDSXBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbXDSW6J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbXDSW6I
+	id S1754291AbXDSXBF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 19:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbXDSXBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:58:08 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:13499 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754294AbXDSW6H (ORCPT
+	Thu, 19 Apr 2007 19:01:04 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:57135 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754291AbXDSXBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:58:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m0avFrGOYiT7J4t2Lt2Zt/r+pTEotBKxH98a4fcs2Jnuv3G9+4ngWMYkAGcHGmaSY/5POYQcmfQFvSvf3VDwKvX6goOYazRLydarbpGVvQTCOZWmdHDwbAWEO5BI7zo6lIyHSUJGKgdmuOerccY6oYpfAi40fLPLHPCDlcZ4pjg=
-Message-ID: <f2b55d220704191558i6deadc08q6aa07360cadaaccc@mail.gmail.com>
-Date: Thu, 19 Apr 2007 15:58:02 -0700
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: chris@pcburn.com
-Subject: Re: GPL-incompatible Module Error Message
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4627EED5.6020800@pcburn.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 19 Apr 2007 19:01:03 -0400
+Date: Thu, 19 Apr 2007 15:59:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Simon Horman <horms@verge.net.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, Wensong Zhang <wensong@linux-vs.org>,
+       Julian Anastasov <ja@ssi.bg>
+Subject: Re: [PATCH] ipv4/ipvs: Convert to kthread API
+Message-Id: <20070419155944.e5fb8e66.akpm@linux-foundation.org>
+In-Reply-To: <20070419090435.GB26050@verge.net.au>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769696262330-git-send-email-ebiederm@xmission.com>
+	<20070419090435.GB26050@verge.net.au>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4627EED5.6020800@pcburn.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/19/07, Chris Bergeron <chris@pcburn.com> wrote:
-> It just seemed like it might be interesting and I couldn't find anything
-> to shed light on the error itself in the mailing list logs, and I'm
-> curious at what's happening.
+On Thu, 19 Apr 2007 18:04:36 +0900
+Simon Horman <horms@verge.net.au> wrote:
 
-What's happening is that some kernel developers don't like Linus's
-stance on binary-only drivers and are trying to circumvent the norms
-of software copyright law using EXPORT_SYMBOL_GPL.  (Why some people
-think that the GPL is magically exempt from Lotus v. Borland, Lexmark
-v. Static Control, and their analogues in other jurisdiction is beyond
-me -- but then I gave up smoking the FSF's parallel-legal-universe
-herb some time ago.)
+> On Thu, Apr 19, 2007 at 01:58:57AM -0600, Eric W. Biederman wrote:
+> > From: Eric W. Biederman <ebiederm@xmission.com>
+> > 
+> > Modify startup of ipvs sync threads to use kthread_run
+> > instead of a weird combination of calling kernel_thread
+> > to start a fork_sync_thread whose hole purpose in life was
+> > to call kernel_thread again starting the actually sync thread
+> > which called daemonize.
+> > 
+> > To use kthread_run I had to move the name calcuation from
+> > sync_thread into start_sync_thread resulting in a small
+> > amount of code motion.
+> > 
+> > The result is simpler and more maintainable piece of code.
+> 
+> Thanks Eric, I'll review this and get back to you shortly.
+> 
 
-Just s/EXPORT_SYMBOL_GPL/EXPORT_SYMBOL/ throughout the kernel and
-you'll be fine -- at a technical level.  But be prepared, when later
-changes break extra-volatile quasi-private in-kernel APIs, to keep
-both pieces -- and to be shunned by EXPORT_SYMBOL_GPL partisans.
+There still seems to be quite a lot of complexity in this driver's
+thread handling which could be removed if we did a full conversion 
+to the kthread API.
 
-Cheers (IANAL, TINLA),
-- Michael
+It all looks.... surprisingly complex in there.
