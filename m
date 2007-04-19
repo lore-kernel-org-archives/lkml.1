@@ -1,107 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbXDSWv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbXDSWxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754287AbXDSWv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbXDSWv6
+	id S1754253AbXDSWxM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbXDSWxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:51:58 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:21832 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754287AbXDSWv5 (ORCPT
+	Thu, 19 Apr 2007 18:53:12 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:51242 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754253AbXDSWxK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:51:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=sKRSHz0ehXFnzZ78QejLzU+Zy+RsVUdx+LjxTeUCp11qC5N3Lb4ZJqPyl4S39NuywcbvVoQzcGsxBBVRBc+pDeaEwaSND+WUr8fBH/Dkyr1oUB494zW6S+xgEnfZVkteKaRu/r02r+0HQ8a4B0/ovW+SHygGYL+uTsxPDvIJ418=
-Message-ID: <4627F283.6030009@gmail.com>
-Date: Fri, 20 Apr 2007 02:51:47 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Markus Rechberger <mrechberger@gmail.com>
-CC: hermann pitton <hermann-pitton@arcor.de>,
-       Michael Krufky <mkrufky@linuxtv.org>, linux-dvb@linuxtv.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-dvb] Re: [video4linux-cvs] [hg:v4l-dvb] Add support for
- Opera S1- DVB-USB
-References: <E1HeXiw-0001Ct-0o@www.linuxtv.org> <4627858A.6060209@linuxtv.org>	 <4627B959.8070601@freenet.de> <4627D407.10105@linuxtv.org>	 <1177015513.6002.40.camel@matwk009568.brasiltelecom.intra.corp>	 <4627D74A.4090304@gmail.com>	 <1177019927.3166.8.camel@pc06.localdom.local>	 <4627F076.4050105@gmail.com> <d9def9db0704191547l49358b74l9d81304f537fe6d6@mail.gmail.com>
-In-Reply-To: <d9def9db0704191547l49358b74l9d81304f537fe6d6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 19 Apr 2007 18:53:10 -0400
+Date: Thu, 19 Apr 2007 15:52:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
+       Hartmut Hackmann <hartmut.hackmann@t-online.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [PATCH] saa7134-tvaudio: Convert to kthread API.
+Message-Id: <20070419155245.6f112d9e.akpm@linux-foundation.org>
+In-Reply-To: <11769696312493-git-send-email-ebiederm@xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769696312493-git-send-email-ebiederm@xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus Rechberger wrote:
-> On 4/20/07, Manu Abraham <abraham.manu@gmail.com> wrote:
->> hermann pitton wrote:
->> > Am Freitag, den 20.04.2007, 00:55 +0400 schrieb Manu Abraham:
->> >> Mauro Carvalho Chehab wrote:
->> >>> Em Qui, 2007-04-19 às 16:41 -0400, Michael Krufky escreveu:
->> >>>> Marco Gittler wrote:
->> >>>>> this patch has applied the hints from mkrufky (dvb_attach,
->> >>>>> firmware-naming)
->> >>>>> and also one working rewrite of the i2c addresses stuff to fit the
->> >>>>> kernel i2c reqs.
->> >>>>>
->> >>>>> Signed-off-by: Marco Gittler<g.marco@freenet.de>
->> >>>>> diff -r c8b73ec18b42 linux/drivers/media/dvb/dvb-usb/opera1.c
->> >>>>> --- a/linux/drivers/media/dvb/dvb-usb/opera1.c    Thu Apr 19
->> 12:04:50
->> 2007 -0300
->> >>>>> +++ b/linux/drivers/media/dvb/dvb-usb/opera1.c    Thu Apr 19
->> 20:38:01
->> 2007 +0200
->> >>>>> @@ -25,6 +25,13 @@
->> >>>>>  #define REG_20_SYMBOLRATE_BYTE1 0x20
->> >>>>>  #define REG_21_SYMBOLRATE_BYTE2 0x21
->> >>>>>
->> >>>>> +#define ADDR_C0_TUNER (0xc0>>1)
->> >>>>> +#define ADDR_D0_PLL (0xd0>>1)
->> >>>>>
->> >>>> I don't like these two #define's.  These i2c addresses need only be
->> >>>> specified once, in the config structs / frontendfoo_attach calls for
->> the
->> >>>> tuner / demod.
->> >>>>
->> >>>> Better to just put them in as constants like all of the other dvb
->> drivers.
->> >>> I prefer the way it is. We should really avoid having magic numbers
->> >>> inside the code. The alias here helps to know that 0x60 is tuner
->> addres
->> >>> and 0x68 the pll.
->> >>
->> >> Following a project's coding styles and conventions is "respecting" a
->> >> project
->> >>
->> >> Manu
->> >>
->> >
->> > Hi,
->> >
->> > the other natural place for this should be the LKML to get more _good_
->> > arguments, instead of hanging soon in some "respect" stuff again.
->>
->>
->> DVB drivers generally have device addresses such as tuner_addresses and
->> demod_adresses defined in a config struct least to prevent them from
->> being global, wherever the header is included, since the very same
->> device can have multiple addresses and so on, which are non-probable
->> since being behind a repeater which is switched by a demod (private) and
->> hence.
->>
->> Those are some of the reasons to follow a certain coding
->> style/conventions. They are _not_ for fun.
->>
+On Thu, 19 Apr 2007 01:58:58 -0600
+"Eric W. Biederman" <ebiederm@xmission.com> wrote:
+
+> It is my goal to replace all kernel code that handles signals
+> from user space, calls kernel_thread or calls daemonize.  All
+> of which the kthread_api makes unncessary.  Handling signals
+> from user space is a maintenance problem becuase using a
+> kernel thread is an implementation detail and if user space
+> cares it does not allow us to change the implementation.  Calling
+> daemonize is a problem because it has to undo a continually changing
+> set of state generated by user space, requiring the implemetation
+> to change continually.  kernel_thread is a problem because it
+> returns a pid_t value.  Numeric pids are inherently racy and
+> in the presence of a pid namespace they are no longer global
+> making them useless for general use in the kernel.
 > 
-> cat *priv.h says something else too...
-> there are also many global register defines in DVB drivers, they just
-> don't include the register value in the define name.
+> So this patch renames the pid member of struct saa7134_thread
+> started and changes it's type from pid_t to int.  All it
+> has ever been used for is to detect if the kernel thread
+> is has been started so this works.
+> 
+> allow_signal(SIGTERM) and the calls to signal_pending have
+> been removed they are needed for the driver to operation.
+> 
+> The startup of tvaudio_thread and tvaudio_thread_dep have
+> been modified to use kthread_run instead of a combination
+> of kernel_thread and daemonize.
+> 
+> The result is code that is slightly simpler and more
+> maintainable.
 
+This one also really wants to be converted to full use of the
+API.  ie: use kthread_stop(), kthread_should_stop(), remove all
+the hand-woven equivalent stuff we have in there.
 
-*_priv.h from what i understand means private .. i don't know what you
-make out from that.
-
-
-HTH,
-Manu
+I'll tag this as an -mm-only thing as well, in the hope that someone
+who can test the changes will be able to find time to address
+all this.
