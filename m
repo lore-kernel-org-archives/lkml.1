@@ -1,81 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766690AbXDSNR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766686AbXDSNUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766690AbXDSNR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 09:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766693AbXDSNR6
+	id S1766686AbXDSNUO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 09:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766692AbXDSNUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 09:17:58 -0400
-Received: from mail04.syd.optusnet.com.au ([211.29.132.185]:49829 "EHLO
-	mail04.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1766690AbXDSNR5 (ORCPT
+	Thu, 19 Apr 2007 09:20:13 -0400
+Received: from omta01sl.mx.bigpond.com ([144.140.92.153]:25609 "EHLO
+	omta01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766686AbXDSNUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 09:17:57 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: Announce - Staircase Deadline cpu scheduler v0.42
-Date: Thu, 19 Apr 2007 23:39:55 +1000
-User-Agent: KMail/1.9.5
-Cc: ck@vds.kolivas.org, Al Boldi <a1426z@gawab.com>,
-       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Matt Mackall <mpm@selenic.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200704190959.06432.kernel@kolivas.org> <200704191212.15151.kernel@kolivas.org> <20070419125524.GB27584@1wt.eu>
-In-Reply-To: <20070419125524.GB27584@1wt.eu>
+	Thu, 19 Apr 2007 09:20:11 -0400
+Message-ID: <46276C83.40608@bigpond.net.au>
+Date: Thu, 19 Apr 2007 23:20:03 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Con Kolivas <kernel@kolivas.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Renice X for cpu schedulers
+References: <20070417062621.GL2986@holomorphy.com> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu> <200704192159.35546.kernel@kolivas.org> <462763A4.8080601@bigpond.net.au>
+In-Reply-To: <462763A4.8080601@bigpond.net.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704192339.56144.kernel@kolivas.org>
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Thu, 19 Apr 2007 13:20:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 April 2007 22:55, Willy Tarreau wrote:
-> On Thu, Apr 19, 2007 at 12:12:14PM +1000, Con Kolivas wrote:
-> > On Thursday 19 April 2007 10:41, Con Kolivas wrote:
-> > > On Thursday 19 April 2007 09:59, Con Kolivas wrote:
-> > > > Since there is so much work currently ongoing with alternative cpu
-> > > > schedulers, as a standard for comparison with the alternative virtual
-> > > > deadline fair designs I've addressed a few issues in the Staircase
-> > > > Deadline cpu scheduler which improve behaviour likely in a noticeable
-> > > > fashion and released version 0.41.
-> > > >
-> > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.20.7-sd-0.41.pat
-> > > >ch
-> > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.41.p
-> > > >atch
-> > > >
-> > > > and an incremental for those on 0.40:
-> > > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7/sched-imp
-> > > >leme nt -staircase-deadline-scheduler-further-improvements.patch
-> > > >
-> > > > Remember to renice X to -10 for nicest desktop behaviour :)
-> > > >
-> > > > Have fun.
-> > >
-> > > Oops forgot to cc a few people
-> > >
-> > > Nick you said I should still have something to offer so here it is.
-> > > Peter you said you never saw this design (it's a dual array affair
-> > > sorry). Gene and Willy you were some of the early testers that noticed
-> > > the advantages of the earlier designs,
-> > > Matt you did lots of great earlier testing.
-> > > WLI you inspired a lot of design ideas.
-> > > Mike you were the stick.
-> > > And a few others I've forgotten to mention and include.
-> >
-> > Version 0.42
-> >
-> > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.42.patch
->
-> Will give it a shoot ASAP, probably this week-end. I'm too short in time
-> this week.
+Peter Williams wrote:
+> Con Kolivas wrote:
+>> Ok, there are 3 known schedulers currently being "promoted" as solid 
+>> replacements for the mainline scheduler which address most of the 
+>> issues with mainline (and about 10 other ones not currently being 
+>> promoted). The main way they do this is through attempting to maintain 
+>> solid fairness. There is enough evidence mounting now from the 
+>> numerous test cases fixed by much fairer designs that this is the way 
+>> forward for a general purpose cpu scheduler which is what linux needs.
+>> Interactivity of just about everything that needs low latency (ie 
+>> audio and video players) are easily managed by maintaining low latency 
+>> between wakeups and scheduling of all these low cpu users.
+> 
+> On a "fair" scheduler these will all get high priority (and good 
+> response) because their CPU bandwidth usage will be much smaller than 
+> their entitlement and the scheduler will be trying to help them "catch 
+> up".  So (as you say) they shouldn't be a problem.
+> 
+>> The one fly in the ointment for linux remains X. I am still, to this 
+>> moment, completely and utterly stunned at why everyone is trying to 
+>> find increasingly complex unique ways to manage X when all it needs is 
+>> more cpu[1]. Now most of these are actually very good ideas about 
+>> _extra_ features that would be desirable in the long run for linux, 
+>> but given the ludicrous simplicity of renicing X I cannot fathom why 
+>> people keep promoting these alternatives. At the time of 2.6.0 coming 
+>> out we were desparately trying to get half decent interactivity within 
+>> a reasonable time frame to release 2.6.0 without rewiring the whole 
+>> scheduler. So I tweaked the crap out of the tunables that were already 
+>> there[2].
+> 
+> X's needs are more complex than that (from my observations) in that the 
+> part of X that processes input doesn't use much CPU but the part that 
+> does output can be quite a heavy user of CPU (e.g. do a "ls -lR /" in an 
+> xterm and watch X chew up the CPU).  At the same time, the part of X 
+> that processes input needs quick responsiveness as it's part of the 
+> interactive chain where this is less so for the output part.
+> 
+> Where X comes unstuck in the current scheduler is that when the output 
+> part goes on one of its CPU storms it ceases to look like an interactive 
+> task and gets given lower priority.  Ironically, this doesn't effect the 
+> output part of X but it does effect the input part and is manifest as 
+> crappy interactive response.  One wonders whether modifying X so that it 
+> has two threads: one for output and one for input; that could be 
+> scheduled separately might help.  I guess it would depend on whether 
+> there is insufficient independence between the two halves.
 
-Great, thanks. By then there will almost certainly be a 0.43 so no rush.
+I forgot to make my point here and that was that if X could be split in 
+two neither half would need to be reniced.  As a very low CPU bandwidth 
+user the input half would get along just fine like the other interactive 
+tasks that you mention.  And the output put part isn't adversely 
+effected by not having a boost so it would get along just fine as well 
+and you don't want it having a boost when it's in a CPU storm anyway.
 
+Of course, if the interdependence between the two halves is such that 
+the equivalent of priority inversion occurs between the two threads. 
+However, that might be solved by making the division between the two 
+halves on a dimension other than the input/output one.
+
+Peter
+PS I think that the tasks most likely to be adversely effected by X's 
+CPU storms (enough to annoy the user) are audio streamers so when you're 
+doing tests to determine the best nice value for X I suggest that would 
+be a good criterion.  Video streamers are also susceptible but glitches 
+in video don't seem to annoy users as much as audio ones.
 -- 
--ck
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
