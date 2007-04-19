@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993129AbXDSHBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993130AbXDSHBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993129AbXDSHBp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993127AbXDSHBo
+	id S2993130AbXDSHBq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993128AbXDSHBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:01:44 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46347 "EHLO
+	Thu, 19 Apr 2007 03:01:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46345 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161359AbXDSHBW (ORCPT
+	with ESMTP id S1161328AbXDSHBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:01:22 -0400
+	Thu, 19 Apr 2007 03:01:19 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] nfsv4 delegation: Convert to kthread API
-Date: Thu, 19 Apr 2007 00:55:55 -0600
-Message-Id: <11769658122498-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] nfsd/nfs4state: Remove unnecessary daemonize call.
+Date: Thu, 19 Apr 2007 00:55:56 -0600
+Message-Id: <11769658123779-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,64 +26,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-To start the nfsv4-delegreturn thread this patch uses
-kthread_run instead of a combination of kernel_thread
-and daemonize.
-
-In addition allow_signal(SIGKILL) is removed from
-the expire delegations thread.
-
 Cc: Neil Brown <neilb@suse.de>
 Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/nfs/delegation.c |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+ fs/nfsd/nfs4state.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/fs/nfs/delegation.c b/fs/nfs/delegation.c
-index 841c99a..7b9b88c 100644
---- a/fs/nfs/delegation.c
-+++ b/fs/nfs/delegation.c
-@@ -232,7 +232,6 @@ int nfs_do_expire_all_delegations(void *ptr)
- 	struct nfs_delegation *delegation;
- 	struct inode *inode;
+diff --git a/fs/nfsd/nfs4state.c b/fs/nfsd/nfs4state.c
+index 678f3be..3cc8ce4 100644
+--- a/fs/nfsd/nfs4state.c
++++ b/fs/nfsd/nfs4state.c
+@@ -1326,8 +1326,6 @@ do_recall(void *__dp)
+ {
+ 	struct nfs4_delegation *dp = __dp;
  
--	allow_signal(SIGKILL);
- restart:
- 	spin_lock(&clp->cl_lock);
- 	if (test_bit(NFS4CLNT_STATE_RECOVER, &clp->cl_state) != 0)
-@@ -310,8 +309,6 @@ static int recall_thread(void *data)
- 	struct nfs_inode *nfsi = NFS_I(inode);
- 	struct nfs_delegation *delegation;
- 
--	daemonize("nfsv4-delegreturn");
+-	daemonize("nfsv4-recall");
 -
- 	nfs_msync_inode(inode);
- 	down_read(&clp->cl_sem);
- 	down_write(&nfsi->rwsem);
-@@ -350,18 +347,18 @@ int nfs_async_inode_return_delegation(struct inode *inode, const nfs4_stateid *s
- 		.inode = inode,
- 		.stateid = stateid,
- 	};
--	int status;
-+	struct task_struct *task;
- 
- 	init_completion(&data.started);
- 	__module_get(THIS_MODULE);
--	status = kernel_thread(recall_thread, &data, CLONE_KERNEL);
--	if (status < 0)
-+	task = kthread_run(recall_thread, &data, "nfsv4-delegreturn");
-+	if (IS_ERR(task))
- 		goto out_module_put;
- 	wait_for_completion(&data.started);
- 	return data.result;
- out_module_put:
- 	module_put(THIS_MODULE);
--	return status;
-+	return PTR_ERR(task);
+ 	nfsd4_cb_recall(dp);
+ 	return 0;
  }
- 
- /*
 -- 
 1.5.0.g53756
 
