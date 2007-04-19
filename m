@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993183AbXDSISY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993167AbXDSITb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993183AbXDSISY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993178AbXDSIEW
+	id S2993167AbXDSITb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993185AbXDSIEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:04:22 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45799 "EHLO
+	Thu, 19 Apr 2007 04:04:15 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45797 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993180AbXDSIEJ (ORCPT
+	with ESMTP id S2993181AbXDSIEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:04:09 -0400
+	Thu, 19 Apr 2007 04:04:04 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Neil Brown <neilb@suse.de>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: [PATCH] nfs lockd reclaimer: Convert to kthread API
-Date: Thu, 19 Apr 2007 01:58:59 -0600
-Message-Id: <11769696321319-git-send-email-ebiederm@xmission.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>, Neil Brown <neilb@suse.de>
+Subject: [PATCH] md: Remove broken SIGKILL support
+Date: Thu, 19 Apr 2007 01:59:05 -0600
+Message-Id: <1176969641308-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,59 +26,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-Start the reclaimer thread using kthread_run instead
-of a combination of kernel_thread and daemonize.
-The small amount of signal handling code is also removed
-as it makes no sense and is a maintenance problem to handle
-signals in kernel threads.
+Currently md_thread calls allow_signal so it can receive a
+SIGKILL but then does nothing with it except flush the
+sigkill so that it not can use an interruptible sleep.
+
+This whole dance is silly so remove the unnecessary
+and broken signal handling logic.
 
 Cc: Neil Brown <neilb@suse.de>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/lockd/clntlock.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/md/md.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
-index f4d45d4..83591f6 100644
---- a/fs/lockd/clntlock.c
-+++ b/fs/lockd/clntlock.c
-@@ -9,6 +9,7 @@
- #include <linux/module.h>
- #include <linux/types.h>
- #include <linux/time.h>
-+#include <linux/kthread.h>
- #include <linux/nfs_fs.h>
- #include <linux/sunrpc/clnt.h>
- #include <linux/sunrpc/svc.h>
-@@ -153,7 +154,7 @@ nlmclnt_recovery(struct nlm_host *host)
- 	if (!host->h_reclaiming++) {
- 		nlm_get_host(host);
- 		__module_get(THIS_MODULE);
--		if (kernel_thread(reclaimer, host, CLONE_KERNEL) < 0)
-+		if (IS_ERR(kthread_run(reclaimer, host, "%s-reclaim", host->h_name)))
- 			module_put(THIS_MODULE);
- 	}
- }
-@@ -166,9 +167,6 @@ reclaimer(void *ptr)
- 	struct file_lock *fl, *next;
- 	u32 nsmstate;
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 1299c23..dfd0cb9 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -4542,17 +4542,11 @@ static int md_thread(void * arg)
+ 	 */
  
--	daemonize("%s-reclaim", host->h_name);
+ 	current->flags |= PF_NOFREEZE;
 -	allow_signal(SIGKILL);
+ 	while (!kthread_should_stop()) {
+ 
+ 		/* We need to wait INTERRUPTIBLE so that
+ 		 * we don't add to the load-average.
+-		 * That means we need to be sure no signals are
+-		 * pending
+ 		 */
+-		if (signal_pending(current))
+-			flush_signals(current);
 -
- 	down_write(&host->h_rwsem);
- 
- 	/* This one ensures that our parent doesn't terminate while the
-@@ -193,8 +191,6 @@ restart:
- 		list_del_init(&fl->fl_u.nfs_fl.list);
- 
- 		/* Why are we leaking memory here? --okir */
--		if (signalled())
--			continue;
- 		if (nlmclnt_reclaim(host, fl) != 0)
- 			continue;
- 		list_add_tail(&fl->fl_u.nfs_fl.list, &host->h_granted);
+ 		wait_event_interruptible_timeout
+ 			(thread->wqueue,
+ 			 test_bit(THREAD_WAKEUP, &thread->flags)
 -- 
 1.5.0.g53756
 
