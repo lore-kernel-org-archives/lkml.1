@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750844AbXDSW1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbXDSW3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750844AbXDSW1h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbXDSW1h
+	id S1753785AbXDSW3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXDSW3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:27:37 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60158 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750844AbXDSW1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:27:36 -0400
-Date: Thu, 19 Apr 2007 15:26:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd_blkdevs: Convert to use the kthread API
-Message-Id: <20070419152639.1057c61b.akpm@linux-foundation.org>
-In-Reply-To: <m11wigmb3h.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769657692046-git-send-email-ebiederm@xmission.com>
-	<20070419164746.GA19469@infradead.org>
-	<m11wigmb3h.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Apr 2007 18:29:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47027 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753785AbXDSW3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 18:29:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ego@in.ibm.com
+Subject: Re: [RFC PATCH 1/2] Fix PF_NOFREEZE and freezeable race
+Date: Thu, 19 Apr 2007 23:39:29 +0200
+User-Agent: KMail/1.9.5
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu, vatsa@in.ibm.com,
+       paulmck@us.ibm.com, pavel@ucw.cz
+References: <20070419120131.GB13435@in.ibm.com> <20070419120234.GA17069@in.ibm.com>
+In-Reply-To: <20070419120234.GA17069@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704192339.30783.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 13:13:22 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+Hi,
 
-> Christoph Hellwig <hch@infradead.org> writes:
+On Thursday, 19 April 2007 14:02, Gautham R Shenoy wrote:
+> This patch fixes the race pointed out by Oleg Nesterov.
 > 
-> > On Thu, Apr 19, 2007 at 12:55:28AM -0600, Eric W. Biederman wrote:
-> >> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
-> >> 
-> >> thread_run is used intead of kernel_thread, daemonize, and mucking
-> >> around blocking signals directly.
-> >
-> > Please don't do incomplete transitions like that.  We don't really
-> > want people to use kthread_run, but not the kthread stopping
-> > mechanisms, because people will simply forget about that bit and
-> > we'll never get rid of the enormous amount of, erm creativity, in
-> > handling kernel thread stopping.
-> >
-> > This is just the first patch in your series where the thread is mutable,
-> > but it equally applies to all following patches where this is the case
-> > aswell.
+> * Freezer marks a thread as freezeable. 
+> * The thread now marks itself PF_NOFREEZE causing it to
+>   freeze on calling try_to_freeze(). Thus the task is frozen, even though
+>   it doesn't want to.
+> * Subsequent thaw_processes() will also fail to thaw the task since it is 
+>   marked PF_NOFREEZE.
 > 
-> I don't really care about the creativity.  Although it would
-> be nice if it wasn't there.  I deliberately left it in so I would be
-> certain my patches were correct.
+> Avoid this problem by checking the current task's PF_NOFREEZE status in the 
+> refrigerator before marking current as frozen.
 > 
-> I care about killing the maintenance and forward development roadblocks
-> that are kernel_thread and daemonize.  And the user interface problem
-> that is handling signals in kernel threads.
-> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 
-Yes, I think that is a practical position, if not an ideal one.
+Looks good, although I'm not sure if we don't need to call recalc_sigpending()
+for tasks that turn out to be PF_NOFREEZE.
 
-MTD (to pick one example) does need to be decruftified: remove
-r->blkcore_priv->exiting, probably ->blkcore_priv->thread_dead, switch
-deregister_mtd_blktrans() to use kthread_stop().  But it's a bit much to
-expect Eric to make that conversion, and to suitably test it.  All he can
-do is to make a best-effort and hope that someone else tests it, which
-isn't very reliable.
-
-This partial patch at least gets us some of the way there, and serves as a
-gentle reminder to dwmwyouknowwho to finish cleaning this stuff up.
-
-I'd be more concerned about a part-conversion in a subsystem which has no
-identifiable maintainer, because in that case the chances are that we'll
-just forget about it an the conversion would never be completed.
-
-And of course, these are not simply cleanup patches: we actually need to get
-the kernel threads out of the daemonize() and signalling game to complete
-the virtualisation work.
-
+Greetings,
+Rafael
