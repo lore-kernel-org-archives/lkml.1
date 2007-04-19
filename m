@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993225AbXDSKW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030925AbXDSK1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993225AbXDSKW5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 06:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030949AbXDSKW5
+	id S1030925AbXDSK1W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 06:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993226AbXDSK1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 06:22:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50741 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030925AbXDSKW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 06:22:56 -0400
-Date: Thu, 19 Apr 2007 12:22:45 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: ck@vds.kolivas.org, Al Boldi <a1426z@gawab.com>,
-       Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: Announce - Staircase Deadline cpu scheduler v0.42
-Message-ID: <20070419102245.GD14885@wotan.suse.de>
-References: <200704190959.06432.kernel@kolivas.org> <200704191212.15151.kernel@kolivas.org> <20070419032204.GA487@wotan.suse.de> <200704191940.04715.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704191940.04715.kernel@kolivas.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 19 Apr 2007 06:27:22 -0400
+Received: from gw-e.panasas.com ([65.194.124.178]:59791 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030925AbXDSK1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 06:27:21 -0400
+Message-ID: <46274407.8010602@panasas.com>
+Date: Thu, 19 Apr 2007 13:27:19 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Wrong free clusters count on FAT32
+References: <20070419085750.GA2833@DervishD>
+In-Reply-To: <20070419085750.GA2833@DervishD>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 19 Apr 2007 10:27:20.0227 (UTC) FILETIME=[4F9FD730:01C7826D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 07:40:04PM +1000, Con Kolivas wrote:
-> On Thursday 19 April 2007 13:22, Nick Piggin wrote:
-> > On Thu, Apr 19, 2007 at 12:12:14PM +1000, Con Kolivas wrote:
-> > > Version 0.42
-> > >
-> > > http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.42.patch
-> >
-> > OK, I run some tests later today...
+DervishD wrote:
+>     Hi all :)
 > 
+>     I have a portable device with a FAT32 formatted hard disk in it, and
+> everytime I delete a file in the device *using the device itself to do
+> it* the device increases its count of free space and if I plug the
+> device in a Windows system, Windows agrees on the free space. Linux
+> doesn't. Linux believes that the files are still there ocuppying space,
+> and I have to run fsck.vfat to fix the problem.
 > 
-> Thank you very much.
+>     As far as I've seen, the device is probably not updating correctly
+> the list of free clusters, but it doesn't seem to worry about it,
+> neither does Windows. So my question is: is there any way of making
+> Linux "bug compatible" with Windows? If Windows itself don't worry about
+> the free cluster count and computes the free space in some other way,
+> then it can be done. I haven't seen anything in mount(8) neither
+> googling.
+> 
+>     Apart from not using the device itself to delete files (and probably
+> not using Windows for that, either) and to run fsck.vfat now and then,
+> is anything I can do to avoid this problem?
+> 
+>     Thanks a lot in advance :)
+> 
+>     Raúl Núñez de Arenas Coronado
+> 
+Not that I know how to fix it. But have you tried running chkdsk on a
+device deleted files in windows. Just that I know, that windows would
+silently ignore fat errors and will only report them in chkdsk.
 
-lmbench numbers are roughly comparable to mainline (lmbench seems to be
-a bit erratic, but there isn't the obvious drop that cfs has).
+Deleting files in windows works fine. There is no problems with it and
+windows updates everything. I do that all the time.
+(I would even theorize that if you delete files on the device and than farther
+delete more files on windows, than windows will fix the problem on the fly)
+So it is "bug compatible" with the device, and error recovery
+compatible with windows.
 
-Didn't worry about hackbench ;)
-
-kbuild:
-2.6.21-rc7
-508.87user 32.47system 2:17.82elapsed 392%CPU
-509.05user 32.25system 2:17.84elapsed 392%CPU
-508.75user 32.26system 2:17.83elapsed 392%CPU
-508.63user 32.17system 2:17.88elapsed 392%CPU
-509.01user 32.26system 2:17.90elapsed 392%CPU
-509.08user 32.20system 2:17.95elapsed 392%CPU
-
-2.6.21-rc7-sd42
-512.78user 31.99system 2:18.41elapsed 393%CPU
-512.55user 31.90system 2:18.57elapsed 392%CPU
-513.05user 31.78system 2:18.48elapsed 393%CPU
-512.46user 32.06system 2:18.63elapsed 392%CPU
-512.78user 31.81system 2:18.49elapsed 393%CPU
-512.41user 32.08system 2:18.70elapsed 392%CPU
-
-sd42 is doing about 745 context switches per second here, and perfomance is
-slightly below mainline. But it isn't doing badly.
-
-507.87user 32.53system 2:17.50elapsed 392%CPU
-508.47user 32.40system 2:17.56elapsed 393%CPU
-508.59user 32.27system 2:17.53elapsed 393%CPU 
-
-A few runs with rr_interval at 100 show that ctxsw numbers drop to 587, and
-performance is up to slightly above mainline.
-
-With the results I've got so far with all scedulers (actually I didn't try
-nicksched with a small timeslice, but I'm sure it would give the expected
-result)... I'd say 5ms might be too small a timeslice. Even 15ms will hurt
-some people I think.
-
-Although we could arguably tolerate this kind of regression, my box only
-has 1MB caches, and kbuild is naturally context switching at over 500 per
-second anyway. On something with bigger caches and less context switchy /
-more cache sensitive workloads, the regression could be quite a bit worse.
-
-(not directed at anyone in particular, but food for thought)
+Boaz
