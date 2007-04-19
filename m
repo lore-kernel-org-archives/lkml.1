@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637778AbXDSOqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S637781AbXDSOqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637778AbXDSOqe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 10:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637781AbXDSOqe
+	id S637781AbXDSOqg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 10:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637782AbXDSOqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 10:46:34 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:44090 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S637778AbXDSOqd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 10:46:33 -0400
-Date: Thu, 19 Apr 2007 16:49:11 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg K-H <greg@kroah.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Message-ID: <20070419164911.76884b12@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.44L0.0704191019320.3413-100000@iolanthe.rowland.org>
-References: <20070419152941.7c4b7ff2@gondolin.boeblingen.de.ibm.com>
-	<Pine.LNX.4.44L0.0704191019320.3413-100000@iolanthe.rowland.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Thu, 19 Apr 2007 10:46:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40583 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S637781AbXDSOqf (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 10:46:35 -0400
+Date: Fri, 20 Apr 2007 00:46:18 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070419144618.GG32602149@melbourne.sgi.com>
+References: <20070419065404.GB1782@ff.dom.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070419065404.GB1782@ff.dom.local>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 10:20:51 -0400 (EDT),
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Thu, Apr 19, 2007 at 08:54:04AM +0200, Jarek Poplawski wrote:
+> Hi,
+> 
+> IMHO cancel_rearming_delayed_work is dangerous place:
 
-> The patch below, applied on top of Cornelia's changes plus the 
-> kobject_init() patch I posted earlier, actually seems to work.  And it 
-> prevents an oops which I was able to trigger without it.
+Agreed - I spent a couple of hours today learning why it
+can only be used on work functions that always rearm...
 
-Looks nice at first glance. I'll try to test it a bit.
+> - it assumes a work function always rearms (with no exception),
+> which probably isn't explained enough now (but anyway should
+> be checked in such loops);
+>
+> - probably possible (theoretical) scenario: a few work
+> functions rearm themselves with very short, equal times;
+> before flush_workqueue ends, their timers are already
+> fired, so cancel_delayed_work has nothing to do.
+
+Easier than that - have a work function that rearms only if there's
+more work to do in the future. You only arm the timer when you
+have work to do, and it only rearms if there's more work to
+do in the future (e.g. rotating expiry lists).
+
+i.e. while there's more work to do, you need to call
+cancel_rearming_delayed_work() to stop it reliably, but if you race
+with the work function not restarting itself, you hang.....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
