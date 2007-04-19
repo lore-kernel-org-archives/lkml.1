@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030812AbXDSE6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031126AbXDSFJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030812AbXDSE6N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 00:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031064AbXDSE6N
+	id S1031126AbXDSFJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 01:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031123AbXDSFJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 00:58:13 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:32901 "EHLO
-	asav10.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030812AbXDSE6M (ORCPT
+	Thu, 19 Apr 2007 01:09:00 -0400
+Received: from smtp1.osdl.org ([65.172.181.25]:43846 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031126AbXDSFI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 00:58:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAPCTJkZKhRO4W2dsb2JhbACQAR0NBhA
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: johann deneux <johann.deneux@gmail.com>
-Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
-Date: Thu, 19 Apr 2007 00:58:10 -0400
-User-Agent: KMail/1.9.3
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
-References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com> <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
-In-Reply-To: <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 19 Apr 2007 01:08:59 -0400
+Date: Wed, 18 Apr 2007 22:08:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: izumi <izumi2005@soft.fujitsu.com>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH][BUG] Fix possible NULL pointer access in 8250 serial
+ driver
+Message-Id: <20070418220812.b809c8fb.akpm@linux-foundation.org>
+In-Reply-To: <4626D3D5.2060408@soft.fujitsu.com>
+References: <46242DD2.7030207@soft.fujitsu.com>
+	<20070416225206.cf7d8cd2.akpm@linux-foundation.org>
+	<1176884513.3945.54.camel@kane-linux>
+	<20070418191812.GA21211@flint.arm.linux.org.uk>
+	<4626D3D5.2060408@soft.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704190058.11625.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 19 Apr 2007 11:28:37 +0900 izumi <izumi2005@soft.fujitsu.com> wrote:
 
-On Thursday 19 April 2007 00:25, johann deneux wrote:
-> On 4/18/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> > johann deneux napsal(a):
-> > > Jiri,
-> > >
-> > > Which solution did you chose to implement? From what I remember, we
-> > > last discussed Dmitry's idea of specifying an axis for an effect, then
-> > > combine several effects to achieve complex effects.
-> >
-> > I think you mean motor instead of axis, because I don't push real axes to
-> > the devices, but motor's torques...
-> >
+> Russell King wrote:
 > 
-> Yes, sorry, I meant motor.
+> > NAK.  This means that you change the list of ports available on the
+> > machine to be limited to only those which are currently open.  Utterly
+> > useless for debugging, where you normally want people to dump the
+> > contents of /proc/tty/driver/*.
+> > 
+> > The original patch was better.
+> > 
+> 
+>    Is the original patch sufficient?  or is there anything we should 
+> correct?
 > 
 
-I have been thinking about this and I don't think that exporting motor
-data is a good idea, at least not in case of Phantom driver. The fact
-that there are 3 motors is a hardware implementation detail and it
-is not interesting for general application.
+Would it be better to do something like
 
-My understanding that the end result of controlling these 3 motors
-is a force vector (I don't know if there is such english term, this
-is a literal translation from russian) applied to user's hand.
-If we are interested in using FF API we need to come up with a way
-to express this effect without exposing implementation details of
-one particular device.
+--- a/drivers/serial/serial_core.c~a
++++ a/drivers/serial/serial_core.c
+@@ -1686,9 +1686,12 @@ static int uart_line_info(char *buf, str
+ 		pm_state = state->pm_state;
+ 		if (pm_state)
+ 			uart_change_pm(state, 0);
+-		spin_lock_irq(&port->lock);
+-		status = port->ops->get_mctrl(port);
+-		spin_unlock_irq(&port->lock);
++		status = 0;
++		if (port->info) {
++			spin_lock_irq(&port->lock);
++			status = port->ops->get_mctrl(port);
++			spin_unlock_irq(&port->lock);
++		}
+ 		if (pm_state)
+ 			uart_change_pm(state, pm_state);
+ 		mutex_unlock(&state->mutex);
+_
 
--- 
-Dmitry
+so that a) we treat all uart types in the same way and b) the same problem
+doesn't occur later with some other driver which is assuming an opened
+device in its ->get_mctrl() handler?
+
