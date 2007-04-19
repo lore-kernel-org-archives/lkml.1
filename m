@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766888AbXDSRTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766893AbXDSR2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766888AbXDSRTX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 13:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766889AbXDSRTX
+	id S1766893AbXDSR2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 13:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766891AbXDSR2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 13:19:23 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51814 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1766888AbXDSRTX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 13:19:23 -0400
-Date: Thu, 19 Apr 2007 13:19:19 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-In-Reply-To: <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0704191254070.3413-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Apr 2007 13:28:32 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:43811 "EHLO jazzdrum.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161510AbXDSR2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 13:28:30 -0400
+Subject: Re: AppArmor FAQ
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: David Lang <david.lang@digitalinsight.com>
+Cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andi Kleen <andi@firstfloor.org>,
+       Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.63.0704181311390.2806@qynat.qvtvafvgr.pbz>
+References: <20070417181016.GA10903@one.firstfloor.org>
+	 <657751.18080.qm@web3 6614.mail.mud.yahoo.com>
+	 <20070417211653.GB11944@one.firstfloor.org>
+	 <20070417225815.000b0fdb@the-vil lage.bc.nu>
+	 <Line.LNX.4.64.0704180935100.25495@d.namei>
+	 <Pine.LNX.4.63.0704181311390.2806@qynat.qvtvafvgr.pbz>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 19 Apr 2007 13:27:51 -0400
+Message-Id: <1177003671.27654.133.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007, Dmitry Torokhov wrote:
-
-> I am still do not understand why this is needed. Would it not be
-> simplier just to use a reference to struct device instead of embedding
-> it in a larger structure if their lifetimes are different and one does
-> not have a subsystem that takes care of releasing logic.
+On Wed, 2007-04-18 at 13:15 -0700, David Lang wrote:
+> On Wed, 18 Apr 2007, James Morris wrote:
 > 
+> > On Tue, 17 Apr 2007, Alan Cox wrote:
+> >
+> >> I'm not sure if AppArmor can be made good security for the general case,
+> >> but it is a model that works in the limited http environment
+> >> (eg .htaccess) and is something people can play with and hack on and may
+> >> be possible to configure to be very secure.
+> >
+> > Perhaps -- until your httpd is compromised via a buffer overflow or
+> > simply misbehaves due to a software or configuration flaw, then the
+> > assumptions being made about its use of pathnames and their security
+> > properties are out the window.
 > 
-> Pretty much drivers have 2 options:
+> since AA defines a whitelist of files that httpd is allowed to access, a 
+> comprimised one may be able to mess up it's files, but it's still not going to 
+> be able to touch other files on the system.
 > 
-> struct my_device {
->         void *private_data;
->         struct device dev;
-> };
-
-Actually people use dev_[gs]et_drvdata() instead of a separate
-private_data pointer.  That way there's no need for the my_device
-container.
-
-> In this case ->release must live in a subsystem code; individual
-> drivers kfree(my_dev->private) and do any additional cleanup after
-> calling device_unregister(&my_dev->dev);
-
-That doesn't sound right.  Generally the call to device_unregister() and
-the release method live in the same module.  Maybe you meant to say
-individual drivers kfree(my_dev->private_data) and do any additional
-cleanup in their remove() routine.
-
-This approach seems dangerous.  Suppose there's mutex embedded in 
-my_dev->private_data, and suppose some other thread is blocked waiting on 
-that mutex when remove() is called.  That other thread will then oops when 
-my_dev->private_data is deallocated.
-
-> Second option:
+> > Without security labeling of the objects being accessed, you can't protect
+> > against software flaws, which has been a pretty fundamental and widely
+> > understood requirement in general computing for at least a decade.
 > 
-> struct my_device {
->         type member1;
->         type member2;
-> 
->        struct device *dev;
-> };
-> 
-> dev is coming from _device_create(). Driver core takes care of
-> releasing dev structure; driver does cleanup of my_device.
+> this is not true. you don't need to label all object and chunks of memory, you 
+> just need to have a way to list (and enforce) the objects and memory that the 
+> program is allowed to use. labeling them is one way of doing this, but not the 
+> only way.
 
-Lots of drivers create devices dynamically without using device_create().
+You need a way of providing global and persistent security guarantees
+for the data, and per-program profiles based on pathname don't get you
+there.  There is no system view in AA, just a bunch of disconnected
+profiles.
 
-More to the point, how does the driver clean up my_device?  It probably 
-has a reference count somewhere in my_device, especially if my_device is 
-shared with other threads or other drivers.  We then face exactly the same 
-problem: What happens if the driver's module is unloaded before all the 
-references to my_device are gone?
-
-> With current sysfs orphaning attributes upon removal request there is
-> no issue of accessing driver-private data through references obtained
-> via ether embedded or referenced dev structure so everything is fine.
-
-Not so.  There are other pathways besides sysfs which can cause a driver
-to access its data structures.
-
-Alan Stern
+-- 
+Stephen Smalley
+National Security Agency
 
