@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637779AbXDSOVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766743AbXDSOWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637779AbXDSOVp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 10:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637781AbXDSOVp
+	id S1766743AbXDSOWm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 10:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766730AbXDSOWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 10:21:45 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:38423 "EHLO
+	Thu, 19 Apr 2007 10:22:42 -0400
+Received: from wr-out-0506.google.com ([64.233.184.236]:38876 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S637779AbXDSOVn (ORCPT
+	with ESMTP id S1766743AbXDSOWk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 10:21:43 -0400
+	Thu, 19 Apr 2007 10:22:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ay2SLHGrK8nKzTL+yTuWYJXNjxXh6TffClRGwm0bOrixEK41S/1oJIC59dDzONeS8zX/CpKZnzTT7WGaMLfGDqlMNuELtHt4bGBO3IUkJS1qszJfiZ82mozrUXXyFUIzDJ0+4UKSjEZfr0TI5+tdD1PpaXHxDo/ghgJ+t7q12o8=
-Message-ID: <d120d5000704190721u16be1110ufe04880eded7d54e@mail.gmail.com>
-Date: Thu, 19 Apr 2007 10:21:41 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Cc: "Tejun Heo" <htejun@gmail.com>, "Alan Stern" <stern@rowland.harvard.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <20070419154849.2e722762@gondolin.boeblingen.de.ibm.com>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=UVVSrt5nHkYxt8eQkCx5Nq40aqRWlBV6tdjFfg8uM+Ht63Q3pbkcalpc2mydy88dVS269PKucwLdtduqVtV1aKDQIMwS2kGiOa2CAoaEC9kjBmwJa6Zm+foargMMUTMNMTUaVfXPg+K3R5Kvyd50T35Si50Cgr5xD07UeESgs1Y=
+Message-ID: <75b66ecd0704190722l5ba8db7n52734c209504e802@mail.gmail.com>
+Date: Thu, 19 Apr 2007 10:22:39 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Peter Williams" <pwil3058@bigpond.net.au>
+Subject: Re: Renice X for cpu schedulers
+Cc: "Con Kolivas" <kernel@kolivas.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matt Mackall" <mpm@selenic.com>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "Mike Galbraith" <efault@gmx.de>, "ck list" <ck@vds.kolivas.org>,
+       "Bill Huey" <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <46276C83.40608@bigpond.net.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
-	 <46263A82.1030703@gmail.com>
-	 <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-	 <20070419145133.2f7ed45a@gondolin.boeblingen.de.ibm.com>
-	 <d120d5000704190613h178ad644h53ad817db2950426@mail.gmail.com>
-	 <20070419154849.2e722762@gondolin.boeblingen.de.ibm.com>
+References: <20070417062621.GL2986@holomorphy.com>
+	 <20070418221432.e4dbcf4f.akpm@linux-foundation.org>
+	 <20070419063810.GA22418@elte.hu>
+	 <200704192159.35546.kernel@kolivas.org>
+	 <462763A4.8080601@bigpond.net.au> <46276C83.40608@bigpond.net.au>
+X-Google-Sender-Auth: 1bc4394d96181a27
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/19/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> On Thu, 19 Apr 2007 09:13:43 -0400,
-> "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
->
-> > Because they are managed by 2 different entities. the struct device
-> > objects are managed by device core and driver-specific objects are
-> > managed by their respective driver.
->
-> Not sure if I understand you here. My view of this was always that the
-> embedding object was kind of an extended device and that the relevant
-> driver/subsystem managed it through the driver core infrastructure.
->
+On 4/19/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
+> PS I think that the tasks most likely to be adversely effected by X's
+> CPU storms (enough to annoy the user) are audio streamers so when you're
+> doing tests to determine the best nice value for X I suggest that would
+> be a good criterion.  Video streamers are also susceptible but glitches
+> in video don't seem to annoy users as much as audio ones.
 
-I am not sure if I agree with this point of view. Driver (or
-subsystem) provides an instance of struct device for the rest of the
-system to iteract uniformly with (suspend/resume/tree
-visualization/etc) i.e. struct device implement an interface for
-subsystems. However most of the system use their own mechanisms to
-manage their devices. They can rely on the driver core to a certain
-degree but driver core is mostly a carries out helper functions, not
-the meat.
+IMHO audio streamers should use SCHED_FIFO thread for time critical
+work.  I think it's insane to expect the scheduler to figure out that
+these processes need low latency when they can just be explicit about
+it.  "Professional" audio software does it already, on Linux as well
+as other OS...
 
-> >
-> > > > Pretty much drivers have 2 options:
-> > > >
-> > > > struct my_device {
-> > > >         void *private_data;
-> > > >         struct device dev;
-> > > > };
-> > > >
-> > > > In this case ->release must live in a subsystem code; individual
-> > > > drivers kfree(my_dev->private) and do any additional cleanup after
-> > > > calling device_unregister(&my_dev->dev);
-> > >
-> > > They must do this in the ->remove callback.
-> >
-> > Why? If the driver truly stops hardware then any driver-specific data
-> > is not needed. With sysfs severing access to removed attributes there
-> > is no need to gave "global release", cleanup can be done in stages.
->
-> I think I meant the same thing :) Freeing the data in the ->release
-> callback is obviously too late. Freeing it in the ->remove callback
-> means that the device is no longer really used (and can't be looked up
-> any more); only some further refrences may linger (and those are of no
-> consequence with the sysfs disconnect).
->
-
-Ah, right, I confused ->remove() with ->release() in your post. Sorry
-about that.
-
--- 
-Dmitry
+Lee
