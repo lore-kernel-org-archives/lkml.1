@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993184AbXDSIEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993183AbXDSISY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993184AbXDSIEO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993167AbXDSIDN
+	id S2993183AbXDSISY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993178AbXDSIEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:03:13 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45730 "EHLO
+	Thu, 19 Apr 2007 04:04:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45799 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993169AbXDSICR (ORCPT
+	with ESMTP id S2993180AbXDSIEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:02:17 -0400
+	Thu, 19 Apr 2007 04:04:09 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Scott Murray <scottm@somanetworks.com>
-Subject: [PATCH] cpci_hotplug: Convert to use the kthread API
-Date: Thu, 19 Apr 2007 01:58:34 -0600
-Message-Id: <11769695563598-git-send-email-ebiederm@xmission.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>, Neil Brown <neilb@suse.de>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: [PATCH] nfs lockd reclaimer: Convert to kthread API
+Date: Thu, 19 Apr 2007 01:58:59 -0600
+Message-Id: <11769696321319-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,90 +27,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-kthread_run replaces the kernel_thread and  daemonize calls
-during thread startup.
+Start the reclaimer thread using kthread_run instead
+of a combination of kernel_thread and daemonize.
+The small amount of signal handling code is also removed
+as it makes no sense and is a maintenance problem to handle
+signals in kernel threads.
 
-Calls to signal_pending were also removed as it is currently
-impossible for the cpci_hotplug thread to receive signals.
-
-CC: Scott Murray <scottm@somanetworks.com>
+Cc: Neil Brown <neilb@suse.de>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/pci/hotplug/cpci_hotplug_core.c |   22 +++++++---------------
- 1 files changed, 7 insertions(+), 15 deletions(-)
+ fs/lockd/clntlock.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpci_hotplug_core.c b/drivers/pci/hotplug/cpci_hotplug_core.c
-index 6845515..c620c7e 100644
---- a/drivers/pci/hotplug/cpci_hotplug_core.c
-+++ b/drivers/pci/hotplug/cpci_hotplug_core.c
-@@ -33,6 +33,7 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/smp_lock.h>
+diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
+index f4d45d4..83591f6 100644
+--- a/fs/lockd/clntlock.c
++++ b/fs/lockd/clntlock.c
+@@ -9,6 +9,7 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/time.h>
 +#include <linux/kthread.h>
- #include <asm/atomic.h>
- #include <linux/delay.h>
- #include "cpci_hotplug.h"
-@@ -521,17 +522,13 @@ event_thread(void *data)
- {
- 	int rc;
- 
--	lock_kernel();
--	daemonize("cpci_hp_eventd");
--	unlock_kernel();
--
- 	dbg("%s - event thread started", __FUNCTION__);
- 	while (1) {
- 		dbg("event thread sleeping");
- 		down_interruptible(&event_semaphore);
- 		dbg("event thread woken, thread_finished = %d",
- 		    thread_finished);
--		if (thread_finished || signal_pending(current))
-+		if (thread_finished)
- 			break;
- 		do {
- 			rc = check_slots();
-@@ -562,12 +559,8 @@ poll_thread(void *data)
- {
- 	int rc;
- 
--	lock_kernel();
--	daemonize("cpci_hp_polld");
--	unlock_kernel();
--
- 	while (1) {
--		if (thread_finished || signal_pending(current))
-+		if (thread_finished)
- 			break;
- 		if (controller->ops->query_enum()) {
- 			do {
-@@ -592,7 +585,7 @@ poll_thread(void *data)
- static int
- cpci_start_thread(void)
- {
--	int pid;
-+	struct task_struct *task;
- 
- 	/* initialize our semaphores */
- 	init_MUTEX_LOCKED(&event_semaphore);
-@@ -600,14 +593,13 @@ cpci_start_thread(void)
- 	thread_finished = 0;
- 
- 	if (controller->irq)
--		pid = kernel_thread(event_thread, NULL, 0);
-+		task = kthread_run(event_thread, NULL, "cpci_hp_eventd");
- 	else
--		pid = kernel_thread(poll_thread, NULL, 0);
--	if (pid < 0) {
-+		task = kthread_run(poll_thread, NULL, "cpci_hp_polld");
-+	if (IS_ERR(task)) {
- 		err("Can't start up our thread");
- 		return -1;
+ #include <linux/nfs_fs.h>
+ #include <linux/sunrpc/clnt.h>
+ #include <linux/sunrpc/svc.h>
+@@ -153,7 +154,7 @@ nlmclnt_recovery(struct nlm_host *host)
+ 	if (!host->h_reclaiming++) {
+ 		nlm_get_host(host);
+ 		__module_get(THIS_MODULE);
+-		if (kernel_thread(reclaimer, host, CLONE_KERNEL) < 0)
++		if (IS_ERR(kthread_run(reclaimer, host, "%s-reclaim", host->h_name)))
+ 			module_put(THIS_MODULE);
  	}
--	dbg("Our thread pid = %d", pid);
- 	return 0;
  }
+@@ -166,9 +167,6 @@ reclaimer(void *ptr)
+ 	struct file_lock *fl, *next;
+ 	u32 nsmstate;
  
+-	daemonize("%s-reclaim", host->h_name);
+-	allow_signal(SIGKILL);
+-
+ 	down_write(&host->h_rwsem);
+ 
+ 	/* This one ensures that our parent doesn't terminate while the
+@@ -193,8 +191,6 @@ restart:
+ 		list_del_init(&fl->fl_u.nfs_fl.list);
+ 
+ 		/* Why are we leaking memory here? --okir */
+-		if (signalled())
+-			continue;
+ 		if (nlmclnt_reclaim(host, fl) != 0)
+ 			continue;
+ 		list_add_tail(&fl->fl_u.nfs_fl.list, &host->h_granted);
 -- 
 1.5.0.g53756
 
