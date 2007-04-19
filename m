@@ -1,61 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766839AbXDSQPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766841AbXDSQSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766839AbXDSQPH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766841AbXDSQPG
+	id S1766841AbXDSQSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766842AbXDSQSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:15:06 -0400
-Received: from rtr.ca ([64.26.128.89]:3224 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766839AbXDSQPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:15:05 -0400
-Message-ID: <46279585.4010409@rtr.ca>
-Date: Thu, 19 Apr 2007 12:15:01 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Renice X for cpu schedulers
-References: <20070417062621.GL2986@holomorphy.com> <200704192159.35546.kernel@kolivas.org> <46276BE5.7020001@rtr.ca> <200704200110.47974.kernel@kolivas.org>
-In-Reply-To: <200704200110.47974.kernel@kolivas.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Apr 2007 12:18:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:58049 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766841AbXDSQSU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 12:18:20 -0400
+Date: Thu, 19 Apr 2007 09:21:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bbpetkov@yahoo.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCHv2] [KERNEL-DOC] kill warnings when building mandocs
+Message-Id: <20070419092122.51b59719.randy.dunlap@oracle.com>
+In-Reply-To: <20070419071931.GA4778@gollum.tnic>
+References: <20070413091422.GA15426@zmei.tnic>
+	<20070413092943.GA16491@zmei.tnic>
+	<20070418101654.7c7906c1.randy.dunlap@oracle.com>
+	<20070419063019.GB3974@gollum.tnic>
+	<20070419071931.GA4778@gollum.tnic>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> On Thursday 19 April 2007 23:17, Mark Lord wrote:
->> Con Kolivas wrote:
->> s go ahead and think up great ideas for other ways of metering out cpu
->>
->>> bandwidth for different purposes, but for X, given the absurd simplicity
->>> of renicing, why keep fighting it? Again I reiterate that most users of
->>> SD have not found the need to renice X anyway except if they stick to old
->>> habits of make -j4 on uniprocessor and the like, and I expect that those
->>> on CFS and Nicksched would also have similar experiences.
->> Just plain "make" (no -j2 or -j9999) is enough to kill interactivity
->> on my 2GHz P-M single-core non-HT machine with SD.
->>
->> But with the very first posted version of CFS by Ingo,
->> I can do "make -j2" no problem and still have a nicely interactive destop.
-> 
-> Cool. Then there's clearly a bug with SD that manifests on your machine as it 
-> should not have that effect at all (and doesn't on other people's machines). 
-> I suggest trying the latest version which fixes some bugs.
+On Thu, 19 Apr 2007 09:19:32 +0200 Borislav Petkov wrote:
 
-SD just doesn't do nearly as good as the stock scheduler, or CFS, here.
+> A fixed version of the patch shutting up missing version warnings when building
+> mandocs.
 
-I'm quite likely one of the few single-CPU/non-HT testers of this stuff.
-If it should ever get more widely used I think we'd hear a lot more complaints.
+http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt ::
+Please include a full patch description/changelog in the future.
 
-Cheers
+
+> +sub get_kernel_version() {
+> +    my $version;
+> +    open (FILE, $ENV{"SRCTREE"}."Makefile") || die "Can't open main kernel Makefile: $!";
+
+This needs to handle the environment variable not
+being there, as another location in scripts/kernel-doc does.
+Updated patch below.  Is this OK with you?
+
+-----
+
+From: Borislav Petkov <bbpetkov@yahoo.de>
+
+This patch shuts warnings of the sort:
+
+make -C /mnt/samsung_200/sam/kernel/trees/21-rc6/build \
+	KBUILD_SRC=/mnt/samsung_200/sam/kernel/trees/21-rc6 \
+	KBUILD_EXTMOD="" -f /mnt/samsung_200/sam/kernel/trees/21-rc6/Makefile mandocs
+make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=scripts/basic
+make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=Documentation/DocBook mandocs
+  SRCTREE=/mnt/samsung_200/sam/kernel/trees/21-rc6/ /mnt/samsung_200/sam/kernel/trees/21-rc6/build/scripts/basic/docproc doc /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/wanbook.tmpl >Documentation/DocBook/wanbook.xml
+  if grep -q refentry Documentation/DocBook/wanbook.xml; then xmlto man -m /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/stylesheet.xsl -o Documentation/DocBook/man Documentation/DocBook/wanbook.xml ; gzip -f Documentation/DocBook/man/*.9; fi
+Note: meta version: No productnumber or alternative     sppp_close
+Note: meta version: No refmiscinfo@class=version        sppp_close
+Note: Writing sppp_close.9
+Note: meta version: No productnumber or alternative     sppp_open
+Note: meta version: No refmiscinfo@class=version        sppp_open
+
+by adding a RefMiscInfo xml tag in the form of the current kernel version to 
+the function, struct and enum definitions in files included by kernel-doc when 
+building 'mandocs'.  However, the version string appears truncated on the manpage
+due to some constraints in the xml DTD for the man header, I believe, for the
+troff output is truncated too.
+
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+
+ scripts/kernel-doc |   36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+--- linux-2621-rc7.orig/scripts/kernel-doc
++++ linux-2621-rc7/scripts/kernel-doc
+@@ -326,6 +326,39 @@ while ($ARGV[0] =~ m/^-(.*)/) {
+     }
+ }
+ 
++# get kernel version
++sub get_kernel_version() {
++    my $version;
++    my $mkfile;
++    if (defined($ENV{'srctree'})) {
++	$mkfile = "$ENV{'srctree'}" . "/Makefile";
++    }
++    else {
++	$mkfile = "Makefile";
++    }
++    open (FILE, "$mkfile") || die "Can't open main kernel Makefile: $!";
++
++    EOF: while (my $line = <FILE>)
++    {
++	if ($line =~ /VERSION\s+=\s+(\d+)/) {
++	     $version .= $1;
++	     next;
++	}
++	if ($line =~ /PATCHLEVEL\s+=\s+(\d+)/) {
++	     $version .= ".$1";
++	     next;
++	}
++	if ($line =~ /SUBLEVEL\s+=\s+(\d+)/) {
++	     $version .= ".$1";
++	     next;
++	}
++	if ($line =~ /EXTRAVERSION\s+=\s+(.*)$/) {
++	     $version .= $1;
++	     last EOF;
++	}
++    }
++    return $version;
++}
+ 
+ # generate a sequence of code that will splice in highlighting information
+ # using the s// operator.
+@@ -592,6 +625,7 @@ sub output_function_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>".$args{'function'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>".$args{'function'}."</refname>\n";
+@@ -668,6 +702,7 @@ sub output_struct_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>".$args{'type'}." ".$args{'struct'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>".$args{'type'}." ".$args{'struct'}."</refname>\n";
+@@ -752,6 +787,7 @@ sub output_enum_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>enum ".$args{'enum'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>enum ".$args{'enum'}."</refname>\n";
