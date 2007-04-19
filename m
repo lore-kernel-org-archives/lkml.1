@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964935AbXDSUex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422629AbXDSUsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964935AbXDSUex (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 16:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXDSUex
+	id S1422629AbXDSUsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 16:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422636AbXDSUsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 16:34:53 -0400
-Received: from lugor.de ([212.112.242.222]:48861 "EHLO solar.vpn.lugor.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964935AbXDSUew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 16:34:52 -0400
-From: Christian Hesse <mail@earthworm.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: CFS and suspend2: hang in atomic copy
-Date: Thu, 19 Apr 2007 22:32:51 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, suspend2-devel@lists.suspend2.net
-References: <20070413202100.GA9957@elte.hu> <200704190112.52838.mail@earthworm.de> <20070419062832.GD18894@elte.hu>
-In-Reply-To: <20070419062832.GD18894@elte.hu>
-X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
+	Thu, 19 Apr 2007 16:48:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38178 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422629AbXDSUsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 16:48:18 -0400
+Message-ID: <4627D57C.4070809@redhat.com>
+Date: Thu, 19 Apr 2007 16:47:56 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart130788829.CpVZlY0MQI";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Zachary Amsden <zach@vmware.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
+ mappings
+References: <20070414204154.871250608@goop.org> <20070414204924.125386443@goop.org>
+In-Reply-To: <20070414204924.125386443@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704192232.56239.mail@earthworm.de>
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.0 (solar.vpn.lugor.de [10.5.1.1]); Thu, 19 Apr 2007 22:33:16 +0200 (CEST)
-X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart130788829.CpVZlY0MQI
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Jeremy Fitzhardinge wrote:
+> head.S creates the very initial pagetable for the kernel.  This just
+> maps enough space for the kernel itself, and an allocation bitmap.
+> The amount of mapped memory is rounded up to 4Mbytes, and so this
+> typically ends up mapping 8Mbytes of memory.
+> 
+> When booting, pagetable_init() needs to create mappings for all
+> lowmem, and the pagetables for these mappings are allocated from the
+> free pages around the kernel in low memory.  If the number of
+> pagetable pages + kernel size exceeds head.S's initial mapping, it
+> will end up faulting on an unmapped page.  This will only happen with
+> specific combinations of kernel size and memory size.
+> 
+> This patch makes sure that head.S also maps enough space to fit the
+> kernel pagetables as well as the kernel itself.  It ends up using an
+> additional two pages of unreclaimable memory.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+> Acked-by: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Zachary Amsden <zach@vmware.com>
+> Cc: Chris Wright <chrisw@sous-sol.org>
+> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>,
 
-On Thursday 19 April 2007, Ingo Molnar wrote:
-> * Christian Hesse <mail@earthworm.de> wrote:
-> > I now got some error message from my system:
-> >
-> > http://www.eworm.de/tmp/cfs-suspend.jpg
->
-> ah, this pinpoints a bug: for performance reasons pick_next_task()
-> assumes that the runqueue is not empty - which is true for schedule(),
-> but not in migrate_dead_tasks(). Does the patch below fix the crash for
-> you?
->
->  kernel/sched.c |    2 ++
->  1 file changed, 2 insertions(+)
->
-> Index: linux/kernel/sched.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux.orig/kernel/sched.c
-> +++ linux/kernel/sched.c
-> @@ -4425,6 +4425,8 @@ static void migrate_dead_tasks(unsigned
->  	struct task_struct *next;
->
->  	for (;;) {
-> +		if (!rq->nr_running)
-> +			break;
->  		next =3D pick_next_task(rq, rq->curr);
->  		if (!next)
->  			break;
-
-Suspend works perfectly with this patch. Thanks a lot and keep up the good=
-=20
-work!
-=2D-=20
-Regards,
-Chris
-
---nextPart130788829.CpVZlY0MQI
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGJ9H4lZfG2c8gdSURAlwJAJ9h2B69Mt8MpavBbKU7KaNgZr/q5QCg78dt
-8KeROkG5nMIXPiRWmxLh2Uc=
-=PVH1
------END PGP SIGNATURE-----
-
---nextPart130788829.CpVZlY0MQI--
+Is some version of this going in for 2.6.21, or is it not a real problem?
