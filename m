@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993069AbXDSApI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993079AbXDSArG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993069AbXDSApI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 20:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993079AbXDSApH
+	id S2993079AbXDSArG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 20:47:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993081AbXDSArG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 20:45:07 -0400
-Received: from smtp1.osdl.org ([65.172.181.25]:33787 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993069AbXDSApF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 20:45:05 -0400
-X-Greylist: delayed 793 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 20:45:05 EDT
-Date: Wed, 18 Apr 2007 17:30:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
-       Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-In-Reply-To: <Pine.LNX.4.64.0704181634220.25880@alien.or.mcafeemobile.com>
-Message-ID: <alpine.LFD.0.98.0704181729580.9964@woody.linux-foundation.org>
-References: <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>
- <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de>
- <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de>
- <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
- <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
- <20070418174945.GA7930@elte.hu> <alpine.LFD.0.98.0704181215260.2828@woody.linux-foundation.org>
- <Pine.LNX.4.64.0704181254580.25880@alien.or.mcafeemobile.com>
- <alpine.LFD.0.98.0704181302370.2828@woody.linux-foundation.org>
- <Pine.LNX.4.64.0704181634220.25880@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 18 Apr 2007 20:47:06 -0400
+Received: from ozlabs.org ([203.10.76.45]:36174 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993079AbXDSArF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Apr 2007 20:47:05 -0400
+Subject: Re: [Patch -mm 3/3] RFC: Introduce kobject->owner for refcounting.
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.0704181110510.12246-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0704181110510.12246-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Thu, 19 Apr 2007 10:46:41 +1000
+Message-Id: <1176943601.5940.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 18 Apr 2007, Davide Libenzi wrote:
+On Wed, 2007-04-18 at 11:20 -0400, Alan Stern wrote:
+> On Wed, 18 Apr 2007, Rusty Russell wrote:
 > 
-> I know, we agree there. But that did not fit my "Pirates of the Caribbean" quote :)
+> > Hi Alan,
+> > 
+> > 	Your assertion is correct.  I haven't studied the driver core, so I
+> > might be off-base here, but you'll note that if the module references
+> > the core kmalloc'ed object rather than the other way around it can be
+> > done safely.  The core can also reference the module, but it must be
+> > able to live without it once it's gone (eg. by returning -ENOENT).
+> 
+> "Live without it once it's gone..."  Do you mean once the object is gone 
+> or once the module is gone?  The core in general has no way to know when 
+> the module is gone; all it knows about is the object.  The trouble arises 
+> when the module is gone (whether the core knows it or not) but the object 
+> is still present.
 
-Ahh, I'm clearly not cultured enough, I didn't catch that reference.
+Hi Alan,
 
-	Linus "yes, I've seen the movie, but it
-		 apparently left more of a mark in other people" Torvalds
+	I meant that the module is gone: it has told the object (via
+unregister_xxx) that it's gone.
+
+> > A really poor example is below:
+...
+> The example is fine as far as it goes, but it assumes that all
+> interactions with the underlying r->foo object can be done under a
+> spinlock.  Of course this isn't true in general.
+
+There are certainly other ways of doing it, such as a mutex, a refcnt &
+completion (for function pointers), or disabling preemption across the
+access and using stop_machine().  Of course, these add complexity.
+
+This is the reason that I've always disliked module removal.  We have a
+lot of code to deal with it and it has awkward semantics (unless --wait
+is used).  OTOH, I'm not a fan of the network approach, either: I feel
+that bringing up an interface should bump the refcnt of the module which
+implements that interface.  Currently taking out e1000 will just kill my
+eth0.
+
+Cheers,
+Rusty.
+
+
+
+
+
+
+
+> 
+> Alan Stern
+
