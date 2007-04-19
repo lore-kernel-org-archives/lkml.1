@@ -1,170 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422636AbXDSVcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767002AbXDSVfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422636AbXDSVcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 17:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422667AbXDSVcv
+	id S1767002AbXDSVfY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 17:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422708AbXDSVfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 17:32:51 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52699 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422636AbXDSVcu (ORCPT
+	Thu, 19 Apr 2007 17:35:24 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:36939 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422667AbXDSVfW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 17:32:50 -0400
-Date: Thu, 19 Apr 2007 14:31:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ego@in.ibm.com
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-Id: <20070419143133.a6c82ef8.akpm@linux-foundation.org>
-In-Reply-To: <20070419120419.GB17069@in.ibm.com>
-References: <20070419120131.GB13435@in.ibm.com>
-	<20070419120419.GB17069@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Apr 2007 17:35:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JWq3njp43wQf9Kut3QSHFQTjCJX4BpSU+PHnDIr8UkPKixp+WXPKCeXmgxuTYIS/OK1lCTM5OoNsy46Wrj69PcneApMPlYtLNzKaO1iymeFBrV5MBYLUy4E/iZU7IiPEQBJ+kCH1HC/KAEyswlnhcNM7UVSQODXfhrAI3FOhLy0=
+Message-ID: <f2b55d220704191435x7a9ffa47s237484b03c6b1a36@mail.gmail.com>
+Date: Thu, 19 Apr 2007 14:35:22 -0700
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Gene Heskett" <gene.heskett@gmail.com>
+Subject: Re: Renice X for cpu schedulers
+Cc: "Con Kolivas" <kernel@kolivas.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matt Mackall" <mpm@selenic.com>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "Peter Williams" <pwil3058@bigpond.net.au>,
+       "Mike Galbraith" <efault@gmx.de>, "ck list" <ck@vds.kolivas.org>,
+       "Bill Huey" <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <200704191416.14374.gene.heskett@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070417062621.GL2986@holomorphy.com>
+	 <20070419063810.GA22418@elte.hu>
+	 <200704192159.35546.kernel@kolivas.org>
+	 <200704191416.14374.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 17:34:19 +0530
-Gautham R Shenoy <ego@in.ibm.com> wrote:
+On 4/19/07, Gene Heskett <gene.heskett@gmail.com> wrote:
+> Having tried re-nicing X a while back, and having the rest of the system
+> suffer in quite obvious ways for even 1 + or - from its default felt pretty
+> bad from this users perspective.
+>
+> It is my considered opinion (yeah I know, I'm just a leaf in the hurricane of
+> this list) that if X has to be re-niced from the 1 point advantage its had
+> for ages, then something is basicly wrong with the overall scheduling, cpu or
+> i/o, or both in combination.  FWIW I'm using cfq for i/o.
 
-> Threads which wait for completion on a frozen thread might result in 
-> causing the freezer to fail, if the waiting thread is freezeable.
-> 
-> There are some well known cases where it's preferable to temporarily thaw
-> the frozen process, finish the wait for completion and allow both the 
-> processes to call try_to_freeze. 
-> 
-> kthread_stop is one such case.
+I think I just realized why the X server is such a problem.  If it
+gets preempted when it's not actually selecting/polling over a set of
+fds that includes the input devices, the scheduler doesn't know that
+it's a good candidate for scheduling when data arrives on those
+devices.  (That's all that any of these dynamic priority heuristics
+really seem to do -- weight the scheduler towards switching to
+conspicuously I/O bound tasks when they become runnable, without the
+forced preemption on lock release that would result from a true
+priority inheritance mechanism.)
 
-hm.
+One way of looking at this is that "fairness-driven" scheduling is a
+poor man's priority ceiling protocol for I/O bound workloads, with the
+implicit priority of an fd or lock given by how desperately the reader
+side needs more data in order to accomplish anything.  "Nice" on a
+task is sort of an indirect way of boosting or dropping the base
+priority of the fds it commonly waits on.  I recognize this is a
+drastic oversimplification, and possibly even a misrepresentation of
+the design _intent_; but I think it's fairly accurate in terms of the
+design _effect_.
 
-> flush_workqueue might be another. 
+The event-driven, non-threaded design of the X server makes it
+particularly vulnerable to "non-interactive behavior" penalties, which
+is appropriate to the extent that it's an output device having trouble
+keeping up with rendering -- in fact, that's exactly the throttling
+mechanism you need in order to exert back-pressure on the X client.
+(Trying to exert back-pressure over Linux's local domain sockets seems
+to be like pushing on a rope, but that's a different problem.)  That
+same event-driven design would prioritize input events just fine --
+except the scheduler won't wake the task in order to deliver them,
+because as far as it's concerned the X server is getting more than
+enough I/O to keep it busy.  It's not only not blocked on the input
+device, it isn't even selecting on it at the moment that its timeslice
+expires -- so no amount of poor-man's PCP emulation is going to help.
 
-flush_workqueue() just needs to die.  I think there are (almost) no
-legitimate users of it once cancel_work_sync() is merged.
+What "more negative nice on the X server than on any CPU-bound
+process" seems to do is to put the X server on a hair-trigger,
+boosting its dynamic priority in a render-limited scenario (on some
+graphics cards!) just enough to cancel the penalty for non-interactive
+behavior.  It's forced to share _some_ CPU cycles, but nobody else is
+allowed a long enough timeslice to keep the X server off the CPU (and
+insensitive to input events) for long.  Not terribly efficient in
+terms of context switch / cache eviction overhead, but certainly
+friendlier to the PEBCAK (who is clearly putting totally inappropriate
+load on a single-threaded CPU by running both a local X server and
+non-SCHED_BATCH compute jobs) than a frozen mouse cursor.
 
-> This patch attempts to address such a situation with a fix for kthread_stop.
+So what's the right answer?  Not special-casing the X server, that's
+for sure.  If this analysis is correct (and as of now it's pure
+speculation), any event-driven application that does compute work
+opportunistically in the absence of user interaction is vulnerable to
+the same overzealous squelching.  I wouldn't design a new application
+that way, of course -- user interaction belongs in a separate thread
+on any UNIX-legacy system which assigns priorities to threads of
+control instead of to patterns of activity.  But all sorts of Linux
+applications have been designed to implicitly elevate artificial
+throughput benchmarks over user responsiveness -- that has been the
+UNIX way at least since SVR4, and Linux's history of expensive thread
+switches prior to NPTL didn't help.
 
-Via wholly undescribed means :(
+If you want responsiveness when the CPU is oversubscribed -- and I for
+one do, which is one reason why I abandoned the Linux desktop once
+both Microsoft and Apple figured out how to make hyperthreading work
+in their favor -- you should probably think about how to get it
+without rewriting half of userspace.  IMHO, dinking around with
+"fairness", as if there were any relationship these days between UIDs
+or process groups or any other control structure and the work that's
+trying to flow through the system, is not going to get you there.
 
-> Strictly experimental. Compile tested on i386.
+If this were my problem, I might start by attaching urgency to
+behavior instead of to thread ID, which demands a scheduler queue
+built around a data structure with a cheap decrease-key operation.
+I'd figure out how to propagate this urgency not just along lock
+chains but also along chains of fds that need flushing (or refilling)
+-- even if the reader (or writer) got preempted for unrelated reasons.
+ Tie appropriate urgency to audio and input devices, and SCHED_FIFO
+can pretty much go away along with nice -10 X.
 
-Rather than doing <whatever you did>, perhaps we could make the freezing
-process a dual-pass thing.  On pass 1, mark all the threads as "we'll be
-freezing you soon" and on the second pass, do the actual freezing.  Then,
-in problematic places such as kthread_stop() we can look to see if we'll
-soon be asked to freeze and if so, run try_to_freeze().
+Then I would use the fact that taking an uncontended futex is
+impressively cheap, ask Ulrich for an extra class of thread-private
+recursive mutexes streamlined for the never-contended case, and
+encourage application developers to use them to bracket any short
+section that would prefer not to have its cache footprint evicted out
+from under it.  Unless things get pretty nasty, when you're too
+impatient to wait for a task to block, you want to preempt it at a
+local minimum in its working set; the easy way to do this is to have a
+per-CPU "soft preemption" timer that causes a per-CPU kernel thread to
+attempt to take the foreground task's thread-private mutex.  The
+foreground task will then block on the next entry into a "cache-hot"
+section, and you can remember its appetite for CPU cycles by the
+urgency on its thread-private futex.
 
-Of course, running try_to_freeze() in kthread_stop() would be very wrong,
-so we'd actually need to do it in callers, preferably via a new
-kthread_stop_freezeable() wrapper.
+For better or for worse, this is far more work than _I'm_ likely to do
+on a volunteer basis, and whether or not this analysis is right, it is
+guaranteed to fail with -ENOPATCH.
 
-And the two-pass-freeze thing is of course racy.  It's also unnecessary:
-setting a flag on every task in the machine is equivalent to setting a
-global variable.  So perhaps just use a global variable?
+Oh, by the way -- maybe someone should look at whether a little
+backpressure on /tmp/.X11-unix/X0 and friends helps, too.  (Evidently
+it works right over pipes, or else hardly anything on Linux would
+DWIM.)  That might succeed in papering over the problem, without
+requiring actual design effort before wading into the code.  Then
+again, I haven't actually looked at the local domain socket code, so
+for all I know there's already backpressure there but X.org's
+excessive cleverness defeats it.
 
-int kthread_stop_freezeable(struct task_struct *k)
-{
-	if (freeze_state == ABOUT_TO_START) {
-		wait_for(freeze_state == STARTED);
-		try_to_freeze();
-	}
-	kthread_stop(k);
-}
-
-which is theoretically racy if another freeze_processes() starts
-immediately.  Anyway - please have a think about it ;)
-
-> +static struct freezer_status_struct freezer_status = {
-> +				.lock = SPIN_LOCK_UNLOCKED,
-> +				.count = 0,
-> +			};
-
-SPIN_LOCK_UNLOCKED is deprecated (it subverts lockdep)
-
->  static inline int freezeable(struct task_struct * p)
->  {
->  	if ((p == current) ||
-> @@ -45,7 +55,8 @@ void refrigerator(void)
->  		 * *after* the freezer did the freezeable() check
->  		 * on us.
->  		 */
-> -		if (current->flags & PF_NOFREEZE) {
-> +		if ((current->flags & PF_NOFREEZE) ||
-> +		    test_tsk_thread_flag(current, TIF_FREEZER_HELD)) {
->  			clear_tsk_thread_flag(current, TIF_FREEZE);
->  			task_unlock(current);
->  			return;
-> @@ -63,12 +74,16 @@ void refrigerator(void)
->  	recalc_sigpending(); /* We sent fake signal, clean it up */
->  	spin_unlock_irq(&current->sighand->siglock);
->  
-> +	task_lock(current);
->  	for (;;) {
->  		set_current_state(TASK_UNINTERRUPTIBLE);
->  		if (!frozen(current))
->  			break;
-> +		task_unlock(current);
->  		schedule();
-> +		task_lock(current);
->  	}
-> +	task_unlock(current);
->  	pr_debug("%s left refrigerator\n", current->comm);
->  	current->state = save;
-
-I guess we should use set_current_state() here.
-
-> +
-> +	if (thaw_user_space) {
-> +		spin_lock(&freezer_status.lock);
-> +			if (freezer_status.count < 0)
-> +				freezer_status.count++;
-> +		spin_unlock(&freezer_status.lock);
-> +	}
->  }
-
-whitespace went wrong
-
-> +#define TIF_FREEZER_HELD	21	/* is temporarily holding up the
-> +					 * process freezer
-> +					 */
->  
->  #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
->  #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
-> @@ -102,6 +105,7 @@ struct thread_info {
->  #define _TIF_MCA_INIT		(1 << TIF_MCA_INIT)
->  #define _TIF_DB_DISABLED	(1 << TIF_DB_DISABLED)
->  #define _TIF_FREEZE		(1 << TIF_FREEZE)
-> +#define _TIF_FREEZER_HELD	(1 << TIF_FREEZER_HELD)
->  
->  /* "work to do on user-return" bits */
->  #define TIF_ALLWORK_MASK	(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
-> Index: linux-2.6.21-rc6/include/asm-mips/thread_info.h
-> ===================================================================
-> --- linux-2.6.21-rc6.orig/include/asm-mips/thread_info.h
-> +++ linux-2.6.21-rc6/include/asm-mips/thread_info.h
-> @@ -120,6 +120,7 @@ register struct thread_info *__current_t
->  #define TIF_MEMDIE		18
->  #define TIF_FREEZE		19
->  #define TIF_ALLOW_FP_IN_KERNEL	20
-> +#define TIF_FREEZER_HELD	21
->  #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
->  
->  #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-> @@ -132,6 +133,7 @@ register struct thread_info *__current_t
->  #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
->  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
->  #define _TIF_FREEZE		(1<<TIF_FREEZE)
-> +#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
-
-hm, all this duplication is unpleasing.  We could do something similar to
-include/linux/buffer_head.h:BH_PrivateStart here: get all architectures to
-define a TIF_COMMON_STUFF_STARTS_HERE then include asm-generic/whatever.h
-which defines all the flags which every architecture must define, as
-TIF_COMMON_STUFF_STARTS_HERE+0, TIF_COMMON_STUFF_STARTS_HERE+1, etc.
-
-
+Cheers,
+- Michael
