@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637745AbXDSNqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S637770AbXDSNyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637745AbXDSNqM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 09:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161504AbXDSNqM
+	id S637770AbXDSNyO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 09:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637769AbXDSNyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 09:46:12 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:41038 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161505AbXDSNqL (ORCPT
+	Thu, 19 Apr 2007 09:54:14 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:22630 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766704AbXDSNyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 09:46:11 -0400
-Date: Thu, 19 Apr 2007 15:48:49 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Tejun Heo" <htejun@gmail.com>, "Alan Stern" <stern@rowland.harvard.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Message-ID: <20070419154849.2e722762@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <d120d5000704190613h178ad644h53ad817db2950426@mail.gmail.com>
-References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
-	<46263A82.1030703@gmail.com>
-	<d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-	<20070419145133.2f7ed45a@gondolin.boeblingen.de.ibm.com>
-	<d120d5000704190613h178ad644h53ad817db2950426@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 09:54:13 -0400
+X-IronPort-AV: i="4.14,427,1170662400"; 
+   d="scan'208"; a="479488231:sNHT1959561956"
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Vladimir V. Saveliev" <vs@namesys.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-aio@kvack.org, reiserfs-dev@namesys.com, linux-mm@kvack.org
+Subject: Re: dio_get_page() lockdep complaints
+X-Message-Flag: Warning: May contain useful information
+References: <20070419073828.GB20928@kernel.dk>
+	<20070419012540.bed394e2.akpm@linux-foundation.org>
+	<20070419083407.GD20928@kernel.dk> <200704191643.38367.vs@namesys.com>
+	<20070419124933.GE11780@kernel.dk> <20070419125236.GF11780@kernel.dk>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 19 Apr 2007 06:53:55 -0700
+In-Reply-To: <20070419125236.GF11780@kernel.dk> (Jens Axboe's message of "Thu, 19 Apr 2007 14:52:36 +0200")
+Message-ID: <adavefstqq4.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 19 Apr 2007 13:53:55.0829 (UTC) FILETIME=[2BFA9A50:01C7828A]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 09:13:43 -0400,
-"Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+ > As I mentioned, the rootfs is on reiser. So something in the boot up
+ > scripts may trigger something that gets reiser to run through that path
+ > with the wrong locking order. After the box is done booting, the dmesg
+ > is clean. I then mount the ext3 fs and run the fio test, the lockdep
+ > trace shows up immediately.
 
-> Because they are managed by 2 different entities. the struct device
-> objects are managed by device core and driver-specific objects are
-> managed by their respective driver.
+Maybe you could add some hack really early on (say at the beginning of
+the reiserfs mount code) that took instances of the locks in the
+correct order, so you would get a lockdep trace of where the ordering
+is violated when it first happens?
 
-Not sure if I understand you here. My view of this was always that the
-embedding object was kind of an extended device and that the relevant
-driver/subsystem managed it through the driver core infrastructure.
-
-> 
-> > > Pretty much drivers have 2 options:
-> > >
-> > > struct my_device {
-> > >         void *private_data;
-> > >         struct device dev;
-> > > };
-> > >
-> > > In this case ->release must live in a subsystem code; individual
-> > > drivers kfree(my_dev->private) and do any additional cleanup after
-> > > calling device_unregister(&my_dev->dev);
-> >
-> > They must do this in the ->remove callback.
-> 
-> Why? If the driver truly stops hardware then any driver-specific data
-> is not needed. With sysfs severing access to removed attributes there
-> is no need to gave "global release", cleanup can be done in stages.
-
-I think I meant the same thing :) Freeing the data in the ->release
-callback is obviously too late. Freeing it in the ->remove callback
-means that the device is no longer really used (and can't be looked up
-any more); only some further refrences may linger (and those are of no
-consequence with the sysfs disconnect).
+ - R.
