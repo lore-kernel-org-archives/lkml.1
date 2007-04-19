@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbXDSW5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbXDSW6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbXDSW5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXDSW5j
+	id S1754290AbXDSW6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbXDSW6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:57:39 -0400
-Received: from mail25.syd.optusnet.com.au ([211.29.133.166]:37164 "EHLO
-	mail25.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751861AbXDSW5h (ORCPT
+	Thu, 19 Apr 2007 18:58:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.236]:13499 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754294AbXDSW6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:57:37 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ray-gmail@madrabbit.org
-Subject: Re: Renice X for cpu schedulers
-Date: Fri, 20 Apr 2007 08:56:05 +1000
-User-Agent: KMail/1.9.5
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Matt Mackall" <mpm@selenic.com>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       "Mike Galbraith" <efault@gmx.de>, "ck list" <ck@vds.kolivas.org>,
-       "Bill Huey" <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-References: <20070417062621.GL2986@holomorphy.com> <200704192159.35546.kernel@kolivas.org> <2c0942db0704191226t21d3dae1lb0fa99bcd9714cf2@mail.gmail.com>
-In-Reply-To: <2c0942db0704191226t21d3dae1lb0fa99bcd9714cf2@mail.gmail.com>
+	Thu, 19 Apr 2007 18:58:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=m0avFrGOYiT7J4t2Lt2Zt/r+pTEotBKxH98a4fcs2Jnuv3G9+4ngWMYkAGcHGmaSY/5POYQcmfQFvSvf3VDwKvX6goOYazRLydarbpGVvQTCOZWmdHDwbAWEO5BI7zo6lIyHSUJGKgdmuOerccY6oYpfAi40fLPLHPCDlcZ4pjg=
+Message-ID: <f2b55d220704191558i6deadc08q6aa07360cadaaccc@mail.gmail.com>
+Date: Thu, 19 Apr 2007 15:58:02 -0700
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: chris@pcburn.com
+Subject: Re: GPL-incompatible Module Error Message
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4627EED5.6020800@pcburn.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704200856.06387.kernel@kolivas.org>
+References: <4627EED5.6020800@pcburn.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 April 2007 05:26, Ray Lee wrote:
-> On 4/19/07, Con Kolivas <kernel@kolivas.org> wrote:
-> > The one fly in the ointment for
-> > linux remains X. I am still, to this moment, completely and utterly
-> > stunned at why everyone is trying to find increasingly complex unique
-> > ways to manage X when all it needs is more cpu[1].
->
-> [...and hence should be reniced]
->
-> The problem is that X is not unique. There's postgresql, memcached,
-> mysql, db2, a little embedded app I wrote... all of these perform work
-> on behalf of another process. It's just most *noticeable* with X, as
-> pretty much everyone is running that.
->
-> If we had some way for the scheduler to decide to donate part of a
-> client process's time slice to the server it just spoke to (with an
-> exponential dampening factor -- take 50% from the client, give 25% to
-> the server, toss the rest on the floor), that -- from my naive point
-> of view -- would be a step toward fixing the underlying issue. Or I
-> might be spouting crap, who knows.
->
-> The problem is real, though, and not limited to X.
->
-> While I have the floor, thank you, Con, for all your work.
+On 4/19/07, Chris Bergeron <chris@pcburn.com> wrote:
+> It just seemed like it might be interesting and I couldn't find anything
+> to shed light on the error itself in the mailing list logs, and I'm
+> curious at what's happening.
 
-You're welcome and thanks for taking the floor to speak. I would say you have 
-actually agreed with me though. X is not unique, it's just an obvious so 
-let's not design the cpu scheduler around the problem with X. Same goes for 
-every other application. Leaving the choice to hand out differential cpu 
-usage when they seem to need is should be up to the users. The donation idea 
-has been done before in some fashion or other in things like "back-boost" 
-which Linus himself tried in 2.5.X days. It worked lovely till it did the 
-wrong thing and wreaked havoc. As is shown repeatedly, the workarounds and 
-the tweaks and the bonuses and the decide on who to give advantage to, when 
-done by the cpu scheduler, is also what is its undoing as it can't always get 
-it right. The consequences of getting it wrong on the other hand are 
-disastrous. The cpu scheduler core is a cpu bandwidth and latency 
-proportionator and should be nothing more or less.
+What's happening is that some kernel developers don't like Linus's
+stance on binary-only drivers and are trying to circumvent the norms
+of software copyright law using EXPORT_SYMBOL_GPL.  (Why some people
+think that the GPL is magically exempt from Lotus v. Borland, Lexmark
+v. Static Control, and their analogues in other jurisdiction is beyond
+me -- but then I gave up smoking the FSF's parallel-legal-universe
+herb some time ago.)
 
--- 
--ck
+Just s/EXPORT_SYMBOL_GPL/EXPORT_SYMBOL/ throughout the kernel and
+you'll be fine -- at a technical level.  But be prepared, when later
+changes break extra-volatile quasi-private in-kernel APIs, to keep
+both pieces -- and to be shunned by EXPORT_SYMBOL_GPL partisans.
+
+Cheers (IANAL, TINLA),
+- Michael
