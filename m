@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161326AbXDSIOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161306AbXDSIPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161326AbXDSIOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993201AbXDSINs
+	id S1161306AbXDSIPb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161224AbXDSIOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:13:48 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33952 "EHLO
+	Thu, 19 Apr 2007 04:14:54 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33957 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993176AbXDSINg (ORCPT
+	with ESMTP id S2993209AbXDSINs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:13:36 -0400
+	Thu, 19 Apr 2007 04:13:48 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH] bluetooth bnep: Convert to kthread API.
-Date: Thu, 19 Apr 2007 01:58:51 -0600
-Message-Id: <1176969596686-git-send-email-ebiederm@xmission.com>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] macintosh/therm_windtunnel.c: Convert to kthread API.
+Date: Thu, 19 Apr 2007 01:58:48 -0600
+Message-Id: <11769695873569-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,57 +27,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch starts kbenpd using kthread_run replacing
-a combination of kernel_thread and daemonize.  Making
-the code a little simpler and more maintainable.
+Start the g4fand using kthread_run not a combination
+of kernel_thread and deamonize.  This makes the code
+a little simpler and more maintainable.
 
-Cc: Marcel Holtmann <marcel@holtmann.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/bluetooth/bnep/core.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/macintosh/therm_windtunnel.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/net/bluetooth/bnep/core.c b/net/bluetooth/bnep/core.c
-index a9f1e88..de3caed 100644
---- a/net/bluetooth/bnep/core.c
-+++ b/net/bluetooth/bnep/core.c
-@@ -32,6 +32,7 @@
- #include <linux/module.h>
- 
- #include <linux/kernel.h>
-+#include <linux/kthread.h>
- #include <linux/sched.h>
- #include <linux/signal.h>
+diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
+index a1d3a98..5d888e7 100644
+--- a/drivers/macintosh/therm_windtunnel.c
++++ b/drivers/macintosh/therm_windtunnel.c
+@@ -36,6 +36,7 @@
+ #include <linux/i2c.h>
+ #include <linux/slab.h>
  #include <linux/init.h>
-@@ -473,7 +474,6 @@ static int bnep_session(void *arg)
++#include <linux/kthread.h>
  
- 	BT_DBG("");
- 
--	daemonize("kbnepd %s", dev->name);
- 	set_user_nice(current, -15);
- 
- 	init_waitqueue_entry(&wait, current);
-@@ -539,6 +539,7 @@ static struct device *bnep_get_device(struct bnep_session *session)
- 
- int bnep_add_connection(struct bnep_connadd_req *req, struct socket *sock)
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+@@ -62,7 +63,6 @@ I2C_CLIENT_INSMOD;
+ static struct {
+ 	volatile int		running;
+ 	struct completion	completion;
+-	pid_t			poll_task;
+ 	
+ 	struct semaphore 	lock;
+ 	struct of_device	*of_dev;
+@@ -285,7 +285,6 @@ restore_regs( void )
+ static int
+ control_loop( void *dummy )
  {
-+	struct task_struct *task;
- 	struct net_device *dev;
- 	struct bnep_session *s, *ss;
- 	u8 dst[ETH_ALEN], src[ETH_ALEN];
-@@ -598,9 +599,10 @@ int bnep_add_connection(struct bnep_connadd_req *req, struct socket *sock)
+-	daemonize("g4fand");
  
- 	__bnep_link_session(s);
- 
--	err = kernel_thread(bnep_session, s, CLONE_KERNEL);
--	if (err < 0) {
-+	task = kthread_run(bnep_session, s, "kbnepd %s", dev->name);
-+	if (IS_ERR(task)) {
- 		/* Session thread start failed, gotta cleanup. */
-+		err = PTR_ERR(task);
- 		unregister_netdev(dev);
- 		__bnep_unlink_session(s);
- 		goto failed;
+ 	down( &x.lock );
+ 	setup_hardware();
+@@ -323,7 +322,7 @@ do_attach( struct i2c_adapter *adapter )
+ 		if( x.thermostat && x.fan ) {
+ 			x.running = 1;
+ 			init_completion( &x.completion );
+-			x.poll_task = kernel_thread( control_loop, NULL, SIGCHLD | CLONE_KERNEL );
++			kthread_run( control_loop, NULL, "g4fand");
+ 		}
+ 	}
+ 	return ret;
 -- 
 1.5.0.g53756
 
