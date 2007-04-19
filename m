@@ -1,223 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993178AbXDSIgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993180AbXDSIhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993178AbXDSIgi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031221AbXDSIgh
+	id S2993180AbXDSIhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031224AbXDSIhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:36:37 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:5686 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031220AbXDSIgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:36:36 -0400
-Date: Thu, 19 Apr 2007 10:34:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       reiserfs-dev@namesys.com, "Vladimir V. Saveliev" <vs@namesys.com>,
-       linux-mm@kvack.org
-Subject: Re: dio_get_page() lockdep complaints
-Message-ID: <20070419083407.GD20928@kernel.dk>
-References: <20070419073828.GB20928@kernel.dk> <20070419010142.5b7b00cd.akpm@linux-foundation.org> <20070419080157.GC20928@kernel.dk> <20070419012540.bed394e2.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070419012540.bed394e2.akpm@linux-foundation.org>
+	Thu, 19 Apr 2007 04:37:17 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:58508 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031225AbXDSIhN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 04:37:13 -0400
+To: linuxram@us.ibm.com
+CC: serue@us.ibm.com, devel@openvz.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, viro@ftp.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <1176925268.2848.67.camel@ram.us.ibm.com> (message from Ram Pai
+	on Wed, 18 Apr 2007 12:41:07 -0700)
+Subject: Re: [Devel] Re: [patch 05/10] add "permit user mounts in new
+	namespace" clone flag
+References: <20070412164541.580374744@szeredi.hu>
+	 <20070412164620.588752236@szeredi.hu>
+	 <20070412203208.GG27772@sergelap.austin.ibm.com>
+	 <m1mz1cq3v6.fsf@ebiederm.dsl.xmission.com>
+	 <1176713221.9488.17.camel@ram.us.ibm.com>
+	 <E1HdNZn-0006i9-00@dorka.pomaz.szeredi.hu>
+	 <1176716941.9488.57.camel@ram.us.ibm.com>
+	 <E1HdNwV-0006l2-00@dorka.pomaz.szeredi.hu>
+	 <1176743669.9488.62.camel@ram.us.ibm.com>
+	 <E1HdVLi-0007oe-00@dorka.pomaz.szeredi.hu>
+	 <20070417170737.GA14891@sergelap.austin.ibm.com>
+	 <E1Hdrir-0002E8-00@dorka.pomaz.szeredi.hu>
+	 <1176838111.2813.109.camel@ram.us.ibm.com>
+	 <E1Hdtai-0002Ri-00@dorka.pomaz.szeredi.hu>
+	 <1176841504.2813.124.camel@ram.us.ibm.com>
+	 <E1He6KI-0003Zl-00@dorka.pomaz.szeredi.hu>
+	 <1176921319.2848.56.camel@ram.us.ibm.com>
+	 <E1HeFbh-0004c2-00@dorka.pomaz.szeredi.hu> <1176925268.2848.67.camel@ram.us.ibm.com>
+Message-Id: <E1HeS7j-0005s3-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 19 Apr 2007 10:36:15 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19 2007, Andrew Morton wrote:
-> On Thu, 19 Apr 2007 10:01:57 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Thu, Apr 19 2007, Andrew Morton wrote:
-> > > On Thu, 19 Apr 2007 09:38:30 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > As I said earlier, I see a case where two mounts that are peers of each
+> > > other can become un-identical if we dont propagate the "allowusermnt".
 > > > 
-> > > > Hi,
-> > > > 
-> > > > Doing some testing on CFQ, I ran into this 100% reproducible report:
-> > > > 
-> > > > =======================================================
-> > > > [ INFO: possible circular locking dependency detected ]
-> > > > 2.6.21-rc7 #5
-> > > > -------------------------------------------------------
-> > > > fio/9741 is trying to acquire lock:
-> > > >  (&mm->mmap_sem){----}, at: [<b018cb34>] dio_get_page+0x54/0x161
-> > > > 
-> > > > but task is already holding lock:
-> > > >  (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
-> > > > 
-> > > > which lock already depends on the new lock.
-> > > > 
+> > > As a practical example.
 > > > 
-> > > This is the correct ranking: i_mutex outside mmap_sem.
+> > > /tmp and /mnt are peers of each other.
+> > > /tmp has its "allowusermnt" flag set, which has not been propagated
+> > > to /mnt.
 > > > 
-> > > > 
-> > > > the existing dependency chain (in reverse order) is:
-> > > > 
-> > > > -> #1 (&inode->i_mutex){--..}:
-> > > >        [<b013e3fb>] __lock_acquire+0xdee/0xf9c
-> > > >        [<b013e600>] lock_acquire+0x57/0x70
-> > > >        [<b038c4a5>] __mutex_lock_slowpath+0x73/0x297
-> > > >        [<b038c6e5>] mutex_lock+0x1c/0x1f
-> > > >        [<b01b17e9>] reiserfs_file_release+0x54/0x447
-> > > >        [<b016afe7>] __fput+0x53/0x101
-> > > >        [<b016b0ee>] fput+0x19/0x1c
-> > > >        [<b015bcd5>] remove_vma+0x3b/0x4d
-> > > >        [<b015c659>] do_munmap+0x17f/0x1cf
-> > > >        [<b015c6db>] sys_munmap+0x32/0x42
-> > > >        [<b0103f04>] sysenter_past_esp+0x5d/0x99
-> > > >        [<ffffffff>] 0xffffffff
-> > > > 
-> > > > -> #0 (&mm->mmap_sem){----}:
-> > > >        [<b013e259>] __lock_acquire+0xc4c/0xf9c
-> > > >        [<b013e600>] lock_acquire+0x57/0x70
-> > > >        [<b0137b92>] down_read+0x3a/0x4c
-> > > >        [<b018cb34>] dio_get_page+0x54/0x161
-> > > >        [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
-> > > >        [<b01cf449>] ext3_direct_IO+0x98/0x1e5
-> > > >        [<b014e8df>] generic_file_direct_IO+0x63/0x133
-> > > >        [<b01500e9>] generic_file_aio_read+0x16b/0x222
-> > > >        [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
-> > > >        [<b0180147>] aio_run_iocb+0x69/0x129
-> > > >        [<b0180a78>] io_submit_one+0x194/0x2eb
-> > > >        [<b0181331>] sys_io_submit+0x92/0xe7
-> > > >        [<b0103f90>] syscall_call+0x7/0xb
-> > > >        [<ffffffff>] 0xffffffff
+> > > now a normal-user mounts an ext2 file system under /tmp at /tmp/1
 > > > 
-> > > But here reiserfs is taking i_mutex in its file_operations.release(),
-> > > which can be called under mmap_sem.
-> > > 
-> > > Vladimir's recent de14569f94513279e3d44d9571a421e9da1759ae.
-> > > "resierfs: avoid tail packing if an inode was ever mmapped" comes real
-> > > close to this code, but afaict it did not cause this bug.
-> > > 
-> > > I can't think of anything which we've done in the 2.6.21 cycle which
-> > > would have caused this to start happening.  Odd.
+> > > unfortunately the mount wont appear under /mnt/1 
 > > 
-> > The bug may be holder, let me know if you want me to check 2.6.20 or
-> > earlier.
+> > Argh, that is not true.  That's what I've been trying to explain to
+> > you all along.
 > 
-> Would be great if you could test 2.6.20.  I have a feeling that I missed
-> something, but what?  We didn't change the refcounting of lifetime of
-> vma.vm_file...
+> I now realize you did, but I failed to catch it. sorry :-(
 
-2.6.20.7 tested, same lockdep triggers. Attached for reference.
+It is my fault also.  I will add better description to the patch
+headers.
 
-> > > > The test run was fio, the job file used is:
-> > > > 
-> > > > # fio job file snip below
-> > > > [global]
-> > > > bs=4k
-> > > > buffered=0
-> > > > ioengine=libaio
-> > > > iodepth=4
-> > > > thread
-> > > > 
-> > > > [readers]
-> > > > numjobs=8
-> > > > size=128m
-> > > > rw=read
-> > > > # fio job file snip above
-> > > > 
-> > > > Filesystem was ext3, default mkfs and mount options. Kernel was
-> > > > 2.6.21-rc7 as of this morning, with some CFQ patches applied.
-> > > > 
-> > > 
-> > > It's interesting that lockdep learned the (wrong) ranking from a reiserfs
-> > > operation then later detected it being violated by ext3.
+> > The propagation will be done _regardless_ of the flag.  The flag is
+> > only checked for the parent of the _requested_ mount.  If it is
+> > allowed there, the mount, including any propagations are allowed.  If
+> > it's denied, then obviously it's denied everywhere.
 > > 
-> > It's a scratch test box, which for some reason has reiserfs as the
-> > rootfs. So reiser gets to run first :-)
+> > > and in case if you allow the mount to appear under /mnt/1, you will
+> > > break unpriviledge mounts semantics which promises: a normal user will
+> > > not be able to mount at a location that does not allow user-mounts.
+> > 
+> > No, it does not promise that.  The flag just promises, that the user
+> > cannot _request_ a mount on the parent mount.
 > 
-> direct-io reads against reiserfs also will take i_mutex outside mmap_sem. 
-> As will pagefaults inside generic_file_write() (which is where this ranking
-> is primarily defined).
-> 
-> So an all-reiserfs system should be getting the same reports.  Obviously,
-> that isn't happening.
-> 
-> It's a bit odd that reiserfs is playing with file contents within
-> file_operations.release(): there could be other files open against that
-> inode.  One would expect this sort of thing to be happening in an
-> inode_operation.  But it's been like that for a long time.
-> 
-> Is it possible that fio was changed?  That it was changed to close() the fd
-> before doing the munmapping whereas it used to hold the file open?
+> ok. if the ability for a normal user to mount something *indirectly*
+> under a mount that has its 'allowusermnt flag' unset, 
+> is acceptable under the definition of 'allowusermnt', i guess my only
+> choice is to accept it. :-)
 
-It's been a while since I tested on this box, so I don't really recall.
-But fio does close() the fd before doing munmap(). This particular test
-case doesn't use mmap(), though.
+It is the only "sane" way I think.
 
+Maybe the MS_SETFLAGS/MS_CLEARFLAGS mount operation could have an
+option for propagating the given flag(s).  Then it's really up to the
+sysadmin, to determine in each case what the desired behavior is.
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.20.7 #1
--------------------------------------------------------
-fio/6651 is trying to acquire lock:
- (&mm->mmap_sem){----}, at: [<b01899c4>] dio_get_page+0x54/0x161
+Yes, you are right, that most of the time propagating the
+"allowusermnt" between peers may be the right thing to do.  But for
+example propagating it from master to slave may not be a good thing at
+all.  So it shouldn't be for the kernel to decide.
 
-but task is already holding lock:
- (&inode->i_mutex){--..}, at: [<b0385e85>] mutex_lock+0x1c/0x1f
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&inode->i_mutex){--..}:
-       [<b013ba73>] __lock_acquire+0xc86/0xd64
-       [<b013bba8>] lock_acquire+0x57/0x70
-       [<b0385c45>] __mutex_lock_slowpath+0x73/0x297
-       [<b0385e85>] mutex_lock+0x1c/0x1f
-       [<b01ae3b5>] reiserfs_file_release+0x54/0x44b
-       [<b0167b27>] __fput+0x53/0x101
-       [<b0167c2e>] fput+0x19/0x1c
-       [<b015884c>] remove_vma+0x37/0x49
-       [<b01591d0>] do_munmap+0x17f/0x1d0
-       [<b0159253>] sys_munmap+0x32/0x42
-       [<b0102f04>] sysenter_past_esp+0x5d/0x99
-       [<ffffffff>] 0xffffffff
-
--> #0 (&mm->mmap_sem){----}:
-       [<b013b8f5>] __lock_acquire+0xb08/0xd64
-       [<b013bba8>] lock_acquire+0x57/0x70
-       [<b013701e>] down_read+0x3a/0x4c
-       [<b01899c4>] dio_get_page+0x54/0x161
-       [<b018a639>] __blockdev_direct_IO+0x514/0xe2a
-       [<b01cc009>] ext3_direct_IO+0x98/0x1e5
-       [<b014b72b>] generic_file_direct_IO+0x63/0x133
-       [<b014cf79>] generic_file_aio_read+0x16b/0x222
-       [<b017c466>] aio_rw_vect_retry+0x5a/0x116
-       [<b017ccf7>] aio_run_iocb+0x69/0x129
-       [<b017d6ed>] io_submit_one+0x194/0x2ec
-       [<b017dffb>] sys_io_submit+0x92/0xe6
-       [<b0102f90>] syscall_call+0x7/0xb
-       [<ffffffff>] 0xffffffff
-
-other info that might help us debug this:
-
-1 lock held by fio/6651:
- #0:  (&inode->i_mutex){--..}, at: [<b0385e85>] mutex_lock+0x1c/0x1f
-
-stack backtrace:
- [<b0103f54>] show_trace_log_lvl+0x1a/0x30
- [<b01045f6>] show_trace+0x12/0x14
- [<b010467d>] dump_stack+0x16/0x18
- [<b0139d29>] print_circular_bug_tail+0x68/0x71
- [<b013b8f5>] __lock_acquire+0xb08/0xd64
- [<b013bba8>] lock_acquire+0x57/0x70
- [<b013701e>] down_read+0x3a/0x4c
- [<b01899c4>] dio_get_page+0x54/0x161
- [<b018a639>] __blockdev_direct_IO+0x514/0xe2a
- [<b01cc009>] ext3_direct_IO+0x98/0x1e5
- [<b014b72b>] generic_file_direct_IO+0x63/0x133
- [<b014cf79>] generic_file_aio_read+0x16b/0x222
- [<b017c466>] aio_rw_vect_retry+0x5a/0x116
- [<b017ccf7>] aio_run_iocb+0x69/0x129
- [<b017d6ed>] io_submit_one+0x194/0x2ec
- [<b017dffb>] sys_io_submit+0x92/0xe6
- [<b0102f90>] syscall_call+0x7/0xb
- =======================
-
--- 
-Jens Axboe
-
+Thanks,
+Miklos
