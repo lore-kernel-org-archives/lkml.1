@@ -1,45 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161488AbXDSJnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993215AbXDSJqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161488AbXDSJnp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 05:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161483AbXDSJnp
+	id S2993215AbXDSJqb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 05:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993220AbXDSJqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 05:43:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53192 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161479AbXDSJno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 05:43:44 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <6d6a94c50704181759w12eee19agcb56058b8261dded@mail.gmail.com> 
-References: <6d6a94c50704181759w12eee19agcb56058b8261dded@mail.gmail.com>  <200704091146.32346.rgetz@blackfin.uclinux.org> <1176112223.17975.8.camel@roc-desktop> <9561.1176209728@redhat.com> <200704101952.05380.rgetz@blackfin.uclinux.org> <6d6a94c50704170336l62fc9ael1e58197e6c3853ba@mail.gmail.com> <2817.1176910411@redhat.com> 
-To: "Aubrey Li" <aubreylee@gmail.com>
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>, uaca@alumni.uv.es,
-       bryan.wu@analog.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       waltje@uwalt.nl.mugnet.org, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Thu, 19 Apr 2007 10:42:53 +0100
-Message-ID: <29619.1176975773@redhat.com>
+	Thu, 19 Apr 2007 05:46:31 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:57803
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S2993215AbXDSJqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 05:46:31 -0400
+Date: Thu, 19 Apr 2007 11:49:45 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: chas@cmf.nrl.navy.mil
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] use mutex instead of binary semaphore in FORE Systems 200E-series driver for ATM
+Message-ID: <20070419094945.GE5013@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	chas@cmf.nrl.navy.mil, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aubrey Li <aubreylee@gmail.com> wrote:
+use mutex instead of binary semaphore in FORE Systems 200E-series
+driver for ATM
 
-> Yes, it's reasonable for me, as long as your
->         host IP is 192.168.2.128
-> and
->         target IP is 192.168.2.141
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-That is correct, yes:-)
+---
 
-I expect it's an NFS packet as my board is using an NFS root at the moment.
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index a7c0ed3..7ab827d 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -1502,9 +1502,9 @@ fore200e_open(struct atm_vcc *vcc)
+     /* pseudo-CBR bandwidth requested? */
+     if ((vcc->qos.txtp.traffic_class == ATM_CBR) && (vcc->qos.txtp.max_pcr > 0)) {
+ 	
+-	down(&fore200e->rate_sf);
++	mutex_lock(&fore200e->rate_mtx);
+ 	if (fore200e->available_cell_rate < vcc->qos.txtp.max_pcr) {
+-	    up(&fore200e->rate_sf);
++	    mutex_unlock(&fore200e->rate_mtx);
+ 
+ 	    kfree(fore200e_vcc);
+ 	    vc_map->vcc = NULL;
+@@ -1513,7 +1513,7 @@ fore200e_open(struct atm_vcc *vcc)
+ 
+ 	/* reserve bandwidth */
+ 	fore200e->available_cell_rate -= vcc->qos.txtp.max_pcr;
+-	up(&fore200e->rate_sf);
++	mutex_unlock(&fore200e->rate_mtx);
+     }
+     
+     vcc->itf = vcc->dev->number;
+@@ -1599,9 +1599,9 @@ fore200e_close(struct atm_vcc* vcc)
+     /* release reserved bandwidth, if any */
+     if ((vcc->qos.txtp.traffic_class == ATM_CBR) && (vcc->qos.txtp.max_pcr > 0)) {
+ 
+-	down(&fore200e->rate_sf);
++	mutex_lock(&fore200e->rate_mtx);
+ 	fore200e->available_cell_rate += vcc->qos.txtp.max_pcr;
+-	up(&fore200e->rate_sf);
++	mutex_unlock(&fore200e->rate_mtx);
+ 
+ 	clear_bit(ATM_VF_HASQOS, &vcc->flags);
+     }
+@@ -2064,16 +2064,16 @@ fore200e_change_qos(struct atm_vcc* vcc,struct atm_qos* qos, int flags)
+ 
+     if ((qos->txtp.traffic_class == ATM_CBR) && (qos->txtp.max_pcr > 0)) {
+ 
+-	down(&fore200e->rate_sf);
++	mutex_lock(&fore200e->rate_mtx);
+ 	if (fore200e->available_cell_rate + vcc->qos.txtp.max_pcr < qos->txtp.max_pcr) {
+-	    up(&fore200e->rate_sf);
++	    mutex_unlock(&fore200e->rate_mtx);
+ 	    return -EAGAIN;
+ 	}
+ 
+ 	fore200e->available_cell_rate += vcc->qos.txtp.max_pcr;
+ 	fore200e->available_cell_rate -= qos->txtp.max_pcr;
+ 
+-	up(&fore200e->rate_sf);
++	mutex_unlock(&fore200e->rate_mtx);
+ 	
+ 	memcpy(&vcc->qos, qos, sizeof(struct atm_qos));
+ 	
+@@ -2459,7 +2459,7 @@ fore200e_initialize(struct fore200e* fore200e)
+ 
+     DPRINTK(2, "device %s being initialized\n", fore200e->name);
+ 
+-    init_MUTEX(&fore200e->rate_sf);
++    mutex_init(&fore200e->rate_mtx);
+     spin_lock_init(&fore200e->q_lock);
+ 
+     cpq = fore200e->cp_queues = fore200e->virt_base + FORE200E_CP_QUEUES_OFFSET;
+diff --git a/drivers/atm/fore200e.h b/drivers/atm/fore200e.h
+index f9abfda..b85a546 100644
+--- a/drivers/atm/fore200e.h
++++ b/drivers/atm/fore200e.h
+@@ -869,7 +869,7 @@ typedef struct fore200e {
+ 
+     struct stats*              stats;                  /* last snapshot of the stats         */
+     
+-    struct semaphore           rate_sf;                /* protects rate reservation ops      */
++    struct mutex               rate_mtx;               /* protects rate reservation ops      */
+     spinlock_t                 q_lock;                 /* protects queue ops                 */
+ #ifdef FORE200E_USE_TASKLET
+     struct tasklet_struct      tx_tasklet;             /* performs tx interrupt work         */
+ 
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-David
+            You can chain me, you can torture me, you can even
+          destroy this body, but you will never imprison my mind
+                            (Mahatma Gandhi)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
