@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993250AbXDSMBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993251AbXDSMDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993250AbXDSMBM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 08:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993249AbXDSMBM
+	id S2993251AbXDSMDG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 08:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993252AbXDSMDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 08:01:12 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:2724 "EHLO kernel.dk"
+	Thu, 19 Apr 2007 08:03:06 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50367 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993248AbXDSMBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 08:01:10 -0400
-Date: Thu, 19 Apr 2007 13:58:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Valerie Clement <valerie.clement@bull.net>
-Cc: ext4 development <linux-ext4@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Performance degradation with FFSB between 2.6.20 and 2.6.21-rc7
-Message-ID: <20070419115840.GA11780@kernel.dk>
-References: <462622F8.10107@bull.net> <20070419090346.GE20928@kernel.dk> <462736FC.3090902@bull.net>
-Mime-Version: 1.0
+	id S2993251AbXDSMDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 08:03:05 -0400
+Date: Thu, 19 Apr 2007 17:31:31 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
+Subject: [RFC 0/2] Fix Freezer related races.
+Message-ID: <20070419120131.GB13435@in.ibm.com>
+Reply-To: ego@in.ibm.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <462736FC.3090902@bull.net>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19 2007, Valerie Clement wrote:
-> Jens Axboe wrote:
-> >Please tell me how you are running ffsb, and also please include a
-> >dmessg from a booted system.
-> >
-> Hi,
-> our mails crossed! please see my response to Andrew.
-> You could reproduce the problem with dd command as suggested, it's more 
-> easy.
-> I'm sending you the dmesg info. For my tests I used the scsci sdc device.
+Hello Everyone, 
+Oleg had pointed out some subtle races which could lead to the failure
+of the process freezer in the patchset which I had posted earlier.
 
-Thanks, it does. Can you try one thing for me? If you run the test on
-sdc, try doing:
+A couple of these problems seem to be present in the latest -mm(2.6.21-rc6-mm1).
 
-# echo 64 > /sys/block/sdc/queue/iosched/quantum
+This is an attempt to fix them.
 
-and repeat the test.
-
+Awaiting you feedback, 
+Regards
+gautham.
 -- 
-Jens Axboe
-
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
