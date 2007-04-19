@@ -1,127 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbXDSWFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750844AbXDSW1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbXDSWFJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXDSWFJ
+	id S1750844AbXDSW1h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbXDSW1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:05:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:49219 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218AbXDSWFE (ORCPT
+	Thu, 19 Apr 2007 18:27:37 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60158 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750844AbXDSW1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:05:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kPL//WDS3h0k7YBS8jfyeUCVEBV82BydTkyLPfEkA2Zk8fxAltd4GZHNsAPiZuD6LDqyni0R6PlfkiJ2r7bCws8gdEbehltHLfp726fR+duzzCCip5ovQiPj7RxinxfCEIibX833Z46V5XxsXzOATB3g1okNDYYxzZtzejZaAL4=
-Message-ID: <4807377b0704191505n6241fb5ej90beac74e702bdc6@mail.gmail.com>
-Date: Thu, 19 Apr 2007 15:05:02 -0700
-From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
-To: "David Ford" <firefighterblu3@gmail.com>
-Subject: Re: [it really is text/plain :P] dual port onboard 82546EB checksum errors
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <523e55a00704191406s4442e32aw5f82bbe21affe2b8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Apr 2007 18:27:36 -0400
+Date: Thu, 19 Apr 2007 15:26:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mtd_blkdevs: Convert to use the kthread API
+Message-Id: <20070419152639.1057c61b.akpm@linux-foundation.org>
+In-Reply-To: <m11wigmb3h.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769657692046-git-send-email-ebiederm@xmission.com>
+	<20070419164746.GA19469@infradead.org>
+	<m11wigmb3h.fsf@ebiederm.dsl.xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <523e55a00704191406s4442e32aw5f82bbe21affe2b8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please copy netdev, or better yet e1000-devel@lists.sourceforge.net in
-the future for e1000 issues like this.  Feel free to move the
-conversation there, if you would like.
+On Thu, 19 Apr 2007 13:13:22 -0600
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-On 4/19/07, David Ford <firefighterblu3@gmail.com> wrote:
-> I have a rackmount server that has a dual port onboard 82546EB card.
->
-> I've googled and seen this card apparently active with other users but
-> I seem to only get checksum errors.
->
-> [    0.194129] Intel(R) PRO/1000 Network Driver - version 7.3.15-k2-NAPI
-> [    0.194234] Copyright (c) 1999-2006 Intel Corporation.
->
-> [    0.194405] ACPI: PCI Interrupt 0000:04:09.0[A] -> GSI 51 (level,
-> low) -> IRQ 16
-> [    0.458732] e1000: 0000:04:09.0: e1000_probe: (PCI:66MHz:64-bit)
-> 00:04:23:cd:93:d2
-> [    0.489766] e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
->
-> [    0.489889] ACPI: PCI Interrupt 0000:03:07.0[A] -> GSI 30 (level,
-> low) -> IRQ 17
-> [    0.721071] e1000: 0000:03:07.0: e1000_probe: The EEPROM Checksum
-> Is Not Valid
-> [    0.742509] ACPI: PCI interrupt for device 0000:03:07.0 disabled
-> [    0.742614] e1000: probe of 0000:03:07.0 failed with error -5
->
-> [    0.742731] ACPI: PCI Interrupt 0000:03:07.1[B] -> GSI 31 (level,
-> low) -> IRQ 18
-> [    0.973865] e1000: 0000:03:07.1: e1000_probe: The EEPROM Checksum
-> Is Not Valid
-> [    0.995304] ACPI: PCI interrupt for device 0000:03:07.1 disabled
-> [    0.995405] e1000: probe of 0000:03:07.1 failed with error -5
->
->
-> 03:07.0 Ethernet controller: Intel Corporation 82546EB Gigabit
-> Ethernet Controller (Copper) (rev 01)
-> 03:07.1 Ethernet controller: Intel Corporation 82546EB Gigabit
-> Ethernet Controller (Copper) (rev 01)
-> 04: 09.0 Ethernet controller: Intel Corporation 82545GM Gigabit
-> Ethernet Controller (rev 04)
->
->
-> 03:07.0 Ethernet controller: Intel Corporation 82546EB Gigabit
-> Ethernet Controller (Copper) (rev 01)
->         Subsystem: Intel Corporation Unknown device 341a
->         Flags: 66MHz, medium devsel, IRQ 17
->         Memory at fe5c0000 (64-bit, non-prefetchable) [size=128K]
->         I/O ports at 2040 [size=64]
->         Capabilities: [dc] Power Management version 2
->         Capabilities: [e4] PCI-X non-bridge device
->         Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+
-> Queue=0/0 Enable-
->
-> 03:07.1 Ethernet controller: Intel Corporation 82546EB Gigabit
-> Ethernet Controller (Copper) (rev 01)
->         Subsystem: Intel Corporation Unknown device 341a
->         Flags: 66MHz, medium devsel, IRQ 18
->         Memory at fe5e0000 (64-bit, non-prefetchable) [size=128K]
->         I/O ports at 2000 [size=64]
->         Capabilities: [dc] Power Management version 2
->         Capabilities: [e4] PCI-X non-bridge device
->         Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+
-> Queue=0/0 Enable-
->
-> 04:09.0 Ethernet controller: Intel Corporation 82545GM Gigabit
-> Ethernet Controller (rev 04)
->         Subsystem: Intel Corporation PRO/1000 MT Server Adapter
->         Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 16
->         Memory at fe8c0000 (64-bit, non-prefetchable) [size=128K]
->         Memory at fe880000 (64-bit, non-prefetchable) [size=256K]
->         I/O ports at 3000 [size=64]
->         Expansion ROM at fe840000 [disabled] [size=256K]
->         Capabilities: [dc] Power Management version 2
->         Capabilities: [e4] PCI-X non-bridge device
->
->
-> The 82545GM card comes up fine but the 46EB card does not.
->
-> This is 2.6.20-gentoo-r6
->
-> I'll be happy to fulfill information request if needed.  Any
-> suggestions that'd help me get the 46EB working?
+> Christoph Hellwig <hch@infradead.org> writes:
+> 
+> > On Thu, Apr 19, 2007 at 12:55:28AM -0600, Eric W. Biederman wrote:
+> >> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+> >> 
+> >> thread_run is used intead of kernel_thread, daemonize, and mucking
+> >> around blocking signals directly.
+> >
+> > Please don't do incomplete transitions like that.  We don't really
+> > want people to use kthread_run, but not the kthread stopping
+> > mechanisms, because people will simply forget about that bit and
+> > we'll never get rid of the enormous amount of, erm creativity, in
+> > handling kernel thread stopping.
+> >
+> > This is just the first patch in your series where the thread is mutable,
+> > but it equally applies to all following patches where this is the case
+> > aswell.
+> 
+> I don't really care about the creativity.  Although it would
+> be nice if it wasn't there.  I deliberately left it in so I would be
+> certain my patches were correct.
+> 
+> I care about killing the maintenance and forward development roadblocks
+> that are kernel_thread and daemonize.  And the user interface problem
+> that is handling signals in kernel threads.
+> 
 
-We haven't heard of any reports about this, can you get us some more
-information about the platform this is in?
-lspci -vv
-dmesg (full version)
-you can comment out the eeprom check and mac address check, rebuild
-the driver and load it, then run
-ethtool -e ethX
-on the ports that are failing, without bringing the interface 'up'
+Yes, I think that is a practical position, if not an ideal one.
 
-you may have a hardware failure, or you could be having bus issues.
-The eeprom read is the first point that we try to read a register from
-the adapter so if register reads are failing this is the symptom you
-will see.
+MTD (to pick one example) does need to be decruftified: remove
+r->blkcore_priv->exiting, probably ->blkcore_priv->thread_dead, switch
+deregister_mtd_blktrans() to use kthread_stop().  But it's a bit much to
+expect Eric to make that conversion, and to suitably test it.  All he can
+do is to make a best-effort and hope that someone else tests it, which
+isn't very reliable.
+
+This partial patch at least gets us some of the way there, and serves as a
+gentle reminder to dwmwyouknowwho to finish cleaning this stuff up.
+
+I'd be more concerned about a part-conversion in a subsystem which has no
+identifiable maintainer, because in that case the chances are that we'll
+just forget about it an the conversion would never be completed.
+
+And of course, these are not simply cleanup patches: we actually need to get
+the kernel threads out of the daemonize() and signalling game to complete
+the virtualisation work.
+
