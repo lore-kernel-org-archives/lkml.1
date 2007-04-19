@@ -1,114 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031233AbXDSMo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965013AbXDSMpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031233AbXDSMo0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 08:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637742AbXDSMoZ
+	id S965013AbXDSMpQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 08:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965109AbXDSMpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 08:44:25 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6175 "EHLO kernel.dk"
+	Thu, 19 Apr 2007 08:45:15 -0400
+Received: from mail.alkar.net ([195.248.191.95]:64990 "EHLO mail.alkar.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031233AbXDSMoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 08:44:24 -0400
-Date: Thu, 19 Apr 2007 14:41:55 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Valerie Clement <valerie.clement@bull.net>
-Cc: ext4 development <linux-ext4@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Performance degradation with FFSB between 2.6.20 and 2.6.21-rc7
-Message-ID: <20070419124155.GC11780@kernel.dk>
-References: <462622F8.10107@bull.net> <20070419090346.GE20928@kernel.dk> <462736FC.3090902@bull.net> <20070419115840.GA11780@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S965013AbXDSMpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 08:45:13 -0400
+From: "Vladimir V. Saveliev" <vs@namesys.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: dio_get_page() lockdep complaints
+Date: Thu, 19 Apr 2007 16:43:37 +0400
+User-Agent: KMail/1.8.2
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-aio@kvack.org, reiserfs-dev@namesys.com, linux-mm@kvack.org
+References: <20070419073828.GB20928@kernel.dk> <20070419012540.bed394e2.akpm@linux-foundation.org> <20070419083407.GD20928@kernel.dk>
+In-Reply-To: <20070419083407.GD20928@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="koi8-u"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070419115840.GA11780@kernel.dk>
+Message-Id: <200704191643.38367.vs@namesys.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19 2007, Jens Axboe wrote:
-> On Thu, Apr 19 2007, Valerie Clement wrote:
-> > Jens Axboe wrote:
-> > >Please tell me how you are running ffsb, and also please include a
-> > >dmessg from a booted system.
-> > >
-> > Hi,
-> > our mails crossed! please see my response to Andrew.
-> > You could reproduce the problem with dd command as suggested, it's more 
-> > easy.
-> > I'm sending you the dmesg info. For my tests I used the scsci sdc device.
+Hello
+
+On Thursday 19 April 2007 12:34, Jens Axboe wrote:
+> On Thu, Apr 19 2007, Andrew Morton wrote:
+> > On Thu, 19 Apr 2007 10:01:57 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Thu, Apr 19 2007, Andrew Morton wrote:
+> > > > On Thu, 19 Apr 2007 09:38:30 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > 
+> > > > > Hi,
+> > > > > 
+> > > > > Doing some testing on CFQ, I ran into this 100% reproducible report:
+> > > > > 
+> > > > > =======================================================
+> > > > > [ INFO: possible circular locking dependency detected ]
+> > > > > 2.6.21-rc7 #5
+> > > > > -------------------------------------------------------
+> > > > > fio/9741 is trying to acquire lock:
+> > > > >  (&mm->mmap_sem){----}, at: [<b018cb34>] dio_get_page+0x54/0x161
+> > > > > 
+> > > > > but task is already holding lock:
+> > > > >  (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
+> > > > > 
+> > > > > which lock already depends on the new lock.
+> > > > > 
+> > > > 
+> > > > This is the correct ranking: i_mutex outside mmap_sem.
+> > > > 
+> > > > > 
+> > > > > the existing dependency chain (in reverse order) is:
+> > > > > 
+> > > > > -> #1 (&inode->i_mutex){--..}:
+> > > > >        [<b013e3fb>] __lock_acquire+0xdee/0xf9c
+> > > > >        [<b013e600>] lock_acquire+0x57/0x70
+> > > > >        [<b038c4a5>] __mutex_lock_slowpath+0x73/0x297
+> > > > >        [<b038c6e5>] mutex_lock+0x1c/0x1f
+> > > > >        [<b01b17e9>] reiserfs_file_release+0x54/0x447
+> > > > >        [<b016afe7>] __fput+0x53/0x101
+> > > > >        [<b016b0ee>] fput+0x19/0x1c
+> > > > >        [<b015bcd5>] remove_vma+0x3b/0x4d
+> > > > >        [<b015c659>] do_munmap+0x17f/0x1cf
+> > > > >        [<b015c6db>] sys_munmap+0x32/0x42
+> > > > >        [<b0103f04>] sysenter_past_esp+0x5d/0x99
+> > > > >        [<ffffffff>] 0xffffffff
+> > > > > 
+> > > > > -> #0 (&mm->mmap_sem){----}:
+> > > > >        [<b013e259>] __lock_acquire+0xc4c/0xf9c
+> > > > >        [<b013e600>] lock_acquire+0x57/0x70
+> > > > >        [<b0137b92>] down_read+0x3a/0x4c
+> > > > >        [<b018cb34>] dio_get_page+0x54/0x161
+> > > > >        [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
+> > > > >        [<b01cf449>] ext3_direct_IO+0x98/0x1e5
+> > > > >        [<b014e8df>] generic_file_direct_IO+0x63/0x133
+> > > > >        [<b01500e9>] generic_file_aio_read+0x16b/0x222
+> > > > >        [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
+> > > > >        [<b0180147>] aio_run_iocb+0x69/0x129
+> > > > >        [<b0180a78>] io_submit_one+0x194/0x2eb
+> > > > >        [<b0181331>] sys_io_submit+0x92/0xe7
+> > > > >        [<b0103f90>] syscall_call+0x7/0xb
+> > > > >        [<ffffffff>] 0xffffffff
+> > > > 
+> > > > But here reiserfs is taking i_mutex in its file_operations.release(),
+> > > > which can be called under mmap_sem.
+> > > > 
+> > > > Vladimir's recent de14569f94513279e3d44d9571a421e9da1759ae.
+> > > > "resierfs: avoid tail packing if an inode was ever mmapped" comes real
+> > > > close to this code, but afaict it did not cause this bug.
+> > > > 
+> > > > I can't think of anything which we've done in the 2.6.21 cycle which
+> > > > would have caused this to start happening.  Odd.
+> > > 
+> > > The bug may be holder, let me know if you want me to check 2.6.20 or
+> > > earlier.
+> > 
+> > Would be great if you could test 2.6.20.  I have a feeling that I missed
+> > something, but what?  We didn't change the refcounting of lifetime of
+> > vma.vm_file...
 > 
-> Thanks, it does. Can you try one thing for me? If you run the test on
-> sdc, try doing:
+> 2.6.20.7 tested, same lockdep triggers. Attached for reference.
 > 
-> # echo 64 > /sys/block/sdc/queue/iosched/quantum
+
+Did you have CFQ patches mentioned below applied?
+Would you please send your .config?
+I tried fio (1.15) with this job file and did not get the possible circular locking dependency detected
+
+> > > > > The test run was fio, the job file used is:
+> > > > > 
+> > > > > # fio job file snip below
+> > > > > [global]
+> > > > > bs=4k
+> > > > > buffered=0
+> > > > > ioengine=libaio
+> > > > > iodepth=4
+> > > > > thread
+> > > > > 
+> > > > > [readers]
+> > > > > numjobs=8
+> > > > > size=128m
+> > > > > rw=read
+> > > > > # fio job file snip above
+> > > > > 
+> > > > > Filesystem was ext3, default mkfs and mount options. Kernel was
+> > > > > 2.6.21-rc7 as of this morning, with some CFQ patches applied.
+> > > > > 
+> > > > 
+> > > > It's interesting that lockdep learned the (wrong) ranking from a reiserfs
+> > > > operation then later detected it being violated by ext3.
+> > > 
+> > > It's a scratch test box, which for some reason has reiserfs as the
+> > > rootfs. So reiser gets to run first :-)
+> > 
+> > direct-io reads against reiserfs also will take i_mutex outside mmap_sem. 
+> > As will pagefaults inside generic_file_write() (which is where this ranking
+> > is primarily defined).
+> > 
+> > So an all-reiserfs system should be getting the same reports.  Obviously,
+> > that isn't happening.
+> > 
+> > It's a bit odd that reiserfs is playing with file contents within
+> > file_operations.release(): there could be other files open against that
+> > inode.  One would expect this sort of thing to be happening in an
+> > inode_operation.  But it's been like that for a long time.
+> > 
+> > Is it possible that fio was changed?  That it was changed to close() the fd
+> > before doing the munmapping whereas it used to hold the file open?
 > 
-> and repeat the test.
-
-And, then try this one as well (and don't tweak quantum for that
-kernel):
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index b6491c0..9e37971 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -986,9 +986,9 @@ __cfq_dispatch_requests(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	 * expire an async queue immediately if it has used up its slice. idle
- 	 * queue always expire after 1 dispatch round.
- 	 */
--	if ((!cfq_cfqq_sync(cfqq) &&
-+	if (cfqd->busy_queues > 1 && ((!cfq_cfqq_sync(cfqq) &&
- 	    cfqd->dispatch_slice >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
--	    cfq_class_idle(cfqq)) {
-+	    cfq_class_idle(cfqq))) {
- 		cfqq->slice_end = jiffies + 1;
- 		cfq_slice_expired(cfqd, 0, 0);
- 	}
-@@ -1051,19 +1051,21 @@ cfq_dispatch_requests(request_queue_t *q, int force)
- 	while ((cfqq = cfq_select_queue(cfqd)) != NULL) {
- 		int max_dispatch;
- 
--		/*
--		 * Don't repeat dispatch from the previous queue.
--		 */
--		if (prev_cfqq == cfqq)
--			break;
-+		if (cfqd->busy_queues > 1) {
-+			/*
-+			 * Don't repeat dispatch from the previous queue.
-+			 */
-+			if (prev_cfqq == cfqq)
-+				break;
- 
--		/*
--		 * So we have dispatched before in this round, if the
--		 * next queue has idling enabled (must be sync), don't
--		 * allow it service until the previous have continued.
--		 */
--		if (cfqd->rq_in_driver && cfq_cfqq_idle_window(cfqq))
--			break;
-+			/*
-+			 * So we have dispatched before in this round, if the
-+			 * next queue has idling enabled (must be sync), don't
-+			 * allow it service until the previous have continued.
-+			 */
-+			if (cfqd->rq_in_driver && cfq_cfqq_idle_window(cfqq))
-+				break;
-+		}
- 
- 		cfq_clear_cfqq_must_dispatch(cfqq);
- 		cfq_clear_cfqq_wait_request(cfqq);
-@@ -1370,7 +1372,9 @@ retry:
- 		atomic_set(&cfqq->ref, 0);
- 		cfqq->cfqd = cfqd;
- 
--		cfq_mark_cfqq_idle_window(cfqq);
-+		if (key != CFQ_KEY_ASYNC)
-+			cfq_mark_cfqq_idle_window(cfqq);
-+
- 		cfq_mark_cfqq_prio_changed(cfqq);
- 		cfq_mark_cfqq_queue_new(cfqq);
- 		cfq_init_prio_data(cfqq);
-
--- 
-Jens Axboe
-
+> It's been a while since I tested on this box, so I don't really recall.
+> But fio does close() the fd before doing munmap(). This particular test
+> case doesn't use mmap(), though.
+> 
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.20.7 #1
+> -------------------------------------------------------
+> fio/6651 is trying to acquire lock:
+>  (&mm->mmap_sem){----}, at: [<b01899c4>] dio_get_page+0x54/0x161
+> 
+> but task is already holding lock:
+>  (&inode->i_mutex){--..}, at: [<b0385e85>] mutex_lock+0x1c/0x1f
+> 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&inode->i_mutex){--..}:
+>        [<b013ba73>] __lock_acquire+0xc86/0xd64
+>        [<b013bba8>] lock_acquire+0x57/0x70
+>        [<b0385c45>] __mutex_lock_slowpath+0x73/0x297
+>        [<b0385e85>] mutex_lock+0x1c/0x1f
+>        [<b01ae3b5>] reiserfs_file_release+0x54/0x44b
+>        [<b0167b27>] __fput+0x53/0x101
+>        [<b0167c2e>] fput+0x19/0x1c
+>        [<b015884c>] remove_vma+0x37/0x49
+>        [<b01591d0>] do_munmap+0x17f/0x1d0
+>        [<b0159253>] sys_munmap+0x32/0x42
+>        [<b0102f04>] sysenter_past_esp+0x5d/0x99
+>        [<ffffffff>] 0xffffffff
+> 
+> -> #0 (&mm->mmap_sem){----}:
+>        [<b013b8f5>] __lock_acquire+0xb08/0xd64
+>        [<b013bba8>] lock_acquire+0x57/0x70
+>        [<b013701e>] down_read+0x3a/0x4c
+>        [<b01899c4>] dio_get_page+0x54/0x161
+>        [<b018a639>] __blockdev_direct_IO+0x514/0xe2a
+>        [<b01cc009>] ext3_direct_IO+0x98/0x1e5
+>        [<b014b72b>] generic_file_direct_IO+0x63/0x133
+>        [<b014cf79>] generic_file_aio_read+0x16b/0x222
+>        [<b017c466>] aio_rw_vect_retry+0x5a/0x116
+>        [<b017ccf7>] aio_run_iocb+0x69/0x129
+>        [<b017d6ed>] io_submit_one+0x194/0x2ec
+>        [<b017dffb>] sys_io_submit+0x92/0xe6
+>        [<b0102f90>] syscall_call+0x7/0xb
+>        [<ffffffff>] 0xffffffff
+> 
+> other info that might help us debug this:
+> 
+> 1 lock held by fio/6651:
+>  #0:  (&inode->i_mutex){--..}, at: [<b0385e85>] mutex_lock+0x1c/0x1f
+> 
+> stack backtrace:
+>  [<b0103f54>] show_trace_log_lvl+0x1a/0x30
+>  [<b01045f6>] show_trace+0x12/0x14
+>  [<b010467d>] dump_stack+0x16/0x18
+>  [<b0139d29>] print_circular_bug_tail+0x68/0x71
+>  [<b013b8f5>] __lock_acquire+0xb08/0xd64
+>  [<b013bba8>] lock_acquire+0x57/0x70
+>  [<b013701e>] down_read+0x3a/0x4c
+>  [<b01899c4>] dio_get_page+0x54/0x161
+>  [<b018a639>] __blockdev_direct_IO+0x514/0xe2a
+>  [<b01cc009>] ext3_direct_IO+0x98/0x1e5
+>  [<b014b72b>] generic_file_direct_IO+0x63/0x133
+>  [<b014cf79>] generic_file_aio_read+0x16b/0x222
+>  [<b017c466>] aio_rw_vect_retry+0x5a/0x116
+>  [<b017ccf7>] aio_run_iocb+0x69/0x129
+>  [<b017d6ed>] io_submit_one+0x194/0x2ec
+>  [<b017dffb>] sys_io_submit+0x92/0xe6
+>  [<b0102f90>] syscall_call+0x7/0xb
+>  =======================
+> 
