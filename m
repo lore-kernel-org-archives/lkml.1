@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993206AbXDSIK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993205AbXDSIMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993206AbXDSIK6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993192AbXDSIKt
+	id S2993205AbXDSIMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993200AbXDSIKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:10:49 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33931 "EHLO
+	Thu, 19 Apr 2007 04:10:43 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33940 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993199AbXDSIKF (ORCPT
+	with ESMTP id S2993196AbXDSIKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:10:05 -0400
+	Thu, 19 Apr 2007 04:10:24 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] macintosh/adb: Convert to the kthread API
-Date: Thu, 19 Apr 2007 01:58:49 -0600
-Message-Id: <11769695932904-git-send-email-ebiederm@xmission.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>, Jes Sorensen <jes@sgi.com>,
+       Tony Luck <tony.luck@intel.com>
+Subject: [PATCH] ia64 sn xpc: Convert to use kthread API.
+Date: Thu, 19 Apr 2007 01:58:44 -0600
+Message-Id: <1176969574439-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -28,118 +27,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch modifies the startup of kadbprobe to use
-kthread_run instead of scheduling a work event which
-later calls kernel_thread and in the thread calls
-daemonize and blocks signals.  kthread_run is simpler
-and more maintainable.
+This patch starts the xpc kernel threads using kthread_run
+not a combination of kernel_thread and daemonize.  Resuling
+in slightly simpler and more maintainable code.
 
-The variable pid_t adb_probe_task_pid is replaced by
-a struct task_struct variable named adb_probe_task.
-Which works equally well with for testing if the current
-process is the adb_probe thread, does not get confused
-in the presence of a pid namespace and is easier to
-compare against current as it is the same type.
-
-The result is code that is slightly simpler and easier
-to maintain.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Jes Sorensen <jes@sgi.com>
+Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/macintosh/adb.c |   32 +++++++-------------------------
- 1 files changed, 7 insertions(+), 25 deletions(-)
+ arch/ia64/sn/kernel/xpc_main.c |   31 +++++++++++++------------------
+ 1 files changed, 13 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index adfea3c..09c5261 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -35,6 +35,7 @@
- #include <linux/spinlock.h>
+diff --git a/arch/ia64/sn/kernel/xpc_main.c b/arch/ia64/sn/kernel/xpc_main.c
+index e336e16..5b53642 100644
+--- a/arch/ia64/sn/kernel/xpc_main.c
++++ b/arch/ia64/sn/kernel/xpc_main.c
+@@ -56,6 +56,7 @@
+ #include <linux/reboot.h>
  #include <linux/completion.h>
- #include <linux/device.h>
+ #include <linux/kdebug.h>
 +#include <linux/kthread.h>
- 
+ #include <asm/sn/intr.h>
+ #include <asm/sn/sn_sal.h>
  #include <asm/uaccess.h>
- #include <asm/semaphore.h>
-@@ -82,7 +83,7 @@ struct adb_driver *adb_controller;
- BLOCKING_NOTIFIER_HEAD(adb_client_list);
- static int adb_got_sleep;
- static int adb_inited;
--static pid_t adb_probe_task_pid;
-+static struct task_struct *adb_probe_task;
- static DECLARE_MUTEX(adb_probe_mutex);
- static struct completion adb_probe_task_comp;
- static int sleepy_trackpad;
-@@ -137,8 +138,7 @@ static void printADBreply(struct adb_request *req)
+@@ -253,8 +254,6 @@ xpc_hb_checker(void *ignore)
  
- static __inline__ void adb_wait_ms(unsigned int ms)
+ 	/* this thread was marked active by xpc_hb_init() */
+ 
+-	daemonize(XPC_HB_CHECK_THREAD_NAME);
+-
+ 	set_cpus_allowed(current, cpumask_of_cpu(XPC_HB_CHECK_CPU));
+ 
+ 	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
+@@ -324,8 +323,6 @@ xpc_hb_checker(void *ignore)
+ static int
+ xpc_initiate_discovery(void *ignore)
  {
--	if (current->pid && adb_probe_task_pid &&
--	  adb_probe_task_pid == current->pid)
-+	if (adb_probe_task == current)
- 		msleep(ms);
- 	else
- 		mdelay(ms);
-@@ -245,35 +245,19 @@ static int adb_scan_bus(void)
-  * This kernel task handles ADB probing. It dies once probing is
-  * completed.
-  */
--static int
--adb_probe_task(void *x)
-+static int adb_probe(void *x)
+-	daemonize(XPC_DISCOVERY_THREAD_NAME);
+-
+ 	xpc_discovery();
+ 
+ 	dev_dbg(xpc_part, "discovery thread is exiting\n");
+@@ -494,8 +491,6 @@ xpc_activating(void *__partid)
+ 
+ 	dev_dbg(xpc_part, "bringing partition %d up\n", partid);
+ 
+-	daemonize("xpc%02d", partid);
+-
+ 	/*
+ 	 * This thread needs to run at a realtime priority to prevent a
+ 	 * significant performance degradation.
+@@ -559,7 +554,7 @@ xpc_activate_partition(struct xpc_partition *part)
  {
--	sigset_t blocked;
--
--	strcpy(current->comm, "kadbprobe");
--
--	sigfillset(&blocked);
--	sigprocmask(SIG_BLOCK, &blocked, NULL);
--	flush_signals(current);
+ 	partid_t partid = XPC_PARTID(part);
+ 	unsigned long irq_flags;
+-	pid_t pid;
++	struct task_struct *task;
  
- 	printk(KERN_INFO "adb: starting probe task...\n");
- 	do_adb_reset_bus();
- 	printk(KERN_INFO "adb: finished probe task...\n");
- 	
--	adb_probe_task_pid = 0;
-+	adb_probe_task = NULL;
- 	up(&adb_probe_mutex);
- 	
- 	return 0;
- }
  
--static void
--__adb_probe_task(struct work_struct *bullshit)
--{
--	adb_probe_task_pid = kernel_thread(adb_probe_task, NULL, SIGCHLD | CLONE_KERNEL);
--}
+ 	spin_lock_irqsave(&part->act_lock, irq_flags);
+@@ -571,9 +566,10 @@ xpc_activate_partition(struct xpc_partition *part)
+ 
+ 	spin_unlock_irqrestore(&part->act_lock, irq_flags);
+ 
+-	pid = kernel_thread(xpc_activating, (void *) ((u64) partid), 0);
++	task = kthread_run(xpc_activating, (void *) ((u64) partid),
++			  "xpc%02d", partid);
+ 
+-	if (unlikely(pid <= 0)) {
++	if (unlikely(IS_ERR(task))) {
+ 		spin_lock_irqsave(&part->act_lock, irq_flags);
+ 		part->act_state = XPC_P_INACTIVE;
+ 		XPC_SET_REASON(part, xpcCloneKThreadFailed, __LINE__);
+@@ -724,8 +720,6 @@ xpc_daemonize_kthread(void *args)
+ 	unsigned long irq_flags;
+ 
+ 
+-	daemonize("xpc%02dc%d", partid, ch_number);
 -
--static DECLARE_WORK(adb_reset_work, __adb_probe_task);
--
- int
- adb_reset_bus(void)
- {
-@@ -283,7 +267,7 @@ adb_reset_bus(void)
- 	}
+ 	dev_dbg(xpc_chan, "kthread starting, partid=%d, channel=%d\n",
+ 		partid, ch_number);
  
- 	down(&adb_probe_mutex);
--	schedule_work(&adb_reset_work);
-+	adb_probe_task = kthread_run(adb_probe, NULL, "kadbprobe");
- 	return 0;
- }
+@@ -844,8 +838,9 @@ xpc_create_kthreads(struct xpc_channel *ch, int needed,
+ 		(void) xpc_part_ref(part);
+ 		xpc_msgqueue_ref(ch);
  
-@@ -469,9 +453,7 @@ adb_request(struct adb_request *req, void (*done)(struct adb_request *),
- 	/* Synchronous requests send from the probe thread cause it to
- 	 * block. Beware that the "done" callback will be overriden !
+-		pid = kernel_thread(xpc_daemonize_kthread, (void *) args, 0);
+-		if (pid < 0) {
++		task = kthread_run(xpc_daemonize_kthread, args,
++				   "xpc%02dc%d", partid, ch_number);
++		if (IS_ERR(task)) {
+ 			/* the fork failed */
+ 
+ 			/*
+@@ -1222,7 +1217,7 @@ xpc_init(void)
+ 	int ret;
+ 	partid_t partid;
+ 	struct xpc_partition *part;
+-	pid_t pid;
++	struct task_struct *task;
+ 	size_t buf_size;
+ 
+ 
+@@ -1353,8 +1348,8 @@ xpc_init(void)
+ 	 * The real work-horse behind xpc.  This processes incoming
+ 	 * interrupts and monitors remote heartbeats.
  	 */
--	if ((flags & ADBREQ_SYNC) &&
--	    (current->pid && adb_probe_task_pid &&
--	    adb_probe_task_pid == current->pid)) {
-+	if ((flags & ADBREQ_SYNC) && (current == adb_probe_task)) {
- 		req->done = adb_probe_wakeup;
- 		rc = adb_controller->send_request(req, 0);
- 		if (rc || req->complete)
+-	pid = kernel_thread(xpc_hb_checker, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(xpc_hb_checker, NULL, XPC_HB_CHECK_THREAD_NAME);
++	if (IS_ERR(task)) {
+ 		dev_err(xpc_part, "failed while forking hb check thread\n");
+ 
+ 		/* indicate to others that our reserved page is uninitialized */
+@@ -1384,8 +1379,8 @@ xpc_init(void)
+ 	 * activate based on info provided by SAL. This new thread is short
+ 	 * lived and will exit once discovery is complete.
+ 	 */
+-	pid = kernel_thread(xpc_initiate_discovery, NULL, 0);
+-	if (pid < 0) {
++	task = kthread_run(xpc_initiate_discovery, NULL, XPC_DISCOVERY_THREAD_NAME);
++	if (IS_ERR(task)) {
+ 		dev_err(xpc_part, "failed while forking discovery thread\n");
+ 
+ 		/* mark this new thread as a non-starter */
 -- 
 1.5.0.g53756
 
