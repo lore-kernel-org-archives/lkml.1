@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161219AbXDSHJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161198AbXDSHJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161219AbXDSHJF (ORCPT <rfc822;w@1wt.eu>);
+	id S1161198AbXDSHJF (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 19 Apr 2007 03:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161198AbXDSHIf
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993159AbXDSHIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:08:35 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46298 "EHLO
+	Thu, 19 Apr 2007 03:08:32 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46299 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161217AbXDSHAM (ORCPT
+	with ESMTP id S1161227AbXDSHAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:00:12 -0400
+	Thu, 19 Apr 2007 03:00:13 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] macintosh/mediabay: Convert to kthread API.
-Date: Thu, 19 Apr 2007 00:55:45 -0600
-Message-Id: <11769657932114-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] md: Remove broken SIGKILL support
+Date: Thu, 19 Apr 2007 00:56:00 -0600
+Message-Id: <11769658203016-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,74 +26,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patch modifies the startup of the media_bay_task
-to use kthread_run and not a combination of kernel_thread,
-deamonize and sigfillset.
+Currently md_thread calls allow_signal so it can receive a
+SIGKILL but then does nothing with it except flush the
+sigkill so that it not can use an interruptible sleep.
 
-In addition since we now always want to ignore signals
-the MB_IGNORE_SIGNALS define is removed along with the
-test for signal_pending.
+This whole dance is silly so remove the unnecessary
+and broken signal handling logic.
 
-The result is slightly simpler code that is more
-maintainable.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Neil Brown <neilb@suse.de>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/macintosh/mediabay.c |   11 ++---------
- 1 files changed, 2 insertions(+), 9 deletions(-)
+ drivers/md/md.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
-index c803d2b..90c853e 100644
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -20,6 +20,7 @@
- #include <linux/stddef.h>
- #include <linux/init.h>
- #include <linux/ide.h>
-+#include <linux/kthread.h>
- #include <asm/prom.h>
- #include <asm/pgtable.h>
- #include <asm/io.h>
-@@ -35,7 +36,6 @@
+diff --git a/drivers/md/md.c b/drivers/md/md.c
+index 1299c23..dfd0cb9 100644
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -4542,17 +4542,11 @@ static int md_thread(void * arg)
+ 	 */
  
+ 	current->flags |= PF_NOFREEZE;
+-	allow_signal(SIGKILL);
+ 	while (!kthread_should_stop()) {
  
- #define MB_DEBUG
--#define MB_IGNORE_SIGNALS
- 
- #ifdef MB_DEBUG
- #define MBDBG(fmt, arg...)	printk(KERN_INFO fmt , ## arg)
-@@ -622,11 +622,6 @@ static int media_bay_task(void *x)
- {
- 	int	i;
- 
--	strcpy(current->comm, "media-bay");
--#ifdef MB_IGNORE_SIGNALS
--	sigfillset(&current->blocked);
--#endif
--
- 	for (;;) {
- 		for (i = 0; i < media_bay_count; ++i) {
- 			down(&media_bays[i].lock);
-@@ -636,8 +631,6 @@ static int media_bay_task(void *x)
- 		}
- 
- 		msleep_interruptible(MB_POLL_DELAY);
+ 		/* We need to wait INTERRUPTIBLE so that
+ 		 * we don't add to the load-average.
+-		 * That means we need to be sure no signals are
+-		 * pending
+ 		 */
 -		if (signal_pending(current))
--			return 0;
- 	}
- }
- 
-@@ -699,7 +692,7 @@ static int __devinit media_bay_attach(struct macio_dev *mdev, const struct of_de
- 
- 	/* Startup kernel thread */
- 	if (i == 0)
--		kernel_thread(media_bay_task, NULL, CLONE_KERNEL);
-+		kthread_run(media_bay_task, NULL, "media-bay");
- 
- 	return 0;
- 
+-			flush_signals(current);
+-
+ 		wait_event_interruptible_timeout
+ 			(thread->wqueue,
+ 			 test_bit(THREAD_WAKEUP, &thread->flags)
 -- 
 1.5.0.g53756
 
