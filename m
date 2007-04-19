@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766884AbXDSROz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766885AbXDSRPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766884AbXDSROz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 13:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161510AbXDSROz
+	id S1766885AbXDSRPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 13:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161510AbXDSRPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 13:14:55 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:64118 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161506AbXDSROx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 13:14:53 -0400
-Subject: Re: AppArmor FAQ
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Crispin Cowan <crispin@novell.com>
-Cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <4626746A.9010701@novell.com>
-References: <20070417181016.GA10903@one.firstfloor.org>
-	 <657751.18080.qm@web36614.mail.mud.yahoo.com>
-	 <20070417211653.GB11944@one.firstfloor.org>
-	 <20070417225815.000b0fdb@the-village.bc.nu>
-	 <Line.LNX.4.64.0704180935100.25495@d.namei>  <4626746A.9010701@novell.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 19 Apr 2007 13:14:18 -0400
-Message-Id: <1177002858.27654.119.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 13:15:43 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:26992 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161508AbXDSRPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 13:15:41 -0400
+Date: Thu, 19 Apr 2007 10:15:37 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: David Miller <davem@davemloft.net>
+Cc: hch@infradead.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
+       ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+Message-ID: <20070419171537.GA14604@dmccrory-d810.qlogic.org>
+References: <20070416200857.GH10822@andrew-vasquezs-computer.local> <20070418171346.GA16471@infradead.org> <20070418172802.GD12708@andrew-vasquezs-computer.local> <20070418.131341.129061984.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070418.131341.129061984.davem@davemloft.net>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 19 Apr 2007 17:15:24.0314 (UTC) FILETIME=[514707A0:01C782A6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-18 at 12:41 -0700, Crispin Cowan wrote:
-> James Morris wrote:
-> > On Tue, 17 Apr 2007, Alan Cox wrote:
-> >   
-> >> I'm not sure if AppArmor can be made good security for the general case,
-> >> but it is a model that works in the limited http environment
-> >> (eg .htaccess) and is something people can play with and hack on and may
-> >> be possible to configure to be very secure.
-> >>     
-> > Perhaps -- until your httpd is compromised via a buffer overflow or 
-> > simply misbehaves due to a software or configuration flaw, then the 
-> > assumptions being made about its use of pathnames and their security 
-> > properties are out the window.
-> >   
-> How is it that you think a buffer overflow in httpd could allow an
-> attacker to break out of an AppArmor profile? This is exactly what
-> AppArmor was designed to do, and without specifics, this is just FUD.
+On Wed, 18 Apr 2007, David Miller wrote:
+
+> > On Wed, 18 Apr 2007, Christoph Hellwig wrote:
+> > 
+> > > I don't think a module option is a good idea at this point.  The problem
+> > > is you broke some so far perfectly working setups, which is not okay.
+> > > The only first step can be printing a really big warning.  After this
+> > > has been in for a while (at lest half a year) we can make it a non-default
+> > > option or turn if off completely in case the warning never triggered in
+> > > practice.
+> > > 
+> > > The only resonable thing for 2.6.21 is to put in David's patch, possible
+> > > with an even more drastic warning when the rom is invalid and there's
+> > > no prom-fallback available.
+> > > 
+> > > Note that I expect Sun put in the invalid ROM intentionally, as we have
+> > > similar cases with other cards that have totally messed up ROMs in
+> > > Sun-branded versions.  Personally I think that's an utterly bad decision
+> > > from Sun's side, but we'll have to live with this.
+> > 
+> > Fine.  I'll rework an alternate patch for the 2.6.22 timeframe...
 > 
-> > Without security labeling of the objects being accessed, you can't protect 
-> > against software flaws, which has been a pretty fundamental and widely 
-> > understood requirement in general computing for at least a decade.
-> >   
-> Please explain why labels are necessary for effective confinement. Many
-> systems besides AppArmor have used non-label schemes for effective
-> confinement: TRON, Janus, LIDS, Systrace, BSD Jail, EROS, PSOS, KeyOS,
-> AS400, to name just a few. This claim seems bogus. Labels may be your
-> method of choice for confinement, but they are far from the only way.
+> We need to fix things now for 2.6.21 and the 2.6.x -stable branches
+> because users have unusable systems currently.
 
-Confinement in its traditional sense (e.g. the 1973 Lampson paper, ACM
-Vol 16 No 10) means information flow control, which you have agreed
-AppArmor does not and cannot provide.  Yes?  As to the (genuine)
-capability-based systems, have a look at the DTOS General System
-Security and Assurability Assessment Report for why we have concerns
-with their approach.  But that has nothing to do with AppArmor.
+Yes, and I'm fine with the original patch you provided which reverts
+the change and adds the firmware-upcalls to retrieve the wwpn/wwnn.
 
-Look, if you would just refrain from making misleading statements about
-SELinux (not only in this FAQ but throughout your documents and talks),
-especially when we've previously refuted those same statements (as in
-the first AppArmor submission and its discussion), and honestly
-acknowledged the limitations of your approach without trying to spin
-them as strengths, I think that there would be nothing to discuss here.
-We could just agree to disagree, and you could just focus on addressing
-the issues raised by the vfs folks about how to get your changes into an
-acceptable form.
+> If it's just a time issue I can work on and push the patch, especially
+> since I have the means to test things here.
 
--- 
-Stephen Smalley
-National Security Agency
+I'll start with the final 2.6.21 -- add modify to add the *flashing*
+light warning and some additional bits based on other archs I can test
+with embedded ISPs.  Thanks again for the SPARC tips.
 
+Regards,
+Andrew Vasquez
