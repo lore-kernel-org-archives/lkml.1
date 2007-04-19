@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993148AbXDSHI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993141AbXDSHKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993148AbXDSHI1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993151AbXDSHIV
+	id S2993141AbXDSHKv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993155AbXDSHKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:08:21 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46307 "EHLO
+	Thu, 19 Apr 2007 03:10:38 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36467 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161274AbXDSHAR (ORCPT
+	with ESMTP id S2993154AbXDSHI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:00:17 -0400
+	Thu, 19 Apr 2007 03:08:28 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] bluetooth cmtp: Convert to use kthread API.
-Date: Thu, 19 Apr 2007 00:55:47 -0600
-Message-Id: <11769658013589-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] powerpc pseries rtasd: Convert to kthread API.
+Date: Thu, 19 Apr 2007 00:55:41 -0600
+Message-Id: <11769657861912-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,56 +26,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patch modifies the kcmptd_ctr_%d daemon using kthread_run
-instead of a combination of kernel_thread and daemonize making
-the code a little simpler and more maintainable.
+This patch modifies the startup of rtasd to use kthread_run instaed of
+a combination of kernel_thread and daemonize.  Making the code a little
+simpler and more maintainble.
 
-Cc: Marcel Holtmann <marcel@holtmann.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/bluetooth/cmtp/core.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/pseries/rtasd.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/net/bluetooth/cmtp/core.c b/net/bluetooth/cmtp/core.c
-index e1b9db9..993303f 100644
---- a/net/bluetooth/cmtp/core.c
-+++ b/net/bluetooth/cmtp/core.c
-@@ -35,6 +35,7 @@
- #include <linux/file.h>
- #include <linux/init.h>
- #include <linux/freezer.h>
+diff --git a/arch/powerpc/platforms/pseries/rtasd.c b/arch/powerpc/platforms/pseries/rtasd.c
+index 77d0937..919a374 100644
+--- a/arch/powerpc/platforms/pseries/rtasd.c
++++ b/arch/powerpc/platforms/pseries/rtasd.c
+@@ -20,6 +20,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/cpu.h>
+ #include <linux/delay.h>
 +#include <linux/kthread.h>
- #include <net/sock.h>
  
- #include <linux/isdn/capilli.h>
-@@ -286,7 +287,6 @@ static int cmtp_session(void *arg)
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+@@ -429,8 +430,6 @@ static int rtasd(void *unused)
+ 	int event_scan = rtas_token("event-scan");
+ 	int rc;
  
- 	BT_DBG("session %p", session);
+-	daemonize("rtasd");
+-
+ 	if (event_scan == RTAS_UNKNOWN_SERVICE || get_eventscan_parms() == -1)
+ 		goto error;
  
--	daemonize("kcmtpd_ctr_%d", session->num);
- 	set_user_nice(current, -15);
+@@ -497,7 +496,7 @@ static int __init rtas_init(void)
+ 	else
+ 		printk(KERN_ERR "Failed to create error_log proc entry\n");
  
- 	init_waitqueue_entry(&wait, current);
-@@ -329,6 +329,7 @@ static int cmtp_session(void *arg)
- int cmtp_add_connection(struct cmtp_connadd_req *req, struct socket *sock)
- {
- 	struct cmtp_session *session, *s;
-+	struct task_struct *task;
- 	bdaddr_t src, dst;
- 	int i, err;
+-	if (kernel_thread(rtasd, NULL, CLONE_FS) < 0)
++	if (IS_ERR(kthread_run(rtasd, NULL, "rtasd")))
+ 		printk(KERN_ERR "Failed to start RTAS daemon\n");
  
-@@ -375,8 +376,9 @@ int cmtp_add_connection(struct cmtp_connadd_req *req, struct socket *sock)
- 
- 	__cmtp_link_session(session);
- 
--	err = kernel_thread(cmtp_session, session, CLONE_KERNEL);
--	if (err < 0)
-+	task = kthread_run(cmtp_session, session, "kcmtpd_ctr_%d", session->num);
-+	err = PTR_ERR(task);
-+	if (IS_ERR(task))
- 		goto unlink;
- 
- 	if (!(session->flags & (1 << CMTP_LOOPBACK))) {
+ 	return 0;
 -- 
 1.5.0.g53756
 
