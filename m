@@ -1,122 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbXDSSjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbXDSSqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbXDSSjm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 14:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXDSSjm
+	id S1754175AbXDSSqV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 14:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbXDSSqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 14:39:42 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:58109 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbXDSSjl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 14:39:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cPbTdv7idctk0tiWfuZfSq6Jq59tAWMEsUuQ+IBDQVMGSVW7LpaZb2Fc7aG2WmMGoC2pVPDeaWeVN9sOCF9Fs0iDTjNT91coGQP6JfVaGz2FknJP7IcQxBJizGDymB7L9AZXOV2xXtN6x1X8ESI/Moq2l13Qdv0ZNHoNhwVAdos=
-Message-ID: <d120d5000704191139m3caf4cfeqd95047d1c33faf64@mail.gmail.com>
-Date: Thu, 19 Apr 2007 14:39:40 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Cc: "Tejun Heo" <htejun@gmail.com>, "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <Pine.LNX.4.44L0.0704191254070.3413-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 14:46:21 -0400
+Received: from 1wt.eu ([62.212.114.60]:2029 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754175AbXDSSqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 14:46:21 -0400
+Date: Thu, 19 Apr 2007 20:45:34 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070419184534.GA29096@1wt.eu>
+References: <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070419090144.GA17100@elte.hu> <20070419125438.GA27584@1wt.eu> <20070419151803.GB30959@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0704191254070.3413-100000@iolanthe.rowland.org>
+In-Reply-To: <20070419151803.GB30959@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/19/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Wed, 18 Apr 2007, Dmitry Torokhov wrote:
->
-> > I am still do not understand why this is needed. Would it not be
-> > simplier just to use a reference to struct device instead of embedding
-> > it in a larger structure if their lifetimes are different and one does
-> > not have a subsystem that takes care of releasing logic.
-> >
-> >
-> > Pretty much drivers have 2 options:
-> >
-> > struct my_device {
-> >         void *private_data;
-> >         struct device dev;
-> > };
->
-> Actually people use dev_[gs]et_drvdata() instead of a separate
-> private_data pointer.  That way there's no need for the my_device
-> container.
->
+On Thu, Apr 19, 2007 at 05:18:03PM +0200, Ingo Molnar wrote:
+> 
+> * Willy Tarreau <w@1wt.eu> wrote:
+> 
+> > You can certainly script it with -geometry. But it is the wrong 
+> > application for this matter, because you benchmark X more than 
+> > glxgears itself. What would be better is something like a line 
+> > rotating 360 degrees and doing some short stuff between each degree, 
+> > so that X is not much sollicitated, but the CPU would be spent more on 
+> > the processes themselves.
+> 
+> at least on my setup glxgears goes via DRI/DRM so there's no X 
+> scheduling inbetween at all, and the visual appearance of glxgears is a 
+> direct function of its scheduling.
 
-No, drvdata belongs to driver that is bound to a device. We are
-talking about private data created and managed by driver that provides
-device.
+OK, I thought that somethink looking like a clock would be useful, especially
+if we could tune the amount of CPU spent per task instead of being limited by
+graphics drivers.
 
-> > In this case ->release must live in a subsystem code; individual
-> > drivers kfree(my_dev->private) and do any additional cleanup after
-> > calling device_unregister(&my_dev->dev);
->
-> That doesn't sound right.  Generally the call to device_unregister() and
-> the release method live in the same module.  Maybe you meant to say
-> individual drivers kfree(my_dev->private_data) and do any additional
-> cleanup in their remove() routine.
+I searched freashmeat for a clock and found "orbitclock" by Jeremy Weatherford,
+which was exactly what I was looking for :
+  - small
+  - C only
+  - X11 only
+  - needed less than 5 minutes and no knowledge of X11 for the complete hack !
+  => Kudos to its author, sincerely !
 
-Again, if we are talking about driver bound to a device then devices
-->release() is irrelevant. If we are talking about driver that created
-device then driver's ->remove() is irrelevant.
+I hacked it a bit to make it accept two parameters :
+  -R <run_time_in_microsecond> : time spent burning CPU cycles at each round
+  -S <sleep_time_in_microsecond> : time spent getting a rest
 
->
-> This approach seems dangerous.  Suppose there's mutex embedded in
-> my_dev->private_data, and suppose some other thread is blocked waiting on
-> that mutex when remove() is called.  That other thread will then oops when
-> my_dev->private_data is deallocated.
+It now advances what it thinks is a second at each iteration, so that it makes
+it easy to compare its progress with other instances (there are seconds,
+minutes and hours, so it's easy to visually count up to around 43200).
 
-What other thread? I suppose it is module-local thread or
-subsystem-local thread. Let's that particular subsystem take care of
-it's own data and use its own ->release() when it is ready. What I
-mean is there is no need to perform clean-up at once; every layer can
-do its own cleanup.
+The modified code is here :
 
->
-> > Second option:
-> >
-> > struct my_device {
-> >         type member1;
-> >         type member2;
-> >
-> >        struct device *dev;
-> > };
-> >
-> > dev is coming from _device_create(). Driver core takes care of
-> > releasing dev structure; driver does cleanup of my_device.
->
-> Lots of drivers create devices dynamically without using device_create().
->
-> More to the point, how does the driver clean up my_device?  It probably
-> has a reference count somewhere in my_device, especially if my_device is
-> shared with other threads or other drivers.  We then face exactly the same
-> problem: What happens if the driver's module is unloaded before all the
-> references to my_device are gone?
->
+  http://linux.1wt.eu/sched/orbitclock-0.2bench.tgz
 
-This is up to subsystem to ensure that it does not access dead devices.
+What is interesting to note is that it's easy to make X work a lot (99%) by
+using 0 as the sleeping time, and it's easy to make the process work a lot
+by using large values for the running time associated with very low values
+(or 0) for the sleep time.
 
-> > With current sysfs orphaning attributes upon removal request there is
-> > no issue of accessing driver-private data through references obtained
-> > via ether embedded or referenced dev structure so everything is fine.
->
-> Not so.  There are other pathways besides sysfs which can cause a driver
-> to access its data structures.
->
+Ah, and it supports -geometry ;-)
 
-Which ones? These needs to be identified and treated with "immediate
-disconnect" that you advocated earlier. Once active users of device's
-services are gone you can zap it.
+It could become a useful scheduler benchmark !
 
--- 
-Dmitry
+Have fun !
+Willy
+
