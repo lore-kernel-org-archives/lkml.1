@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbXDSW3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbXDSWbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785AbXDSW3R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXDSW3R
+	id S1754198AbXDSWbE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbXDSWbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:29:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47027 "EHLO ogre.sisk.pl"
+	Thu, 19 Apr 2007 18:31:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:39146 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753785AbXDSW3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 18:29:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ego@in.ibm.com
-Subject: Re: [RFC PATCH 1/2] Fix PF_NOFREEZE and freezeable race
-Date: Thu, 19 Apr 2007 23:39:29 +0200
-User-Agent: KMail/1.9.5
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-References: <20070419120131.GB13435@in.ibm.com> <20070419120234.GA17069@in.ibm.com>
-In-Reply-To: <20070419120234.GA17069@in.ibm.com>
+	id S1754198AbXDSWbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 18:31:01 -0400
+Message-ID: <4627ED99.3030201@goop.org>
+Date: Thu, 19 Apr 2007 15:30:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Matt Mackall <mpm@selenic.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@waste.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 20/20] Add apply_to_page_range() which applies a function
+ to a pte range.
+References: <20070404191151.009821039@goop.org> <20070404191206.675793431@goop.org> <20070405044133.GE4892@waste.org> <46149CC9.2070903@goop.org> <20070417205652.GM11115@waste.org> <4627C6B9.7000605@goop.org> <20070419195957.GF11115@waste.org> <4627E131.5070801@goop.org> <20070419213013.GI11115@waste.org>
+In-Reply-To: <20070419213013.GI11115@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704192339.30783.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Matt Mackall wrote:
+> I was counting from the top down.
+>   
 
-On Thursday, 19 April 2007 14:02, Gautham R Shenoy wrote:
-> This patch fixes the race pointed out by Oleg Nesterov.
-> 
-> * Freezer marks a thread as freezeable. 
-> * The thread now marks itself PF_NOFREEZE causing it to
->   freeze on calling try_to_freeze(). Thus the task is frozen, even though
->   it doesn't want to.
-> * Subsequent thaw_processes() will also fail to thaw the task since it is 
->   marked PF_NOFREEZE.
-> 
-> Avoid this problem by checking the current task's PF_NOFREEZE status in the 
-> refrigerator before marking current as frozen.
-> 
-> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Bottom-up is better; that way the levels don't change for 2,3,4 level
+pagetables.
 
-Looks good, although I'm not sure if we don't need to call recalc_sigpending()
-for tasks that turn out to be PF_NOFREEZE.
+    J
 
-Greetings,
-Rafael
