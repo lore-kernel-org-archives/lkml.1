@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993185AbXDSI4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161309AbXDSJCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993185AbXDSI4F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161305AbXDSI4F
+	id S1161309AbXDSJCI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 05:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161374AbXDSJCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:56:05 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:61344 "EHLO smtp01.cdmon.com"
+	Thu, 19 Apr 2007 05:02:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42212 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161224AbXDSI4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:56:04 -0400
-Date: Thu, 19 Apr 2007 10:57:50 +0200
-From: DervishD <lkml@dervishd.net>
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Wrong free clusters count on FAT32
-Message-ID: <20070419085750.GA2833@DervishD>
-Mail-Followup-To: Linux-kernel <linux-kernel@vger.kernel.org>
+	id S1161309AbXDSJCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 05:02:06 -0400
+Date: Thu, 19 Apr 2007 11:01:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
+Message-ID: <20070419090144.GA17100@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070414130101.GA2538@1wt.eu>
 User-Agent: Mutt/1.4.2.2i
-Organization: DervishD
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi all :)
 
-    I have a portable device with a FAT32 formatted hard disk in it, and
-everytime I delete a file in the device *using the device itself to do
-it* the device increases its count of free space and if I plug the
-device in a Windows system, Windows agrees on the free space. Linux
-doesn't. Linux believes that the files are still there ocuppying space,
-and I have to run fsck.vfat to fix the problem.
+* Willy Tarreau <w@1wt.eu> wrote:
 
-    As far as I've seen, the device is probably not updating correctly
-the list of free clusters, but it doesn't seem to worry about it,
-neither does Windows. So my question is: is there any way of making
-Linux "bug compatible" with Windows? If Windows itself don't worry about
-the free cluster count and computes the free space in some other way,
-then it can be done. I haven't seen anything in mount(8) neither
-googling.
+> Good idea. The machine I'm typing from now has 1000 scheddos running 
+> at +19, and 12 gears at nice 0. [...]
 
-    Apart from not using the device itself to delete files (and probably
-not using Windows for that, either) and to run fsck.vfat now and then,
-is anything I can do to avoid this problem?
+> From time to time, one of the 12 aligned gears will quickly perform a 
+> full quarter of round while others slowly turn by a few degrees. In 
+> fact, while I don't know this process's CPU usage pattern, there's 
+> something useful in it : it allows me to visually see when process 
+> accelerate/decelerate. [...]
 
-    Thanks a lot in advance :)
+cool idea - i have just tried this and it rocks - you can easily see the 
+'nature' of CPU time distribution just via visual feedback. (Is there 
+any easy way to start up 12 glxgears fully aligned, or does one always 
+have to mouse around to get them into proper position?)
 
-    Raúl Núñez de Arenas Coronado
+btw., i am using another method to quickly judge X's behavior: i started 
+the 'snowflakes' plugin in Beryl on Fedora 7, which puts a nice smooth 
+opengl-rendered snow fall on the desktop background. That gives me an 
+idea about how well X is scheduling under various workloads, without 
+having to instrument it explicitly.
 
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+	Ingo
