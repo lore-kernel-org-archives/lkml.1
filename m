@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031161AbXDSHpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993153AbXDSHxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031161AbXDSHpS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031193AbXDSHpS
+	id S2993153AbXDSHxO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993156AbXDSHxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:45:18 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:38521 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031161AbXDSHpR (ORCPT
+	Thu, 19 Apr 2007 03:53:13 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:4022 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993153AbXDSHxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:45:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=lcjXQm/pnL6UzNUPutYHLoGDEbmAJEi4VY/EGoe49QTbMkswQQ6f9NeKAet1TannteWqOoiqT1WzT8Tgo49EkZJj/0rt9z+yOe5bDq0LF0kyKG9Kxz8FOWUHdwKzrI1yX647XFJiHPYwSwqm6MZljaHj+QVfpjejuivFqhyGFzI=
-Message-ID: <33e9dd1c0704190045v62cd1b4fm8ded434086108dd5@mail.gmail.com>
-Date: Thu, 19 Apr 2007 17:45:16 +1000
-From: "Zik Saleeba" <zik@zikzak.net>
-To: linux-kernel@vger.kernel.org
-Subject: How to structure an SPI UART driver?
+	Thu, 19 Apr 2007 03:53:12 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=bYsELil2NGZv2FHqB7M4f6ZOnBD2d+OHZRxVci1lUUCF3xEWEf1oYtK+UYweRg81n
+	rcVWI5Ne4JIaIcaPTvClw==
+Message-ID: <46271FB7.9030408@google.com>
+Date: Thu, 19 Apr 2007 00:52:23 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: akpm@osdl.org, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC 0/8] Cpuset aware writeback
+References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com> <45C2960B.9070907@google.com> <Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com> <46019F67.3010300@google.com> <Pine.LNX.4.64.0703211428430.4832@schroedinger.engr.sgi.com> <4626CEDA.7050608@google.com> <Pine.LNX.4.64.0704181948260.8743@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0704181948260.8743@schroedinger.engr.sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 86ff2abe6dcdbc9d
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm looking for a little advice on writing a driver for the Phillips
-sc16is752 SPI UART chip. I've written drivers before but I'm having a
-problem with this one. Since this driver is both an SPI driver and a
-UART driver I'm unclear on whether it should register with
-spi_register_driver() or uart_register_driver(), or both, or do
-something completely different. I'm not clear on how to play nicely
-with both subsystems.
+Christoph Lameter wrote:
+> On Wed, 18 Apr 2007, Ethan Solomita wrote:
+>
+>   
+>>    Any new ETA? I'm trying to decide whether to go back to your original
+>> patches or wait for the new set. Adding new knobs isn't as important to me as
+>> having something that fixes the core problem, so hopefully this isn't waiting
+>> on them. They could always be patches on top of your core patches.
+>>    -- Ethan
+>>     
+>
+> Hmmmm.... Sorry. I got distracted and I have sent them to Kame-san who was 
+> interested in working on them. 
+>
+> I have placed the most recent version at
+> http://ftp.kernel.org/pub/linux/kernel/people/christoph/cpuset_dirty
+>   
 
-Any hints?
+    Do you expect any conflicts with the per-bdi dirty throttling patches?
+    -- Ethan
 
-Cheers,
-Zik
