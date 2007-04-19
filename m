@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161209AbXDSG7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161182AbXDSG7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161209AbXDSG7j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 02:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161179AbXDSG7d
+	id S1161182AbXDSG7k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 02:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161217AbXDSG7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 02:59:33 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46256 "EHLO
+	Thu, 19 Apr 2007 02:59:30 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46259 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161175AbXDSG7H (ORCPT
+	with ESMTP id S1161182AbXDSG7P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 02:59:07 -0400
+	Thu, 19 Apr 2007 02:59:15 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] ibmphp: Convert to use the kthreads API
-Date: Thu, 19 Apr 2007 00:55:30 -0600
-Message-Id: <11769657722297-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] i386 voyager: Convert the monitor thread to use the kthread API
+Date: Thu, 19 Apr 2007 00:55:27 -0600
+Message-Id: <117696576895-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,81 +26,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-kthread_run replaces kernel_thread and dameonize.
+This patch just trivially replaces kernel_thread and daemonize
+with a single call to kthread_run.
 
-allow_signal is unnecessary and has been removed.
-tid_poll was unused and has been removed.
-
-Cc: Jyoti Shah <jshah@us.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/pci/hotplug/ibmphp_hpc.c |   14 +++++---------
- 1 files changed, 5 insertions(+), 9 deletions(-)
+ arch/i386/mach-voyager/voyager_thread.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/hotplug/ibmphp_hpc.c b/drivers/pci/hotplug/ibmphp_hpc.c
-index 46abaa8..27e12f1 100644
---- a/drivers/pci/hotplug/ibmphp_hpc.c
-+++ b/drivers/pci/hotplug/ibmphp_hpc.c
-@@ -34,6 +34,7 @@
- #include <linux/pci.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
+diff --git a/arch/i386/mach-voyager/voyager_thread.c b/arch/i386/mach-voyager/voyager_thread.c
+index ebfd913..ee23d9b 100644
+--- a/arch/i386/mach-voyager/voyager_thread.c
++++ b/arch/i386/mach-voyager/voyager_thread.c
+@@ -23,6 +23,7 @@
+ #include <linux/kmod.h>
+ #include <linux/completion.h>
+ #include <linux/sched.h>
 +#include <linux/kthread.h>
- 
- #include "ibmphp.h"
- 
-@@ -101,7 +102,6 @@ static int to_debug = 0;
- // global variables
- //----------------------------------------------------------------------------
- static int ibmphp_shutdown;
--static int tid_poll;
- static struct mutex sem_hpcaccess;	// lock access to HPC
- static struct semaphore semOperations;	// lock all operations and
- 					// access to data structures
-@@ -137,7 +137,6 @@ void __init ibmphp_hpc_initvars (void)
- 	init_MUTEX_LOCKED (&sem_exit);
- 	to_debug = 0;
- 	ibmphp_shutdown = 0;
--	tid_poll = 0;
- 
- 	debug ("%s - Exit\n", __FUNCTION__);
- }
-@@ -1060,12 +1059,8 @@ static int hpc_poll_thread (void *data)
+ #include <asm/desc.h>
+ #include <asm/voyager.h>
+ #include <asm/vic.h>
+@@ -43,7 +44,7 @@ static __u8 set_timeout = 0;
+ static int __init
+ voyager_thread_start(void)
  {
- 	debug ("%s - Entry\n", __FUNCTION__);
+-	if(kernel_thread(thread, NULL, CLONE_KERNEL) < 0) {
++	if (IS_ERR(kthread_run(thread, NULL, "%s", THREAD_NAME))) {
+ 		/* This is serious, but not fatal */
+ 		printk(KERN_ERR "Voyager: Failed to create system monitor thread!!!\n");
+ 		return 1;
+@@ -122,8 +123,6 @@ thread(void *unused)
  
--	daemonize("hpc_poll");
--	allow_signal(SIGKILL);
+ 	kvoyagerd_running = 1;
+ 
+-	daemonize(THREAD_NAME);
 -
- 	poll_hpc ();
+ 	set_timeout = 0;
  
--	tid_poll = 0;
- 	debug ("%s - Exit\n", __FUNCTION__);
- 	return 0;
- }
-@@ -1078,17 +1073,18 @@ static int hpc_poll_thread (void *data)
- *---------------------------------------------------------------------*/
- int __init ibmphp_hpc_start_poll_thread (void)
- {
-+	struct task_struct *task;
- 	int rc = 0;
- 
- 	debug ("%s - Entry\n", __FUNCTION__);
- 
--	tid_poll = kernel_thread (hpc_poll_thread, NULL, 0);
--	if (tid_poll < 0) {
-+	task = kthread_run(hpc_poll_thread, NULL, "hpc_poll");
-+	if (IS_ERR(task)) {
- 		err ("%s - Error, thread not started\n", __FUNCTION__);
- 		rc = -1;
- 	}
- 
--	debug ("%s - Exit tid_poll[%d] rc[%d]\n", __FUNCTION__, tid_poll, rc);
-+	debug ("%s - Exit rc[%d]\n", __FUNCTION__, rc);
- 	return rc;
- }
- 
+ 	init_timer(&wakeup_timer);
 -- 
 1.5.0.g53756
 
