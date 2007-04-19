@@ -1,230 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031063AbXDSCDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993105AbXDSCIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031063AbXDSCDM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 22:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031077AbXDSCDM
+	id S2993105AbXDSCIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 22:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993107AbXDSCIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 22:03:12 -0400
-Received: from mail34.syd.optusnet.com.au ([211.29.133.218]:54723 "EHLO
-	mail34.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031065AbXDSCDK (ORCPT
+	Wed, 18 Apr 2007 22:08:19 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:49898 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993105AbXDSCIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 22:03:10 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: implement staircase deadline scheduler further improvements-1
-Date: Thu, 19 Apr 2007 12:03:54 +1000
-User-Agent: KMail/1.9.5
-Cc: ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200704190948.36649.kernel@kolivas.org>
-In-Reply-To: <200704190948.36649.kernel@kolivas.org>
+	Wed, 18 Apr 2007 22:08:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=bnOPDVyeYP300stX3pLeEtMAwXmngN/+OlT72OykwZo/vtxkpnuk0PYd5J8ORdsI5
+	rVtHtCki0PepkS/H8UQcw==
+Message-ID: <4626CEDA.7050608@google.com>
+Date: Wed, 18 Apr 2007 19:07:22 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Christoph Lameter <clameter@sgi.com>
+CC: akpm@osdl.org, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 0/8] Cpuset aware writeback
+References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com> <45C2960B.9070907@google.com> <Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com> <46019F67.3010300@google.com> <Pine.LNX.4.64.0703211428430.4832@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0703211428430.4832@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704191203.54812.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 April 2007 09:48, Con Kolivas wrote:
-> While the Staircase Deadline scheduler has not been completely killed off
-> and is still in -mm I would like to fix some outstanding issues that I've
-> found since it still serves for comparison with all the upcoming
-> schedulers.
+Christoph Lameter wrote:
+> On Wed, 21 Mar 2007, Ethan Solomita wrote:
 >
-> While still in -mm can we queue this on top please?
+>   
+>> Christoph Lameter wrote:
+>>     
+>>> On Thu, 1 Feb 2007, Ethan Solomita wrote:
+>>>
+>>>       
+>>>>    Hi Christoph -- has anything come of resolving the NFS / OOM concerns
+>>>> that
+>>>> Andrew Morton expressed concerning the patch? I'd be happy to see some
+>>>> progress on getting this patch (i.e. the one you posted on 1/23) through.
+>>>>         
+>>> Peter Zilkstra addressed the NFS issue. I will submit the patch again as
+>>> soon as the writeback code stabilizes a bit.
+>>>       
+>> 	I'm pinging to see if this has gotten anywhere. Are you ready to
+>> resubmit? Do we have the evidence to convince Andrew that the NFS issues are
+>> resolved and so this patch won't obscure anything?
+>>     
 >
-> A set of staircase-deadline v 0.41 patches will make their way into the
-> usual place for those willing to test it.
->
-> http://ck.kolivas.org/patches/staircase-deadline/
+> The NFS patch went into Linus tree a couple of days ago and I have a new 
+> version ready with additional support to set per dirty ratios per cpu. 
+> There is some interest in adding more VM controls to this patch. I hope I 
+> can post the next rev by tomorrow.
+>   
 
-Oops! Minor thinko! Here is a respin. Please apply this one instead.
+    Any new ETA? I'm trying to decide whether to go back to your 
+original patches or wait for the new set. Adding new knobs isn't as 
+important to me as having something that fixes the core problem, so 
+hopefully this isn't waiting on them. They could always be patches on 
+top of your core patches.
+    -- Ethan
 
-I better make a 0.42 heh.
-
----
-The prio_level was being inappropriately decreased if a higher priority
-task was still using previous timeslice. Fix that.
-
-Task expiration of higher priority tasks was not being taken into account
-with allocating priority slots. Check the expired best_static_prio level
-to facilitate that.
-
-Explicitly check all better static priority prio_levels when deciding on
-allocating slots for niced tasks.
-
-These changes improve behaviour in many ways.
-
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
-
----
- kernel/sched.c |   64 ++++++++++++++++++++++++++++++++++++++-------------------
- 1 file changed, 43 insertions(+), 21 deletions(-)
-
-Index: linux-2.6.21-rc7-sd/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc7-sd.orig/kernel/sched.c	2007-04-19 08:51:54.000000000 +1000
-+++ linux-2.6.21-rc7-sd/kernel/sched.c	2007-04-19 12:03:29.000000000 +1000
-@@ -145,6 +145,12 @@ struct prio_array {
- 	 */
- 	DECLARE_BITMAP(prio_bitmap, MAX_PRIO + 1);
- 
-+	/*
-+	 * The best static priority (of the dynamic priority tasks) queued
-+	 * this array.
-+	 */
-+	int best_static_prio;
-+
- #ifdef CONFIG_SMP
- 	/* For convenience looks back at rq */
- 	struct rq *rq;
-@@ -191,9 +197,9 @@ struct rq {
- 
- 	/*
- 	 * The current dynamic priority level this runqueue is at per static
--	 * priority level, and the best static priority queued this rotation.
-+	 * priority level.
- 	 */
--	int prio_level[PRIO_RANGE], best_static_prio;
-+	int prio_level[PRIO_RANGE];
- 
- 	/* How many times we have rotated the priority queue */
- 	unsigned long prio_rotation;
-@@ -669,7 +675,7 @@ static void task_new_array(struct task_s
- }
- 
- /* Find the first slot from the relevant prio_matrix entry */
--static inline int first_prio_slot(struct task_struct *p)
-+static int first_prio_slot(struct task_struct *p)
- {
- 	if (unlikely(p->policy == SCHED_BATCH))
- 		return p->static_prio;
-@@ -682,11 +688,18 @@ static inline int first_prio_slot(struct
-  * level. SCHED_BATCH tasks do not use the priority matrix. They only take
-  * priority slots from their static_prio and above.
-  */
--static inline int next_entitled_slot(struct task_struct *p, struct rq *rq)
-+static int next_entitled_slot(struct task_struct *p, struct rq *rq)
- {
-+	int search_prio = MAX_RT_PRIO, uprio = USER_PRIO(p->static_prio);
-+	struct prio_array *array = rq->active;
- 	DECLARE_BITMAP(tmp, PRIO_RANGE);
--	int search_prio, uprio = USER_PRIO(p->static_prio);
- 
-+	/*
-+	 * Go straight to expiration if there are higher priority tasks
-+	 * already expired.
-+	 */
-+	if (p->static_prio > rq->expired->best_static_prio)
-+		return MAX_PRIO;
- 	if (!rq->prio_level[uprio])
- 		rq->prio_level[uprio] = MAX_RT_PRIO;
- 	/*
-@@ -694,15 +707,22 @@ static inline int next_entitled_slot(str
- 	 * static_prio are acceptable, and only if it's not better than
- 	 * a queued better static_prio's prio_level.
- 	 */
--	if (p->static_prio < rq->best_static_prio) {
--		search_prio = MAX_RT_PRIO;
-+	if (p->static_prio < array->best_static_prio) {
- 		if (likely(p->policy != SCHED_BATCH))
--			rq->best_static_prio = p->static_prio;
--	} else if (p->static_prio == rq->best_static_prio)
-+			array->best_static_prio = p->static_prio;
-+	} else if (p->static_prio == array->best_static_prio) {
- 		search_prio = rq->prio_level[uprio];
--	else {
--		search_prio = max(rq->prio_level[uprio],
--			rq->prio_level[USER_PRIO(rq->best_static_prio)]);
-+	} else {
-+		int i;
-+
-+		search_prio = rq->prio_level[uprio];
-+		/* A bound O(n) function, worst case n is 40 */
-+		for (i = array->best_static_prio; i <= p->static_prio ; i++) {
-+			if (!rq->prio_level[USER_PRIO(i)])
-+				rq->prio_level[USER_PRIO(i)] = MAX_RT_PRIO;
-+			search_prio = max(search_prio,
-+				      rq->prio_level[USER_PRIO(i)]);
-+		}
- 	}
- 	if (unlikely(p->policy == SCHED_BATCH)) {
- 		search_prio = max(search_prio, p->static_prio);
-@@ -718,6 +738,8 @@ static void queue_expired(struct task_st
- {
- 	task_new_array(p, rq, rq->expired);
- 	p->prio = p->normal_prio = first_prio_slot(p);
-+	if (p->static_prio < rq->expired->best_static_prio)
-+		rq->expired->best_static_prio = p->static_prio;
- }
- 
- #ifdef CONFIG_SMP
-@@ -726,7 +748,7 @@ static void queue_expired(struct task_st
-  * update its data appropriately. Note we may be reading data from src_rq->
-  * outside of lock, but the occasional inaccurate result should be harmless.
-  */
-- static inline void update_if_moved(struct task_struct *p, struct rq *rq)
-+ static void update_if_moved(struct task_struct *p, struct rq *rq)
- {
- 	struct rq *src_rq = p->array->rq;
- 
-@@ -3217,8 +3239,10 @@ EXPORT_SYMBOL(sub_preempt_count);
- 
- #endif
- 
--static inline void reset_prio_levels(struct rq *rq)
-+static void reset_prio_levels(struct rq *rq)
- {
-+	rq->active->best_static_prio = MAX_PRIO - 1;
-+	rq->expired->best_static_prio = MAX_PRIO - 1;
- 	memset(rq->prio_level, 0, sizeof(int) * PRIO_RANGE);
- }
- 
-@@ -3239,7 +3263,6 @@ retry:
- 		rq->active = array;
- 		rq->exp_bitmap = rq->expired->prio_bitmap;
- 		rq->dyn_bitmap = rq->active->prio_bitmap;
--		rq->best_static_prio = MAX_PRIO - 1;
- 		rq->prio_rotation++;
- 		idx = find_next_bit(rq->dyn_bitmap, MAX_PRIO, MAX_RT_PRIO);
- 		reset_prio_levels(rq);
-@@ -3261,9 +3284,10 @@ retry:
- 	if (likely(next->policy != SCHED_BATCH)) {
- 		int nstatic = next->static_prio;
- 
--		if (nstatic < rq->best_static_prio)
--			rq->best_static_prio = nstatic;
--		rq->prio_level[USER_PRIO(nstatic)] = idx;
-+		if (nstatic < array->best_static_prio)
-+			array->best_static_prio = nstatic;
-+		if (idx > rq->prio_level[USER_PRIO(nstatic)])
-+			rq->prio_level[USER_PRIO(nstatic)] = idx;
- 	}
- 	return next;
- }
-@@ -3348,7 +3372,6 @@ need_resched_nonpreemptible:
- 	}
- switch_tasks:
- 	if (next == rq->idle) {
--		rq->best_static_prio = MAX_PRIO - 1;
- 		reset_prio_levels(rq);
- 		rq->prio_rotation++;
- 		schedstat_inc(rq, sched_goidle);
-@@ -6671,10 +6694,9 @@ void __init sched_init(void)
- 		lockdep_set_class(&rq->lock, &rq->rq_lock_key);
- 		rq->nr_running = 0;
- 		rq->prio_rotation = 0;
--		rq->best_static_prio = MAX_PRIO - 1;
--		reset_prio_levels(rq);
- 		rq->active = rq->arrays;
- 		rq->expired = rq->arrays + 1;
-+		reset_prio_levels(rq);
- 		rq->dyn_bitmap = rq->active->prio_bitmap;
- 		rq->exp_bitmap = rq->expired->prio_bitmap;
- 
-
--- 
--ck
