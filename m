@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993205AbXDSIMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993202AbXDSIKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993205AbXDSIMg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993200AbXDSIKn
+	id S2993202AbXDSIKm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993193AbXDSIKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:10:43 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33940 "EHLO
+	Thu, 19 Apr 2007 04:10:10 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33923 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993196AbXDSIKY (ORCPT
+	with ESMTP id S2993192AbXDSIJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:10:24 -0400
+	Thu, 19 Apr 2007 04:09:52 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Jes Sorensen <jes@sgi.com>,
-       Tony Luck <tony.luck@intel.com>
-Subject: [PATCH] ia64 sn xpc: Convert to use kthread API.
-Date: Thu, 19 Apr 2007 01:58:44 -0600
-Message-Id: <1176969574439-git-send-email-ebiederm@xmission.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] macintosh/therm_pm72.c: Convert to kthread API.
+Date: Thu, 19 Apr 2007 01:58:47 -0600
+Message-Id: <11769695832169-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -27,130 +27,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch starts the xpc kernel threads using kthread_run
-not a combination of kernel_thread and daemonize.  Resuling
-in slightly simpler and more maintainable code.
+This patch modifies startup of the kfand to use kthread_run
+not a combination of kernel_thread and daemonize, making
+the code a little simpler and more maintaintable.
 
-Cc: Jes Sorensen <jes@sgi.com>
-Cc: Tony Luck <tony.luck@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/ia64/sn/kernel/xpc_main.c |   31 +++++++++++++------------------
- 1 files changed, 13 insertions(+), 18 deletions(-)
+ drivers/macintosh/therm_pm72.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/ia64/sn/kernel/xpc_main.c b/arch/ia64/sn/kernel/xpc_main.c
-index e336e16..5b53642 100644
---- a/arch/ia64/sn/kernel/xpc_main.c
-+++ b/arch/ia64/sn/kernel/xpc_main.c
-@@ -56,6 +56,7 @@
+diff --git a/drivers/macintosh/therm_pm72.c b/drivers/macintosh/therm_pm72.c
+index b002a4b..7e9cbb7 100644
+--- a/drivers/macintosh/therm_pm72.c
++++ b/drivers/macintosh/therm_pm72.c
+@@ -121,6 +121,7 @@
  #include <linux/reboot.h>
- #include <linux/completion.h>
- #include <linux/kdebug.h>
+ #include <linux/kmod.h>
+ #include <linux/i2c.h>
 +#include <linux/kthread.h>
- #include <asm/sn/intr.h>
- #include <asm/sn/sn_sal.h>
- #include <asm/uaccess.h>
-@@ -253,8 +254,6 @@ xpc_hb_checker(void *ignore)
- 
- 	/* this thread was marked active by xpc_hb_init() */
- 
--	daemonize(XPC_HB_CHECK_THREAD_NAME);
--
- 	set_cpus_allowed(current, cpumask_of_cpu(XPC_HB_CHECK_CPU));
- 
- 	xpc_hb_check_timeout = jiffies + (xpc_hb_check_interval * HZ);
-@@ -324,8 +323,6 @@ xpc_hb_checker(void *ignore)
- static int
- xpc_initiate_discovery(void *ignore)
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+ #include <asm/io.h>
+@@ -161,7 +162,7 @@ static struct slots_pid_state		slots_state;
+ static int				state;
+ static int				cpu_count;
+ static int				cpu_pid_type;
+-static pid_t				ctrl_task;
++static int				ctrl_task;
+ static struct completion		ctrl_complete;
+ static int				critical_state;
+ static int				rackmac;
+@@ -1779,8 +1780,6 @@ static int call_critical_overtemp(void)
+  */
+ static int main_control_loop(void *x)
  {
--	daemonize(XPC_DISCOVERY_THREAD_NAME);
+-	daemonize("kfand");
 -
- 	xpc_discovery();
+ 	DBG("main_control_loop started\n");
  
- 	dev_dbg(xpc_part, "discovery thread is exiting\n");
-@@ -494,8 +491,6 @@ xpc_activating(void *__partid)
+ 	down(&driver_lock);
+@@ -1859,7 +1858,6 @@ static int main_control_loop(void *x)
+ 			machine_power_off();
+ 		}
  
- 	dev_dbg(xpc_part, "bringing partition %d up\n", partid);
- 
--	daemonize("xpc%02d", partid);
--
- 	/*
- 	 * This thread needs to run at a realtime priority to prevent a
- 	 * significant performance degradation.
-@@ -559,7 +554,7 @@ xpc_activate_partition(struct xpc_partition *part)
+-		// FIXME: Deal with signals
+ 		elapsed = jiffies - start;
+ 		if (elapsed < HZ)
+ 			schedule_timeout_interruptible(HZ - elapsed);
+@@ -1954,9 +1952,12 @@ static int create_control_loops(void)
+  */
+ static void start_control_loops(void)
  {
- 	partid_t partid = XPC_PARTID(part);
- 	unsigned long irq_flags;
--	pid_t pid;
 +	struct task_struct *task;
+ 	init_completion(&ctrl_complete);
  
+-	ctrl_task = kernel_thread(main_control_loop, NULL, SIGCHLD | CLONE_KERNEL);
++	task = kthread_run(main_control_loop, NULL, "kfand");
++	if (!IS_ERR(task))
++		ctrl_task = 1;
+ }
  
- 	spin_lock_irqsave(&part->act_lock, irq_flags);
-@@ -571,9 +566,10 @@ xpc_activate_partition(struct xpc_partition *part)
- 
- 	spin_unlock_irqrestore(&part->act_lock, irq_flags);
- 
--	pid = kernel_thread(xpc_activating, (void *) ((u64) partid), 0);
-+	task = kthread_run(xpc_activating, (void *) ((u64) partid),
-+			  "xpc%02d", partid);
- 
--	if (unlikely(pid <= 0)) {
-+	if (unlikely(IS_ERR(task))) {
- 		spin_lock_irqsave(&part->act_lock, irq_flags);
- 		part->act_state = XPC_P_INACTIVE;
- 		XPC_SET_REASON(part, xpcCloneKThreadFailed, __LINE__);
-@@ -724,8 +720,6 @@ xpc_daemonize_kthread(void *args)
- 	unsigned long irq_flags;
- 
- 
--	daemonize("xpc%02dc%d", partid, ch_number);
--
- 	dev_dbg(xpc_chan, "kthread starting, partid=%d, channel=%d\n",
- 		partid, ch_number);
- 
-@@ -844,8 +838,9 @@ xpc_create_kthreads(struct xpc_channel *ch, int needed,
- 		(void) xpc_part_ref(part);
- 		xpc_msgqueue_ref(ch);
- 
--		pid = kernel_thread(xpc_daemonize_kthread, (void *) args, 0);
--		if (pid < 0) {
-+		task = kthread_run(xpc_daemonize_kthread, args,
-+				   "xpc%02dc%d", partid, ch_number);
-+		if (IS_ERR(task)) {
- 			/* the fork failed */
- 
- 			/*
-@@ -1222,7 +1217,7 @@ xpc_init(void)
- 	int ret;
- 	partid_t partid;
- 	struct xpc_partition *part;
--	pid_t pid;
-+	struct task_struct *task;
- 	size_t buf_size;
- 
- 
-@@ -1353,8 +1348,8 @@ xpc_init(void)
- 	 * The real work-horse behind xpc.  This processes incoming
- 	 * interrupts and monitors remote heartbeats.
- 	 */
--	pid = kernel_thread(xpc_hb_checker, NULL, 0);
--	if (pid < 0) {
-+	task = kthread_run(xpc_hb_checker, NULL, XPC_HB_CHECK_THREAD_NAME);
-+	if (IS_ERR(task)) {
- 		dev_err(xpc_part, "failed while forking hb check thread\n");
- 
- 		/* indicate to others that our reserved page is uninitialized */
-@@ -1384,8 +1379,8 @@ xpc_init(void)
- 	 * activate based on info provided by SAL. This new thread is short
- 	 * lived and will exit once discovery is complete.
- 	 */
--	pid = kernel_thread(xpc_initiate_discovery, NULL, 0);
--	if (pid < 0) {
-+	task = kthread_run(xpc_initiate_discovery, NULL, XPC_DISCOVERY_THREAD_NAME);
-+	if (IS_ERR(task)) {
- 		dev_err(xpc_part, "failed while forking discovery thread\n");
- 
- 		/* mark this new thread as a non-starter */
+ /*
 -- 
 1.5.0.g53756
 
