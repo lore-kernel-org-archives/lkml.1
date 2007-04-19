@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766869AbXDSQk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766864AbXDSQmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766869AbXDSQk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766868AbXDSQk1
+	id S1766864AbXDSQmm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766867AbXDSQmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:40:27 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:60079 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766867AbXDSQk0 (ORCPT
+	Thu, 19 Apr 2007 12:42:42 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:43930 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766864AbXDSQml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:40:26 -0400
-Date: Thu, 19 Apr 2007 19:39:59 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] add two SCSI command opcodes
-Message-ID: <20070419163959.GA25595@localdomain>
-References: <20070419151053.GA10199@localdomain> <20070419154743.GA18325@lug-owl.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070419154743.GA18325@lug-owl.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 19 Apr 2007 12:42:41 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: AppArmor FAQ
+Date: Thu, 19 Apr 2007 16:35:28 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <f085og$3hg$1@taverner.cs.berkeley.edu>
+References: <20070417181016.GA10903@one.firstfloor.org> <Line.LNX.4.64.0704180935100.25495@d.namei> <4626746A.9010701@novell.com> <Line.LNX.4.64.0704181620130.27545@d.namei>
+Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1177000528 3632 128.32.168.222 (19 Apr 2007 16:35:28 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Thu, 19 Apr 2007 16:35:28 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 05:47:43PM +0200, Jan-Benedict Glaw wrote:
-> On Thu, 2007-04-19 18:10:54 +0300, Dan Aloni <da-x@monatomic.org> wrote:
-> > diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-> > index 5c0e979..dff842a 100644
-> > --- a/include/scsi/scsi.h
-> > +++ b/include/scsi/scsi.h
-> > @@ -103,6 +103,7 @@ extern const unsigned char scsi_command_size[8];
-> >  #define READ_12               0xa8
-> >  #define WRITE_12              0xaa
-> >  #define WRITE_VERIFY_12       0xae
-> > +#define VERIFY_12             0xaf
-> >  #define SEARCH_HIGH_12        0xb0
-> >  #define SEARCH_EQUAL_12       0xb1
-> >  #define SEARCH_LOW_12         0xb2
-> > @@ -111,6 +112,7 @@ extern const unsigned char scsi_command_size[8];
-> >  #define WRITE_LONG_2          0xea
-> >  #define READ_16               0x88
-> >  #define WRITE_16              0x8a
-> > +#define WRITE_VERIFY_16       0x8e
-> >  #define VERIFY_16	      0x8f
-> >  #define SERVICE_ACTION_IN     0x9e
-> >  /* values for service action in */
-> 
-> Where's the user?
+James Morris  wrote:
+>On Wed, 18 Apr 2007, Crispin Cowan wrote:
+>> How is it that you think a buffer overflow in httpd could allow an
+>> attacker to break out of an AppArmor profile?
+>
+>Because you can change the behavior of the application and then bypass 
+>policy entirely by utilizing any mechanism other than direct filesystem 
+>access: IPC, shared memory, Unix domain sockets, local IP networking, 
+>remote networking etc.
 
-A privately maintained kernel driver.
+Any halfway decent jail will let you control access to all of those
+things, thereby preventing an 0wned httpd from breaking out of the jail.
+(For instance, Janus did.  So does Systrace.)
 
-Do we _must_ have in-tree users? I'd consider the change for completion's
-sake.
+Are you saying AppArmor does not allow that kind of control?  Specifics
+would be useful.
 
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+>Also worth noting here is that you have to consider any limited 
+>environment as enforcing security policy, and thus its configuration 
+>becomes an additional component of security policy.
+
+I don't understand what you are saying.  Yes, the AppArmor policy
+file is part of policy.  Is that what you mean?
