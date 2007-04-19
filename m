@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767009AbXDSUTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767024AbXDSUZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767009AbXDSUTK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 16:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767024AbXDSUTK
+	id S1767024AbXDSUZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 16:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767025AbXDSUZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 16:19:10 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:42332 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767009AbXDSUTJ (ORCPT
+	Thu, 19 Apr 2007 16:25:31 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:57880 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767024AbXDSUZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 16:19:09 -0400
-Date: Thu, 19 Apr 2007 16:19:05 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Bernd Eckenfels <ecki@lina.inka.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: AppArmor FAQ
-In-Reply-To: <E1HebEV-0004m9-00@calista.eckenfels.net>
-Message-ID: <Line.LNX.4.64.0704191618360.5128@d.namei>
-References: <E1HebEV-0004m9-00@calista.eckenfels.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Apr 2007 16:25:30 -0400
+Subject: Re: [PATCH 13/13] maps#2: Add /proc/kpagemap interface
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070419200226.GG11115@waste.org>
+References: <14.469046093@selenic.com>
+	 <1177009598.12599.152.camel@localhost.localdomain>
+	 <20070419200226.GG11115@waste.org>
+Content-Type: text/plain
+Date: Thu, 19 Apr 2007 13:25:25 -0700
+Message-Id: <1177014325.12599.166.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007, Bernd Eckenfels wrote:
-
-> In article <Line.LNX.4.64.0704180935100.25495@d.namei> you wrote:
-> > Perhaps -- until your httpd is compromised via a buffer overflow or 
-> > simply misbehaves due to a software or configuration flaw, then the 
-> > assumptions being made about its use of pathnames and their security 
-> > properties are out the window.
+On Thu, 2007-04-19 at 15:02 -0500, Matt Mackall wrote:
+> On Thu, Apr 19, 2007 at 12:06:38PM -0700, Dave Hansen wrote:
+> > On Fri, 2007-04-06 at 17:03 -0500, Matt Mackall wrote:
+> > > 
+> > > +static ssize_t kpagemap_read(struct file *file, char __user *buf,
+> > > +                            size_t count, loff_t *ppos)
+> > > +{
+> > ...
+> > > +               for (; i < 2 * chunk / KPMSIZE; i += 2, pfn++) {
+> > > +                       ppage = pfn_to_page(pfn);
+> > > +                       if (!ppage) {
+> > > +                               page[i] = 0;
+> > > +                               page[i + 1] = 0;
+> > > +                       } else {
+> > > +                               page[i] = ppage->flags;
+> > > +                               page[i + 1] = atomic_read(&ppage->_count);
+> > > +                       }
+> > > +               } 
+> > 
+> > I think this needs a pfn_valid() check for sparse/discontig systems.  I
+> > think we'll oops if we have holes because we don't check pfn_valid()
+> > inside of pfn_to_page().
 > 
-> Hu? Even a compromised httpd (especially a compromised httpd) is bound to
-> the app armor policies. This means it cannot (for example) write to
-> /var/www/* - if it never needed to at normal/profiling time.
+> Are there cases where pfn_valid is true but pfn_to_page doesn't work?
+> In other words, do I still only need two cases?
 
-This has been addressed several times already, please read the full 
-thread.
+pfn_valid() will at least guarantee that pfn_to_page() will give you
+_some_ 'struct page' back.  
 
+However, it isn't an absolute guarantee that there is actual physical
+memory backing that struct page.  For your use here, it should be OK,
+but it might be a bit confusing if anyone ever ends up with more entries
+in that /proc file than they have pages of total memory.
 
+But, this is a pretty low-level debugging mechanism, and I'm not sure
+this is very easy to solve in an arch-independent way.
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+I'd probably just leave it looking something like this:
+
++               for (; i < 2 * chunk / KPMSIZE; i += 2, pfn++) {
++                       if (!pfn_valid(pfn)) {
++                              page[i] = 0;
++                              page[i + 1] = 0;
++                       } else {
++	                       ppage = pfn_to_page(pfn);
++                              page[i] = ppage->flags;
++                              page[i + 1] = atomic_read(&ppage->_count);
++                       }
++               } 
+
+BTW, page->flags can be quite config-dependent on how stuff is stored in
+there, especially with the zone, node, and section information encoded
+in there.  Do you, perhaps, want to just spit out the bits that are
+actual PageFoo() flags?
+
+-- Dave
+
