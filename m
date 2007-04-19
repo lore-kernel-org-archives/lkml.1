@@ -1,143 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161258AbXDSX5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161280AbXDSX7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161258AbXDSX5u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 19:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030829AbXDSX5t
+	id S1161280AbXDSX7E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 19:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030582AbXDSX7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 19:57:49 -0400
-Received: from mail-in-08.arcor-online.net ([151.189.21.48]:40631 "EHLO
-	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161280AbXDSX5a (ORCPT
+	Thu, 19 Apr 2007 19:59:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:18218 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030748AbXDSX7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 19:57:30 -0400
-Subject: Re: [linux-dvb] Re: [video4linux-cvs] [hg:v4l-dvb] Add support for
-	Opera S1- DVB-USB
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Markus Rechberger <mrechberger@gmail.com>,
-       Michael Krufky <mkrufky@linuxtv.org>, linux-dvb@linuxtv.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4627FE4D.8010204@gmail.com>
-References: <E1HeXiw-0001Ct-0o@www.linuxtv.org>
-	 <4627858A.6060209@linuxtv.org>	 <4627B959.8070601@freenet.de>
-	 <4627D407.10105@linuxtv.org>
-	 <1177015513.6002.40.camel@matwk009568.brasiltelecom.intra.corp>
-	 <4627D74A.4090304@gmail.com> <1177019927.3166.8.camel@pc06.localdom.local>
-	 <4627F076.4050105@gmail.com>
-	 <d9def9db0704191547l49358b74l9d81304f537fe6d6@mail.gmail.com>
-	 <4627F283.6030009@gmail.com> <1177024610.4513.9.camel@pc06.localdom.local>
-	 <4627F90A.40307@gmail.com> <1177025724.4513.16.camel@pc06.localdom.local>
-	 <4627FE4D.8010204@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 20 Apr 2007 02:00:52 +0200
-Message-Id: <1177027252.4513.19.camel@pc06.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-2.fc5) 
-Content-Transfer-Encoding: 8bit
+	Thu, 19 Apr 2007 19:59:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=kLABefOVC3ECE2pqO+X7yMZDcwgU70S2hlR2f1E4PH2WAwsEU0fPNSEcmMVnlAKtpFbsfxnOiHZDhwHWUcSHVLct4ksc5aDLJn86VVv+4bZiMWUDpvaHTrk3HXs3yjXrKFCVnOdk8Xav84gqilROF+7WFLllETbTk2V3cWTmcrs=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [RFC 0/8] Variable Order Page Cache
+Date: Fri, 20 Apr 2007 02:58:24 +0300
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>, Andi Kleen <ak@suse.de>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+In-Reply-To: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704200258.24749.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 20.04.2007, 03:42 +0400 schrieb Manu Abraham:
-> hermann pitton wrote:
-> > Am Freitag, den 20.04.2007, 03:19 +0400 schrieb Manu Abraham:
-> >> hermann pitton wrote:
-> >>> Am Freitag, den 20.04.2007, 02:51 +0400 schrieb Manu Abraham:
-> >>>> Markus Rechberger wrote:
-> >>>>> On 4/20/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> >>>>>> hermann pitton wrote:
-> >>>>>>> Am Freitag, den 20.04.2007, 00:55 +0400 schrieb Manu Abraham:
-> >>>>>>>> Mauro Carvalho Chehab wrote:
-> >>>>>>>>> Em Qui, 2007-04-19 às 16:41 -0400, Michael Krufky escreveu:
-> >>>>>>>>>> Marco Gittler wrote:
-> >>>>>>>>>>> this patch has applied the hints from mkrufky (dvb_attach,
-> >>>>>>>>>>> firmware-naming)
-> >>>>>>>>>>> and also one working rewrite of the i2c addresses stuff to fit the
-> >>>>>>>>>>> kernel i2c reqs.
-> >>>>>>>>>>>
-> >>>>>>>>>>> Signed-off-by: Marco Gittler<g.marco@freenet.de>
-> >>>>>>>>>>> diff -r c8b73ec18b42 linux/drivers/media/dvb/dvb-usb/opera1.c
-> >>>>>>>>>>> --- a/linux/drivers/media/dvb/dvb-usb/opera1.c    Thu Apr 19
-> >>>>>> 12:04:50
-> >>>>>> 2007 -0300
-> >>>>>>>>>>> +++ b/linux/drivers/media/dvb/dvb-usb/opera1.c    Thu Apr 19
-> >>>>>> 20:38:01
-> >>>>>> 2007 +0200
-> >>>>>>>>>>> @@ -25,6 +25,13 @@
-> >>>>>>>>>>>  #define REG_20_SYMBOLRATE_BYTE1 0x20
-> >>>>>>>>>>>  #define REG_21_SYMBOLRATE_BYTE2 0x21
-> >>>>>>>>>>>
-> >>>>>>>>>>> +#define ADDR_C0_TUNER (0xc0>>1)
-> >>>>>>>>>>> +#define ADDR_D0_PLL (0xd0>>1)
-> >>>>>>>>>>>
-> >>>>>>>>>> I don't like these two #define's.  These i2c addresses need only be
-> >>>>>>>>>> specified once, in the config structs / frontendfoo_attach calls for
-> >>>>>> the
-> >>>>>>>>>> tuner / demod.
-> >>>>>>>>>>
-> >>>>>>>>>> Better to just put them in as constants like all of the other dvb
-> >>>>>> drivers.
-> >>>>>>>>> I prefer the way it is. We should really avoid having magic numbers
-> >>>>>>>>> inside the code. The alias here helps to know that 0x60 is tuner
-> >>>>>> addres
-> >>>>>>>>> and 0x68 the pll.
-> >>>>>>>> Following a project's coding styles and conventions is "respecting" a
-> >>>>>>>> project
-> >>>>>>>>
-> >>>>>>>> Manu
-> >>>>>>>>
-> >>>>>>> Hi,
-> >>>>>>>
-> >>>>>>> the other natural place for this should be the LKML to get more _good_
-> >>>>>>> arguments, instead of hanging soon in some "respect" stuff again.
-> >>>>>> DVB drivers generally have device addresses such as tuner_addresses and
-> >>>>>> demod_adresses defined in a config struct least to prevent them from
-> >>>>>> being global, wherever the header is included, since the very same
-> >>>>>> device can have multiple addresses and so on, which are non-probable
-> >>>>>> since being behind a repeater which is switched by a demod (private) and
-> >>>>>> hence.
-> >>>>>>
-> >>>>>> Those are some of the reasons to follow a certain coding
-> >>>>>> style/conventions. They are _not_ for fun.
-> >>>>>>
-> >>>>> cat *priv.h says something else too...
-> >>>>> there are also many global register defines in DVB drivers, they just
-> >>>>> don't include the register value in the define name.
-> >>>> *_priv.h from what i understand means private .. i don't know what you
-> >>>> make out from that.
-> >>>>
-> >>>>
-> >>>> HTH,
-> >>>> Manu
-> >>> ;)
-> >>>
-> >>> That means that I had to post the actual headers to every single tester
-> >> If you use a private header as a public header, of course yes. But that
-> >> is not what private explicitly means.
-> >> It _is_ indeed wrong to use a private header as a public header _even_
-> >> for workarounds.
-> >>
-> >> HTH,
-> >> Manu
-> > 
-> > Forget it.
-> > 
-> > That is as wrong as older Fedora distros were shipping v4l2 apps like
-> > tvtime, but only providing v4l1 headers on the user level.
-> > 
+On Thursday 19 April 2007 19:35:04 Christoph Lameter wrote:
+> Variable Order Page Cache Patchset
 > 
-> I don't know about Fedora shipping v4l2 apps.  Forgive my ignorance. But
-> it is really hopeless to include a private header for a device into
-> another device. Anyway not talking about V4L1/2/n headers, but about DVB
-> device (demod/tuner) private headers being included publicly. Private
-> means private, i don't understand how the notion comes around that a
-> private header is a public header.
+> This patchset modifies the core VM so that higher order page cache pages
+> become possible. The higher order page cache pages are compound pages
+> and can be handled in the same way as regular pages.
 > 
-> It is _not_ named private for no reason.
+> The order of the pages is determined by the order set up in the mapping
+> (struct address_space). By default the order is set to zero.
+> This means that higher order pages are optional. There is no attempt here
+> to generally change the page order of the page cache. 4K pages are effective
+> for small files.
+> 
+> However, it would be good if the VM would support I/O to higher order pages
+> to enable efficient support for large scale I/O. If one wants to write a
+> long file of a few gigabytes then the filesystem should have a choice of
+> selecting a larger page size for that file and handle larger chunks of
+> memory at once.
+> 
+> The support here is only for buffered I/O and only for one filesystem 
+(ramfs).
+> Modification of other filesystems to support higher order pages may require
+> extensive work of other components of the kernel. But I hope this shows that
+> there is a relatively easy way to that goal that could be taken in steps..
+> 
+> Note that the higher order pages are subject to reclaim. This works in 
+general
+> since we are always operating on a single page struct. Reclaim is fooled to
+> think that it is touching page sized objects (there are likely issues to be
+> fixed there if we want to go down this road).
+> 
+> What is currently not supported:
+> - Buffer heads for higher order pages (possible with the compound pages in 
+mm
+>   that do not use page->private requires upgrade of the buffer cache 
+layers).
+> - Higher order pages in the block layer etc.
+> - Mmapping higher order pages
+> 
+> Note that this is proof-of-concept. Lots of functionality is missing and
+> various issues have not been dealt with. Use of higher order pages may cause
+> memory fragmentation. Mel Gorman's anti-fragmentation work is probably
+> essential if we want to do this. We likely need actual defragmentation
+> support.
+> 
+> The main point of this patchset is to demonstrates that it is basically
+> possible to have higher order support with straightforward changes to the
+> VM.
+> 
+> The ramfs driver can be used to test higher order page cache functionality
+> (and may help troubleshoot the VM support until we get some real filesystem
+> and real devices supporting higher order pages).
+> 
+> If you apply this patch and then you can f.e. try this:
+> 
+> mount -tramfs -o10 none /media
+> 
+> 	Mounts a ramfs filesystem with order 10 pages (4 MB)
+> 
+> cp linux-2.6.21-rc7.tar.gz /media
+> 
+> 	Populate the ramfs. Note that we allocate 14 pages of 4M each
+> 	instead of 13508..
+> 
+> umount /media
+> 
+> 	Gets rid of the large pages again
+> 
+> Comments appreciated.
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
-The GPL was also not named GPL for no reason.
+Hello,
 
-HTH,
-Hermann
+This is exactly what I wanted some time ago,
+Thank you very much, I was almost thinking of doing this myself 
+(but decided that it is too difficult now for me and maybe doesn't worth the 
+effort)
 
+I want to point out on number of problems that this will solve (and reasons I 
+wanted to do that)
 
+First of all, today, packet writing on cd/dvd doesn't work well, it is very 
+slow because 
+now all file-systems are limited to 4k-barrier and cd/dvd can write only 
+32k/64k packets.
+This is why a pktcdvd was written and it emulates those 4k sectors by doing 
+read/modify/write cycle
+This cause a lot of seeks and read/writing switches and thus it is very slow.
+
+By introducing a bigger that 4k page cache a dvd/cd can be divided is 64k/32k 
+blocks that will be read an written freely
+(Although dvd can read 2k  I don't think that reading a 64k block will hurt 
+since most of time drive is busy seeking and locating a specific sector)
+
+Now I thinking to implement this in an other way, I mean I want to teach udf 
+filesystem to to packet writing on its own, bypassing disk cache (but not page 
+cache)
+
+Secondary 32/64k limitation is present of flash devices too, so they can 
+benefit too, and I almost sure that future hard disks will use bigger block 
+size too.
+
+To summarize I want to tell that bigger pagesize will allow devices that have 
+big hardware sectors to work fine in linux.
+
+Best regards,
+	Maxim Levitsky
