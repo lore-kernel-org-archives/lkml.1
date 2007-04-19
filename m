@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030859AbXDSGOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031140AbXDSG2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030859AbXDSGOX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 02:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030864AbXDSGOX
+	id S1031140AbXDSG2t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 02:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031153AbXDSG2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 02:14:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39332 "EHLO mx2.mail.elte.hu"
+	Thu, 19 Apr 2007 02:28:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48633 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030859AbXDSGOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 02:14:22 -0400
-Date: Thu, 19 Apr 2007 08:14:16 +0200
+	id S1031140AbXDSG2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 02:28:48 -0400
+Date: Thu, 19 Apr 2007 08:28:32 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] workqueue: debug possible lockups in flush_workqueue
-Message-ID: <20070419061416.GB18894@elte.hu>
-References: <20070419055247.GA1782@ff.dom.local>
+To: Christian Hesse <mail@earthworm.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, suspend2-devel@lists.suspend2.net
+Subject: Re: CFS and suspend2: hang in atomic copy
+Message-ID: <20070419062832.GD18894@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418221609.GA17347@elte.hu> <200704190112.52838.mail@earthworm.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070419055247.GA1782@ff.dom.local>
+In-Reply-To: <200704190112.52838.mail@earthworm.de>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -33,27 +38,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jarek Poplawski <jarkao2@o2.pl> wrote:
+* Christian Hesse <mail@earthworm.de> wrote:
 
-> Here is my patch proposal for detecting possible lockups, when 
-> flush_workqueue caller holds a lock (e.g. rtnl_lock) also used in work 
-> functions.
+> I now got some error message from my system:
+> 
+> http://www.eworm.de/tmp/cfs-suspend.jpg
 
-looks good in principle - did you test it and it caught a bug that wasnt 
-caught before?
-
-> +#ifdef CONFIG_PROVE_LOCKING
-> +/* Detect possible flush_workqueue() lockup with circular dependency check. */
-> +static struct lockdep_map flush_dep_map = { .name = "flush_dep_map" };
-> +#endif
-
-> +#ifdef CONFIG_PROVE_LOCKING
-> +		/* lockdep dependency: flush_dep_map (read) before any lock: */
-> +		lock_acquire(&flush_dep_map, 0, 0, 1, 2, _THIS_IP_);
-> +#endif
-
-i think the #ifdef should only be needed for the .name initialization - 
-both lock_acquire() and lock_release() maps to NOP if PROVE_LOCKING is 
-off.
+ah, this pinpoints a bug: for performance reasons pick_next_task() 
+assumes that the runqueue is not empty - which is true for schedule(), 
+but not in migrate_dead_tasks(). Does the patch below fix the crash for 
+you?
 
 	Ingo
+
+---
+ kernel/sched.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -4425,6 +4425,8 @@ static void migrate_dead_tasks(unsigned 
+ 	struct task_struct *next;
+ 
+ 	for (;;) {
++		if (!rq->nr_running)
++			break;
+ 		next = pick_next_task(rq, rq->curr);
+ 		if (!next)
+ 			break;
