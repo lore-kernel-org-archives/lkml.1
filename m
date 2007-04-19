@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766767AbXDSPEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766788AbXDSPFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766767AbXDSPEa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 11:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766776AbXDSPE3
+	id S1766788AbXDSPFw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 11:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766786AbXDSPFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 11:04:29 -0400
-Received: from mail15.syd.optusnet.com.au ([211.29.132.196]:54456 "EHLO
-	mail15.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1766767AbXDSPE2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 11:04:28 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>
-Subject: [PATCH] [3/3] sched: increase ksoftirqd priority
-Date: Fri, 20 Apr 2007 01:03:51 +1000
-User-Agent: KMail/1.9.5
+	Thu, 19 Apr 2007 11:05:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35690 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766749AbXDSPFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 11:05:51 -0400
+Date: Thu, 19 Apr 2007 11:06:56 -0400
+From: Josef Bacik <jwhiter@redhat.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Josef Bacik <jwhiter@redhat.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
+Message-ID: <20070419150655.GC1481@korben.rdu.redhat.com>
+References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704200103.51443.kernel@kolivas.org>
+In-Reply-To: <1176991356.31764.3.camel@mulgrave.il.steeleye.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-More aggressive nice discrimination by the Staircase-Deadline cpu scheduler
-means ksoftirqd is getting significantly less cpu than previously. Adjust
-nice value accordingly for similar cpu distribution.
+On Thu, Apr 19, 2007 at 10:02:36AM -0400, James Bottomley wrote:
+> On Thu, 2007-04-19 at 09:25 -0400, Josef Bacik wrote:
+> > Looking through everything I came to the conclusion that we don't really need
+> > the scsi_sysfs_add_devices in scsi_finish_async_scan, which gets run everytime
+> > we do a do_scan_async.  In doing the scanning, if we come upon anything we will
+> > already be registering the device with sysfs so the scsi_sysfs_add_devices step
+> > is kind of useless.
+> 
+> Unfortunately, it isn't.  The registration step while scanning is at the
+> end of scsi_add_lun():
+> 
+> 
+> 	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
+> 		return SCSI_SCAN_NO_RESPONSE;
+> 
+> 	return SCSI_SCAN_LUN_PRESENT;
+> 
+> The !async should mean that the addition *only* occurs for the non async
+> scan case ... if you remove the post async scan add, we'll lose devices.
+> 
+> >   I tested this and it worked fine on my UP box (where the
+> > problem was happening) and my SMP box (where the problem wasn't happening).  Now
+> > I'm not entirely sure if this is correct, but I'm attaching the patch that I
+> > used to fix it for me, please point out if I've done something wrong or if there
+> > is a different way this needs to be fixed.  Thank you,
+> 
+> Could you add some debugging first to see if we're actually adding the
+> device twice (and also, if we are, what the value of the async is).
+>
 
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
+Sorry I should have put that in the original post, I added debugging to
+kobject_add to check to see if we were adding something twice, thats how I
+figured out who was doing it
 
----
- kernel/softirq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+kobject rport-3:0-0: registering. parent: host3, set: devices
+kobject rport-3:0-0: registering. parent: fc_remote_ports, set: class_obj
+kobject target3:0:0: registering. parent: rport-3:0-0, set: devices
+kobject rport-3:0-1: registering. parent: host3, set: devices
+kobject rport-3:0-1: registering. parent: fc_remote_ports, set: class_obj
+kobject target3:0:0: registering. parent: fc_transport, set: class_obj
+kobject rport-3:0-2: registering. parent: host3, set: devices
+kobject rport-3:0-2: registering. parent: fc_remote_ports, set: class_obj
+kobject rport-3:0-3: registering. parent: host3, set: devices
+kobject rport-3:0-3: registering. parent: fc_remote_ports, set: class_obj
+kobject rport-3:0-4: registering. parent: host3, set: devices
+kobject rport-3:0-4: registering. parent: fc_remote_ports, set: class_obj
+kobject rport-3:0-5: registering. parent: host3, set: devices
+kobject rport-3:0-5: registering. parent: fc_remote_ports, set: class_obj
+kobject rport-3:0-6: registering. parent: host3, set: devices
+kobject rport-3:0-6: registering. parent: fc_remote_ports, set: class_obj
+kobject rport-3:0-7: registering. parent: host3, set: devices
+kobject rport-3:0-7: registering. parent: fc_remote_ports, set: class_obj
+>> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
+kobject 3:0:0:0: registering. parent: scsi_device, set: class_obj
+scsi 3:0:0:0: Direct-Access     IBM 1742-900         0520 PQ: 0 ANSI: 3
+>> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
+kobject_add failed for 3:0:0:0 with -EEXIST, don't try to register things with 
+the same name in the same directory.
 
-Index: linux-2.6.21-rc7-sd/kernel/softirq.c
-===================================================================
---- linux-2.6.21-rc7-sd.orig/kernel/softirq.c	2007-04-20 00:30:08.000000000 +1000
-+++ linux-2.6.21-rc7-sd/kernel/softirq.c	2007-04-20 00:30:31.000000000 +1000
-@@ -488,7 +488,7 @@ void __init softirq_init(void)
- 
- static int ksoftirqd(void * __bind_cpu)
- {
--	set_user_nice(current, 19);
-+	set_user_nice(current, 15);
- 	current->flags |= PF_NOFREEZE;
- 
- 	set_current_state(TASK_INTERRUPTIBLE);
+Async in the first case is set and in the second case it isn't set.  Thank you,
 
--- 
--ck
+Josef 
