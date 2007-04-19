@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993120AbXDSHDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993128AbXDSHDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993120AbXDSHDQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993133AbXDSHC4
+	id S2993128AbXDSHDR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993134AbXDSHCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:02:56 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34571 "EHLO
+	Thu, 19 Apr 2007 03:02:53 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34578 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993123AbXDSHCl (ORCPT
+	with ESMTP id S2993133AbXDSHCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:02:41 -0400
+	Thu, 19 Apr 2007 03:02:45 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] s390/net/lcs: Convert to the kthread API
-Date: Thu, 19 Apr 2007 00:55:35 -0600
-Message-Id: <11769657794115-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] pnpbios: Conert to use the kthread API.
+Date: Thu, 19 Apr 2007 00:55:32 -0600
+Message-Id: <1176965774141-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,58 +26,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Use kthread_run to start the lcs kernel threads not a
-combination of kernel_thread and daemonize.  This makes
-the code slightly simpler and more maintainable.
+This patches modifies the pnpbios kernel thread to start
+with ktrhead_run not kernel_thread and deamonize.  Doing
+this makes the code a little simpler and easier to maintain.
 
-Cc: Frank Pavlic <fpavlic@de.ibm.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/s390/net/lcs.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/pnp/pnpbios/core.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/s390/net/lcs.c b/drivers/s390/net/lcs.c
-index 08a994f..0300d87 100644
---- a/drivers/s390/net/lcs.c
-+++ b/drivers/s390/net/lcs.c
-@@ -36,6 +36,7 @@
- #include <linux/in.h>
- #include <linux/igmp.h>
+diff --git a/drivers/pnp/pnpbios/core.c b/drivers/pnp/pnpbios/core.c
+index c2ed53f..3a201b7 100644
+--- a/drivers/pnp/pnpbios/core.c
++++ b/drivers/pnp/pnpbios/core.c
+@@ -62,6 +62,7 @@
  #include <linux/delay.h>
+ #include <linux/acpi.h>
+ #include <linux/freezer.h>
 +#include <linux/kthread.h>
- #include <net/arp.h>
- #include <net/ip.h>
  
-@@ -1248,7 +1249,6 @@ lcs_register_mc_addresses(void *data)
- 	struct in_device *in4_dev;
+ #include <asm/page.h>
+ #include <asm/desc.h>
+@@ -159,9 +160,7 @@ static int pnp_dock_thread(void * unused)
+ {
+ 	static struct pnp_docking_station_info now;
+ 	int docked = -1, d = 0;
+-	daemonize("kpnpbiosd");
+-	allow_signal(SIGKILL);
+-	while(!unloading && !signal_pending(current))
++	while (!unloading)
+ 	{
+ 		int status;
+ 		
+@@ -170,11 +169,8 @@ static int pnp_dock_thread(void * unused)
+ 		 */
+ 		msleep_interruptible(2000);
  
- 	card = (struct lcs_card *) data;
--	daemonize("regipm");
+-		if(signal_pending(current)) {
+-			if (try_to_freeze())
+-				continue;
+-			break;
+-		}
++		if (try_to_freeze())
++			continue;
  
- 	if (!lcs_do_run_thread(card, LCS_SET_MC_THREAD))
+ 		status = pnp_bios_dock_station_info(&now);
+ 
+@@ -582,6 +578,7 @@ subsys_initcall(pnpbios_init);
+ 
+ static int __init pnpbios_thread_init(void)
+ {
++	struct task_struct *task;
+ #if defined(CONFIG_PPC_MERGE)
+ 	if (check_legacy_ioport(PNPBIOS_BASE))
  		return 0;
-@@ -1728,11 +1728,10 @@ lcs_start_kernel_thread(struct work_struct *work)
- 	struct lcs_card *card = container_of(work, struct lcs_card, kernel_thread_starter);
- 	LCS_DBF_TEXT(5, trace, "krnthrd");
- 	if (lcs_do_start_thread(card, LCS_RECOVERY_THREAD))
--		kernel_thread(lcs_recovery, (void *) card, SIGCHLD);
-+		kthread_run(lcs_recovery, card, "lcs_recover");
- #ifdef CONFIG_IP_MULTICAST
- 	if (lcs_do_start_thread(card, LCS_SET_MC_THREAD))
--		kernel_thread(lcs_register_mc_addresses,
--				(void *) card, SIGCHLD);
-+		kernel_run(lcs_register_mc_addresses, card, "regipm");
+@@ -590,7 +587,8 @@ static int __init pnpbios_thread_init(void)
+ 		return 0;
+ #ifdef CONFIG_HOTPLUG
+ 	init_completion(&unload_sem);
+-	if (kernel_thread(pnp_dock_thread, NULL, CLONE_KERNEL) > 0)
++	task = kthread_run(pnp_dock_thread, NULL, "kpnpbiosd");
++	if (!IS_ERR(task))
+ 		unloading = 0;
  #endif
- }
- 
-@@ -2232,7 +2231,6 @@ lcs_recovery(void *ptr)
-         int rc;
- 
- 	card = (struct lcs_card *) ptr;
--	daemonize("lcs_recover");
- 
- 	LCS_DBF_TEXT(4, trace, "recover1");
- 	if (!lcs_do_run_thread(card, LCS_RECOVERY_THREAD))
+ 	return 0;
 -- 
 1.5.0.g53756
 
