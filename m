@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993067AbXDSAkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993069AbXDSApI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993067AbXDSAkX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 20:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993069AbXDSAkX
+	id S2993069AbXDSApI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 20:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993079AbXDSApH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 20:40:23 -0400
-Received: from mail01.syd.optusnet.com.au ([211.29.132.182]:42857 "EHLO
-	mail01.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993067AbXDSAkW (ORCPT
+	Wed, 18 Apr 2007 20:45:07 -0400
+Received: from smtp1.osdl.org ([65.172.181.25]:33787 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2993069AbXDSApF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 20:40:22 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org, Nick Piggin <npiggin@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Bill Huey <billh@gnuppy.monkey.org>,
+	Wed, 18 Apr 2007 20:45:05 -0400
+X-Greylist: delayed 793 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Apr 2007 20:45:05 EDT
+Date: Wed, 18 Apr 2007 17:30:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
+       Nick Piggin <npiggin@suse.de>,
        William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>, Willy Tarreau <w@1wt.eu>
-Subject: Re: [ck] Announce - Staircase Deadline cpu scheduler v0.41
-Date: Thu, 19 Apr 2007 10:41:12 +1000
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200704190959.06432.kernel@kolivas.org>
-In-Reply-To: <200704190959.06432.kernel@kolivas.org>
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       ck list <ck@vds.kolivas.org>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
+ Scheduler [CFS]
+In-Reply-To: <Pine.LNX.4.64.0704181634220.25880@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.0.98.0704181729580.9964@woody.linux-foundation.org>
+References: <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de>
+ <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de>
+ <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de>
+ <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
+ <20070418152355.GU11115@waste.org> <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
+ <20070418174945.GA7930@elte.hu> <alpine.LFD.0.98.0704181215260.2828@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0704181254580.25880@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0704181302370.2828@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0704181634220.25880@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704191041.13352.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 April 2007 09:59, Con Kolivas wrote:
-> Since there is so much work currently ongoing with alternative cpu
-> schedulers, as a standard for comparison with the alternative virtual
-> deadline fair designs I've addressed a few issues in the Staircase Deadline
-> cpu scheduler which improve behaviour likely in a noticeable fashion and
-> released version 0.41.
->
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.20.7-sd-0.41.patch
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.41.patch
->
-> and an incremental for those on 0.40:
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7/sched-implement
->-staircase-deadline-scheduler-further-improvements.patch
->
-> Remember to renice X to -10 for nicest desktop behaviour :)
->
-> Have fun.
 
-Oops forgot to cc a few people
 
-Nick you said I should still have something to offer so here it is.
-Peter you said you never saw this design (it's a dual array affair sorry).
-Gene and Willy you were some of the early testers that noticed the advantages 
-of the earlier designs,
-Matt you did lots of great earlier testing.
-WLI you inspired a lot of design ideas.
-Mike you were the stick.
-And a few others I've forgotten to mention and include.
+On Wed, 18 Apr 2007, Davide Libenzi wrote:
+> 
+> I know, we agree there. But that did not fit my "Pirates of the Caribbean" quote :)
 
--- 
--ck
+Ahh, I'm clearly not cultured enough, I didn't catch that reference.
+
+	Linus "yes, I've seen the movie, but it
+		 apparently left more of a mark in other people" Torvalds
