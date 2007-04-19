@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993215AbXDSJqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161489AbXDSKL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993215AbXDSJqb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 05:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993220AbXDSJqb
+	id S1161489AbXDSKL4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 06:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161490AbXDSKL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 05:46:31 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:57803
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2993215AbXDSJqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 05:46:31 -0400
-Date: Thu, 19 Apr 2007 11:49:45 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: chas@cmf.nrl.navy.mil
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] use mutex instead of binary semaphore in FORE Systems 200E-series driver for ATM
-Message-ID: <20070419094945.GE5013@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	chas@cmf.nrl.navy.mil, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Thu, 19 Apr 2007 06:11:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53264 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161489AbXDSKLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 06:11:55 -0400
+Date: Thu, 19 Apr 2007 12:11:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Esben Nielsen <nielsen.esben@googlemail.com>
+Cc: Christian Hesse <mail@earthworm.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, suspend2-devel@lists.suspend2.net
+Subject: Re: CFS and suspend2: hang in atomic copy (was: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS])
+Message-ID: <20070419101131.GB32274@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <200704181759.03559.mail@earthworm.de> <20070418164621.GA30744@elte.hu> <Pine.LNX.4.64.0704191117530.8557@frodo.shire>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0704191117530.8557@frodo.shire>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use mutex instead of binary semaphore in FORE Systems 200E-series
-driver for ATM
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+* Esben Nielsen <nielsen.esben@googlemail.com> wrote:
 
----
+> >+	/*
+> >+	 * Temporarily insert at the last position of the tree:
+> >+	 */
+> >+	p->fair_key = LLONG_MAX;
+> >+	__enqueue_task_fair(rq, p);
+> >	p->on_rq = 1;
+> >+
+> >+	/*
+> >+	 * Update the key to the real value, so that when all other
+> >+	 * tasks from before the rightmost position have executed,
+> >+	 * this task is picked up again:
+> >+	 */
+> >+	p->fair_key = rq->fair_clock - p->wait_runtime + p->nice_offset;
+> 
+> I don't think it safe to change the key after inserting the element in 
+> the tree. You end up with an unsorted tree giving where new entries 
+> end up in wrong places "randomly".
 
-diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
-index a7c0ed3..7ab827d 100644
---- a/drivers/atm/fore200e.c
-+++ b/drivers/atm/fore200e.c
-@@ -1502,9 +1502,9 @@ fore200e_open(struct atm_vcc *vcc)
-     /* pseudo-CBR bandwidth requested? */
-     if ((vcc->qos.txtp.traffic_class == ATM_CBR) && (vcc->qos.txtp.max_pcr > 0)) {
- 	
--	down(&fore200e->rate_sf);
-+	mutex_lock(&fore200e->rate_mtx);
- 	if (fore200e->available_cell_rate < vcc->qos.txtp.max_pcr) {
--	    up(&fore200e->rate_sf);
-+	    mutex_unlock(&fore200e->rate_mtx);
- 
- 	    kfree(fore200e_vcc);
- 	    vc_map->vcc = NULL;
-@@ -1513,7 +1513,7 @@ fore200e_open(struct atm_vcc *vcc)
- 
- 	/* reserve bandwidth */
- 	fore200e->available_cell_rate -= vcc->qos.txtp.max_pcr;
--	up(&fore200e->rate_sf);
-+	mutex_unlock(&fore200e->rate_mtx);
-     }
-     
-     vcc->itf = vcc->dev->number;
-@@ -1599,9 +1599,9 @@ fore200e_close(struct atm_vcc* vcc)
-     /* release reserved bandwidth, if any */
-     if ((vcc->qos.txtp.traffic_class == ATM_CBR) && (vcc->qos.txtp.max_pcr > 0)) {
- 
--	down(&fore200e->rate_sf);
-+	mutex_lock(&fore200e->rate_mtx);
- 	fore200e->available_cell_rate += vcc->qos.txtp.max_pcr;
--	up(&fore200e->rate_sf);
-+	mutex_unlock(&fore200e->rate_mtx);
- 
- 	clear_bit(ATM_VF_HASQOS, &vcc->flags);
-     }
-@@ -2064,16 +2064,16 @@ fore200e_change_qos(struct atm_vcc* vcc,struct atm_qos* qos, int flags)
- 
-     if ((qos->txtp.traffic_class == ATM_CBR) && (qos->txtp.max_pcr > 0)) {
- 
--	down(&fore200e->rate_sf);
-+	mutex_lock(&fore200e->rate_mtx);
- 	if (fore200e->available_cell_rate + vcc->qos.txtp.max_pcr < qos->txtp.max_pcr) {
--	    up(&fore200e->rate_sf);
-+	    mutex_unlock(&fore200e->rate_mtx);
- 	    return -EAGAIN;
- 	}
- 
- 	fore200e->available_cell_rate += vcc->qos.txtp.max_pcr;
- 	fore200e->available_cell_rate -= qos->txtp.max_pcr;
- 
--	up(&fore200e->rate_sf);
-+	mutex_unlock(&fore200e->rate_mtx);
- 	
- 	memcpy(&vcc->qos, qos, sizeof(struct atm_qos));
- 	
-@@ -2459,7 +2459,7 @@ fore200e_initialize(struct fore200e* fore200e)
- 
-     DPRINTK(2, "device %s being initialized\n", fore200e->name);
- 
--    init_MUTEX(&fore200e->rate_sf);
-+    mutex_init(&fore200e->rate_mtx);
-     spin_lock_init(&fore200e->q_lock);
- 
-     cpq = fore200e->cp_queues = fore200e->virt_base + FORE200E_CP_QUEUES_OFFSET;
-diff --git a/drivers/atm/fore200e.h b/drivers/atm/fore200e.h
-index f9abfda..b85a546 100644
---- a/drivers/atm/fore200e.h
-+++ b/drivers/atm/fore200e.h
-@@ -869,7 +869,7 @@ typedef struct fore200e {
- 
-     struct stats*              stats;                  /* last snapshot of the stats         */
-     
--    struct semaphore           rate_sf;                /* protects rate reservation ops      */
-+    struct mutex               rate_mtx;               /* protects rate reservation ops      */
-     spinlock_t                 q_lock;                 /* protects queue ops                 */
- #ifdef FORE200E_USE_TASKLET
-     struct tasklet_struct      tx_tasklet;             /* performs tx interrupt work         */
- 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+yeah, indeed. I hoped that once this rightmost entry is removed (as soon 
+as it gets scheduled next time) the tree goes back to a correct shape, 
+but that's not the case - the left sub-tree and the right sub-tree is 
+merged by the rbtree code with the assumption that the entry had a 
+correct key.
 
-            You can chain me, you can torture me, you can even
-          destroy this body, but you will never imprison my mind
-                            (Mahatma Gandhi)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+> I think a better approach would be to keep track of the rightmost 
+> entry, set the key to the rightmost's key +1 and then simply insert it 
+> there.
+
+yeah. I had that implemented at a stage but was trying to be too clever 
+for my own good ;-)
+
+	Ingo
