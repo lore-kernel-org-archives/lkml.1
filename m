@@ -1,142 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766714AbXDSORl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766715AbXDSOR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766714AbXDSORl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 10:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766713AbXDSORl
+	id S1766715AbXDSOR4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 10:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766717AbXDSORz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 10:17:41 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:13604 "EHLO kernel.dk"
+	Thu, 19 Apr 2007 10:17:55 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:65134 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766714AbXDSORk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 10:17:40 -0400
-Date: Thu, 19 Apr 2007 16:15:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
-       reiserfs-dev@namesys.com, "Vladimir V. Saveliev" <vs@namesys.com>,
-       linux-mm@kvack.org
-Subject: Re: dio_get_page() lockdep complaints
-Message-ID: <20070419141510.GG11780@kernel.dk>
-References: <20070419073828.GB20928@kernel.dk> <20070419010142.5b7b00cd.akpm@linux-foundation.org> <20070419080157.GC20928@kernel.dk> <20070419012540.bed394e2.akpm@linux-foundation.org> <20070419083407.GD20928@kernel.dk>
+	id S1766715AbXDSORy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 10:17:54 -0400
+Date: Thu, 19 Apr 2007 16:19:42 +0200
+From: DervishD <lkml@dervishd.net>
+To: Juergen Beisert <juergen127@kreuzholzen.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Wrong free clusters count on FAT32
+Message-ID: <20070419141942.GF8287@DervishD>
+Mail-Followup-To: Juergen Beisert <juergen127@kreuzholzen.de>,
+	linux-kernel@vger.kernel.org
+References: <20070419085750.GA2833@DervishD> <200704191352.06456.juergen127@kreuzholzen.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070419083407.GD20928@kernel.dk>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200704191352.06456.juergen127@kreuzholzen.de>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19 2007, Jens Axboe wrote:
-> > Is it possible that fio was changed?  That it was changed to close() the fd
-> > before doing the munmapping whereas it used to hold the file open?
+    Hi Juergen :)
+
+ * Juergen Beisert <juergen127@kreuzholzen.de> dixit:
+> On Thursday 19 April 2007 10:57, DervishD wrote:
+> > I have a portable device with a FAT32 formatted hard disk in it, and
+> > everytime I delete a file in the device *using the device itself to
+> > do it* the device increases its count of free space and if I plug
+> > the device in a Windows system, Windows agrees on the free space.
+> > Linux doesn't. Linux believes that the files are still there
+> > ocuppying space, and I have to run fsck.vfat to fix the problem.
 > 
-> It's been a while since I tested on this box, so I don't really recall.
-> But fio does close() the fd before doing munmap(). This particular test
-> case doesn't use mmap(), though.
+> As I remember: It needs a large amount of time to calculate the free
+> space on a big FAT32 system.
 
-Ah wait, but it does use mmap! Fio sets up a semaphore my mmap'ing a
-file in /tmp (which is reiserfs). Here's a test case that triggers it
-100% reliably, adjust /tmp to some other location that is reiserfs.
-lockdep from that run attached.
+    Big fat truth, I'm afraid. The thing is that I thought that Linux
+did that from time to time to update the count. Obviously, doing it for
+every statfs call would be very expensive :((
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/mman.h>
+> So the last free sector count is also stored. When mounting this
+> filesystem you don't need to walk through the whole FAT to calculate
+> the available space, you can use this "cached" value instead. And this
+> cached value seems not to be updated in your portable device.
 
-int main(int argc, char *argv[])
-{
-	char fname[] = "/tmp/some_file";	/* /tmp on reiserfs */
-	void *p;
-	int fd;
+    It doesn't, certainly, but Windows doesn't care. Moreover, the
+device doesn't seem to recalculate the value on every run (unless it
+does it lightning fast!), so maybe the number is stored elsewhere (the
+count can be stored in many places as far as I've read, but I don't know
+the details).
 
-	fd = open(fname, O_RDWR|O_CREAT, 0644);
-	if (fd < 0) {
-		perror("open");
-		return 1;
-	}
+    A mount option to force walking the FAT and getting the real info
+could be interesting. That way, it will be only done for certain devices
+(small disks, for example).
 
-	if (ftruncate(fd, 64) < 0) {
-		perror("ftruncate");
-		return 1;
-	}
+    Thanks for your answer :)
 
-	p = mmap(NULL, 64, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	if (p == MAP_FAILED) {
-		perror("mmap");
-		return 1;
-	}
-
-	unlink(fname);
-	close(fd);
-	munmap(p, 64);
-	return 0;
-}
-
-
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.21-rc7 #18
--------------------------------------------------------
-reiser-mmap/9643 is trying to acquire lock:
- (&inode->i_mutex){--..}, at: [<b038c625>] mutex_lock+0x1c/0x1f
-
-but task is already holding lock:
- (&mm->mmap_sem){----}, at: [<b015c6cf>] sys_munmap+0x26/0x42
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&mm->mmap_sem){----}:
-       [<b013e3fb>] __lock_acquire+0xdee/0xf9c
-       [<b013e600>] lock_acquire+0x57/0x70
-       [<b0137b92>] down_read+0x3a/0x4c
-       [<b01b6b88>] reiserfs_remount+0x176/0x42a
-       [<b016ba21>] do_remount_sb+0xb9/0x10f
-       [<b017ebe7>] do_mount+0x1b6/0x616
-       [<b017f0b6>] sys_mount+0x6f/0xa9
-       [<b0103f04>] sysenter_past_esp+0x5d/0x99
-       [<ffffffff>] 0xffffffff
-
--> #0 (&inode->i_mutex){--..}:
-       [<b013e259>] __lock_acquire+0xc4c/0xf9c
-       [<b013e600>] lock_acquire+0x57/0x70
-       [<b038c3e5>] __mutex_lock_slowpath+0x73/0x297
-       [<b038c625>] mutex_lock+0x1c/0x1f
-       [<b01b17e9>] reiserfs_file_release+0x54/0x447
-       [<b016afe7>] __fput+0x53/0x101
-       [<b016b0ee>] fput+0x19/0x1c
-       [<b015bcd5>] remove_vma+0x3b/0x4d
-       [<b015c659>] do_munmap+0x17f/0x1cf
-       [<b015c6db>] sys_munmap+0x32/0x42
-       [<b0103f04>] sysenter_past_esp+0x5d/0x99
-       [<ffffffff>] 0xffffffff
-
-other info that might help us debug this:
-
-1 lock held by reiser-mmap/9643:
- #0:  (&mm->mmap_sem){----}, at: [<b015c6cf>] sys_munmap+0x26/0x42
-
-stack backtrace:
- [<b0104f54>] show_trace_log_lvl+0x1a/0x30
- [<b0105626>] show_trace+0x12/0x14
- [<b01056ad>] dump_stack+0x16/0x18
- [<b013c48d>] print_circular_bug_tail+0x68/0x71
- [<b013e259>] __lock_acquire+0xc4c/0xf9c
- [<b013e600>] lock_acquire+0x57/0x70
- [<b038c3e5>] __mutex_lock_slowpath+0x73/0x297
- [<b038c625>] mutex_lock+0x1c/0x1f
- [<b01b17e9>] reiserfs_file_release+0x54/0x447
- [<b016afe7>] __fput+0x53/0x101
- [<b016b0ee>] fput+0x19/0x1c
- [<b015bcd5>] remove_vma+0x3b/0x4d
- [<b015c659>] do_munmap+0x17f/0x1cf
- [<b015c6db>] sys_munmap+0x32/0x42
- [<b0103f04>] sysenter_past_esp+0x5d/0x99
- =======================
+    Raúl Núñez de Arenas Coronado
 
 -- 
-Jens Axboe
-
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
