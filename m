@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161130AbXDSGy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161149AbXDSG4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161130AbXDSGy2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 02:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161175AbXDSGy2
+	id S1161149AbXDSG4x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 02:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161151AbXDSG4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 02:54:28 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57900 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161130AbXDSGyX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 02:54:23 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Remaining straight forward kthread API conversions...
-Date: Thu, 19 Apr 2007 00:52:28 -0600
-Message-ID: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 19 Apr 2007 02:56:53 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:59529 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161149AbXDSG4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 02:56:52 -0400
+Date: Thu, 19 Apr 2007 09:02:28 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] workqueue: debug possible lockups in flush_workqueue
+Message-ID: <20070419070228.GC1782@ff.dom.local>
+References: <20070419055247.GA1782@ff.dom.local> <20070419061416.GB18894@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070419061416.GB18894@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 19, 2007 at 08:14:16AM +0200, Ingo Molnar wrote:
+> 
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > Here is my patch proposal for detecting possible lockups, when 
+> > flush_workqueue caller holds a lock (e.g. rtnl_lock) also used in work 
+> > functions.
+> 
+> looks good in principle - did you test it and it caught a bug that wasnt 
+> caught before?
 
-The following patches are against 2.6.21.rc6-mm1.
-Hopefully that is enough to catch most of the recent development
-activity.
+Yes, but it was only my own testing bug... (I'm not a good tester, sorry).
 
-I am aiming to remove all kernel threads that handle signals
-from user space, to remove all calls to daemonize and kernel_thread
-from non-core kernel code.
+> 
+> > +#ifdef CONFIG_PROVE_LOCKING
+> > +/* Detect possible flush_workqueue() lockup with circular dependency check. */
+> > +static struct lockdep_map flush_dep_map = { .name = "flush_dep_map" };
+> > +#endif
+> 
+> > +#ifdef CONFIG_PROVE_LOCKING
+> > +		/* lockdep dependency: flush_dep_map (read) before any lock: */
+> > +		lock_acquire(&flush_dep_map, 0, 0, 1, 2, _THIS_IP_);
+> > +#endif
+> 
+> i think the #ifdef should only be needed for the .name initialization - 
+> both lock_acquire() and lock_release() maps to NOP if PROVE_LOCKING is 
+> off.
 
-kernel thrreads handling signals from user space is a problem because
-it makes the kernel thread part of the user/kernel API which make
-changing things difficult and it breaks as soon as you are inside of
-a pid namespace because you won't be able to see your kernel thread.
+There is also DEBUG_LOCK_ALLOC without PROVE_LOCKING possibility,
+which isn't usable here.
 
-Calling kernel_thread has problems because it returns a pid_t value
-which once we get to the pid namespace is context depending so it
-cannot be used to globally identify a process.  kernel_thread is
-also a problem because it traps user space state and requires us
-to call daemonize to free that state.
-
-daemonize is a maintenance problem because every time you play with
-user space state and limiting things you need to remember to update
-daemonize.  Occasionally it has taken years like in the case of the
-mount namespace before someone realizes they need to update it.
-With the kthread api we no longer need daemonize.
-
-In addition we don't want kernel threads visible in anything but
-the initial pid namespace or they will hold a reference to a
-child pid namespace.  However calling kernel_thread from a non-kernel
-parent in a child pid namespace will give the thread a pid in
-the child pid namespace, and there is nothing daemonize can do about
-it.  So daemonize appears impossible to support going forward, and
-I choose to remove all of it's callers rather than attempt to support
-it.
-
-Eric
+Jarek P.
