@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161309AbXDSJCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161224AbXDSJEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161309AbXDSJCI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 05:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161374AbXDSJCI
+	id S1161224AbXDSJEy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 05:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993209AbXDSJEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 05:02:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42212 "EHLO mx2.mail.elte.hu"
+	Thu, 19 Apr 2007 05:04:54 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:39815 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161309AbXDSJCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 05:02:06 -0400
-Date: Thu, 19 Apr 2007 11:01:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070419090144.GA17100@elte.hu>
-References: <20070413202100.GA9957@elte.hu> <20070414020424.GB14544@wotan.suse.de> <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu>
-Mime-Version: 1.0
+	id S1161224AbXDSJEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 05:04:53 -0400
+Date: Thu, 19 Apr 2007 18:04:36 +0900
+From: Simon Horman <horms@verge.net.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, Wensong Zhang <wensong@linux-vs.org>,
+       Julian Anastasov <ja@ssi.bg>
+Subject: Re: [PATCH] ipv4/ipvs: Convert to kthread API
+Message-ID: <20070419090435.GB26050@verge.net.au>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769696262330-git-send-email-ebiederm@xmission.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070414130101.GA2538@1wt.eu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <11769696262330-git-send-email-ebiederm@xmission.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 19, 2007 at 01:58:57AM -0600, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com>
+> 
+> Modify startup of ipvs sync threads to use kthread_run
+> instead of a weird combination of calling kernel_thread
+> to start a fork_sync_thread whose hole purpose in life was
+> to call kernel_thread again starting the actually sync thread
+> which called daemonize.
+> 
+> To use kthread_run I had to move the name calcuation from
+> sync_thread into start_sync_thread resulting in a small
+> amount of code motion.
+> 
+> The result is simpler and more maintainable piece of code.
 
-* Willy Tarreau <w@1wt.eu> wrote:
+Thanks Eric, I'll review this and get back to you shortly.
 
-> Good idea. The machine I'm typing from now has 1000 scheddos running 
-> at +19, and 12 gears at nice 0. [...]
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
-> From time to time, one of the 12 aligned gears will quickly perform a 
-> full quarter of round while others slowly turn by a few degrees. In 
-> fact, while I don't know this process's CPU usage pattern, there's 
-> something useful in it : it allows me to visually see when process 
-> accelerate/decelerate. [...]
-
-cool idea - i have just tried this and it rocks - you can easily see the 
-'nature' of CPU time distribution just via visual feedback. (Is there 
-any easy way to start up 12 glxgears fully aligned, or does one always 
-have to mouse around to get them into proper position?)
-
-btw., i am using another method to quickly judge X's behavior: i started 
-the 'snowflakes' plugin in Beryl on Fedora 7, which puts a nice smooth 
-opengl-rendered snow fall on the desktop background. That gives me an 
-idea about how well X is scheduling under various workloads, without 
-having to instrument it explicitly.
-
-	Ingo
