@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422667AbXDSVzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbXDSWFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422667AbXDSVzj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 17:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422708AbXDSVzj
+	id S1754211AbXDSWFI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXDSWFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 17:55:39 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:38346 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422667AbXDSVzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 17:55:38 -0400
-Subject: Re: [linux-dvb] Re: [video4linux-cvs] [hg:v4l-dvb] Add support for
-	Opera S1- DVB-USB
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Manu Abraham <abraham.manu@gmail.com>, linux-kernel@vger.kernel.org
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-dvb@linuxtv.org,
-       Michael Krufky <mkrufky@linuxtv.org>
-In-Reply-To: <4627D74A.4090304@gmail.com>
-References: <E1HeXiw-0001Ct-0o@www.linuxtv.org>
-	 <4627858A.6060209@linuxtv.org> <4627B959.8070601@freenet.de>
-	 <4627D407.10105@linuxtv.org>
-	 <1177015513.6002.40.camel@matwk009568.brasiltelecom.intra.corp>
-	 <4627D74A.4090304@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 19 Apr 2007 23:58:47 +0200
-Message-Id: <1177019927.3166.8.camel@pc06.localdom.local>
+	Thu, 19 Apr 2007 18:05:08 -0400
+Received: from pat.uio.no ([129.240.10.15]:49893 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754211AbXDSWFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 18:05:04 -0400
+Subject: Re: [PATCH] nfs lockd reclaimer: Convert to kthread API
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+In-Reply-To: <20070419144059.7f5b9b39.akpm@linux-foundation.org>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	 <11769696321319-git-send-email-ebiederm@xmission.com>
+	 <1176999710.6663.12.camel@heimdal.trondhjem.org>
+	 <m1slawkw76.fsf@ebiederm.dsl.xmission.com>
+	 <1177017564.6628.5.camel@heimdal.trondhjem.org>
+	 <20070419144059.7f5b9b39.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 19 Apr 2007 18:04:44 -0400
+Message-Id: <1177020284.6628.27.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-2.fc5) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: DC57B063EF5812C7BD88E029593A6DD00166232A
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 42 total 1199940 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 20.04.2007, 00:55 +0400 schrieb Manu Abraham:
-> Mauro Carvalho Chehab wrote:
-> > Em Qui, 2007-04-19 às 16:41 -0400, Michael Krufky escreveu:
-> >> Marco Gittler wrote:
-> >>> this patch has applied the hints from mkrufky (dvb_attach,
-> >>> firmware-naming)
-> >>> and also one working rewrite of the i2c addresses stuff to fit the
-> >>> kernel i2c reqs.
-> >>>
-> >>> Signed-off-by: Marco Gittler<g.marco@freenet.de>
-> >>> diff -r c8b73ec18b42 linux/drivers/media/dvb/dvb-usb/opera1.c
-> >>> --- a/linux/drivers/media/dvb/dvb-usb/opera1.c	Thu Apr 19 12:04:50 2007 -0300
-> >>> +++ b/linux/drivers/media/dvb/dvb-usb/opera1.c	Thu Apr 19 20:38:01 2007 +0200
-> >>> @@ -25,6 +25,13 @@
-> >>>  #define REG_20_SYMBOLRATE_BYTE1 0x20
-> >>>  #define REG_21_SYMBOLRATE_BYTE2 0x21
-> >>>  
-> >>> +#define ADDR_C0_TUNER (0xc0>>1)
-> >>> +#define ADDR_D0_PLL (0xd0>>1)
-> >>>   
-> >> I don't like these two #define's.  These i2c addresses need only be
-> >> specified once, in the config structs / frontendfoo_attach calls for the
-> >> tuner / demod.
-> >>
-> >> Better to just put them in as constants like all of the other dvb drivers.
+On Thu, 2007-04-19 at 14:40 -0700, Andrew Morton wrote:
+> Using signals to communicate with kernel threads is fairly unpleasant, IMO.
+> We have much simpler, faster and more idiomatic ways of communicating
+> between threads in-kernel and there are better ways in which userspace can
+> communicate with the kernel - system calls, for example...
+> 
+> So I think generally any move which gets us away from using signals in
+> kernel threads is moving in a good direction.
+
+I have yet to see a proposal which did. Eric's patch was eliminating
+signals in kernel threads that used them without proposing any
+replacement mechanism or showing that he had plans to do so. That is a
+good reason for a veto.
+
+> > > With pid namespaces all kernel threads will disappear so how do
+> > > we cope with the problem when the sysadmin can not see the kernel
+> > > threads?
 > > 
-> > I prefer the way it is. We should really avoid having magic numbers
-> > inside the code. The alias here helps to know that 0x60 is tuner addres
-> > and 0x68 the pll.
+> > Then you have a usability problem. How does the sysadmin reboot the
+> > system if there is no way to shut down the processes that are hanging on
+> > an unresponsive filesystem?
 > 
+> Where's the hang?  A user process is stuck on h_rwsem?
 > 
-> Following a project's coding styles and conventions is "respecting" a
-> project
-> 
-> Manu
-> 
+> If so, would it be appropriate to convert the user process to use
+> down_foo_interruptible(), so that the operator can just kill the user
+> process as expected, rather than having to futz around killing kernel
+> threads?
 
-Hi,
+If an NFS server reboots, then the locks held by user processes on the
+client need to be re-established by when it comes up again. Otherwise,
+the processes that thought they were holding locks will suddenly fail.
+This recovery job is currently the done by a kernel thread.
 
-the other natural place for this should be the LKML to get more _good_
-arguments, instead of hanging soon in some "respect" stuff again.
+The question is then what to do if the server crashes again while the
+kernel thread is re-establishing the locks. Particularly if it never
+comes back again.
+Currently, the administrator can intervene by killing anything that has
+open files on that volume and kill the recovery kernel thread.
+You'll also note that lockd_down(), nfsd_down() etc all use signals to
+inform lockd(), nfsd() etc that they should be shutting down. Since the
+reclaimer thread is started by the lockd() thread using CLONE_SIGHAND,
+this means that we also automatically kill any lingering recovery
+threads whenever we shutdown lockd().
 
-Cheers,
-Hermann
- 
+These mechanisms need to be replaced _before_ we start shooting down
+sigallow() etc in the kernel.
 
+  Trond
 
