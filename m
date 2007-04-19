@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbXDSOas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753554AbXDSOeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606AbXDSOas (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 10:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbXDSOas
+	id S1753554AbXDSOeO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 10:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXDSOeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 10:30:48 -0400
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:38286 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753122AbXDSOar (ORCPT
+	Thu, 19 Apr 2007 10:34:14 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:55515 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753554AbXDSOeN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 10:30:47 -0400
-Date: Thu, 19 Apr 2007 16:30:07 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Bart Trojanowski <bart@jukie.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: how to tell linux (on x86) to ignore 1M or memory
-Message-ID: <20070419163007.26db4041@localhost>
-In-Reply-To: <20070419141804.GO32620@jukie.net>
-References: <20070419141804.GO32620@jukie.net>
-X-Mailer: Claws Mail 2.6.1 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
+	Thu, 19 Apr 2007 10:34:13 -0400
+Date: Thu, 19 Apr 2007 17:34:11 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] revoke: only fput unused files
+Message-ID: <Pine.LNX.4.64.0704191733290.25796@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 10:18:04 -0400
-Bart Trojanowski <bart@jukie.net> wrote:
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> I need to preserve some state from the bios before entering protected
-> mode.  For now I want to copy it into some ram accessible by real-mode,
-> say the last megabyte visible in real-mode.
-> 
-> What's the easiest way to have linux ignore the megabyte starting at 15M?
-> 
+We should do fput only to files that were not used by the revoke
+operation.
 
-Documentation/kernel-parameters.txt:
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/revoke.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-        memmap=nn[KMG]$ss[KMG]
-                        [KNL,ACPI] Mark specific memory as reserved.
-                        Region of memory to be used, from ss to ss+nn.
-
-
-So adding this to kernel boot parameters should do the trick:
-
-	memmap=15M$1M
-
--- 
-	Paolo Ornati
-	Linux 2.6.21-rc7-CFS-v3-g6262cd9f on x86_64
+Index: uml-2.6/fs/revoke.c
+===================================================================
+--- uml-2.6.orig/fs/revoke.c	2007-04-19 17:27:11.000000000 +0300
++++ uml-2.6/fs/revoke.c	2007-04-19 17:27:40.000000000 +0300
+@@ -130,7 +130,6 @@ 	for (fd = 0; fd < fdt->max_fds; fd++) {
+ 		}
+ 
+ 		new_filp = revoke_table_get(table);
+-		get_file(new_filp);
+ 
+ 		/*
+ 		 * Replace original struct file pointer with a pointer to
+@@ -487,7 +486,7 @@ static void free_revoke_table(struct rev
+ {
+ 	int i;
+ 
+-	for (i = 0; i < table->size; i++)
++	for (i = table->end; i < table->size; i++)
+ 		fput(table->files[i]);
+ 
+ 	kfree(table->files);
