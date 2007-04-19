@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161113AbXDSGwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXDSGyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161113AbXDSGwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 02:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161130AbXDSGwt
+	id S1161140AbXDSGyJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 02:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161130AbXDSGyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 02:52:49 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46204 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1161113AbXDSGws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 02:52:48 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19xK+NPNTtxm0kc1PDoz2+0W4hhgk3FH1TJjDTjA/
-	PL1jw+TcEV6YNS
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Thu, 19 Apr 2007 02:54:09 -0400
+Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:2287 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161140AbXDSGyI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 02:54:08 -0400
+Date: Thu, 19 Apr 2007 08:54:13 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070418214816.GA10902@elte.hu>
-References: <20070418043831.GR11115@waste.org>
-	 <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org>
-	 <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
-	 <20070418152355.GU11115@waste.org>
-	 <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
-	 <20070418174945.GA7930@elte.hu> <20070418175936.GA11980@elte.hu>
-	 <alpine.LFD.0.98.0704181223190.2828@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0704181304250.25880@alien.or.mcafeemobile.com>
-	 <20070418214816.GA10902@elte.hu>
-Content-Type: text/plain
-Date: Thu, 19 Apr 2007 08:52:40 +0200
-Message-Id: <1176965560.6408.60.camel@Homer.simpson.net>
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
+       Christer Weinigel <wingel@nano-system.com>,
+       Jordan Crouse <jordan.crouse@amd.com>
+Subject: Re: [PATCH v3] Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070419085413.1520feef@hyperion.delvare>
+In-Reply-To: <20070418174256.GB5577@csclub.uwaterloo.ca>
+References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
+	<20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
+	<20070414192807.60bdf84b@hyperion.delvare>
+	<20070418174256.GB5577@csclub.uwaterloo.ca>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-18 at 23:48 +0200, Ingo Molnar wrote:
+Hi Len,
 
-> so my current impression is that we want per UID accounting to solve the 
-> X problem, the kernel threads problem and the many-users problem, but 
-> i'd not want to do it for threads just yet because for them there's not 
-> really any apparent problem to be solved.
+On Wed, 18 Apr 2007 13:42:56 -0400, Lennart Sorensen wrote:
+> On Sat, Apr 14, 2007 at 07:28:07PM +0200, Jean Delvare wrote:
+> > Otherwise it looks OK to me, I take the patch. If others have comments
+> > or objections, just speak up and submit incremental patches as needed.
+> > 
+> > Now I would like to see platform code actually using this.
+> 
+> Any idea how similar this new driver is to the scx200_i2c driver?  As
+> far as I can tell that driver is already a bit banged i2c over gpio
+> lines.
 
-If you really mean UID vs EUID as Linus mentioned, I suppose I could
-learn to login as !root, and set KDE up to always give me root shells.
+The major difference is that the implementation in scx200_i2c is
+hardware-specific, while the i2c-gpio driver is a generic one, so it's
+a lot better.
 
-With a heavily reniced X (perfectly fine), that should indeed solve my
-daily usage pattern nicely (always need godmode for shells, but not for
-mozilla and ilk. 50/50 split automatic without renice of entire gui)
+What this means is that i2c-gpio obsoletes scx200_i2c, so I am inclined
+to delete scx200_i2c right away. I'm not even sure anyone still uses it
+now that scx200_acb has been fixed and is reported to work very well.
+If anyone really needs to do I2C over GPIO pins on SCx200, this should
+be reimplemented on top of i2c-gpio.
 
-	-Mike
+It also looks to me like i2c-ixp2000 and i2c-ixp4xx are obsoleted by
+i2c-gpio. Deepak, can you please try using i2c-gpio instead and confirm
+that i2c-ixp2000 and i2c-ixp4xx can be deleted?
 
+Thanks,
+-- 
+Jean Delvare
