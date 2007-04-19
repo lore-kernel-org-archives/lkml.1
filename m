@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031147AbXDSEoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030812AbXDSE6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031147AbXDSEoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 00:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031154AbXDSEoV
+	id S1030812AbXDSE6N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 00:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031064AbXDSE6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 00:44:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52625 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031147AbXDSEoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 00:44:20 -0400
-Message-ID: <4626F038.8020606@redhat.com>
-Date: Thu, 19 Apr 2007 00:29:44 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Thu, 19 Apr 2007 00:58:13 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:32901 "EHLO
+	asav10.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030812AbXDSE6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 00:58:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAPCTJkZKhRO4W2dsb2JhbACQAR0NBhA
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: johann deneux <johann.deneux@gmail.com>
+Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
+Date: Thu, 19 Apr 2007 00:58:10 -0400
+User-Agent: KMail/1.9.3
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com> <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
+In-Reply-To: <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
 MIME-Version: 1.0
-To: Abhijit Bhopatkar <bainonline@gmail.com>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>, akpm@osdl.org, jgarzik@pobox.com,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH] [RFC] Throttle swappiness for interactive tasks
-References: <2ff216280704180510w28136a6cw6816f834593aff13@mail.gmail.com>	 <46268519.7080702@redhat.com> <2ff216280704182014h6ff2eed3g4301ee8d1bfbed14@mail.gmail.com>
-In-Reply-To: <2ff216280704182014h6ff2eed3g4301ee8d1bfbed14@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704190058.11625.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Abhijit Bhopatkar wrote:
+Hi,
 
-> I just wanted to know weather its worth going forward or we have
-> better reasons to discount any such direction?
+On Thursday 19 April 2007 00:25, johann deneux wrote:
+> On 4/18/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> > johann deneux napsal(a):
+> > > Jiri,
+> > >
+> > > Which solution did you chose to implement? From what I remember, we
+> > > last discussed Dmitry's idea of specifying an axis for an effect, then
+> > > combine several effects to achieve complex effects.
+> >
+> > I think you mean motor instead of axis, because I don't push real axes to
+> > the devices, but motor's torques...
+> >
+> 
+> Yes, sorry, I meant motor.
+> 
 
-The reason that the wrong pages get swapped out sometimes
-could be due to a side effect of the way the swappiness
-policy is implemented.
+I have been thinking about this and I don't think that exporting motor
+data is a good idea, at least not in case of Phantom driver. The fact
+that there are 3 motors is a hardware implementation detail and it
+is not interesting for general application.
 
-While the VM only reclaims page cache pages, it will still
-rotate through the anonymous pages on the LRU list, which
-effectively randomizes the order of those pages on the list.
-
-I need to get back to benchmarking my patch to split the
-lists - anonymous and other swap backed pages on one set
-of pageout lists, filesystem backed pages on another list.
-
-One report I got was that the system is more interactive
-under very heavy load, and my desktop system at the office
-seems to behave better than it used to when I get back to
-it after a few days.
-
-Unfortunately my main desktop system at home depends on
-Xen, so it's not as easy to use that patch there :(
+My understanding that the end result of controlling these 3 motors
+is a force vector (I don't know if there is such english term, this
+is a literal translation from russian) applied to user's hand.
+If we are interested in using FF API we need to come up with a way
+to express this effect without exposing implementation details of
+one particular device.
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Dmitry
