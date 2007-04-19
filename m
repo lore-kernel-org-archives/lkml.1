@@ -1,175 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993194AbXDSIJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993197AbXDSIIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993194AbXDSIJE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993189AbXDSIGV
+	id S2993197AbXDSIIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993156AbXDSIIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:06:21 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45857 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993192AbXDSIGF (ORCPT
+	Thu, 19 Apr 2007 04:08:12 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:3117 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993190AbXDSIHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:06:05 -0400
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: "<Andrew Morton" <akpm@osdl.org>
-Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Hartmut Hackmann <hartmut.hackmann@t-online.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [PATCH] saa7134-tvaudio: Convert to kthread API.
-Date: Thu, 19 Apr 2007 01:58:58 -0600
-Message-Id: <11769696312493-git-send-email-ebiederm@xmission.com>
-X-Mailer: git-send-email 1.5.1.1.g2de0
-In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	Thu, 19 Apr 2007 04:07:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fVt2uXWZaGOCwcqsmgHeiCPn0BH2KpG2+/D6VXL35wHvNfjcxth0oi8O/UbhzLwtfP3qOcANGrmJXEN5F6XuVBWouKEFph+YkeNJmKBRlCRMW/xASWoHY5d3VKLj6YNILOgMR1B/crlbha+CNtT3MyDN/R0WL5+egJENfY+pXwg=
+Message-ID: <38b2ab8a0704190107x2c151bafx824beca052f97ef6@mail.gmail.com>
+Date: Thu, 19 Apr 2007 10:07:53 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [CRYPTO] is it really optimized ?
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+In-Reply-To: <adalkgq3nx6.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0704170659o3f65f5fbo94a59be58727d21c@mail.gmail.com>
+	 <E1HdoGm-0005WU-00@gondolin.me.apana.org.au>
+	 <38b2ab8a0704170741n619e169s6a2f3ac5b768a950@mail.gmail.com>
+	 <adairbv57s2.fsf@cisco.com>
+	 <38b2ab8a0704170914h3a766236t47bc7e1c8de67662@mail.gmail.com>
+	 <ada7isb3qr2.fsf@cisco.com>
+	 <38b2ab8a0704171024m3d838bdak14370a7d0931557f@mail.gmail.com>
+	 <adalkgq3nx6.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+On 4/17/07, Roland Dreier <rdreier@cisco.com> wrote:
+>  > > It seems trivial to keep the last key you were given and do a quick
+>  > > memcmp in your setkey method to see if it's different from the last
+>  > > key you pushed to hardware, and set a flag if it is.  Then only do
+>  > > your set_key() if you have a new key to pass to hardware.
+>  > >
+>  > > I'm assuming the expense is in the aes_write() calls, and you could
+>  > > avoid them if you know you're not writing something new.
+>
+>  > that's a wrong assumption. aes_write()/aes_read() are both used to
+>  > access to the controller and are slow (no cache involved).
+>
+> Sorry, I wasn't clear.  I meant that the hardware access is what is
+> slow, and that anything you do on the CPU is relatively cheap compared
+> to that.
+>
+> So my suggestion is just to keep a cache (in CPU memory) of what you
+> have already loaded into the HW, and before reloading the HW just
+> check the cache and don't do the actual HW access if you're not going
+> to change the HW contents.  So you avoid any extra aes_write and
+> aes_read calls in the cache hit case.
+>
+> This would have the advantage of making anything that does lots of
+> bulk encryption fast without special casing ecryptfs.
+>
 
-It is my goal to replace all kernel code that handles signals
-from user space, calls kernel_thread or calls daemonize.  All
-of which the kthread_api makes unncessary.  Handling signals
-from user space is a maintenance problem becuase using a
-kernel thread is an implementation detail and if user space
-cares it does not allow us to change the implementation.  Calling
-daemonize is a problem because it has to undo a continually changing
-set of state generated by user space, requiring the implemetation
-to change continually.  kernel_thread is a problem because it
-returns a pid_t value.  Numeric pids are inherently racy and
-in the presence of a pid namespace they are no longer global
-making them useless for general use in the kernel.
+I'm not sure how "memcmp(key, cache, KEY_SIZE)" would impact AES
+performance. I need to give it a test but can't today. I'll do
+tomorrow and give you back the result.
 
-So this patch renames the pid member of struct saa7134_thread
-started and changes it's type from pid_t to int.  All it
-has ever been used for is to detect if the kernel thread
-is has been started so this works.
-
-allow_signal(SIGTERM) and the calls to signal_pending have
-been removed they are needed for the driver to operation.
-
-The startup of tvaudio_thread and tvaudio_thread_dep have
-been modified to use kthread_run instead of a combination
-of kernel_thread and daemonize.
-
-The result is code that is slightly simpler and more
-maintainable.
-
-Cc: Hartmut Hackmann <hartmut.hackmann@t-online.de>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/media/video/saa7134/saa7134-tvaudio.c |   27 ++++++++++++-------------
- drivers/media/video/saa7134/saa7134.h         |    2 +-
- 2 files changed, 14 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/media/video/saa7134/saa7134-tvaudio.c b/drivers/media/video/saa7134/saa7134-tvaudio.c
-index 7b56041..b636cb1 100644
---- a/drivers/media/video/saa7134/saa7134-tvaudio.c
-+++ b/drivers/media/video/saa7134/saa7134-tvaudio.c
-@@ -27,6 +27,7 @@
- #include <linux/kernel.h>
- #include <linux/slab.h>
- #include <linux/delay.h>
-+#include <linux/kthread.h>
- #include <asm/div64.h>
- 
- #include "saa7134-reg.h"
-@@ -505,11 +506,9 @@ static int tvaudio_thread(void *data)
- 	unsigned int i, audio, nscan;
- 	int max1,max2,carrier,rx,mode,lastmode,default_carrier;
- 
--	daemonize("%s", dev->name);
--	allow_signal(SIGTERM);
- 	for (;;) {
- 		tvaudio_sleep(dev,-1);
--		if (dev->thread.shutdown || signal_pending(current))
-+		if (dev->thread.shutdown)
- 			goto done;
- 
- 	restart:
-@@ -618,7 +617,7 @@ static int tvaudio_thread(void *data)
- 		for (;;) {
- 			if (tvaudio_sleep(dev,5000))
- 				goto restart;
--			if (dev->thread.shutdown || signal_pending(current))
-+			if (dev->thread.shutdown)
- 				break;
- 			if (UNSET == dev->thread.mode) {
- 				rx = tvaudio_getstereo(dev,&tvaudio[i]);
-@@ -782,9 +781,6 @@ static int tvaudio_thread_ddep(void *data)
- 	struct saa7134_dev *dev = data;
- 	u32 value, norms, clock;
- 
--	daemonize("%s", dev->name);
--	allow_signal(SIGTERM);
--
- 	clock = saa7134_boards[dev->board].audio_clock;
- 	if (UNSET != audio_clock_override)
- 		clock = audio_clock_override;
-@@ -796,7 +792,7 @@ static int tvaudio_thread_ddep(void *data)
- 
- 	for (;;) {
- 		tvaudio_sleep(dev,-1);
--		if (dev->thread.shutdown || signal_pending(current))
-+		if (dev->thread.shutdown)
- 			goto done;
- 
- 	restart:
-@@ -986,14 +982,17 @@ int saa7134_tvaudio_init2(struct saa7134_dev *dev)
- 		break;
- 	}
- 
--	dev->thread.pid = -1;
-+	dev->thread.started = 0;
- 	if (my_thread) {
-+		struct task_struct *task;
- 		/* start tvaudio thread */
- 		init_waitqueue_head(&dev->thread.wq);
- 		init_completion(&dev->thread.exit);
--		dev->thread.pid = kernel_thread(my_thread,dev,0);
--		if (dev->thread.pid < 0)
--			printk(KERN_WARNING "%s: kernel_thread() failed\n",
-+		task = kthread_run(my_thread, dev, "%s", dev->name);
-+		if (!IS_ERR(task))
-+			dev->thread.started = 1;
-+		else
-+			printk(KERN_WARNING "%s: kthread_create() failed\n",
- 			       dev->name);
- 		saa7134_tvaudio_do_scan(dev);
- 	}
-@@ -1005,7 +1004,7 @@ int saa7134_tvaudio_init2(struct saa7134_dev *dev)
- int saa7134_tvaudio_fini(struct saa7134_dev *dev)
- {
- 	/* shutdown tvaudio thread */
--	if (dev->thread.pid >= 0) {
-+	if (dev->thread.started) {
- 		dev->thread.shutdown = 1;
- 		wake_up_interruptible(&dev->thread.wq);
- 		wait_for_completion(&dev->thread.exit);
-@@ -1020,7 +1019,7 @@ int saa7134_tvaudio_do_scan(struct saa7134_dev *dev)
- 		dprintk("sound IF not in use, skipping scan\n");
- 		dev->automute = 0;
- 		saa7134_tvaudio_setmute(dev);
--	} else if (dev->thread.pid >= 0) {
-+	} else if (dev->thread.started) {
- 		dev->thread.mode = UNSET;
- 		dev->thread.scan2++;
- 		wake_up_interruptible(&dev->thread.wq);
-diff --git a/drivers/media/video/saa7134/saa7134.h b/drivers/media/video/saa7134/saa7134.h
-index 62224cc..3a10ce7 100644
---- a/drivers/media/video/saa7134/saa7134.h
-+++ b/drivers/media/video/saa7134/saa7134.h
-@@ -324,7 +324,7 @@ struct saa7134_pgtable {
- 
- /* tvaudio thread status */
- struct saa7134_thread {
--	pid_t                      pid;
-+	int			   started;
- 	struct completion          exit;
- 	wait_queue_head_t          wq;
- 	unsigned int               shutdown;
+Thanks
 -- 
-1.5.0.g53756
-
+Francis
