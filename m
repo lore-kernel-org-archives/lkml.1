@@ -1,73 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767000AbXDSVat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422636AbXDSVcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767000AbXDSVat (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 17:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422667AbXDSVat
+	id S1422636AbXDSVcv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 17:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422667AbXDSVcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 17:30:49 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:10604 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422636AbXDSVas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 17:30:48 -0400
-X-IronPort-AV: i="4.14,428,1170662400"; 
-   d="scan'208"; a="52732888:sNHT23517025"
-Subject: Re: Failure! Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series
-	of issues
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Florin Iucha <florin@iucha.net>
-Cc: chuck.lever@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070419195844.GT24044@iucha.net>
-References: <20070418123842.GF24044@iucha.net>
-	 <1176902131.6796.62.camel@heimdal.trondhjem.org>
-	 <20070418134225.GG24044@iucha.net>
-	 <1176905506.6796.84.camel@heimdal.trondhjem.org>
-	 <20070419015232.GO24044@iucha.net>
-	 <1176950713.6422.95.camel@heimdal.trondhjem.org>
-	 <462786C9.7090405@oracle.com>
-	 <1176995848.6663.1.camel@heimdal.trondhjem.org>
-	 <20070419155046.GR24044@iucha.net>
-	 <1176998982.6663.10.camel@heimdal.trondhjem.org>
-	 <20070419195844.GT24044@iucha.net>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Thu, 19 Apr 2007 17:30:42 -0400
-Message-Id: <1177018242.6628.10.camel@heimdal.trondhjem.org>
+	Thu, 19 Apr 2007 17:32:51 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:52699 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422636AbXDSVcu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 17:32:50 -0400
+Date: Thu, 19 Apr 2007 14:31:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ego@in.ibm.com
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@in.ibm.com,
+       paulmck@us.ibm.com, pavel@ucw.cz
+Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
+Message-Id: <20070419143133.a6c82ef8.akpm@linux-foundation.org>
+In-Reply-To: <20070419120419.GB17069@in.ibm.com>
+References: <20070419120131.GB13435@in.ibm.com>
+	<20070419120419.GB17069@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 19 Apr 2007 21:30:49.0136 (UTC) FILETIME=[FF954B00:01C782C9]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-19 at 14:58 -0500, Florin Iucha wrote:
-> On Thu, Apr 19, 2007 at 12:09:42PM -0400, Trond Myklebust wrote:
-> > See
-> >    http://client.linux-nfs.org/Linux-2.6.x/2.6.21-rc7/
-> > 
-> > I'm giving the first 5 patches of that series (i.e.
-> > linux-2.6.21-001-cleanup_unstable_write.dif to
-> > linux-2.6.21-005-fix_nfsv4_resend.dif) an extra beating since those are
-> > the ones that I feel should go into 2.6.21 final in order to fix the
-> > read/write regressions that have been reported. They should be identical
-> > to the patches that I posted on lkml in the past 3 days.
-> > 
-> > Please feel free to grab them and give them a test.
-> 
-> The copy completed some time ago, but now I cannot ssh into the box!
-> This is a new development, as before I was always able to ssh into,
-> even when the copy slowed down to a trickle.
-> 
-> I'm far from the machine right now, so I will do some more tests
-> tonight, but right now, the new patchset is not good.  What is the
-> difference between reverting the patch you sent yesterday and your
-> current fifth patch?  I assume the other four are identical, right?
+On Thu, 19 Apr 2007 17:34:19 +0530
+Gautham R Shenoy <ego@in.ibm.com> wrote:
 
-The only difference is the way in which we handle retries of an NFSv4
-request: the new patch disconnects if and only if a timeout has
-occurred, or the server sends us garbage.
+> Threads which wait for completion on a frozen thread might result in 
+> causing the freezer to fail, if the waiting thread is freezeable.
+> 
+> There are some well known cases where it's preferable to temporarily thaw
+> the frozen process, finish the wait for completion and allow both the 
+> processes to call try_to_freeze. 
+> 
+> kthread_stop is one such case.
 
-Trond
+hm.
+
+> flush_workqueue might be another. 
+
+flush_workqueue() just needs to die.  I think there are (almost) no
+legitimate users of it once cancel_work_sync() is merged.
+
+> This patch attempts to address such a situation with a fix for kthread_stop.
+
+Via wholly undescribed means :(
+
+> Strictly experimental. Compile tested on i386.
+
+Rather than doing <whatever you did>, perhaps we could make the freezing
+process a dual-pass thing.  On pass 1, mark all the threads as "we'll be
+freezing you soon" and on the second pass, do the actual freezing.  Then,
+in problematic places such as kthread_stop() we can look to see if we'll
+soon be asked to freeze and if so, run try_to_freeze().
+
+Of course, running try_to_freeze() in kthread_stop() would be very wrong,
+so we'd actually need to do it in callers, preferably via a new
+kthread_stop_freezeable() wrapper.
+
+And the two-pass-freeze thing is of course racy.  It's also unnecessary:
+setting a flag on every task in the machine is equivalent to setting a
+global variable.  So perhaps just use a global variable?
+
+int kthread_stop_freezeable(struct task_struct *k)
+{
+	if (freeze_state == ABOUT_TO_START) {
+		wait_for(freeze_state == STARTED);
+		try_to_freeze();
+	}
+	kthread_stop(k);
+}
+
+which is theoretically racy if another freeze_processes() starts
+immediately.  Anyway - please have a think about it ;)
+
+> +static struct freezer_status_struct freezer_status = {
+> +				.lock = SPIN_LOCK_UNLOCKED,
+> +				.count = 0,
+> +			};
+
+SPIN_LOCK_UNLOCKED is deprecated (it subverts lockdep)
+
+>  static inline int freezeable(struct task_struct * p)
+>  {
+>  	if ((p == current) ||
+> @@ -45,7 +55,8 @@ void refrigerator(void)
+>  		 * *after* the freezer did the freezeable() check
+>  		 * on us.
+>  		 */
+> -		if (current->flags & PF_NOFREEZE) {
+> +		if ((current->flags & PF_NOFREEZE) ||
+> +		    test_tsk_thread_flag(current, TIF_FREEZER_HELD)) {
+>  			clear_tsk_thread_flag(current, TIF_FREEZE);
+>  			task_unlock(current);
+>  			return;
+> @@ -63,12 +74,16 @@ void refrigerator(void)
+>  	recalc_sigpending(); /* We sent fake signal, clean it up */
+>  	spin_unlock_irq(&current->sighand->siglock);
+>  
+> +	task_lock(current);
+>  	for (;;) {
+>  		set_current_state(TASK_UNINTERRUPTIBLE);
+>  		if (!frozen(current))
+>  			break;
+> +		task_unlock(current);
+>  		schedule();
+> +		task_lock(current);
+>  	}
+> +	task_unlock(current);
+>  	pr_debug("%s left refrigerator\n", current->comm);
+>  	current->state = save;
+
+I guess we should use set_current_state() here.
+
+> +
+> +	if (thaw_user_space) {
+> +		spin_lock(&freezer_status.lock);
+> +			if (freezer_status.count < 0)
+> +				freezer_status.count++;
+> +		spin_unlock(&freezer_status.lock);
+> +	}
+>  }
+
+whitespace went wrong
+
+> +#define TIF_FREEZER_HELD	21	/* is temporarily holding up the
+> +					 * process freezer
+> +					 */
+>  
+>  #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+>  #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+> @@ -102,6 +105,7 @@ struct thread_info {
+>  #define _TIF_MCA_INIT		(1 << TIF_MCA_INIT)
+>  #define _TIF_DB_DISABLED	(1 << TIF_DB_DISABLED)
+>  #define _TIF_FREEZE		(1 << TIF_FREEZE)
+> +#define _TIF_FREEZER_HELD	(1 << TIF_FREEZER_HELD)
+>  
+>  /* "work to do on user-return" bits */
+>  #define TIF_ALLWORK_MASK	(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
+> Index: linux-2.6.21-rc6/include/asm-mips/thread_info.h
+> ===================================================================
+> --- linux-2.6.21-rc6.orig/include/asm-mips/thread_info.h
+> +++ linux-2.6.21-rc6/include/asm-mips/thread_info.h
+> @@ -120,6 +120,7 @@ register struct thread_info *__current_t
+>  #define TIF_MEMDIE		18
+>  #define TIF_FREEZE		19
+>  #define TIF_ALLOW_FP_IN_KERNEL	20
+> +#define TIF_FREEZER_HELD	21
+>  #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
+>  
+>  #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+> @@ -132,6 +133,7 @@ register struct thread_info *__current_t
+>  #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+>  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+>  #define _TIF_FREEZE		(1<<TIF_FREEZE)
+> +#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
+
+hm, all this duplication is unpleasing.  We could do something similar to
+include/linux/buffer_head.h:BH_PrivateStart here: get all architectures to
+define a TIF_COMMON_STUFF_STARTS_HERE then include asm-generic/whatever.h
+which defines all the flags which every architecture must define, as
+TIF_COMMON_STUFF_STARTS_HERE+0, TIF_COMMON_STUFF_STARTS_HERE+1, etc.
+
+
