@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766893AbXDSR2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766896AbXDSR2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766893AbXDSR2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 13:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766891AbXDSR2c
+	id S1766896AbXDSR2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 13:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766895AbXDSR2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 13:28:32 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:43811 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161510AbXDSR2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 13:28:30 -0400
-Subject: Re: AppArmor FAQ
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: David Lang <david.lang@digitalinsight.com>
-Cc: James Morris <jmorris@namei.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>,
-       Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.63.0704181311390.2806@qynat.qvtvafvgr.pbz>
-References: <20070417181016.GA10903@one.firstfloor.org>
-	 <657751.18080.qm@web3 6614.mail.mud.yahoo.com>
-	 <20070417211653.GB11944@one.firstfloor.org>
-	 <20070417225815.000b0fdb@the-vil lage.bc.nu>
-	 <Line.LNX.4.64.0704180935100.25495@d.namei>
-	 <Pine.LNX.4.63.0704181311390.2806@qynat.qvtvafvgr.pbz>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 19 Apr 2007 13:27:51 -0400
-Message-Id: <1177003671.27654.133.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 19 Apr 2007 13:28:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41164 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766890AbXDSR2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 13:28:46 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH][RFC] Kill off legacy power management stuff.
+Date: Thu, 19 Apr 2007 13:27:17 -0400
+User-Agent: KMail/1.9.5
+Cc: Dave Jones <davej@redhat.com>, davej@codemonkey.org.uk,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0704122025380.3628@CPE00045a9c397f-CM001225dbafb6> <20070418235806.GD20204@redhat.com> <Pine.LNX.4.64.0704182028320.5826@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0704182028320.5826@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704191327.17500.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-18 at 13:15 -0700, David Lang wrote:
-> On Wed, 18 Apr 2007, James Morris wrote:
+On Wednesday 18 April 2007 20:35, Robert P. J. Day wrote:
+> On Wed, 18 Apr 2007, Dave Jones wrote:
 > 
-> > On Tue, 17 Apr 2007, Alan Cox wrote:
+> > On Wed, Apr 18, 2007 at 05:23:15PM -0400, Len Brown wrote:
 > >
-> >> I'm not sure if AppArmor can be made good security for the general case,
-> >> but it is a model that works in the limited http environment
-> >> (eg .htaccess) and is something people can play with and hack on and may
-> >> be possible to configure to be very secure.
+> >  > > p.p.s.  patch improvements that will let me avoid doing any of that
+> >  > > myself always welcome. :-)
+> >  >
+> >  > well, I'm sorry that I've known about the APM issue for a long time
+> >  > and done nothing about it.  I did ping davej when he broke it,
+> >  > but his to-do list is probably even longer than mine.
 > >
-> > Perhaps -- until your httpd is compromised via a buffer overflow or
-> > simply misbehaves due to a software or configuration flaw, then the
-> > assumptions being made about its use of pathnames and their security
-> > properties are out the window.
+> > ping timeout.
+> >
+> > I don't recall too many of the details surrounding those changes,
+> > but I certainly won't stand in the way of anyone trying to fix it.
+> > It sounds like you and Robert are on top of it, or do you want me to
+> > poke at it ?
 > 
-> since AA defines a whitelist of files that httpd is allowed to access, a 
-> comprimised one may be able to mess up it's files, but it's still not going to 
-> be able to touch other files on the system.
+> well, before i get even more confused by what was (once upon a time) a
+> fairly straightforward removal patch, the first obvious question is --
+> are there *any* circumstances that *require* a config selection of
+> CONFIG_PM_LEGACY, as opposed to a selection of APM and/or ACPI?  if
+> there are, then it can't simply be removed.  my original patch
+> submission was based on the assumption that absolutely no one needed
+> the legacy stuff anymore and absolutely everything related to it could
+> be scrapped.
 > 
-> > Without security labeling of the objects being accessed, you can't protect
-> > against software flaws, which has been a pretty fundamental and widely
-> > understood requirement in general computing for at least a decade.
+> so, first things first:  what *needs* legacy PM at the moment?
 > 
-> this is not true. you don't need to label all object and chunks of memory, you 
-> just need to have a way to list (and enforce) the objects and memory that the 
-> program is allowed to use. labeling them is one way of doing this, but not the 
-> only way.
+> rday
+> 
+> p.s.  i'm confused by the header file include/linux/pm_legacy.h,
+> especially this part:
+> 
+> ========================
+> #ifdef CONFIG_PM_LEGACY
+> ...
+> # else /* CONFIG_PM_LEGACY */
+> 
+> #define PM_IS_ACTIVE() 0
+> ...
+> #endif
+> =======================
+> 
+>   so the macro "PM_IS_ACTIVE()" represents whether *legacy* PM has
+> been selected.  in other words, it makes no (apparent) sense that the
+> value of that macro would represent some kind of contention mechanism
+> between APM and ACPI, which is entirely independent from the legacy
+> stuff.  right?
 
-You need a way of providing global and persistent security guarantees
-for the data, and per-program profiles based on pathname don't get you
-there.  There is no system view in AA, just a bunch of disconnected
-profiles.
 
--- 
-Stephen Smalley
-National Security Agency
+yep, the problem is that PM_IS_ACTIVE() got mixed up in CONFIG_PM_LEGACY.
+how about i send a patch to fix this first -- when i get back tomorrow.
+and then the CONFIG_PM_LEGACY patch will not be tangled in this?
+
+-Len
 
