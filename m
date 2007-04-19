@@ -1,71 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993139AbXDSHOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993132AbXDSHTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993139AbXDSHOd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 03:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993157AbXDSHOd
+	id S2993132AbXDSHTi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 03:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993156AbXDSHTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:14:33 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55648 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S2993139AbXDSHOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:14:31 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/qN+RxLXXqGw9dgvqVMjAN3k8M9ovpktEDxgFOSb
-	DIk9HN7dFTkwdA
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-	Scheduler [CFS]
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1176965560.6408.60.camel@Homer.simpson.net>
-References: <20070418043831.GR11115@waste.org>
-	 <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org>
-	 <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
-	 <20070418152355.GU11115@waste.org>
-	 <alpine.LFD.0.98.0704181012470.2828@woody.linux-foundation.org>
-	 <20070418174945.GA7930@elte.hu> <20070418175936.GA11980@elte.hu>
-	 <alpine.LFD.0.98.0704181223190.2828@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0704181304250.25880@alien.or.mcafeemobile.com>
-	 <20070418214816.GA10902@elte.hu>
-	 <1176965560.6408.60.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Thu, 19 Apr 2007 09:14:25 +0200
-Message-Id: <1176966865.6408.71.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Thu, 19 Apr 2007 03:19:38 -0400
+Received: from smtp110.plus.mail.re2.yahoo.com ([206.190.53.35]:45886 "HELO
+	smtp110.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2993132AbXDSHTh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 03:19:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=GofDK6C4+pU5cuoiRxqDFCxP85MF4qkti22p8N3iebSQX0qdqsonMt1T8saWZzSwIR3JA3BSgozC9NODGAyl7cCMpmnh1icShD3nUdSMP66lt+ioMjTJUIIKrZdMoWK4xxClKzDAT6spovYgwsRckA3BQ5OlY/TldtJbEFGnEjU=  ;
+X-YMail-OSG: AgCEnzUVM1m8IFW1pAwO.qFpJ8KaY7_qDTMcyffP_U6BNc1Z7zmxLjd20a18R_8tNLkYVG1w_Q--
+Date: Thu, 19 Apr 2007 09:19:32 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCHv2] [KERNEL-DOC] kill warnings when building mandocs
+Message-ID: <20070419071931.GA4778@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070413091422.GA15426@zmei.tnic> <20070413092943.GA16491@zmei.tnic> <20070418101654.7c7906c1.randy.dunlap@oracle.com> <20070419063019.GB3974@gollum.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070419063019.GB3974@gollum.tnic>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-19 at 08:52 +0200, Mike Galbraith wrote:
-> On Wed, 2007-04-18 at 23:48 +0200, Ingo Molnar wrote:
-> 
-> > so my current impression is that we want per UID accounting to solve the 
-> > X problem, the kernel threads problem and the many-users problem, but 
-> > i'd not want to do it for threads just yet because for them there's not 
-> > really any apparent problem to be solved.
-> 
-> If you really mean UID vs EUID as Linus mentioned, I suppose I could
-> learn to login as !root, and set KDE up to always give me root shells.
-> 
-> With a heavily reniced X (perfectly fine), that should indeed solve my
-> daily usage pattern nicely (always need godmode for shells, but not for
-> mozilla and ilk. 50/50 split automatic without renice of entire gui)
+A fixed version of the patch shutting up missing version warnings when building
+mandocs.
 
-Backward, needs to be EUID as Linus suggested.  Kernel builds etc along
-with reniced X in root's bucket, surfing and whatnot in Joe-User's
-bucket.
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 
-	-Mike
 
+Index: 21-rc7/scripts/kernel-doc
+===================================================================
+--- 21-rc7.orig/scripts/kernel-doc
++++ 21-rc7/scripts/kernel-doc
+@@ -326,6 +326,32 @@ while ($ARGV[0] =~ m/^-(.*)/) {
+     }
+ }
+ 
++# get kernel version
++sub get_kernel_version() {
++    my $version;
++    open (FILE, $ENV{"SRCTREE"}."Makefile") || die "Can't open main kernel Makefile: $!";
++
++    EOF: while (my $line = <FILE>)
++    {
++	if ($line =~ /VERSION\s+=\s+(\d+)/) {
++	     $version .= $1;
++	     next;
++	}
++	if ($line =~ /PATCHLEVEL\s+=\s+(\d+)/) {
++	     $version .= ".$1";
++	     next;
++	}
++	if ($line =~ /SUBLEVEL\s+=\s+(\d+)/) {
++	     $version .= ".$1";
++	     next;
++	}
++	if ($line =~ /EXTRAVERSION\s+=\s+(.*)$/) {
++	     $version .= $1;
++	     last EOF;
++	}
++    }
++    return $version;
++}
+ 
+ # generate a sequence of code that will splice in highlighting information
+ # using the s// operator.
+@@ -592,6 +618,7 @@ sub output_function_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>".$args{'function'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>".$args{'function'}."</refname>\n";
+@@ -668,6 +695,7 @@ sub output_struct_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>".$args{'type'}." ".$args{'struct'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>".$args{'type'}." ".$args{'struct'}."</refname>\n";
+@@ -752,6 +780,7 @@ sub output_enum_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>enum ".$args{'enum'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>enum ".$args{'enum'}."</refname>\n";
+
+-- 
+Regards/Gruﬂ,
+    Boris.
