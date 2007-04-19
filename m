@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766862AbXDSQjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766869AbXDSQk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766862AbXDSQjs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766868AbXDSQjs
+	id S1766869AbXDSQk2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766868AbXDSQk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:39:48 -0400
-Received: from cobalt0.barnhard.net ([216.181.81.129]:38609 "EHLO
-	cobalt0.barnhard.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766862AbXDSQjq (ORCPT
+	Thu, 19 Apr 2007 12:40:27 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:60079 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766867AbXDSQk0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:39:46 -0400
-Date: Thu, 19 Apr 2007 17:39:30 +0100
-From: Dale Amon <amon@vnl.com>
-To: Dale Amon <amon@vnl.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Problem with ufs nextstep in 2.6.18 (debian)
-Message-ID: <20070419163930.GA3901@vnl.com>
-Mail-Followup-To: Dale Amon <amon@vnl.com>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20070416073204.GA10225@rain>
+	Thu, 19 Apr 2007 12:40:26 -0400
+Date: Thu, 19 Apr 2007 19:39:59 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] add two SCSI command opcodes
+Message-ID: <20070419163959.GA25595@localdomain>
+References: <20070419151053.GA10199@localdomain> <20070419154743.GA18325@lug-owl.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070416073204.GA10225@rain>
-X-Operating-System: Linux, the choice of a GNU generation
+In-Reply-To: <20070419154743.GA18325@lug-owl.de>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 16, 2007 at 11:32:04AM +0400, Evgeniy Dushistov wrote:
-> >The error also happens in 2.6.19, same as in 2.6.18.
-> >I extracted this from syslog: 
-> >Apr 17 00:14:15 kdev kernel: UFS-fs error (device loop0):
-> >ufs_check_page: bad entry
+On Thu, Apr 19, 2007 at 05:47:43PM +0200, Jan-Benedict Glaw wrote:
+> On Thu, 2007-04-19 18:10:54 +0300, Dan Aloni <da-x@monatomic.org> wrote:
+> > diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
+> > index 5c0e979..dff842a 100644
+> > --- a/include/scsi/scsi.h
+> > +++ b/include/scsi/scsi.h
+> > @@ -103,6 +103,7 @@ extern const unsigned char scsi_command_size[8];
+> >  #define READ_12               0xa8
+> >  #define WRITE_12              0xaa
+> >  #define WRITE_VERIFY_12       0xae
+> > +#define VERIFY_12             0xaf
+> >  #define SEARCH_HIGH_12        0xb0
+> >  #define SEARCH_EQUAL_12       0xb1
+> >  #define SEARCH_LOW_12         0xb2
+> > @@ -111,6 +112,7 @@ extern const unsigned char scsi_command_size[8];
+> >  #define WRITE_LONG_2          0xea
+> >  #define READ_16               0x88
+> >  #define WRITE_16              0x8a
+> > +#define WRITE_VERIFY_16       0x8e
+> >  #define VERIFY_16	      0x8f
+> >  #define SERVICE_ACTION_IN     0x9e
+> >  /* values for service action in */
 > 
-> Is this happened also with this patch:
-> http://lkml.org/lkml/diff/2007/2/5/75/1
-> ?
-> 
-> -- 
-> /Evgeniy
+> Where's the user?
 
-I tried the patch but it would not apply to 2.6.20.7 and
-appeared to already exist in that release as patch was
-asking me about reversing the patch. So I just built a
-vanilla version:
+A privately maintained kernel driver.
 
-Linux otv2 2.6.20.7-i686 #1 SMP Tue Apr 17 02:33:19 BST 2007 i686 GNU/Linux
+Do we _must_ have in-tree users? I'd consider the change for completion's
+sake.
 
-and then tried the mount again:
-
-otv2:/dma/FloppyDisks-3.50# mount -t ufs -o ro,ufstype=nextstep,loop NeXT-Diagram1-fd0a.ufs /floppy
-otv2:/dma/FloppyDisks-3.50# df
-Filesystem           1K-blocks      Used Available Use% Mounted on
-/dev/hda2              8649576   5141412   3068788  63% /
-tmpfs                   128128         0    128128   0% /lib/init/rw
-udev                     10240        60     10180   1% /dev
-tmpfs                   128128         0    128128   0% /dev/shm
-/dma/FloppyDisks-3.50/NeXT-Diagram1-fd0a.ufs
-                          1255      1184        71  95% /media/floppy0
-otv2:/dma/FloppyDisks-3.50# ls /floppy
-ls: reading directory /floppy: Input/output error
-
-I find in syslog:
-
-Apr 19 17:34:29 localhost kernel: UFS-fs error (device loop0): ufs_check_page: bad entry in directory #2: directory entry across blocks - offset=140, rec_len=884, name_len=7
-Apr 19 17:34:29 localhost kernel: UFS-fs error (device loop0): ufs_readdir: bad page in #2
-
-I would be happy to supply you with an image of the NeXT /dev/fd0a
-floppy partition if you would like, or even a full image of
-the floppy made via the NeXT raw device /dev/rfd0b.
-
-
-
-
-
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
