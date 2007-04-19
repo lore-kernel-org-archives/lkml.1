@@ -1,196 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766912AbXDSSse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161464AbXDSTAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766912AbXDSSse (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 14:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766915AbXDSSse
+	id S1161464AbXDSTAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 15:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161510AbXDSTAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 14:48:34 -0400
-Received: from amsfep20-int.chello.nl ([62.179.120.15]:47333 "EHLO
-	amsfep20-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766912AbXDSSsd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 14:48:33 -0400
-Subject: Re: [PATCH 09/12] mm: count unstable pages per BDI
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-In-Reply-To: <1177006362.2934.13.camel@lappy>
-References: <20070417071046.318415445@chello.nl>
-	 <20070417071703.710381113@chello.nl>
-	 <E1Heafy-0006ia-00@dorka.pomaz.szeredi.hu> <1177006362.2934.13.camel@lappy>
-Content-Type: text/plain
-Date: Thu, 19 Apr 2007 20:46:46 +0200
-Message-Id: <1177008406.2934.19.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 15:00:14 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:27085 "EHLO
+	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161464AbXDSTAM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 15:00:12 -0400
+X-BigFish: VP
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: unable to run busybox /sbin/int
+Date: Thu, 19 Apr 2007 12:00:01 -0700
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: unable to run busybox /sbin/int
+Thread-Index: AceCtO6cMPsNlEevRRSeRNO+0GVb4Q==
+From: "Tom Strader" <tom.strader@xilinx.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 19 Apr 2007 19:00:02.0123 (UTC) FILETIME=[EF24A9B0:01C782B4]
+Message-Id: <20070419190009.039B1A080F8@mail28-fra.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-19 at 20:12 +0200, Peter Zijlstra wrote:
-> On Thu, 2007-04-19 at 19:44 +0200, Miklos Szeredi wrote:
-> > > Count per BDI unstable pages.
-> > > 
-> > 
-> > I'm wondering, is it really worth having this category separate from
-> > per BDI brity pages?
-> > 
-> > With the exception of the export to sysfs, always the sum of unstable
-> > + dirty is used.
-> 
-> I guess you are right, but it offends my sense of aesthetics to break
-> symmetry with the zone statistics. However, it has the added advantage
-> of only needing 2 deltas as well.
+This is the final output from my kernel as I try to launch busybox
+(/sbin/init is linked to /bin/busybox)
+As it launches the kernel looks for libraries which do not exist (not
+sure why), but it appears to find /lib/libcrypt.so.1 and /lib/libc.so.6
+but the system does not output after that.  I can press keys on the
+keyboard and there are echoed to the screen, I can also use the control
+characters C-c, C-s, C-q, and so on and I see kernel messages indication
+the uart_flush_buffer(0) is being called but busybox does not appear to
+start.  Here is my kernel output, any suggestions would help. Thanks.
 
-I guess, this should do.
+VFS: Mounted root (jffs2 filesystem).
+Freeing init memory: 64K
+#do_sys_open(/dev/console)... n_tty_set_termios()
+opening ttyS0...uart_open(0) called
+ret 0
+running /sbin/init
+#do_sys_open(/etc/ld.so.cache)... do_filp_open error
+ret -2
+#do_sys_open(/lib/v5l/fast-mult/half/libcrypt.so.1)... do_filp_open
+error
+ret -2
+#do_sys_open(/lib/v5l/fast-mult/libcrypt.so.1)... do_filp_open error
+ret -2
+#do_sys_open(/lib/v5l/half/libcrypt.so.1)... do_filp_open error
+ret -2
+#do_sys_open(/lib/v5l/libcrypt.so.1)... do_filp_open error
+ret -2
+#do_sys_open(/lib/fast-mult/half/libcrypt.so.1)... do_filp_open error
+ret -2
+#do_sys_open(/lib/fast-mult/libcrypt.so.1)... do_filp_open error
+ret -2
+#do_sys_open(/lib/half/libcrypt.so.1)... do_filp_open error
+ret -2
+#do_sys_open(/lib/libcrypt.so.1)... ret 3
+#do_sys_open(/lib/libc.so.6)... ret 3
 
----
- fs/buffer.c                 |    2 +-
- fs/nfs/write.c              |   11 +++++++----
- include/linux/backing-dev.h |    3 +--
- mm/page-writeback.c         |   16 +++++++---------
- mm/truncate.c               |    2 +-
- 5 files changed, 17 insertions(+), 17 deletions(-)
 
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c	2007-04-19 19:59:26.000000000 +0200
-+++ linux-2.6/fs/buffer.c	2007-04-19 20:35:39.000000000 +0200
-@@ -733,7 +733,7 @@ int __set_page_dirty_buffers(struct page
- 	if (page->mapping) {	/* Race with truncate? */
- 		if (mapping_cap_account_dirty(mapping)) {
- 			__inc_zone_page_state(page, NR_FILE_DIRTY);
--			__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
-+			__inc_bdi_stat(mapping->backing_dev_info, BDI_RECLAIM);
- 			task_io_account_write(PAGE_CACHE_SIZE);
- 		}
- 		radix_tree_tag_set(&mapping->page_tree,
-Index: linux-2.6/fs/nfs/write.c
-===================================================================
---- linux-2.6.orig/fs/nfs/write.c	2007-04-19 19:59:26.000000000 +0200
-+++ linux-2.6/fs/nfs/write.c	2007-04-19 20:39:03.000000000 +0200
-@@ -456,7 +456,7 @@ nfs_mark_request_commit(struct nfs_page 
- 	nfsi->ncommit++;
- 	spin_unlock(&nfsi->req_lock);
- 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
--	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_UNSTABLE);
-+	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_RECLAIM);
- 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
- }
- #endif
-@@ -518,7 +518,8 @@ static void nfs_cancel_commit_list(struc
- 	while(!list_empty(head)) {
- 		req = nfs_list_entry(head->next);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
--		dec_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_UNSTABLE);
-+		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
-+				BDI_RECLAIM);
- 		nfs_list_remove_request(req);
- 		nfs_inode_remove_request(req);
- 		nfs_unlock_request(req);
-@@ -1247,7 +1248,8 @@ nfs_commit_list(struct inode *inode, str
- 		nfs_list_remove_request(req);
- 		nfs_mark_request_commit(req);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
--		dec_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_UNSTABLE);
-+		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
-+				BDI_RECLAIM);
- 		nfs_clear_page_writeback(req);
- 	}
- 	return -ENOMEM;
-@@ -1272,7 +1274,8 @@ static void nfs_commit_done(struct rpc_t
- 		req = nfs_list_entry(data->pages.next);
- 		nfs_list_remove_request(req);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
--		dec_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_UNSTABLE);
-+		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
-+				BDI_RECLAIM);
- 
- 		dprintk("NFS: commit (%s/%Ld %d@%Ld)",
- 			req->wb_context->dentry->d_inode->i_sb->s_id,
-Index: linux-2.6/include/linux/backing-dev.h
-===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h	2007-04-19 19:59:26.000000000 +0200
-+++ linux-2.6/include/linux/backing-dev.h	2007-04-19 20:39:24.000000000 +0200
-@@ -26,9 +26,8 @@ enum bdi_state {
- typedef int (congested_fn)(void *, int);
- 
- enum bdi_stat_item {
--	BDI_DIRTY,
-+	BDI_RECLAIM,
- 	BDI_WRITEBACK,
--	BDI_UNSTABLE,
- 	BDI_WRITEOUT,
- 	NR_BDI_STAT_ITEMS
- };
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c	2007-04-19 20:00:09.000000000 +0200
-+++ linux-2.6/mm/page-writeback.c	2007-04-19 20:40:29.000000000 +0200
-@@ -300,8 +300,7 @@ static void balance_dirty_pages(struct a
- 
- 		get_dirty_limits(&background_thresh, &dirty_thresh,
- 				&bdi_thresh, bdi);
--		bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY) +
--					bdi_stat(bdi, BDI_UNSTABLE);
-+		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIM);
- 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
- 		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
- 				break;
-@@ -321,16 +320,14 @@ static void balance_dirty_pages(struct a
- 			get_dirty_limits(&background_thresh, &dirty_thresh,
- 				       &bdi_thresh, bdi);
- 
--			if (bdi_thresh < 3*bdi_stat_delta()) {
-+			if (bdi_thresh < 2*bdi_stat_delta()) {
- 				bdi_nr_reclaimable =
--					bdi_stat_sum(bdi, BDI_DIRTY) +
--					bdi_stat_sum(bdi, BDI_UNSTABLE);
-+					bdi_stat_sum(bdi, BDI_RECLAIM);
- 				bdi_nr_writeback =
- 					bdi_stat_sum(bdi, BDI_WRITEBACK);
- 			} else {
- 				bdi_nr_reclaimable =
--					bdi_stat(bdi, BDI_DIRTY) +
--					bdi_stat(bdi, BDI_UNSTABLE);
-+					bdi_stat(bdi, BDI_RECLAIM);
- 				bdi_nr_writeback =
- 					bdi_stat(bdi, BDI_WRITEBACK);
- 			}
-@@ -907,7 +904,8 @@ int __set_page_dirty_nobuffers(struct pa
- 			BUG_ON(mapping2 != mapping);
- 			if (mapping_cap_account_dirty(mapping)) {
- 				__inc_zone_page_state(page, NR_FILE_DIRTY);
--				__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
-+				__inc_bdi_stat(mapping->backing_dev_info,
-+						BDI_RECLAIM);
- 				task_io_account_write(PAGE_CACHE_SIZE);
- 			}
- 			radix_tree_tag_set(&mapping->page_tree,
-@@ -1034,7 +1032,7 @@ int clear_page_dirty_for_io(struct page 
- 			set_page_dirty(page);
- 		if (TestClearPageDirty(page)) {
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
--			dec_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
-+			dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIM);
- 			return 1;
- 		}
- 		return 0;
-Index: linux-2.6/mm/truncate.c
-===================================================================
---- linux-2.6.orig/mm/truncate.c	2007-04-19 19:59:26.000000000 +0200
-+++ linux-2.6/mm/truncate.c	2007-04-19 20:40:36.000000000 +0200
-@@ -71,7 +71,7 @@ void cancel_dirty_page(struct page *page
- 		struct address_space *mapping = page->mapping;
- 		if (mapping && mapping_cap_account_dirty(mapping)) {
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
--			dec_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
-+			dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIM);
- 			if (account_size)
- 				task_io_account_cancelled_write(account_size);
- 		}
+Thanks,
+Tom Strader
+Systems Engineer
+Xilinx Inc. - GPD Product Planning
+Tom.Strader@Xilinx.com
++1 (408)879-4464
 
 
