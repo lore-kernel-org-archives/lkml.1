@@ -1,89 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766788AbXDSPFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766795AbXDSPJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766788AbXDSPFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 11:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766786AbXDSPFw
+	id S1766795AbXDSPJa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 11:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766791AbXDSPJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 11:05:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35690 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766749AbXDSPFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 11:05:51 -0400
-Date: Thu, 19 Apr 2007 11:06:56 -0400
-From: Josef Bacik <jwhiter@redhat.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Josef Bacik <jwhiter@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
-Message-ID: <20070419150655.GC1481@korben.rdu.redhat.com>
-References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com>
+	Thu, 19 Apr 2007 11:09:30 -0400
+Received: from ccerelbas01.cce.hp.com ([161.114.21.104]:59233 "EHLO
+	ccerelbas01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766786AbXDSPJ3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 11:09:29 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1176991356.31764.3.camel@mulgrave.il.steeleye.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] cciss: Fix warnings during compilation under 32bit  environment
+Date: Thu, 19 Apr 2007 15:09:10 -0000
+Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
+In-Reply-To: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] cciss: Fix warnings during compilation under 32bit  environment
+thread-index: AceBh6+soEuZ7NtlQ2KNjFcJtPC/PQBDK0NQ
+References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: "Hisashi Hifumi" <hifumi.hisashi@oss.ntt.co.jp>,
+       <akpm@linux-foundation.org>
+Cc: <jens.axboe@oracle.com>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, "Cameron, Steve" <steve.cameron@hp.com>
+X-OriginalArrivalTime: 19 Apr 2007 15:09:20.0074 (UTC) FILETIME=[B4A39AA0:01C78294]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 10:02:36AM -0400, James Bottomley wrote:
-> On Thu, 2007-04-19 at 09:25 -0400, Josef Bacik wrote:
-> > Looking through everything I came to the conclusion that we don't really need
-> > the scsi_sysfs_add_devices in scsi_finish_async_scan, which gets run everytime
-> > we do a do_scan_async.  In doing the scanning, if we come upon anything we will
-> > already be registering the device with sysfs so the scsi_sysfs_add_devices step
-> > is kind of useless.
-> 
-> Unfortunately, it isn't.  The registration step while scanning is at the
-> end of scsi_add_lun():
-> 
-> 
-> 	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
-> 		return SCSI_SCAN_NO_RESPONSE;
-> 
-> 	return SCSI_SCAN_LUN_PRESENT;
-> 
-> The !async should mean that the addition *only* occurs for the non async
-> scan case ... if you remove the post async scan add, we'll lose devices.
-> 
-> >   I tested this and it worked fine on my UP box (where the
-> > problem was happening) and my SMP box (where the problem wasn't happening).  Now
-> > I'm not entirely sure if this is correct, but I'm attaching the patch that I
-> > used to fix it for me, please point out if I've done something wrong or if there
-> > is a different way this needs to be fixed.  Thank you,
-> 
-> Could you add some debugging first to see if we're actually adding the
-> device twice (and also, if we are, what the value of the async is).
->
+ 
 
-Sorry I should have put that in the original post, I added debugging to
-kobject_add to check to see if we were adding something twice, thats how I
-figured out who was doing it
+> -----Original Message-----
+> From: Hisashi Hifumi [mailto:hifumi.hisashi@oss.ntt.co.jp] 
+> Sent: Wednesday, April 18, 2007 2:03 AM
+> To: Miller, Mike (OS Dev); akpm@linux-foundation.org
+> Subject: [PATCH] cciss: Fix warnings during compilation under 
+> 32bit environment
+> 
+> 
+> Hi.
+> 
+> I fixed following warnings.
+> 
+> drivers/block/cciss.c: In function `do_cciss_request':
+> drivers/block/cciss.c:2555: warning: right shift count >= 
+> width of type
+> drivers/block/cciss.c:2556: warning: right shift count >= 
+> width of type
+> drivers/block/cciss.c:2557: warning: right shift count >= 
+> width of type
+> drivers/block/cciss.c:2558: warning: right shift count >= 
+> width of type
+> 
+> 
+> Signed-off-by :Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
 
-kobject rport-3:0-0: registering. parent: host3, set: devices
-kobject rport-3:0-0: registering. parent: fc_remote_ports, set: class_obj
-kobject target3:0:0: registering. parent: rport-3:0-0, set: devices
-kobject rport-3:0-1: registering. parent: host3, set: devices
-kobject rport-3:0-1: registering. parent: fc_remote_ports, set: class_obj
-kobject target3:0:0: registering. parent: fc_transport, set: class_obj
-kobject rport-3:0-2: registering. parent: host3, set: devices
-kobject rport-3:0-2: registering. parent: fc_remote_ports, set: class_obj
-kobject rport-3:0-3: registering. parent: host3, set: devices
-kobject rport-3:0-3: registering. parent: fc_remote_ports, set: class_obj
-kobject rport-3:0-4: registering. parent: host3, set: devices
-kobject rport-3:0-4: registering. parent: fc_remote_ports, set: class_obj
-kobject rport-3:0-5: registering. parent: host3, set: devices
-kobject rport-3:0-5: registering. parent: fc_remote_ports, set: class_obj
-kobject rport-3:0-6: registering. parent: host3, set: devices
-kobject rport-3:0-6: registering. parent: fc_remote_ports, set: class_obj
-kobject rport-3:0-7: registering. parent: host3, set: devices
-kobject rport-3:0-7: registering. parent: fc_remote_ports, set: class_obj
->> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
-kobject 3:0:0:0: registering. parent: scsi_device, set: class_obj
-scsi 3:0:0:0: Direct-Access     IBM 1742-900         0520 PQ: 0 ANSI: 3
->> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
-kobject_add failed for 3:0:0:0 with -EEXIST, don't try to register things with 
-the same name in the same directory.
+Nak. You still haven't told where you saw these warnings. What compiler
+are you using? I do not see these in my 32-bit environment.
 
-Async in the first case is set and in the second case it isn't set.  Thank you,
+mikem
 
-Josef 
+> 
+> 
+> --- linux-2.6.21-rc7.org/drivers/block/cciss.c	2007-04-17 
+> 16:36:02.000000000 +0900
+> +++ linux-2.6.21-rc7/drivers/block/cciss.c	2007-04-17 
+> 16:25:53.000000000 +0900
+> @@ -2552,10 +2552,10 @@ static void do_cciss_request(request_que
+>   	} else {
+>   		c->Request.CDBLen = 16;
+>   		c->Request.CDB[1]= 0;
+> -		c->Request.CDB[2]= (start_blk >> 56) & 0xff;	//MSB
+> -		c->Request.CDB[3]= (start_blk >> 48) & 0xff;
+> -		c->Request.CDB[4]= (start_blk >> 40) & 0xff;
+> -		c->Request.CDB[5]= (start_blk >> 32) & 0xff;
+> +		c->Request.CDB[2]= sizeof(start_blk) > 4 ? 
+> (start_blk >> 56) & 0xff : 0;	//MSB
+> +		c->Request.CDB[3]= sizeof(start_blk) > 4 ? 
+> (start_blk >> 48) & 0xff : 0;
+> +		c->Request.CDB[4]= sizeof(start_blk) > 4 ? 
+> (start_blk >> 40) & 0xff : 0;
+> +		c->Request.CDB[5]= sizeof(start_blk) > 4 ? 
+> (start_blk >> 32) & 0xff : 
+> +0;
+>   		c->Request.CDB[6]= (start_blk >> 24) & 0xff;
+>   		c->Request.CDB[7]= (start_blk >> 16) & 0xff;
+>   		c->Request.CDB[8]= (start_blk >>  8) & 0xff;
+> 
+> 
+> 
+> Thanks,
+> 
