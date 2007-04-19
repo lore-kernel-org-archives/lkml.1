@@ -1,68 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766950AbXDST0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766962AbXDSTa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766950AbXDST0G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 15:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766960AbXDST0F
+	id S1766962AbXDSTa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 15:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766965AbXDSTa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 15:26:05 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:29964 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766950AbXDST0E (ORCPT
+	Thu, 19 Apr 2007 15:30:28 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:35674 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1766962AbXDSTa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 15:26:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=US44ghyFLRVfqmSF/wQAz2cjQSi2PqlvkJpdrP0dIS/BFVyzpDvjFRjbnfFZCcgdhNSBbY7sW5yzU4aoZxyoqPMftQ+Xybi7pZ0pJRzvGorl+g/jIs1P+6gt0tyO7JfKeUUbs1wmZRMoFf+rSIz5nV3WlibxTH5VnUC/4QMpxU0=
-Message-ID: <2c0942db0704191226t21d3dae1lb0fa99bcd9714cf2@mail.gmail.com>
-Date: Thu, 19 Apr 2007 12:26:03 -0700
-From: "Ray Lee" <madrabbit@gmail.com>
-Reply-To: ray-gmail@madrabbit.org
-To: "Con Kolivas" <kernel@kolivas.org>
-Subject: Re: Renice X for cpu schedulers
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Matt Mackall" <mpm@selenic.com>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       "Mike Galbraith" <efault@gmx.de>, "ck list" <ck@vds.kolivas.org>,
-       "Bill Huey" <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <200704192159.35546.kernel@kolivas.org>
+	Thu, 19 Apr 2007 15:30:27 -0400
+Message-ID: <4627C386.9020407@ru.mvista.com>
+Date: Thu, 19 Apr 2007 23:31:18 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 14/15] ide: rework the code for selecting the best DMA
+ transfer mode
+References: <20070203135301.2546.54884.sendpatchset@localhost.localdomain> <20070203135323.2546.29438.sendpatchset@localhost.localdomain>
+In-Reply-To: <20070203135323.2546.29438.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070417062621.GL2986@holomorphy.com>
-	 <20070418221432.e4dbcf4f.akpm@linux-foundation.org>
-	 <20070419063810.GA22418@elte.hu>
-	 <200704192159.35546.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/19/07, Con Kolivas <kernel@kolivas.org> wrote:
-> The one fly in the ointment for
-> linux remains X. I am still, to this moment, completely and utterly stunned
-> at why everyone is trying to find increasingly complex unique ways to manage
-> X when all it needs is more cpu[1].
-[...and hence should be reniced]
+Hello.
 
-The problem is that X is not unique. There's postgresql, memcached,
-mysql, db2, a little embedded app I wrote... all of these perform work
-on behalf of another process. It's just most *noticeable* with X, as
-pretty much everyone is running that.
+Bartlomiej Zolnierkiewicz wrote:
+> [PATCH] ide: rework the code for selecting the best DMA transfer mode 
 
-If we had some way for the scheduler to decide to donate part of a
-client process's time slice to the server it just spoke to (with an
-exponential dampening factor -- take 50% from the client, give 25% to
-the server, toss the rest on the floor), that -- from my naive point
-of view -- would be a step toward fixing the underlying issue. Or I
-might be spouting crap, who knows.
+> Depends on the "ide: fix UDMA/MWDMA/SWDMA masks" patch.
 
-The problem is real, though, and not limited to X.
+   I'm now trying to rewrite hpt366.c to benefit more from these patches...
+and alas, this very patch seems to be breaking filtering (at least) in this driver. :-]
 
-While I have the floor, thank you, Con, for all your work.
+> Index: b/drivers/ide/ide-dma.c
+> ===================================================================
+> --- a/drivers/ide/ide-dma.c
+> +++ b/drivers/ide/ide-dma.c
+> @@ -705,6 +705,80 @@ int ide_use_dma(ide_drive_t *drive)
+>  
+>  EXPORT_SYMBOL_GPL(ide_use_dma);
+>  
+> +static const u8 xfer_mode_bases[] = {
+> +	XFER_UDMA_0,
+> +	XFER_MW_DMA_0,
+> +	XFER_SW_DMA_0,
+> +};
+> +
+> +static unsigned int ide_get_mode_mask(ide_drive_t *drive, u8 base)
+> +{
+> +	struct hd_driveid *id = drive->id;
+> +	ide_hwif_t *hwif = drive->hwif;
+> +	unsigned int mask = 0;
+> +
+> +	switch(base) {
+> +	case XFER_UDMA_0:
+> +		if ((id->field_valid & 4) == 0)
+> +			break;
+> +
+> +		mask = id->dma_ultra & hwif->ultra_mask;
+> +
+> +		if (hwif->udma_filter)
+> +			mask &= hwif->udma_filter(drive);
+> +
+> +		if ((mask & 0x78) && (eighty_ninty_three(drive) == 0))
+> +			mask &= 0x07;
 
-Ray
+   Note the subtle difference between the old and new behavior: the old driver code was applying UltraDMA filter *after*
+the cable type limit, and the new code does it *before*.
+
+> +		break;
+> +	case XFER_MW_DMA_0:
+> +		mask = id->dma_mword & hwif->mwdma_mask;
+> +		break;
+> +	case XFER_SW_DMA_0:
+> +		mask = id->dma_1word & hwif->swdma_mask;
+> +		break;
+> +	default:
+> +		BUG();
+> +		break;
+> +	}
+> +
+> +	return mask;
+> +}
+> +
+> +/**
+> + *	ide_max_dma_mode	-	compute DMA speed
+> + *	@drive: IDE device
+> + *
+> + *	Checks the drive capabilities and returns the speed to use
+> + *	for the DMA transfer.  Returns 0 if the drive is incapable
+> + *	of DMA transfers.
+> + */
+> +
+> +u8 ide_max_dma_mode(ide_drive_t *drive)
+> +{
+> +	ide_hwif_t *hwif = drive->hwif;
+> +	unsigned int mask;
+> +	int x, i;
+> +	u8 mode = 0;
+> +
+> +	if (drive->media != ide_disk && hwif->atapi_dma == 0)
+> +		return 0;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(xfer_mode_bases); i++) {
+> +		mask = ide_get_mode_mask(drive, xfer_mode_bases[i]);
+> +		x = fls(mask) - 1;
+> +		if (x >= 0) {
+> +			mode = xfer_mode_bases[i] + x;
+> +			break;
+> +		}
+> +	}
+> +
+> +	printk(KERN_DEBUG "%s: selected mode 0x%x\n", drive->name, mode);
+> +
+> +	return mode;
+> +}
+> +
+> +EXPORT_SYMBOL_GPL(ide_max_dma_mode);
+> +
+>  void ide_dma_verbose(ide_drive_t *drive)
+>  {
+>  	struct hd_driveid *id	= drive->id;
+[...]
+> Index: b/drivers/ide/pci/hpt366.c
+> ===================================================================
+> --- a/drivers/ide/pci/hpt366.c
+> +++ b/drivers/ide/pci/hpt366.c
+> @@ -513,43 +513,31 @@ static int check_in_drive_list(ide_drive
+>  	return 0;
+>  }
+>  
+> -static u8 hpt3xx_ratemask(ide_drive_t *drive)
+> -{
+> -	struct hpt_info *info	= pci_get_drvdata(HWIF(drive)->pci_dev);
+> -	u8 mode			= info->max_mode;
+> -
+> -	if (!eighty_ninty_three(drive) && mode)
+> -		mode = min(mode, (u8)1);
+> -	return mode;
+> -}
+> -
+>  /*
+>   *	Note for the future; the SATA hpt37x we must set
+>   *	either PIO or UDMA modes 0,4,5
+>   */
+> - 
+> -static u8 hpt3xx_ratefilter(ide_drive_t *drive, u8 speed)
+> +
+> +static u8 hpt3xx_udma_filter(ide_drive_t *drive)
+>  {
+>  	struct hpt_info *info	= pci_get_drvdata(HWIF(drive)->pci_dev);
+>  	u8 chip_type		= info->chip_type;
+> -	u8 mode			= hpt3xx_ratemask(drive);
+> -
+> -	if (drive->media != ide_disk)
+> -		return min(speed, (u8)XFER_PIO_4);
+> +	u8 mode			= info->max_mode;
+> +	u8 mask;
+>  
+>  	switch (mode) {
+>  		case 0x04:
+> -			speed = min_t(u8, speed, XFER_UDMA_6);
+> +			mask = 0x7f;
+>  			break;
+>  		case 0x03:
+> -			speed = min_t(u8, speed, XFER_UDMA_5);
+> +			mask = 0x3f;
+>  			if (chip_type >= HPT374)
+>  				break;
+>  			if (!check_in_drive_list(drive, bad_ata100_5))
+>  				goto check_bad_ata33;
+>  			/* fall thru */
+>  		case 0x02:
+> -			speed = min_t(u8, speed, XFER_UDMA_4);
+> +			mask = 0x1f;
+>  
+>  			/*
+>  			 * CHECK ME, Does this need to be changed to HPT374 ??
+> @@ -560,13 +548,13 @@ static u8 hpt3xx_ratefilter(ide_drive_t 
+>  			    !check_in_drive_list(drive, bad_ata66_4))
+>  				goto check_bad_ata33;
+>  
+> -			speed = min_t(u8, speed, XFER_UDMA_3);
+> +			mask = 0x0f;
+>  			if (HPT366_ALLOW_ATA66_3 &&
+>  			    !check_in_drive_list(drive, bad_ata66_3))
+>  				goto check_bad_ata33;
+>  			/* fall thru */
+>  		case 0x01:
+> -			speed = min_t(u8, speed, XFER_UDMA_2);
+> +			mask = 0x07;
+>  
+>  		check_bad_ata33:
+>  			if (chip_type >= HPT370A)
+
+   This case 0x01 will *never* be hit for HPT370 chip with the new code, therefore the filter won't get applied.
+
+> @@ -576,10 +564,10 @@ static u8 hpt3xx_ratefilter(ide_drive_t 
+>  			/* fall thru */
+>  		case 0x00:
+>  		default:
+> -			speed = min_t(u8, speed, XFER_MW_DMA_2);
+> +			mask = 0x00;
+>  			break;
+>  	}
+> -	return speed;
+> +	return mask;
+>  }
+[...]
+> @@ -1270,6 +1272,7 @@ static void __devinit init_hwif_hpt366(i
+>  	hwif->intrproc			= &hpt3xx_intrproc;
+>  	hwif->maskproc			= &hpt3xx_maskproc;
+>  	hwif->busproc			= &hpt3xx_busproc;
+> +	hwif->udma_filter		= &hpt3xx_udma_filter;
+
+   In fact, we only need a filter for HPT36x/370 chips -- I'll address it in my patch.
+ 
+>  	/*
+>  	 * HPT3xxN chips have some complications:
+
+WBR, Sergei
