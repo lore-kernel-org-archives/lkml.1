@@ -1,38 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750837AbXDSOXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbXDSO0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750837AbXDSOXI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 10:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXDSOXI
+	id S1751892AbXDSO0m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 10:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXDSO0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 10:23:08 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:3469 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750837AbXDSOXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 10:23:06 -0400
-Date: Thu, 19 Apr 2007 16:20:37 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Vladimir V. Saveliev" <vs@namesys.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-aio@kvack.org, reiserfs-dev@namesys.com, linux-mm@kvack.org
-Subject: Re: dio_get_page() lockdep complaints
-Message-ID: <20070419142035.GH11780@kernel.dk>
-References: <20070419073828.GB20928@kernel.dk> <20070419012540.bed394e2.akpm@linux-foundation.org> <20070419083407.GD20928@kernel.dk> <200704191643.38367.vs@namesys.com> <20070419124933.GE11780@kernel.dk> <20070419125236.GF11780@kernel.dk> <adavefstqq4.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adavefstqq4.fsf@cisco.com>
+	Thu, 19 Apr 2007 10:26:42 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:52608 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbXDSO0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 10:26:41 -0400
+Date: Thu, 19 Apr 2007 08:26:14 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: problem with <asm/semaphore.h>
+In-reply-to: <1176961482.904618.250700@e65g2000hsc.googlegroups.com>
+To: liangbowen <liangbowen@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <46277C06.4020602@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <1176885218.597268.304370@l77g2000hsb.googlegroups.com>
+ <fa.fBTtgscoj66JCf4bIm8v290vCRo@ifi.uio.no>
+ <fa.w5cKcLCYzl2eiKiQW21MMlLALWM@ifi.uio.no>
+ <1176961482.904618.250700@e65g2000hsc.googlegroups.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19 2007, Roland Dreier wrote:
-> Maybe you could add some hack really early on (say at the beginning of
-> the reiserfs mount code) that took instances of the locks in the
-> correct order, so you would get a lockdep trace of where the ordering
-> is violated when it first happens?
+liangbowen wrote:
+>> You're trying to use a kernel data structure in a user-space program.
+>> Don't. The definitions in that header are inside #ifdef __KERNEL__ and
+>> so the provided userspace headers remove that part.
+> 
+> someone've said the exact same thing, and he said that I can add the -
+> D__KERNEL__ to the compilation options,
+> but I can't see any #ifdef __KERNEL__ macro in that header(<asm/
+> semaphore.h>).
+> Is my header differ from yours?
+> 
 
-See the test case mail I sent out.
+It's because the userspace headers have been processed with unifdef to 
+remove any sections which are inside #ifdef __KERNEL__, since userspace 
+apps are not supposed to see those sections.
+
+I'm not sure why you want to use a semaphore in a userspace program. 
+Even if you can get it to compile, they definitely won't function 
+properly. Aside from the legal issues (using internal kernel code like 
+that would make your program a derived work of the kernel and thus 
+covered under the GPL).
 
 -- 
-Jens Axboe
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
