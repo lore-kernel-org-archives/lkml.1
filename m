@@ -1,441 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637739AbXDSMFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993246AbXDSMHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637739AbXDSMFu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 08:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993254AbXDSMFu
+	id S2993246AbXDSMHk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 08:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637741AbXDSMHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 08:05:50 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:53579 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993246AbXDSMFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 08:05:48 -0400
-Date: Thu, 19 Apr 2007 17:34:19 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
-Subject: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-ID: <20070419120419.GB17069@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070419120131.GB13435@in.ibm.com>
+	Thu, 19 Apr 2007 08:07:40 -0400
+Received: from smtpauth03.prod.mesa1.secureserver.net ([64.202.165.183]:33428
+	"HELO smtpauth03.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2993254AbXDSMHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 08:07:39 -0400
+Message-ID: <46275B89.5010604@seclark.us>
+Date: Thu, 19 Apr 2007 08:07:37 -0400
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070419120131.GB13435@in.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Len Brown <lenb@kernel.org>
+CC: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.21-rc5 from fc7-rc2 problems
+References: <460EC109.5070300@seclark.us> <200704181612.07257.lenb@kernel.org> <46267E38.9020909@garzik.org> <200704181711.05344.lenb@kernel.org>
+In-Reply-To: <200704181711.05344.lenb@kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Threads which wait for completion on a frozen thread might result in 
-causing the freezer to fail, if the waiting thread is freezeable.
+Len Brown wrote:
 
-There are some well known cases where it's preferable to temporarily thaw
-the frozen process, finish the wait for completion and allow both the 
-processes to call try_to_freeze. 
+>On Wednesday 18 April 2007 16:23, Jeff Garzik wrote:
+>  
+>
+>>Len Brown wrote:
+>>    
+>>
+>>>< Linux version 2.6.20-1.2933.fc6
+>>>< (brewbuilder@hs20-bc2-4.build.redhat.com) (gcc version 4.1.1 20070105
+>>>< (Red Hat 4.1.1-51)) #1 SMP Mon Mar 19 11:38:26 EDT 2007
+>>>---
+>>>      
+>>>
+>>>>Linux version 2.6.20-1.3023.fc7
+>>>>(brewbuilder@ls20-bc1-13.build.redhat.com) (gcc version 4.1.2 20070317
+>>>>(Red Hat 4.1.2-5)) #1 SMP Sun Mar 25 22:12:02 EDT 2007
+>>>>        
+>>>>
+>>>I agree that the fc7 version string looks strange, because
+>>>there are other things in the fc7 dmesg which are clearly from 2.6.21,
+>>>such as this:
+>>>
+>>>< ACPI: Core revision 20060707
+>>>---
+>>>      
+>>>
+>>>>ACPI: Core revision 20070126
+>>>>        
+>>>>
+>>>Perhaps you can try building a kernel.org 2.6.21 kernel and running
+>>>it on your FC6 install?
+>>>
+>>>The ALI15X3 stuff exists only in the working FC6 dmesg:
+>>>
+>>>< Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+>>>< ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+>>>< ALI15X3: IDE controller at PCI slot 0000:00:0f.0
+>>>< ACPI: Unable to derive IRQ for device 0000:00:0f.0
+>>>< ACPI: PCI Interrupt 0000:00:0f.0[A]: no GSI
+>>>< ALI15X3: chipset revision 195
+>>>< ALI15X3: not 100% native mode: will probe irqs later
+>>><     ide0: BM-DMA at 0x1000-0x1007, BIOS settings: hda:DMA, hdb:pio
+>>><     ide1: BM-DMA at 0x1008-0x100f, BIOS settings: hdc:DMA, hdd:pio
+>>>< Probing IDE interface ide0...
+>>>< hda: HITACHI_DK23CA-20, ATA DISK drive
+>>>< ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+>>>< Probing IDE interface ide1...
+>>>< hdc: MATSHITADVD-ROM SR-8175, ATAPI CD/DVD-ROM drive
+>>>< ide1 at 0x170-0x177,0x376 on irq 15
+>>>< Probing IDE interface ide2...
+>>>< Probing IDE interface ide3...
+>>>< Probing IDE interface ide4...
+>>>< Probing IDE interface ide5...
+>>>< hda: max request size: 128KiB
+>>>< hda: 39070080 sectors (20003 MB) w/2048KiB Cache, CHS=38760/16/63, UDMA(66)
+>>>< hda: cache flushes not supported
+>>><  hda: hda1 hda2
+>>>< ide-floppy driver 0.99.newide
+>>>
+>>>FC7 looks like it is using libata instead:
+>>>-Len
+>>>
+>>>      
+>>>
+>>>>SCSI subsystem initialized
+>>>>libata version 2.20 loaded.
+>>>>ACPI: Unable to derive IRQ for device 0000:00:0f.0
+>>>>ACPI: PCI Interrupt 0000:00:0f.0[A]: no GSI
+>>>>ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x00011000
+>>>>irq 14
+>>>>ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x00011008
+>>>>irq 15
+>>>>scsi0 : pata_ali
+>>>>PM: Adding info for No Bus:host0
+>>>>ata1.00: ATA-5: HITACHI_DK23CA-20, 00H1A0A3, max UDMA/100   <========
+>>>>drive can do 100
+>>>>ata1.00: 39070080 sectors, multi 16: LBA
+>>>>ata1.00: configured for UDMA/33    <=============== configured as 33
+>>>>scsi1 : pata_ali
+>>>>PM: Adding info for No Bus:host1
+>>>>ata2.00: ATAPI, max UDMA/33   <=== cd can't be read now
+>>>>ata2.00: configured for UDMA/33
+>>>>PM: Adding info for No Bus:target0:0:0
+>>>>scsi 0:0:0:0: Direct-Access     ATA      HITACHI_DK23CA-2 00H1 PQ: 0 ANSI: 5
+>>>>PM: Adding info for scsi:0:0:0:0
+>>>>PM: Adding info for No Bus:target1:0:0
+>>>>ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+>>>>ata2.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x12 data 36 in
+>>>>         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>>>ata2: soft resetting port
+>>>>        
+>>>>
+>>It looks like interrupts are not being delivered?
+>>    
+>>
+>
+>Dunno, both 2.6.20 and 2.6.21 say they're looking on IRQ14 and IRQ15.
+>ACPI isn't involved at all with those IRQs, as it couldn't find any info
+>for 0000:00:0f.0[A] and thus the legacy hard-coding for IDE must rule the day.
+>
+>Is it possible to configure 2.6.21 with the driver that was running in 2.6.20?
+>If yes, and that works, then we know we didn't somehow otherwise break interrupts.
+>
+>-Len
+>
+>  
+>
+These results are from the livecd from FC7-rc2, Chuck Ebbert said a new 
+one is soon to be released.
+Let's see what the results are for this upcoming release.
 
-kthread_stop is one such case. flush_workqueue might be another. 
+Thanks,
+Steve
 
-This patch attempts to address such a situation with a fix for kthread_stop.
-
-Strictly experimental. Compile tested on i386.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-
----
- include/asm-arm/thread_info.h      |    2 
- include/asm-blackfin/thread_info.h |    4 +
- include/asm-frv/thread_info.h      |    4 +
- include/asm-i386/thread_info.h     |    4 +
- include/asm-ia64/thread_info.h     |    4 +
- include/asm-mips/thread_info.h     |    2 
- include/asm-powerpc/thread_info.h  |    4 +
- include/asm-sh/thread_info.h       |    2 
- include/asm-x86_64/thread_info.h   |    4 +
- include/linux/freezer.h            |    4 +
- kernel/kthread.c                   |    4 +
- kernel/power/process.c             |   81 ++++++++++++++++++++++++++++++++++++-
- 12 files changed, 118 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc6/kernel/power/process.c
-===================================================================
---- linux-2.6.21-rc6.orig/kernel/power/process.c
-+++ linux-2.6.21-rc6/kernel/power/process.c
-@@ -23,6 +23,16 @@
- #define FREEZER_KERNEL_THREADS 0
- #define FREEZER_USER_SPACE 1
- 
-+struct freezer_status_struct {
-+	spinlock_t lock;
-+	int count;
-+};
-+
-+static struct freezer_status_struct freezer_status = {
-+				.lock = SPIN_LOCK_UNLOCKED,
-+				.count = 0,
-+			};
-+
- static inline int freezeable(struct task_struct * p)
- {
- 	if ((p == current) ||
-@@ -45,7 +55,8 @@ void refrigerator(void)
- 		 * *after* the freezer did the freezeable() check
- 		 * on us.
- 		 */
--		if (current->flags & PF_NOFREEZE) {
-+		if ((current->flags & PF_NOFREEZE) ||
-+		    test_tsk_thread_flag(current, TIF_FREEZER_HELD)) {
- 			clear_tsk_thread_flag(current, TIF_FREEZE);
- 			task_unlock(current);
- 			return;
-@@ -63,12 +74,16 @@ void refrigerator(void)
- 	recalc_sigpending(); /* We sent fake signal, clean it up */
- 	spin_unlock_irq(&current->sighand->siglock);
- 
-+	task_lock(current);
- 	for (;;) {
- 		set_current_state(TASK_UNINTERRUPTIBLE);
- 		if (!frozen(current))
- 			break;
-+		task_unlock(current);
- 		schedule();
-+		task_lock(current);
- 	}
-+	task_unlock(current);
- 	pr_debug("%s left refrigerator\n", current->comm);
- 	current->state = save;
- }
-@@ -114,6 +129,47 @@ static inline int is_user_space(struct t
- 	return ret;
- }
- 
-+/*
-+ * Delay the freezer from declaring the system as frozen,
-+ * if it is not frozen already.
-+ *
-+ * Usage:
-+ * int result = hold_freezer_for_task(p);
-+ * wait_for_completion(something_which_p_completes);
-+ * release_freezer(p, result);
-+ */
-+
-+int hold_freezer_for_task(struct task_struct *p)
-+{
-+	int ret = 0;
-+	spin_lock(&freezer_status.lock);
-+	if (freezer_status.count >= 0)
-+	{
-+		set_tsk_thread_flag(p, TIF_FREEZER_HELD);
-+		thaw_process(p);
-+		freezer_status.count++;
-+		ret = 1;
-+	}
-+	spin_unlock(&freezer_status.lock);
-+
-+	return ret;
-+}
-+
-+/*
-+ * Allow freezer to function normally as before.
-+ * Usage: See the comment above definition of hold_freezer_for_task()
-+ */
-+void release_freezer(struct task_struct *p, int result)
-+{
-+	if (result) {
-+		spin_lock(&freezer_status.lock);
-+		BUG_ON(freezer_status.count <= 0);
-+		clear_tsk_thread_flag(p, TIF_FREEZER_HELD);
-+		freezer_status.count--;
-+		spin_unlock(&freezer_status.lock);
-+	}
-+
-+}
- static unsigned int try_to_freeze_tasks(int freeze_user_space)
- {
- 	struct task_struct *g, *p;
-@@ -146,6 +202,22 @@ static unsigned int try_to_freeze_tasks(
- 		yield();			/* Yield is okay here */
- 		if (todo && time_after(jiffies, end_time))
- 			break;
-+
-+		if (!freeze_user_space && !todo) {
-+			spin_lock(&freezer_status.lock);
-+			if (freezer_status.count == 0)
-+				freezer_status.count--;
-+			else {
-+				spin_unlock(&freezer_status.lock);
-+				/* check once more for any unfrozen
-+				 * tasks. someone might have thawed
-+				 * a task temporarily.
-+				 */
-+				continue;
-+			}
-+			spin_unlock(&freezer_status.lock);
-+		}
-+
- 	} while (todo);
- 
- 	if (todo) {
-@@ -219,6 +291,13 @@ static void thaw_tasks(int thaw_user_spa
- 		thaw_process(p);
- 	} while_each_thread(g, p);
- 	read_unlock(&tasklist_lock);
-+
-+	if (thaw_user_space) {
-+		spin_lock(&freezer_status.lock);
-+			if (freezer_status.count < 0)
-+				freezer_status.count++;
-+		spin_unlock(&freezer_status.lock);
-+	}
- }
- 
- void thaw_processes(void)
-Index: linux-2.6.21-rc6/include/linux/freezer.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/linux/freezer.h
-+++ linux-2.6.21-rc6/include/linux/freezer.h
-@@ -65,6 +65,8 @@ static inline void frozen_process(struct
- extern void refrigerator(void);
- extern int freeze_processes(void);
- extern void thaw_processes(void);
-+extern int hold_freezer_for_task(struct task_struct *p);
-+extern void release_freezer(struct task_struct *p, int result);
- 
- static inline int try_to_freeze(void)
- {
-@@ -125,6 +127,8 @@ static inline int freezing(struct task_s
- static inline void freeze(struct task_struct *p) { BUG(); }
- static inline int thaw_process(struct task_struct *p) { return 1; }
- static inline void frozen_process(struct task_struct *p) { BUG(); }
-+static inline int hold_freezer_for_task(struct task_struct *p) { return 0;}
-+static inline void release_freezer(struct task_struct *p, int result) {}
- 
- static inline void refrigerator(void) {}
- static inline int freeze_processes(void) { BUG(); return 0; }
-Index: linux-2.6.21-rc6/kernel/kthread.c
-===================================================================
---- linux-2.6.21-rc6.orig/kernel/kthread.c
-+++ linux-2.6.21-rc6/kernel/kthread.c
-@@ -14,6 +14,7 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <asm/semaphore.h>
-+#include <linux/freezer.h>
- 
- /*
-  * We dont want to execute off keventd since it might
-@@ -220,6 +221,7 @@ EXPORT_SYMBOL(kthread_bind);
- int kthread_stop(struct task_struct *k)
- {
- 	int ret;
-+	int freezer_is_held;
- 
- 	mutex_lock(&kthread_stop_lock);
- 
-@@ -236,7 +238,9 @@ int kthread_stop(struct task_struct *k)
- 	put_task_struct(k);
- 
- 	/* Once it dies, reset stop ptr, gather result and we're done. */
-+	freezer_is_held = hold_freezer_for_task(k);
- 	wait_for_completion(&kthread_stop_info.done);
-+	release_freezer(k, freezer_is_held);
- 	kthread_stop_info.k = NULL;
- 	ret = kthread_stop_info.err;
- 	mutex_unlock(&kthread_stop_lock);
-Index: linux-2.6.21-rc6/include/asm-arm/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-arm/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-arm/thread_info.h
-@@ -148,6 +148,7 @@ extern void iwmmxt_task_switch(struct th
- #define TIF_USING_IWMMXT	17
- #define TIF_MEMDIE		18
- #define TIF_FREEZE		19
-+#define TIF_FREEZER_HELD	20
- 
- #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
- #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
-@@ -156,6 +157,7 @@ extern void iwmmxt_task_switch(struct th
- #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
- #define _TIF_USING_IWMMXT	(1 << TIF_USING_IWMMXT)
- #define _TIF_FREEZE		(1 << TIF_FREEZE)
-+#define _TIF_FREEZER_HELD	(1 << TIF_FREEZER_HELD)
- 
- /*
-  * Change these and you break ASM code in entry-common.S
-Index: linux-2.6.21-rc6/include/asm-blackfin/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-blackfin/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-blackfin/thread_info.h
-@@ -127,6 +127,9 @@ static inline struct thread_info *curren
- #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
- #define TIF_FREEZE              7       /* is freezing for suspend */
- #define TIF_SINGLESTEP		8       /* restore singlestep on return to user mode */
-+#define TIF_FREEZER_HELD	9	/* Thread is temporarily holding up
-+					 * the process freezer
-+					 */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -137,6 +140,7 @@ static inline struct thread_info *curren
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_FREEZE             (1<<TIF_FREEZE)
- #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
-+#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
- 
- #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
- 
-Index: linux-2.6.21-rc6/include/asm-frv/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-frv/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-frv/thread_info.h
-@@ -117,6 +117,9 @@ register struct thread_info *__current_t
- #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_MEMDIE		17	/* OOM killer killed process */
- #define TIF_FREEZE		18	/* freezing for suspend */
-+#define TIF_FREEZER_HELD	19	/* Thread is holding up freezer
-+					 * temporarily.
-+					 */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
-@@ -127,6 +130,7 @@ register struct thread_info *__current_t
- #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
- #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
- #define _TIF_FREEZE		(1 << TIF_FREEZE)
-+#define _TIF_FREEZER_HELD	(1 << TIF_FREEZER_HELD)
- 
- #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
- #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
-Index: linux-2.6.21-rc6/include/asm-i386/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-i386/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-i386/thread_info.h
-@@ -137,6 +137,9 @@ static inline struct thread_info *curren
- #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
- #define TIF_FREEZE		19	/* is freezing for suspend */
- #define TIF_FORCED_TF		20	/* true if TF in eflags artificially */
-+#define TIF_FREEZER_HELD	21	/* is temporarily holding up process
-+					 * freezer
-+					 */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-@@ -151,6 +154,7 @@ static inline struct thread_info *curren
- #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
- #define _TIF_FORCED_TF		(1<<TIF_FORCED_TF)
-+#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK \
-Index: linux-2.6.21-rc6/include/asm-ia64/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-ia64/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-ia64/thread_info.h
-@@ -90,6 +90,9 @@ struct thread_info {
- #define TIF_MCA_INIT		18	/* this task is processing MCA or INIT */
- #define TIF_DB_DISABLED		19	/* debug trap disabled for fsyscall */
- #define TIF_FREEZE		20	/* is freezing for suspend */
-+#define TIF_FREEZER_HELD	21	/* is temporarily holding up the
-+					 * process freezer
-+					 */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
-@@ -102,6 +105,7 @@ struct thread_info {
- #define _TIF_MCA_INIT		(1 << TIF_MCA_INIT)
- #define _TIF_DB_DISABLED	(1 << TIF_DB_DISABLED)
- #define _TIF_FREEZE		(1 << TIF_FREEZE)
-+#define _TIF_FREEZER_HELD	(1 << TIF_FREEZER_HELD)
- 
- /* "work to do on user-return" bits */
- #define TIF_ALLWORK_MASK	(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
-Index: linux-2.6.21-rc6/include/asm-mips/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-mips/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-mips/thread_info.h
-@@ -120,6 +120,7 @@ register struct thread_info *__current_t
- #define TIF_MEMDIE		18
- #define TIF_FREEZE		19
- #define TIF_ALLOW_FP_IN_KERNEL	20
-+#define TIF_FREEZER_HELD	21
- #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -132,6 +133,7 @@ register struct thread_info *__current_t
- #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-+#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK		(0x0000ffef & ~_TIF_SECCOMP)
-Index: linux-2.6.21-rc6/include/asm-powerpc/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-powerpc/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-powerpc/thread_info.h
-@@ -123,6 +123,9 @@ static inline struct thread_info *curren
- #define TIF_NOERROR		14	/* Force successful syscall return */
- #define TIF_RESTORE_SIGMASK	15	/* Restore signal mask in do_signal */
- #define TIF_FREEZE		16	/* Freezing for suspend */
-+#define TIF_FREEZER_HELD	17	/* Is temporarily holding up the
-+					 * process freezer.
-+					 */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -140,6 +143,7 @@ static inline struct thread_info *curren
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-+#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_NOTIFY_RESUME | _TIF_SIGPENDING | \
-Index: linux-2.6.21-rc6/include/asm-sh/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-sh/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-sh/thread_info.h
-@@ -116,6 +116,7 @@ static inline struct thread_info *curren
- #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_MEMDIE		18
- #define TIF_FREEZE		19
-+#define TIF_FREEZER_HELD	20
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-@@ -126,6 +127,7 @@ static inline struct thread_info *curren
- #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-+#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
- 
- #define _TIF_WORK_MASK		0x000000FE	/* work to do on interrupt/exception return */
- #define _TIF_ALLWORK_MASK	0x000000FF	/* work to do on any return to u-space */
-Index: linux-2.6.21-rc6/include/asm-x86_64/thread_info.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/asm-x86_64/thread_info.h
-+++ linux-2.6.21-rc6/include/asm-x86_64/thread_info.h
-@@ -123,6 +123,9 @@ static inline struct thread_info *stack_
- #define TIF_DEBUG		21	/* uses debug registers */
- #define TIF_IO_BITMAP		22	/* uses I/O bitmap */
- #define TIF_FREEZE		23	/* is freezing for suspend */
-+#define TIF_FREEZER_HELD	24	/* is temporarily holding up the
-+					 * process freezer
-+					 */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-@@ -140,6 +143,7 @@ static inline struct thread_info *stack_
- #define _TIF_DEBUG		(1<<TIF_DEBUG)
- #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-+#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK \
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
+
