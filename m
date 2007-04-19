@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766791AbXDSPiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766792AbXDSPlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766791AbXDSPiK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 11:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766819AbXDSPiJ
+	id S1766792AbXDSPlW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 11:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766823AbXDSPlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 11:38:09 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:51417 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1766791AbXDSPiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 11:38:08 -0400
-Message-ID: <46278CDD.2000007@gmail.com>
-Date: Thu, 19 Apr 2007 17:38:05 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: johann deneux <johann.deneux@gmail.com>, linux-kernel@vger.kernel.org,
-       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
-References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com> <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com> <200704190058.11625.dtor@insightbb.com>
-In-Reply-To: <200704190058.11625.dtor@insightbb.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 19 Apr 2007 11:41:22 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41547 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766792AbXDSPlU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 11:41:20 -0400
+Date: Thu, 19 Apr 2007 08:43:39 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jiri Bohac <jbohac@suse.cz>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
+Message-Id: <20070419084339.418dbe69.randy.dunlap@oracle.com>
+In-Reply-To: <20070419092339.GA13569@dwarf.suse.cz>
+References: <20070419092339.GA13569@dwarf.suse.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov napsal(a):
-> I have been thinking about this and I don't think that exporting motor
-> data is a good idea, at least not in case of Phantom driver. The fact
-> that there are 3 motors is a hardware implementation detail and it
-> is not interesting for general application.
+On Thu, 19 Apr 2007 11:23:39 +0200 Jiri Bohac wrote:
 
-Ok, so what about torques (despite it's still something like FF_RAW or motor
-descriptor)? It seems not to be so bad called effect name -- not only
-phantom uses torques on motors as an unit of force, for example I get this
-by quick googling:
-http://www.caip.rutgers.edu/~bouzit/lrp/glove.html
-They use there some motors with 14 torque values too, so the phantom isn't
-the only device which uses this approach.
+> Hi,
+> 
+> is there any reason to use an explicit int instead of a typeof in
+> the abs() macro? The current implementation will return bogus
+> results when used with longs.
 
-> My understanding that the end result of controlling these 3 motors
+I think it's like it is just to be consistent with abs() in C,
+which also contains labs() and llabs().
 
-Actually there is also a version with 6 motors :).
+> How about changing the int to a typeof like this?:
+> 
+> 
+> 
+> Fix the abs() macro to work with wider types than int.
+> 
+> Signed-off-by: Jiri Bohac <jbohac@suse.cz>
+> 
+> --- linux-2.6.21-rc5.orig/include/linux/kernel.h
+> +++ linux-2.6.21-rc5/include/linux/kernel.h
+> @@ -89,7 +89,7 @@ extern int cond_resched(void);
+>  #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
+>  
+>  #define abs(x) ({				\
+> -		int __x = (x);			\
+> +		typeof(x) __x = (x);			\
+>  		(__x < 0) ? -__x : __x;		\
+>  	})
+>  
+> 
+> 
+> 
+> -- 
+> Jiri Bohac <jbohac@suse.cz>
+> SUSE Labs, SUSE CZ
 
-> is a force vector (I don't know if there is such english term, this
-> is a literal translation from russian) applied to user's hand.
-
-Better say torques vector. You must compute a torque for each place from the
-3d (or bigger) vector of forces in different way for each device that exists
--- this means forces are not independent unit, torques are in the meaning of
-layer which doesn't care about what is connected above and below it.
-
-> If we are interested in using FF API we need to come up with a way
-> to express this effect without exposing implementation details of
-> one particular device.
-
-Still, torques are better named raw/motor values, which goes to the device
-and I'm sceptic about inventing something class-better than this.
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
-
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
