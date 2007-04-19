@@ -1,56 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031196AbXDSIWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031206AbXDSI0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031196AbXDSIWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031208AbXDSIWa
+	id S1031206AbXDSI0R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031213AbXDSI0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:22:30 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:58649 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031184AbXDSIW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:22:27 -0400
-Date: Thu, 19 Apr 2007 10:28:02 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070419082802.GA2425@ff.dom.local>
-References: <20070419065404.GB1782@ff.dom.local> <20070419073222.GA438@elte.hu>
+	Thu, 19 Apr 2007 04:26:16 -0400
+Received: from smtp1.osdl.org ([65.172.181.25]:40527 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031206AbXDSI0N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 04:26:13 -0400
+Date: Thu, 19 Apr 2007 01:25:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-aio@kvack.org,
+       reiserfs-dev@namesys.com, "Vladimir V. Saveliev" <vs@namesys.com>,
+       linux-mm@kvack.org
+Subject: Re: dio_get_page() lockdep complaints
+Message-Id: <20070419012540.bed394e2.akpm@linux-foundation.org>
+In-Reply-To: <20070419080157.GC20928@kernel.dk>
+References: <20070419073828.GB20928@kernel.dk>
+	<20070419010142.5b7b00cd.akpm@linux-foundation.org>
+	<20070419080157.GC20928@kernel.dk>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070419073222.GA438@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 09:32:22AM +0200, Ingo Molnar wrote:
+On Thu, 19 Apr 2007 10:01:57 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Thu, Apr 19 2007, Andrew Morton wrote:
+> > On Thu, 19 Apr 2007 09:38:30 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > Hi,
+> > > 
+> > > Doing some testing on CFQ, I ran into this 100% reproducible report:
+> > > 
+> > > =======================================================
+> > > [ INFO: possible circular locking dependency detected ]
+> > > 2.6.21-rc7 #5
+> > > -------------------------------------------------------
+> > > fio/9741 is trying to acquire lock:
+> > >  (&mm->mmap_sem){----}, at: [<b018cb34>] dio_get_page+0x54/0x161
+> > > 
+> > > but task is already holding lock:
+> > >  (&inode->i_mutex){--..}, at: [<b038c6e5>] mutex_lock+0x1c/0x1f
+> > > 
+> > > which lock already depends on the new lock.
+> > > 
+> > 
+> > This is the correct ranking: i_mutex outside mmap_sem.
+> > 
+> > > 
+> > > the existing dependency chain (in reverse order) is:
+> > > 
+> > > -> #1 (&inode->i_mutex){--..}:
+> > >        [<b013e3fb>] __lock_acquire+0xdee/0xf9c
+> > >        [<b013e600>] lock_acquire+0x57/0x70
+> > >        [<b038c4a5>] __mutex_lock_slowpath+0x73/0x297
+> > >        [<b038c6e5>] mutex_lock+0x1c/0x1f
+> > >        [<b01b17e9>] reiserfs_file_release+0x54/0x447
+> > >        [<b016afe7>] __fput+0x53/0x101
+> > >        [<b016b0ee>] fput+0x19/0x1c
+> > >        [<b015bcd5>] remove_vma+0x3b/0x4d
+> > >        [<b015c659>] do_munmap+0x17f/0x1cf
+> > >        [<b015c6db>] sys_munmap+0x32/0x42
+> > >        [<b0103f04>] sysenter_past_esp+0x5d/0x99
+> > >        [<ffffffff>] 0xffffffff
+> > > 
+> > > -> #0 (&mm->mmap_sem){----}:
+> > >        [<b013e259>] __lock_acquire+0xc4c/0xf9c
+> > >        [<b013e600>] lock_acquire+0x57/0x70
+> > >        [<b0137b92>] down_read+0x3a/0x4c
+> > >        [<b018cb34>] dio_get_page+0x54/0x161
+> > >        [<b018d7a9>] __blockdev_direct_IO+0x514/0xe2a
+> > >        [<b01cf449>] ext3_direct_IO+0x98/0x1e5
+> > >        [<b014e8df>] generic_file_direct_IO+0x63/0x133
+> > >        [<b01500e9>] generic_file_aio_read+0x16b/0x222
+> > >        [<b017f8b6>] aio_rw_vect_retry+0x5a/0x116
+> > >        [<b0180147>] aio_run_iocb+0x69/0x129
+> > >        [<b0180a78>] io_submit_one+0x194/0x2eb
+> > >        [<b0181331>] sys_io_submit+0x92/0xe7
+> > >        [<b0103f90>] syscall_call+0x7/0xb
+> > >        [<ffffffff>] 0xffffffff
+> > 
+> > But here reiserfs is taking i_mutex in its file_operations.release(),
+> > which can be called under mmap_sem.
+> > 
+> > Vladimir's recent de14569f94513279e3d44d9571a421e9da1759ae.
+> > "resierfs: avoid tail packing if an inode was ever mmapped" comes real
+> > close to this code, but afaict it did not cause this bug.
+> > 
+> > I can't think of anything which we've done in the 2.6.21 cycle which
+> > would have caused this to start happening.  Odd.
 > 
-> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> The bug may be holder, let me know if you want me to check 2.6.20 or
+> earlier.
+
+Would be great if you could test 2.6.20.  I have a feeling that I missed
+something, but what?  We didn't change the refcounting of lifetime of
+vma.vm_file...
+
+
+> > > The test run was fio, the job file used is:
+> > > 
+> > > # fio job file snip below
+> > > [global]
+> > > bs=4k
+> > > buffered=0
+> > > ioengine=libaio
+> > > iodepth=4
+> > > thread
+> > > 
+> > > [readers]
+> > > numjobs=8
+> > > size=128m
+> > > rw=read
+> > > # fio job file snip above
+> > > 
+> > > Filesystem was ext3, default mkfs and mount options. Kernel was
+> > > 2.6.21-rc7 as of this morning, with some CFQ patches applied.
+> > > 
+> > 
+> > It's interesting that lockdep learned the (wrong) ranking from a reiserfs
+> > operation then later detected it being violated by ext3.
 > 
-> > +		int i = 1000;
-> >  
-> > -		while (!cancel_delayed_work(dwork))
-> > +		while (!cancel_delayed_work(dwork)) {
-> >  			flush_workqueue(wq);
-> > +			BUG_ON(!i--);
-> > +		}
-> 
-> if then make it a WARN_ON(). But ... dont we have the softlockup 
-> detector for such cases? Does CONFIG_DETECT_SOFTLOCKUP=y give you enough 
-> information?
+> It's a scratch test box, which for some reason has reiserfs as the
+> rootfs. So reiser gets to run first :-)
 
-Maybe it was my testing, but no softlockup detection triggered here.
-I'll try to wait longer - and if no result - I'll resubmit tomorrow.
+direct-io reads against reiserfs also will take i_mutex outside mmap_sem. 
+As will pagefaults inside generic_file_write() (which is where this ranking
+is primarily defined).
 
-On the other hand, I think the return of cancel_delayed_work is
-too much depending on probability here (it may look like shooting
-to running targets), so it could be hard to repeat (and debugging
-not necessarily on at the time). As a matter of fact I intentionally
-made it for -mm, to see if the problem really exists, because then,
-another solution is needed.
+So an all-reiserfs system should be getting the same reports.  Obviously,
+that isn't happening.
 
-And of course WARN_ON should be better - if only it's messages were
-more reliably saved in logs after rebooting.
+It's a bit odd that reiserfs is playing with file contents within
+file_operations.release(): there could be other files open against that
+inode.  One would expect this sort of thing to be happening in an
+inode_operation.  But it's been like that for a long time.
 
-Jarek P.
+Is it possible that fio was changed?  That it was changed to close() the fd
+before doing the munmapping whereas it used to hold the file open?
+
+
