@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766847AbXDSQn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766873AbXDSQsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766847AbXDSQn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766867AbXDSQn2
+	id S1766873AbXDSQsK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766868AbXDSQsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:43:28 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:48013 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1766847AbXDSQn0 (ORCPT
+	Thu, 19 Apr 2007 12:48:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44613 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766873AbXDSQsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:43:26 -0400
-Date: Thu, 19 Apr 2007 09:42:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Vladimir V. Saveliev" <vs@namesys.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-aio@kvack.org, reiserfs-dev@namesys.com, linux-mm@kvack.org
-Subject: Re: dio_get_page() lockdep complaints
-Message-Id: <20070419094254.2b273d0c.akpm@linux-foundation.org>
-In-Reply-To: <200704191857.42001.vs@namesys.com>
-References: <20070419073828.GB20928@kernel.dk>
-	<20070419080157.GC20928@kernel.dk>
-	<20070419012540.bed394e2.akpm@linux-foundation.org>
-	<200704191857.42001.vs@namesys.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 19 Apr 2007 12:48:09 -0400
+Date: Thu, 19 Apr 2007 17:47:46 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mtd_blkdevs: Convert to use the kthread API
+Message-ID: <20070419164746.GA19469@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769657692046-git-send-email-ebiederm@xmission.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11769657692046-git-send-email-ebiederm@xmission.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 18:57:41 +0400 "Vladimir V. Saveliev" <vs@namesys.com> wrote:
-
-> > It's a bit odd that reiserfs is playing with file contents within
-> > file_operations.release(): there could be other files open against that
-> > inode.  One would expect this sort of thing to be happening in an
-> > inode_operation.  But it's been like that for a long time.
-> > 
+On Thu, Apr 19, 2007 at 12:55:28AM -0600, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 > 
-> reiserfs needs to "pack" file tail when last process which opened a file closes it.
-> Can you see more suitable place where that could be performed?
+> thread_run is used intead of kernel_thread, daemonize, and mucking
+> around blocking signals directly.
 
-No, you're right - I got my ->release() and ->flush() mixed up.
+Please don't do incomplete transitions like that.  We don't really
+want people to use kthread_run, but not the kthread stopping
+mechanisms, because people will simply forget about that bit and
+we'll never get rid of the enormous amount of, erm creativity, in
+handling kernel thread stopping.
 
-Possibly one could perform this operation on the final iput(), but I suspect the
-locking situation there would be even more complex.
+This is just the first patch in your series where the thread is mutable,
+but it equally applies to all following patches where this is the case
+aswell.
