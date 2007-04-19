@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766947AbXDSTP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766946AbXDSTPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766947AbXDSTP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 15:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766949AbXDSTPZ
+	id S1766946AbXDSTPy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 15:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766953AbXDSTPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 15:15:25 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39253 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766947AbXDSTPY (ORCPT
+	Thu, 19 Apr 2007 15:15:54 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58707 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766951AbXDSTPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 15:15:24 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd_blkdevs: Convert to use the kthread API
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769657692046-git-send-email-ebiederm@xmission.com>
-	<20070419164746.GA19469@infradead.org>
-Date: Thu, 19 Apr 2007 13:13:22 -0600
-In-Reply-To: <20070419164746.GA19469@infradead.org> (Christoph Hellwig's
-	message of "Thu, 19 Apr 2007 17:47:46 +0100")
-Message-ID: <m11wigmb3h.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 19 Apr 2007 15:15:53 -0400
+Date: Thu, 19 Apr 2007 12:15:52 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andi Kleen <ak@suse.de>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 0/8] Variable Order Page Cache
+In-Reply-To: <200704192111.52395.ak@suse.de>
+Message-ID: <Pine.LNX.4.64.0704191214100.13064@schroedinger.engr.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+ <200704192111.52395.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+On Thu, 19 Apr 2007, Andi Kleen wrote:
 
-> On Thu, Apr 19, 2007 at 12:55:28AM -0600, Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
->> 
->> thread_run is used intead of kernel_thread, daemonize, and mucking
->> around blocking signals directly.
->
-> Please don't do incomplete transitions like that.  We don't really
-> want people to use kthread_run, but not the kthread stopping
-> mechanisms, because people will simply forget about that bit and
-> we'll never get rid of the enormous amount of, erm creativity, in
-> handling kernel thread stopping.
->
-> This is just the first patch in your series where the thread is mutable,
-> but it equally applies to all following patches where this is the case
-> aswell.
+> > We likely need actual defragmentation support.
+> 
+> To be honest it looks quite pointless before this is solved. So far it is
+> not even clear if it is feasible to solve it.
 
-I don't really care about the creativity.  Although it would
-be nice if it wasn't there.  I deliberately left it in so I would be
-certain my patches were correct.
-
-I care about killing the maintenance and forward development roadblocks
-that are kernel_thread and daemonize.  And the user interface problem
-that is handling signals in kernel threads.
-
-Eric
-
-
-
+We have done order 1 / 2 allocations for some limited purposes for some 
+time (task struct etc). But you are right: We need to figure out how high 
+we can go with Mel's antifrag and defrag work.
