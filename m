@@ -1,92 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993111AbXDSCUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993109AbXDSCWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993111AbXDSCUP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 22:20:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993112AbXDSCUP
+	id S2993109AbXDSCWw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 22:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993113AbXDSCWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 22:20:15 -0400
-Received: from omta01sl.mx.bigpond.com ([144.140.92.153]:27320 "EHLO
-	omta01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993111AbXDSCUO (ORCPT
+	Wed, 18 Apr 2007 22:22:51 -0400
+Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:36815 "HELO
+	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2993109AbXDSCWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 22:20:14 -0400
-Message-ID: <4626D1D5.4040508@bigpond.net.au>
-Date: Thu, 19 Apr 2007 12:20:05 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 18 Apr 2007 22:22:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NdSf55sYMl9/7CltztlaSMDWfc1wetZAvuHow0MF9exjbeXhIx56exMFHNYpPKk2twJO2ajM7Jpto14+dBoIwsLj9mnozrSdsbU9og7/NuP4+igux4o5OPecF51FrZGgWapzbqKRKRyJRjn2219sgPpQlQGALeNu1h8YjZix+xM=  ;
+X-YMail-OSG: XAm1lzYVM1kCRfbzUjiuDEQWpQfjesWB4w1c_4bGso_C6iacF7dG8yBMUnpEYsqNQlKMm9AmXKz5xJIhONZ3kgIRWvQBcWKTKmZxLK5TaoseQxCu.74-
+From: David Brownell <david-b@pacbell.net>
+To: Paul Sokolovsky <pmiscml@gmail.com>
+Subject: Re: is there any generic GPIO chip framework like IRQ chips?
+Date: Wed, 18 Apr 2007 19:22:44 -0700
+User-Agent: KMail/1.7.1
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+References: <f17812d70704090309l8dd764cxc06fbd7b765c55d8@mail.gmail.com> <200704151247.57724.david-b@pacbell.net> <424488534.20070417190535@gmail.com>
+In-Reply-To: <424488534.20070417190535@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <462467E9.4030509@bigpond.net.au> <20070417084405.GA13661@elte.hu>
-In-Reply-To: <20070417084405.GA13661@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta01sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Thu, 19 Apr 2007 02:20:10 +0000
+Content-Disposition: inline
+Message-Id: <200704181922.44635.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+> >> > So, talking about what an (optional) implementation framework might
+> >> > look like (and which could handle the SOC, FPGA, I2C, and MFD cases
+> >> > I've looked at):
 > 
->>> And my scheduler for example cuts down the amount of policy code and 
->>> code size significantly.
->> Yours is one of the smaller patches mainly because you perpetuate (or 
->> you did in the last one I looked at) the (horrible to my eyes) dual 
->> array (active/expired) mechanism.  That this idea was bad should have 
->> been apparent to all as soon as the decision was made to excuse some 
->> tasks from being moved from the active array to the expired array.  
->> This essentially meant that there would be circumstances where extreme 
->> unfairness (to the extent of starvation in some cases) -- the very 
->> things that the mechanism was originally designed to ensure (as far as 
->> I can gather).  Right about then in the development of the O(1) 
->> scheduler alternative solutions should have been sought.
+> > See patches in following messages ... a preliminary "gpio_chip" core
+> > for such a framework, plus example support for one SOC family's GPIOs,
+> > and then updating one board's handling of GPIOs, including over I2C.
 > 
-> in hindsight i'd agree.
+>         Just to compare, diffstats for GPIODEV:
 
-Hindsight's a wonderful place isn't it :-) and, of course, it's where I 
-was making my comments from.
+Now, if they were functionally equivalent, such a comparison
+would be less of an apples/oranges thing!
 
-> But back then we were clearly not ready for 
-> fine-grained accurate statistics + trees (cpus are alot faster at more 
-> complex arithmetics today, plus people still believed that low-res can 
-> be done well enough),  and taking out any of these two concepts from CFS
-> would result in a similarly complex runqueue implementation.
+The most useful comparison would focus on technical aspects of
+the gpio_chip abstraction itself (i.e. $SUBJECT).
 
-I disagree.  The single priority array with a promotion mechanism that I 
-use in the SPA schedulers can do the job of avoiding starvation with no 
-measurable increase in the overhead.  Fairness, nice, good interactive 
-responsiveness can then be managed by how you determine tasks' dynamic 
-priorities.
 
-> Also, the 
-> array switch was just thought to be of another piece of 'if the 
-> heuristics go wrong, we fall back to an array switch' logic, right in 
-> line with the other heuristics. And you have to accept it, mainline's 
-> ability to auto-renice make -j jobs (and other CPU hogs) was quite a 
-> plus for developers, so it had (and probably still has) quite some 
-> inertia.
+> 	it needs work - it doesn't adhere to your own 
+> optimization scheme by using lookup table instead of list.
 
-I agree, it wasn't totally useless especially for the average user.  My 
-main problem with it was that the effect of "nice" wasn't consistent or 
-predictable enough for reliable resource allocation.
+I thought it was more important to address the $SUBJECT first:
+get a working gpio_chip abstraction which covers all the needed
+functionality.  The patch had a hook for implementing such tweaks,
+but it wasn't used.
 
-I also agree with the aims of the various heuristics i.e. you have to be 
-unfair and give some tasks preferential treatment in order to give the 
-users the type of responsiveness that they want.  It's just a shame that 
-it got broken in the process but as you say it's easier to see these 
-things in hindsight than in the middle of the melee.
+The next version you'll see lets the platform code use its own
+existing lookup code, as part of slimming things down a bit.
+I also decided to take out the debugfs support.
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+>         	 you speak about constructor
+> parts which "anyone" can use to construct whatever GPIO API they like,
+> whereas I'm speaking about exact API implementation which can be used
+> right away.
+
+I most certainly did not speak about "whatever GPIO API they like"!!
+
+Quite the contrary, in fact.  Please don't put words in my mouth.
+(You've been doing it quite extensively in this thread; it's rude.)
+
+And that "core" patch I posted was clearly usable "right away";
+otherwise the two examples _using_ it couldn't have worked.
+
+
+>         Well, besides gpio_keys we here have asic3_keys, samcop_keys,
+> etc. - all that duplication just because the current GPIO API doesn't
+> allow extensibility to more chips.
+
+When I get tired of repeating myself, just remember:  the current
+programming interface *DOES* allow such extensibility.  That's what it
+means to be an "interface", rather than an implementation:  it defines
+inputs and outputs, allowing any process that conforms to both.
+
+In fact, the patches I sent demonstrated exactly that extensibility.
+Same interface, additional chips; different implementation inside.
+
+
+> > So you're agreeing that, at a technical level, what I described
+> > could be augmented by a "caching" facility ... giving a programming
+> > interface with all the characteristics of your "GPIODEV" thingie.
+> 
+> > All you're really disagreeing with is bootstrapping issues; and
+> > whether there is in fact a need for such a layer.  The only argument
+> > I could possibly buy is that it avoids the lookup of (b) ... but
+> > that doesn't seem to matter in most cases I've looked at.
+
+
+> So, now the most important question is what we all would get
+> with your approach in the end.
+> 
+> So, if you could make sure gpiolib.c doesn't contain inefficient
+> implementation,
+
+I can make it comparable to existing implementations that work
+the same way ... e.g. AT91 and OMAP code.  Of course, it's not
+possible to get away from the cost of function indirection, with
+a generic gpio_chip abstraction.  Or those lookup costs; but as
+you agreed, those costs don't seem to matter much.  And if they
+ever do matter, caching support would be easy to add.
+
+
+> and make such extensible implementation available by default
+> for ARM PXA/S3Cxxx/OMAP, then it's for sure cover Handhelds.org's,
+> and many other peoples' usecases, and that would be highly
+> appreciated.
+> 
+> If you could do it for 2.6.22 merge window, that would
+> straight ideal.
+
+I think having an optional gpio_chip, not unlike what was in
+that one patch, should be reasonable; also, making it work on
+some platforms that I use.  But I don't think there's much
+overlap between those platforms and what hh.org uses.
+
+- Dave
