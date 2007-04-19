@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766880AbXDSRGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766882AbXDSRJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766880AbXDSRGo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 13:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161505AbXDSRGo
+	id S1766882AbXDSRJF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 13:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766884AbXDSRJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 13:06:44 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:55870 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161504AbXDSRGn (ORCPT
+	Thu, 19 Apr 2007 13:09:05 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33786 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766882AbXDSRJE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 13:06:43 -0400
-Date: Thu, 19 Apr 2007 19:06:50 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andi Kleen <ak@suse.de>
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: Dropping CONFIG_REORDER on x86-64 for 2.6.22
-Message-ID: <20070419170650.GI10338@stusta.de>
-References: <200704191354.52985.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200704191354.52985.ak@suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 19 Apr 2007 13:09:04 -0400
+Date: Thu, 19 Apr 2007 18:12:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Marat Buharov <marat.buharov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: why UDF have so ugly filesize limit?
+Message-ID: <20070419181221.59c3c7bd@the-village.bc.nu>
+In-Reply-To: <46279F3B.8050807@redhat.com>
+References: <698310e10704190655j1263035bi77c5f551db510646@mail.gmail.com>
+	<46279F3B.8050807@redhat.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 01:54:52PM +0200, Andi Kleen wrote:
+On Thu, 19 Apr 2007 12:56:27 -0400
+Chuck Ebbert <cebbert@redhat.com> wrote:
+
+> Marat Buharov wrote:
+> > from fs/udf/super.c:
+> > in function udf_fill_super
+> > sb->s_maxbytes = 1<<30; (1 GB)
+> > 
+> > Why sb->s_maxbytes is not equal to MAX_LFS_FILESIZE?
+> > 
 > 
-> Hallo,
-> 
-> I'm thinking about dropping the x86-64 CONFIG_REORDER for 2.6.22. 
-> The function enabled -ffunction-sections and then tries to reorder
-> the executable
-> 
-> While that's in theory a worthy goal to save TLB/icache, in practice it 
-> didn't really work out.
-> 
-> Rationale:
->...
-> So I'm planning to drop the option and arch/x86_64/kernel/functionlist
-> 
-> Comments?
+> Patches to fix that are in the -mm kernel already (and in
+> Fedora Core 6 latest update.)
 
-Have there been any benchmarks showing performance improvements 
-with -ffunction-sections?
+Good to know, presumably these also fix the underlying UDF problems in the
+UDF filesystem code that caused it to be put there in the first pace ?
 
-> -Andi
+(Security CVE-2006-4145)
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Alan
