@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXDSIOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161326AbXDSIOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964784AbXDSIOe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDSIOd
+	id S1161326AbXDSIOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993201AbXDSINs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:14:33 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33963 "EHLO
+	Thu, 19 Apr 2007 04:13:48 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33952 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964784AbXDSIOV (ORCPT
+	with ESMTP id S2993176AbXDSINg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:14:21 -0400
+	Thu, 19 Apr 2007 04:13:36 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] macintosh/mediabay: Convert to kthread API.
-Date: Thu, 19 Apr 2007 01:58:50 -0600
-Message-Id: <11769695954018-git-send-email-ebiederm@xmission.com>
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: [PATCH] bluetooth bnep: Convert to kthread API.
+Date: Thu, 19 Apr 2007 01:58:51 -0600
+Message-Id: <1176969596686-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.1.1.g2de0
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -28,74 +27,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com>
 
-This patch modifies the startup of the media_bay_task
-to use kthread_run and not a combination of kernel_thread,
-deamonize and sigfillset.
+This patch starts kbenpd using kthread_run replacing
+a combination of kernel_thread and daemonize.  Making
+the code a little simpler and more maintainable.
 
-In addition since we now always want to ignore signals
-the MB_IGNORE_SIGNALS define is removed along with the
-test for signal_pending.
-
-The result is slightly simpler code that is more
-maintainable.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/macintosh/mediabay.c |   11 ++---------
- 1 files changed, 2 insertions(+), 9 deletions(-)
+ net/bluetooth/bnep/core.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
-index c803d2b..90c853e 100644
---- a/drivers/macintosh/mediabay.c
-+++ b/drivers/macintosh/mediabay.c
-@@ -20,6 +20,7 @@
- #include <linux/stddef.h>
- #include <linux/init.h>
- #include <linux/ide.h>
+diff --git a/net/bluetooth/bnep/core.c b/net/bluetooth/bnep/core.c
+index a9f1e88..de3caed 100644
+--- a/net/bluetooth/bnep/core.c
++++ b/net/bluetooth/bnep/core.c
+@@ -32,6 +32,7 @@
+ #include <linux/module.h>
+ 
+ #include <linux/kernel.h>
 +#include <linux/kthread.h>
- #include <asm/prom.h>
- #include <asm/pgtable.h>
- #include <asm/io.h>
-@@ -35,7 +36,6 @@
+ #include <linux/sched.h>
+ #include <linux/signal.h>
+ #include <linux/init.h>
+@@ -473,7 +474,6 @@ static int bnep_session(void *arg)
  
+ 	BT_DBG("");
  
- #define MB_DEBUG
--#define MB_IGNORE_SIGNALS
+-	daemonize("kbnepd %s", dev->name);
+ 	set_user_nice(current, -15);
  
- #ifdef MB_DEBUG
- #define MBDBG(fmt, arg...)	printk(KERN_INFO fmt , ## arg)
-@@ -622,11 +622,6 @@ static int media_bay_task(void *x)
+ 	init_waitqueue_entry(&wait, current);
+@@ -539,6 +539,7 @@ static struct device *bnep_get_device(struct bnep_session *session)
+ 
+ int bnep_add_connection(struct bnep_connadd_req *req, struct socket *sock)
  {
- 	int	i;
++	struct task_struct *task;
+ 	struct net_device *dev;
+ 	struct bnep_session *s, *ss;
+ 	u8 dst[ETH_ALEN], src[ETH_ALEN];
+@@ -598,9 +599,10 @@ int bnep_add_connection(struct bnep_connadd_req *req, struct socket *sock)
  
--	strcpy(current->comm, "media-bay");
--#ifdef MB_IGNORE_SIGNALS
--	sigfillset(&current->blocked);
--#endif
--
- 	for (;;) {
- 		for (i = 0; i < media_bay_count; ++i) {
- 			down(&media_bays[i].lock);
-@@ -636,8 +631,6 @@ static int media_bay_task(void *x)
- 		}
+ 	__bnep_link_session(s);
  
- 		msleep_interruptible(MB_POLL_DELAY);
--		if (signal_pending(current))
--			return 0;
- 	}
- }
- 
-@@ -699,7 +692,7 @@ static int __devinit media_bay_attach(struct macio_dev *mdev, const struct of_de
- 
- 	/* Startup kernel thread */
- 	if (i == 0)
--		kernel_thread(media_bay_task, NULL, CLONE_KERNEL);
-+		kthread_run(media_bay_task, NULL, "media-bay");
- 
- 	return 0;
- 
+-	err = kernel_thread(bnep_session, s, CLONE_KERNEL);
+-	if (err < 0) {
++	task = kthread_run(bnep_session, s, "kbnepd %s", dev->name);
++	if (IS_ERR(task)) {
+ 		/* Session thread start failed, gotta cleanup. */
++		err = PTR_ERR(task);
+ 		unregister_netdev(dev);
+ 		__bnep_unlink_session(s);
+ 		goto failed;
 -- 
 1.5.0.g53756
 
