@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766857AbXDSQfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766856AbXDSQfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766857AbXDSQfK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 12:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766855AbXDSQfK
+	id S1766856AbXDSQfM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 12:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766855AbXDSQfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 12:35:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48133 "EHLO
+	Thu, 19 Apr 2007 12:35:12 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51397 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1766857AbXDSQfJ (ORCPT
+	with ESMTP id S1766856AbXDSQfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 12:35:09 -0400
+	Thu, 19 Apr 2007 12:35:10 -0400
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-kernel@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
-       Dave Chinner <dgc@sgi.com>, Andi Kleen <ak@suse.de>
-Message-Id: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
-Subject: [RFC 0/8] Variable Order Page Cache
-Date: Thu, 19 Apr 2007 09:35:04 -0700 (PDT)
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>
+Message-Id: <20070419163510.11948.12351.sendpatchset@schroedinger.engr.sgi.com>
+In-Reply-To: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+Subject: [RFC 1/8] Add order field to address_space struct
+Date: Thu, 19 Apr 2007 09:35:10 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Variable Order Page Cache Patchset
+Variable Order Page Cache: Add order field in mapping
 
-This patchset modifies the core VM so that higher order page cache pages
-become possible. The higher order page cache pages are compound pages
-and can be handled in the same way as regular pages.
+Add an "order" field in the address space structure that
+specifies the page order of pages in an address space.
 
-The order of the pages is determined by the order set up in the mapping
-(struct address_space). By default the order is set to zero.
-This means that higher order pages are optional. There is no attempt here
-to generally change the page order of the page cache. 4K pages are effective
-for small files.
+Set the field to zero by default so that filesystems not prepared to
+deal with higher pages can be left as is.
 
-However, it would be good if the VM would support I/O to higher order pages
-to enable efficient support for large scale I/O. If one wants to write a
-long file of a few gigabytes then the filesystem should have a choice of
-selecting a larger page size for that file and handle larger chunks of
-memory at once.
+Putting page order in the address space structure means that the order of the
+pages in the page cache can be varied per file that a filesystem creates.
+This means we can keep small 4k pages for small files. Larger files can
+be configured by the file system to use a higher order.
 
-The support here is only for buffered I/O and only for one filesystem (ramfs).
-Modification of other filesystems to support higher order pages may require
-extensive work of other components of the kernel. But I hope this shows that
-there is a relatively easy way to that goal that could be taken in steps..
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Note that the higher order pages are subject to reclaim. This works in general
-since we are always operating on a single page struct. Reclaim is fooled to
-think that it is touching page sized objects (there are likely issues to be
-fixed there if we want to go down this road).
+---
+ fs/inode.c         |    1 +
+ include/linux/fs.h |    1 +
+ 2 files changed, 2 insertions(+)
 
-What is currently not supported:
-- Buffer heads for higher order pages (possible with the compound pages in mm
-  that do not use page->private requires upgrade of the buffer cache layers).
-- Higher order pages in the block layer etc.
-- Mmapping higher order pages
-
-Note that this is proof-of-concept. Lots of functionality is missing and
-various issues have not been dealt with. Use of higher order pages may cause
-memory fragmentation. Mel Gorman's anti-fragmentation work is probably
-essential if we want to do this. We likely need actual defragmentation
-support.
-
-The main point of this patchset is to demonstrates that it is basically
-possible to have higher order support with straightforward changes to the
-VM.
-
-The ramfs driver can be used to test higher order page cache functionality
-(and may help troubleshoot the VM support until we get some real filesystem
-and real devices supporting higher order pages).
-
-If you apply this patch and then you can f.e. try this:
-
-mount -tramfs -o10 none /media
-
-	Mounts a ramfs filesystem with order 10 pages (4 MB)
-
-cp linux-2.6.21-rc7.tar.gz /media
-
-	Populate the ramfs. Note that we allocate 14 pages of 4M each
-	instead of 13508..
-
-umount /media
-
-	Gets rid of the large pages again
-
-Comments appreciated.
-
+Index: linux-2.6.21-rc7/fs/inode.c
+===================================================================
+--- linux-2.6.21-rc7.orig/fs/inode.c	2007-04-18 21:21:56.000000000 -0700
++++ linux-2.6.21-rc7/fs/inode.c	2007-04-18 21:26:31.000000000 -0700
+@@ -145,6 +145,7 @@ static struct inode *alloc_inode(struct 
+ 		mapping->a_ops = &empty_aops;
+  		mapping->host = inode;
+ 		mapping->flags = 0;
++		mapping->order = 0;
+ 		mapping_set_gfp_mask(mapping, GFP_HIGHUSER);
+ 		mapping->assoc_mapping = NULL;
+ 		mapping->backing_dev_info = &default_backing_dev_info;
+Index: linux-2.6.21-rc7/include/linux/fs.h
+===================================================================
+--- linux-2.6.21-rc7.orig/include/linux/fs.h	2007-04-18 21:21:56.000000000 -0700
++++ linux-2.6.21-rc7/include/linux/fs.h	2007-04-18 21:26:31.000000000 -0700
+@@ -435,6 +435,7 @@ struct address_space {
+ 	struct inode		*host;		/* owner: inode, block_device */
+ 	struct radix_tree_root	page_tree;	/* radix tree of all pages */
+ 	rwlock_t		tree_lock;	/* and rwlock protecting it */
++	unsigned int		order;		/* Page order in this space */
+ 	unsigned int		i_mmap_writable;/* count VM_SHARED mappings */
+ 	struct prio_tree_root	i_mmap;		/* tree of private and shared mappings */
+ 	struct list_head	i_mmap_nonlinear;/*list VM_NONLINEAR mappings */
