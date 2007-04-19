@@ -1,88 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbXDSWFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbXDSWFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211AbXDSWFI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 18:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXDSWFI
+	id S1754218AbXDSWFJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 18:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXDSWFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 18:05:08 -0400
-Received: from pat.uio.no ([129.240.10.15]:49893 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754211AbXDSWFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 18:05:09 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:49219 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754218AbXDSWFE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Apr 2007 18:05:04 -0400
-Subject: Re: [PATCH] nfs lockd reclaimer: Convert to kthread API
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-In-Reply-To: <20070419144059.7f5b9b39.akpm@linux-foundation.org>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	 <11769696321319-git-send-email-ebiederm@xmission.com>
-	 <1176999710.6663.12.camel@heimdal.trondhjem.org>
-	 <m1slawkw76.fsf@ebiederm.dsl.xmission.com>
-	 <1177017564.6628.5.camel@heimdal.trondhjem.org>
-	 <20070419144059.7f5b9b39.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 19 Apr 2007 18:04:44 -0400
-Message-Id: <1177020284.6628.27.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kPL//WDS3h0k7YBS8jfyeUCVEBV82BydTkyLPfEkA2Zk8fxAltd4GZHNsAPiZuD6LDqyni0R6PlfkiJ2r7bCws8gdEbehltHLfp726fR+duzzCCip5ovQiPj7RxinxfCEIibX833Z46V5XxsXzOATB3g1okNDYYxzZtzejZaAL4=
+Message-ID: <4807377b0704191505n6241fb5ej90beac74e702bdc6@mail.gmail.com>
+Date: Thu, 19 Apr 2007 15:05:02 -0700
+From: "Jesse Brandeburg" <jesse.brandeburg@gmail.com>
+To: "David Ford" <firefighterblu3@gmail.com>
+Subject: Re: [it really is text/plain :P] dual port onboard 82546EB checksum errors
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <523e55a00704191406s4442e32aw5f82bbe21affe2b8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: DC57B063EF5812C7BD88E029593A6DD00166232A
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 42 total 1199940 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+References: <523e55a00704191406s4442e32aw5f82bbe21affe2b8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-19 at 14:40 -0700, Andrew Morton wrote:
-> Using signals to communicate with kernel threads is fairly unpleasant, IMO.
-> We have much simpler, faster and more idiomatic ways of communicating
-> between threads in-kernel and there are better ways in which userspace can
-> communicate with the kernel - system calls, for example...
-> 
-> So I think generally any move which gets us away from using signals in
-> kernel threads is moving in a good direction.
+please copy netdev, or better yet e1000-devel@lists.sourceforge.net in
+the future for e1000 issues like this.  Feel free to move the
+conversation there, if you would like.
 
-I have yet to see a proposal which did. Eric's patch was eliminating
-signals in kernel threads that used them without proposing any
-replacement mechanism or showing that he had plans to do so. That is a
-good reason for a veto.
+On 4/19/07, David Ford <firefighterblu3@gmail.com> wrote:
+> I have a rackmount server that has a dual port onboard 82546EB card.
+>
+> I've googled and seen this card apparently active with other users but
+> I seem to only get checksum errors.
+>
+> [    0.194129] Intel(R) PRO/1000 Network Driver - version 7.3.15-k2-NAPI
+> [    0.194234] Copyright (c) 1999-2006 Intel Corporation.
+>
+> [    0.194405] ACPI: PCI Interrupt 0000:04:09.0[A] -> GSI 51 (level,
+> low) -> IRQ 16
+> [    0.458732] e1000: 0000:04:09.0: e1000_probe: (PCI:66MHz:64-bit)
+> 00:04:23:cd:93:d2
+> [    0.489766] e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+>
+> [    0.489889] ACPI: PCI Interrupt 0000:03:07.0[A] -> GSI 30 (level,
+> low) -> IRQ 17
+> [    0.721071] e1000: 0000:03:07.0: e1000_probe: The EEPROM Checksum
+> Is Not Valid
+> [    0.742509] ACPI: PCI interrupt for device 0000:03:07.0 disabled
+> [    0.742614] e1000: probe of 0000:03:07.0 failed with error -5
+>
+> [    0.742731] ACPI: PCI Interrupt 0000:03:07.1[B] -> GSI 31 (level,
+> low) -> IRQ 18
+> [    0.973865] e1000: 0000:03:07.1: e1000_probe: The EEPROM Checksum
+> Is Not Valid
+> [    0.995304] ACPI: PCI interrupt for device 0000:03:07.1 disabled
+> [    0.995405] e1000: probe of 0000:03:07.1 failed with error -5
+>
+>
+> 03:07.0 Ethernet controller: Intel Corporation 82546EB Gigabit
+> Ethernet Controller (Copper) (rev 01)
+> 03:07.1 Ethernet controller: Intel Corporation 82546EB Gigabit
+> Ethernet Controller (Copper) (rev 01)
+> 04: 09.0 Ethernet controller: Intel Corporation 82545GM Gigabit
+> Ethernet Controller (rev 04)
+>
+>
+> 03:07.0 Ethernet controller: Intel Corporation 82546EB Gigabit
+> Ethernet Controller (Copper) (rev 01)
+>         Subsystem: Intel Corporation Unknown device 341a
+>         Flags: 66MHz, medium devsel, IRQ 17
+>         Memory at fe5c0000 (64-bit, non-prefetchable) [size=128K]
+>         I/O ports at 2040 [size=64]
+>         Capabilities: [dc] Power Management version 2
+>         Capabilities: [e4] PCI-X non-bridge device
+>         Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+
+> Queue=0/0 Enable-
+>
+> 03:07.1 Ethernet controller: Intel Corporation 82546EB Gigabit
+> Ethernet Controller (Copper) (rev 01)
+>         Subsystem: Intel Corporation Unknown device 341a
+>         Flags: 66MHz, medium devsel, IRQ 18
+>         Memory at fe5e0000 (64-bit, non-prefetchable) [size=128K]
+>         I/O ports at 2000 [size=64]
+>         Capabilities: [dc] Power Management version 2
+>         Capabilities: [e4] PCI-X non-bridge device
+>         Capabilities: [f0] Message Signalled Interrupts: Mask- 64bit+
+> Queue=0/0 Enable-
+>
+> 04:09.0 Ethernet controller: Intel Corporation 82545GM Gigabit
+> Ethernet Controller (rev 04)
+>         Subsystem: Intel Corporation PRO/1000 MT Server Adapter
+>         Flags: bus master, 66MHz, medium devsel, latency 64, IRQ 16
+>         Memory at fe8c0000 (64-bit, non-prefetchable) [size=128K]
+>         Memory at fe880000 (64-bit, non-prefetchable) [size=256K]
+>         I/O ports at 3000 [size=64]
+>         Expansion ROM at fe840000 [disabled] [size=256K]
+>         Capabilities: [dc] Power Management version 2
+>         Capabilities: [e4] PCI-X non-bridge device
+>
+>
+> The 82545GM card comes up fine but the 46EB card does not.
+>
+> This is 2.6.20-gentoo-r6
+>
+> I'll be happy to fulfill information request if needed.  Any
+> suggestions that'd help me get the 46EB working?
 
-> > > With pid namespaces all kernel threads will disappear so how do
-> > > we cope with the problem when the sysadmin can not see the kernel
-> > > threads?
-> > 
-> > Then you have a usability problem. How does the sysadmin reboot the
-> > system if there is no way to shut down the processes that are hanging on
-> > an unresponsive filesystem?
-> 
-> Where's the hang?  A user process is stuck on h_rwsem?
-> 
-> If so, would it be appropriate to convert the user process to use
-> down_foo_interruptible(), so that the operator can just kill the user
-> process as expected, rather than having to futz around killing kernel
-> threads?
+We haven't heard of any reports about this, can you get us some more
+information about the platform this is in?
+lspci -vv
+dmesg (full version)
+you can comment out the eeprom check and mac address check, rebuild
+the driver and load it, then run
+ethtool -e ethX
+on the ports that are failing, without bringing the interface 'up'
 
-If an NFS server reboots, then the locks held by user processes on the
-client need to be re-established by when it comes up again. Otherwise,
-the processes that thought they were holding locks will suddenly fail.
-This recovery job is currently the done by a kernel thread.
-
-The question is then what to do if the server crashes again while the
-kernel thread is re-establishing the locks. Particularly if it never
-comes back again.
-Currently, the administrator can intervene by killing anything that has
-open files on that volume and kill the recovery kernel thread.
-You'll also note that lockd_down(), nfsd_down() etc all use signals to
-inform lockd(), nfsd() etc that they should be shutting down. Since the
-reclaimer thread is started by the lockd() thread using CLONE_SIGHAND,
-this means that we also automatically kill any lingering recovery
-threads whenever we shutdown lockd().
-
-These mechanisms need to be replaced _before_ we start shooting down
-sigallow() etc in the kernel.
-
-  Trond
-
+you may have a hardware failure, or you could be having bus issues.
+The eeprom read is the first point that we try to read a register from
+the adapter so if register reads are failing this is the symptom you
+will see.
