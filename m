@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993167AbXDSITb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161255AbXDSIUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993167AbXDSITb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 04:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993185AbXDSIEP
+	id S1161255AbXDSIUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 04:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161337AbXDSIUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 04:04:15 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45797 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993181AbXDSIEE (ORCPT
+	Thu, 19 Apr 2007 04:20:23 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:60745 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161217AbXDSIUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 04:04:04 -0400
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: "<Andrew Morton" <akpm@osdl.org>
-Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Neil Brown <neilb@suse.de>
-Subject: [PATCH] md: Remove broken SIGKILL support
-Date: Thu, 19 Apr 2007 01:59:05 -0600
-Message-Id: <1176969641308-git-send-email-ebiederm@xmission.com>
-X-Mailer: git-send-email 1.5.1.1.g2de0
-In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	Thu, 19 Apr 2007 04:20:05 -0400
+Date: Thu, 19 Apr 2007 10:19:55 +0200
+From: Frank Pavlic <fpavlic@de.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] s390/net/lcs: Convert to the kthread API
+Message-ID: <20070419081955.GA14586@de.ibm.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769695682070-git-send-email-ebiederm@xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11769695682070-git-send-email-ebiederm@xmission.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+ACK  for both patches,  
+thank you Eric for the patches, will add them to my patchset
+for Jeff.
 
-Currently md_thread calls allow_signal so it can receive a
-SIGKILL but then does nothing with it except flush the
-sigkill so that it not can use an interruptible sleep.
+Frank
 
-This whole dance is silly so remove the unnecessary
-and broken signal handling logic.
-
-Cc: Neil Brown <neilb@suse.de>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/md/md.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 1299c23..dfd0cb9 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -4542,17 +4542,11 @@ static int md_thread(void * arg)
- 	 */
- 
- 	current->flags |= PF_NOFREEZE;
--	allow_signal(SIGKILL);
- 	while (!kthread_should_stop()) {
- 
- 		/* We need to wait INTERRUPTIBLE so that
- 		 * we don't add to the load-average.
--		 * That means we need to be sure no signals are
--		 * pending
- 		 */
--		if (signal_pending(current))
--			flush_signals(current);
--
- 		wait_event_interruptible_timeout
- 			(thread->wqueue,
- 			 test_bit(THREAD_WAKEUP, &thread->flags)
--- 
-1.5.0.g53756
-
+On Thu, Apr 19, 2007 at 01:58:40AM -0600, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com>
+> 
+> Use kthread_run to start the lcs kernel threads not a
+> combination of kernel_thread and daemonize.  This makes
+> the code slightly simpler and more maintainable.
+> 
+> Cc: Frank Pavlic <fpavlic@de.ibm.com>
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  drivers/s390/net/lcs.c |    8 +++-----
+>  1 files changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/s390/net/lcs.c b/drivers/s390/net/lcs.c
+> index 08a994f..0300d87 100644
+> --- a/drivers/s390/net/lcs.c
+> +++ b/drivers/s390/net/lcs.c
+> @@ -36,6 +36,7 @@
+>  #include <linux/in.h>
+>  #include <linux/igmp.h>
+>  #include <linux/delay.h>
+> +#include <linux/kthread.h>
+>  #include <net/arp.h>
+>  #include <net/ip.h>
+> 
+> @@ -1248,7 +1249,6 @@ lcs_register_mc_addresses(void *data)
+>  	struct in_device *in4_dev;
+> 
+>  	card = (struct lcs_card *) data;
+> -	daemonize("regipm");
+> 
+>  	if (!lcs_do_run_thread(card, LCS_SET_MC_THREAD))
+>  		return 0;
+> @@ -1728,11 +1728,10 @@ lcs_start_kernel_thread(struct work_struct *work)
+>  	struct lcs_card *card = container_of(work, struct lcs_card, kernel_thread_starter);
+>  	LCS_DBF_TEXT(5, trace, "krnthrd");
+>  	if (lcs_do_start_thread(card, LCS_RECOVERY_THREAD))
+> -		kernel_thread(lcs_recovery, (void *) card, SIGCHLD);
+> +		kthread_run(lcs_recovery, card, "lcs_recover");
+>  #ifdef CONFIG_IP_MULTICAST
+>  	if (lcs_do_start_thread(card, LCS_SET_MC_THREAD))
+> -		kernel_thread(lcs_register_mc_addresses,
+> -				(void *) card, SIGCHLD);
+> +		kernel_run(lcs_register_mc_addresses, card, "regipm");
+>  #endif
+>  }
+> 
+> @@ -2232,7 +2231,6 @@ lcs_recovery(void *ptr)
+>          int rc;
+> 
+>  	card = (struct lcs_card *) ptr;
+> -	daemonize("lcs_recover");
+> 
+>  	LCS_DBF_TEXT(4, trace, "recover1");
+>  	if (!lcs_do_run_thread(card, LCS_RECOVERY_THREAD))
+> -- 
+> 1.5.0.g53756
