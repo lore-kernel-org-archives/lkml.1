@@ -1,89 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031068AbXDSBw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031063AbXDSCDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031068AbXDSBw7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Apr 2007 21:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031055AbXDSBw7
+	id S1031063AbXDSCDM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Apr 2007 22:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031077AbXDSCDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Apr 2007 21:52:59 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:35675 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031065AbXDSBw6 (ORCPT
+	Wed, 18 Apr 2007 22:03:12 -0400
+Received: from mail34.syd.optusnet.com.au ([211.29.133.218]:54723 "EHLO
+	mail34.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031065AbXDSCDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Apr 2007 21:52:58 -0400
-Subject: Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20070418220228.GA14536@elte.hu>
-References: <20070413202100.GA9957@elte.hu>
-	 <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu>
-	 <200704182357.28107.mail@earthworm.de>  <20070418220228.GA14536@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YbP/YtG+oADPCxklN5Ro"
-Date: Thu, 19 Apr 2007 11:52:56 +1000
-Message-Id: <1176947576.5906.21.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 18 Apr 2007 22:03:10 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: implement staircase deadline scheduler further improvements-1
+Date: Thu, 19 Apr 2007 12:03:54 +1000
+User-Agent: KMail/1.9.5
+Cc: ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200704190948.36649.kernel@kolivas.org>
+In-Reply-To: <200704190948.36649.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704191203.54812.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 19 April 2007 09:48, Con Kolivas wrote:
+> While the Staircase Deadline scheduler has not been completely killed off
+> and is still in -mm I would like to fix some outstanding issues that I've
+> found since it still serves for comparison with all the upcoming
+> schedulers.
+>
+> While still in -mm can we queue this on top please?
+>
+> A set of staircase-deadline v 0.41 patches will make their way into the
+> usual place for those willing to test it.
+>
+> http://ck.kolivas.org/patches/staircase-deadline/
 
---=-YbP/YtG+oADPCxklN5Ro
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Oops! Minor thinko! Here is a respin. Please apply this one instead.
 
-Hi.
+I better make a 0.42 heh.
 
-On Thu, 2007-04-19 at 00:02 +0200, Ingo Molnar wrote:
-> * Christian Hesse <mail@earthworm.de> wrote:
->=20
-> > > although probably your suspend2 problem is still not fixed, it's=20
-> > > worth a try nevertheless. Which suspend2 patch did you apply, and=20
-> > > was it against -rc6 or -rc7?
-> >=20
-> > You are right again. ;-)
-> >=20
-> > Linux 2.6.21-rc7
-> > Suspend2 2.2.9.11 (applies cleanly to -rc7)
-> > CFS v3 (without any additional patches)
-> >=20
-> > And it still hangs on suspend.
->=20
-> what's the easiest way for me to try suspend2? Apply the patch, reboot=20
-> into the kernel, then execute what command to suspend? (there's a=20
-> confusing mismash of initiators of all the suspend variants. Can i drive=20
-> this by echoing to /sys/power/state?)
+---
+The prio_level was being inappropriately decreased if a higher priority
+task was still using previous timeslice. Fix that.
 
-=46rom subsequent emails, I think you already got your answer, but just in
-case...
+Task expiration of higher priority tasks was not being taken into account
+with allocating priority slots. Check the expired best_static_prio level
+to facilitate that.
 
-Yes, if you enabled "Replace swsusp by default" and you already had it
-set up for getting swsusp to resume. If not, and you're using an
-initrd/ramfs, you'll need to modify it to echo
-> /sys/power/suspend2/do_resume after /sys and /proc are mounted but
-prior to mounting / and so on.
+Explicitly check all better static priority prio_levels when deciding on
+allocating slots for niced tasks.
 
-Regards,
+These changes improve behaviour in many ways.
 
-Nigel
+Signed-off-by: Con Kolivas <kernel@kolivas.org>
 
---=-YbP/YtG+oADPCxklN5Ro
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+---
+ kernel/sched.c |   64 ++++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 43 insertions(+), 21 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Index: linux-2.6.21-rc7-sd/kernel/sched.c
+===================================================================
+--- linux-2.6.21-rc7-sd.orig/kernel/sched.c	2007-04-19 08:51:54.000000000 +1000
++++ linux-2.6.21-rc7-sd/kernel/sched.c	2007-04-19 12:03:29.000000000 +1000
+@@ -145,6 +145,12 @@ struct prio_array {
+ 	 */
+ 	DECLARE_BITMAP(prio_bitmap, MAX_PRIO + 1);
+ 
++	/*
++	 * The best static priority (of the dynamic priority tasks) queued
++	 * this array.
++	 */
++	int best_static_prio;
++
+ #ifdef CONFIG_SMP
+ 	/* For convenience looks back at rq */
+ 	struct rq *rq;
+@@ -191,9 +197,9 @@ struct rq {
+ 
+ 	/*
+ 	 * The current dynamic priority level this runqueue is at per static
+-	 * priority level, and the best static priority queued this rotation.
++	 * priority level.
+ 	 */
+-	int prio_level[PRIO_RANGE], best_static_prio;
++	int prio_level[PRIO_RANGE];
+ 
+ 	/* How many times we have rotated the priority queue */
+ 	unsigned long prio_rotation;
+@@ -669,7 +675,7 @@ static void task_new_array(struct task_s
+ }
+ 
+ /* Find the first slot from the relevant prio_matrix entry */
+-static inline int first_prio_slot(struct task_struct *p)
++static int first_prio_slot(struct task_struct *p)
+ {
+ 	if (unlikely(p->policy == SCHED_BATCH))
+ 		return p->static_prio;
+@@ -682,11 +688,18 @@ static inline int first_prio_slot(struct
+  * level. SCHED_BATCH tasks do not use the priority matrix. They only take
+  * priority slots from their static_prio and above.
+  */
+-static inline int next_entitled_slot(struct task_struct *p, struct rq *rq)
++static int next_entitled_slot(struct task_struct *p, struct rq *rq)
+ {
++	int search_prio = MAX_RT_PRIO, uprio = USER_PRIO(p->static_prio);
++	struct prio_array *array = rq->active;
+ 	DECLARE_BITMAP(tmp, PRIO_RANGE);
+-	int search_prio, uprio = USER_PRIO(p->static_prio);
+ 
++	/*
++	 * Go straight to expiration if there are higher priority tasks
++	 * already expired.
++	 */
++	if (p->static_prio > rq->expired->best_static_prio)
++		return MAX_PRIO;
+ 	if (!rq->prio_level[uprio])
+ 		rq->prio_level[uprio] = MAX_RT_PRIO;
+ 	/*
+@@ -694,15 +707,22 @@ static inline int next_entitled_slot(str
+ 	 * static_prio are acceptable, and only if it's not better than
+ 	 * a queued better static_prio's prio_level.
+ 	 */
+-	if (p->static_prio < rq->best_static_prio) {
+-		search_prio = MAX_RT_PRIO;
++	if (p->static_prio < array->best_static_prio) {
+ 		if (likely(p->policy != SCHED_BATCH))
+-			rq->best_static_prio = p->static_prio;
+-	} else if (p->static_prio == rq->best_static_prio)
++			array->best_static_prio = p->static_prio;
++	} else if (p->static_prio == array->best_static_prio) {
+ 		search_prio = rq->prio_level[uprio];
+-	else {
+-		search_prio = max(rq->prio_level[uprio],
+-			rq->prio_level[USER_PRIO(rq->best_static_prio)]);
++	} else {
++		int i;
++
++		search_prio = rq->prio_level[uprio];
++		/* A bound O(n) function, worst case n is 40 */
++		for (i = array->best_static_prio; i <= p->static_prio ; i++) {
++			if (!rq->prio_level[USER_PRIO(i)])
++				rq->prio_level[USER_PRIO(i)] = MAX_RT_PRIO;
++			search_prio = max(search_prio,
++				      rq->prio_level[USER_PRIO(i)]);
++		}
+ 	}
+ 	if (unlikely(p->policy == SCHED_BATCH)) {
+ 		search_prio = max(search_prio, p->static_prio);
+@@ -718,6 +738,8 @@ static void queue_expired(struct task_st
+ {
+ 	task_new_array(p, rq, rq->expired);
+ 	p->prio = p->normal_prio = first_prio_slot(p);
++	if (p->static_prio < rq->expired->best_static_prio)
++		rq->expired->best_static_prio = p->static_prio;
+ }
+ 
+ #ifdef CONFIG_SMP
+@@ -726,7 +748,7 @@ static void queue_expired(struct task_st
+  * update its data appropriately. Note we may be reading data from src_rq->
+  * outside of lock, but the occasional inaccurate result should be harmless.
+  */
+- static inline void update_if_moved(struct task_struct *p, struct rq *rq)
++ static void update_if_moved(struct task_struct *p, struct rq *rq)
+ {
+ 	struct rq *src_rq = p->array->rq;
+ 
+@@ -3217,8 +3239,10 @@ EXPORT_SYMBOL(sub_preempt_count);
+ 
+ #endif
+ 
+-static inline void reset_prio_levels(struct rq *rq)
++static void reset_prio_levels(struct rq *rq)
+ {
++	rq->active->best_static_prio = MAX_PRIO - 1;
++	rq->expired->best_static_prio = MAX_PRIO - 1;
+ 	memset(rq->prio_level, 0, sizeof(int) * PRIO_RANGE);
+ }
+ 
+@@ -3239,7 +3263,6 @@ retry:
+ 		rq->active = array;
+ 		rq->exp_bitmap = rq->expired->prio_bitmap;
+ 		rq->dyn_bitmap = rq->active->prio_bitmap;
+-		rq->best_static_prio = MAX_PRIO - 1;
+ 		rq->prio_rotation++;
+ 		idx = find_next_bit(rq->dyn_bitmap, MAX_PRIO, MAX_RT_PRIO);
+ 		reset_prio_levels(rq);
+@@ -3261,9 +3284,10 @@ retry:
+ 	if (likely(next->policy != SCHED_BATCH)) {
+ 		int nstatic = next->static_prio;
+ 
+-		if (nstatic < rq->best_static_prio)
+-			rq->best_static_prio = nstatic;
+-		rq->prio_level[USER_PRIO(nstatic)] = idx;
++		if (nstatic < array->best_static_prio)
++			array->best_static_prio = nstatic;
++		if (idx > rq->prio_level[USER_PRIO(nstatic)])
++			rq->prio_level[USER_PRIO(nstatic)] = idx;
+ 	}
+ 	return next;
+ }
+@@ -3348,7 +3372,6 @@ need_resched_nonpreemptible:
+ 	}
+ switch_tasks:
+ 	if (next == rq->idle) {
+-		rq->best_static_prio = MAX_PRIO - 1;
+ 		reset_prio_levels(rq);
+ 		rq->prio_rotation++;
+ 		schedstat_inc(rq, sched_goidle);
+@@ -6671,10 +6694,9 @@ void __init sched_init(void)
+ 		lockdep_set_class(&rq->lock, &rq->rq_lock_key);
+ 		rq->nr_running = 0;
+ 		rq->prio_rotation = 0;
+-		rq->best_static_prio = MAX_PRIO - 1;
+-		reset_prio_levels(rq);
+ 		rq->active = rq->arrays;
+ 		rq->expired = rq->arrays + 1;
++		reset_prio_levels(rq);
+ 		rq->dyn_bitmap = rq->active->prio_bitmap;
+ 		rq->exp_bitmap = rq->expired->prio_bitmap;
+ 
 
-iD8DBQBGJst4N0y+n1M3mo0RAsycAKDNi7oYH3c8zSeBtsiB0OFlE89VBwCcDVWh
-la+JROBvVa7h6M6jTPDAu+Q=
-=BvPv
------END PGP SIGNATURE-----
-
---=-YbP/YtG+oADPCxklN5Ro--
-
+-- 
+-ck
