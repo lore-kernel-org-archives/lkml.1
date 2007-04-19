@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993128AbXDSHDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993135AbXDSHDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993128AbXDSHDR (ORCPT <rfc822;w@1wt.eu>);
+	id S2993135AbXDSHDR (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 19 Apr 2007 03:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993134AbXDSHCx
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993128AbXDSHCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 03:02:53 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34578 "EHLO
+	Thu, 19 Apr 2007 03:02:54 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34576 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993133AbXDSHCp (ORCPT
+	with ESMTP id S2993119AbXDSHCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 03:02:45 -0400
+	Thu, 19 Apr 2007 03:02:43 -0400
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
 Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
        Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH] pnpbios: Conert to use the kthread API.
-Date: Thu, 19 Apr 2007 00:55:32 -0600
-Message-Id: <1176965774141-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH] sparc64/power.c: Convert to use the kthread API
+Date: Thu, 19 Apr 2007 00:55:34 -0600
+Message-Id: <11769657771939-git-send-email-ebiederm@xmission.com>
 X-Mailer: git-send-email 1.5.0.rc1.gb60d
 In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
 References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
@@ -26,70 +26,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This patches modifies the pnpbios kernel thread to start
-with ktrhead_run not kernel_thread and deamonize.  Doing
-this makes the code a little simpler and easier to maintain.
+This starts the sparc64 powerd using kthread_run
+instead of kernel_thread and daemonize.  Making the
+code slightly simpler and more maintainable.
 
+In addition the unnecessary flush_signals is removed.
+
+Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/pnp/pnpbios/core.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+ arch/sparc64/kernel/power.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pnp/pnpbios/core.c b/drivers/pnp/pnpbios/core.c
-index c2ed53f..3a201b7 100644
---- a/drivers/pnp/pnpbios/core.c
-+++ b/drivers/pnp/pnpbios/core.c
-@@ -62,6 +62,7 @@
- #include <linux/delay.h>
- #include <linux/acpi.h>
- #include <linux/freezer.h>
+diff --git a/arch/sparc64/kernel/power.c b/arch/sparc64/kernel/power.c
+index 699b24b..03feb8b 100644
+--- a/arch/sparc64/kernel/power.c
++++ b/arch/sparc64/kernel/power.c
+@@ -13,6 +13,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/pm.h>
+ #include <linux/syscalls.h>
 +#include <linux/kthread.h>
  
- #include <asm/page.h>
- #include <asm/desc.h>
-@@ -159,9 +160,7 @@ static int pnp_dock_thread(void * unused)
- {
- 	static struct pnp_docking_station_info now;
- 	int docked = -1, d = 0;
--	daemonize("kpnpbiosd");
--	allow_signal(SIGKILL);
--	while(!unloading && !signal_pending(current))
-+	while (!unloading)
- 	{
- 		int status;
- 		
-@@ -170,11 +169,8 @@ static int pnp_dock_thread(void * unused)
- 		 */
- 		msleep_interruptible(2000);
+ #include <asm/system.h>
+ #include <asm/auxio.h>
+@@ -81,15 +82,12 @@ static int powerd(void *__unused)
+ 	char *argv[] = { "/sbin/shutdown", "-h", "now", NULL };
+ 	DECLARE_WAITQUEUE(wait, current);
  
--		if(signal_pending(current)) {
--			if (try_to_freeze())
--				continue;
--			break;
--		}
-+		if (try_to_freeze())
-+			continue;
+-	daemonize("powerd");
+-
+ 	add_wait_queue(&powerd_wait, &wait);
+ again:
+ 	for (;;) {
+ 		set_task_state(current, TASK_INTERRUPTIBLE);
+ 		if (button_pressed)
+ 			break;
+-		flush_signals(current);
+ 		schedule();
+ 	}
+ 	__set_current_state(TASK_RUNNING);
+@@ -128,7 +126,9 @@ static int __devinit power_probe(struct of_device *op, const struct of_device_id
+ 	poweroff_method = machine_halt;  /* able to use the standard halt */
  
- 		status = pnp_bios_dock_station_info(&now);
- 
-@@ -582,6 +578,7 @@ subsys_initcall(pnpbios_init);
- 
- static int __init pnpbios_thread_init(void)
- {
-+	struct task_struct *task;
- #if defined(CONFIG_PPC_MERGE)
- 	if (check_legacy_ioport(PNPBIOS_BASE))
- 		return 0;
-@@ -590,7 +587,8 @@ static int __init pnpbios_thread_init(void)
- 		return 0;
- #ifdef CONFIG_HOTPLUG
- 	init_completion(&unload_sem);
--	if (kernel_thread(pnp_dock_thread, NULL, CLONE_KERNEL) > 0)
-+	task = kthread_run(pnp_dock_thread, NULL, "kpnpbiosd");
-+	if (!IS_ERR(task))
- 		unloading = 0;
- #endif
- 	return 0;
+ 	if (has_button_interrupt(irq, op->node)) {
+-		if (kernel_thread(powerd, NULL, CLONE_FS) < 0) {
++		struct task_struct *task;
++		task = kthread_urn(powerd, NULL, "powerd");
++		if (IS_ERR(task)) {
+ 			printk("Failed to start power daemon.\n");
+ 			return 0;
+ 		}
 -- 
 1.5.0.g53756
 
