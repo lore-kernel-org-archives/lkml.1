@@ -1,50 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767250AbXDTUfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767254AbXDTUfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767250AbXDTUfh (ORCPT <rfc822;w@1wt.eu>);
+	id S1767254AbXDTUfh (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 20 Apr 2007 16:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767254AbXDTUex
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767252AbXDTUeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:34:53 -0400
-Received: from mga03.intel.com ([143.182.124.21]:44257 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767246AbXDTUei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:34:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,433,1170662400"; 
-   d="scan'208"; a="216853457:sNHT20794984"
-From: Jesse Barnes <jesse.barnes@intel.com>
+	Fri, 20 Apr 2007 16:34:15 -0400
+Received: from dh166.citi.umich.edu ([141.211.133.166]:47388 "EHLO
+	heimdal.trondhjem.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767247AbXDTUeK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 16:34:10 -0400
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH 1/5] NFS: clean up the unstable write code
+Date: Fri, 20 Apr 2007 16:12:34 -0400
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: PCI bridge range sizing bug
-Date: Fri, 20 Apr 2007 13:34:55 -0700
-User-Agent: KMail/1.9.6
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       Adam Jackson <ajackson@redhat.com>, linux-kernel@vger.kernel.org
-References: <1175812632.17147.12.camel@localhost.localdomain> <200704200932.52181.jesse.barnes@intel.com> <alpine.LFD.0.98.0704201102000.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704201102000.9964@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704201334.56802.jesse.barnes@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Florin Iucha <florin@iucha.net>,
+       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Chuck Lever <chuck.lever@oracle.com>, linux-kernel@vger.kernel.org,
+       nfs@lists.sourceforge.net
+Message-Id: <20070420201234.7897.92105.stgit@heimdal.trondhjem.org>
+In-Reply-To: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
+References: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, April 20, 2007 11:28 am Linus Torvalds wrote:
-> On Fri, 20 Apr 2007, Jesse Barnes wrote:
-> > Sounds good, hopefully reassigning the bridge resources won't cause
-> > too much trouble.  Do you have time to hack this up?  If not, I
-> > could give it a try, as long as ajax is willing to test...
->
-> Actually, I would suggest we not do it automatically (because the
-> need for it is just so low, and the downsides are potentially huge -
-> there are just too many resources that are "hidden" from us through
-> ACPI tricks and having hardware that doesn't actually expose their
-> PCI resources fully through the normal PCI resource setup).
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-Yeah, that's probably prudent.  OTOH we should probably let the user 
-know in no uncertain terms that some of the stuff behind one of their 
-bridges will be inaccessible.
+Get rid of the inlined #ifdefs.
 
-Thanks,
-Jesse
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/write.c           |  117 ++++++++++++++++++++++++++++------------------
+ include/linux/nfs_page.h |   30 ------------
+ 2 files changed, 71 insertions(+), 76 deletions(-)
+
+diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+index ad2e91b..3ed4feb 100644
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -460,6 +460,43 @@ nfs_mark_request_commit(struct nfs_page *req)
+ 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
+ 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
+ }
++
++static inline
++int nfs_write_need_commit(struct nfs_write_data *data)
++{
++	return data->verf.committed != NFS_FILE_SYNC;
++}
++
++static inline
++int nfs_reschedule_unstable_write(struct nfs_page *req)
++{
++	if (test_and_clear_bit(PG_NEED_COMMIT, &req->wb_flags)) {
++		nfs_mark_request_commit(req);
++		return 1;
++	}
++	if (test_and_clear_bit(PG_NEED_RESCHED, &req->wb_flags)) {
++		nfs_redirty_request(req);
++		return 1;
++	}
++	return 0;
++}
++#else
++static inline void
++nfs_mark_request_commit(struct nfs_page *req)
++{
++}
++
++static inline
++int nfs_write_need_commit(struct nfs_write_data *data)
++{
++	return 0;
++}
++
++static inline
++int nfs_reschedule_unstable_write(struct nfs_page *req)
++{
++	return 0;
++}
+ #endif
+ 
+ /*
+@@ -746,26 +783,12 @@ int nfs_updatepage(struct file *file, struct page *page,
+ 
+ static void nfs_writepage_release(struct nfs_page *req)
+ {
+-	nfs_end_page_writeback(req->wb_page);
+ 
+-#if defined(CONFIG_NFS_V3) || defined(CONFIG_NFS_V4)
+-	if (!PageError(req->wb_page)) {
+-		if (NFS_NEED_RESCHED(req)) {
+-			nfs_redirty_request(req);
+-			goto out;
+-		} else if (NFS_NEED_COMMIT(req)) {
+-			nfs_mark_request_commit(req);
+-			goto out;
+-		}
+-	}
+-	nfs_inode_remove_request(req);
+-
+-out:
+-	nfs_clear_commit(req);
+-	nfs_clear_reschedule(req);
+-#else
+-	nfs_inode_remove_request(req);
+-#endif
++	if (PageError(req->wb_page) || !nfs_reschedule_unstable_write(req)) {
++		nfs_end_page_writeback(req->wb_page);
++		nfs_inode_remove_request(req);
++	} else
++		nfs_end_page_writeback(req->wb_page);
+ 	nfs_clear_page_writeback(req);
+ }
+ 
+@@ -1008,22 +1031,28 @@ static void nfs_writeback_done_partial(struct rpc_task *task, void *calldata)
+ 		nfs_set_pageerror(page);
+ 		req->wb_context->error = task->tk_status;
+ 		dprintk(", error = %d\n", task->tk_status);
+-	} else {
+-#if defined(CONFIG_NFS_V3) || defined(CONFIG_NFS_V4)
+-		if (data->verf.committed < NFS_FILE_SYNC) {
+-			if (!NFS_NEED_COMMIT(req)) {
+-				nfs_defer_commit(req);
+-				memcpy(&req->wb_verf, &data->verf, sizeof(req->wb_verf));
+-				dprintk(" defer commit\n");
+-			} else if (memcmp(&req->wb_verf, &data->verf, sizeof(req->wb_verf))) {
+-				nfs_defer_reschedule(req);
+-				dprintk(" server reboot detected\n");
+-			}
+-		} else
+-#endif
+-			dprintk(" OK\n");
++		goto out;
+ 	}
+ 
++	if (nfs_write_need_commit(data)) {
++		spinlock_t *req_lock = &NFS_I(page->mapping->host)->req_lock;
++
++		spin_lock(req_lock);
++		if (test_bit(PG_NEED_RESCHED, &req->wb_flags)) {
++			/* Do nothing we need to resend the writes */
++		} else if (!test_and_set_bit(PG_NEED_COMMIT, &req->wb_flags)) {
++			memcpy(&req->wb_verf, &data->verf, sizeof(req->wb_verf));
++			dprintk(" defer commit\n");
++		} else if (memcmp(&req->wb_verf, &data->verf, sizeof(req->wb_verf))) {
++			set_bit(PG_NEED_RESCHED, &req->wb_flags);
++			clear_bit(PG_NEED_COMMIT, &req->wb_flags);
++			dprintk(" server reboot detected\n");
++		}
++		spin_unlock(req_lock);
++	} else
++		dprintk(" OK\n");
++
++out:
+ 	if (atomic_dec_and_test(&req->wb_complete))
+ 		nfs_writepage_release(req);
+ }
+@@ -1064,25 +1093,21 @@ static void nfs_writeback_done_full(struct rpc_task *task, void *calldata)
+ 		if (task->tk_status < 0) {
+ 			nfs_set_pageerror(page);
+ 			req->wb_context->error = task->tk_status;
+-			nfs_end_page_writeback(page);
+-			nfs_inode_remove_request(req);
+ 			dprintk(", error = %d\n", task->tk_status);
+-			goto next;
++			goto remove_request;
+ 		}
+-		nfs_end_page_writeback(page);
+ 
+-#if defined(CONFIG_NFS_V3) || defined(CONFIG_NFS_V4)
+-		if (data->args.stable != NFS_UNSTABLE || data->verf.committed == NFS_FILE_SYNC) {
+-			nfs_inode_remove_request(req);
+-			dprintk(" OK\n");
++		if (nfs_write_need_commit(data)) {
++			memcpy(&req->wb_verf, &data->verf, sizeof(req->wb_verf));
++			nfs_mark_request_commit(req);
++			nfs_end_page_writeback(page);
++			dprintk(" marked for commit\n");
+ 			goto next;
+ 		}
+-		memcpy(&req->wb_verf, &data->verf, sizeof(req->wb_verf));
+-		nfs_mark_request_commit(req);
+-		dprintk(" marked for commit\n");
+-#else
++		dprintk(" OK\n");
++remove_request:
++		nfs_end_page_writeback(page);
+ 		nfs_inode_remove_request(req);
+-#endif
+ 	next:
+ 		nfs_clear_page_writeback(req);
+ 	}
+diff --git a/include/linux/nfs_page.h b/include/linux/nfs_page.h
+index d111be6..16b0266 100644
+--- a/include/linux/nfs_page.h
++++ b/include/linux/nfs_page.h
+@@ -49,8 +49,6 @@ struct nfs_page {
+ };
+ 
+ #define NFS_WBACK_BUSY(req)	(test_bit(PG_BUSY,&(req)->wb_flags))
+-#define NFS_NEED_COMMIT(req)	(test_bit(PG_NEED_COMMIT,&(req)->wb_flags))
+-#define NFS_NEED_RESCHED(req)	(test_bit(PG_NEED_RESCHED,&(req)->wb_flags))
+ 
+ extern	struct nfs_page *nfs_create_request(struct nfs_open_context *ctx,
+ 					    struct inode *inode,
+@@ -121,34 +119,6 @@ nfs_list_remove_request(struct nfs_page *req)
+ 	req->wb_list_head = NULL;
+ }
+ 
+-static inline int
+-nfs_defer_commit(struct nfs_page *req)
+-{
+-	return !test_and_set_bit(PG_NEED_COMMIT, &req->wb_flags);
+-}
+-
+-static inline void
+-nfs_clear_commit(struct nfs_page *req)
+-{
+-	smp_mb__before_clear_bit();
+-	clear_bit(PG_NEED_COMMIT, &req->wb_flags);
+-	smp_mb__after_clear_bit();
+-}
+-
+-static inline int
+-nfs_defer_reschedule(struct nfs_page *req)
+-{
+-	return !test_and_set_bit(PG_NEED_RESCHED, &req->wb_flags);
+-}
+-
+-static inline void
+-nfs_clear_reschedule(struct nfs_page *req)
+-{
+-	smp_mb__before_clear_bit();
+-	clear_bit(PG_NEED_RESCHED, &req->wb_flags);
+-	smp_mb__after_clear_bit();
+-}
+-
+ static inline struct nfs_page *
+ nfs_list_entry(struct list_head *head)
+ {
