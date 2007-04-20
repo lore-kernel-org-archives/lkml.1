@@ -1,69 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbXDTLER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbXDTLFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752625AbXDTLER (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 07:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbXDTLER
+	id S1754461AbXDTLFU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 07:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbXDTLFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 07:04:17 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:46430 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752625AbXDTLEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 07:04:16 -0400
-Date: Fri, 20 Apr 2007 13:09:54 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070420110954.GA3640@ff.dom.local>
+	Fri, 20 Apr 2007 07:05:20 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:53270 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754461AbXDTLFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 07:05:19 -0400
+Date: Fri, 20 Apr 2007 12:05:17 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>,
+       shaggy@linux.vnet.ibm.com
+Subject: Re: [RFC 4/8] Enhance fallback functions in libs to support higher order pages
+Message-ID: <20070420110516.GC12075@skynet.ie>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(take 2)
+On (19/04/07 09:35), Christoph Lameter didst pronounce:
+> Variable Order Page Cache: Fixup fallback functions
+> 
+> Fixup the fallback function in fs/libfs.c to be able to handle
+> higher order page cache pages.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> 
+> ---
+>  fs/libfs.c |   16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6.21-rc7/fs/libfs.c
+> ===================================================================
+> --- linux-2.6.21-rc7.orig/fs/libfs.c	2007-04-18 21:52:49.000000000 -0700
+> +++ linux-2.6.21-rc7/fs/libfs.c	2007-04-18 21:54:51.000000000 -0700
+> @@ -320,8 +320,8 @@ int simple_rename(struct inode *old_dir,
+>  
+>  int simple_readpage(struct file *file, struct page *page)
+>  {
+> -	clear_highpage(page);
+> -	flush_dcache_page(page);
+> +	clear_mapping_page(file->f_mapping, page);
+> +	flush_mapping_page(file->f_mapping, page);
 
-I'm not sure we've agreed enough, who'll resubmit, so here
-it is with WARN_ON. If it was submited already - forget it.
+right, I think it would be easier to read if patches 3 and 4 were
+merged. Personal preference, feel free to ignore
 
-Jarek P.
+>  	SetPageUptodate(page);
+>  	unlock_page(page);
+>  	return 0;
+> @@ -331,11 +331,15 @@ int simple_prepare_write(struct file *fi
+>  			unsigned from, unsigned to)
+>  {
+>  	if (!PageUptodate(page)) {
+> -		if (to - from != PAGE_CACHE_SIZE) {
+> +		if (to - from != page_cache_size(file->f_mapping)) {
+> +			/*
+> +			 * Mapping to higher order pages need to be supported
+> +			 * if higher order pages can be in highmem
+> +			 */
 
---->
-IMHO cancel_rearming_delayed_work is dangerous place:
+comments about missing page_cache_size() covered elsewhere. However, I
+note that Dave Kleikamp might be interested in this changing of
+page_cache_size() from the perspective of page cache tails. I've added
+him to the cc so he can take a quick look.
 
-- it assumes a work function always rearms (with no exception),
-which probably isn't explained enough now (but anyway should
-be checked in such loops);
+>  			void *kaddr = kmap_atomic(page, KM_USER0);
+>  			memset(kaddr, 0, from);
+> -			memset(kaddr + to, 0, PAGE_CACHE_SIZE - to);
+> -			flush_dcache_page(page);
+> +			memset(kaddr + to, 0, page_cache_size(file->f_mapping) - to);
+> +			flush_mapping_page(file->f_mapping, page);
+>  			kunmap_atomic(kaddr, KM_USER0);
+>  		}
+>  	}
+> @@ -346,7 +350,7 @@ int simple_commit_write(struct file *fil
+>  			unsigned from, unsigned to)
+>  {
+>  	struct inode *inode = page->mapping->host;
+> -	loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
+> +	loff_t pos = ((loff_t)page->index << page_cache_shift(file->f_mapping)) + to;
+>  
+>  	if (!PageUptodate(page))
+>  		SetPageUptodate(page);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-- probably possible (theoretical) scenario: a few work
-functions rearm themselves with very short, equal times;
-before flush_workqueue ends, their timers are already
-fired, so cancel_delayed_work has nothing to do.
-
-Maybe this patch could check, if I'm not dreaming...
-
-PS: of course the counter value below is a question of taste
-
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-
----
-
-diff -Nurp 2.6.21-rc6-mm1-/kernel/workqueue.c 2.6.21-rc6-mm1/kernel/workqueue.c
---- 2.6.21-rc6-mm1-/kernel/workqueue.c	2007-04-18 20:07:45.000000000 +0200
-+++ 2.6.21-rc6-mm1/kernel/workqueue.c	2007-04-18 20:15:44.000000000 +0200
-@@ -557,9 +557,12 @@ void cancel_rearming_delayed_work(struct
- 	/* Was it ever queued ? */
- 	if (cwq != NULL) {
- 		struct workqueue_struct *wq = cwq->wq;
-+		int i = 1000;
- 
--		while (!cancel_delayed_work(dwork))
-+		while (!cancel_delayed_work(dwork)) {
- 			flush_workqueue(wq);
-+			WARN_ON(!i--);
-+		}
- 	}
- }
- EXPORT_SYMBOL(cancel_rearming_delayed_work);
-
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
