@@ -1,61 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXDTKLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423034AbXDTKPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbXDTKLI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 06:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbXDTKLI
+	id S1423034AbXDTKPI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 06:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423032AbXDTKPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 06:11:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:5009 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754130AbXDTKLG (ORCPT
+	Fri, 20 Apr 2007 06:15:08 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:15531 "EHLO
+	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423034AbXDTKPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 06:11:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=G55YT0iVreoibtSacLbAXMyBRMO94QmpydEoIqjp5vrCDStSY4YFNdcpkY0epgEL2YjH7B0PRdba6OjGzxKuKi4n+nGdJ/rkuvZO1CydGPFB/TdUz7iRgw9oU/y7tGzkg9ce9nnZvIrlen4RXr6Z+MRDgovItWMbyTZwe4fPCtk=
-Message-ID: <462891A8.6080502@gmail.com>
-Date: Fri, 20 Apr 2007 13:10:48 +0300
-From: Sergey Yanovich <ynvich@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Fri, 20 Apr 2007 06:15:05 -0400
+X-BigFish: VP
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Message-ID: <46289509.6090306@amd.com>
+Date: Fri, 20 Apr 2007 12:25:13 +0200
+From: "Markus Rechberger" <markus.rechberger@amd.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070413)
 MIME-Version: 1.0
-To: Fabio Comolli <fabio.comolli@gmail.com>
-CC: Brad Campbell <brad@wasp.net.au>, Alex Dubov <oakad@yahoo.com>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
-References: <204224.14405.qm@web36703.mail.mud.yahoo.com>	 <462877E8.2070005@wasp.net.au> <b637ec0b0704200131g6297d5d5q842edbf160940170@mail.gmail.com>
-In-Reply-To: <b637ec0b0704200131g6297d5d5q842edbf160940170@mail.gmail.com>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+To: "Chris Murton" <chris.murton@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Oops on 2.6.21 with dvb-usb-dib0700?
+X-OriginalArrivalTime: 20 Apr 2007 10:14:18.0557 (UTC)
+ FILETIME=[A82036D0:01C78334]
+X-WSS-ID: 6A364D191XC191057-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1;
+ format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
->> > Have you looked at the last version (0.8)? It fixed all outstanding 
->> issues (as far as I know).
->> >
->>
->> Seconded. I've been running Alex's latest driver since its release. I 
->> routinely suspend/resume
->> 60-100 times between boots to S3 and disk, I've suspended with cards 
->> in the socket and I've tested
->> it using SD and MMC .. I've not been able to fault it now. In fact, 
->> checking my mail archives, my
->> last reported bug was on the 17th of Feb and it has been rock solid 
->> since. I just don't think about
->> it anymore, it simply works...
->>
+this will be fixed in upcoming kernel releases, there's already a patch 
+for that in the video4linux/dvb repository on linuxtv.org.
+So if you update your v4l-dvb drivers that problem shouldn't occure anymore.
 
-Well, I am tracking Alex's svn. It is for off-the-tree builds. I 
-reorganized Alex's code in Oct 2006 and added
-a patch to my debian/patches. Until debian shipped linux-2.6.20, there 
-were no [tifm_*] in their tree, so no conflicts. The 2.6.20 came with 
-tifm_sd-v0.6 which is not so stable. I dug lkml and bugzilla.kernel.org 
-for fresh patches, but found 
-http://bugzilla.kernel.org/show_bug.cgi?id=8052. Which made me think, 
-svn is still unstable. I merged in-kernel updates to my old (v2.6.18-*) 
-version. It compiles and runs OK, so I posted it. No offense to anyone.
+http://linuxtv.org/repo/
 
-Best regards,
-Sergey
+-Markus
+
+On 4/19/07, Chris Murton <chris.murton@gmail.com> wrote:
+ > Hi,
+ >
+ > Get an occasional Oops which can occur either when the device is in use,
+ > or idle.. and it only usually happens after several hours of uptime with
+ > the module and device loaded. The 'oops' seems to directly correlate
+ > with the device appearing to disconnect and reconnect via USB (but
+ > nothing physical has changed).
+ >
+ > In this example, the box was booted at 21:50 and the Oops occurred at
+ > 03:13 when the device was idle:
+ >
+ > Apr 19 03:13:01 basil kernel: usb 2-1: USB disconnect, address 2
+ > Apr 19 03:13:01 basil kernel: ehci_hcd 0000:04:08.2: qh ffff81003dbc61e0
+ > (#82) state 4(has tds)
+ > Apr 19 03:13:01 basil kernel: mt2060 I2C write failed
+ > Apr 19 03:13:01 basil kernel: mt2060 I2C write failed
+ > Apr 19 03:13:01 basil kernel: dvb-usb: Hauppauge Nova-T 500 Dual DVB-T
+ > successfully deinitialized and disconnected.
+ > Apr 19 03:13:02 basil kernel: usb 2-1: new high speed USB device using
+ > ehci_hcd and address 3
+ > Apr 19 03:13:02 basil kernel: usb 2-1: configuration #1 chosen from 1 
+choice
+ > Apr 19 03:13:02 basil kernel: dvb-usb: found a 'Hauppauge Nova-T 500
+ > Dual DVB-T' in warm state.
+ > Apr 19 03:13:02 basil kernel: **WARNING** I2C adapter driver [Hauppauge
+ > Nova-T 500 Dual DVB-T] forgot to specify physical device; fi
+ > x it!
+ > Apr 19 03:13:02 basil kernel: dvb-usb: will pass the complete MPEG2
+ > transport stream to the software demuxer.
+ > Apr 19 03:13:02 basil kernel: DVB: registering new adapter (Hauppauge
+ > Nova-T 500 Dual DVB-T).
+ > Apr 19 03:13:02 basil kernel: **WARNING** I2C adapter driver [DiBX000
+ > tuner I2C bus] forgot to specify physical device; fix it!
+ > Apr 19 03:13:02 basil kernel: DVB: registering frontend 0 (DiBcom
+ > 3000MC/P)...
+ > Apr 19 03:13:02 basil kernel: MT2060: successfully identified (IF1 = 
+1220)
+ > Apr 19 03:13:02 basil kernel: dvb-usb: will pass the complete MPEG2
+ > transport stream to the software demuxer.
+ > Apr 19 03:13:02 basil kernel: DVB: registering new adapter (Hauppauge
+ > Nova-T 500 Dual DVB-T).
+ > Apr 19 03:13:02 basil kernel: **WARNING** I2C adapter driver [DiBX000
+ > tuner I2C bus] forgot to specify physical device; fix it!
+ > Apr 19 03:13:02 basil kernel: DVB: registering frontend 1 (DiBcom
+ > 3000MC/P)...
+ > Apr 19 03:13:02 basil kernel: MT2060: successfully identified (IF1 = 
+1220)
+ > Apr 19 03:13:03 basil kernel: dvb-usb: Hauppauge Nova-T 500 Dual DVB-T
+ > successfully initialized and connected.
+ > Apr 19 03:17:30 basil kernel: Unable to handle kernel NULL pointer
+ > dereference at 0000000000000000 RIP:
+ > Apr 19 03:17:30 basil kernel:  [<ffffffff804a4af2>]
+ > __mutex_lock_interruptible_slowpath+0x22/0x99
+ > Apr 19 03:17:30 basil kernel: PGD 13042067 PUD 13043067 PMD 0
+ > Apr 19 03:17:30 basil kernel: Oops: 0002 [1]
+ > Apr 19 03:17:30 basil kernel: CPU 0
+ > Apr 19 03:17:30 basil kernel: Modules linked in: nvidia(P) snd_mpu401
+ > snd_mpu401_uart snd_seq_midi snd_seq_midi_event snd_hda_intel
+ > snd_hda_codec snd_seq snd_pcm_oss snd_mixer_oss dvb_usb_dib0700 dib7000m
+ > dib7000p dvb_usb snd_rawmidi dvb_core snd_pcm snd_timer snd
+ > _seq_device lirc_imon lirc_mceusb2 lirc_dev dvb_pll dib3000mc
+ > dibx000_common mt2060 snd_page_alloc
+ > Apr 19 03:17:30 basil kernel: Pid: 7860, comm: mythbackend Tainted:
+ > P      2.6.20 #1
+ > Apr 19 03:17:30 basil kernel: RIP: 0010:[<ffffffff804a4af2>] 
+ > [<ffffffff804a4af2>] __mutex_lock_interruptible_slowpath+0x22/0x99
+ > Apr 19 03:17:30 basil kernel: RSP: 0018:ffff81002e929ea8  EFLAGS: 
+00010292
+ > Apr 19 03:17:30 basil kernel: RAX: ffffc200101ad0a0 RBX:
+ > ffffc200101ad098 RCX: 0000000000000000
+ > Apr 19 03:17:30 basil kernel: RDX: ffff81002e929fd8 RSI:
+ > ffff8100331ee980 RDI: ffffc200101ad098
+ > Apr 19 03:17:30 basil kernel: RBP: ffff810034403200 R08:
+ > 0000000000000000 R09: 0000000000001eb4
+ > Apr 19 03:17:30 basil kernel: R10: 0000000000000000 R11:
+ > 0000000000000206 R12: ffffc200101ad098
+ > Apr 19 03:17:30 basil kernel: R13: ffff81003cff7418 R14:
+ > ffff81003da1a8c0 R15: ffff81003c997b70
+ > Apr 19 03:17:30 basil kernel: FS:  000000004a816960(0063)
+ > GS:ffffffff80615000(0000) knlGS:00000000f7db58c0
+ > Apr 19 03:17:30 basil kernel: CS:  0010 DS: 0000 ES: 0000 CR0:
+ > 000000008005003b
+ > Apr 19 03:17:30 basil kernel: CR2: 0000000000000000 CR3:
+ > 0000000013041000 CR4: 00000000000006e0
+ > Apr 19 03:17:30 basil kernel: Process mythbackend (pid: 7860, threadinfo
+ > ffff81002e928000, task ffff810034403200)
+ > Apr 19 03:17:30 basil kernel: Stack:  ffffc200101ad0a0 0000000000000000
+ > 0000000000000000 0000000800000000
+ > Apr 19 03:17:30 basil kernel:  ffff81003c542fa0 ffffc200101ad000
+ > ffff81003c542fa0 ffffffff88043d22
+ > Apr 19 03:17:30 basil kernel:  0000000000000008 ffff8100331ee980
+ > ffff81003cff7418 ffffffff802618ec
+ > Apr 19 03:17:30 basil kernel: Call Trace:
+ > Apr 19 03:17:30 basil kernel:  [<ffffffff88043d22>]
+ > :dvb_core:dvb_demux_release+0x37/0xba
+ > Apr 19 03:17:30 basil kernel:  [<ffffffff802618ec>] __fput+0xb1/0x164
+ > Apr 19 03:17:30 basil kernel:  [<ffffffff8023671d>] 
+hrtimer_wakeup+0x0/0x21
+ > Apr 19 03:17:30 basil kernel:  [<ffffffff8025f3ec>] filp_close+0x5d/0x65
+ > Apr 19 03:17:30 basil kernel:  [<ffffffff8026046d>] sys_close+0x76/0xaf
+ > Apr 19 03:17:30 basil kernel:  [<ffffffff802092be>] system_call+0x7e/0x83
+ > Apr 19 03:17:30 basil kernel:
+ > Apr 19 03:17:30 basil kernel:
+ > Apr 19 03:17:30 basil kernel: Code: 48 89 21 48 89 4c 24 08 48 89 6c 24
+ > 10 48 83 c8 ff 87 03 ff
+ > Apr 19 03:17:30 basil kernel: RIP  [<ffffffff804a4af2>]
+ > __mutex_lock_interruptible_slowpath+0x22/0x99
+ > Apr 19 03:17:30 basil kernel:  RSP <ffff81002e929ea8>
+ > Apr 19 03:17:30 basil kernel: CR2: 0000000000000000
+ >
+ > If you need any more diagnostics or information from me, just let me 
+know.
+ >
+ > Thanks
+ > Chris
+ > -
+ > To unsubscribe from this list: send the line "unsubscribe 
+linux-kernel" in
+ > the body of a message to majordomo@vger.kernel.org
+ > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ > Please read the FAQ at  http://www.tux.org/lkml/
+ >
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
+
