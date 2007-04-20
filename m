@@ -1,148 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767043AbXDTK3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767048AbXDTKaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767043AbXDTK3c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 06:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767042AbXDTK33
+	id S1767048AbXDTKaW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 06:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423053AbXDTK3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 06:29:29 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:40693 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030865AbXDTK2O (ORCPT
+	Fri, 20 Apr 2007 06:29:49 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:57031 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423043AbXDTK3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 06:28:14 -0400
-Message-Id: <20070420102652.075606533@szeredi.hu>
-References: <20070420102532.385211890@szeredi.hu>
+	Fri, 20 Apr 2007 06:29:39 -0400
+Message-Id: <20070420102532.385211890@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 20 Apr 2007 12:25:39 +0200
+Date: Fri, 20 Apr 2007 12:25:32 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
        linuxram@us.ibm.com, ebiederm@xmission.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org
-Subject: [patch 7/8] allow unprivileged mounts
-Content-Disposition: inline; filename=unprivileged_mount.patch
+Subject: [patch 0/8]  mount ownership and unprivileged mount syscall (v4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+This patchset has now been bared to the "lowest common denominator"
+that everybody can agree on.  Or at least there weren't any objections
+to this proposal.
 
-Define a new fs flag FS_SAFE, which denotes, that unprivileged
-mounting of this filesystem may not constitute a security problem.
+Andrew, please consider it for -mm.
 
-Since most filesystems haven't been designed with unprivileged
-mounting in mind, a thorough audit is needed before setting this flag.
+Thanks,
+Miklos
+----
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
+v3 -> v4:
 
-Index: linux/fs/namespace.c
-===================================================================
---- linux.orig/fs/namespace.c	2007-04-20 11:55:10.000000000 +0200
-+++ linux/fs/namespace.c	2007-04-20 11:55:13.000000000 +0200
-@@ -781,13 +781,17 @@ asmlinkage long sys_oldumount(char __use
-  * - mountpoint is not a symlink or special file
-  * - mountpoint is in a mount owned by the user
-  */
--static bool permit_mount(struct nameidata *nd, int *flags)
-+static bool permit_mount(struct nameidata *nd, struct file_system_type *type,
-+			 int *flags)
- {
- 	struct inode *inode = nd->dentry->d_inode;
- 
- 	if (capable(CAP_SYS_ADMIN))
- 		return true;
- 
-+	if (type && !(type->fs_flags & FS_SAFE))
-+		return false;
-+
- 	if (!S_ISDIR(inode->i_mode) && !S_ISREG(inode->i_mode))
- 		return false;
- 
-@@ -1021,7 +1025,7 @@ static int do_loopback(struct nameidata 
- 	struct vfsmount *mnt = NULL;
- 	int err;
- 
--	if (!permit_mount(nd, &flags))
-+	if (!permit_mount(nd, NULL, &flags))
- 		return -EPERM;
- 	if (!old_name || !*old_name)
- 		return -EINVAL;
-@@ -1182,26 +1186,46 @@ out:
-  * create a new mount for userspace and request it to be added into the
-  * namespace's tree
-  */
--static int do_new_mount(struct nameidata *nd, char *type, int flags,
-+static int do_new_mount(struct nameidata *nd, char *fstype, int flags,
- 			int mnt_flags, char *name, void *data)
- {
-+	int err;
- 	struct vfsmount *mnt;
-+	struct file_system_type *type;
- 
--	if (!type || !memchr(type, 0, PAGE_SIZE))
-+	if (!fstype || !memchr(fstype, 0, PAGE_SIZE))
- 		return -EINVAL;
- 
--	/* we need capabilities... */
--	if (!capable(CAP_SYS_ADMIN))
--		return -EPERM;
--
--	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
--	if (IS_ERR(mnt))
-+	type = get_fs_type(fstype);
-+	if (!type)
-+		return -ENODEV;
-+
-+	err = -EPERM;
-+	if (!permit_mount(nd, type, &flags))
-+		goto out_put_filesystem;
-+
-+	if (flags & MS_SETUSER) {
-+		err = reserve_user_mount();
-+		if (err)
-+			goto out_put_filesystem;
-+	}
-+
-+	mnt = vfs_kern_mount(type, flags & ~MS_SETUSER, name, data);
-+	put_filesystem(type);
-+	if (IS_ERR(mnt)) {
-+		if (flags & MS_SETUSER)
-+			dec_nr_user_mounts();
- 		return PTR_ERR(mnt);
-+	}
- 
- 	if (flags & MS_SETUSER)
--		set_mnt_user(mnt);
-+		__set_mnt_user(mnt);
- 
- 	return do_add_mount(mnt, nd, mnt_flags, NULL);
-+
-+ out_put_filesystem:
-+	put_filesystem(type);
-+	return err;
- }
- 
- /*
-@@ -1231,7 +1255,7 @@ int do_add_mount(struct vfsmount *newmnt
- 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
- 		goto unlock;
- 
--	/* MNT_USER was set earlier */
-+	/* some flags may have been set earlier */
- 	newmnt->mnt_flags |= mnt_flags;
- 	if ((err = graft_tree(newmnt, nd)))
- 		goto unlock;
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h	2007-04-20 11:55:11.000000000 +0200
-+++ linux/include/linux/fs.h	2007-04-20 11:55:13.000000000 +0200
-@@ -96,6 +96,7 @@ extern int dir_notify_enable;
- #define FS_REQUIRES_DEV 1 
- #define FS_BINARY_MOUNTDATA 2
- #define FS_HAS_SUBTYPE 4
-+#define FS_SAFE 8		/* Safe to mount by unprivileged users */
- #define FS_REVAL_DOT	16384	/* Check the paths ".", ".." for staleness */
- #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move()
- 					 * during rename() internally.
+ - simplify interface as much as possible, now only a single option
+   ("user=UID") is used to control everything
+ - no longer allow/deny mounting based on file/directory permissions,
+   that approach does not always make sense
+
+----
+This patchset adds support for keeping mount ownership information in
+the kernel, and allow unprivileged mount(2) and umount(2) in certain
+cases.
+
+The mount owner has the following privileges:
+
+  - unmount the owned mount
+  - create a submount under the owned mount
+
+The sysadmin can set the owner explicitly on mount and remount.  When
+an unprivileged user creates a mount, then the owner is automatically
+set to the user.
+
+The following use cases are envisioned:
+
+1) Private namespace, with selected mounts owned by user.
+   E.g. /home/$USER is a good candidate for allowing unpriv mounts and
+   unmounts within.
+
+2) Private namespace, with all mounts owned by user and having the
+   "nosuid" flag.  User can mount and umount anywhere within the
+   namespace, but suid programs will not work.
+
+3) Global namespace, with a designated directory, which is a mount
+   owned by the user.  E.g. /mnt/users/$USER is set up so that it is
+   bind mounted onto itself, and set to be owned by $USER.  The user
+   can add/remove mounts only under this directory.
+
+The following extra security measures are taken for unprivileged
+mounts:
+
+ - usermounts are limited by a sysctl tunable
+ - force "nosuid,nodev" mount options on the created mount
 
 --
