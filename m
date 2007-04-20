@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993302AbXDTRdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767162AbXDTRdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993302AbXDTRdQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993303AbXDTRdQ
+	id S1767162AbXDTRdy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993306AbXDTRdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:33:16 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59795 "EHLO mx2.suse.de"
+	Fri, 20 Apr 2007 13:33:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47211 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993302AbXDTRdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:33:15 -0400
-Date: Fri, 20 Apr 2007 10:31:18 -0700
-From: Greg KH <gregkh@suse.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: const struct pci_driver [Was: [RFC 2/2] Input: phantom, add a
-	new driver]
-Message-ID: <20070420173118.GA10082@suse.de>
-References: <210731960111436322@karneval.cz> <258431179037841809@karneval.cz> <20070419230719.a118a132.akpm@linux-foundation.org> <462879BE.1050401@gmail.com>
-MIME-Version: 1.0
+	id S2993304AbXDTRdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:33:53 -0400
+Date: Fri, 20 Apr 2007 13:33:37 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Preston A. Elder" <prez@goth.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: AGPGart / AMD K7
+Message-ID: <20070420173337.GD20118@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Preston A. Elder" <prez@goth.net>, linux-kernel@vger.kernel.org
+References: <46286775.5000507@goth.net> <20070420155537.GA20118@redhat.com> <4628F00B.3010304@goth.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <462879BE.1050401@gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <4628F00B.3010304@goth.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 10:28:46AM +0200, Jiri Slaby wrote:
-> Andrew Morton napsal(a):
-> > On Tue, 17 Apr 2007 22:02:10 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
-> > 
-> >> phantom, add a new driver
-> [...]
-> >> +static struct pci_driver phantom_pci_driver = {
-> >> +	.name = "phantom",
-> >> +	.id_table = phantom_pci_tbl,
-> >> +	.probe = phantom_probe,
-> >> +	.remove = __devexit_p(phantom_remove),
-> >> +	.suspend = phantom_suspend,
-> >> +	.resume = phantom_resume
-> >> +};
-> > 
-> > This goes into the read/write section.  Make it const?
-> 
-> Hmm, good question, I don't know the answer. Why are not pci_driver structs
-> const, Greg?
+On Fri, Apr 20, 2007 at 12:53:31PM -0400, Preston A. Elder wrote:
 
-Because the pci core sets the needed pci_driver.driver structure fields
-that the driver core needs in order to properly hook up things.
+ > Linux agpgart interface v0.101 (c) Dave Jones
+ > agpgart: DEBUG 0
+ > agpgart: DEBUG 1
+ > __pci_register_driver: In function
+ > __pci_register_driver: driver = agpgart-amdk7, multithread = 0
+ > __pci_register_driver: Before Spinlock
+ > __pci_register_driver: Before List Init
+ > __pci_register_driver: Before Driver Register
+ > __pci_register_driver: Error = 0
+ > __pci_register_driver: Returning 0
+ > 
+ > The DEBUG 0 and 1 are coming from agp_amdk7_init()
+ > There is a DEBUG 2 at the top of agp_amdk7_probe(), even before
+ > pci_find_capability, but the function never gets called.
 
-I'm considering a change to this that would allow pci (and all other)
-driver structures be const, and then dynamically create the needed
-driver core structure based on this "template" which would also let us
-do some other things that the driver core wants, but that work is a few
-months away.  When/if I get to that, I'll go through and mark all of the
-driver structures const to move them to the read-only kernel section.
+bus_add_driver() returns 0 on error, but there's a few different
+cases it can fail, which isn't helpful.  Add some printk's to
+the error cases there, and see if that gives any more clues.
 
-thanks,
+	Dave
 
-greg k-h
+-- 
+http://www.codemonkey.org.uk
