@@ -1,109 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992824AbXDTK27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767040AbXDTK32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992824AbXDTK27 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 06:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992786AbXDTK2O
+	id S1767040AbXDTK32 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 06:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030848AbXDTK2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 06:28:14 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:40609 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423046AbXDTK14 (ORCPT
+	Fri, 20 Apr 2007 06:28:13 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:33598 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423043AbXDTK1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 06:27:56 -0400
-Message-Id: <20070420102656.364689151@szeredi.hu>
+	Fri, 20 Apr 2007 06:27:55 -0400
+Message-Id: <20070420102631.544911966@szeredi.hu>
 References: <20070420102532.385211890@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 20 Apr 2007 12:25:40 +0200
+Date: Fri, 20 Apr 2007 12:25:35 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
        linuxram@us.ibm.com, ebiederm@xmission.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org
-Subject: [patch 8/8] allow unprivileged fuse mounts
-Content-Disposition: inline; filename=fuse_safe.patch
+Subject: [patch 3/8] account user mounts
+Content-Disposition: inline; filename=account_user_mounts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+Add sysctl variables for accounting and limiting the number of user
+mounts.
 
-FUSE was designed from the beginning to be safe for unprivileged
-users.  This has also been verified in practice over many years.  In
-addition unprivileged mounts require the parent mount to be owned by
-the user, which is more strict than the current userspace policy.
-
-This will enable future installations to remove the suid-root
-fusermount utility.
-
-Don't require the "user_id=" and "group_id=" options for unprivileged
-mounts, but if they are present, verify them for sanity.
-
-Disallow the "allow_other" option for unprivileged mounts.
+The maximum number of user mounts is set to 1024 by default.  This
+won't in itself enable user mounts, setting a mount to be owned by a
+user is first needed
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/inode.c
+Index: linux/include/linux/sysctl.h
 ===================================================================
---- linux.orig/fs/fuse/inode.c	2007-04-20 11:55:01.000000000 +0200
-+++ linux/fs/fuse/inode.c	2007-04-20 11:55:14.000000000 +0200
-@@ -311,6 +311,19 @@ static int parse_fuse_opt(char *opt, str
- 	d->max_read = ~0;
- 	d->blksize = 512;
- 
-+	/*
-+	 * For unprivileged mounts use current uid/gid.  Still allow
-+	 * "user_id" and "group_id" options for compatibility, but
-+	 * only if they match these values.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		d->user_id = current->uid;
-+		d->user_id_present = 1;
-+		d->group_id = current->gid;
-+		d->group_id_present = 1;
-+
-+	}
-+
- 	while ((p = strsep(&opt, ",")) != NULL) {
- 		int token;
- 		int value;
-@@ -339,6 +352,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_USER_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->user_id_present && d->user_id != value)
-+				return 0;
- 			d->user_id = value;
- 			d->user_id_present = 1;
- 			break;
-@@ -346,6 +361,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_GROUP_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->group_id_present && d->group_id != value)
-+				return 0;
- 			d->group_id = value;
- 			d->group_id_present = 1;
- 			break;
-@@ -536,6 +553,10 @@ static int fuse_fill_super(struct super_
- 	if (!parse_fuse_opt((char *) data, &d, is_bdev))
- 		return -EINVAL;
- 
-+	/* This is a privileged option */
-+	if ((d.flags & FUSE_ALLOW_OTHER) && !capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
- 	if (is_bdev) {
- #ifdef CONFIG_BLOCK
- 		if (!sb_set_blocksize(sb, d.blksize))
-@@ -639,6 +660,7 @@ static struct file_system_type fuse_fs_t
- 	.fs_flags	= FS_HAS_SUBTYPE,
- 	.get_sb		= fuse_get_sb,
- 	.kill_sb	= kill_anon_super,
-+	.fs_flags	= FS_SAFE,
+--- linux.orig/include/linux/sysctl.h	2007-04-20 11:55:02.000000000 +0200
++++ linux/include/linux/sysctl.h	2007-04-20 11:55:07.000000000 +0200
+@@ -818,6 +818,8 @@ enum
+ 	FS_AIO_NR=18,	/* current system-wide number of aio requests */
+ 	FS_AIO_MAX_NR=19,	/* system-wide maximum number of aio requests */
+ 	FS_INOTIFY=20,	/* inotify submenu */
++	FS_NR_USER_MOUNTS=21,	/* int:current number of user mounts */
++	FS_MAX_USER_MOUNTS=22,	/* int:maximum number of user mounts */
+ 	FS_OCFS2=988,	/* ocfs2 */
  };
  
- #ifdef CONFIG_BLOCK
+Index: linux/kernel/sysctl.c
+===================================================================
+--- linux.orig/kernel/sysctl.c	2007-04-20 11:55:02.000000000 +0200
++++ linux/kernel/sysctl.c	2007-04-20 11:55:07.000000000 +0200
+@@ -1063,6 +1063,22 @@ static ctl_table fs_table[] = {
+ #endif	
+ #endif
+ 	{
++		.ctl_name	= FS_NR_USER_MOUNTS,
++		.procname	= "nr_user_mounts",
++		.data		= &nr_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
++		.ctl_name	= FS_MAX_USER_MOUNTS,
++		.procname	= "max_user_mounts",
++		.data		= &max_user_mounts,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
+ 		.ctl_name	= KERN_SETUID_DUMPABLE,
+ 		.procname	= "suid_dumpable",
+ 		.data		= &suid_dumpable,
+Index: linux/Documentation/filesystems/proc.txt
+===================================================================
+--- linux.orig/Documentation/filesystems/proc.txt	2007-04-20 11:55:02.000000000 +0200
++++ linux/Documentation/filesystems/proc.txt	2007-04-20 11:55:07.000000000 +0200
+@@ -923,6 +923,15 @@ reaches aio-max-nr then io_setup will fa
+ raising aio-max-nr does not result in the pre-allocation or re-sizing
+ of any kernel data structures.
+ 
++nr_user_mounts and max_user_mounts
++----------------------------------
++
++These represent the number of "user" mounts and the maximum number of
++"user" mounts respectively.  User mounts may be created by
++unprivileged users.  User mounts may also be created with sysadmin
++privileges on behalf of a user, in which case nr_user_mounts may
++exceed max_user_mounts.
++
+ 2.2 /proc/sys/fs/binfmt_misc - Miscellaneous binary formats
+ -----------------------------------------------------------
+ 
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2007-04-20 11:55:06.000000000 +0200
++++ linux/fs/namespace.c	2007-04-20 11:55:07.000000000 +0200
+@@ -39,6 +39,9 @@ static int hash_mask __read_mostly, hash
+ static struct kmem_cache *mnt_cache __read_mostly;
+ static struct rw_semaphore namespace_sem;
+ 
++int nr_user_mounts;
++int max_user_mounts = 1024;
++
+ /* /sys/fs */
+ decl_subsys(fs, NULL, NULL);
+ EXPORT_SYMBOL_GPL(fs_subsys);
+@@ -227,11 +230,30 @@ static struct vfsmount *skip_mnt_tree(st
+ 	return p;
+ }
+ 
++static void dec_nr_user_mounts(void)
++{
++	spin_lock(&vfsmount_lock);
++	nr_user_mounts--;
++	spin_unlock(&vfsmount_lock);
++}
++
+ static void set_mnt_user(struct vfsmount *mnt)
+ {
+ 	BUG_ON(mnt->mnt_flags & MNT_USER);
+ 	mnt->mnt_uid = current->uid;
+ 	mnt->mnt_flags |= MNT_USER;
++	spin_lock(&vfsmount_lock);
++	nr_user_mounts++;
++	spin_unlock(&vfsmount_lock);
++}
++
++static void clear_mnt_user(struct vfsmount *mnt)
++{
++	if (mnt->mnt_flags & MNT_USER) {
++		mnt->mnt_uid = 0;
++		mnt->mnt_flags &= ~MNT_USER;
++		dec_nr_user_mounts();
++	}
+ }
+ 
+ static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
+@@ -283,6 +305,7 @@ static inline void __mntput(struct vfsmo
+ {
+ 	struct super_block *sb = mnt->mnt_sb;
+ 	dput(mnt->mnt_root);
++	clear_mnt_user(mnt);
+ 	free_vfsmnt(mnt);
+ 	deactivate_super(sb);
+ }
+@@ -1023,6 +1046,7 @@ static int do_remount(struct nameidata *
+ 	down_write(&sb->s_umount);
+ 	err = do_remount_sb(sb, flags, data, 0);
+ 	if (!err) {
++		clear_mnt_user(nd->mnt);
+ 		nd->mnt->mnt_flags = mnt_flags;
+ 		if (flags & MS_SETUSER)
+ 			set_mnt_user(nd->mnt);
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h	2007-04-20 11:55:05.000000000 +0200
++++ linux/include/linux/fs.h	2007-04-20 11:55:07.000000000 +0200
+@@ -50,6 +50,9 @@ extern struct inodes_stat_t inodes_stat;
+ 
+ extern int leases_enable, lease_break_time;
+ 
++extern int nr_user_mounts;
++extern int max_user_mounts;
++
+ #ifdef CONFIG_DNOTIFY
+ extern int dir_notify_enable;
+ #endif
 
 --
