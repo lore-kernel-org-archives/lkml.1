@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767162AbXDTRdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993291AbXDTRrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767162AbXDTRdy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993306AbXDTRdy
+	id S2993291AbXDTRrV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993299AbXDTRrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:33:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47211 "EHLO mx1.redhat.com"
+	Fri, 20 Apr 2007 13:47:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52036 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993304AbXDTRdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:33:53 -0400
-Date: Fri, 20 Apr 2007 13:33:37 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Preston A. Elder" <prez@goth.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: AGPGart / AMD K7
-Message-ID: <20070420173337.GD20118@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Preston A. Elder" <prez@goth.net>, linux-kernel@vger.kernel.org
-References: <46286775.5000507@goth.net> <20070420155537.GA20118@redhat.com> <4628F00B.3010304@goth.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4628F00B.3010304@goth.net>
-User-Agent: Mutt/1.4.2.2i
+	id S2993291AbXDTRrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:47:20 -0400
+Message-ID: <4628FC9E.9080503@redhat.com>
+Date: Fri, 20 Apr 2007 13:47:10 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: reiserfs-dev@namesys.com
+Subject: 4K stack overflow with nfs3, reiserfs, dm and raid1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 12:53:31PM -0400, Preston A. Elder wrote:
+4K stacks still overflow:
 
- > Linux agpgart interface v0.101 (c) Dave Jones
- > agpgart: DEBUG 0
- > agpgart: DEBUG 1
- > __pci_register_driver: In function
- > __pci_register_driver: driver = agpgart-amdk7, multithread = 0
- > __pci_register_driver: Before Spinlock
- > __pci_register_driver: Before List Init
- > __pci_register_driver: Before Driver Register
- > __pci_register_driver: Error = 0
- > __pci_register_driver: Returning 0
- > 
- > The DEBUG 0 and 1 are coming from agp_amdk7_init()
- > There is a DEBUG 2 at the top of agp_amdk7_probe(), even before
- > pci_find_capability, but the function never gets called.
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=237276
 
-bus_add_driver() returns 0 on error, but there's a few different
-cases it can fail, which isn't helpful.  Add some printk's to
-the error cases there, and see if that gives any more clues.
+Just trying to dump the stack trace when that happens causes an oops,
+and there's no good way to prevent that. In fact it's probably the
+best thing to do anyway.
 
-	Dave
+You can tell something Really Bad has happened because of this:
 
--- 
-http://www.codemonkey.org.uk
+> Process nfsd (pid: 2815, ti=f3f49000 task=f582d7b0 task.ti=f3f4a000)
+
+Note that ti and task.ti don't agree.
+
+P. S. Does reiserfs really need to use that much stack?
