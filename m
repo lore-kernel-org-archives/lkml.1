@@ -1,65 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767168AbXDTRtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767164AbXDTRuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767168AbXDTRtX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993301AbXDTRtX
+	id S1767164AbXDTRuJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993299AbXDTRuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:49:23 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:2882 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993299AbXDTRtW (ORCPT
+	Fri, 20 Apr 2007 13:50:08 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:58639 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S2993306AbXDTRuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:49:22 -0400
-Date: Fri, 20 Apr 2007 19:49:33 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
-       Christer Weinigel <wingel@nano-system.com>,
-       Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: [PATCH v3] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070420194933.0813a359@hyperion.delvare>
-In-Reply-To: <20070419205942.GC5577@csclub.uwaterloo.ca>
-References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
-	<20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
-	<20070414192807.60bdf84b@hyperion.delvare>
-	<20070418174256.GB5577@csclub.uwaterloo.ca>
-	<20070419085413.1520feef@hyperion.delvare>
-	<20070419205942.GC5577@csclub.uwaterloo.ca>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Apr 2007 13:50:06 -0400
+Message-ID: <4628D64B.7080500@ru.mvista.com>
+Date: Fri, 20 Apr 2007 19:03:39 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 14/15] ide: rework the code for selecting the best DMA
+ transfer mode
+References: <20070203135301.2546.54884.sendpatchset@localhost.localdomain> <20070203135323.2546.29438.sendpatchset@localhost.localdomain> <4627C386.9020407@ru.mvista.com> <4627C5D1.5010602@ru.mvista.com>
+In-Reply-To: <4627C5D1.5010602@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lennart,
+Hello, I wrote:
 
-On Thu, 19 Apr 2007 16:59:42 -0400, Lennart Sorensen wrote:
-> On Thu, Apr 19, 2007 at 08:54:13AM +0200, Jean Delvare wrote:
-> > The major difference is that the implementation in scx200_i2c is
-> > hardware-specific, while the i2c-gpio driver is a generic one, so it's
-> > a lot better.
-> > 
-> > What this means is that i2c-gpio obsoletes scx200_i2c, so I am inclined
-> > to delete scx200_i2c right away. I'm not even sure anyone still uses it
-> > now that scx200_acb has been fixed and is reported to work very well.
-> > If anyone really needs to do I2C over GPIO pins on SCx200, this should
-> > be reimplemented on top of i2c-gpio.
-> 
-> I use scx200_i2c.  The SBC I am using doesn't work with the scx200_acb
-> (different pins on the cpu after all).  I would love to see it
-> reimplemented using the generic interface, since there isn't that many
-> lines of code involved as far as I can tell.  Well scx200_acb works fine
-> on a Geode LX board, but not on a Geode SC1200 board.  Unless it has
-> been fixed since 2.6.18, then it still doesn't work, but scx200_i2c
-> works perfectly fine.
+>>> [PATCH] ide: rework the code for selecting the best DMA transfer mode 
 
-The scx200_acb driver was heavily modified in 2.6.17 and 2.6.18, not
-much since then. I am not familiar with the hardware so I can't comment
-on which chips are supposed to work and which aren't.
+>>> Depends on the "ide: fix UDMA/MWDMA/SWDMA masks" patch.
 
--- 
-Jean Delvare
+>>   I'm now trying to rewrite hpt366.c to benefit more from these 
+>> patches...
+>> and alas, this very patch seems to be breaking filtering (at least) in 
+>> this driver. :-]
+
+  Ignore me, I've seemingly misundertood the code. :-<
+
+>>> Index: b/drivers/ide/pci/hpt366.c
+>>> ===================================================================
+>>> --- a/drivers/ide/pci/hpt366.c
+>>> +++ b/drivers/ide/pci/hpt366.c
+>>> @@ -513,43 +513,31 @@ static int check_in_drive_list(ide_drive
+>>>      return 0;
+>>>  }
+>>>  
+>>> -static u8 hpt3xx_ratemask(ide_drive_t *drive)
+>>> -{
+>>> -    struct hpt_info *info    = pci_get_drvdata(HWIF(drive)->pci_dev);
+>>> -    u8 mode            = info->max_mode;
+>>> -
+>>> -    if (!eighty_ninty_three(drive) && mode)
+>>> -        mode = min(mode, (u8)1);
+>>> -    return mode;
+>>> -}
+>>> -
+>>>  /*
+>>>   *    Note for the future; the SATA hpt37x we must set
+>>>   *    either PIO or UDMA modes 0,4,5
+>>>   */
+>>> - -static u8 hpt3xx_ratefilter(ide_drive_t *drive, u8 speed)
+>>> +
+>>> +static u8 hpt3xx_udma_filter(ide_drive_t *drive)
+>>>  {
+>>>      struct hpt_info *info    = pci_get_drvdata(HWIF(drive)->pci_dev);
+>>>      u8 chip_type        = info->chip_type;
+>>> -    u8 mode            = hpt3xx_ratemask(drive);
+>>> -
+>>> -    if (drive->media != ide_disk)
+>>> -        return min(speed, (u8)XFER_PIO_4);
+>>> +    u8 mode            = info->max_mode;
+>>> +    u8 mask;
+>>>  
+>>>      switch (mode) {
+>>>          case 0x04:
+>>> -            speed = min_t(u8, speed, XFER_UDMA_6);
+>>> +            mask = 0x7f;
+>>>              break;
+>>>          case 0x03:
+>>> -            speed = min_t(u8, speed, XFER_UDMA_5);
+>>> +            mask = 0x3f;
+>>>              if (chip_type >= HPT374)
+>>>                  break;
+>>>              if (!check_in_drive_list(drive, bad_ata100_5))
+>>>                  goto check_bad_ata33;
+>>>              /* fall thru */
+>>>          case 0x02:
+>>> -            speed = min_t(u8, speed, XFER_UDMA_4);
+>>> +            mask = 0x1f;
+>>>  
+>>>              /*
+>>>               * CHECK ME, Does this need to be changed to HPT374 ??
+>>> @@ -560,13 +548,13 @@ static u8 hpt3xx_ratefilter(ide_drive_t 
+>>>                  !check_in_drive_list(drive, bad_ata66_4))
+>>>                  goto check_bad_ata33;
+>>>  
+>>> -            speed = min_t(u8, speed, XFER_UDMA_3);
+>>> +            mask = 0x0f;
+>>>              if (HPT366_ALLOW_ATA66_3 &&
+>>>                  !check_in_drive_list(drive, bad_ata66_3))
+>>>                  goto check_bad_ata33;
+>>>              /* fall thru */
+>>>          case 0x01:
+>>> -            speed = min_t(u8, speed, XFER_UDMA_2);
+>>> +            mask = 0x07;
+>>>  
+>>>          check_bad_ata33:
+>>>              if (chip_type >= HPT370A)
+
+>>   This case 0x01 will *never* be hit for HPT370 chip with the new 
+>> code, therefore the filter won't get applied.
+
+>   Oh, and for HPT36x chips used with 40c cable too (unless they're 
+> artificaially reduced to UltraDMA/33 by the driver #define's).
+
+   It will still get applied since the code always resorts to looking up the 'bad_ata33' list for HPT36x/370.
+I've got a bit muddled in my own code -- not sure if it got much clearer after I'd untangled hpt3xx_ratemask() / hpt3xx_ratefilter() puzzle. :-)
+
+>>> @@ -576,10 +564,10 @@ static u8 hpt3xx_ratefilter(ide_drive_t 
+>>>              /* fall thru */
+>>>          case 0x00:
+>>>          default:
+>>> -            speed = min_t(u8, speed, XFER_MW_DMA_2);
+>>> +            mask = 0x00;
+>>>              break;
+
+>   Well, that case 0x00 should never actually happen.
+
+   Yeah, that's true, 'case 0x00' (and even 'default') labels could have been removed.
+
+MBR, Sergei
+
