@@ -1,100 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767042AbXDTKgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767052AbXDTKmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767042AbXDTKgO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 06:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767050AbXDTKgO
+	id S1767052AbXDTKmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 06:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767050AbXDTKmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 06:36:14 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:38572 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767042AbXDTKgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 06:36:13 -0400
-Message-id: <28921299193042021193@wsc.cz>
-In-reply-to: <20225157853131727049@wsc.cz>
-Subject: [PATCH 3/3] Char: mxser, fix TIOCMIWAIT
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Fri, 20 Apr 2007 12:36:08 +0200 (CEST)
+	Fri, 20 Apr 2007 06:42:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53870 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767049AbXDTKmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 06:42:18 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070420.015838.83621529.davem@davemloft.net> 
+References: <20070420.015838.83621529.davem@davemloft.net>  <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> 
+To: David Miller <davem@davemloft.net>
+Cc: ebiederm@xmission.com, akpm@osdl.org, containers@lists.osdl.org,
+       oleg@tv-sign.ru, hch@infradead.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Fri, 20 Apr 2007 11:41:46 +0100
+Message-ID: <4713.1177065706@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mxser, fix TIOCMIWAIT
+David Miller <davem@davemloft.net> wrote:
 
-There was schedule() missing in the TIOCMIWAIT ioctl. Solve it by moving
-the code to the wait_event_interruptible.
+> Now that Herbert cleared up the crypto layer issues
+> the only problem left is that there are generic changes
+> in there which are not strictly networking but which
+> your subsequent networking changes depend upon.
+>
+> This is a mess, and makes merging your work into the
+> net-2.6.22 tree more difficult.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+There are only two non-net patches that AF_RXRPC depends on:
 
----
-commit 88c99e7bd7356c4b5a960f4a2b631d980bddc337
-tree 4d713ce58282145839d6223a849c32a791e25a93
-parent bd99756ce7fb8f3e9105b076a71046b0d8ad1f8f
-author Jiri Slaby <jirislaby@gmail.com> Fri, 20 Apr 2007 12:26:08 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Fri, 20 Apr 2007 12:26:08 +0200
+ (1) The key facility changes.  That's all my code anyway, and shouldn't be a
+     problem to merge unless someone else has put some changes in there that I
+     don't know about.
 
- drivers/char/mxser.c |   48 ++++++++++++++----------------------------------
- 1 files changed, 14 insertions(+), 34 deletions(-)
+ (2) try_to_cancel_delayed_work().  I suppose I could use
+     cancel_delayed_work() instead, but that's less efficient as it waits for
+     the timer completion function to finish.
 
-diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
-index 573b271..5953a45 100644
---- a/drivers/char/mxser.c
-+++ b/drivers/char/mxser.c
-@@ -1337,43 +1337,23 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file, unsigned int c
- 		 *   (use |'ed TIOCM_RNG/DSR/CD/CTS for masking)
- 		 * Caller should use TIOCGICOUNT to see which one it was
- 		 */
--	case TIOCMIWAIT: {
--			DECLARE_WAITQUEUE(wait, current);
--			int ret;
-+	case TIOCMIWAIT:
-+		spin_lock_irqsave(&info->slock, flags);
-+		cnow = info->icount;	/* note the counters on entry */
-+		spin_unlock_irqrestore(&info->slock, flags);
-+
-+		wait_event_interruptible(info->delta_msr_wait, ({
-+			cprev = cnow;
- 			spin_lock_irqsave(&info->slock, flags);
--			cprev = info->icount;	/* note the counters on entry */
-+			cnow = info->icount;	/* atomic copy */
- 			spin_unlock_irqrestore(&info->slock, flags);
- 
--			add_wait_queue(&info->delta_msr_wait, &wait);
--			while (1) {
--				spin_lock_irqsave(&info->slock, flags);
--				cnow = info->icount;	/* atomic copy */
--				spin_unlock_irqrestore(&info->slock, flags);
--
--				set_current_state(TASK_INTERRUPTIBLE);
--				if (((arg & TIOCM_RNG) &&
--						(cnow.rng != cprev.rng)) ||
--						((arg & TIOCM_DSR) &&
--						(cnow.dsr != cprev.dsr)) ||
--						((arg & TIOCM_CD) &&
--						(cnow.dcd != cprev.dcd)) ||
--						((arg & TIOCM_CTS) &&
--						(cnow.cts != cprev.cts))) {
--					ret = 0;
--					break;
--				}
--				/* see if a signal did it */
--				if (signal_pending(current)) {
--					ret = -ERESTARTSYS;
--					break;
--				}
--				cprev = cnow;
--			}
--			current->state = TASK_RUNNING;
--			remove_wait_queue(&info->delta_msr_wait, &wait);
--			break;
--		}
--		/* NOTREACHED */
-+			((arg & TIOCM_RNG) && (cnow.rng != cprev.rng)) ||
-+			((arg & TIOCM_DSR) && (cnow.dsr != cprev.dsr)) ||
-+			((arg & TIOCM_CD)  && (cnow.dcd != cprev.dcd)) ||
-+			((arg & TIOCM_CTS) && (cnow.cts != cprev.cts));
-+		}));
-+		break;
- 		/*
- 		 * Get counter of input serial line interrupts (DCD,RI,DSR,CTS)
- 		 * Return: write counters to the user passed counter struct
+And one that AFS depends on:
+
+ (3) Cache the key in nameidata.  I still don't have Al's agreement on this,
+     but it's purely caching, so I could drop that patch for the moment and
+     excise the stuff that uses it from my AFS patches if that would help.
+
+Do you class the AFS patches as "networking changes"?
+
+Do you want me to consolidate my patches to make things simpler for you?
+
+Do you want me to rebase my patches onto net-2.6.22?
+
+I have the following patches, in order, available now, though I haven't yet
+released the last few (they can all be downloaded from my RH people pages):
+
+	move-skb-generic.diff  (you've got this)
+	timers.diff
+	keys.diff
+	af_rxrpc.diff
+	afs-cleanup.diff
+	af_rxrpc-kernel.diff
+	af_rxrpc-afs.diff
+	af_rxrpc-delete-old.diff
+	af_rxrpc-own-workqueues.diff
+	af_rxrpc-fixes.diff
+	afs-callback-wq.diff
+	afs-vlocation.diff
+	afs-multimount.diff
+	afs-rxrpc-key.diff
+	afs-nameidata-key.diff
+	afs-security.diff
+	afs-doc.diff
+	netlink-support-MSG_TRUNC.diff  (you've got this)
+	afs-get-capabilities.diff
+	afs-initcallbackstate3.diff
+	afs-dir-write-support.diff
+
+David
