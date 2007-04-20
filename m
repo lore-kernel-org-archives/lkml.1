@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993001AbXDTLpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767050AbXDTLpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993001AbXDTLpE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 07:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992947AbXDTLpD
+	id S1767050AbXDTLpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 07:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767060AbXDTLpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 07:45:03 -0400
-Received: from ns.suse.de ([195.135.220.2]:43313 "EHLO mx1.suse.de"
+	Fri, 20 Apr 2007 07:45:44 -0400
+Received: from mtaout4.012.net.il ([84.95.2.10]:58199 "EHLO mtaout4.012.net.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993013AbXDTLpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 07:45:00 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [d_path 0/7] Fixes to d_path: Respin
-Date: Fri, 20 Apr 2007 13:45:09 +0200
-User-Agent: KMail/1.9.5
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070412090809.917795000@suse.de> <20070419232303.300441585@schurl.suse.de> <20070420103008.15f37eec@the-village.bc.nu>
-In-Reply-To: <20070420103008.15f37eec@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704201345.09858.agruen@suse.de>
+	id S1767050AbXDTLpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 07:45:42 -0400
+Date: Fri, 20 Apr 2007 14:45:39 +0300
+From: Avi Kivity <avi@qumranet.com>
+Subject: Re: VMWare Workstation 6 for debugging Linux Kernel (!)
+In-reply-to: <p73r6qf49zc.fsf@bingen.suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Xavier Bestel <xavier.bestel@free.fr>, roland <devzero@web.de>,
+       linux-kernel@vger.kernel.org
+Message-id: <4628A7E3.5030908@qumranet.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+X-Greylist: Sender IP whitelisted,
+ not delayed by milter-greylist-2.1.12 (firebolt.argo.co.il [0.0.0.0]); Fri,
+ 20 Apr 2007 14:45:39 +0300 (IDT)
+References: <03f401c782d4$95c323e0$eeeea8c0@aldipc>
+ <1177058522.14404.132.camel@frg-rhel40-em64t-04>
+ <p73r6qf49zc.fsf@bingen.suse.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 April 2007 11:30, Alan Cox wrote:
-> > As far as I can see, glibc internally looks at /proc/mounts (or else
-> > mtab) to find out where tmpfs is mounted for opening files there, and to
-> > look up filesystem information for statfs(), while accessing that path,
-> > too. Fstatfs() also looks into the same files, but it only matches by
-> > filesystem type, so this is only a very unreliable heuristic, anyway.
-> >
-> > So judging from that, glibc users should be fine.
+Andi Kleen wrote:
+> Xavier Bestel <xavier.bestel@free.fr> writes:
 >
-> So glibc does use it and you will change behaviour
+>   
+>> On Fri, 2007-04-20 at 00:46 +0200, roland wrote:
+>>
+>>     
+>>> We just quietly added an exciting feature to Workstation 6.0. I believe it 
+>>> will make WS6 a great tool for Linux kernel development. You can now debug 
+>>> kernel of Linux VM with gdb running on the Host without changing anything in 
+>>> the Guest VM. No kdb, no recompiling and no need for second machine. All you 
+>>> need is a single line in VM's configuration file.
+>>>       
+>> I think qemu has the exact same feature.
+>>     
+>
+> It doesn't seem to work for x86-64 there though.
+>   
 
-Not for statfs(), shm_open(), and sem_open().
+kvm's qemu has a patch that allows qemu to be an x86_64 gdbserver (with
+or without kvm).
 
-Possibly for fstatfs(): fstatfs() has no way of looking up mount points per 
-path name in /proc/mounts, and so it resorts to mapping from the numeric 
-statfs->f_type to the filesystem name (e.g., "ext3"), looks up the first 
-mount point with that name, and sets the statfs->f_flag flags based on that 
-entry. This field may change from one arbitrary value to another.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-Andreas
