@@ -1,119 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993327AbXDTVMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbXDTVMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993327AbXDTVMb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 17:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbXDTVMb
+	id S1754508AbXDTVMk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 17:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbXDTVMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 17:12:31 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:58509 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754496AbXDTVM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 17:12:29 -0400
-Date: Fri, 20 Apr 2007 14:12:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: "Cameron, Steve" <Steve.Cameron@hp.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] cciss: Fix warnings during compilation under
- 32bitenvironment
-Message-Id: <20070420141218.a0222472.akpm@linux-foundation.org>
-In-Reply-To: <1177100459.3718.45.camel@mulgrave.il.steeleye.com>
-References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
-	<226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
-	<1176995934.31764.7.camel@mulgrave.il.steeleye.com>
-	<226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
-	<1176999730.31764.15.camel@mulgrave.il.steeleye.com>
-	<558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
-	<20070419222028.d33c7f86.akpm@linux-foundation.org>
-	<1177074641.3718.5.camel@mulgrave.il.steeleye.com>
-	<20070420114337.12a67141.akpm@linux-foundation.org>
-	<1177095007.3718.43.camel@mulgrave.il.steeleye.com>
-	<20070420123041.94aac1e1.akpm@linux-foundation.org>
-	<1177100459.3718.45.camel@mulgrave.il.steeleye.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 20 Apr 2007 17:12:40 -0400
+Received: from mail.screens.ru ([213.234.233.54]:39355 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754508AbXDTVMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 17:12:39 -0400
+Date: Sat, 21 Apr 2007 01:12:09 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu, vatsa@in.ibm.com,
+       paulmck@us.ibm.com, pavel@ucw.cz
+Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
+Message-ID: <20070420211209.GA820@tv-sign.ru>
+References: <20070419120131.GB13435@in.ibm.com> <20070419120419.GB17069@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070419120419.GB17069@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 16:20:59 -0400
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
+On 04/19, Gautham R Shenoy wrote:
+>
+> @@ -63,12 +74,16 @@ void refrigerator(void)
+>  	recalc_sigpending(); /* We sent fake signal, clean it up */
+>  	spin_unlock_irq(&current->sighand->siglock);
+>  
+> +	task_lock(current);
+>  	for (;;) {
+>  		set_current_state(TASK_UNINTERRUPTIBLE);
+>  		if (!frozen(current))
+>  			break;
+> +		task_unlock(current);
+>  		schedule();
+> +		task_lock(current);
+>  	}
+> +	task_unlock(current);
+>  	pr_debug("%s left refrigerator\n", current->comm);
+>  	current->state = save;
 
-> On Fri, 2007-04-20 at 12:30 -0700, Andrew Morton wrote:
-> > On Fri, 20 Apr 2007 14:50:06 -0400
-> > James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> > 
-> > > > CONFIG_LBD=y gives us an additional 3kb of instructions on i386
-> > > > allnoconfig.  Other architectures might do less well.  It's not a huge
-> > > > difference, but that's the way in which creeping bloatiness happens.
-> > > 
-> > > OK, sure, but if we really care about this saving, then unconditionally
-> > > casting to u64 is therefore wrong as well ... this is starting to open
-> > > quite a large can of worms ...
-> > > 
-> > > For the record, if we have to do this, I fancy sector_upper_32() ... we
-> > > should already have some similar accessor for dma_addr_t as well.
-> > 
-> > hm.  How about this?
-> > 
-> > --- a/include/linux/kernel.h~upper-32-bits
-> > +++ a/include/linux/kernel.h
-> > @@ -40,6 +40,17 @@ extern const char linux_proc_banner[];
-> >  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-> >  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
-> >  
-> > +/**
-> > + * upper_32_bits - return bits 32-63 of a number
-> > + * @n: the number we're accessing
-> > + *
-> > + * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
-> > + * the "right shift count >= width of type" warning when that quantity is
-> > + * 32-bits.
-> > + */
-> > +#define upper_32_bits(n) (((u64)(n)) >> 32)
-> 
-> Won't this have the unwanted side effect of promoting everything in a
-> calculation to long long on 32 bit platforms, even if n was only 32
-> bits?
+Just curious, why this change?
 
-bummer.
+> +int hold_freezer_for_task(struct task_struct *p)
+> +{
+> +	int ret = 0;
+> +	spin_lock(&freezer_status.lock);
+> +	if (freezer_status.count >= 0)
+> +	{
+> +		set_tsk_thread_flag(p, TIF_FREEZER_HELD);
+> +		thaw_process(p);
+> +		freezer_status.count++;
+> +		ret = 1;
+> +	}
+> +	spin_unlock(&freezer_status.lock);
+> +
+> +	return ret;
+> +}
 
-> > +
-> > +
-> >  #define	KERN_EMERG	"<0>"	/* system is unusable			*/
-> >  #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
-> >  #define	KERN_CRIT	"<2>"	/* critical conditions			*/
-> > _
-> > 
-> > It seems to generate the desired code.  I avoided Alan's ((n >> 31) >> 1)
-> > trick because it'll generate peculiar results with signed 64-bit
-> > quantities.
-> 
-> I've seen the trick done similarly with ((n >> 16) >> 16) which
-> shouldn't have the issue.
+I think this can work if it is used only in kthread_stop(). But what if
+another task wants to do hold_freezer_for_task(p) ? freezer_status.count
+is recursive, but TIF_FREEZER_HELD is not. IOW, I believe this is not
+generic enough.
 
-That works if we know the caller is treating the return value as 32 bits,
-but we don't know that.
+Also, you are planning to add different freezing states (FE_HOTPLUG_CPU,
+FE_SUSPEND, etc). In that case each of them needs a separate .count, because
+it should be negative when try_to_freeze_tasks() returns. Now consider
+the case when we are doing freeze_processes(FE_A | FE_B) ...
 
-If we have
-
-#define upper_32_bits(x)  ((x >> 16) >> 16)
-
-then
-
-	upper_32_bits(0x8888777766665555)
-
-will return 0x88887777 if it's treated as 32-bits, but it'll return
-0xffffffff88887777 if the caller is using 64-bits.
-
-I spose
-
-#define upper_32_bits(x)  ((u32)((x >> 16) >> 16))
-
-will do the trick.
-
+Oleg.
 
