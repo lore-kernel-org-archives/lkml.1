@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030829AbXDTATH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423018AbXDTATm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030829AbXDTATH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 20:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031141AbXDTATH
+	id S1423018AbXDTATm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 20:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423020AbXDTATl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 20:19:07 -0400
-Received: from mail01.syd.optusnet.com.au ([211.29.132.182]:38471 "EHLO
-	mail01.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030829AbXDTATF (ORCPT
+	Thu, 19 Apr 2007 20:19:41 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:53463 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423019AbXDTATk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 20:19:05 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: Renice X for cpu schedulers
-Date: Fri, 20 Apr 2007 10:17:52 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070417062621.GL2986@holomorphy.com> <200704200110.47974.kernel@kolivas.org> <46279585.4010409@rtr.ca>
-In-Reply-To: <46279585.4010409@rtr.ca>
+	Thu, 19 Apr 2007 20:19:40 -0400
+Date: Thu, 19 Apr 2007 17:19:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+cc: Jesse Barnes <jesse.barnes@intel.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Adam Jackson <ajackson@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: PCI bridge range sizing bug
+In-Reply-To: <20070419234014.GB3215@suse.de>
+Message-ID: <alpine.LFD.0.98.0704191702200.9964@woody.linux-foundation.org>
+References: <1175812632.17147.12.camel@localhost.localdomain>
+ <200704191611.52125.jesse.barnes@intel.com>
+ <20070419234014.GB3215@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704201017.53047.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 April 2007 02:15, Mark Lord wrote:
-> Con Kolivas wrote:
-> > On Thursday 19 April 2007 23:17, Mark Lord wrote:
-> >> Con Kolivas wrote:
-> >> s go ahead and think up great ideas for other ways of metering out cpu
-> >>
-> >>> bandwidth for different purposes, but for X, given the absurd
-> >>> simplicity of renicing, why keep fighting it? Again I reiterate that
-> >>> most users of SD have not found the need to renice X anyway except if
-> >>> they stick to old habits of make -j4 on uniprocessor and the like, and
-> >>> I expect that those on CFS and Nicksched would also have similar
-> >>> experiences.
-> >>
-> >> Just plain "make" (no -j2 or -j9999) is enough to kill interactivity
-> >> on my 2GHz P-M single-core non-HT machine with SD.
-> >>
-> >> But with the very first posted version of CFS by Ingo,
-> >> I can do "make -j2" no problem and still have a nicely interactive
-> >> destop.
-> >
-> > Cool. Then there's clearly a bug with SD that manifests on your machine
-> > as it should not have that effect at all (and doesn't on other people's
-> > machines). I suggest trying the latest version which fixes some bugs.
->
-> SD just doesn't do nearly as good as the stock scheduler, or CFS, here.
->
-> I'm quite likely one of the few single-CPU/non-HT testers of this stuff.
-> If it should ever get more widely used I think we'd hear a lot more
-> complaints.
 
-You are not really one of the few. A lot of my own work is done on a single 
-core pentium M 1.7Ghz laptop. I am not endowed with truckloads of hardware 
-like all the paid developers are. I recall extreme frustration myself when a 
-developer a few years ago (around 2002) said he couldn't reproduce poor 
-behaviour on his 4GB ram 4 x Xeon machine. Even today if I add up every 
-machine I have in my house and work at my disposal it doesn't amount to that 
-many cpus and that much ram.
 
--- 
--ck
+On Thu, 19 Apr 2007, Greg KH wrote:
+
+> On Thu, Apr 19, 2007 at 04:11:50PM -0700, Jesse Barnes wrote:
+> > On Thursday, April 5, 2007 3:37 pm Adam Jackson wrote:
+> > > So I'm attempting to do something fairly heinous (X server across
+> > > five video cards), and I hit a fun bug in bridge range setup.  See
+> > > attached lspci and dmesg, but the short of it is I've got two VGA
+> > > chips on one card behind a bridge, which is itself behind a second
+> > > PCI bridge, and the bridge ranges get set up so that I can't map the
+> > > ROMs, which means I can't post them, and therefore can't use them
+> > > period.
+
+Ok, let me start out by saying that at this point in the development cycle 
+(ie trying to get 2.6.21 out some day), I can't really find it in myself 
+to care all that deeply about people doing something quote _that_ fairly 
+heinous ;)
+
+> > > The alignment restriction on the ROMs seems a bit extreme:
+> > >
+> > > % sudo setpci -s 7:2 ROM_ADDRESS=ffffffff
+> > > % sudo setpci -s 7:2 ROM_ADDRESS
+> > > f0000001
+
+Yeah, they seem to want 256MB.
+
+> > Yep, looks like those two devices had a problem.  Supposedly they want 
+> > to sit at 256M?  Given that we're only giving each bridge 1M of memory 
+> > space that would definitely be a problem.
+
+We should be sizing the bridge regions by how much space the devices 
+behind the bridges actually need, BUT I can guess at two problems:
+
+ - On PC's, we generally trust any BIOS setup. If the bridge has been 
+   initialized to some value that seems half-way valid we generally leave 
+   it there. Moving things around tends to cause a lot  more problems than 
+   it fixes.
+ - we normally do *not* try to assign ROM resources at all, because a 
+   number of video cards in particular do some really strange stuff with 
+   the ROMS, like share the decoders for the ROM's and the other PCI 
+   resources!
+
+IOW, I think that what happens is that the BIOS has set it up to have a 
+32MB window, and since the kernel doesn't think there is anything wrong 
+with that, it leaves it well enough alone.
+
+You could try adding "pci=rom" to the kernel command line, which should 
+make the kernel try to assign space for the roms too.
+
+I think we used to *never* assign PCI bus resources on x86, but that thing 
+got fixed some time ago. Now I think we only re-assign them if they were 
+unassigned *or* if the assignment wasn't working before. But I'm not 100% 
+sure about that second part... It's been working so well that I don't 
+think we've had a lot of problems with resource assignment lately, and 
+I've paged it all out of my brain.
+
+Ivan, can you remind my tired old brain?
+
+		Linus
