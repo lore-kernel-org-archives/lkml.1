@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767247AbXDTUe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767250AbXDTUfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767247AbXDTUe1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 16:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767246AbXDTUeQ
+	id S1767250AbXDTUfh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 16:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767254AbXDTUex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:34:16 -0400
-Received: from dh166.citi.umich.edu ([141.211.133.166]:47385 "EHLO
-	heimdal.trondhjem.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767248AbXDTUeK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:34:10 -0400
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH 4/5] NFS: Fix race in nfs_set_page_dirty
-Date: Fri, 20 Apr 2007 16:12:50 -0400
+	Fri, 20 Apr 2007 16:34:53 -0400
+Received: from mga03.intel.com ([143.182.124.21]:44257 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767246AbXDTUei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 16:34:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,433,1170662400"; 
+   d="scan'208"; a="216853457:sNHT20794984"
+From: Jesse Barnes <jesse.barnes@intel.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Florin Iucha <florin@iucha.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Chuck Lever <chuck.lever@oracle.com>, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net
-Message-Id: <20070420201250.7897.77055.stgit@heimdal.trondhjem.org>
-In-Reply-To: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
-References: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.11
+Subject: Re: PCI bridge range sizing bug
+Date: Fri, 20 Apr 2007 13:34:55 -0700
+User-Agent: KMail/1.9.6
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       Adam Jackson <ajackson@redhat.com>, linux-kernel@vger.kernel.org
+References: <1175812632.17147.12.camel@localhost.localdomain> <200704200932.52181.jesse.barnes@intel.com> <alpine.LFD.0.98.0704201102000.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704201102000.9964@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704201334.56802.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+On Friday, April 20, 2007 11:28 am Linus Torvalds wrote:
+> On Fri, 20 Apr 2007, Jesse Barnes wrote:
+> > Sounds good, hopefully reassigning the bridge resources won't cause
+> > too much trouble.  Do you have time to hack this up?  If not, I
+> > could give it a try, as long as ajax is willing to test...
+>
+> Actually, I would suggest we not do it automatically (because the
+> need for it is just so low, and the downsides are potentially huge -
+> there are just too many resources that are "hidden" from us through
+> ACPI tricks and having hardware that doesn't actually expose their
+> PCI resources fully through the normal PCI resource setup).
 
-Protect nfs_set_page_dirty() against races with nfs_inode_add_request.
+Yeah, that's probably prudent.  OTOH we should probably let the user 
+know in no uncertain terms that some of the stuff behind one of their 
+bridges will be inaccessible.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/write.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
-
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index ce5b4a9..7975589 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -388,6 +388,8 @@ static int nfs_inode_add_request(struct inode *inode, struct nfs_page *req)
- 	}
- 	SetPagePrivate(req->wb_page);
- 	set_page_private(req->wb_page, (unsigned long)req);
-+	if (PageDirty(req->wb_page))
-+		set_bit(PG_NEED_FLUSH, &req->wb_flags);
- 	nfsi->npages++;
- 	atomic_inc(&req->wb_count);
- 	return 0;
-@@ -407,6 +409,8 @@ static void nfs_inode_remove_request(struct nfs_page *req)
- 	set_page_private(req->wb_page, 0);
- 	ClearPagePrivate(req->wb_page);
- 	radix_tree_delete(&nfsi->nfs_page_tree, req->wb_index);
-+	if (test_and_clear_bit(PG_NEED_FLUSH, &req->wb_flags))
-+		__set_page_dirty_nobuffers(req->wb_page);
- 	nfsi->npages--;
- 	if (!nfsi->npages) {
- 		spin_unlock(&nfsi->req_lock);
-@@ -1527,15 +1531,22 @@ int nfs_wb_page(struct inode *inode, struct page* page)
- 
- int nfs_set_page_dirty(struct page *page)
- {
-+	spinlock_t *req_lock = &NFS_I(page->mapping->host)->req_lock;
- 	struct nfs_page *req;
-+	int ret;
- 
--	req = nfs_page_find_request(page);
-+	spin_lock(req_lock);
-+	req = nfs_page_find_request_locked(page);
- 	if (req != NULL) {
- 		/* Mark any existing write requests for flushing */
--		set_bit(PG_NEED_FLUSH, &req->wb_flags);
-+		ret = !test_and_set_bit(PG_NEED_FLUSH, &req->wb_flags);
-+		spin_unlock(req_lock);
- 		nfs_release_request(req);
-+		return ret;
- 	}
--	return __set_page_dirty_nobuffers(page);
-+	ret = __set_page_dirty_nobuffers(page);
-+	spin_unlock(req_lock);
-+	return ret;
- }
- 
- 
+Thanks,
+Jesse
