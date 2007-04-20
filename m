@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993290AbXDTRPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993285AbXDTRQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993290AbXDTRPE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993285AbXDTRPE
+	id S2993285AbXDTRQw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993289AbXDTRQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:15:04 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36201 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993290AbXDTRPB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:15:01 -0400
-Date: Fri, 20 Apr 2007 10:15:00 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 7/8] Enhance ramfs to support higher order pages
-In-Reply-To: <20070420171118.GZ2986@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0704201012500.20723@schroedinger.engr.sgi.com>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
- <20070419163540.11948.51549.sendpatchset@schroedinger.engr.sgi.com>
- <20070420134226.GA16878@skynet.ie> <20070420144726.GI31925@holomorphy.com>
- <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com>
- <20070420171118.GZ2986@holomorphy.com>
+	Fri, 20 Apr 2007 13:16:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:54413 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993285AbXDTRQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:16:51 -0400
+Message-ID: <4628F586.3040606@goop.org>
+Date: Fri, 20 Apr 2007 10:16:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org> <20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org> <20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org> <20070420145126.GC25051@redhat.com> <4628DC0A.60707@goop.org> <20070420160308.GB20118@redhat.com>
+In-Reply-To: <20070420160308.GB20118@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, William Lee Irwin III wrote:
-> 
-> On Fri, Apr 20, 2007 at 09:30:30AM -0700, Christoph Lameter wrote:
-> > We can map arbitrary 4k chunks of larger pages.
-> 
-> The core VM can do that but the hugetlb architectural code can't fall
-> back to smaller page sizes. It also should not be put into a situation
-> where it needs to do so given the semantics it must honor.
+Dave Jones wrote:
+>  > Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
+>
+> Ah, I saw you patched in CFS too, and thought it may be related.
+>   
 
-Wel we could potentially add a handle_pmd_fault to the vm...?
- 
-> Also, the final assertion is inaccurate. Fault handlers must instantiate
-> pages of order mapping->order when faulting in a page of a file with
-> a given pagecache size. The semantics of faulting and mmap()'ing are
+Well, I have CONFIG_FB_BACKLIGHT enabled, and it still works.
 
-Why? I agree that the page state of the higher order page must be updated 
-consistently but one can use a pte to map a 4k chunk of a higher 
-order page.
+Maybe there's something in Andi's queue which is making it work?
 
-
+    J
