@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbXDTJRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbXDTJWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbXDTJRd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 05:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXDTJRd
+	id S1754123AbXDTJWo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 05:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXDTJWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 05:17:33 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:51252 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754123AbXDTJRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 05:17:31 -0400
-Date: Fri, 20 Apr 2007 11:17:27 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: David Howells <dhowells@redhat.com>
-Cc: "Aubrey Li" <aubreylee@gmail.com>,
-       "Robin Getz" <rgetz@blackfin.uclinux.org>, uaca@alumni.uv.es,
-       bryan.wu@analog.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       waltje@uwalt.nl.mugnet.org, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
-Message-Id: <20070420111727.fc69d671.dada1@cosmosbay.com>
-In-Reply-To: <2181.1177059532@redhat.com>
-References: <6d6a94c50704200139vb9b24f6y77a6d23544c8f7b9@mail.gmail.com>
-	<200704091146.32346.rgetz@blackfin.uclinux.org>
-	<1176112223.17975.8.camel@roc-desktop>
-	<9561.1176209728@redhat.com>
-	<200704101952.05380.rgetz@blackfin.uclinux.org>
-	<6d6a94c50704170336l62fc9ael1e58197e6c3853ba@mail.gmail.com>
-	<2817.1176910411@redhat.com>
-	<6d6a94c50704192146k5bbe2aefr31fa5726bf1c1e54@mail.gmail.com>
-	<1016.1177055893@redhat.com>
-	<2181.1177059532@redhat.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Apr 2007 05:22:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:22785 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbXDTJWn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 05:22:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Clg2D/25jr3hSKYRd/qS0pordCb+byDzlxnjVI/jHpPWZM4WOLvNB1p1ias7WgT9YSYCbAv/eV6wnB0D+wE3vRVAMcX7PMGQrnqgLf9ZoAWn4BjtA2SGOsFJ0ee/v/0Evvp5P6jCPbd550klpj6XFAX8LctYMtSbvdi7A/By8po=
+Message-ID: <46288645.3090201@gmail.com>
+Date: Fri, 20 Apr 2007 12:22:13 +0300
+From: Sergey Yanovich <ynvich@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
+References: <4627D6CB.1050107@gmail.com> <200704200056.33866.arnd@arndb.de>
+In-Reply-To: <200704200056.33866.arnd@arndb.de>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 09:58:52 +0100
-David Howells <dhowells@redhat.com> wrote:
-> 
-> Because kmalloc() may be able to get us a smaller chunk of memory.  Actually,
-> calling __get_free_pages() might be a better, and then release the excess
-> pages.
+Hi,
 
-Interesting, that rings a bell here.
+Arnd Bergmann wrote:
+> As very general comments, you should have the maintainer of the subsystem
+> (Pierre in this case) on Cc when posting a driver, and you should include
+> the patch inline in your mail, see Documentation/SubmittingPatches.
+>   
+I have cc'ed both Pierre and Alex, but my first message was blocked
+by the list as it contained html.
 
-I wonder why we dont use this in alloc_large_system_hash().
+For inlinning, this is my first kernel patch. I have just followed
+http://www.tux.org/lkml/#s2-2.
+> You should include the Makefile and Kconfig changes in the same patch/mail,
+> no point splitting these out.
+>   
+Once again it was an advise from http://www.tux.org/lkml/#s1-10. 
+<http://www.tux.org/lkml/#s1-10>
+> Don't define your own DBG macro, instead use the predefined dev_dbg()
+> that has a similar definition.
+>   
+Somewhere in 0.5-0.6 version this driver has issues with timeouts , 
+which were
+revealing in a non-debug kernel builds only . So this was a nessecity. I 
+will purge
+them now.
+> Your mmc_tifm_irq_chip() function does a _very_ long delay of 100
+> miliseconds. This is normally not acceptable, since it is a noticeable
+> time in which the system is completely unresponsive. Maybe you can convert
+> the tasklet to a workqueue, which lets you call msleep instead of mdelay.
+>   
+This is done intentionally to prevent a race condition when a card is 
+removed
+and immediately reinserted. There may be a more complicated way to solve 
+this
+issue, but didn't think about them. This only happens when an MMC/SD 
+card is
+inserted/removed. And it takes at least as long to process the event in 
+other
+parts of subsystem.
+> Your use of pci_map_sg() looks wrong, you simply can't assume that the
+> return value is '1' in general. I've stumbled over that same problem
+> in the sdhci driver, so it may be inherent to the mmc layer and not
+> be driver specific.
+>   
+This is taken as is from [tifm_sd]. I suppose this relates to a hardware
+limitation:
 
-(if __get_free_pages(GFP_ATOMIC, order) is used instead of alloc_bootmem() or __vmalloc())
++	mmc->max_hw_segs = 1;
++	mmc->max_phys_segs = 1;
 
-We currently loose 1/4 of space on tcp hash table for example, because sizeof(inet_ehash_bucket) is not a power of 2.
 
-Is it really possible to allocate an order-10 page, then release part of it (say an order-8 subpage) ?
-
+Best regards,
+Sergey
