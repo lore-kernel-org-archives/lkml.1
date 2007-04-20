@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767313AbXDTXCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767317AbXDTXFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767313AbXDTXCN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 19:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767312AbXDTXCM
+	id S1767317AbXDTXFs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 19:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767321AbXDTXFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 19:02:12 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:58608 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767308AbXDTXCL (ORCPT
+	Fri, 20 Apr 2007 19:05:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40881
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1767317AbXDTXFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 19:02:11 -0400
-Date: Fri, 20 Apr 2007 17:02:08 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH] fix ext2 allocator overflows above 31 bit blocks
-Message-ID: <20070420230208.GU5967@schatzie.adilger.int>
-Mail-Followup-To: Eric Sandeen <sandeen@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	ext4 development <linux-ext4@vger.kernel.org>
-References: <4628F3ED.9040101@redhat.com>
+	Fri, 20 Apr 2007 19:05:47 -0400
+Date: Fri, 20 Apr 2007 16:05:50 -0700 (PDT)
+Message-Id: <20070420.160550.92268431.davem@davemloft.net>
+To: peter.p.waskiewicz.jr@intel.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       christopher.leech@intel.com, jgarzik@pobox.com
+Subject: Re: [PATCH] NET: Add packet sock option to return orig_dev to
+ userspace when bonded
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <D5C1322C3E673F459512FB59E0DDC329026E9753@orsmsx414.amr.corp.intel.com>
+References: <D5C1322C3E673F459512FB59E0DDC329026E9753@orsmsx414.amr.corp.intel.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4628F3ED.9040101@redhat.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 20, 2007  12:10 -0500, Eric Sandeen wrote:
-> If ext3 can do 16T, ext2 probably should be able to as well.
-> There are still "int" block containers in the block allocation path
-> that need to be fixed up.
+From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
+Date: Thu, 8 Mar 2007 18:17:39 -0800
 
-Yeah, but who wants to do 16TB e2fsck on every boot?  I think there
-needs to be some limits imposed for the sake of usability.
+> Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
+> 	NET: Add packet sock option to return orig_dev to userspace when
+> bonded
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+I'm going to apply this patch (by hand, your email client corrupted
+the patch massively, adding newlines and whatnot all over the patch).
 
+But I'm going to rename the option to be just PACKET_ORIGDEV
+because although bonding is the only user of this orig_dev
+decapsulation method, that might not always be true and it'd
+be a shame to give a special cased name when it is not deserved
+here.
+
+But please do fix your email client for future patch submissions.
+
+Thanks.
