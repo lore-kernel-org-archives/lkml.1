@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767277AbXDTVkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767275AbXDTVki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767277AbXDTVkE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 17:40:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161371AbXDTVkE
+	id S1767275AbXDTVki (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 17:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXDTVki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 17:40:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:59207 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161332AbXDTVkB (ORCPT
+	Fri, 20 Apr 2007 17:40:38 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:46551 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767275AbXDTVkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 17:40:01 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: how to tell linux (on x86) to ignore 1M or memory
-To: Rene Herman <rene.herman@gmail.com>, Dave Jones <davej@redhat.com>,
-       Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Kyle McMartin <kyle@canonical.com>, linux-kernel@vger.kernel.org,
-       alan@redhat.com, bcollins@ubuntu.com, pjones@redhat.com
-Reply-To: 7eggert@gmx.de
-Date: Fri, 20 Apr 2007 23:39:54 +0200
-References: <8bFEz-3B4-39@gated-at.bofh.it> <8c6EE-4Jj-5@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Fri, 20 Apr 2007 17:40:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=p35T3G3Ez4y0mC+w4U9XLlZVH1qpzT5kD0PMs5MZNyhvmtTQKTc4xf7XMbc5DtI4vHiazUkBaN9Uj1UTIv6ZWwmjmF7nRYVcXs+VT5txiyX1FfjR9790eRZVGV5bWC7ENdu+T1VE9ULSRl/5TV7nBaUEOP7smFP/hAZudQQmJKc=
+Message-ID: <cb7bb73a0704201440i55557a13v5ad5a71617dc1239@mail.gmail.com>
+Date: Fri, 20 Apr 2007 23:40:18 +0200
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+To: "Vojtech Pavlik" <vojtech@suse.cz>
+Subject: Re: Acecad USB Tablet: usbmouse takeover and odd motion
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       edouard.tisserant@wanadoo.fr
+In-Reply-To: <20070420204724.GB5334@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Hf0pe-0001Ne-J8@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19anbb+i+9DoDY9WiYjY2rXL7fDQ4HCECYJNMt
- iT0IRMlLydkU4OqVkYv8gPcf//FG0AeJRRTexS4tZ01z56EEoD
- d+nCry0iIs2ttE+8uN3qQ==
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cb7bb73a0704191940s1fd6487j9a4412aebd4342c0@mail.gmail.com>
+	 <Pine.LNX.4.64.0704200903370.29846@jikos.suse.cz>
+	 <cb7bb73a0704200126x1e7893fem5902fe79eefb70b7@mail.gmail.com>
+	 <Pine.LNX.4.64.0704201533300.5138@jikos.suse.cz>
+	 <cb7bb73a0704200855xe841ecdoc9a0f67fc6f7009e@mail.gmail.com>
+	 <d120d5000704200901m44c9a3aei9ee0572c3b0a61ab@mail.gmail.com>
+	 <cb7bb73a0704200909h2f47e04cq87cb3dd91d7144f7@mail.gmail.com>
+	 <20070420204724.GB5334@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@gmail.com> wrote:
-> On 04/19/2007 04:18 PM, Bart Trojanowski wrote:
+On 4/20/07, Vojtech Pavlik <vojtech@suse.cz> wrote:
+> On Fri, Apr 20, 2007 at 06:09:55PM +0200, Giuseppe Bilotta wrote:
+> > On 4/20/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > >On 4/20/07, Giuseppe Bilotta <giuseppe.bilotta@gmail.com> wrote:
+> > >>
+> > >> Sorry, it seems I was wrong, it's not usbhid but usbmouse taking over.
+> > >> After a fresh plug (e.g. at bootup) I get the following:
+> > >>
+> > >
+> > >Well, the question is - why do you have usbmouse module on your system?
+> >
+> > Stock Debian kernel 2.6.18 comes with it.
+> >
+> > With my custom kernels I can probably skip compiling it at all, if you
+> > so suggest; should I blacklist it for the distro kernel? Or is there a
+> > chance that some random USB mouse plugged in would fail to function by
+> > doing so?
+>
+> usbmouse and usbkbd are only intended for embedded systems where the
+> full usbhid doesn't fit and for testing purposes: Normal distros
+> shouldn't have them enabled.
 
->> I need to preserve some state from the bios before entering protected
->> mode.  For now I want to copy it into some ram accessible by real-mode,
->> say the last megabyte visible in real-mode.
->> 
->> What's the easiest way to have linux ignore the megabyte starting at 15M?
-> 
-> Note that real-mode can only access the first megabyte (*) and not the first
-> 16. 16MB is the 16-bit protected mode (286) limit.
-> 
-> (*) well, the first 1M + 64K - 16 bytes using segment FFFF assuming A20 is
-> enabled and x > 1 in x86...
+Oh, I see. I'll blacklist those modules, maybe also issue a ticket on
+the Debian BTS.
 
-Interrupt 15h, function 87h allows copying from/to extended memory.
-You might like to look into Ralph Brown's interrupt list for more details.
+Thanks all.
 
-You could also cpio-gzip the data and append it to the initramfs.
 -- 
-Fun things to slip into your budget
-Does that line item say 'Personal Massage System' Oops, it's supposed to be
-'Message'. Go ahead and sign the authorization, Boss; I'll correct it later.
-(Iike Hell I will)
+Giuseppe "Oblomov" Bilotta
