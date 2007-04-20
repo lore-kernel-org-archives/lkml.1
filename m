@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767243AbXDTUdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767233AbXDTUeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767243AbXDTUdW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 16:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767242AbXDTUdV
+	id S1767233AbXDTUeA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 16:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767246AbXDTUeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:33:21 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55210 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767240AbXDTUdU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:33:20 -0400
-Subject: Re: qla2xxx hba crashes with older 2310 cards
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: David Miller <davem@davemloft.net>
-Cc: rpeterso@redhat.com, linux-kernel@vger.kernel.org,
-       andrew.vasquez@qlogic.com, hch@lst.de, linux-scsi@vger.kernel.org
-In-Reply-To: <20070420.132402.119227720.davem@davemloft.net>
-References: <4628DEEE.3060205@redhat.com>
-	 <20070420.132402.119227720.davem@davemloft.net>
-Content-Type: text/plain
-Date: Fri, 20 Apr 2007 16:33:09 -0400
-Message-Id: <1177101189.3718.49.camel@mulgrave.il.steeleye.com>
+	Fri, 20 Apr 2007 16:34:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49274 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767233AbXDTUd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 16:33:59 -0400
+Date: Fri, 20 Apr 2007 16:33:42 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Preston A. Elder" <prez@goth.net>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: AGPGart / AMD K7
+Message-ID: <20070420203342.GA622@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Preston A. Elder" <prez@goth.net>, linux-kernel@vger.kernel.org,
+	greg@kroah.com
+References: <46286775.5000507@goth.net> <20070420155537.GA20118@redhat.com> <4628F00B.3010304@goth.net> <20070420173337.GD20118@redhat.com> <462900BD.8020204@goth.net> <20070420182029.GF20118@redhat.com> <462906E5.8060609@goth.net> <20070420184956.GD13939@redhat.com> <462920EE.2020202@goth.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462920EE.2020202@goth.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-20 at 13:24 -0700, David Miller wrote:
-> From: Robert Peterson <rpeterso@redhat.com>
-> Date: Fri, 20 Apr 2007 10:40:30 -0500
-> 
-> > I've seen some chatter about the qla2xxx driver but not paid attention, so
-> > I'm sorry if this is a known issue.  I've got an older qlogic hba, and recent
-> > drivers don't seem to play nice with it.  I've got the latest firmware from
-> > qlogic's web site.  I'm using a 2.6.21-rc6 kernel from Steve Whitehouse's
-> > -nmw git tree.  Reverting to an older driver (but same kernel) and it works.
-> > The current driver gives this:
-> 
-> Yes, known problem, I'm sorry these guys broke the driver for
-> you as well, please see this thread:
-> 
-> 	http://marc.info/?l=linux-kernel&m=117671067701124&w=2
-> 
-> This was really a stupid change to make.
+On Fri, Apr 20, 2007 at 04:22:06PM -0400, Preston A. Elder wrote:
+ > Dave, Greg,
+ > 
+ > Here is the trace with 2.6.20.6
+ > 
+ > I added back in my trace code, as you see.  As you can also see,
+ > agp_amdk7_probe is still not called.
 
-OK,OK, we heard you the first time ... the maintainers will try to fix
-this in a manner acceptable to all concerned ... could we try to cool
-down the public traductions now?
+Try looking down in __driver_attach()
+The fact that we're not calling the ->probe function is quite bizarre.
 
-James
+It could be this in __driver_attach
 
+        if (!dev->driver)
+                driver_probe_device(drv, dev);
 
+Though that'd be odd.
+
+Putting a #define DEBUG 1 in drivers/base/dd.c may also yield some clues.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
