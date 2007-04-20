@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbXDTIWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbXDTI03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbXDTIWb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 04:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXDTIWb
+	id S1752395AbXDTI03 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 04:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbXDTI03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 04:22:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:50704 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbXDTIWa (ORCPT
+	Fri, 20 Apr 2007 04:26:29 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:45277 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752395AbXDTI02 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 04:22:30 -0400
-Date: Fri, 20 Apr 2007 10:21:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Adam Litke <aglitke@gmail.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 4/8] Enhance fallback functions in libs to support higher  order pages
-Message-ID: <20070420082129.GI6525@kernel.dk>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com> <a0a62dfc0704191148v15434469kc3130821cb251072@mail.gmail.com> <Pine.LNX.4.64.0704191208340.12936@schroedinger.engr.sgi.com>
+	Fri, 20 Apr 2007 04:26:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gboyFbQcHogZI2KFLN/rPYxDVGfhQX8i3W6GNNO1P9nl8QGlUq+Di3SfTNAE5i1paFFm/f91ZKC0w0bPUmAF9WfAyZwA5OtDptXyrvCRJsqWVbCBmFX1O095bLvxEMYDkEue0q9oMoiT6b5pxeE/0Xq4WTWEGNyGwPowsy/jG20=
+Message-ID: <cb7bb73a0704200126x1e7893fem5902fe79eefb70b7@mail.gmail.com>
+Date: Fri, 20 Apr 2007 10:26:27 +0200
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: Acecad USB Tablet: usbmouse takeover and odd motion
+Cc: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
+       edouard.tisserant@wanadoo.fr
+In-Reply-To: <Pine.LNX.4.64.0704200903370.29846@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704191208340.12936@schroedinger.engr.sgi.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+References: <cb7bb73a0704191940s1fd6487j9a4412aebd4342c0@mail.gmail.com>
+	 <Pine.LNX.4.64.0704200903370.29846@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19 2007, Christoph Lameter wrote:
-> +static inline int page_cache_shift(struct address_space *a)
-> +{
-> +	return a->order + PAGE_CACHE_SHIFT;
-> +}
-> +
-> +static inline unsigned long page_cache_size(struct address_space *a)
-> +{
-> +	return PAGE_CACHE_SIZE << a->order;
-> +}
+On 4/20/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Fri, 20 Apr 2007, Giuseppe Bilotta wrote:
+>
+> > The first problem is that the usbmouse and usbhid drivers take control
+> > of the device, so that when I plug it in the tablet appears as a mouse,
+> > with extremely funny effects (cursor jumping around, buttons clicking
+> > out of nowhere, and other strange stuff).I have to rmmod usbmouse and
+> > usbhid and then re-modprobe acecad to get proper data from the tablet
+> > (where by 'proper' I mean that input-events reports apparently correct
+> > values for X, Y, pressure and keypresses.
+>
+> Hi Giuseppe,
+>
+> could you please send me the product ID of the hardware in question? (you
+> could get it for example by running lsusb). Currently the usbhid driver
+> blacklists just product ids 0x0004 and 0x0008 (so that for these product
+> ids, the HID driver doesn't claim the device and lets other driver -
+> acecad - to claim it). I guess you have some newer version of the device,
+> so just adding it to blacklist should suffice.
 
-This works fine as long as you are in the submitter context, but once
-you pass the into the block layer, we don't have any way to find the
-address space (at least we don't want to). Would something like this be
-workable, name withstanding:
+Hello Jiri,
 
-static unsigned long page_size(struct page *page)
-{
-        struct address_space *mapping;
-        int order = 0;
+lsusb claims:
 
-        mapping = page_mapping(page);
-        if (mapping)
-                order = mapping->order;
+Bus 002 Device 003: ID 0460:0004 Ace Cad Enterprise Co., Ltd
 
-        return PAGE_CACHE_SIZE << order;
-}
+and according to hid-core.c this *is* a blacklisted ID ...
 
 -- 
-Jens Axboe
-
+Giuseppe "Oblomov" Bilotta
