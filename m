@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbXDTWAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbXDTWGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbXDTWAX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 18:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXDTWAX
+	id S1754510AbXDTWGf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 18:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXDTWGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 18:00:23 -0400
-Received: from sanctuary.goth.net ([64.27.17.130]:53934 "EHLO mail.goth.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753999AbXDTWAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 18:00:22 -0400
-Message-ID: <462937E1.7040403@goth.net>
-Date: Fri, 20 Apr 2007 18:00:01 -0400
-From: "Preston A. Elder" <prez@goth.net>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, "Preston A. Elder" <prez@goth.net>,
-       linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: AGPGart / AMD K7
-References: <46286775.5000507@goth.net> <20070420155537.GA20118@redhat.com> <4628F00B.3010304@goth.net> <20070420173337.GD20118@redhat.com> <462900BD.8020204@goth.net> <20070420182029.GF20118@redhat.com> <462906E5.8060609@goth.net> <20070420184956.GD13939@redhat.com> <462920EE.2020202@goth.net> <20070420203342.GA622@redhat.com>
-In-Reply-To: <20070420203342.GA622@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Apr 2007 18:06:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:35171 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754510AbXDTWGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 18:06:34 -0400
+Date: Fri, 20 Apr 2007 15:06:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
+Message-Id: <20070420150618.179d31a4.akpm@linux-foundation.org>
+In-Reply-To: <462932BE.4020005@redhat.com>
+References: <46247427.6000902@redhat.com>
+	<20070420135715.f6e8e091.akpm@linux-foundation.org>
+	<462932BE.4020005@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Fri, Apr 20, 2007 at 04:22:06PM -0400, Preston A. Elder wrote:
->  > Dave, Greg,
->  > 
->  > Here is the trace with 2.6.20.6
->  > 
->  > I added back in my trace code, as you see.  As you can also see,
->  > agp_amdk7_probe is still not called.
->
-> Try looking down in __driver_attach()
-> The fact that we're not calling the ->probe function is quite bizarre.
->
-> It could be this in __driver_attach
->
->         if (!dev->driver)
->                 driver_probe_device(drv, dev);
->
-> Though that'd be odd.
->
-> Putting a #define DEBUG 1 in drivers/base/dd.c may also yield some clues.
->
-> 	Dave
->
->   
-OK, I found it!
+On Fri, 20 Apr 2007 17:38:06 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-Here is more trace:
-Linux agpgart interface v0.101 (c) Dave Jones
-agp_amdk7_init: In function
-agp_amdk7_init: Before pci_register_driver
-__pci_register_driver: In Function (driver = agpgart-amdk7, multithread = 0)
-__pci_register_driver: Before Spinlock
-__pci_register_driver: Before Init List Head
-__pci_register_driver: Before driver_register
-bus_add_driver: In Function (c0492920)
-bus_add_driver: Before kobject_set_name
-bus_add_driver: error = 0
-bus_add_driver: Before kobject_register
-bus_add_driver: error = 0
-bus_add_driver: Before driver_attach
-__driver_attach (0000:00:00.0,1): Before Down (parent) (c21c8600)
-__driver_attach (0000:00:00.0, 1): Before Down
-__driver_attach (0000:00:00.0, 1): Before Probe Device (c049fe54)
-__driver_attach (0000:00:00.0, 1): alreay registered with driver amd76x_edac
-__driver_attach (0000:00:00.0, 1): Before Up
-__driver_attach (0000:00:00.0, 1): Before Up (parent) (c21c8600)
-__driver_attach (0000:00:00.0, 1): Returning 0
-bus_add_driver: error = 0
-bus_add_driver: Before klist_add_tail
-bus_add_driver: Before module_add_driver
-bus_add_driver: Before driver_add_attrs
-bus_add_driver: error = 0
-bus_add_driver: Before add_bind_files
-bus_add_driver: error = 0
-bus_add_driver: Returning 0
-__pci_register_driver: error = 0
-__pci_register_driver: Before pci_create_newid_file
-__pci_register_driver: error = 0
-__pci_register_driver: Returning 0
+> Andrew Morton wrote:
+> 
+> > I've also merged Nick's "mm: madvise avoid exclusive mmap_sem".
+> > 
+> > - Nick's patch also will help this problem.  It could be that your patch
+> >   no longer offers a 2x speedup when combined with Nick's patch.
+> > 
+> >   It could well be that the combination of the two is even better, but it
+> >   would be nice to firm that up a bit.  
+> 
+> I'll test that.
 
-I snipped some since __driver_attach is called many times.
+Thanks.
 
-But the long and short is that 00:00:00 is already associated with the
-'amd76x_edac' driver, and as such will not call the agp probe call. 
-What is this edac, btw?
+> >   I do go on about that.  But we're adding page flags at about one per
+> >   year, and when we run out we're screwed - we'll need to grow the
+> >   pageframe.
+> 
+> If you want, I can take a look at folding this into the
+> ->mapping pointer.  I can guarantee you it won't be
+> pretty, though :)
 
-PreZ :)
+Well, let's see how fugly it ends up looking?
 
+> > - I need to update your patch for Nick's patch.  Please confirm that
+> >   down_read(mmap_sem) is sufficient for MADV_FREE.
+> 
+> It is.  MADV_FREE needs no more protection than MADV_DONTNEED.
+> 
+> > Stylistic nit:
+> > 
+> >> +	if (PageLazyFree(page) && !migration) {
+> >> +		/* There is new data in the page.  Reinstate it. */
+> >> +		if (unlikely(pte_dirty(pteval))) {
+> >> +			set_pte_at(mm, address, pte, pteval);
+> >> +			ret = SWAP_FAIL;
+> >> +			goto out_unmap;
+> >> +		}
+> > 
+> > The comment should be inside the second `if' statement.  As it is, It
+> > looks like we reinstate the page if (PageLazyFree(page) && !migration).
+> 
+> Want me to move it?
 
+I did that, thanks.
