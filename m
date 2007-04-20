@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993281AbXDTQfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767148AbXDTQj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993281AbXDTQfw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993282AbXDTQfw
+	id S1767148AbXDTQj7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993280AbXDTQj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:35:52 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:60707 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993281AbXDTQfu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:35:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TQJb1B/mdiOewzGSTjXQxjSGemsXXvr6K9sxyPbgDIMeNqPqRVtu12RfrXp65gLJmobvkByn+HOlzOcUWPHVYoGwrFrRqwlNbVL/I/7sOcWNR4jXYrT0xOSwhTPHxZcJY7oVaq1EsEo9EBTxTrWJLHbt1LEcxGb0gsexyI/D9DE=
-Message-ID: <d120d5000704200935r2fb1e614m6da149eee0aec5b6@mail.gmail.com>
-Date: Fri, 20 Apr 2007 12:35:48 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <462856B9.9010307@gmail.com>
+	Fri, 20 Apr 2007 12:39:59 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57094 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993277AbXDTQj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 12:39:57 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: "Ulrich Drepper" <drepper@gmail.com>
+Subject: Re: [d_path 0/7] Fixes to d_path: Respin
+Date: Fri, 20 Apr 2007 18:40:07 +0200
+User-Agent: KMail/1.9.5
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <20070412090809.917795000@suse.de> <200704201721.29825.agruen@suse.de> <a36005b50704200824i228f98ccq80f88a0f9d64abb2@mail.gmail.com>
+In-Reply-To: <a36005b50704200824i228f98ccq80f88a0f9d64abb2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
-	 <46263A82.1030703@gmail.com>
-	 <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
-	 <20070419145133.2f7ed45a@gondolin.boeblingen.de.ibm.com>
-	 <d120d5000704190613h178ad644h53ad817db2950426@mail.gmail.com>
-	 <20070419154849.2e722762@gondolin.boeblingen.de.ibm.com>
-	 <d120d5000704190721u16be1110ufe04880eded7d54e@mail.gmail.com>
-	 <462856B9.9010307@gmail.com>
+Message-Id: <200704201840.07247.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tejun,
-
-On 4/20/07, Tejun Heo <htejun@gmail.com> wrote:
-> Hello, Dmitry.
+On Friday 20 April 2007 17:24, Ulrich Drepper wrote:
+> On 4/20/07, Andreas Gruenbacher <agruen@suse.de> wrote:
+> > Yes, that one, sorry. The values it obtains that way are not reliable.
 >
-> Dmitry Torokhov wrote:
-> > On 4/19/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> >> On Thu, 19 Apr 2007 09:13:43 -0400,
-> >> "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
-> >>
-> >> > Because they are managed by 2 different entities. the struct device
-> >> > objects are managed by device core and driver-specific objects are
-> >> > managed by their respective driver.
-> >>
-> >> Not sure if I understand you here. My view of this was always that the
-> >> embedding object was kind of an extended device and that the relevant
-> >> driver/subsystem managed it through the driver core infrastructure.
-> >>
-> >
-> > I am not sure if I agree with this point of view. Driver (or
-> > subsystem) provides an instance of struct device for the rest of the
-> > system to iteract uniformly with (suspend/resume/tree
-> > visualization/etc) i.e. struct device implement an interface for
-> > subsystems. However most of the system use their own mechanisms to
-> > manage their devices. They can rely on the driver core to a certain
-> > degree but driver core is mostly a carries out helper functions, not
-> > the meat.
->
-> Many drivers (at least all the SCSI/IDE ones) consider struct device as
-> the base class of the devices those drivers implement.  I don't think we
-> can just consider those drivers to be wrong.
+> Why should the mount point info together with the filesystem type not
+> be reliable?
 
-I am not saying they are wrong I am just saying that driver core is
-not where most work is done. Every subsystem has its own locking rules
-and lifetime rules and they are what is important. Whether subsystem
-uses embedding or referencing of struct devices is implementation
-detail.
+Ah ... I overlooked that fstatvfs() also checks the device number, not only 
+the name, and so then it can find the right device from that.
 
-What is the goal of driver core? I thought the main goal was to have
-an uniform interface for device power management and presentation of
-device tree to userspace. It has nothing to do with main purposes of
-every individual subsystem - making some set of devices/services work.
+So for how glibc uses /proc/mounts in fstatvfs(), hiding unreachable mount 
+points from /proc/mounts wouldn't improve things. The heuristic already 
+doesn't work for file descriptors from other namespaces, so it's already 
+broken unfortunately. A more robust mechanism for glibc to use would be nice; 
+not sure it would be worth it only for fstatvfs though.
 
--- 
-Dmitry
+The code also seems to stop at the first matching mount point. You can have 
+the same device mounted on the same mount point multiple times but with 
+different mount options, e.g.,
+
+	$ dd if=/dev/zero of=/var/tmp/ext2 bs=4096 count=16384
+	$ mkfs.ext2 -F /var/tmp/ext2
+	$ mount -o loop /var/tmp/ext2 /mnt
+	$ mount -o loop,ro /var/tmp/ext2 /mnt
+	$ tail -n 2 /proc/mounts
+	/dev/loop0 /mnt ext2 rw 0 0
+	/dev/loop1 /mnt ext2 ro 0 0
+
+The topmost mount point appears last in /proc/mounts, and so unless I am 
+overlooking something else, that's another minor problem.
+
+The third problem, as I already tried to argue several times now, is that the 
+mount points path that /proc/mounts reports may or may not actually exist. 
+That's a problem for glibc, and you should be one of the first to notice and 
+acknowledge that. I gave a chroot example that showed that in the current 
+implementation, you can get pretty random clashes between mounts; there are 
+other cases with lazy unmounts as well.
+
+> You're trying to find an excuse to break tings, that seems all there is.
+
+Now what makes you think that??
+
+Andreas
