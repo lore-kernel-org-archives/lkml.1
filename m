@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992648AbXDTImc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992635AbXDTIpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992648AbXDTImc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 04:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992642AbXDTImc
+	id S2992635AbXDTIpK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 04:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992687AbXDTIpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 04:42:32 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:41588 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992648AbXDTIma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 04:42:30 -0400
-Date: Fri, 20 Apr 2007 09:42:29 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Pierre Peiffer <Pierre.Peiffer@bull.net>
-cc: Andy Whitcroft <apw@shadowen.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] fix undefined symbol if CONFIG_PAGE_GROUP_BY_MOBILITY
- not set
-In-Reply-To: <20070420100744.cd287042.Pierre.Peiffer@bull.net>
-Message-ID: <Pine.LNX.4.64.0704200940460.6816@skynet.skynet.ie>
-References: <20070420100744.cd287042.Pierre.Peiffer@bull.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 20 Apr 2007 04:45:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:42135 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992635AbXDTIpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 04:45:08 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Subject: Re: Dropping CONFIG_REORDER on x86-64 for 2.6.22
+Date: Fri, 20 Apr 2007 09:35:10 +0100
+Message-ID: <yw1x4pnba1fl.fsf@thrashbarg.mansr.com>
+References: <200704191354.52985.ak@suse.de> <46277C36.6030301@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: agrajag.inprovide.com
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (Double Solitaire, linux)
+Cancel-Lock: sha1:FYQYStSr3hbfZeaRcmck8I2p44A=
+Cc: discuss@x86-64.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, Pierre Peiffer wrote:
+Arjan van de Ven <arjan@linux.intel.com> writes:
 
-> Hi,
+> Andi Kleen wrote:
+>> Rationale:
+>> - It cannot be enabled in normal builds because all current lds
+>> become very slow when they have to handle thousands of sections.
+>>
 >
-> This is a fix against the patch
-> do-not-group-pages-by-mobility-type-on-low-memory-systems.patch (include in -mm
-> tree):
-> The error "page_group_by_mobility_disabled undefinied" occured if
-> CONFIG_PAGE_GROUP_BY_MOBILITY is not set.
->
-> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
->
+> afaik this is only ever reported on SuSE; I've not heard it on any
+> other distro...
 
-Hi,
-
-Your fix looks correct but the compile-time option 
-CONFIG_PAGE_GROUP_BY_MOBILITY was removed in a patch I sent to Andrew two 
-days ago. It went into mm-commits last night so this problem should no 
-longer exist.
-
-> ---
-> mm/page_alloc.c |    5 +++++
-> 1 file changed, 5 insertions(+)
->
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2297,6 +2297,7 @@ void __meminit build_all_zonelists(void)
-> 	}
-> 	vm_total_pages = nr_free_pagecache_pages();
->
-> +#ifdef CONFIG_PAGE_GROUP_BY_MOBILITY
-> 	/*
-> 	 * Disable grouping by mobility if the number of pages in the
-> 	 * system is too low to allow the mechanism to work. It would be
-> @@ -2313,6 +2314,10 @@ void __meminit build_all_zonelists(void)
-> 			num_online_nodes(),
-> 			page_group_by_mobility_disabled ? "off" : "on",
-> 			vm_total_pages);
-> +#else
-> +	printk("Built %i zonelists.  Total pages: %ld\n",
-> +	       num_online_nodes(), vm_total_pages);
-> +#endif
-> }
->
-> /*
->
->
-> -- 
-> Pierre
->
+Even with that option set, the full kernel build with my configuration
+finishes in one minute flat on my Gentoo box.  Could it be that the
+linker uses enormous amounts of memory?  I have 4GB so I wouldn't
+immediately notice.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Måns Rullgård
+mans@mansr.com
+
