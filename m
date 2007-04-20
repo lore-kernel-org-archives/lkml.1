@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993312AbXDTSSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993316AbXDTSUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993312AbXDTSSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 14:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993313AbXDTSSe
+	id S2993316AbXDTSUw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 14:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993315AbXDTSUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 14:18:34 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:39757 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993312AbXDTSSd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 14:18:33 -0400
-Date: Fri, 20 Apr 2007 11:18:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Adrian Bunk <bunk@stusta.de>,
-       perex@suse.cz, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [1/2] 2.6.21-rc7: known regressions
-Message-Id: <20070420111807.82d67afb.akpm@linux-foundation.org>
-In-Reply-To: <s5h7is7xrkl.wl%tiwai@suse.de>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	<20070416003714.GL3691@stusta.de>
-	<4623EE59.7090005@redhat.com>
-	<s5hk5wbcny7.wl%tiwai@suse.de>
-	<4627CB04.4060401@googlemail.com>
-	<s5h7is7xrkl.wl%tiwai@suse.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 20 Apr 2007 14:20:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35441 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993313AbXDTSUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 14:20:51 -0400
+Date: Fri, 20 Apr 2007 14:20:29 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Preston A. Elder" <prez@goth.net>
+Cc: linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: AGPGart / AMD K7
+Message-ID: <20070420182029.GF20118@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Preston A. Elder" <prez@goth.net>, linux-kernel@vger.kernel.org,
+	greg@kroah.com
+References: <46286775.5000507@goth.net> <20070420155537.GA20118@redhat.com> <4628F00B.3010304@goth.net> <20070420173337.GD20118@redhat.com> <462900BD.8020204@goth.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462900BD.8020204@goth.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 12:34:18 +0200
-Takashi Iwai <tiwai@suse.de> wrote:
+On Fri, Apr 20, 2007 at 02:04:45PM -0400, Preston A. Elder wrote:
+ > Dave Jones wrote:
+ > > On Fri, Apr 20, 2007 at 12:53:31PM -0400, Preston A. Elder wrote:
+ > >
+ > >  > Linux agpgart interface v0.101 (c) Dave Jones
+ > >  > agpgart: DEBUG 0
+ > >  > agpgart: DEBUG 1
+ > >  > __pci_register_driver: In function
+ > >  > __pci_register_driver: driver = agpgart-amdk7, multithread = 0
+ > >  > __pci_register_driver: Before Spinlock
+ > >  > __pci_register_driver: Before List Init
+ > >  > __pci_register_driver: Before Driver Register
+ > >  > __pci_register_driver: Error = 0
+ > >  > __pci_register_driver: Returning 0
+ > >  > 
+ > >  > The DEBUG 0 and 1 are coming from agp_amdk7_init()
+ > >  > There is a DEBUG 2 at the top of agp_amdk7_probe(), even before
+ > >  > pci_find_capability, but the function never gets called.
+ > >
+ > > bus_add_driver() returns 0 on error, but there's a few different
+ > > cases it can fail, which isn't helpful.
 
-> Good to hear!  I forgot the patch description and sign-off, so here it
-> is again:
-> 
-> 
-> [PATCH] ALSA: intel8x0 - Fix Oops in crash kernel
-> 
-> When intel8x0 driver is loaded in the crash kernel, it gets Oops
-> occasionally.  This is because the irq handler gets called before
-> the proper hardware initialization.  Now defer it after
-> snd_intel8x0_chip_init().
+Actually I misparsed this function, see below..
 
-Neat, thanks.
+ > > Add some printk's to
+ > > the error cases there, and see if that gives any more clues.
+ > >
+ > Here you go:
 
-Do we think this is safe enough and important enough for 2.6.21?
-And if so, do you want me to merge it?
+This is odd..
+
+ > >  > __pci_register_driver: Before Driver Register
+ > >  > __pci_register_driver: Error = 0
+ > >  > __pci_register_driver: Returning 0
+
+That __pci_register_driver code is (presumably with your printk's added..)
+
+        error = driver_register(&drv->driver);
+	printk("Error = %d\n", error);
+        if (error) {
+		printk("Returning %d\n" error);
+                return error;
+	}
+
+Which doesn't make much sense.  If 'error' is 0, we shouldn't be
+taking that second printk & return. What compiler version is this?
+
+btw Greg, wtf does driver_register return a 0 as 'success' if it
+completes the function, and 0 as 'failure' if !bus ?
+That seems doomed to failure.
+
+ > Linux agpgart interface v0.101 (c) Dave Jones
+ > agpgart: DEBUG 0
+ > agpgart: DEBUG 1
+ > __pci_register_driver: In function
+ > __pci_register_driver: driver = agpgart-amdk7, multithread = 0
+ > __pci_register_driver: Before Spinlock
+ > __pci_register_driver: Before List Init
+ > __pci_register_driver: Before Driver Register
+ > bus_add_driver: In Function
+ > bus_add_driver: Before kobject_set_name (agpgart-amdk7)
+ > bus_add_driver: error = 0
+ > bus_add_driver: Before kobject_register
+ > bus_add_driver: error = 0
+ > bus_add_driver: Before driver_attach
+ > bus_add_driver: error = 0
+ > bus_add_driver: Before klist_add_tail
+ > bus_add_driver: Before module_add_driver
+ > bus_add_driver: Before driver_add_attrs
+ > bus_add_driver: error = 0
+ > bus_add_driver: Before add_bind_files
+ > bus_add_driver: error = 0
+ > bus_add_driver: Returning 0
+ > __pci_register_driver: Error = 0
+ > __pci_register_driver: Returning 0
+
+So we completed bus_add_driver without failing, then popped back
+up to __pci_register_driver and were somehow treated as
+if we failed.   *scratches head*
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
