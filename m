@@ -1,90 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767302AbXDTWxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767303AbXDTWzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767302AbXDTWxw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 18:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767307AbXDTWxw
+	id S1767303AbXDTWzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 18:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767306AbXDTWzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 18:53:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33491 "EHLO mx1.redhat.com"
+	Fri, 20 Apr 2007 18:55:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33679 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767302AbXDTWxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 18:53:51 -0400
-Message-ID: <4629447D.5030900@redhat.com>
-Date: Fri, 20 Apr 2007 18:53:49 -0400
+	id S1767303AbXDTWy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 18:54:59 -0400
+Message-ID: <462944B3.8060304@redhat.com>
+Date: Fri, 20 Apr 2007 18:54:43 -0400
 From: Chuck Ebbert <cebbert@redhat.com>
 Organization: Red Hat
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
 To: linux-kernel <linux-kernel@vger.kernel.org>
 CC: Andi Kleen <ak@suse.de>
-Subject: [RFC PATCH 2/3] x86: new API for modifying CPU feature flags
+Subject: [RFC PATCH 3/3] x86: use the x86 CPU feature API
 References: <4629438C.4070209@redhat.com>
 In-Reply-To: <4629438C.4070209@redhat.com>
 Content-Type: multipart/mixed;
- boundary="------------050605090201010105080605"
+ boundary="------------010208050203090008000200"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------050605090201010105080605
+--------------010208050203090008000200
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
 
---------------050605090201010105080605
+--------------010208050203090008000200
 Content-Type: text/plain;
- name="x86_cpufeature_api.patch"
+ name="x86_use_cpu_api.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="x86_cpufeature_api.patch"
+ filename="x86_use_cpu_api.patch"
 
-x86: new API for modifying CPU feature flags
+x86: use the x86 CPU feature API
 
-Use an API for setting/clearing CPU features, so the
-process can be debugged.
-
-Adds:
-set_cpu_feature()
-clear_cpu_feature()
-clear_all_cpu_features()
-
-Todo:
-mask_boot_cpu_features()
-set_cpu_feature_word()
-more?
-
-(Hardcoded printk for now, should be dprintk.)
+Just a small demo for now.
 
 Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 ---
- include/asm-i386/cpufeature.h |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ arch/i386/kernel/cpu/amd.c    |    4 ++--
+ arch/i386/kernel/cpu/common.c |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
---- 2.6.21-rc7-d390.orig/include/asm-i386/cpufeature.h
-+++ 2.6.21-rc7-d390/include/asm-i386/cpufeature.h
-@@ -108,6 +108,23 @@
- #define cpu_has(c, bit)		test_bit(bit, (c)->x86_capability)
- #define boot_cpu_has(bit)	test_bit(bit, boot_cpu_data.x86_capability)
+--- 2.6.21-rc7-d390.orig/arch/i386/kernel/cpu/amd.c
++++ 2.6.21-rc7-d390/arch/i386/kernel/cpu/amd.c
+@@ -109,8 +109,8 @@ static void __cpuinit init_amd(struct cp
+ 			{
+ 				/* Based on AMD doc 20734R - June 2000 */
+ 				if ( c->x86_model == 0 ) {
+-					clear_bit(X86_FEATURE_APIC, c->x86_capability);
+-					set_bit(X86_FEATURE_PGE, c->x86_capability);
++					clear_cpu_feature(APIC, c);
++					set_cpu_feature(PGE, c);
+ 				}
+ 				break;
+ 			}
+--- 2.6.21-rc7-d390.orig/arch/i386/kernel/cpu/common.c
++++ 2.6.21-rc7-d390/arch/i386/kernel/cpu/common.c
+@@ -381,7 +381,7 @@ void __cpuinit identify_cpu(struct cpuin
+ 	c->x86_model_id[0] = '\0';  /* Unset */
+ 	c->x86_max_cores = 1;
+ 	c->x86_clflush_size = 32;
+-	memset(&c->x86_capability, 0, sizeof c->x86_capability);
++	clear_all_cpu_features(c);
  
-+#define alter_cpu_feature(fn, feat, c) \
-+		do {    typeof(c) __c = (c); \
-+			printk("CPU: %s: %s feature %s for CPU %p", \
-+				__func__, #fn, #feat, __c); \
-+			fn ## _bit(X86_FEATURE_ ## feat, __c->x86_capability); \
-+		} while (0)
-+
-+#define set_cpu_feature(f, c)	alter_cpu_feature(set, f, c)
-+#define clear_cpu_feature(f, c)	alter_cpu_feature(clear, f, c)
-+
-+#define clear_all_cpu_features(c) \
-+		do {    typeof(c) __c = (c); \
-+			printk("CPU: %s: clearing all capabilities for CPU %p", \
-+				__func__, __c); \
-+			memset(&__c->x86_capability, 0, sizeof __c->x86_capability); \
-+		} while (0)
-+
- #define cpu_has_fpu		boot_cpu_has(X86_FEATURE_FPU)
- #define cpu_has_vme		boot_cpu_has(X86_FEATURE_VME)
- #define cpu_has_de		boot_cpu_has(X86_FEATURE_DE)
+ 	if (!have_cpuid_p()) {
+ 		/* First of all, decide if this is a 486 or higher */
 
---------------050605090201010105080605--
+--------------010208050203090008000200--
