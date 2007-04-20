@@ -1,200 +1,460 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422947AbXDTGDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422910AbXDTGHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422947AbXDTGDB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 02:03:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422952AbXDTGDA
+	id S1422910AbXDTGHa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 02:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422916AbXDTGHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 02:03:00 -0400
-Received: from omta01sl.mx.bigpond.com ([144.140.92.153]:41777 "EHLO
-	omta01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422947AbXDTGC7 (ORCPT
+	Fri, 20 Apr 2007 02:07:30 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54138 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422910AbXDTGH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 02:02:59 -0400
-Message-ID: <46285781.7090205@bigpond.net.au>
-Date: Fri, 20 Apr 2007 16:02:41 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420044850.GA31438@1wt.eu>
-In-Reply-To: <20070420044850.GA31438@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 20 Apr 2007 02:07:29 -0400
+Date: Thu, 19 Apr 2007 23:07:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, johann deneux <johann.deneux@gmail.com>,
+       Dmitry Torokhov <dtor@insightbb.com>, <stenyak@gmail.com>,
+       <linux-input@atrey.karlin.mff.cuni.cz>
+Subject: Re: [RFC 2/2] Input: phantom, add a new driver
+Message-Id: <20070419230719.a118a132.akpm@linux-foundation.org>
+In-Reply-To: <258431179037841809@karneval.cz>
+References: <210731960111436322@karneval.cz>
+	<258431179037841809@karneval.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Fri, 20 Apr 2007 06:02:46 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> On Fri, Apr 20, 2007 at 10:10:45AM +1000, Peter Williams wrote:
->> Ingo Molnar wrote:
->>> - bugfix: use constant offset factor for nice levels instead of 
->>>   sched_granularity_ns. Thus nice levels work even if someone sets 
->>>   sched_granularity_ns to 0. NOTE: nice support is still naive, i'll 
->>>   address the many nice level related suggestions in -v4.
->> I have a suggestion I'd like to make that addresses both nice and 
->> fairness at the same time.  As I understand the basic principle behind 
->> this scheduler it to work out a time by which a task should make it onto 
->> the CPU and then place it into an ordered list (based on this value) of 
->> tasks waiting for the CPU.  I think that this is a great idea and my 
->> suggestion is with regard to a method for working out this time that 
->> takes into account both fairness and nice.
->>
->> First suppose we have the following metrics available in addition to 
->> what's already provided.
->>
->> rq->avg_weight_load /* a running average of the weighted load on the CPU */
->> p->avg_cpu_per_cycle /* the average time in nsecs that p spends on the 
->> CPU each scheduling cycle */
->>
->> where a scheduling cycle for a task starts when it is placed on the 
->> queue after waking or being preempted and ends when it is taken off the 
->> CPU either voluntarily or after being preempted.  So 
->> p->avg_cpu_per_cycle is just the average amount of time p spends on the 
->> CPU each time it gets on to the CPU.  Sorry for the long explanation 
->> here but I just wanted to make sure there was no chance that "scheduling 
->> cycle" would be construed as some mechanism being imposed on the scheduler.)
->>
->> We can then define:
->>
->> effective_weighted_load = max(rq->raw_weighted_load, rq->avg_weighted_load)
->>
->> If p is just waking (i.e. it's not on the queue and its load_weight is 
->> not included in rq->raw_weighted_load) and we need to queue it, we say 
->> that the maximum time (in all fairness) that p should have to wait to 
->> get onto the CPU is:
->>
->> expected_wait = p->avg_cpu_per_cycle * effective_weighted_load / 
->> p->load_weight
->>
->> Calculating p->avg_cpu_per_cycle costs one add, one multiply and one 
->> shift right per scheduling cycle of the task.  An additional cost is 
->> that you need a shift right to get the nanosecond value from value 
->> stored in the task struct. (i.e. the above code is simplified to give 
->> the general idea).  The average would be number of cycles based rather 
->> than time based and (happily) this simplifies the calculations.
->>
->> If the expected time to get onto the CPU (i.e. expected_wait plus the 
->> current time) for p is earlier than the equivalent time for the 
->> currently running task then preemption of that task would be justified.
+On Tue, 17 Apr 2007 22:02:10 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> phantom, add a new driver
 > 
-> I 100% agree on this method because I came to nearly the same conclusion on
-> paper about 1 year ago. What I'd like to add is that the expected wake up time
-> is not the most precise criterion for fairness.
-
-It's not the expected wake up time being computed.  It's the expected 
-time that the task is selected to run after being put on the queue 
-(either as a result of waking or being pre-empted).
-
-I think that your comments below are mainly invalid because of this 
-understanding.
-
-> The expected completion
-> time is better. When you have one task t1 which is expected to run for T1
-> nanosecs and another task t2 which is expected to run for T2, what is
-> important for the user for fairness is when the task completes its work. If
-> t1 should wake up at time W1 and t2 at W2, then the list should be ordered
-> by comparing W1+T1 and W2+T2.
-
-This is a point where misunderstanding results in a wrong conclusion. 
-However, the notion of expected completion time is useful.  I'd 
-calculate the expected completion time for the task as it goes on to the 
-CPU and if while it is running a new task is queued whose expected "on 
-CPU" time is before the current task's expected end time you can think 
-about preempting when the new tasks "on CPU" task arrives -- how 
-hard/easy this would be to implement is moot.
-
+> Sensable Phantom is a up to 7DOF force feedback (up to 6DOF FF) device. It's
+> atypical, so it's based on the new added FF_RAW effect.
 > 
-> What I like with this method is that it remains fair with nice tasks because
-> because in order to renice a task tN, you just have to change TN, and if it
-> has to run shorter, it can be executed before CPU hogs and stay there for a
-> very short time.
-> 
-> Also, I found that if we want to respect interactivity, we must conserve a
-> credit for each task.
+> diff --git a/drivers/input/misc/phantom.c b/drivers/input/misc/phantom.c
+> new file mode 100644
+> index 0000000..58f55cd
+> --- /dev/null
+> +++ b/drivers/input/misc/phantom.c
+> @@ -0,0 +1,387 @@
+> +/*
+> + *  Copyright (C) 2005-2007 Jiri Slaby <jirislaby@gmail.com>
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or
+> + *  (at your option) any later version.
+> + *
+> + *  You need an userspace library to cooperate with this driver. It (and other
+> + *  info) may be obtained here:
+> + *  http://www.fi.muni.cz/~xslaby/phantom.html
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/device.h>
+> +#include <linux/pci.h>
+> +#include <linux/fs.h>
+> +#include <linux/poll.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/input.h>
+> +
+> +#include <asm/io.h>
+> +
+> +#define PHANTOM_VERSION		"n0.9.4"
 
-This is one point where the misunderstanding results in an invalid 
-conclusion.  There is no need for credits as the use of the average time 
-on CPU each cycle makes the necessary corrections that credits would be 
-used to address.
+That's an impressive version number ;)
 
-> It is a bounded amount of CPU time left to be used. When
-> the task t3 has the right to use T3 nsecs, and wakes up at W3, if it does not
-> spend T3 nsec on the CPU, but only N3<T3, then we have a credit C3 computed
-> like this :
-> 
->   C3 = MAX(MAX_CREDIT, C3 + T3 - N3)
-> 
-> And if a CPU hog uses more than its assigned time slice due to scheduler
-> resolution, then C3 can become negative (and bounded too) :
-> 
->   C3 = MAX(MIN_CREDIT, C3 + T3 - N3)
-> 
-> Now how is the credit used ? Simple: the credit is a part of a timeslice, so
-> it's systematically added to the computed timeslice when ordering the tasks.
-> So we indeed order tasks t1 and t2 by W1+T1+C1 and W2+T2+C2.
+> +#define PHM_MAX_TORQUES		3
+> +
+> +#define PHN_CONTROL		0x6
+> +#define PHN_CTL_AMP		0x1
+> +#define PHN_CTL_BUT		0x2
+> +#define PHN_CTL_IRQ		0x10
+> +
+> +#define PHN_IRQCTL		0x4c
+> +
+> +#define PHN_ZERO_FORCE		2048
 
-I think this is overcomplicating matters.
+<wonders what all those do>
 
-However, some compensating credit might be in order for tasks that get 
-pre-empted e.g. base their next expected "on CPU" time on the difference 
-between their average on CPU time and they amount they got to use before 
-they were pre-empted.
+> +#define PCI_ENCODER(dev, axis) ((0 - (int)ioread32((dev)->iaddr + (axis))) & \
+> +									0xffff)
 
-> 
-> It means that an interactive task which has not eaten all of timeslice will
-> accumulate time credit have great chances of being able to run before others
-> if it wakes up again, and even use slightly more CPU time than others if it
-> has not used it before. Conversely, if a task eats too much CPU time, it will
-> be punished and wait longer than others, and run less, to compensate for the
-> advance it has taken.
+Is there any reason why this cannot be a lower-cased inline C function? 
+Nicer to read, typesafe, etc.
 
-I think that with this model you can almost do away with the notion of a 
-time slice but I need to think about that some more as the idea I have 
-for doing that may have some gotchas.
+> +#define PHB_RUNNING		1
+> +#define PHB_RESET		2
+> +
+> +static struct PH_CLASSTYPE *phantom_class;
 
-> 
-> Also, what I like with this method is that it can correctly handle the
-> fork/exit storms which quickly change the per-task allocated CPU time.
-> Upon fork() or exit(), it should not be too hard to readjust Tx and Cx
-> for each task and reorder them according to their new completion time.
-> 
-> I've not found a way to include a variable nr_running in the tree and
-> order the tasks according to an external variable, hence the need to
-> rescan the tree upon fork/exit for maximum precision. That's where I
-> stopped working on those ideas. If someone knows how to order the tree
-> by (Wx+(Tx+Cx)/nr_running) with nr_running which can change at any time
-> but which is common for everyone in the tree, that would be great.
+I guess that PH_CLASSTYPE is some protect-me-from-gregkh compatibility
+thing.  But there isn't such a macro in the tree.  I switched this to plain
+old `class'.
 
-There is only one potential exploit for this method that I can see (but 
-that doesn't mean there aren't others) and that is a task that does 
-virtually no CPU use when on the CPU and has very short sleeps such as 
-the expected "on CPU" time is "right now" (and it's happening at high 
-frequency due to the short sleeps), even when other tasks are running, 
-due to the average "on CPU" time being zero. This could be defeated by 
-using min(average "on CPU" time, some system dependent minimum).
+> +struct phantom_device {
+> +	void __iomem *caddr;
+> +	u32 __iomem *iaddr;
+> +	u32 __iomem *oaddr;
+> +	u32 amp_bit;
+> +	s16 torques[PHM_MAX_TORQUES];
+> +	unsigned long status;
+> +
+> +	struct input_dev *idev;
+> +};
+> +
+> +static int phantom_status(struct phantom_device *dev, unsigned long newstat)
+> +{
+> +	pr_debug("phantom_status %lx %lx\n", dev->status, newstat);
+> +
+> +	if (!(dev->status & PHB_RUNNING) && (newstat & PHB_RUNNING)) {
+> +		iowrite32(PHN_CTL_IRQ | PHN_CTL_AMP, dev->iaddr + PHN_CONTROL);
+> +		dev->amp_bit = PHN_CTL_IRQ;
+> +		iowrite32(0x43, dev->caddr + PHN_IRQCTL);
+> +	} else if ((dev->status & PHB_RUNNING) && !(newstat & PHB_RUNNING))
+> +		iowrite32(0, dev->caddr + PHN_IRQCTL);
+> +
+> +	dev->status = newstat;
+> +
+> +	return 0;
+> +}
+> +
+> +static void phantom_close(struct input_dev *idev)
+> +{
+> +	struct phantom_device *dev = idev->private;
+> +
+> +	phantom_status(dev, dev->status & ~PHB_RUNNING);
+> +}
+> +
+> +static void phantom_reset(struct phantom_device *dev)
+> +{
+> +	pr_debug("resetting\n");
+> +
+> +	iowrite32(~0x1f, dev->iaddr);
+> +	wmb();
+> +	iowrite32(0x1f, dev->iaddr);
+> +	dev->status |= PHB_RESET;
+> +}
 
-In practice, it might be prudent to use the idea of maximum expected "on 
-CPU" time instead of the average (especially if you're going to use this 
-for triggering pre-emption).  This would be the average plus two or 
-three time the standard deviation and has the down side that you have to 
-calculate the standard deviation and that means a square root (of course 
-we could use some less mathematically rigorous metric to approximate the 
-standard deviation).  The advantage would be that streamer type programs 
-such as audio/video applications would have very small standard 
-deviations and would hence get earlier expected "on CPU" times than 
-other tasks with similar averages but more random distribution.
+Does the wmb here actually do anything useful?  If so, a comment is needed
+because it isn't possible to work out why that statement is there by
+reading the code.
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+> ...
+>
+> +
+> +static irqreturn_t phantom_isr(int irq, void *data)
+> +{
+> +	struct phantom_device *dev = data;
+> +	struct input_dev *idev = dev->idev;
+> +	unsigned int a, hw_status;
+> +
+> +	hw_status = ioread32(dev->iaddr + PHN_CONTROL);
+> +	if (!(hw_status & PHN_CTL_IRQ))
+> +		return IRQ_NONE;
+> +
+> +	iowrite32(0, dev->iaddr);
+> +	wmb();
+> +	iowrite32(0xc0, dev->iaddr);
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+there too.
+
+> +	if (unlikely(idev == NULL))
+> +		return IRQ_HANDLED;
+
+Can this happen?  If so, a comment explaining why would be nice.
+
+> +	input_report_abs(idev, ABS_X, PCI_ENCODER(dev, 0));
+> +	input_report_abs(idev, ABS_Y, PCI_ENCODER(dev, 1));
+> +	input_report_abs(idev, ABS_Z, PCI_ENCODER(dev, 2));
+> +	input_report_abs(idev, ABS_RX, PCI_ENCODER(dev, 3));
+> +	input_report_abs(idev, ABS_RY, PCI_ENCODER(dev, 4));
+> +	input_report_abs(idev, ABS_RZ, PCI_ENCODER(dev, 5));
+> +	input_report_key(idev, BTN_0, !!(hw_status & PHN_CTL_BUT));
+> +	input_sync(idev);
+> +	input_event(idev, EV_SYN, SYN_CONFIG, 0);
+> +
+> +	for (a = 0; a < PHM_MAX_TORQUES; a++)
+> +		iowrite32(dev->torques[a] + PHN_ZERO_FORCE, dev->oaddr + a);
+> +	iowrite32(dev->amp_bit, dev->iaddr + PHN_CONTROL);
+> +	dev->amp_bit ^= PHN_CTL_AMP;
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +/******************************************************************************
+
+A plain old
+
+/*
+ * Init and deinit driver
+ */
+
+is sufficient and typical.
+
+But this is not actually the most useful of comments anyway ;)
+
+> + * Init and deinit driver
+> + */
+> +static void __devinit phantom_init_idev(const struct pci_dev *pdev,
+> +		struct phantom_device *dev)
+> +{
+> +	struct input_dev *idev = dev->idev;
+> +
+> +	idev->private = dev;
+> +	idev->name = "Sensable Phantom";
+> +	idev->id.bustype = BUS_PCI;
+
+<looks>
+
+<wonders why BUS_PCI got defined in input.h>
+
+<and in drivers/isdn/hardware/eicon/cardtype.h>
+
+<and in drivers/char/sxboards.h>
+
+<hurriedly stops looking>
+
+> +	idev->id.vendor = pdev->vendor;
+> +	idev->id.product = pdev->device;
+> +	idev->id.version = 1;
+> +	idev->close = phantom_close;
+> +
+> +	set_bit(BTN_0, idev->keybit);
+> +	input_set_abs_params(idev, ABS_X, -0x8000, 0x7fff, 4, 0);
+> +	input_set_abs_params(idev, ABS_Y, -0x8000, 0x7fff, 4, 0);
+> +	input_set_abs_params(idev, ABS_Z, -0x8000, 0x7fff, 4, 0);
+> +	input_set_abs_params(idev, ABS_RX, -0x8000, 0x7fff, 4, 0);
+> +	input_set_abs_params(idev, ABS_RY, -0x8000, 0x7fff, 4, 0);
+> +	input_set_abs_params(idev, ABS_RZ, -0x8000, 0x7fff, 4, 0);
+> +	set_bit(FF_RAW, idev->ffbit);
+> +
+> +	set_bit(EV_KEY, idev->evbit);
+> +	set_bit(EV_ABS, idev->evbit);
+> +	set_bit(EV_FF, idev->evbit);
+> +	set_bit(FF_AUTOCENTER, idev->ffbit); /* reset phantom */
+> +}
+> +
+> +static int __devinit phantom_probe(struct pci_dev *pdev,
+> +	const struct pci_device_id *pci_id)
+> +{
+> +	struct phantom_device *pht;
+> +	int retval;
+> +
+> +	retval = pci_enable_device(pdev);
+> +	if (retval)
+> +		goto err;
+> +
+> +	retval = pci_request_regions(pdev, "phantom");
+> +	if (retval)
+> +		goto err;
+
+Missed a pci_disable_device() here?
+
+> +	retval = -ENOMEM;
+> +	pht = kzalloc(sizeof(*pht), GFP_KERNEL);
+> +	if (pht == NULL) {
+> +		dev_err(&pdev->dev, "unable to allocate device\n");
+> +		goto err_reg;
+> +	}
+> +
+> +	pht->caddr = pci_iomap(pdev, 0, 0);
+> +	if (pht->caddr == NULL) {
+> +		dev_err(&pdev->dev, "can't remap conf space\n");
+> +		goto err_fr;
+> +	}
+> +	pht->iaddr = pci_iomap(pdev, 2, 0);
+> +	if (pht->iaddr == NULL) {
+> +		dev_err(&pdev->dev, "can't remap input space\n");
+> +		goto err_unmc;
+> +	}
+> +	pht->oaddr = pci_iomap(pdev, 3, 0);
+> +	if (pht->oaddr == NULL) {
+> +		dev_err(&pdev->dev, "can't remap output space\n");
+> +		goto err_unmi;
+> +	}
+> +
+> +	iowrite32(0, pht->caddr + PHN_IRQCTL);
+> +	retval = request_irq(pdev->irq, phantom_isr,
+> +			IRQF_SHARED | IRQF_DISABLED, "phantom", pht);
+> +	if (retval) {
+> +		dev_err(&pdev->dev, "can't establish ISR\n");
+> +		goto err_unmo;
+> +	}
+> +
+> +	pht->idev = input_allocate_device();
+> +	if (pht->idev == NULL) {
+> +		dev_err(&pdev->dev, "can't create input device\n");
+> +		retval = -ENOMEM;
+> +		goto err_irq;
+> +	}
+> +
+> +	phantom_init_idev(pdev, pht);
+> +
+> +	retval = input_ff_create_memless(pht->idev, NULL, phantom_play);
+> +	if (retval) {
+> +		dev_err(&pdev->dev, "can't create FF device\n");
+> +		goto err_idev;
+> +	}
+> +
+> +	pht->idev->ff->set_autocenter = phantom_autocenter;
+> +
+> +	retval = input_register_device(pht->idev);
+> +	if (retval) {
+> +		dev_err(&pdev->dev, "can't register input device\n");
+> +		goto err_idev;
+> +	}
+> +
+> +	pci_set_drvdata(pdev, pht);
+> +
+> +	return 0;
+> +err_idev:
+> +	input_free_device(pht->idev);
+> +err_irq:
+> +	free_irq(pdev->irq, pht);
+> +err_unmo:
+> +	pci_iounmap(pdev, pht->oaddr);
+> +err_unmi:
+> +	pci_iounmap(pdev, pht->iaddr);
+> +err_unmc:
+> +	pci_iounmap(pdev, pht->caddr);
+> +err_fr:
+> +	kfree(pht);
+> +err_reg:
+> +	pci_release_regions(pdev);
+
+err_disable:
+	pci_disable_device(pdev);
+
+> +err:
+> +	return retval;
+> +}
+> +
+> +static void __devexit phantom_remove(struct pci_dev *pdev)
+> +{
+> +	struct phantom_device *pht = pci_get_drvdata(pdev);
+> +
+> +	iowrite32(0, pht->caddr + PHN_IRQCTL);
+> +
+> +	input_unregister_device(pht->idev);
+> +
+> +	free_irq(pdev->irq, pht);
+> +
+> +	pci_iounmap(pdev, pht->oaddr);
+> +	pci_iounmap(pdev, pht->iaddr);
+> +	pci_iounmap(pdev, pht->caddr);
+> +
+> +	kfree(pht);
+> +
+> +	pci_release_regions(pdev);
+> +}
+
+#ifdef CONFIG_PM
+
+> +static int phantom_suspend(struct pci_dev *pdev, pm_message_t state)
+> +{
+> +	struct phantom_device *dev = pci_get_drvdata(pdev);
+> +
+> +	iowrite32(0, dev->caddr + PHN_IRQCTL);
+> +
+> +	return 0;
+> +}
+> +
+> +static int phantom_resume(struct pci_dev *pdev)
+> +{
+> +	struct phantom_device *dev = pci_get_drvdata(pdev);
+> +
+> +	iowrite32(0, dev->caddr + PHN_IRQCTL);
+> +
+> +	return 0;
+> +}
+
+#else
+#define phantom_suspend NULL
+#define phantom_resume NULL
+#endif
+
+(then test it with CONFIG_PM=n!)
+
+> +static struct pci_device_id phantom_pci_tbl[] __devinitdata = {
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050),
+> +		.class = PCI_CLASS_BRIDGE_OTHER << 8, .class_mask = 0xffff00 },
+> +	{ 0, }
+> +};
+> +MODULE_DEVICE_TABLE(pci, phantom_pci_tbl);
+> +
+> +static struct pci_driver phantom_pci_driver = {
+> +	.name = "phantom",
+> +	.id_table = phantom_pci_tbl,
+> +	.probe = phantom_probe,
+> +	.remove = __devexit_p(phantom_remove),
+> +	.suspend = phantom_suspend,
+> +	.resume = phantom_resume
+> +};
+
+This goes into the read/write section.  Make it const?
+
+> +static ssize_t phantom_show_version(struct class *cls, char *buf)
+> +{
+> +	return sprintf(buf, PHANTOM_VERSION "\n");
+> +}
+> +
+> +static CLASS_ATTR(version, 0444, phantom_show_version, NULL);
+> +
+> +static int __init phantom_init(void)
+> +{
+> +	int retval;
+> +
+> +	phantom_class = class_create(THIS_MODULE, "phantom");
+> +	if (IS_ERR(phantom_class)) {
+> +		retval = PTR_ERR(phantom_class);
+> +		printk(KERN_ERR "phantom: can't register phantom class\n");
+> +		goto err;
+> +	}
+> +	retval = class_create_file(phantom_class, &class_attr_version);
+> +	if (retval) {
+> +		printk(KERN_ERR "phantom: can't create sysfs version file\n");
+> +		goto err_class;
+> +	}
+> +
+> +	retval = pci_register_driver(&phantom_pci_driver);
+> +	if (retval) {
+> +		printk(KERN_ERR "phantom: can't register pci driver\n");
+> +		goto err_attr;
+> +	}
+> +
+> +	printk(KERN_INFO "Phantom Linux Driver, version " PHANTOM_VERSION ", "
+> +			"init OK\n");
+> +
+> +	return 0;
+> +err_attr:
+> +	class_remove_file(phantom_class, &class_attr_version);
+> +err_class:
+> +	class_destroy(phantom_class);
+> +err:
+> +	return retval;
+> +}
+> +
+> +static void __exit phantom_exit(void)
+> +{
+> +	pci_unregister_driver(&phantom_pci_driver);
+> +
+> +	class_remove_file(phantom_class, &class_attr_version);
+> +	class_destroy(phantom_class);
+> +
+> +	pr_debug("phantom: module successfully removed\n");
+> +}
+> +
+> +module_init(phantom_init);
+> +module_exit(phantom_exit);
+> +
+> +MODULE_AUTHOR("Jiri Slaby <jirislaby@gmail.com>");
+> +MODULE_DESCRIPTION("Sensable Phantom driver");
+> +MODULE_LICENSE("GPL");
+> +MODULE_VERSION(PHANTOM_VERSION);
+
