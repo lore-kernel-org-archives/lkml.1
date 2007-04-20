@@ -1,105 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbXDTGrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbXDTGse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbXDTGrN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 02:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbXDTGrN
+	id S1754428AbXDTGse (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 02:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXDTGse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 02:47:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57486 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbXDTGrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 02:47:12 -0400
-Date: Fri, 20 Apr 2007 08:46:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-Message-ID: <20070420064600.GA24614@elte.hu>
-References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au>
+	Fri, 20 Apr 2007 02:48:34 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54324 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754333AbXDTGsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 02:48:33 -0400
+Date: Thu, 19 Apr 2007 23:48:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       Andrew de Quincey <adq_dvb@lidskialf.net>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [PATCH] dvb_en_50221: Convert to kthread API
+Message-Id: <20070419234809.894769e1.akpm@linux-foundation.org>
+In-Reply-To: <20070420063714.GA5205@infradead.org>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<1176969639190-git-send-email-ebiederm@xmission.com>
+	<20070419153413.8768fd1d.akpm@linux-foundation.org>
+	<20070420063714.GA5205@infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46280505.4020605@bigpond.net.au>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Apr 2007 07:37:14 +0100 Christoph Hellwig <hch@infradead.org> wrote:
 
-* Peter Williams <pwil3058@bigpond.net.au> wrote:
-
-> > - bugfix: use constant offset factor for nice levels instead of
-> >   sched_granularity_ns. Thus nice levels work even if someone sets 
-> >   sched_granularity_ns to 0. NOTE: nice support is still naive, i'll 
-> >   address the many nice level related suggestions in -v4.
+> > urgh, yes, this is just sad.  We should convert this driver fully to
+> > the kthread API - it will end up much better.
+> > 
+> > I'll queue this up as a -mm-only thing as a gentle reminder that
+> > we should do it properly.
 > 
-> I have a suggestion I'd like to make that addresses both nice and 
-> fairness at the same time.  As I understand the basic principle behind 
-> this scheduler it to work out a time by which a task should make it 
-> onto the CPU and then place it into an ordered list (based on this 
-> value) of tasks waiting for the CPU. I think that this is a great idea 
-> [...]
+> Here's an attempted update to the full kthread API + wake_up_process:
 
-yes, that's exactly the main idea behind CFS, and thanks for the 
-compliment :)
+ drivers/media/dvb/dvb-core/dvb_ca_en50221.c |   84 +++---------------
+ 1 file changed, 16 insertions(+), 68 deletions(-)
 
-Under this concept the scheduler never really has to guess: every 
-scheduler decision derives straight from the relatively simple 
-one-sentence (!) scheduling concept outlined above. Everything that 
-tasks 'get' is something they 'earned' before and all the scheduler does 
-are micro-decisions based on math with the nanosec-granularity values. 
-Both the rbtree and nanosec accounting are a straight consequence of 
-this too: they are the tools that allow the implementation of this 
-concept in the highest-quality way. It's certainly a very exciting 
-experiment to me and the feedback 'from the field' is very promising so 
-far.
-
-> [...] and my suggestion is with regard to a method for working out 
-> this time that takes into account both fairness and nice.
-> 
-> First suppose we have the following metrics available in addition to 
-> what's already provided.
-> 
-> rq->avg_weight_load /* a running average of the weighted load on the 
-> CPU */ p->avg_cpu_per_cycle /* the average time in nsecs that p spends 
-> on the CPU each scheduling cycle */
-
-yes. rq->nr_running is really just a first-level approximation of 
-rq->raw_weighted_load. I concentrated on the 'nice 0' case initially.
-
-> I appreciate that the notion of basing the expected wait on the task's 
-> average cpu use per scheduling cycle is counter intuitive but I 
-> believe that (if you think about it) you'll see that it actually makes 
-> sense.
-
-hm. So far i tried to not do any statistical approach anywhere: the 
-p->wait_runtime metric (which drives the task ordering) is in essence an 
-absolutely precise 'integral' of the 'expected runtimes' that the task 
-observes and hence is a precise "load-average as observed by the task" 
-in itself. Every time we base some metric on an average value we 
-introduce noise into the system.
-
-i definitely agree with your suggestion that CFS should use a 
-nice-scaled metric for 'load' instead of the current rq->nr_running, but 
-regarding the basic calculations i'd rather lean towards using 
-rq->raw_weighted_load. Hm?
-
-your suggestion concentrates on the following scenario: if a task 
-happens to schedule in an 'unlucky' way and happens to hit a busy period 
-while there are many idle periods. Unless i misunderstood your 
-suggestion, that is the main intention behind it, correct?
-
-	Ingo
+tasty!
