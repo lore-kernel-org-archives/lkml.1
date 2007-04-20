@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993286AbXDTQyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993020AbXDTRIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993286AbXDTQyS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993287AbXDTQyS
+	id S2993020AbXDTRIp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993021AbXDTRIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:54:18 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:16566 "EHLO kernel.dk"
+	Fri, 20 Apr 2007 13:08:45 -0400
+Received: from mail.screens.ru ([213.234.233.54]:43209 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993286AbXDTQyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:54:17 -0400
-Date: Fri, 20 Apr 2007 18:51:36 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Adam Litke <aglitke@gmail.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 4/8] Enhance fallback functions in libs to support higher   order pages
-Message-ID: <20070420165135.GB30100@kernel.dk>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com> <a0a62dfc0704191148v15434469kc3130821cb251072@mail.gmail.com> <Pine.LNX.4.64.0704191208340.12936@schroedinger.engr.sgi.com> <20070420082129.GI6525@kernel.dk> <Pine.LNX.4.64.0704200900060.20068@schroedinger.engr.sgi.com>
+	id S2993020AbXDTRIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:08:44 -0400
+Date: Fri, 20 Apr 2007 21:08:36 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070420170836.GB470@tv-sign.ru>
+References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704200900060.20068@schroedinger.engr.sgi.com>
+In-Reply-To: <20070420092201.GC1695@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20 2007, Christoph Lameter wrote:
-> On Fri, 20 Apr 2007, Jens Axboe wrote:
-> 
-> > This works fine as long as you are in the submitter context, but once
-> > you pass the into the block layer, we don't have any way to find the
-> > address space (at least we don't want to). Would something like this be
-> > workable, name withstanding:
+On 04/20, Jarek Poplawski wrote:
+>
+> On Thu, Apr 19, 2007 at 02:21:22PM +0400, Oleg Nesterov wrote:
+> ...
+> > Yes. It would be better to use cancel_work_sync() instead of flush_workqueue()
+> > to make this less possible (because cancel_work_sync() doesn't need to wait for
+> > the whole ->worklist), but we can't.
 > > 
-> > static unsigned long page_size(struct page *page)
-> > {
-> >         struct address_space *mapping;
-> >         int order = 0;
+> > > Maybe this patch could check, if I'm not dreaming...
 > > 
-> >         mapping = page_mapping(page);
-> >         if (mapping)
-> >                 order = mapping->order;
+> > Also: cancel_rearming_delayed_work() will hang if it (or cancel_delayed_work())
+> > was already called.
 > > 
-> >         return PAGE_CACHE_SIZE << order;
-> > }
+> > I had some ideas how to make this interface reliable, but I can't see how to do
+> > this without uglification of the current code.
 > 
-> There is much simpler solution (possible with mm)
+> For some time I thought about using a flag (isn't there
+> one available after NOAUTOREL?), e.g. WORK_STRUCT_CANCEL,
+> as a sign:
 > 
-> PAGE_SIZE << compound_order(page)
-> 
-> compound_order will return 0 for a non compound page.
+> - for a workqueue code: that the work shouldn't be queued,
+> nor executed, if possiblei, at first possible check.
 
-Ah perfect, much easier. I'll spin a patchset for the block bits.
+Well, yes and no, afaics. (note also that NOAUTOREL has already gone).
 
--- 
-Jens Axboe
+First, this flag should be cleared after return from cancel_rearming_delayed_work().
+Also, we should add a lot of nasty checks to workqueue.c
+
+I _think_ we can re-use WORK_STRUCT_PENDING to improve this interface.
+Note that if we set WORK_STRUCT_PENDING, the work can't be queued, and
+dwork->timer can't be started. The only problem is that it is not so
+trivial to avoid races.
+
+I'll try to do something on Sunday.
+
+> - for a work function: to stop execution as soon as possible,
+> even without completing the usual job, at first possible check.
+
+I doubt we need this "in general". It is easy to add some flag to the
+work_struct's container and check it in work->func() when needed.
+
+Oleg.
 
