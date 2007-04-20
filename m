@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXDTVlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767282AbXDTVsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161228AbXDTVlb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 17:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbXDTVla
+	id S1767282AbXDTVsp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 17:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767281AbXDTVsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 17:41:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51567 "EHLO ogre.sisk.pl"
+	Fri, 20 Apr 2007 17:48:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45673 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754510AbXDTVl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 17:41:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Date: Fri, 20 Apr 2007 23:45:22 +0200
-User-Agent: KMail/1.9.5
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
-References: <20070419120131.GB13435@in.ibm.com> <20070420110520.GB11290@in.ibm.com> <20070420212057.GB820@tv-sign.ru>
-In-Reply-To: <20070420212057.GB820@tv-sign.ru>
+	id S1767273AbXDTVsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 17:48:43 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: linux-kernel@vger.kernel.org
+Subject: BUG: Dentry still in use during umount in 2.6.21-rc5-git6
+Date: Fri, 20 Apr 2007 23:48:39 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-fsdevel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704202345.23823.rjw@sisk.pl>
+Message-Id: <200704202348.39357.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 20 April 2007 23:20, Oleg Nesterov wrote:
-> On 04/20, Gautham R Shenoy wrote:
-> >
-> > On Fri, Apr 20, 2007 at 10:54:36AM +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > Hmm, can't we do something like this instead:
-> > > 
-> > > ---
-> > >  kernel/kthread.c |   10 ++++++++++
-> > >  1 file changed, 10 insertions(+)
-> > > 
-> > > Index: linux-2.6.21-rc7/kernel/kthread.c
-> > > ===================================================================
-> > > --- linux-2.6.21-rc7.orig/kernel/kthread.c
-> > > +++ linux-2.6.21-rc7/kernel/kthread.c
-> > > @@ -13,6 +13,7 @@
-> > >  #include <linux/file.h>
-> > >  #include <linux/module.h>
-> > >  #include <linux/mutex.h>
-> > > +#include <linux/freezer.h>
-> > >  #include <asm/semaphore.h>
-> > > 
-> > >  /*
-> > > @@ -232,6 +233,15 @@ int kthread_stop(struct task_struct *k)
-> > > 
-> > >  	/* Now set kthread_should_stop() to true, and wake it up. */
-> > >  	kthread_stop_info.k = k;
-> > > +	if (!(current->flags & PF_NOFREEZE)) {
-> > > +		/* If we are freezable, the freezer will wait for us */
-> > > +		task_lock(k);
-> > > +		k->flags |= PF_NOFREEZE;
-> > > +		if (frozen(k))
-> > > +			k->flags &= ~PF_FROZEN;
-> > > +
-> > > +		task_unlock(k);
-> > > +	}
-> > 
-> > Yes, we can do this for now since the tasks have only two freeze states,
-> > namely Freezeable and Non Freezeable. 
-> 
-> No, we can't change k->flags, k owns its ->flags, and it is not atomic.
 
-Yes, but if we move PF_FROZEN to a separate field in task_struct with
-appropriate locking, then it won't be a problem any more IMO.
- 
-> Rafael, may I suggest you to document task_lock() in thaw_process() ? This
-> looks really confusing, as if task_lock() protects "p->flags &= ~PF_FROZEN".
-> 
-> Actually, task_lock() is needed to prevent the race with refrigerator()
-> when the freezing fails, but this is not obvious.
+One of my autoboot test clients gave me this during shutdown. It used
+reiserfs and autofs and NFS heavily.
 
-Sure, I will.
+Unmounting file systems
+BUG: Dentry ffff8100f3693a40{i=2352220,n=xattrs} still in use (1) [unmount of reiserfs sda9]
+------------[ cut here ]------------
+kernel BUG at /mnt/dm-2/newautoboot/autoboot/lsrc/mainline/linux/fs/dcache.c:623!
+invalid opcode: 0000 [1] SMP 
+CPU 1 
+Modules linked in:
+Pid: 15791, comm: umount Not tainted 2.6.21-rc5-git6 #44
+RIP: 0010:[<ffffffff80287454>]  [<ffffffff80287454>] shrink_dcache_for_umount_subtree+0x178/0x250
+RSP: 0018:ffff8100f5f67e18  EFLAGS: 00010292
+RAX: 0000000000000060 RBX: ffff8100f3693a40 RCX: 0000000000005207
+RDX: 00000000ffffffff RSI: 0000000000000046 RDI: 0000000000014661
+RBP: ffff8100f6dc9cc0 R08: 00000000000000a0 R09: 00000005ffffffff
+R10: 0000000000000000 R11: 0000000000000000 R12: ffff8100f3693aa0
+R13: 0000000000014661 R14: 000000000050ea70 R15: 000000000050ead0
+FS:  00002adc863a86d0(0000) GS:ffff8100f7fdc1c0(0000) knlGS:00000000b7be38d0
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00002adc8626a688 CR3: 00000000f628b000 CR4: 00000000000006e0
+Process umount (pid: 15791, threadinfo ffff8100f5f66000, task ffff8100f7a08100)
+Stack:  ffff810004dab218 ffff810004dab000 ffffffff80558860 ffff810004dab000
+ 0000000000000000 ffffffff8028815b ffff810004dab000 ffffffff8027a1a5
+ 0000000000000000 ffff8100f6c50980 ffffffff806c1600 ffffffff8027a2a4
+Call Trace:
+ [<ffffffff8028815b>] shrink_dcache_for_umount+0x2f/0x3d
+ [<ffffffff8027a1a5>] generic_shutdown_super+0x19/0xf2
+ [<ffffffff8027a2a4>] kill_block_super+0x26/0x3b
+ [<ffffffff8027a350>] deactivate_super+0x47/0x60
+ [<ffffffff8028bf94>] sys_umount+0x1f7/0x22a
+ [<ffffffff8027b64d>] sys_newstat+0x19/0x31
+ [<ffffffff8020932e>] system_call+0x7e/0x83
 
-Greetings,
-Rafael
+
+Code: 0f 0b eb fe 48 8b 6b 28 48 39 dd 75 04 31 ed eb 04 f0 ff 4d 
+RIP  [<ffffffff80287454>] shrink_dcache_for_umount_subtree+0x178/0x250
+ RSP <ffff8100f5f67e18>
+/etc/init.d/boot.d/K14boot.localfs: line 93: 15791 Segmentation fault      umount -avt noproc,nonfs,nonfs4,nosmbfs,nocifs,notmpfs
+
+
+
+-Andi
