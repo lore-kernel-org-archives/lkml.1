@@ -1,95 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993328AbXDTUVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993329AbXDTUV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993328AbXDTUVQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 16:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993326AbXDTUVP
+	id S2993329AbXDTUV2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 16:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993327AbXDTUV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:21:15 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55097 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993325AbXDTUVO (ORCPT
+	Fri, 20 Apr 2007 16:21:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:61904 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993331AbXDTUV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:21:14 -0400
-Subject: Re: [PATCH] cciss: Fix warnings during compilation under
-	32bitenvironment
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Cameron, Steve" <Steve.Cameron@hp.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20070420123041.94aac1e1.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
-	 <226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
-	 <1176995934.31764.7.camel@mulgrave.il.steeleye.com>
-	 <226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
-	 <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
-	 <558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
-	 <20070419222028.d33c7f86.akpm@linux-foundation.org>
-	 <1177074641.3718.5.camel@mulgrave.il.steeleye.com>
-	 <20070420114337.12a67141.akpm@linux-foundation.org>
-	 <1177095007.3718.43.camel@mulgrave.il.steeleye.com>
-	 <20070420123041.94aac1e1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 20 Apr 2007 16:20:59 -0400
-Message-Id: <1177100459.3718.45.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 20 Apr 2007 16:21:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=EQNBUnw8xGoTs5wILrhAqtukcfneUG3R2CntNuvh/bwc0ffsYR9fdBubyouy8kmkziqAjkl+dvJhkJ1fPX4gpl8b6PDQddkzgkyL7z9nyPFtfuN8inTez+ZhGAYNOIvi71S4nwBLaE+CznrWt+Ejf7wNOn7a42yX9acHMxQ//lE=
+Message-ID: <da612e190704201321o115e44eck570e716fd7869555@mail.gmail.com>
+Date: Fri, 20 Apr 2007 22:21:26 +0200
+From: "Mark Stier" <markstier@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: FYI: Xen or kernel bug?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-20 at 12:30 -0700, Andrew Morton wrote:
-> On Fri, 20 Apr 2007 14:50:06 -0400
-> James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> 
-> > > CONFIG_LBD=y gives us an additional 3kb of instructions on i386
-> > > allnoconfig.  Other architectures might do less well.  It's not a huge
-> > > difference, but that's the way in which creeping bloatiness happens.
-> > 
-> > OK, sure, but if we really care about this saving, then unconditionally
-> > casting to u64 is therefore wrong as well ... this is starting to open
-> > quite a large can of worms ...
-> > 
-> > For the record, if we have to do this, I fancy sector_upper_32() ... we
-> > should already have some similar accessor for dma_addr_t as well.
-> 
-> hm.  How about this?
-> 
-> --- a/include/linux/kernel.h~upper-32-bits
-> +++ a/include/linux/kernel.h
-> @@ -40,6 +40,17 @@ extern const char linux_proc_banner[];
->  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
->  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
->  
-> +/**
-> + * upper_32_bits - return bits 32-63 of a number
-> + * @n: the number we're accessing
-> + *
-> + * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
-> + * the "right shift count >= width of type" warning when that quantity is
-> + * 32-bits.
-> + */
-> +#define upper_32_bits(n) (((u64)(n)) >> 32)
+Hello,
 
-Won't this have the unwanted side effect of promoting everything in a
-calculation to long long on 32 bit platforms, even if n was only 32
-bits?
+tcp_vegas produces division by zero kernel oopses in dom0 when running
+a Xen-patched 2.6.16.28 kernel. I have tracked down the problem to
+line #256 in tcp_vegas.c: presumably due to flaky Xen timing, the rtt
+seems to get zero from time to time (adding 1 to the rtt variable
+solves the problem for me). The same should apply to line #140 in
+tcp_veno.c, too.
 
-> +
-> +
->  #define	KERN_EMERG	"<0>"	/* system is unusable			*/
->  #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
->  #define	KERN_CRIT	"<2>"	/* critical conditions			*/
-> _
-> 
-> It seems to generate the desired code.  I avoided Alan's ((n >> 31) >> 1)
-> trick because it'll generate peculiar results with signed 64-bit
-> quantities.
-
-I've seen the trick done similarly with ((n >> 16) >> 16) which
-shouldn't have the issue.
-
-James
-
-
+Best regards,
+Mark
