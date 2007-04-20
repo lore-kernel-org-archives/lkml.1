@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767064AbXDTMHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767066AbXDTMHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767064AbXDTMHQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 08:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767069AbXDTMHQ
+	id S1767066AbXDTMHT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 08:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767070AbXDTMHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 08:07:16 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:56674 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767066AbXDTMHO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 08:07:14 -0400
-Date: Fri, 20 Apr 2007 14:07:20 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: chris@pcburn.com, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: GPL-incompatible Module Error Message
-Message-ID: <20070420120720.GW10338@stusta.de>
-References: <4627EED5.6020800@pcburn.com> <p73vefr4y1c.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 20 Apr 2007 08:07:19 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:37815 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767066AbXDTMHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 08:07:18 -0400
+Date: Fri, 20 Apr 2007 14:12:56 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: [PATCH] workqueue: cancel_rearming_delayed_work/workqueue usage warning
+Message-ID: <20070420121255.GA4042@ff.dom.local>
+References: <20070419065404.GB1782@ff.dom.local> <20070419144618.GG32602149@melbourne.sgi.com> <20070420081325.GB1695@ff.dom.local> <20070420085354.GP32602149@melbourne.sgi.com> <20070420102157.GD1695@ff.dom.local> <20070420110119.GS32602149@melbourne.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p73vefr4y1c.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20070420110119.GS32602149@melbourne.sgi.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 03:47:27AM +0200, Andi Kleen wrote:
-> Chris Bergeron <chris@pcburn.com> writes:
-> 
-> > Hello all,
-> > 
-> > Building the fglrx module against the current Linux kernel (2.6.20.7
-> > as of this e-mail) I'm getting an error:
-> > 
-> > FATAL: modpost: GPL-incompatible module fglrx.ko uses GPL-only symbol
-> > 'paravirt_ops'
-> 
-> It should probably be available for non GPL modules too. Otherwise
-> they can't even disable interrupts, which seems a bit extreme.
-> I will change that in my tree.
 
-Don't do this, this would allow non-GPL modules write access to 
-paravirt_ops.
+Here is my proposal to make things clearer:
+(this time on 2.6.21-rc7)
 
-Operations required by modules should be exported separately.
+CC: David Chinner <dgc@sgi.com>
+CC: Oleg Nesterov <oleg@tv-sign.ru>
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
 
-> -Andi
+---
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff -Nurp 2.6.21-rc7-/kernel/workqueue.c 2.6.21-rc7/kernel/workqueue.c
+--- 2.6.21-rc7-/kernel/workqueue.c	2007-04-18 10:14:16.000000000 +0200
++++ 2.6.21-rc7/kernel/workqueue.c	2007-04-20 13:56:51.000000000 +0200
+@@ -662,6 +662,8 @@ EXPORT_SYMBOL(flush_scheduled_work);
+  * cancel_rearming_delayed_workqueue - reliably kill off a delayed work whose handler rearms the delayed work.
+  * @wq:   the controlling workqueue structure
+  * @dwork: the delayed work struct
++ *
++ * WARNING: use only with handlers, which rearm unconditionally with delay > 0
+  */
+ void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
+ 				       struct delayed_work *dwork)
+@@ -674,6 +676,8 @@ EXPORT_SYMBOL(cancel_rearming_delayed_wo
+ /**
+  * cancel_rearming_delayed_work - reliably kill off a delayed keventd work whose handler rearms the delayed work.
+  * @dwork: the delayed work struct
++ *
++ * WARNING: use only with handlers, which rearm unconditionally with delay > 0
+  */
+ void cancel_rearming_delayed_work(struct delayed_work *dwork)
+ {
