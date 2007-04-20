@@ -1,43 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992947AbXDTNjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbXDTNlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992947AbXDTNjw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 09:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993248AbXDTNjw
+	id S1753537AbXDTNlE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 09:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXDTNlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 09:39:52 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36345 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753537AbXDTNju (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 09:39:50 -0400
-Date: Fri, 20 Apr 2007 14:43:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bhuvan Kumar MITTAL <bhuvan.mittal@st.com>
-Cc: <linux-kernel@vger.kernel.org>, <bhuvan.mittal@st.com>
-Subject: Re: How to make mmap'ed kernel buffer non-cacheable
-Message-ID: <20070420144312.74ec1ebd@the-village.bc.nu>
-In-Reply-To: <000201c7834b$dda8c6c0$142ec70a@dlh.st.com>
-References: <000201c7834b$dda8c6c0$142ec70a@dlh.st.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Apr 2007 09:41:04 -0400
+Received: from mx2.suse.de ([195.135.220.15]:44934 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753537AbXDTNlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 09:41:03 -0400
+To: guilherme <guilherme@centralinf.com.br>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc7: HPET enabled freeze my machine at boot
+References: <4628B0DA.3070907@centralinf.com.br>
+	<p73mz133zr0.fsf@bingen.suse.de> <4628C045.3020503@centralinf.com.br>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 20 Apr 2007 16:38:53 +0200
+In-Reply-To: <4628C045.3020503@centralinf.com.br>
+Message-ID: <p73irbr3ybm.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 18:30:25 +0530
-Bhuvan Kumar MITTAL <bhuvan.mittal@st.com> wrote:
+guilherme <guilherme@centralinf.com.br> writes:
 
-> Hi,
->   I am working on an audio device driver development on Linux. I have a kernel buffer which I have mapped to user space using mmap call from user space. My problem is that the data which comes to the kernel buffer is getting dropped in user space and I get only 50-60% of the data which is randomly ordered. The user to kernel level buffer address translation code is fine and I suspect this data dropping is occurring coz the kernel buffer is cacheable. Please suggest me some way of making the entire buffer non cacheable. I am stuck on this for quite a while now. 
+> With noapic it freezes too. This doesn't occur with 2.6.20.x thought.
 
-The dma mapping API (or the PCI equivalent) provide the neccessary
-behaviours for DMA receive, DMA send and consistent memory space in a
-portable fashion.
+Ah. Can you please git bisect it then? 
 
-That may not be done using uncachable memory in all cases as not all
-processors even support uncacheable memory spaces.
-
-If you are using the ALSA core routines (snd_dma_alloc_coherent) then
-ALSA already uses dma_alloc_coherent to ensure the memory is allocated
-for the appropriate use and will be kernel marked uncached.
+-Andi
