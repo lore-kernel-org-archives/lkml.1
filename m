@@ -1,99 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031007AbXDTQfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993281AbXDTQfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031007AbXDTQfZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030930AbXDTQfZ
+	id S2993281AbXDTQfw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993282AbXDTQfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:35:25 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57592 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031007AbXDTQfX (ORCPT
+	Fri, 20 Apr 2007 12:35:52 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:60707 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993281AbXDTQfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:35:23 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [patch 0/8]  mount ownership and unprivileged mount syscall (v4)
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420124249.GC29498@sergelap.austin.ibm.com>
-Date: Fri, 20 Apr 2007 10:33:13 -0600
-In-Reply-To: <20070420124249.GC29498@sergelap.austin.ibm.com> (Serge
-	E. Hallyn's message of "Fri, 20 Apr 2007 07:42:49 -0500")
-Message-ID: <m18xcnknue.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 20 Apr 2007 12:35:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TQJb1B/mdiOewzGSTjXQxjSGemsXXvr6K9sxyPbgDIMeNqPqRVtu12RfrXp65gLJmobvkByn+HOlzOcUWPHVYoGwrFrRqwlNbVL/I/7sOcWNR4jXYrT0xOSwhTPHxZcJY7oVaq1EsEo9EBTxTrWJLHbt1LEcxGb0gsexyI/D9DE=
+Message-ID: <d120d5000704200935r2fb1e614m6da149eee0aec5b6@mail.gmail.com>
+Date: Fri, 20 Apr 2007 12:35:48 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
+In-Reply-To: <462856B9.9010307@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>
+	 <46263A82.1030703@gmail.com>
+	 <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>
+	 <20070419145133.2f7ed45a@gondolin.boeblingen.de.ibm.com>
+	 <d120d5000704190613h178ad644h53ad817db2950426@mail.gmail.com>
+	 <20070419154849.2e722762@gondolin.boeblingen.de.ibm.com>
+	 <d120d5000704190721u16be1110ufe04880eded7d54e@mail.gmail.com>
+	 <462856B9.9010307@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
+Hi Tejun,
 
-> Quoting Miklos Szeredi (miklos@szeredi.hu):
->> This patchset has now been bared to the "lowest common denominator"
->> that everybody can agree on.  Or at least there weren't any objections
->> to this proposal.
->> 
->> Andrew, please consider it for -mm.
->> 
->> Thanks,
->> Miklos
->> ----
->> 
->> v3 -> v4:
->> 
->>  - simplify interface as much as possible, now only a single option
->>    ("user=UID") is used to control everything
->>  - no longer allow/deny mounting based on file/directory permissions,
->>    that approach does not always make sense
->> 
->> ----
->> This patchset adds support for keeping mount ownership information in
->> the kernel, and allow unprivileged mount(2) and umount(2) in certain
->> cases.
->> 
->> The mount owner has the following privileges:
->> 
->>   - unmount the owned mount
->>   - create a submount under the owned mount
->> 
->> The sysadmin can set the owner explicitly on mount and remount.  When
->> an unprivileged user creates a mount, then the owner is automatically
->> set to the user.
->> 
->> The following use cases are envisioned:
->> 
->> 1) Private namespace, with selected mounts owned by user.
->>    E.g. /home/$USER is a good candidate for allowing unpriv mounts and
->>    unmounts within.
->> 
->> 2) Private namespace, with all mounts owned by user and having the
->>    "nosuid" flag.  User can mount and umount anywhere within the
->>    namespace, but suid programs will not work.
->> 
->> 3) Global namespace, with a designated directory, which is a mount
->>    owned by the user.  E.g. /mnt/users/$USER is set up so that it is
->>    bind mounted onto itself, and set to be owned by $USER.  The user
->>    can add/remove mounts only under this directory.
->> 
->> The following extra security measures are taken for unprivileged
->> mounts:
->> 
->>  - usermounts are limited by a sysctl tunable
->>  - force "nosuid,nodev" mount options on the created mount
+On 4/20/07, Tejun Heo <htejun@gmail.com> wrote:
+> Hello, Dmitry.
 >
-> Very nice.  I like these semantics.
+> Dmitry Torokhov wrote:
+> > On 4/19/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> >> On Thu, 19 Apr 2007 09:13:43 -0400,
+> >> "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+> >>
+> >> > Because they are managed by 2 different entities. the struct device
+> >> > objects are managed by device core and driver-specific objects are
+> >> > managed by their respective driver.
+> >>
+> >> Not sure if I understand you here. My view of this was always that the
+> >> embedding object was kind of an extended device and that the relevant
+> >> driver/subsystem managed it through the driver core infrastructure.
+> >>
+> >
+> > I am not sure if I agree with this point of view. Driver (or
+> > subsystem) provides an instance of struct device for the rest of the
+> > system to iteract uniformly with (suspend/resume/tree
+> > visualization/etc) i.e. struct device implement an interface for
+> > subsystems. However most of the system use their own mechanisms to
+> > manage their devices. They can rely on the driver core to a certain
+> > degree but driver core is mostly a carries out helper functions, not
+> > the meat.
 >
-> I'll try to rework my laptop in the next few days to use this patchset
-> as a test.
+> Many drivers (at least all the SCSI/IDE ones) consider struct device as
+> the base class of the devices those drivers implement.  I don't think we
+> can just consider those drivers to be wrong.
 
-Agreed.  It appears the approach of adding owner ship information to
-mount points and using that to control what may happen with them
-in regards to mount/unmount is the only workable approach in the
-unix environment.
+I am not saying they are wrong I am just saying that driver core is
+not where most work is done. Every subsystem has its own locking rules
+and lifetime rules and they are what is important. Whether subsystem
+uses embedding or referencing of struct devices is implementation
+detail.
 
-Now to dig into the details and ensure that they are correct.
+What is the goal of driver core? I thought the main goal was to have
+an uniform interface for device power management and presentation of
+device tree to userspace. It has nothing to do with main purposes of
+every individual subsystem - making some set of devices/services work.
 
-Eric
+-- 
+Dmitry
