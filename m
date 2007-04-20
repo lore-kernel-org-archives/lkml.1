@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbXDTGse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422974AbXDTG7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbXDTGse (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 02:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXDTGse
+	id S1422974AbXDTG7J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 02:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbXDTG7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 02:48:34 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:54324 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754333AbXDTGsd (ORCPT
+	Fri, 20 Apr 2007 02:59:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54929
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753981AbXDTG7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 02:48:33 -0400
-Date: Thu, 19 Apr 2007 23:48:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       Andrew de Quincey <adq_dvb@lidskialf.net>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH] dvb_en_50221: Convert to kthread API
-Message-Id: <20070419234809.894769e1.akpm@linux-foundation.org>
-In-Reply-To: <20070420063714.GA5205@infradead.org>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<1176969639190-git-send-email-ebiederm@xmission.com>
-	<20070419153413.8768fd1d.akpm@linux-foundation.org>
-	<20070420063714.GA5205@infradead.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 20 Apr 2007 02:59:07 -0400
+Date: Thu, 19 Apr 2007 23:59:08 -0700 (PDT)
+Message-Id: <20070419.235908.122942095.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: akpm@linux-foundation.org, k-keiichi@bx.jp.nec.com, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take4 6/6] add ioctls for adding/removing
+ target
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070419223909.00e8285d@localhost.localdomain>
+References: <46260BBF.2070202@bx.jp.nec.com>
+	<20070419211630.70c20706.akpm@linux-foundation.org>
+	<20070419223909.00e8285d@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 07:37:14 +0100 Christoph Hellwig <hch@infradead.org> wrote:
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Thu, 19 Apr 2007 22:39:09 -0700
 
-> > urgh, yes, this is just sad.  We should convert this driver fully to
-> > the kthread API - it will end up much better.
-> > 
-> > I'll queue this up as a -mm-only thing as a gentle reminder that
-> > we should do it properly.
-> 
-> Here's an attempted update to the full kthread API + wake_up_process:
+> Should't this just be a network ioctl against an UDP (AF_INET,
+> SOCK_DGRAM) socket?  Also consider netconsole over IPV6 for future
+> enhancement.
 
- drivers/media/dvb/dvb-core/dvb_ca_en50221.c |   84 +++---------------
- 1 file changed, 16 insertions(+), 68 deletions(-)
-
-tasty!
+If it's on a socket use a socket option :-)
