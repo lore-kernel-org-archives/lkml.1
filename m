@@ -1,47 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030974AbXDTTU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767197AbXDTTWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030974AbXDTTU6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 15:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030977AbXDTTU5
+	id S1767197AbXDTTWG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 15:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767200AbXDTTWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 15:20:57 -0400
-Received: from holomorphy.com ([66.93.40.71]:49662 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030974AbXDTTU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 15:20:57 -0400
-Date: Fri, 20 Apr 2007 12:21:15 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 7/8] Enhance ramfs to support higher order pages
-Message-ID: <20070420192115.GK31925@holomorphy.com>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163540.11948.51549.sendpatchset@schroedinger.engr.sgi.com> <20070420134226.GA16878@skynet.ie> <20070420144726.GI31925@holomorphy.com> <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com> <20070420171118.GZ2986@holomorphy.com> <Pine.LNX.4.64.0704201012500.20723@schroedinger.engr.sgi.com> <20070420171928.GA2986@holomorphy.com> <Pine.LNX.4.64.0704201051040.20868@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704201051040.20868@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 20 Apr 2007 15:22:06 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:57548 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767197AbXDTTWF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 15:22:05 -0400
+X-Greylist: delayed 1474 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Apr 2007 15:22:04 EDT
+Subject: Fault Injection issues: stacktrace x86_64 and failslab NUMA
+From: Scott Porter <scott@opengridcomputing.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 20 Apr 2007 13:55:54 -0500
+Message-Id: <1177095354.25165.48.camel@scott-desktop.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, William Lee Irwin III wrote:
->> Probably just terminological disagreement here. I was referring to
->> allocating the higher-order page from the fault path here, not mapping
->> it or a piece of it with a user pte.
+I'm attempting to use Fault Injection stacktrace filtering on an x86_64
+platform (see config details below) and finding problems:
 
-On Fri, Apr 20, 2007 at 10:57:25AM -0700, Christoph Lameter wrote:
-> Ah. Okay. I have some dysfunctional patches here that implement mmap 
-> support. Would you be willing to take care of that aspect of things? Then 
-> I can focus on the other VM pieces. I am going to post them following this 
-> message. These are an absolute mess. They do not compile etc etc.
+(1) Apparently stacktrace on x86_64 isn't always reliable but the fault
+injection code path to save a stack trace looks *completely* unreliable
 
-Good stuff. Going over this sounds like more fun than trying to 
-preemptively clean up after whichever scheduler trainwreck ends up
-hitting mainline.
+(2) CONFIG_NUMA and failslab don't mix -- the NUMA code successfully
+allocates after the fault injection code thinks it has failed!
+
+Details:
+
+(1) When the fault injection code is saving a stack trace to compare
+require-start/require-end addresses, it employs the following code in
+arch/x86_64/kernel/traps.c where the task is the currently running
+thread:
+
+        if (!stack) {
+                unsigned long dummy;
+                stack = &dummy;
+                if (tsk && tsk != current)
+                        stack = (unsigned long *)tsk->thread.rsp;
+        }
+
+Can anyone explain how this code could possibly get a valid stack
+pointer using "&dummy" on an automatic variable defined in the middle of
+a routine that has arguments and other auto variables?  When I look at
+the stack buffer that is saved it contains only entries for
+"should_fail()" and so fail_stacktrace() NEVER matches on the start/end
+addresses.
+
+Prior to this patch:
+
+  2006-09-26 Andi Kleen [PATCH] Merge stacktrace and show_trace
+
+the save_stack_trace() routine would get the current thread stack
+pointer this way:
+
+-       if (!task || task == current) {
+-               /* Grab rbp right from our regs: */
+-               asm ("mov %%rbp, %0" : "=r" (stack));
+
+Any pointers you can give to help me understand x86_64 stack frames
+and/or how this code should work is appreciated!
+
+I'd like to take advantage of the Fault Injection capabilities to debug
+error paths in a driver but without reliable stacktrace it looks like
+I'm left to invent my own kmalloc() error injection methods.  Anybody
+know how to interpose (a la LD_PRELOAD) on exported kernel interfaces
+like kmalloc() for a loadable kernel module?!  I'm thinking that Fault
+Injection for failslab and fail-page-alloc provided as a separate
+loadable module would be more appealing than having to add debug code
+into the kernel anyways?
+
+(2) The fault injection code in mm/slab.c within ____cache_alloc()
+returns NULL when should_failslab() returns true.  HOWEVER, later code
+in __cache_alloc() compiled in with NUMA_BUILD (via CONFIG_NUMA)
+successfully allocates memory from another node and prevents the error
+injection from really failing:
+
+    if (!objp)
+            objp = ____cache_alloc(cachep, flags);
+    /*
+     * We may just have run out of memory on the local node.
+     * ____cache_alloc_node() knows how to locate memory on other nodes
+     */
+    if (NUMA_BUILD && !objp)
+            objp = ____cache_alloc_node(cachep, flags, numa_node_id());
+
+Not sure what the best way is to deal with this (other than turning off
+CONFIG_NUMA!).
+
+Config details:
+
+2.6.20.1 x86_64
+CONFIG_DEBUG_KERNEL=y
+CONFIG_STACKTRACE=y
+CONFIG_FRAME_POINTER=y
+CONFIG_FAULT_INJECTION=y
+CONFIG_FAILSLAB=y
+CONFIG_FAIL_PAGE_ALLOC=y
+# CONFIG_FAIL_MAKE_REQUEST is not set
+CONFIG_FAULT_INJECTION_DEBUG_FS=y
+CONFIG_NUMA=y
 
 
--- wli
+
