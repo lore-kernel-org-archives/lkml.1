@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767068AbXDTMCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767064AbXDTMHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767068AbXDTMCi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 08:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767066AbXDTMCi
+	id S1767064AbXDTMHQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 08:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767069AbXDTMHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 08:02:38 -0400
-Received: from mx34.mail.ru ([194.67.23.200]:12958 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767068AbXDTMCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 08:02:36 -0400
-Date: Fri, 20 Apr 2007 16:00:42 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: linux-kernel@vger.kernel.org
-Cc: kernel-discuss@handhelds.org
-Subject: [PATCH 7/7] remove "#if 0" from find_bus function, export it.
-Message-ID: <20070420120042.GG21752@zarina>
+	Fri, 20 Apr 2007 08:07:16 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:56674 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767066AbXDTMHO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 08:07:14 -0400
+Date: Fri, 20 Apr 2007 14:07:20 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: chris@pcburn.com, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: GPL-incompatible Module Error Message
+Message-ID: <20070420120720.GW10338@stusta.de>
+References: <4627EED5.6020800@pcburn.com> <p73vefr4y1c.fsf@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <p73vefr4y1c.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This function were placed in "#if 0" because nobody was using it.
-We using it now.
+On Fri, Apr 20, 2007 at 03:47:27AM +0200, Andi Kleen wrote:
+> Chris Bergeron <chris@pcburn.com> writes:
+> 
+> > Hello all,
+> > 
+> > Building the fglrx module against the current Linux kernel (2.6.20.7
+> > as of this e-mail) I'm getting an error:
+> > 
+> > FATAL: modpost: GPL-incompatible module fglrx.ko uses GPL-only symbol
+> > 'paravirt_ops'
+> 
+> It should probably be available for non GPL modules too. Otherwise
+> they can't even disable interrupts, which seems a bit extreme.
+> I will change that in my tree.
 
-See http://lwn.net/Articles/210610/
+Don't do this, this would allow non-GPL modules write access to 
+paravirt_ops.
 
-Signed-off-by: Anton Vorontsov <cbou@mail.ru>
----
- drivers/base/bus.c     |    5 ++---
- include/linux/device.h |    2 ++
- 2 files changed, 4 insertions(+), 3 deletions(-)
+Operations required by modules should be exported separately.
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 253868e..971efa2 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -667,14 +667,13 @@ void put_bus(struct bus_type * bus)
-  *
-  *	Note that kset_find_obj increments bus' reference count.
-  */
--#if 0
-+
- struct bus_type * find_bus(char * name)
- {
- 	struct kobject * k = kset_find_obj(&bus_subsys.kset, name);
- 	return k ? to_bus(k) : NULL;
- }
--#endif  /*  0  */
--
-+EXPORT_SYMBOL_GPL(find_bus);
- 
- /**
-  *	bus_add_attrs - Add default attributes for this bus.
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 5cf30e9..4015b39 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -68,6 +68,8 @@ extern void bus_unregister(struct bus_type * bus);
- 
- extern int __must_check bus_rescan_devices(struct bus_type * bus);
- 
-+extern struct bus_type *find_bus(char *name);
-+
- /* iterator helpers for buses */
- 
- int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data,
+> -Andi
+
+cu
+Adrian
+
 -- 
-1.5.1.1-dirty
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
