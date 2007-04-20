@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993020AbXDTRIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993055AbXDTRKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993020AbXDTRIp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993021AbXDTRIp
+	id S2993055AbXDTRKz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993021AbXDTRKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:08:45 -0400
-Received: from mail.screens.ru ([213.234.233.54]:43209 "EHLO mail.screens.ru"
+	Fri, 20 Apr 2007 13:10:55 -0400
+Received: from holomorphy.com ([66.93.40.71]:40741 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993020AbXDTRIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:08:44 -0400
-Date: Fri, 20 Apr 2007 21:08:36 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070420170836.GB470@tv-sign.ru>
-References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local>
-Mime-Version: 1.0
+	id S2993055AbXDTRKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:10:54 -0400
+Date: Fri, 20 Apr 2007 10:11:18 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 7/8] Enhance ramfs to support higher order pages
+Message-ID: <20070420171118.GZ2986@holomorphy.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163540.11948.51549.sendpatchset@schroedinger.engr.sgi.com> <20070420134226.GA16878@skynet.ie> <20070420144726.GI31925@holomorphy.com> <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070420092201.GC1695@ff.dom.local>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/20, Jarek Poplawski wrote:
->
-> On Thu, Apr 19, 2007 at 02:21:22PM +0400, Oleg Nesterov wrote:
-> ...
-> > Yes. It would be better to use cancel_work_sync() instead of flush_workqueue()
-> > to make this less possible (because cancel_work_sync() doesn't need to wait for
-> > the whole ->worklist), but we can't.
-> > 
-> > > Maybe this patch could check, if I'm not dreaming...
-> > 
-> > Also: cancel_rearming_delayed_work() will hang if it (or cancel_delayed_work())
-> > was already called.
-> > 
-> > I had some ideas how to make this interface reliable, but I can't see how to do
-> > this without uglification of the current code.
-> 
-> For some time I thought about using a flag (isn't there
-> one available after NOAUTOREL?), e.g. WORK_STRUCT_CANCEL,
-> as a sign:
-> 
-> - for a workqueue code: that the work shouldn't be queued,
-> nor executed, if possiblei, at first possible check.
+On Fri, 20 Apr 2007, William Lee Irwin III wrote:
+>> Careful there. mmap() needs more than this.
+>> (1) mapping->order is variable within an fs, so the architectural code
+>> 	would need some vague awareness of the underlying page size
+>> 	being variable unless the fs restricts it properly.
 
-Well, yes and no, afaics. (note also that NOAUTOREL has already gone).
+On Fri, Apr 20, 2007 at 09:30:30AM -0700, Christoph Lameter wrote:
+> We can map arbitrary 4k chunks of larger pages.
 
-First, this flag should be cleared after return from cancel_rearming_delayed_work().
-Also, we should add a lot of nasty checks to workqueue.c
+The core VM can do that but the hugetlb architectural code can't fall
+back to smaller page sizes. It also should not be put into a situation
+where it needs to do so given the semantics it must honor.
 
-I _think_ we can re-use WORK_STRUCT_PENDING to improve this interface.
-Note that if we set WORK_STRUCT_PENDING, the work can't be queued, and
-dwork->timer can't be started. The only problem is that it is not so
-trivial to avoid races.
 
-I'll try to do something on Sunday.
+On Fri, 20 Apr 2007, William Lee Irwin III wrote:
+>> The hugetlbfs fs stub has by and large been a huge embarrassment to me,
+>> so I'd welcome the opportunity to foist off the vfs lifting onto ramfs.
+>> I'd be happier with real superpages, but it's not my kernel.
 
-> - for a work function: to stop execution as soon as possible,
-> even without completing the usual job, at first possible check.
+On Fri, Apr 20, 2007 at 09:30:30AM -0700, Christoph Lameter wrote:
+> We are not doing superpages in any form. The filesystem determines it page 
+> cache size thereby managing pages of arbitrary order. The usual VM 
+> mmap will work using PAGE_SIZEd mappings as now (once that is working 
+> right). There is no need to tie the page cache order to the page sizes 
+> used by mmap or the sizes used by the fault handling of the VM.
 
-I doubt we need this "in general". It is easy to add some flag to the
-work_struct's container and check it in work->func() when needed.
+Fine, s/real superpages/superpages/ -- I'm not picky enough.
 
-Oleg.
+Also, the final assertion is inaccurate. Fault handlers must instantiate
+pages of order mapping->order when faulting in a page of a file with
+a given pagecache size. The semantics of faulting and mmap()'ing are
+slightly underspecified but no requirements for the size of the newly
+established translations are included, so they can be PAGE_SIZE easily
+enough.
 
+
+-- wli
