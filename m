@@ -1,103 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767143AbXDTQAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767135AbXDTQBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767143AbXDTQAc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767148AbXDTQAb
+	id S1767135AbXDTQBO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767131AbXDTQAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:00:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42514 "EHLO mx1.redhat.com"
+	Fri, 20 Apr 2007 12:00:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42725 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767138AbXDTQAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:00:00 -0400
-Message-Id: <20070420155502.787144532@chello.nl>
+	id S1767149AbXDTQAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 12:00:30 -0400
+Message-Id: <20070420155503.222304356@chello.nl>
 References: <20070420155154.898600123@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 20 Apr 2007 17:51:58 +0200
+Date: Fri, 20 Apr 2007 17:52:01 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com
-Subject: [PATCH 04/10] lib: percpu_counter_mod64
-Content-Disposition: inline; filename=percpu_counter_mod.patch
+Subject: [PATCH 07/10] mm: count reclaimable pages per BDI
+Content-Disposition: inline; filename=bdi_stat_reclaimable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add percpu_counter_mod64() to allow large modifications.
+Count per BDI reclaimable pages; nr_reclaimable = nr_dirty + nr_unstable.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/percpu_counter.h |    9 +++++++++
- lib/percpu_counter.c           |   28 ++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+)
+ fs/buffer.c                 |    2 ++
+ fs/nfs/write.c              |    7 +++++++
+ include/linux/backing-dev.h |    1 +
+ mm/page-writeback.c         |    4 ++++
+ mm/truncate.c               |    2 ++
+ 5 files changed, 16 insertions(+)
 
-Index: linux-2.6/include/linux/percpu_counter.h
+Index: linux-2.6/fs/buffer.c
 ===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h	2007-04-12 13:54:55.000000000 +0200
-+++ linux-2.6/include/linux/percpu_counter.h	2007-04-12 14:00:21.000000000 +0200
-@@ -36,6 +36,7 @@ static inline void percpu_counter_destro
- }
- 
- void percpu_counter_mod(struct percpu_counter *fbc, s32 amount);
-+void percpu_counter_mod64(struct percpu_counter *fbc, s64 amount);
- s64 percpu_counter_sum(struct percpu_counter *fbc);
- 
- static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-@@ -81,6 +82,14 @@ percpu_counter_mod(struct percpu_counter
- 	preempt_enable();
- }
- 
-+static inline void
-+percpu_counter_mod64(struct percpu_counter *fbc, s64 amount)
-+{
-+	preempt_disable();
-+	fbc->count += amount;
-+	preempt_enable();
-+}
-+
- static inline s64 percpu_counter_read(struct percpu_counter *fbc)
- {
- 	return fbc->count;
-Index: linux-2.6/lib/percpu_counter.c
+--- linux-2.6.orig/fs/buffer.c	2007-04-20 15:20:48.000000000 +0200
++++ linux-2.6/fs/buffer.c	2007-04-20 15:26:31.000000000 +0200
+@@ -740,6 +740,8 @@ int __set_page_dirty_buffers(struct page
+ 	if (page->mapping) {	/* Race with truncate? */
+ 		if (mapping_cap_account_dirty(mapping)) {
+ 			__inc_zone_page_state(page, NR_FILE_DIRTY);
++			__inc_bdi_stat(mapping->backing_dev_info,
++					BDI_RECLAIMABLE);
+ 			task_io_account_write(PAGE_CACHE_SIZE);
+ 		}
+ 		radix_tree_tag_set(&mapping->page_tree,
+Index: linux-2.6/mm/page-writeback.c
 ===================================================================
---- linux-2.6.orig/lib/percpu_counter.c	2006-07-31 13:07:38.000000000 +0200
-+++ linux-2.6/lib/percpu_counter.c	2007-04-12 14:17:12.000000000 +0200
-@@ -25,6 +25,34 @@ void percpu_counter_mod(struct percpu_co
+--- linux-2.6.orig/mm/page-writeback.c	2007-04-20 15:20:48.000000000 +0200
++++ linux-2.6/mm/page-writeback.c	2007-04-20 15:27:28.000000000 +0200
+@@ -828,6 +828,8 @@ int __set_page_dirty_nobuffers(struct pa
+ 			BUG_ON(mapping2 != mapping);
+ 			if (mapping_cap_account_dirty(mapping)) {
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
++				__inc_bdi_stat(mapping->backing_dev_info,
++						BDI_RECLAIMABLE);
+ 				task_io_account_write(PAGE_CACHE_SIZE);
+ 			}
+ 			radix_tree_tag_set(&mapping->page_tree,
+@@ -961,6 +963,8 @@ int clear_page_dirty_for_io(struct page 
+ 		 */
+ 		if (TestClearPageDirty(page)) {
+ 			dec_zone_page_state(page, NR_FILE_DIRTY);
++			dec_bdi_stat(mapping->backing_dev_info,
++					BDI_RECLAIMABLE);
+ 			return 1;
+ 		}
+ 		return 0;
+Index: linux-2.6/mm/truncate.c
+===================================================================
+--- linux-2.6.orig/mm/truncate.c	2007-04-20 15:20:48.000000000 +0200
++++ linux-2.6/mm/truncate.c	2007-04-20 15:27:38.000000000 +0200
+@@ -71,6 +71,8 @@ void cancel_dirty_page(struct page *page
+ 		struct address_space *mapping = page->mapping;
+ 		if (mapping && mapping_cap_account_dirty(mapping)) {
+ 			dec_zone_page_state(page, NR_FILE_DIRTY);
++			dec_bdi_stat(mapping->backing_dev_info,
++					BDI_RECLAIMABLE);
+ 			if (account_size)
+ 				task_io_account_cancelled_write(account_size);
+ 		}
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c	2007-04-20 15:20:05.000000000 +0200
++++ linux-2.6/fs/nfs/write.c	2007-04-20 15:27:07.000000000 +0200
+@@ -449,6 +449,7 @@ nfs_mark_request_commit(struct nfs_page 
+ 	nfsi->ncommit++;
+ 	spin_unlock(&nfsi->req_lock);
+ 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_RECLAIMABLE);
+ 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
  }
- EXPORT_SYMBOL(percpu_counter_mod);
+ #endif
+@@ -509,6 +510,8 @@ static void nfs_cancel_commit_list(struc
+ 	while(!list_empty(head)) {
+ 		req = nfs_list_entry(head->next);
+ 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
++				BDI_RECLAIMABLE);
+ 		nfs_list_remove_request(req);
+ 		nfs_inode_remove_request(req);
+ 		nfs_unlock_request(req);
+@@ -1234,6 +1237,8 @@ nfs_commit_list(struct inode *inode, str
+ 		nfs_list_remove_request(req);
+ 		nfs_mark_request_commit(req);
+ 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
++				BDI_RECLAIMABLE);
+ 		nfs_clear_page_writeback(req);
+ 	}
+ 	return -ENOMEM;
+@@ -1258,6 +1263,8 @@ static void nfs_commit_done(struct rpc_t
+ 		req = nfs_list_entry(data->pages.next);
+ 		nfs_list_remove_request(req);
+ 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
++				BDI_RECLAIMABLE);
  
-+void percpu_counter_mod64(struct percpu_counter *fbc, s64 amount)
-+{
-+	long count;
-+	s32 *pcount;
-+	int cpu;
-+
-+	if (amount >= FBC_BATCH || amount <= -FBC_BATCH) {
-+		spin_lock(&fbc->lock);
-+		fbc->count += amount;
-+		spin_unlock(&fbc->lock);
-+		return;
-+	}
-+
-+	cpu = get_cpu();
-+	pcount = per_cpu_ptr(fbc->counters, cpu);
-+	count = *pcount + amount;
-+	if (count >= FBC_BATCH || count <= -FBC_BATCH) {
-+		spin_lock(&fbc->lock);
-+		fbc->count += count;
-+		*pcount = 0;
-+		spin_unlock(&fbc->lock);
-+	} else {
-+		*pcount = count;
-+	}
-+	put_cpu();
-+}
-+EXPORT_SYMBOL(percpu_counter_mod64);
-+
- /*
-  * Add up all the per-cpu counts, return the result.  This is a more accurate
-  * but much slower version of percpu_counter_read_positive()
+ 		dprintk("NFS: commit (%s/%Ld %d@%Ld)",
+ 			req->wb_context->dentry->d_inode->i_sb->s_id,
+Index: linux-2.6/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6.orig/include/linux/backing-dev.h	2007-04-20 15:20:48.000000000 +0200
++++ linux-2.6/include/linux/backing-dev.h	2007-04-20 15:25:47.000000000 +0200
+@@ -26,6 +26,7 @@ enum bdi_state {
+ typedef int (congested_fn)(void *, int);
+ 
+ enum bdi_stat_item {
++	BDI_RECLAIMABLE,
+ 	NR_BDI_STAT_ITEMS
+ };
+ 
 
 -- 
 
