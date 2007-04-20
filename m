@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993272AbXDTQCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767131AbXDTQBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993272AbXDTQCl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767144AbXDTQBP
+	id S1767131AbXDTQBO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767145AbXDTQAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:01:15 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56841 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767146AbXDTQBG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:01:06 -0400
-Date: Fri, 20 Apr 2007 09:01:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Adam Litke <aglitke@gmail.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 4/8] Enhance fallback functions in libs to support higher
-  order pages
-In-Reply-To: <20070420082129.GI6525@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0704200900060.20068@schroedinger.engr.sgi.com>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
- <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com>
- <a0a62dfc0704191148v15434469kc3130821cb251072@mail.gmail.com>
- <Pine.LNX.4.64.0704191208340.12936@schroedinger.engr.sgi.com>
- <20070420082129.GI6525@kernel.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Apr 2007 12:00:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42728 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767131AbXDTQAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 12:00:30 -0400
+Message-Id: <20070420155503.334628394@chello.nl>
+References: <20070420155154.898600123@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Fri, 20 Apr 2007 17:52:02 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: [PATCH 08/10] mm: count writeback pages per BDI
+Content-Disposition: inline; filename=bdi_stat_writeback.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, Jens Axboe wrote:
+Count per BDI writeback pages.
 
-> This works fine as long as you are in the submitter context, but once
-> you pass the into the block layer, we don't have any way to find the
-> address space (at least we don't want to). Would something like this be
-> workable, name withstanding:
-> 
-> static unsigned long page_size(struct page *page)
-> {
->         struct address_space *mapping;
->         int order = 0;
-> 
->         mapping = page_mapping(page);
->         if (mapping)
->                 order = mapping->order;
-> 
->         return PAGE_CACHE_SIZE << order;
-> }
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/backing-dev.h |    1 +
+ mm/page-writeback.c         |   12 ++++++++++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-There is much simpler solution (possible with mm)
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c	2007-04-20 15:27:28.000000000 +0200
++++ linux-2.6/mm/page-writeback.c	2007-04-20 15:28:10.000000000 +0200
+@@ -979,14 +979,18 @@ int test_clear_page_writeback(struct pag
+ 	int ret;
+ 
+ 	if (mapping) {
++		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		unsigned long flags;
+ 
+ 		write_lock_irqsave(&mapping->tree_lock, flags);
+ 		ret = TestClearPageWriteback(page);
+-		if (ret)
++		if (ret) {
+ 			radix_tree_tag_clear(&mapping->page_tree,
+ 						page_index(page),
+ 						PAGECACHE_TAG_WRITEBACK);
++			if (bdi_cap_writeback_dirty(bdi))
++				__dec_bdi_stat(bdi, BDI_WRITEBACK);
++		}
+ 		write_unlock_irqrestore(&mapping->tree_lock, flags);
+ 	} else {
+ 		ret = TestClearPageWriteback(page);
+@@ -1002,14 +1006,18 @@ int test_set_page_writeback(struct page 
+ 	int ret;
+ 
+ 	if (mapping) {
++		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		unsigned long flags;
+ 
+ 		write_lock_irqsave(&mapping->tree_lock, flags);
+ 		ret = TestSetPageWriteback(page);
+-		if (!ret)
++		if (!ret) {
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 						page_index(page),
+ 						PAGECACHE_TAG_WRITEBACK);
++			if (bdi_cap_writeback_dirty(bdi))
++				__inc_bdi_stat(bdi, BDI_WRITEBACK);
++		}
+ 		if (!PageDirty(page))
+ 			radix_tree_tag_clear(&mapping->page_tree,
+ 						page_index(page),
+Index: linux-2.6/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6.orig/include/linux/backing-dev.h	2007-04-20 15:25:47.000000000 +0200
++++ linux-2.6/include/linux/backing-dev.h	2007-04-20 15:28:17.000000000 +0200
+@@ -27,6 +27,7 @@ typedef int (congested_fn)(void *, int);
+ 
+ enum bdi_stat_item {
+ 	BDI_RECLAIMABLE,
++	BDI_WRITEBACK,
+ 	NR_BDI_STAT_ITEMS
+ };
+ 
 
-PAGE_SIZE << compound_order(page)
-
-compound_order will return 0 for a non compound page.
+-- 
 
