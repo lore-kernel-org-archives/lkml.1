@@ -1,90 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767082AbXDTM0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767083AbXDTM2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767082AbXDTM0N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 08:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767081AbXDTM0N
+	id S1767083AbXDTM2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 08:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767084AbXDTM2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 08:26:13 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:33849 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767072AbXDTM0M (ORCPT
+	Fri, 20 Apr 2007 08:28:25 -0400
+Received: from omta01sl.mx.bigpond.com ([144.140.92.153]:64146 "EHLO
+	omta01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767083AbXDTM2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 08:26:12 -0400
-Date: Fri, 20 Apr 2007 17:56:09 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-ID: <20070420122609.GA22325@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070419120131.GB13435@in.ibm.com> <200704201054.38037.rjw@sisk.pl> <20070420110520.GB11290@in.ibm.com> <200704201359.30490.rjw@sisk.pl>
+	Fri, 20 Apr 2007 08:28:24 -0400
+Message-ID: <4628B1DF.8000400@bigpond.net.au>
+Date: Fri, 20 Apr 2007 22:28:15 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704201359.30490.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, v3
+References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420064600.GA24614@elte.hu> <46286CA0.2050409@bigpond.net.au>
+In-Reply-To: <46286CA0.2050409@bigpond.net.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Fri, 20 Apr 2007 12:28:20 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 01:59:29PM +0200, Rafael J. Wysocki wrote:
+Peter Williams wrote:
+> Ingo Molnar wrote:
+>> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+>>
+>>>> - bugfix: use constant offset factor for nice levels instead of
+>>>>   sched_granularity_ns. Thus nice levels work even if someone sets   
+>>>> sched_granularity_ns to 0. NOTE: nice support is still naive, i'll   
+>>>> address the many nice level related suggestions in -v4.
+>>> I have a suggestion I'd like to make that addresses both nice and 
+>>> fairness at the same time.  As I understand the basic principle 
+>>> behind this scheduler it to work out a time by which a task should 
+>>> make it onto the CPU and then place it into an ordered list (based on 
+>>> this value) of tasks waiting for the CPU. I think that this is a 
+>>> great idea [...]
+>>
+>> yes, that's exactly the main idea behind CFS, and thanks for the 
+>> compliment :)
+>>
+>> Under this concept the scheduler never really has to guess: every 
+>> scheduler decision derives straight from the relatively simple 
+>> one-sentence (!) scheduling concept outlined above. Everything that 
+>> tasks 'get' is something they 'earned' before and all the scheduler 
+>> does are micro-decisions based on math with the nanosec-granularity 
+>> values. Both the rbtree and nanosec accounting are a straight 
+>> consequence of this too: they are the tools that allow the 
+>> implementation of this concept in the highest-quality way. It's 
+>> certainly a very exciting experiment to me and the feedback 'from the 
+>> field' is very promising so far.
+>>
+>>> [...] and my suggestion is with regard to a method for working out 
+>>> this time that takes into account both fairness and nice.
+>>>
+>>> First suppose we have the following metrics available in addition to 
+>>> what's already provided.
+>>>
+>>> rq->avg_weight_load /* a running average of the weighted load on the 
+>>> CPU */ p->avg_cpu_per_cycle /* the average time in nsecs that p 
+>>> spends on the CPU each scheduling cycle */
+>>
+>> yes. rq->nr_running is really just a first-level approximation of 
+>> rq->raw_weighted_load. I concentrated on the 'nice 0' case initially.
+>>
+>>> I appreciate that the notion of basing the expected wait on the 
+>>> task's average cpu use per scheduling cycle is counter intuitive but 
+>>> I believe that (if you think about it) you'll see that it actually 
+>>> makes sense.
+>>
+>> hm. So far i tried to not do any statistical approach anywhere: the 
+>> p->wait_runtime metric (which drives the task ordering) is in essence 
+>> an absolutely precise 'integral' of the 'expected runtimes' that the 
+>> task observes and hence is a precise "load-average as observed by the 
+>> task"
 > 
-> Actually, I thought about it for a while.  The thread that is going to stop
-> another one may temporarily mark itself as freezable in all cases, which
-> will have no effect on it, since it's not going to cally try_to_freeze(), but
-> will make the freezer wait for it.  Next, after returning from
-> wait_for_completion(), it should restore its old freezability status and that
-> should make the freezer finish.
-
-But that will have no affect if the thread to be stopped is already
-frozen. The only affect might be that now, freezer will fail whether
-the thread that is going to stop another one was freezeable or not.
-
-Concern is whether we can somehow complete these wait_for_completion()'s in 
-the freezing context and reduce the probabilty of freezer failing.
-
+> To me this is statistics :-)
 > 
-> > However, I was attempting to solve the generic problem where
-> > A waits on B and B is frozen. If A is freezeable (under one of the
-> > events) then the freezer will fail. So a solution would be for A to
-> > somehow inform B of the dependency and postpone it's freezing.
+>> in itself. Every time we base some metric on an average value we 
+>> introduce noise into the system.
+>>
+>> i definitely agree with your suggestion that CFS should use a 
+>> nice-scaled metric for 'load' instead of the current rq->nr_running, 
+>> but regarding the basic calculations i'd rather lean towards using 
+>> rq->raw_weighted_load. Hm?
 > 
-> Well, I think it might be simpler to consider each case separately.  This way
-> we may be able to avoid introducing the additional TIF_ flag.
+> This can result in jerkiness (in my experience) but using the smoothed 
+> version is certainly something that can be tried later rather than 
+> sooner.  Perhaps just something to bear in mind as a solution to 
+> "jerkiness" if it manifests.
 > 
+>>
+>> your suggestion concentrates on the following scenario: if a task 
+>> happens to schedule in an 'unlucky' way and happens to hit a busy 
+>> period while there are many idle periods. Unless i misunderstood your 
+>> suggestion, that is the main intention behind it, correct?
+> 
+> You misunderstand (that's one of my other schedulers :-)).  This one's 
+> based on the premise that if everything happens as the task expects it 
+> will get the amount of CPU bandwidth (over this short period) that it's 
+> entitled to.  In reality, sometimes it will get more and sometimes less 
+> but on average it should get what it deserves. E.g. If you had two tasks 
+> with equal nice and both had demands of 90% of a CPU you'd expect them 
+> each to get about half of the CPU bandwidth.  Now suppose that one of 
+> them uses 5ms of CPU each time it got onto the CPU and the other uses 
+> 10ms.  If these two tasks just round robin with each other the likely 
+> outcome is that the one with the 10ms bursts will get twice as much CPU 
+> as the other but my proposed method should prevent and cause them to get 
+> roughly the same amount of CPU.  (I believe this was a scenario that 
+> caused problems with O(1) and required a fix at some stage?)
+> 
+> BTW this has the advantage that the decay rate used in calculating the 
+> task's statistics can be used to control how quickly the scheduler 
+> reacts to changes in the task's behaviour.
 
-Makes sense.
+I think that, with this model, if the current task hasn't surrendered 
+the CPU when the next task on the queue's "on CPU" time arrives that the 
+current task should be pre-empted in favour of that task.  I'm not sure 
+what would be the best way to implement this.
 
-> > Since akpm mentioned that flush_workqueue() needs to go, I guess, I am
-> > ok with fixing only kthread_stop/kthread_should_stop for the moment.
-> > Unless I can spot any other valid case :)
-> 
-> Sure. :-)
-> 
-> BTW, if it turns out that we need to introduce yet another freezer-related
-> TIF_ flag, it may be acceptable (?) to move all of the freezer-related flags
-> into a separate member of task_struct (eg. freezer_flags) that can only be
-> manipulated under task_lock().
-> 
-> I mean, we already have four of them (PF_NOFREEZE, PF_FROZEN,
-> PF_FREEZER_SKIP, TIF_FREEZE), and you will need to introduce two more for
-> the freezer-based CPU hotplug, so if yet another one is needed, that will make
-> up almost a separate u8 field ...
-
-I am perfectly ok with it. But I am not sure if everybody would agree to have
-another field in the task struct, though in this case it does make sense :-)
-
-> 
-> Greetings,
-> Rafael
-> -
-
-Thanks and Regards
-gautham.
+Peter
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
