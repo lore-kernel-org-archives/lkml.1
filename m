@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992705AbXDTJXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992750AbXDTJ2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992705AbXDTJXx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 05:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992727AbXDTJXw
+	id S2992750AbXDTJ2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 05:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992742AbXDTJ2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 05:23:52 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:1659 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992705AbXDTJXw (ORCPT
+	Fri, 20 Apr 2007 05:28:32 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43243 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992728AbXDTJ2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 05:23:52 -0400
-Date: Fri, 20 Apr 2007 13:23:52 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Jesse Barnes <jesse.barnes@intel.com>,
-       Adam Jackson <ajackson@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: PCI bridge range sizing bug
-Message-ID: <20070420132352.A19232@jurassic.park.msu.ru>
-References: <1175812632.17147.12.camel@localhost.localdomain> <200704191611.52125.jesse.barnes@intel.com> <20070419234014.GB3215@suse.de> <alpine.LFD.0.98.0704191702200.9964@woody.linux-foundation.org>
+	Fri, 20 Apr 2007 05:28:31 -0400
+Date: Fri, 20 Apr 2007 10:30:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [d_path 0/7] Fixes to d_path: Respin
+Message-ID: <20070420103008.15f37eec@the-village.bc.nu>
+In-Reply-To: <20070419232303.300441585@schurl.suse.de>
+References: <20070412090809.917795000@suse.de>
+	<200704170335.21805.agruen@suse.de>
+	<20070417182126.2327d89d@the-village.bc.nu>
+	<20070419232303.300441585@schurl.suse.de>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <alpine.LFD.0.98.0704191702200.9964@woody.linux-foundation.org>; from torvalds@linux-foundation.org on Thu, Apr 19, 2007 at 05:19:20PM -0700
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 05:19:20PM -0700, Linus Torvalds wrote:
-> I think we used to *never* assign PCI bus resources on x86, but that thing 
-> got fixed some time ago. Now I think we only re-assign them if they were 
-> unassigned *or* if the assignment wasn't working before. But I'm not 100% 
-> sure about that second part... It's been working so well that I don't 
-> think we've had a lot of problems with resource assignment lately, and 
-> I've paged it all out of my brain.
+> As far as I can see, glibc internally looks at /proc/mounts (or else mtab) to
+> find out where tmpfs is mounted for opening files there, and to look up
+> filesystem information for statfs(), while accessing that path, too. Fstatfs()
+> also looks into the same files, but it only matches by filesystem type, so this
+> is only a very unreliable heuristic, anyway.
 > 
-> Ivan, can you remind my tired old brain?
+> So judging from that, glibc users should be fine.
 
-No :-)  You are absolutely right - we re-assign only unassigned OR
-conflicting resources. And yes, x86 kernel does accept any enabled
-bridge ranges without looking at what is on the other side of the
-bridge.
+So glibc does use it and you will change behaviour
 
-I think what we need is some very minimalistic validity check for
-BIOS bridge setup: calculate sums of resource ranges of each type
-(or just MEM and PREFETCH, should we care about IO these days?)
-for devices that are behind the bridge, even without taking alignment
-requirements into account. Then, if some window is too small, we just
-let the pci_assign_unassigned_resources to take care of that.
+> > I disagree - firstly because of not breaking stuff, and secondly because
+> > it separates two discussions - merging AppArmor being one of them , and
+> > the correct behaviour for getcwd & /proc/mounts being the other.
+> 
+> I agree with the separation of discussion argument. Here are patches that
+> change getcwd() and /proc/mounts independent of the changes that AppArmor
+> depends on.
 
-Ivan.
+More useful would be AppArmour without the changes to getcwd
+and /proc/mounts
