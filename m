@@ -1,82 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767137AbXDTP7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767134AbXDTP7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767137AbXDTP7x (ORCPT <rfc822;w@1wt.eu>);
+	id S1767134AbXDTP7x (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 20 Apr 2007 11:59:53 -0400
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767131AbXDTP7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 20 Apr 2007 11:59:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42431 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([66.187.233.31]:42433 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767137AbXDTP7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1767134AbXDTP7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Apr 2007 11:59:52 -0400
-Message-Id: <20070420155503.473053637@chello.nl>
-References: <20070420155154.898600123@chello.nl>
+Message-Id: <20070420155154.898600123@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 20 Apr 2007 17:52:03 +0200
+Date: Fri, 20 Apr 2007 17:51:54 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com
-Subject: [PATCH 09/10] mm: expose BDI statistics in sysfs.
-Content-Disposition: inline; filename=bdi_stat_sysfs.patch
+Subject: [PATCH 00/10] per device dirty throttling -v5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose the per BDI stats in /sys/block/<dev>/queue/*
+The latest version of the per device dirty throttling.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- block/ll_rw_blk.c |   32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+against 2.6.21-rc6-mm1; the first patch is for easy application.
+Andrew can of course just drop the patch it reverts.
 
-Index: linux-2.6-mm/block/ll_rw_blk.c
-===================================================================
---- linux-2.6-mm.orig/block/ll_rw_blk.c
-+++ linux-2.6-mm/block/ll_rw_blk.c
-@@ -3976,6 +3976,15 @@ static ssize_t queue_max_hw_sectors_show
- 	return queue_var_show(max_hw_sectors_kb, (page));
- }
- 
-+static ssize_t queue_nr_reclaimable_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_RECLAIMABLE));
-+}
-+
-+static ssize_t queue_nr_writeback_show(struct request_queue *q, char *page)
-+{
-+	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_WRITEBACK));
-+}
- 
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
-@@ -4006,6 +4020,16 @@ static struct queue_sysfs_entry queue_ma
- 	.show = queue_max_hw_sectors_show,
- };
- 
-+static struct queue_sysfs_entry queue_reclaimable_entry = {
-+	.attr = {.name = "reclaimable_pages", .mode = S_IRUGO },
-+	.show = queue_nr_reclaimable_show,
-+};
-+
-+static struct queue_sysfs_entry queue_writeback_entry = {
-+	.attr = {.name = "writeback_pages", .mode = S_IRUGO },
-+	.show = queue_nr_writeback_show,
-+};
-+
- static struct queue_sysfs_entry queue_iosched_entry = {
- 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
- 	.show = elv_iosched_show,
-@@ -4018,6 +4047,8 @@ static struct attribute *default_attrs[]
- 	&queue_initial_ra_entry.attr,
- 	&queue_max_hw_sectors_entry.attr,
- 	&queue_max_sectors_entry.attr,
-+	&queue_reclaimable_entry.attr,
-+	&queue_writeback_entry.attr,
- 	&queue_iosched_entry.attr,
- 	NULL,
- };
+Merged BDI_DIRTY and BDI_UNSTABLE into BDI_RECLAIMABLE, and multiplied
+bdi_stat_delta() by the number of counters summed.
+
+Thanks to Miklos for pointing these out.
 
 -- 
 
