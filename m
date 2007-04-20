@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbXDTUp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767241AbXDTUqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbXDTUp4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 16:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXDTUpz
+	id S1767241AbXDTUqn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 16:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767246AbXDTUqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:45:55 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:59146 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754500AbXDTUpy (ORCPT
+	Fri, 20 Apr 2007 16:46:43 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:35466
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767241AbXDTUqm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:45:54 -0400
-To: drepper@gmail.com
-CC: agruen@suse.de, alan@lxorguk.ukuu.org.uk, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       akpm@linux-foundation.org
-In-reply-to: <a36005b50704201217l649195f0q204c2434445e7160@mail.gmail.com>
-	(drepper@gmail.com)
-Subject: Re: [d_path 0/7] Fixes to d_path: Respin
-References: <20070412090809.917795000@suse.de>
-	 <200704201721.29825.agruen@suse.de>
-	 <a36005b50704200824i228f98ccq80f88a0f9d64abb2@mail.gmail.com>
-	 <200704201840.07247.agruen@suse.de> <a36005b50704201217l649195f0q204c2434445e7160@mail.gmail.com>
-Message-Id: <E1Hezy0-0001Pf-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 20 Apr 2007 22:44:28 +0200
+	Fri, 20 Apr 2007 16:46:42 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 7/8] Kconfig: silicon backplane dependency.
+Date: Fri, 20 Apr 2007 22:45:43 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       akpm@linux-foundation.org, linville@tuxdriver.com
+References: <20070420113505.GH3738@skybase>
+In-Reply-To: <20070420113505.GH3738@skybase>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704202245.43806.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I gave a chroot example that showed that in the current
-> > implementation, you can get pretty random clashes between mounts; there are
-> > other cases with lazy unmounts as well.
+On Friday 20 April 2007 13:35, Martin Schwidefsky wrote:
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> Irrelevant as well.  If you create chroot problems it's your problem.
+> Make the "Sonics Silicon Backplane" menu dependent on the two buses
+> it can be found on.
+> Goes on top of git-wireless.patch.
 > 
-> The fact is that if you have a normal setup the code works fine.  All
-> other situations cannot be handled with the current kernel interface.
+> Cc: Michael Buesch <mb@bu3sch.de>
+> Cc: John W. Linville <linville@tuxdriver.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
 > 
-> This does not give anybody the right to say "since the code doesn't
-> always work we can break it completely".  That's completely
-> unacceptable.
+>  drivers/ssb/Kconfig |    1 +
+>  1 files changed, 1 insertion(+)
+> 
+> diff -urpN linux-2.6/drivers/ssb/Kconfig linux-2.6-patched/drivers/ssb/Kconfig
+> --- linux-2.6/drivers/ssb/Kconfig	2007-04-19 15:24:40.000000000 +0200
+> +++ linux-2.6-patched/drivers/ssb/Kconfig	2007-04-19 15:55:44.000000000 +0200
+> @@ -1,4 +1,5 @@
+>  menu "Sonics Silicon Backplane"
+> +	depends on PCI || PCMCIA
 
-I'm not sure I understand the situation completely.  What exactly is
-broken in libc by removing unreachable mounts from /proc/mounts?
+This is wrong. SSB does not depend on PCI or PCMCIA.
+SSB can (and does) stay very well on its own feet and
+can be the main system bus.
+Most Linksys WRT routers work that way. They have no
+PCI bus, but a SSB bus instead.
 
-Is it the situation when
- - file descriptor is opened
- - process does chroot
- - process does fstatvfs on file descriptor
-?
+Nevertheless, I'm not sure what your problem really is.
+Does a s390 machine exist with a B44 card? I doubt it.
+So what about the following: We simply add
+a DEPENDS ON !S390 to both SSB and B44.
+I really thing that is the right fix for this.
+The patch above is clearly not, as it breaks things for
+embedded devices without PCI or PCMCIA bus.
 
-In that case currently fstatvfs() _usually_ gives the correct results,
-but can give wrong results if mounts paths accidently clash in
-/proc/mounts?
-
-Also isn't it the case, that fstatvfs() or statvfs() performed within
-the chroot could also give incorrect result for a _reachable_ mount if
-it clashes with an unreachable mount?
-
-If this is the case, I would think that removing the unreachable
-mounts from /proc/mounts, would actually be fixing this second case,
-which is more likely to be used anyway.
-
-BTW, this patch, or at least a predecessor is in -mm, and it very much
-feels the Right Thing(tm).  The /proc/mounts under a chroot
-environment actually looks sane, instead of some random crap, that it
-was previously.
-
-While we should make every effort to keep the kernel interfaces
-stable, this shouldn't prevent us from fixing bugs.  And this one is
-clearly a bug, even if not a very serious one.
-
-Miklos
+-- 
+Greetings Michael.
