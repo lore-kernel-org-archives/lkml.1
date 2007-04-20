@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767060AbXDTMAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767063AbXDTMAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767060AbXDTMAG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 08:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767061AbXDTMAE
+	id S1767063AbXDTMAo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 08:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767062AbXDTMAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 08:00:04 -0400
-Received: from mx3.mail.ru ([194.67.23.149]:28879 "EHLO mx3.mail.ru"
+	Fri, 20 Apr 2007 08:00:44 -0400
+Received: from mx5.mail.ru ([194.67.23.25]:16899 "EHLO mx5.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767060AbXDTMAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 08:00:01 -0400
-Date: Fri, 20 Apr 2007 15:58:07 +0400
+	id S1767065AbXDTMAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 08:00:42 -0400
+Date: Fri, 20 Apr 2007 15:58:13 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: linux-kernel@vger.kernel.org
 Cc: kernel-discuss@handhelds.org
-Subject: [PATCH 2/7] pda power driver
-Message-ID: <20070420115807.GB21752@zarina>
+Subject: [PATCH 3/7] Universal battery class
+Message-ID: <20070420115813.GC21752@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
@@ -22,300 +22,686 @@ User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Common power driver for PDAs and phones with one or two external
-power supplies (AC/USB) connected to main and backup batteries,
-and optional builtin charger.
-
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/power/Kconfig     |    8 ++
- drivers/power/Makefile    |    1 +
- drivers/power/pda_power.c |  220 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pda_power.h |   25 +++++
- 4 files changed, 254 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/pda_power.c
- create mode 100644 include/linux/pda_power.h
+ Documentation/battery-class.txt |  150 ++++++++++++++++++
+ drivers/Kconfig                 |    2 +
+ drivers/Makefile                |    1 +
+ drivers/battery/Kconfig         |   11 ++
+ drivers/battery/Makefile        |    1 +
+ drivers/battery/battery.c       |  323 +++++++++++++++++++++++++++++++++++++++
+ include/linux/battery.h         |  125 +++++++++++++++
+ 7 files changed, 613 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/battery-class.txt
+ create mode 100644 drivers/battery/Kconfig
+ create mode 100644 drivers/battery/Makefile
+ create mode 100644 drivers/battery/battery.c
+ create mode 100644 include/linux/battery.h
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 17349c1..b87779e 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -10,4 +10,12 @@ config EXTERNAL_POWER
- 
- 	  This interface is mandatory for battery class support.
- 
-+config PDA_POWER
-+	tristate "Generic PDA/phone power driver"
-+	depends on EXTERNAL_POWER
-+	help
-+	  Say Y here to enable generic power driver for PDAs and phones with
-+	  one or two external power supplies (AC/USB) connected to main and
-+	  backup batteries, and optional builtin charger.
-+
- endmenu
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index c303b45..6f084e7 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_EXTERNAL_POWER)  += external_power.o
-+obj-$(CONFIG_PDA_POWER)       += pda_power.o
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+diff --git a/Documentation/battery-class.txt b/Documentation/battery-class.txt
 new file mode 100644
-index 0000000..85287da
+index 0000000..6a7d591
 --- /dev/null
-+++ b/drivers/power/pda_power.c
-@@ -0,0 +1,220 @@
++++ b/Documentation/battery-class.txt
+@@ -0,0 +1,150 @@
++Linux battery class
++===================
++
++Synopsis
++~~~~~~~~
++Battery class used to export battery properties to userspace in consistent
++manner.
++
++It defines core set of battery attributes, available via sysfs, which
++should be applicable to (almost) every battery out there. Each attribute
++has well defined meaning, up to unit of measure used. While the attributes
++provided are believed to be universally applicable to any battery,
++specific monitoring hardware may not be able to provide them all, so
++any of them may be skipped.
++
++Battery class is extensible, and allows to define drivers own attributes.
++The core attribute set is subject to the standard Linux evolution (i.e.
++if it will be found that some attribute is applicable to many batteries
++or their drivers, it can be added to the core set).
++
++Battery class integrates with External Power framework, for the purpose of
++notification battery drivers when charging power is available. Note that
++specific charge control is left to the battery drivers.
++
++It also integrates with LED framework, for the purpose of providing
++typically expected (at least for portable devices) feedback of battery
++status (charging/fully charged) via LEDs. (Note that specific details of
++the indication (including whether to use it at all) are fully controllable
++by user and/or specific machine defaults, per design principles of LED
++framework).
++
++
++Attributes/properties
++~~~~~~~~~~~~~~~~~~~~~
++Battery class has predefined set of attributes, this eliminates code
++duplication across battery drivers. Battery class insist on reusing its
++predefined attributes *and* their units.
++
++So, userspace gets expected set of attributes and their units for
++any kind of battery, and can process/present them to a user in consistent
++manner. Results for different batteries and machines are also directly
++comparable.
++
++See drivers/battery/ds2760_battery.c for the example how to declare and
++handle attributes.
++
++
++Units
++~~~~~
++Quoting include/linux/battery.h:
++
++  All voltages, currents, charges, energies, time and temperatures in uV,
++  uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
++  stated. It's driver's job to convert its raw values to units in which
++  this class operates.
++
++
++Attributes/properties detailed
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++~ ~ ~ ~ ~ ~ ~  Charge/Energy/Capacity - how to not confuse  ~ ~ ~ ~ ~ ~ ~
++~                                                                       ~
++~ Because both "charge" (uAh) and "energy" (uWh) represents "capacity"  ~
++~ of battery, battery class distinguish these terms. Don't mix them!    ~
++~                                                                       ~
++~ CHARGE_* attributes represents capacity in uAh only.                  ~
++~ ENERGY_* attributes represents capacity in uWh only.                  ~
++~ CAPACITY attribute represents capacity in *percents*, from 0 to 100.  ~
++~                                                                       ~
++~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
++
++Postfixes:
++_AVG - *hardware* averaged value, use it if your hardware is really able to
++report averaged values.
++_NOW - momentary/instantaneous values.
++
++STATUS - this attribute represents operating status (charging, full,
++discharging (i.e. powering a load), etc.). This corresponds to
++BATTERY_STATUS_* values, as defined in battery.h.
++
++HEALTH - represents health of the battery, values corresponds to
++BATTERY_HEALTH_*, defined in battery.h.
++
++VOLTAGE_MAX_DESIGN, VOLTAGE_MIN_DESIGN - design values for maximal and
++minimal battery voltages. Maximal/minimal means values of voltages when
++battery considered "full"/"empty" at normal conditions. Yes, there is
++no direct relation between voltage and battery capacity, but some dumb
++batteries use voltage for very approximated calculation of capacity.
++Battery driver also can use this attribute just to inform userspace
++about maximal and minimal voltage thresholds of a given battery.
++
++CHARGE_FULL_DESIGN, CHARGE_EMPTY_DESIGN - design charge values, when
++battery considered full/empty.
++
++ENERGY_FULL_DESIGN, ENERGY_EMPTY_DESIGN - same as above but for energy.
++
++CHARGE_FULL, CHARGE_EMPTY - These attributes means "last remembered value
++of charge when battery became full/empty". It also could mean "value of
++charge when battery considered full/empty at given conditions (temperature,
++age)". I.e. these attributes represents real thresholds, not design values.
++
++ENERGY_FULL, ENERGY_EMPTY - same as above but for energy.
++
++CAPACITY - capacity in percents.
++
++TEMP - temperature of the battery.
++
++TIME_TO_EMPTY - seconds left for battery to be considered empty (i.e.
++while battery powers a load)
++TIME_TO_FULL - seconds left for battery to be considered full (i.e.
++while battery is charging)
++
++
++QA
++~~
++Q: Where is BATTERY_PROP_XYZ attribute?
++A: If you cannot find attribute suitable for your battery needs, feel free
++   to add it and send patch along with your battery driver.
++
++   The attributes available currently are the ones currently provided by the
++   drivers written.
++
++   Good candidates to add in future: battery technology, model/part#,
++   cycle_time, manufacturer, etc.
++
++
++Q: I have some very specific attribute (e.g. battery color), should I add
++   this attribute to standard ones?
++A: Most likely, no. Such attribute can be placed in the driver itself, if
++   it is useful. Of course, if the attribute in question applicable to
++   large set of batteries, provided by many drivers, and/or comes from
++   some general battery specification/standard, it may be a candidate to
++   be added to the core attribute set.
++
++
++Q: Suppose, my battery monitoring chip/firmware does not provides capacity
++   in percents, but provides charge_{now,full,empty}. Should I calculate
++   percentage capacity manually, inside the driver, and register CAPACITY
++   attribute? The same question about time_to_empty/time_to_full.
++A: Most likely, no. Battery class is designed to export battery properties
++   which are directly measurable by the specific hardware available.
++   Inferring not available properties using some heuristics or mathematical
++   model is not subject of work for a battery driver. Such functionality
++   should be factored out, and in fact, apm_power, the driver to serve
++   legacy APM API on top of battery class, uses a simple heuristic of
++   approximating remaining battery capacity based on its charge, current,
++   voltage and so on. But full-fledged battery model is likely not subject
++   for kernel at all, as it would require floating point calculation to deal
++   with things like differential equations and Kalman filters. This is
++   better be handled by batteryd/libbattery, yet to be written.
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index c546de3..c3a0038 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -56,6 +56,8 @@ source "drivers/w1/Kconfig"
+ 
+ source "drivers/power/Kconfig"
+ 
++source "drivers/battery/Kconfig"
++
+ source "drivers/hwmon/Kconfig"
+ 
+ source "drivers/mfd/Kconfig"
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 2bdaae7..7cbfd37 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -61,6 +61,7 @@ obj-$(CONFIG_RTC_LIB)		+= rtc/
+ obj-$(CONFIG_I2C)		+= i2c/
+ obj-$(CONFIG_W1)		+= w1/
+ obj-$(CONFIG_EXTERNAL_POWER)	+= power/
++obj-$(CONFIG_BATTERY)		+= battery/
+ obj-$(CONFIG_HWMON)		+= hwmon/
+ obj-$(CONFIG_PHONE)		+= telephony/
+ obj-$(CONFIG_MD)		+= md/
+diff --git a/drivers/battery/Kconfig b/drivers/battery/Kconfig
+new file mode 100644
+index 0000000..c386593
+--- /dev/null
++++ b/drivers/battery/Kconfig
+@@ -0,0 +1,11 @@
++
++menu "Battery support"
++
++config BATTERY
++	tristate "Battery monitoring support"
++	select EXTERNAL_POWER
++	help
++	  Say Y here to enable generic battery status reporting in
++	  the /sys filesystem.
++
++endmenu
+diff --git a/drivers/battery/Makefile b/drivers/battery/Makefile
+new file mode 100644
+index 0000000..a2239cb
+--- /dev/null
++++ b/drivers/battery/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_BATTERY)              += battery.o
+diff --git a/drivers/battery/battery.c b/drivers/battery/battery.c
+new file mode 100644
+index 0000000..66dc727
+--- /dev/null
++++ b/drivers/battery/battery.c
+@@ -0,0 +1,323 @@
 +/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
++ *  Universal battery monitor class
 + *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
++ *  Copyright (c) 2007  Anton Vorontsov <cbou@mail.ru>
++ *  Copyright (c) 2004  Szabolcs Gyurko
++ *  Copyright (c) 2003  Ian Molton <spyro@f2s.com>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ *  Modified: 2004, Oct     Szabolcs Gyurko
++ *
++ *  You may use this code as per GPL version 2
++ *
++ * All voltages, currents, charges, energies, time and temperatures in uV,
++ * uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
++ * stated. It's driver's job to convert its raw values to units in which
++ * this class operates.
 + */
 +
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
-+#include <linux/external_power.h>
-+#include <linux/pda_power.h>
-+#include <linux/timer.h>
++#include <linux/types.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/battery.h>
 +
-+static inline unsigned int get_irq_flags(struct resource *res)
++/* If we have hwtimer trigger, then use it to blink charging LED */
++#if defined(CONFIG_LEDS_TRIGGER_HWTIMER) ||                  \
++               (defined(CONFIG_BATTERY_MODULE) &&            \
++                defined(CONFIG_LEDS_TRIGGER_HWTIMER_MODULE))
++	#define led_trigger_register_charging led_trigger_register_hwtimer
++	#define led_trigger_unregister_charging led_trigger_unregister_hwtimer
++#else
++	#define led_trigger_register_charging led_trigger_register_simple
++	#define led_trigger_unregister_charging led_trigger_unregister_simple
++#endif
++
++struct class *battery_class;
++
++static void battery_external_power_changed(struct power_supplicant *pst,
++                                           struct power_supply *psy)
 +{
-+	unsigned int flags = IRQF_DISABLED | IRQF_SHARED;
++	struct battery *bat = container_of(pst, struct battery, pst);
 +
-+	flags |= res->flags & IRQF_TRIGGER_MASK;
-+
-+	return flags;
-+}
-+
-+static struct resource *ac_irq, *usb_irq;
-+static struct pda_power_pdata *pdata;
-+static struct timer_list isr_timer;
-+
-+static int pda_power_is_ac_online(struct power_supply *psy)
-+{
-+	return pdata->is_ac_online ? pdata->is_ac_online() : 0;
-+}
-+
-+static int pda_power_is_usb_online(struct power_supply *psy)
-+{
-+	return pdata->is_usb_online ? pdata->is_usb_online() : 0;
-+}
-+
-+static char *pda_power_supplied_to[] = {
-+	"main-battery",
-+	"backup-battery",
-+};
-+
-+static struct power_supply pda_power_supplies[] = {
-+	{
-+		.name = "ac",
-+		.type = "ac",
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.is_online = pda_power_is_ac_online,
-+	},
-+	{
-+		.name = "usb",
-+		.type = "dc",
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.is_online = pda_power_is_usb_online,
-+	},
-+};
-+
-+static void update_charger(void)
-+{
-+	if (!pdata->set_charge)
-+		return;
-+
-+	if (pdata->is_ac_online && pdata->is_ac_online()) {
-+		pr_debug("pda_power: charger on (AC)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_AC);
-+	}
-+	else if (pdata->is_usb_online && pdata->is_usb_online()) {
-+		pr_debug("pda_power: charger on (USB)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_USB);
-+	}
-+	else {
-+		pr_debug("pda_power: charger off\n");
-+		pdata->set_charge(0);
-+	}
++	pr_debug("%s\n", __FUNCTION__);
++	if (bat->external_power_changed)
++		bat->external_power_changed(bat);
 +
 +	return;
 +}
 +
-+static void isr_timer_func(unsigned long irq)
++int battery_is_external_power_supplied(struct battery *bat)
 +{
-+	if (ac_irq && irq == ac_irq->start) {
-+		power_supply_changed(&pda_power_supplies[0]);
-+	}
-+	else if (usb_irq && irq == usb_irq->start) {
-+		power_supply_changed(&pda_power_supplies[1]);
-+	}
-+	else {
-+		printk(KERN_WARNING "pda_power: spurious irq %li", irq);
++	pr_debug("%s\n", __FUNCTION__);
++	return power_supplicant_am_i_supplied(&bat->pst);
++}
++
++void battery_status_changed(struct battery *bat)
++{
++	void *value;
++
++	pr_debug("%s\n", __FUNCTION__);
++
++	value = bat->get_property(bat, BATTERY_PROP_STATUS);
++	if (!value)
 +		return;
++
++#ifdef CONFIG_LEDS_TRIGGERS
++	switch(*(int *)value) {
++	case BATTERY_STATUS_FULL:
++		led_trigger_event(bat->charging_full_trig, LED_FULL);
++		led_trigger_event(bat->charging_trig, LED_OFF);
++		led_trigger_event(bat->full_trig, LED_FULL);
++		break;
++	case BATTERY_STATUS_CHARGING:
++		led_trigger_event(bat->charging_full_trig, LED_FULL);
++		led_trigger_event(bat->charging_trig, LED_FULL);
++		led_trigger_event(bat->full_trig, LED_OFF);
++		break;
++	default:
++		led_trigger_event(bat->charging_full_trig, LED_OFF);
++		led_trigger_event(bat->charging_trig, LED_OFF);
++		led_trigger_event(bat->full_trig, LED_OFF);
++		break;
++	}
++#endif /* CONFIG_LEDS_TRIGGERS */
++	return;
++}
++
++/*
++ * This is because the name "current" breaks the device attr macro.
++ * The "current" word resolvs to "(get_current())" so instead of
++ * "current" "(get_current())" appears in the sysfs.
++ *
++ * The source of this definition is the device.h which calls __ATTR
++ * macro in sysfs.h which calls the __stringify macro.
++ *
++ * Only modification that the name is not tried to be resolved
++ * (as a macro let's say).
++ */
++
++#define BATTERY_ATTR(_name)                                             \
++{                                                                       \
++	.attr = { .name = #_name, .mode = 0444, .owner = THIS_MODULE }, \
++	.show = battery_show_property,                                  \
++	.store = NULL,                                                  \
++}
++
++static struct device_attribute battery_attrs[];
++
++static ssize_t battery_show_property(struct device *dev,
++                                     struct device_attribute *attr,
++                                     char *buf) {
++	static char *status_text[] = {
++		"Unknown", "Charging", "Discharging", "Not charging", "Full"
++	};
++	static char *health_text[] = {
++		"Unknown", "Good", "Overheat", "Dead"
++	};
++	struct battery *bat = dev_get_drvdata(dev);
++	const off_t off = attr - battery_attrs;
++	void *value = bat->get_property(bat, off);
++
++	if (!value)
++		return sprintf(buf, "Driver can't report this property, "
++		               "but claimed it can. Fix it.\n");
++
++	if (off == BATTERY_PROP_STATUS)
++		return sprintf(buf, "%s\n", status_text[*(int *)value]);
++	else if (off == BATTERY_PROP_HEALTH)
++		return sprintf(buf, "%s\n", health_text[*(int *)value]);
++	else
++		return sprintf(buf, "%d\n", *(int *)value);
++}
++
++/* Must be in the same order as BATTERY_PROP_*, defined in battery.h */
++static struct device_attribute battery_attrs[] = {
++	BATTERY_ATTR(status),
++	BATTERY_ATTR(health),
++	BATTERY_ATTR(voltage_max_design),
++	BATTERY_ATTR(voltage_min_design),
++	BATTERY_ATTR(voltage_now),
++	BATTERY_ATTR(voltage_avg),
++	BATTERY_ATTR(current_now),
++	BATTERY_ATTR(current_avg),
++	BATTERY_ATTR(charge_full_design),
++	BATTERY_ATTR(charge_empty_design),
++	BATTERY_ATTR(charge_full),
++	BATTERY_ATTR(charge_empty),
++	BATTERY_ATTR(charge_now),
++	BATTERY_ATTR(charge_avg),
++	BATTERY_ATTR(energy_full_design),
++	BATTERY_ATTR(energy_empty_design),
++	BATTERY_ATTR(energy_full),
++	BATTERY_ATTR(energy_empty),
++	BATTERY_ATTR(energy_now),
++	BATTERY_ATTR(energy_avg),
++	BATTERY_ATTR(capacity),
++	BATTERY_ATTR(temp),
++	BATTERY_ATTR(time_to_empty_now),
++	BATTERY_ATTR(time_to_empty_avg),
++	BATTERY_ATTR(time_to_full_now),
++	BATTERY_ATTR(time_to_full_avg),
++};
++
++static int battery_create_attrs(struct battery *bat)
++{
++	int rc = 0;
++	int i;
++
++	for (i = 0; i < bat->num_properties; i++) {
++		rc = device_create_file(bat->dev,
++		            &battery_attrs[bat->properties[i]]);
++		if (rc)
++			goto failed;
 +	}
 +
-+	update_charger();
++	goto succeed;
++
++failed:
++	while (i--)
++		device_remove_file(bat->dev,
++		           &battery_attrs[bat->properties[i]]);
++succeed:
++	return rc;
++}
++
++static void battery_remove_attrs(struct battery *bat)
++{
++	int i;
++
++	for (i = 0; i < bat->num_properties; i++)
++		device_remove_file(bat->dev,
++		           &battery_attrs[bat->properties[i]]);
 +
 +	return;
 +}
 +
-+static irqreturn_t power_changed_isr(int irq, void *unused)
++int battery_register(struct device *parent, struct battery *bat)
 +{
-+	isr_timer.data = irq;
-+	mod_timer(&isr_timer, jiffies + HZ);
-+	return IRQ_HANDLED;
-+}
++	int rc = 0;
 +
-+static int pda_power_probe(struct platform_device *pdev)
-+{
-+	int ret = 0;
-+
-+	if (pdev->id != -1) {
-+		printk(KERN_WARNING "pda_power: it's meaningless to "
-+		       "register several pda_powers, use id = -1\n");
-+		ret = -EINVAL;
-+		goto wrongid;
++	bat->dev = device_create(battery_class, parent, 0, "%s", bat->name);
++	if (IS_ERR(bat->dev)) {
++		rc = PTR_ERR(bat->dev);
++		goto dev_create_failed;
 +	}
 +
-+	pdata = pdev->dev.platform_data;
++	dev_set_drvdata(bat->dev, bat);
 +
-+	setup_timer(&isr_timer, isr_timer_func, 0);
++	rc = battery_create_attrs(bat);
++	if (rc)
++		goto create_bat_attrs_failed;
 +
-+	ac_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "ac");
-+	usb_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "usb");
-+	if (!ac_irq && !usb_irq) {
-+		printk(KERN_ERR "pda_power: no ac/usb irq specified\n");
-+		ret = -ENODEV;
-+		goto noirqs;
++	bat->pst.name = bat->name;
++	bat->pst.power_supply_changed = battery_external_power_changed;
++	rc = power_supplicant_register(&bat->pst);
++	if (rc)
++		goto power_supplicant_failed;
++
++#ifdef CONFIG_LEDS_TRIGGERS
++	bat->charging_full_trig_name = kmalloc(strlen(bat->name) +
++	                          sizeof("-charging-or-full"), GFP_KERNEL);
++	if (!bat->charging_full_trig_name) {
++		rc = -ENOMEM;
++		goto charging_full_trig_name_failed;
 +	}
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[0]);
-+	if (ret) {
-+		printk(KERN_ERR "pda_power: failed to register %s power "
-+		       "supply\n", pda_power_supplies[0].name);
-+		goto supply0_failed;
++	bat->charging_trig_name = kmalloc(strlen(bat->name) +
++	                                  sizeof("-charging"), GFP_KERNEL);
++	if (!bat->charging_trig_name) {
++		rc = -ENOMEM;
++		goto charging_trig_name_failed;
 +	}
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[1]);
-+	if (ret) {
-+		printk(KERN_ERR "pda_power: failed to register %s power "
-+		       "supply\n", pda_power_supplies[1].name);
-+		goto supply1_failed;
++	bat->full_trig_name = kmalloc(strlen(bat->name) +
++	                              sizeof("-full"), GFP_KERNEL);
++	if (!bat->full_trig_name) {
++		rc = -ENOMEM;
++		goto full_trig_name_failed;
 +	}
 +
-+	if (ac_irq) {
-+		ret = request_irq(ac_irq->start, power_changed_isr,
-+		                  get_irq_flags(ac_irq), ac_irq->name,
-+		                  &pda_power_supplies[0]);
-+		if (ret) {
-+			printk(KERN_ERR "pda_power: request ac irq failed\n");
-+			goto ac_irq_failed;
-+		}
-+	}
++	strcpy(bat->charging_full_trig_name, bat->name);
++	strcat(bat->charging_full_trig_name, "-charging-or-full");
++	strcpy(bat->charging_trig_name, bat->name);
++	strcat(bat->charging_trig_name, "-charging");
++	strcpy(bat->full_trig_name, bat->name);
++	strcat(bat->full_trig_name, "-full");
 +
-+	if (usb_irq) {
-+		ret = request_irq(usb_irq->start, power_changed_isr,
-+		                  get_irq_flags(usb_irq), usb_irq->name,
-+		                  &pda_power_supplies[1]);
-+		if (ret) {
-+			printk(KERN_ERR "pda_power: request usb irq failed\n");
-+			goto usb_irq_failed;
-+		}
-+	}
-+
-+	update_charger();
++	led_trigger_register_simple(bat->charging_full_trig_name,
++	                            &bat->charging_full_trig);
++	led_trigger_register_charging(bat->charging_trig_name,
++	                              &bat->charging_trig);
++	led_trigger_register_simple(bat->full_trig_name,
++	                            &bat->full_trig);
++#endif /* CONFIG_LEDS_TRIGGERS */
 +
 +	goto success;
 +
-+usb_irq_failed:
-+	if (ac_irq)
-+		free_irq(ac_irq->start, &pda_power_supplies[0]);
-+ac_irq_failed:
-+	power_supply_unregister(&pda_power_supplies[1]);
-+supply1_failed:
-+	power_supply_unregister(&pda_power_supplies[0]);
-+supply0_failed:
-+noirqs:
-+wrongid:
++#ifdef CONFIG_LEDS_TRIGGERS
++full_trig_name_failed:
++	kfree(bat->charging_trig_name);
++charging_trig_name_failed:
++	kfree(bat->charging_full_trig_name);
++charging_full_trig_name_failed:
++#endif
++	power_supplicant_unregister(&bat->pst);
++power_supplicant_failed:
++	battery_remove_attrs(bat);
++create_bat_attrs_failed:
++	device_unregister(bat->dev);
++dev_create_failed:
 +success:
-+	return ret;
++	return rc;
 +}
 +
-+static int pda_power_remove(struct platform_device *pdev)
++void battery_unregister(struct battery *bat)
 +{
-+	if (usb_irq)
-+		free_irq(usb_irq->start, &pda_power_supplies[1]);
-+	if (ac_irq)
-+		free_irq(ac_irq->start, &pda_power_supplies[0]);
-+	del_timer_sync(&isr_timer);
-+	power_supply_unregister(&pda_power_supplies[1]);
-+	power_supply_unregister(&pda_power_supplies[0]);
-+	return 0;
-+}
++	power_supplicant_unregister(&bat->pst);
++	battery_remove_attrs(bat);
++	device_unregister(bat->dev);
 +
-+static struct platform_driver pda_power_pdrv = {
-+	.driver = {
-+		.name = "pda-power",
-+	},
-+	.probe = pda_power_probe,
-+	.remove = pda_power_remove,
-+};
-+
-+static int __init pda_power_init(void)
-+{
-+	return platform_driver_register(&pda_power_pdrv);
-+}
-+
-+static void __exit pda_power_exit(void)
-+{
-+	platform_driver_unregister(&pda_power_pdrv);
++#ifdef CONFIG_LEDS_TRIGGERS
++	led_trigger_unregister_charging(bat->charging_full_trig);
++	led_trigger_unregister_charging(bat->charging_trig);
++	led_trigger_unregister_simple(bat->full_trig);
++	kfree(bat->full_trig_name);
++	kfree(bat->charging_trig_name);
++	kfree(bat->charging_full_trig_name);
++#endif
 +	return;
 +}
 +
-+module_init(pda_power_init);
-+module_exit(pda_power_exit);
++static int __init battery_class_init(void)
++{
++	battery_class = class_create(THIS_MODULE, "battery");
++
++	if (IS_ERR(battery_class))
++		return PTR_ERR(battery_class);
++
++	return 0;
++}
++
++static void __exit battery_class_exit(void)
++{
++	class_destroy(battery_class);
++	return;
++}
++
++EXPORT_SYMBOL_GPL(battery_register);
++EXPORT_SYMBOL_GPL(battery_unregister);
++EXPORT_SYMBOL_GPL(battery_status_changed);
++EXPORT_SYMBOL_GPL(battery_is_external_power_supplied);
++
++/* exported for the APM Power driver, APM emulation */
++EXPORT_SYMBOL_GPL(battery_class);
++
++subsys_initcall(battery_class_init);
++module_exit(battery_class_exit);
++
++MODULE_DESCRIPTION("Universal battery monitor class");
++MODULE_AUTHOR("Ian Molton <spyro@f2s.com>, "
++              "Szabolcs Gyurko, "
++              "Anton Vorontsov <cbou@mail.ru>");
 +MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Anton Vorontsov <cbou@mail.ru>");
-diff --git a/include/linux/pda_power.h b/include/linux/pda_power.h
+diff --git a/include/linux/battery.h b/include/linux/battery.h
 new file mode 100644
-index 0000000..0d414a8
+index 0000000..2743f88
 --- /dev/null
-+++ b/include/linux/pda_power.h
-@@ -0,0 +1,25 @@
++++ b/include/linux/battery.h
+@@ -0,0 +1,125 @@
 +/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
++ *  Universal battery monitor class
 + *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
++ *  Copyright (c) 2007  Anton Vorontsov <cbou@mail.ru>
++ *  Copyright (c) 2004  Szabolcs Gyurko
++ *  Copyright (c) 2003  Ian Molton <spyro@f2s.com>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ *  Modified: 2004, Oct     Szabolcs Gyurko
++ *
++ *  You may use this code as per GPL version 2
++ *
++ * All voltages, currents, charges, energies, time and temperatures in uV,
++ * uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
++ * stated. It's driver's job to convert its raw values to units in which
++ * this class operates.
 + */
 +
-+#ifndef __PDA_POWER_H__
-+#define __PDA_POWER_H__
++#ifndef __LINUX_BATTERY_H__
++#define __LINUX_BATTERY_H__
 +
-+#define PDA_POWER_CHARGE_AC  (1 << 0)
-+#define PDA_POWER_CHARGE_USB (1 << 1)
++#include <linux/device.h>
++#include <linux/external_power.h>
++#include <linux/leds.h>
 +
-+struct pda_power_pdata {
-+	int (*is_ac_online)(void);
-+	int (*is_usb_online)(void);
-+	void (*set_charge)(int flags);
++#define BATTERY_STATUS_UNKNOWN      0
++#define BATTERY_STATUS_CHARGING     1
++#define BATTERY_STATUS_DISCHARGING  2
++#define BATTERY_STATUS_NOT_CHARGING 3
++#define BATTERY_STATUS_FULL         4
++
++#define BATTERY_HEALTH_UNKNOWN  0
++#define BATTERY_HEALTH_GOOD     1
++#define BATTERY_HEALTH_OVERHEAT 2
++#define BATTERY_HEALTH_DEAD     3
++
++/*
++ * For systems where the charger determines the maximum battery capacity
++ * the min and max fields should be used to present these values to user
++ * space. Unused/unknown fields will not appear in sysfs.
++ */
++
++enum battery_property {
++	BATTERY_PROP_STATUS = 0,
++	BATTERY_PROP_HEALTH,
++	BATTERY_PROP_VOLTAGE_MAX_DESIGN,
++	BATTERY_PROP_VOLTAGE_MIN_DESIGN,
++	BATTERY_PROP_VOLTAGE_NOW,
++	BATTERY_PROP_VOLTAGE_AVG,
++	BATTERY_PROP_CURRENT_NOW,
++	BATTERY_PROP_CURRENT_AVG,
++	BATTERY_PROP_CHARGE_FULL_DESIGN,
++	BATTERY_PROP_CHARGE_EMPTY_DESIGN,
++	BATTERY_PROP_CHARGE_FULL,
++	BATTERY_PROP_CHARGE_EMPTY,
++	BATTERY_PROP_CHARGE_NOW,
++	BATTERY_PROP_CHARGE_AVG,
++	BATTERY_PROP_ENERGY_FULL_DESIGN,
++	BATTERY_PROP_ENERGY_EMPTY_DESIGN,
++	BATTERY_PROP_ENERGY_FULL,
++	BATTERY_PROP_ENERGY_EMPTY,
++	BATTERY_PROP_ENERGY_NOW,
++	BATTERY_PROP_ENERGY_AVG,
++	BATTERY_PROP_CAPACITY, /* in percents! */
++	BATTERY_PROP_TEMP,
++	BATTERY_PROP_TIME_TO_EMPTY_NOW,
++	BATTERY_PROP_TIME_TO_EMPTY_AVG,
++	BATTERY_PROP_TIME_TO_FULL_NOW,
++	BATTERY_PROP_TIME_TO_FULL_AVG,
 +};
 +
-+#endif /* __PDA_POWER_H__ */
++struct battery {
++	char *name;
++	enum battery_property *properties;
++	size_t num_properties;
++
++	/* For APM emulation, think legacy userspace. */
++	int main_battery;
++
++	/* executed in userspace, feel free to sleep */
++	void *(*get_property)(struct battery *bat, enum battery_property);
++
++	/* drivers should not sleep inside it, you'll get there from ISRs */
++	void (*external_power_changed)(struct battery *bat);
++
++	/* private */
++	struct device *dev;
++	struct power_supplicant pst;
++
++#ifdef CONFIG_LEDS_TRIGGERS
++	struct led_trigger *charging_full_trig;
++	char *charging_full_trig_name;
++	struct led_trigger *charging_trig;
++	char *charging_trig_name;
++	struct led_trigger *full_trig;
++	char *full_trig_name;
++#endif
++};
++
++/*
++ * This is recommended structure to specify static battery parameters.
++ * Generic one, parametrizable for different batteries. Battery device
++ * itself does not use it, but that's what implementing most drivers,
++ * should try reuse for consistency.
++ */
++
++struct battery_info {
++	char *name;
++	int voltage_max_design;
++	int voltage_min_design;
++	int charge_full_design;
++	int charge_empty_design;
++	int energy_full_design;
++	int energy_empty_design;
++	int main_battery;
++};
++
++extern void battery_status_changed(struct battery *bat);
++extern int battery_is_external_power_supplied(struct battery *bat);
++extern int battery_register(struct device *parent, struct battery *bat);
++extern void battery_unregister(struct battery *bat);
++
++/* For APM emulation, think legacy userspace. */
++extern struct class *battery_class;
++
++#endif /* __LINUX_BATTERY_H__ */
 -- 
 1.5.1.1-dirty
