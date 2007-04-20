@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbXDTBEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbXDTBLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754319AbXDTBEi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 21:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbXDTBEi
+	id S1754389AbXDTBLw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 21:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbXDTBLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 21:04:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:1508 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754319AbXDTBEh (ORCPT
+	Thu, 19 Apr 2007 21:11:52 -0400
+Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:44002 "EHLO
+	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754387AbXDTBLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 21:04:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K1xf7aJ773XUHTLk6dvZsQsA8dWfUG2+GOgGL4A8hw5yi4nxieuwOzcytTwRksZQzoxHCGKeYj+g1z2Dh3DsGU0Mcj45VeCCWz+s8BujzBPuoB4j7f9yd6GfRV5LWifxrL98fLM0fl+/l0Ezl3nzLSFqVaawpsrl6NZwnfhbReY=
-Message-ID: <f2b55d220704191804g2d5b0d5fl762a411c3edae43d@mail.gmail.com>
-Date: Thu, 19 Apr 2007 18:04:36 -0700
-From: "Michael K. Edwards" <medwards.linux@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: GPL-incompatible Module Error Message
-Cc: chris@pcburn.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070420003111.376a44d2@the-village.bc.nu>
+	Thu, 19 Apr 2007 21:11:51 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: rr_interval experiments
+Date: Fri, 20 Apr 2007 10:47:57 +1000
+User-Agent: KMail/1.9.5
+Cc: ck list <ck@vds.kolivas.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <npiggin@suse.de>
+References: <200704200101.49823.kernel@kolivas.org>
+In-Reply-To: <200704200101.49823.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4627EED5.6020800@pcburn.com>
-	 <f2b55d220704191558i6deadc08q6aa07360cadaaccc@mail.gmail.com>
-	 <20070420003111.376a44d2@the-village.bc.nu>
+Message-Id: <200704201047.57539.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/19/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> The troll is back I see.
+On Friday 20 April 2007 01:01, Con Kolivas wrote:
+> This then allows the maximum rr_interval to be as large as 5000
+> milliseconds.
 
-Troll, shmoll.  I call 'em like I see 'em.  As much as I like and
-depend on Linux, and as much as I respect the contributions and the
-ideals of the EXPORT_SYMBOL_GPL partisans, they're spreading needless
-FUD by spraying "private-don't-touch-me" all over mechanisms that are
-_explicitly_designed_ as interoperation boundaries.  They're also
-aiding and abetting the FSF's hypocritical charlatanry about the
-meaning of "derivative work".
+Just for fun, on a core2duo make allnoconfig make -j8 here are the build time 
+differences (on a 1000HZ config) machine:
 
-> Why don't you give him some useful information instead
+16ms:
+53.68user 4.81system 0:34.27elapsed 170%CPU (0avgtext+0avgdata 0maxresident)k
 
-Alternate technical solutions are also useful.  You seem to know them;
-I don't pretend to.  Thanks for providing them.
+1ms:
+56.73user 4.83system 0:36.03elapsed 170%CPU (0avgtext+0avgdata 0maxresident)k
 
-> - Turn off the paravirt option - you don't need it, and its just bloat
-> and slows down the kernel. Then rebuild the kernel and other bits and it
-> should all work fine.
+5000ms:
+52.88user 4.77system 0:32.37elapsed 178%CPU (0avgtext+0avgdata 0maxresident)k
 
-Just out of curiosity -- it seems thoroughly unlikely that ATI has
-intentionally touched paravirt_ops in fglrx.  Do you think that
-redefining bog-standard Linux interfaces when CONFIG_PARAVIRT (or
-whatever) is enabled suddenly makes fglrx a derivative work of
-whatever code underlies paravirt_ops?
+For the record, 16ms is what SD v0.43 would choose as the default value on 
+this hardware. A load with a much lower natural context switching rate than a 
+kernel compile, as you said Nick, would show even greater discrepancy in 
+these results.
 
-> The legality of the ati driver as a derivative work is another matter,
-> but I don't see what _GPL symbols have to do with its legality beyond
-> providing a hint.
+Fun eh? Note these are not for any comparison with anything else; just to show 
+the effect rr_interval changes have on throughput.
 
-Then surely you don't approve of spraying FATAL messages on people's
-consoles under these circumstances.  Allowing code into one's kernel
-whose integration problems can't or won't be diagnosed by mainline
-developers may be foolish, but it's not FATAL.
-
-Cheers,
-- Michael
+-- 
+-ck
