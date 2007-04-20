@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767063AbXDTMAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767061AbXDTMA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767063AbXDTMAo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 08:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767062AbXDTMAo
+	id S1767061AbXDTMA4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 08:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767062AbXDTMA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 08:00:44 -0400
-Received: from mx5.mail.ru ([194.67.23.25]:16899 "EHLO mx5.mail.ru"
+	Fri, 20 Apr 2007 08:00:56 -0400
+Received: from mx7.mail.ru ([194.67.23.27]:22750 "EHLO mx7.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767065AbXDTMAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 08:00:42 -0400
-Date: Fri, 20 Apr 2007 15:58:13 +0400
+	id S1767061AbXDTMAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 08:00:54 -0400
+Date: Fri, 20 Apr 2007 15:58:55 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: linux-kernel@vger.kernel.org
 Cc: kernel-discuss@handhelds.org
-Subject: [PATCH 3/7] Universal battery class
-Message-ID: <20070420115813.GC21752@zarina>
+Subject: [PATCH 4/7] 1-Wire ds2760 chip battery driver
+Message-ID: <20070420115855.GD21752@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
@@ -24,684 +24,579 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
- Documentation/battery-class.txt |  150 ++++++++++++++++++
- drivers/Kconfig                 |    2 +
- drivers/Makefile                |    1 +
- drivers/battery/Kconfig         |   11 ++
- drivers/battery/Makefile        |    1 +
- drivers/battery/battery.c       |  323 +++++++++++++++++++++++++++++++++++++++
- include/linux/battery.h         |  125 +++++++++++++++
- 7 files changed, 613 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/battery-class.txt
- create mode 100644 drivers/battery/Kconfig
- create mode 100644 drivers/battery/Makefile
- create mode 100644 drivers/battery/battery.c
- create mode 100644 include/linux/battery.h
+ drivers/battery/Kconfig          |    7 +
+ drivers/battery/Makefile         |    1 +
+ drivers/battery/ds2760_battery.c |  499 ++++++++++++++++++++++++++++++++++++++
+ include/linux/ds2760_battery.h   |   32 +++
+ 4 files changed, 539 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/battery/ds2760_battery.c
+ create mode 100644 include/linux/ds2760_battery.h
 
-diff --git a/Documentation/battery-class.txt b/Documentation/battery-class.txt
-new file mode 100644
-index 0000000..6a7d591
---- /dev/null
-+++ b/Documentation/battery-class.txt
-@@ -0,0 +1,150 @@
-+Linux battery class
-+===================
-+
-+Synopsis
-+~~~~~~~~
-+Battery class used to export battery properties to userspace in consistent
-+manner.
-+
-+It defines core set of battery attributes, available via sysfs, which
-+should be applicable to (almost) every battery out there. Each attribute
-+has well defined meaning, up to unit of measure used. While the attributes
-+provided are believed to be universally applicable to any battery,
-+specific monitoring hardware may not be able to provide them all, so
-+any of them may be skipped.
-+
-+Battery class is extensible, and allows to define drivers own attributes.
-+The core attribute set is subject to the standard Linux evolution (i.e.
-+if it will be found that some attribute is applicable to many batteries
-+or their drivers, it can be added to the core set).
-+
-+Battery class integrates with External Power framework, for the purpose of
-+notification battery drivers when charging power is available. Note that
-+specific charge control is left to the battery drivers.
-+
-+It also integrates with LED framework, for the purpose of providing
-+typically expected (at least for portable devices) feedback of battery
-+status (charging/fully charged) via LEDs. (Note that specific details of
-+the indication (including whether to use it at all) are fully controllable
-+by user and/or specific machine defaults, per design principles of LED
-+framework).
-+
-+
-+Attributes/properties
-+~~~~~~~~~~~~~~~~~~~~~
-+Battery class has predefined set of attributes, this eliminates code
-+duplication across battery drivers. Battery class insist on reusing its
-+predefined attributes *and* their units.
-+
-+So, userspace gets expected set of attributes and their units for
-+any kind of battery, and can process/present them to a user in consistent
-+manner. Results for different batteries and machines are also directly
-+comparable.
-+
-+See drivers/battery/ds2760_battery.c for the example how to declare and
-+handle attributes.
-+
-+
-+Units
-+~~~~~
-+Quoting include/linux/battery.h:
-+
-+  All voltages, currents, charges, energies, time and temperatures in uV,
-+  uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
-+  stated. It's driver's job to convert its raw values to units in which
-+  this class operates.
-+
-+
-+Attributes/properties detailed
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+~ ~ ~ ~ ~ ~ ~  Charge/Energy/Capacity - how to not confuse  ~ ~ ~ ~ ~ ~ ~
-+~                                                                       ~
-+~ Because both "charge" (uAh) and "energy" (uWh) represents "capacity"  ~
-+~ of battery, battery class distinguish these terms. Don't mix them!    ~
-+~                                                                       ~
-+~ CHARGE_* attributes represents capacity in uAh only.                  ~
-+~ ENERGY_* attributes represents capacity in uWh only.                  ~
-+~ CAPACITY attribute represents capacity in *percents*, from 0 to 100.  ~
-+~                                                                       ~
-+~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-+
-+Postfixes:
-+_AVG - *hardware* averaged value, use it if your hardware is really able to
-+report averaged values.
-+_NOW - momentary/instantaneous values.
-+
-+STATUS - this attribute represents operating status (charging, full,
-+discharging (i.e. powering a load), etc.). This corresponds to
-+BATTERY_STATUS_* values, as defined in battery.h.
-+
-+HEALTH - represents health of the battery, values corresponds to
-+BATTERY_HEALTH_*, defined in battery.h.
-+
-+VOLTAGE_MAX_DESIGN, VOLTAGE_MIN_DESIGN - design values for maximal and
-+minimal battery voltages. Maximal/minimal means values of voltages when
-+battery considered "full"/"empty" at normal conditions. Yes, there is
-+no direct relation between voltage and battery capacity, but some dumb
-+batteries use voltage for very approximated calculation of capacity.
-+Battery driver also can use this attribute just to inform userspace
-+about maximal and minimal voltage thresholds of a given battery.
-+
-+CHARGE_FULL_DESIGN, CHARGE_EMPTY_DESIGN - design charge values, when
-+battery considered full/empty.
-+
-+ENERGY_FULL_DESIGN, ENERGY_EMPTY_DESIGN - same as above but for energy.
-+
-+CHARGE_FULL, CHARGE_EMPTY - These attributes means "last remembered value
-+of charge when battery became full/empty". It also could mean "value of
-+charge when battery considered full/empty at given conditions (temperature,
-+age)". I.e. these attributes represents real thresholds, not design values.
-+
-+ENERGY_FULL, ENERGY_EMPTY - same as above but for energy.
-+
-+CAPACITY - capacity in percents.
-+
-+TEMP - temperature of the battery.
-+
-+TIME_TO_EMPTY - seconds left for battery to be considered empty (i.e.
-+while battery powers a load)
-+TIME_TO_FULL - seconds left for battery to be considered full (i.e.
-+while battery is charging)
-+
-+
-+QA
-+~~
-+Q: Where is BATTERY_PROP_XYZ attribute?
-+A: If you cannot find attribute suitable for your battery needs, feel free
-+   to add it and send patch along with your battery driver.
-+
-+   The attributes available currently are the ones currently provided by the
-+   drivers written.
-+
-+   Good candidates to add in future: battery technology, model/part#,
-+   cycle_time, manufacturer, etc.
-+
-+
-+Q: I have some very specific attribute (e.g. battery color), should I add
-+   this attribute to standard ones?
-+A: Most likely, no. Such attribute can be placed in the driver itself, if
-+   it is useful. Of course, if the attribute in question applicable to
-+   large set of batteries, provided by many drivers, and/or comes from
-+   some general battery specification/standard, it may be a candidate to
-+   be added to the core attribute set.
-+
-+
-+Q: Suppose, my battery monitoring chip/firmware does not provides capacity
-+   in percents, but provides charge_{now,full,empty}. Should I calculate
-+   percentage capacity manually, inside the driver, and register CAPACITY
-+   attribute? The same question about time_to_empty/time_to_full.
-+A: Most likely, no. Battery class is designed to export battery properties
-+   which are directly measurable by the specific hardware available.
-+   Inferring not available properties using some heuristics or mathematical
-+   model is not subject of work for a battery driver. Such functionality
-+   should be factored out, and in fact, apm_power, the driver to serve
-+   legacy APM API on top of battery class, uses a simple heuristic of
-+   approximating remaining battery capacity based on its charge, current,
-+   voltage and so on. But full-fledged battery model is likely not subject
-+   for kernel at all, as it would require floating point calculation to deal
-+   with things like differential equations and Kalman filters. This is
-+   better be handled by batteryd/libbattery, yet to be written.
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index c546de3..c3a0038 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -56,6 +56,8 @@ source "drivers/w1/Kconfig"
- 
- source "drivers/power/Kconfig"
- 
-+source "drivers/battery/Kconfig"
-+
- source "drivers/hwmon/Kconfig"
- 
- source "drivers/mfd/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 2bdaae7..7cbfd37 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -61,6 +61,7 @@ obj-$(CONFIG_RTC_LIB)		+= rtc/
- obj-$(CONFIG_I2C)		+= i2c/
- obj-$(CONFIG_W1)		+= w1/
- obj-$(CONFIG_EXTERNAL_POWER)	+= power/
-+obj-$(CONFIG_BATTERY)		+= battery/
- obj-$(CONFIG_HWMON)		+= hwmon/
- obj-$(CONFIG_PHONE)		+= telephony/
- obj-$(CONFIG_MD)		+= md/
 diff --git a/drivers/battery/Kconfig b/drivers/battery/Kconfig
-new file mode 100644
-index 0000000..c386593
---- /dev/null
+index c386593..0c14ae0 100644
+--- a/drivers/battery/Kconfig
 +++ b/drivers/battery/Kconfig
-@@ -0,0 +1,11 @@
-+
-+menu "Battery support"
-+
-+config BATTERY
-+	tristate "Battery monitoring support"
-+	select EXTERNAL_POWER
+@@ -8,4 +8,11 @@ config BATTERY
+ 	  Say Y here to enable generic battery status reporting in
+ 	  the /sys filesystem.
+ 
++config BATTERY_DS2760
++	tristate "DS2760 battery driver (HP iPAQ & others)"
++	depends on BATTERY && W1
++	select W1_SLAVE_DS2760
 +	help
-+	  Say Y here to enable generic battery status reporting in
-+	  the /sys filesystem.
++	  Say Y here to enable support for batteries with ds2760 chip.
 +
-+endmenu
+ endmenu
 diff --git a/drivers/battery/Makefile b/drivers/battery/Makefile
-new file mode 100644
-index 0000000..a2239cb
---- /dev/null
+index a2239cb..9902513 100644
+--- a/drivers/battery/Makefile
 +++ b/drivers/battery/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_BATTERY)              += battery.o
-diff --git a/drivers/battery/battery.c b/drivers/battery/battery.c
+@@ -1 +1,2 @@
+ obj-$(CONFIG_BATTERY)              += battery.o
++obj-$(CONFIG_BATTERY_DS2760)       += ds2760_battery.o
+diff --git a/drivers/battery/ds2760_battery.c b/drivers/battery/ds2760_battery.c
 new file mode 100644
-index 0000000..66dc727
+index 0000000..7c48260
 --- /dev/null
-+++ b/drivers/battery/battery.c
-@@ -0,0 +1,323 @@
++++ b/drivers/battery/ds2760_battery.c
+@@ -0,0 +1,499 @@
 +/*
-+ *  Universal battery monitor class
++ * Driver for batteries with DS2760 chips inside.
 + *
-+ *  Copyright (c) 2007  Anton Vorontsov <cbou@mail.ru>
-+ *  Copyright (c) 2004  Szabolcs Gyurko
-+ *  Copyright (c) 2003  Ian Molton <spyro@f2s.com>
++ * Copyright (c) 2007 Anton Vorontsov
++ *               2004-2007 Matt Reimer
++ *               2004 Szabolcs Gyurko
 + *
-+ *  Modified: 2004, Oct     Szabolcs Gyurko
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
 + *
-+ *  You may use this code as per GPL version 2
++ * Author:  Anton Vorontsov <cbou@mail.ru>
++ *          February 2007
 + *
-+ * All voltages, currents, charges, energies, time and temperatures in uV,
-+ * uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
-+ * stated. It's driver's job to convert its raw values to units in which
-+ * this class operates.
++ *          Matt Reimer <mreimer@vpop.net>
++ *          April 2004, 2005, 2007
++ *
++ *          Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
++ *          September 2004
 + */
 +
 +#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/battery.h>
++#include <linux/param.h>
++#include <linux/jiffies.h>
++#include <linux/workqueue.h>
++#include <linux/pm.h>
++#include <linux/platform_device.h>
++#include <linux/ds2760_battery.h>
 +
-+/* If we have hwtimer trigger, then use it to blink charging LED */
-+#if defined(CONFIG_LEDS_TRIGGER_HWTIMER) ||                  \
-+               (defined(CONFIG_BATTERY_MODULE) &&            \
-+                defined(CONFIG_LEDS_TRIGGER_HWTIMER_MODULE))
-+	#define led_trigger_register_charging led_trigger_register_hwtimer
-+	#define led_trigger_unregister_charging led_trigger_unregister_hwtimer
-+#else
-+	#define led_trigger_register_charging led_trigger_register_simple
-+	#define led_trigger_unregister_charging led_trigger_unregister_simple
-+#endif
++#include "../w1/w1.h"
++#include "../w1/slaves/w1_ds2760.h"
 +
-+struct class *battery_class;
++struct ds2760_device_info {
++	struct battery_info *bi;
 +
-+static void battery_external_power_changed(struct power_supplicant *pst,
-+                                           struct power_supply *psy)
-+{
-+	struct battery *bat = container_of(pst, struct battery, pst);
++	/* DS2760 data, valid after calling ds2760_battery_read_status() */
++	unsigned long update_time;      /* jiffies when data read */
++	char raw[DS2760_DATA_SIZE];     /* raw DS2760 data */
++	int voltage_raw;                /* units of 4.88 mV */
++	int voltage_uV;                 /* units of uV */
++	int current_raw;                /* units of 0.625 mA */
++	int current_uA;                 /* units of uA */
++	int accum_current_raw;          /* units of 0.25 mAh */
++	int accum_current_uAh;          /* units of uAh */
++	int temp_raw;                   /* units of 0.125 C */
++	int temp_C;                     /* units of 0.1 C */
++	int rated_capacity;             /* units of uAh */
++	int rem_capacity;               /* percentage */
++	int full_active_uAh;            /* units of uAh */
++	int empty_uAh;                  /* units of uAh */
++	int life_sec;                   /* units of seconds */
++	int charge_status;              /* BATTERY_STATUS_* */
 +
-+	pr_debug("%s\n", __FUNCTION__);
-+	if (bat->external_power_changed)
-+		bat->external_power_changed(bat);
-+
-+	return;
-+}
-+
-+int battery_is_external_power_supplied(struct battery *bat)
-+{
-+	pr_debug("%s\n", __FUNCTION__);
-+	return power_supplicant_am_i_supplied(&bat->pst);
-+}
-+
-+void battery_status_changed(struct battery *bat)
-+{
-+	void *value;
-+
-+	pr_debug("%s\n", __FUNCTION__);
-+
-+	value = bat->get_property(bat, BATTERY_PROP_STATUS);
-+	if (!value)
-+		return;
-+
-+#ifdef CONFIG_LEDS_TRIGGERS
-+	switch(*(int *)value) {
-+	case BATTERY_STATUS_FULL:
-+		led_trigger_event(bat->charging_full_trig, LED_FULL);
-+		led_trigger_event(bat->charging_trig, LED_OFF);
-+		led_trigger_event(bat->full_trig, LED_FULL);
-+		break;
-+	case BATTERY_STATUS_CHARGING:
-+		led_trigger_event(bat->charging_full_trig, LED_FULL);
-+		led_trigger_event(bat->charging_trig, LED_FULL);
-+		led_trigger_event(bat->full_trig, LED_OFF);
-+		break;
-+	default:
-+		led_trigger_event(bat->charging_full_trig, LED_OFF);
-+		led_trigger_event(bat->charging_trig, LED_OFF);
-+		led_trigger_event(bat->full_trig, LED_OFF);
-+		break;
-+	}
-+#endif /* CONFIG_LEDS_TRIGGERS */
-+	return;
-+}
-+
-+/*
-+ * This is because the name "current" breaks the device attr macro.
-+ * The "current" word resolvs to "(get_current())" so instead of
-+ * "current" "(get_current())" appears in the sysfs.
-+ *
-+ * The source of this definition is the device.h which calls __ATTR
-+ * macro in sysfs.h which calls the __stringify macro.
-+ *
-+ * Only modification that the name is not tried to be resolved
-+ * (as a macro let's say).
-+ */
-+
-+#define BATTERY_ATTR(_name)                                             \
-+{                                                                       \
-+	.attr = { .name = #_name, .mode = 0444, .owner = THIS_MODULE }, \
-+	.show = battery_show_property,                                  \
-+	.store = NULL,                                                  \
-+}
-+
-+static struct device_attribute battery_attrs[];
-+
-+static ssize_t battery_show_property(struct device *dev,
-+                                     struct device_attribute *attr,
-+                                     char *buf) {
-+	static char *status_text[] = {
-+		"Unknown", "Charging", "Discharging", "Not charging", "Full"
-+	};
-+	static char *health_text[] = {
-+		"Unknown", "Good", "Overheat", "Dead"
-+	};
-+	struct battery *bat = dev_get_drvdata(dev);
-+	const off_t off = attr - battery_attrs;
-+	void *value = bat->get_property(bat, off);
-+
-+	if (!value)
-+		return sprintf(buf, "Driver can't report this property, "
-+		               "but claimed it can. Fix it.\n");
-+
-+	if (off == BATTERY_PROP_STATUS)
-+		return sprintf(buf, "%s\n", status_text[*(int *)value]);
-+	else if (off == BATTERY_PROP_HEALTH)
-+		return sprintf(buf, "%s\n", health_text[*(int *)value]);
-+	else
-+		return sprintf(buf, "%d\n", *(int *)value);
-+}
-+
-+/* Must be in the same order as BATTERY_PROP_*, defined in battery.h */
-+static struct device_attribute battery_attrs[] = {
-+	BATTERY_ATTR(status),
-+	BATTERY_ATTR(health),
-+	BATTERY_ATTR(voltage_max_design),
-+	BATTERY_ATTR(voltage_min_design),
-+	BATTERY_ATTR(voltage_now),
-+	BATTERY_ATTR(voltage_avg),
-+	BATTERY_ATTR(current_now),
-+	BATTERY_ATTR(current_avg),
-+	BATTERY_ATTR(charge_full_design),
-+	BATTERY_ATTR(charge_empty_design),
-+	BATTERY_ATTR(charge_full),
-+	BATTERY_ATTR(charge_empty),
-+	BATTERY_ATTR(charge_now),
-+	BATTERY_ATTR(charge_avg),
-+	BATTERY_ATTR(energy_full_design),
-+	BATTERY_ATTR(energy_empty_design),
-+	BATTERY_ATTR(energy_full),
-+	BATTERY_ATTR(energy_empty),
-+	BATTERY_ATTR(energy_now),
-+	BATTERY_ATTR(energy_avg),
-+	BATTERY_ATTR(capacity),
-+	BATTERY_ATTR(temp),
-+	BATTERY_ATTR(time_to_empty_now),
-+	BATTERY_ATTR(time_to_empty_avg),
-+	BATTERY_ATTR(time_to_full_now),
-+	BATTERY_ATTR(time_to_full_avg),
++	int full_counter;
++	struct battery batt;
++	struct device *w1_dev;
++	struct workqueue_struct *monitor_wqueue;
++	struct delayed_work monitor_work;
 +};
 +
-+static int battery_create_attrs(struct battery *bat)
++static unsigned int cache_time = 1000;
++module_param(cache_time, uint, 0644);
++MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
++
++/* Some batteries have their rated capacity stored a N * 10 mAh, while
++ * others use an index into this table. */
++static int rated_capacities[] = {
++	0,
++	920,        /* Samsung */
++	920,        /* BYD */
++	920,        /* Lishen */
++	920,        /* NEC */
++	1440,       /* Samsung */
++	1440,       /* BYD */
++	1440,       /* Lishen */
++	1440,       /* NEC */
++	2880,       /* Samsung */
++	2880,       /* BYD */
++	2880,       /* Lishen */
++	2880        /* NEC */
++};
++
++/* array is level at temps 0C, 10C, 20C, 30C, 40C
++ * temp is in Celsius */
++static int battery_interpolate(int array[], int temp)
 +{
-+	int rc = 0;
-+	int i;
++	int index, dt;
 +
-+	for (i = 0; i < bat->num_properties; i++) {
-+		rc = device_create_file(bat->dev,
-+		            &battery_attrs[bat->properties[i]]);
-+		if (rc)
-+			goto failed;
-+	}
++	if (temp <= 0)
++		return array[0];
++	if (temp >= 40)
++		return array[4];
 +
-+	goto succeed;
++	index = temp / 10;
++	dt    = temp % 10;
 +
-+failed:
-+	while (i--)
-+		device_remove_file(bat->dev,
-+		           &battery_attrs[bat->properties[i]]);
-+succeed:
-+	return rc;
++	return array[index] + (((array[index + 1] - array[index]) * dt) / 10);
 +}
 +
-+static void battery_remove_attrs(struct battery *bat)
++static int ds2760_battery_read_status(struct ds2760_device_info *di)
 +{
-+	int i;
++	int ret, i, start, count, scale[5];
 +
-+	for (i = 0; i < bat->num_properties; i++)
-+		device_remove_file(bat->dev,
-+		           &battery_attrs[bat->properties[i]]);
++	if (di->update_time && time_before(jiffies, di->update_time +
++	                                   msecs_to_jiffies(cache_time)))
++		return 0;
 +
-+	return;
-+}
++	if (!di->w1_dev)
++		return 0;
 +
-+int battery_register(struct device *parent, struct battery *bat)
-+{
-+	int rc = 0;
-+
-+	bat->dev = device_create(battery_class, parent, 0, "%s", bat->name);
-+	if (IS_ERR(bat->dev)) {
-+		rc = PTR_ERR(bat->dev);
-+		goto dev_create_failed;
++	/* The first time we read the entire contents of SRAM/EEPROM,
++	 * but after that we just read the interesting bits that change. */
++	if (di->update_time == 0) {
++		start = 0;
++		count = DS2760_DATA_SIZE;
++	}
++	else {
++		start = DS2760_VOLTAGE_MSB;
++		count = DS2760_TEMP_LSB - start + 1;
 +	}
 +
-+	dev_set_drvdata(bat->dev, bat);
-+
-+	rc = battery_create_attrs(bat);
-+	if (rc)
-+		goto create_bat_attrs_failed;
-+
-+	bat->pst.name = bat->name;
-+	bat->pst.power_supply_changed = battery_external_power_changed;
-+	rc = power_supplicant_register(&bat->pst);
-+	if (rc)
-+		goto power_supplicant_failed;
-+
-+#ifdef CONFIG_LEDS_TRIGGERS
-+	bat->charging_full_trig_name = kmalloc(strlen(bat->name) +
-+	                          sizeof("-charging-or-full"), GFP_KERNEL);
-+	if (!bat->charging_full_trig_name) {
-+		rc = -ENOMEM;
-+		goto charging_full_trig_name_failed;
++	ret = w1_ds2760_read(di->w1_dev, di->raw + start, start, count);
++	if (ret != count) {
++		printk("call to w1_ds2760_read failed (0x%08x)\n",
++		       (unsigned int)di->w1_dev);
++		return 1;
 +	}
 +
-+	bat->charging_trig_name = kmalloc(strlen(bat->name) +
-+	                                  sizeof("-charging"), GFP_KERNEL);
-+	if (!bat->charging_trig_name) {
-+		rc = -ENOMEM;
-+		goto charging_trig_name_failed;
-+	}
++	di->update_time = jiffies;
 +
-+	bat->full_trig_name = kmalloc(strlen(bat->name) +
-+	                              sizeof("-full"), GFP_KERNEL);
-+	if (!bat->full_trig_name) {
-+		rc = -ENOMEM;
-+		goto full_trig_name_failed;
-+	}
++	/* DS2760 reports voltage in units of 4.88mV, but the battery class
++	 * reports in units of uV, so convert by multiplying by 4880. */
++	di->voltage_raw = (di->raw[DS2760_VOLTAGE_MSB] << 3) |
++	                  (di->raw[DS2760_VOLTAGE_LSB] >> 5);
++	di->voltage_uV = di->voltage_raw * 4880;
 +
-+	strcpy(bat->charging_full_trig_name, bat->name);
-+	strcat(bat->charging_full_trig_name, "-charging-or-full");
-+	strcpy(bat->charging_trig_name, bat->name);
-+	strcat(bat->charging_trig_name, "-charging");
-+	strcpy(bat->full_trig_name, bat->name);
-+	strcat(bat->full_trig_name, "-full");
++	/* DS2760 reports current in signed units of 0.625mA, but the battery
++	 * class reports in units of uA, so convert by multiplying by 625. */
++	di->current_raw =
++	    (((signed char)di->raw[DS2760_CURRENT_MSB]) << 5) |
++	                  (di->raw[DS2760_CURRENT_LSB] >> 3);
++	di->current_uA = di->current_raw * 625;
 +
-+	led_trigger_register_simple(bat->charging_full_trig_name,
-+	                            &bat->charging_full_trig);
-+	led_trigger_register_charging(bat->charging_trig_name,
-+	                              &bat->charging_trig);
-+	led_trigger_register_simple(bat->full_trig_name,
-+	                            &bat->full_trig);
-+#endif /* CONFIG_LEDS_TRIGGERS */
++	/* DS2760 reports accumulated current in signed units of 0.25mAh. */
++	di->accum_current_raw =
++	    (((signed char)di->raw[DS2760_CURRENT_ACCUM_MSB]) << 8) |
++	                   di->raw[DS2760_CURRENT_ACCUM_LSB];
++	di->accum_current_uAh = di->accum_current_raw * 250;
 +
-+	goto success;
++	/* DS2760 reports temperature in signed units of 0.125C, but the
++	 * battery class reports in units of 1/10 C, so we convert by
++	 * multiplying by .125 * 10 = 1.25. */
++	di->temp_raw = (((signed char)di->raw[DS2760_TEMP_MSB]) << 3) |
++	                             (di->raw[DS2760_TEMP_LSB] >> 5);
++	di->temp_C = di->temp_raw + (di->temp_raw / 4);
 +
-+#ifdef CONFIG_LEDS_TRIGGERS
-+full_trig_name_failed:
-+	kfree(bat->charging_trig_name);
-+charging_trig_name_failed:
-+	kfree(bat->charging_full_trig_name);
-+charging_full_trig_name_failed:
-+#endif
-+	power_supplicant_unregister(&bat->pst);
-+power_supplicant_failed:
-+	battery_remove_attrs(bat);
-+create_bat_attrs_failed:
-+	device_unregister(bat->dev);
-+dev_create_failed:
-+success:
-+	return rc;
-+}
++	/* At least some battery monitors (e.g. HP iPAQ) store the battery's
++	 * maximum rated capacity. */
++	if (di->raw[DS2760_RATED_CAPACITY] < ARRAY_SIZE(rated_capacities))
++		di->rated_capacity = rated_capacities[
++		        (unsigned int)di->raw[DS2760_RATED_CAPACITY]];
++	else
++		di->rated_capacity = di->raw[DS2760_RATED_CAPACITY] * 10;
 +
-+void battery_unregister(struct battery *bat)
-+{
-+	power_supplicant_unregister(&bat->pst);
-+	battery_remove_attrs(bat);
-+	device_unregister(bat->dev);
++	di->rated_capacity *= 1000; /* convert to uAh */
 +
-+#ifdef CONFIG_LEDS_TRIGGERS
-+	led_trigger_unregister_charging(bat->charging_full_trig);
-+	led_trigger_unregister_charging(bat->charging_trig);
-+	led_trigger_unregister_simple(bat->full_trig);
-+	kfree(bat->full_trig_name);
-+	kfree(bat->charging_trig_name);
-+	kfree(bat->charging_full_trig_name);
-+#endif
-+	return;
-+}
++	/* Calculate the full level at the present temperature. */
++	di->full_active_uAh = di->raw[DS2760_ACTIVE_FULL] << 8 |
++	                      di->raw[DS2760_ACTIVE_FULL + 1];
 +
-+static int __init battery_class_init(void)
-+{
-+	battery_class = class_create(THIS_MODULE, "battery");
++	scale[0] = di->raw[DS2760_ACTIVE_FULL] << 8 |
++	           di->raw[DS2760_ACTIVE_FULL + 1];
++	for (i = 1; i < 5; i++)
++		scale[i] = scale[i - 1] + di->raw[DS2760_ACTIVE_FULL + 2 + i];
 +
-+	if (IS_ERR(battery_class))
-+		return PTR_ERR(battery_class);
++	di->full_active_uAh = battery_interpolate(scale, di->temp_C / 10);
++	di->full_active_uAh *= 1000; /* convert to uAh */
++
++	/* Calculate the empty level at the present temperature. */
++	scale[4] = di->raw[DS2760_ACTIVE_EMPTY + 4];
++	for (i = 3; i >= 0; i--)
++		scale[i] = scale[i + 1] + di->raw[DS2760_ACTIVE_EMPTY + i];
++
++	di->empty_uAh = battery_interpolate(scale, di->temp_C / 10);
++	di->empty_uAh *= 1000; /* convert to uAh */
++
++	/* From Maxim Application Note 131: remaining capacity =
++	 * ((ICA - Empty Value) / (Full Value - Empty Value)) x 100% */
++	di->rem_capacity = ((di->accum_current_uAh - di->empty_uAh) * 100L) /
++	                    (di->full_active_uAh - di->empty_uAh);
++
++	if (di->rem_capacity < 0)
++		di->rem_capacity = 0;
++	if (di->rem_capacity > 100)
++		di->rem_capacity = 100;
++
++	if (di->current_uA)
++		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) *
++		                 3600L) / di->current_uA;
++	else
++		di->life_sec = 0;
 +
 +	return 0;
 +}
 +
-+static void __exit battery_class_exit(void)
++static void ds2760_battery_update_status(struct ds2760_device_info *di)
 +{
-+	class_destroy(battery_class);
++	int old_charge_status = di->charge_status;
++
++	ds2760_battery_read_status(di);
++
++	if (di->charge_status == BATTERY_STATUS_UNKNOWN)
++		di->full_counter = 0;
++
++	if (battery_is_external_power_supplied(&di->batt)) {
++		if (di->current_uA > 10000) {
++			di->charge_status = BATTERY_STATUS_CHARGING;
++			di->full_counter = 0;
++		}
++		else if (di->current_uA < -5000) {
++			if (di->charge_status != BATTERY_STATUS_NOT_CHARGING)
++				printk(KERN_WARNING "%s: not enough power to "
++				       "charge\n", di->bi->name);
++			di->charge_status = BATTERY_STATUS_NOT_CHARGING;
++			di->full_counter = 0;
++		}
++		else if (di->current_uA < 10000 &&
++		            di->charge_status != BATTERY_STATUS_FULL) {
++
++			/* Don't consider the battery to be full unless
++			 * we've seen the current < 10 mA at least two
++			 * consecutive times. */
++
++			di->full_counter++;
++
++			if (di->full_counter < 2)
++				di->charge_status = BATTERY_STATUS_CHARGING;
++			else {
++				unsigned char acr[2];
++				int acr_val;
++
++				/* acr is in units of 0.25 mAh */
++				acr_val = di->full_active_uAh * 4L / 1000;
++
++				acr[0] = acr_val >> 8;
++				acr[1] = acr_val & 0xff;
++
++				if (w1_ds2760_write(di->w1_dev, acr,
++				    DS2760_CURRENT_ACCUM_MSB, 2) < 2)
++					printk(KERN_ERR "ACR reset failed\n");
++
++				di->charge_status = BATTERY_STATUS_FULL;
++			}
++		}
++	}
++	else {
++		di->charge_status = BATTERY_STATUS_DISCHARGING;
++		di->full_counter = 0;
++	}
++
++	if (di->charge_status != old_charge_status)
++		battery_status_changed(&di->batt);
++
 +	return;
 +}
 +
-+EXPORT_SYMBOL_GPL(battery_register);
-+EXPORT_SYMBOL_GPL(battery_unregister);
-+EXPORT_SYMBOL_GPL(battery_status_changed);
-+EXPORT_SYMBOL_GPL(battery_is_external_power_supplied);
++static int ds2760_battery_match_callback(struct device *dev, void *data)
++{
++	struct w1_slave *sl;
 +
-+/* exported for the APM Power driver, APM emulation */
-+EXPORT_SYMBOL_GPL(battery_class);
++	if (!(dev->driver && dev->driver->name &&
++	     (strcmp(dev->driver->name, "w1_slave_driver") == 0)))
++		return 0;
 +
-+subsys_initcall(battery_class_init);
-+module_exit(battery_class_exit);
++	sl = container_of(dev, struct w1_slave, dev);
 +
-+MODULE_DESCRIPTION("Universal battery monitor class");
-+MODULE_AUTHOR("Ian Molton <spyro@f2s.com>, "
-+              "Szabolcs Gyurko, "
-+              "Anton Vorontsov <cbou@mail.ru>");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/battery.h b/include/linux/battery.h
-new file mode 100644
-index 0000000..2743f88
---- /dev/null
-+++ b/include/linux/battery.h
-@@ -0,0 +1,125 @@
-+/*
-+ *  Universal battery monitor class
-+ *
-+ *  Copyright (c) 2007  Anton Vorontsov <cbou@mail.ru>
-+ *  Copyright (c) 2004  Szabolcs Gyurko
-+ *  Copyright (c) 2003  Ian Molton <spyro@f2s.com>
-+ *
-+ *  Modified: 2004, Oct     Szabolcs Gyurko
-+ *
-+ *  You may use this code as per GPL version 2
-+ *
-+ * All voltages, currents, charges, energies, time and temperatures in uV,
-+ * uA, uAh, uWh, seconds and tenths of degree Celsius unless otherwise
-+ * stated. It's driver's job to convert its raw values to units in which
-+ * this class operates.
-+ */
++	/* DS2760 w1 slave device names begin with the family number 0x30. */
++	if (strncmp(sl->name, "30-", 3) != 0)
++		return 0;
 +
-+#ifndef __LINUX_BATTERY_H__
-+#define __LINUX_BATTERY_H__
++	return 1;
++}
 +
-+#include <linux/device.h>
-+#include <linux/external_power.h>
-+#include <linux/leds.h>
++static void ds2760_battery_work(struct work_struct *work)
++{
++	struct ds2760_device_info *di = container_of(work,
++		struct ds2760_device_info, monitor_work.work);
++	struct bus_type *bus;
++	int interval = HZ * 60;
 +
-+#define BATTERY_STATUS_UNKNOWN      0
-+#define BATTERY_STATUS_CHARGING     1
-+#define BATTERY_STATUS_DISCHARGING  2
-+#define BATTERY_STATUS_NOT_CHARGING 3
-+#define BATTERY_STATUS_FULL         4
++	pr_debug("%s\n", __FUNCTION__);
 +
-+#define BATTERY_HEALTH_UNKNOWN  0
-+#define BATTERY_HEALTH_GOOD     1
-+#define BATTERY_HEALTH_OVERHEAT 2
-+#define BATTERY_HEALTH_DEAD     3
++	if (!di->w1_dev) {
++		/* Get the battery w1 slave device. */
++		bus = find_bus("w1");
++		if (bus)
++			di->w1_dev = bus_find_device(bus, NULL, NULL,
++			                   ds2760_battery_match_callback);
 +
-+/*
-+ * For systems where the charger determines the maximum battery capacity
-+ * the min and max fields should be used to present these values to user
-+ * space. Unused/unknown fields will not appear in sysfs.
-+ */
++		if (!di->w1_dev) {
++			pr_debug("%s: no dev found\n", __FUNCTION__);
++			interval = HZ * 10;
++			goto again_please;
++		}
++		pr_debug("%s: dev found\n", __FUNCTION__);
++	}
 +
-+enum battery_property {
-+	BATTERY_PROP_STATUS = 0,
-+	BATTERY_PROP_HEALTH,
++	ds2760_battery_update_status(di);
++
++again_please:
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, interval);
++	return;
++}
++
++#define to_ds2760_device_info(x) container_of((x), struct ds2760_device_info, \
++                                              batt);
++
++static void ds2760_battery_external_power_changed(struct battery *bat)
++{
++	struct ds2760_device_info *di = to_ds2760_device_info(bat);
++
++	pr_debug("%s\n", __FUNCTION__);
++
++	cancel_delayed_work(&di->monitor_work);
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ/10);
++
++	return;
++}
++
++static void *ds2760_battery_get_property(struct battery *bat,
++                                         enum battery_property bp)
++{
++	struct ds2760_device_info *di = to_ds2760_device_info(bat);
++
++	switch (bp) {
++	case BATTERY_PROP_VOLTAGE_MAX_DESIGN:
++		return &di->bi->voltage_max_design;
++	case BATTERY_PROP_STATUS:
++		return &di->charge_status;
++	default:
++		break;
++	};
++
++	ds2760_battery_read_status(di);
++
++	switch (bp) {
++	case BATTERY_PROP_VOLTAGE_NOW:
++		return &di->voltage_uV;
++	case BATTERY_PROP_CURRENT_NOW:
++		return &di->current_uA;
++	case BATTERY_PROP_CHARGE_FULL_DESIGN:
++		return &di->rated_capacity;
++	case BATTERY_PROP_CHARGE_FULL:
++		return &di->full_active_uAh;
++	case BATTERY_PROP_CHARGE_EMPTY:
++		return &di->empty_uAh;
++	case BATTERY_PROP_CHARGE_NOW:
++		return &di->accum_current_uAh;
++	case BATTERY_PROP_TEMP:
++		return &di->temp_C;
++	default:
++		return NULL;
++	};
++}
++
++static enum battery_property ds2760_battery_properties[] = {
++	BATTERY_PROP_STATUS,
 +	BATTERY_PROP_VOLTAGE_MAX_DESIGN,
-+	BATTERY_PROP_VOLTAGE_MIN_DESIGN,
 +	BATTERY_PROP_VOLTAGE_NOW,
-+	BATTERY_PROP_VOLTAGE_AVG,
 +	BATTERY_PROP_CURRENT_NOW,
-+	BATTERY_PROP_CURRENT_AVG,
 +	BATTERY_PROP_CHARGE_FULL_DESIGN,
-+	BATTERY_PROP_CHARGE_EMPTY_DESIGN,
 +	BATTERY_PROP_CHARGE_FULL,
 +	BATTERY_PROP_CHARGE_EMPTY,
 +	BATTERY_PROP_CHARGE_NOW,
-+	BATTERY_PROP_CHARGE_AVG,
-+	BATTERY_PROP_ENERGY_FULL_DESIGN,
-+	BATTERY_PROP_ENERGY_EMPTY_DESIGN,
-+	BATTERY_PROP_ENERGY_FULL,
-+	BATTERY_PROP_ENERGY_EMPTY,
-+	BATTERY_PROP_ENERGY_NOW,
-+	BATTERY_PROP_ENERGY_AVG,
-+	BATTERY_PROP_CAPACITY, /* in percents! */
 +	BATTERY_PROP_TEMP,
-+	BATTERY_PROP_TIME_TO_EMPTY_NOW,
-+	BATTERY_PROP_TIME_TO_EMPTY_AVG,
-+	BATTERY_PROP_TIME_TO_FULL_NOW,
-+	BATTERY_PROP_TIME_TO_FULL_AVG,
 +};
 +
-+struct battery {
-+	char *name;
-+	enum battery_property *properties;
-+	size_t num_properties;
++static int ds2760_battery_probe(struct platform_device *pdev)
++{
++	int retval = 0;
++	struct ds2760_device_info *di;
++	struct ds2760_platform_data *pdata;
 +
-+	/* For APM emulation, think legacy userspace. */
-+	int main_battery;
++	di = kzalloc(sizeof(*di), GFP_KERNEL);
++	if (!di) {
++		retval = -ENOMEM;
++		goto di_alloc_failed;
++	}
 +
-+	/* executed in userspace, feel free to sleep */
-+	void *(*get_property)(struct battery *bat, enum battery_property);
++	platform_set_drvdata(pdev, di);
 +
-+	/* drivers should not sleep inside it, you'll get there from ISRs */
-+	void (*external_power_changed)(struct battery *bat);
++	pdata = pdev->dev.platform_data;
++	di->bi = &pdata->battery_info;
 +
-+	/* private */
-+	struct device *dev;
-+	struct power_supplicant pst;
++	di->batt.name           = di->bi->name;
++	di->batt.properties     = ds2760_battery_properties;
++	di->batt.num_properties = ARRAY_SIZE(ds2760_battery_properties);
++	di->batt.get_property   = ds2760_battery_get_property;
++	di->batt.external_power_changed =
++	                          ds2760_battery_external_power_changed;
 +
-+#ifdef CONFIG_LEDS_TRIGGERS
-+	struct led_trigger *charging_full_trig;
-+	char *charging_full_trig_name;
-+	struct led_trigger *charging_trig;
-+	char *charging_trig_name;
-+	struct led_trigger *full_trig;
-+	char *full_trig_name;
++	di->charge_status = BATTERY_STATUS_UNKNOWN;
++
++	retval = battery_register(&pdev->dev, &di->batt);
++	if (retval) {
++		printk(KERN_ERR "Failed to register class dev for %s",
++		       pdev->name);
++		goto batt_failed;
++	}
++
++	INIT_DELAYED_WORK(&di->monitor_work, ds2760_battery_work);
++	di->monitor_wqueue = create_singlethread_workqueue("ds2760_mon");
++	if (!di->monitor_wqueue) {
++		retval = -ESRCH;
++		goto workqueue_failed;
++	}
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ * 1);
++
++	goto success;
++
++workqueue_failed:
++	battery_unregister(&di->batt);
++batt_failed:
++	kfree(di);
++di_alloc_failed:
++success:
++	return retval;
++}
++
++static int ds2760_battery_remove(struct platform_device *pdev)
++{
++	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++
++	cancel_rearming_delayed_workqueue(di->monitor_wqueue,
++	                                  &di->monitor_work);
++	destroy_workqueue(di->monitor_wqueue);
++	battery_unregister(&di->batt);
++	if (di->w1_dev)
++		put_device(di->w1_dev);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int ds2760_battery_suspend(struct platform_device *pdev,
++                                  pm_message_t state)
++{
++	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++
++	di->charge_status = BATTERY_STATUS_UNKNOWN;
++	battery_status_changed(&di->batt);
++
++	return 0;
++}
++
++static int ds2760_battery_resume(struct platform_device *pdev)
++{
++	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++
++	di->charge_status = BATTERY_STATUS_UNKNOWN;
++	battery_status_changed(&di->batt);
++
++	cancel_delayed_work(&di->monitor_work);
++	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ);
++
++	return 0;
++}
++#endif /* CONFIG_PM */
++
++static struct platform_driver ds2760_battery_driver = {
++	.driver = {
++		.name = "ds2760-battery",
++	},
++	.probe	  = ds2760_battery_probe,
++	.remove   = ds2760_battery_remove,
++#ifdef CONFIG_PM
++	.suspend  = ds2760_battery_suspend,
++	.resume	  = ds2760_battery_resume,
 +#endif
 +};
 +
++static int __init ds2760_battery_init(void)
++{
++	return platform_driver_register(&ds2760_battery_driver);
++}
++
++static void __exit ds2760_battery_exit(void)
++{
++	platform_driver_unregister(&ds2760_battery_driver);
++}
++
++module_init(ds2760_battery_init);
++module_exit(ds2760_battery_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>, "
++              "Matt Reimer <mreimer@vpop.net>, "
++              "Anton Vorontsov <cbou@mail.ru>");
++MODULE_DESCRIPTION("ds2760 battery driver");
+diff --git a/include/linux/ds2760_battery.h b/include/linux/ds2760_battery.h
+new file mode 100644
+index 0000000..a614b6a
+--- /dev/null
++++ b/include/linux/ds2760_battery.h
+@@ -0,0 +1,32 @@
 +/*
-+ * This is recommended structure to specify static battery parameters.
-+ * Generic one, parametrizable for different batteries. Battery device
-+ * itself does not use it, but that's what implementing most drivers,
-+ * should try reuse for consistency.
++ * Driver for batteries with DS2760 chips inside.
++ *
++ * Copyright (c) 2007 Anton Vorontsov
++ *               2004-2007 Matt Reimer
++ *               2004 Szabolcs Gyurko
++ *
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
++ *
++ * Author:  Anton Vorontsov <cbou@mail.ru>
++ *          February 2007
++ *
++ *          Matt Reimer <mreimer@vpop.net>
++ *          April 2004, 2005, 2007
++ *
++ *          Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
++ *          September 2004
 + */
 +
-+struct battery_info {
-+	char *name;
-+	int voltage_max_design;
-+	int voltage_min_design;
-+	int charge_full_design;
-+	int charge_empty_design;
-+	int energy_full_design;
-+	int energy_empty_design;
-+	int main_battery;
++#ifndef __DS2760_BATTERY__
++#define __DS2760_BATTERY__
++
++#include <linux/battery.h>
++
++struct ds2760_platform_data {
++	/* Battery information and characteristics. */
++	struct battery_info battery_info;
 +};
 +
-+extern void battery_status_changed(struct battery *bat);
-+extern int battery_is_external_power_supplied(struct battery *bat);
-+extern int battery_register(struct device *parent, struct battery *bat);
-+extern void battery_unregister(struct battery *bat);
-+
-+/* For APM emulation, think legacy userspace. */
-+extern struct class *battery_class;
-+
-+#endif /* __LINUX_BATTERY_H__ */
++#endif
 -- 
 1.5.1.1-dirty
