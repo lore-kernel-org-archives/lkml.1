@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbXDTHhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbXDTHqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbXDTHhv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 03:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXDTHhv
+	id S1754046AbXDTHqJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 03:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDTHqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 03:37:51 -0400
-Received: from sanctuary.goth.net ([64.27.17.130]:34918 "EHLO mail.goth.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753984AbXDTHhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 03:37:50 -0400
-X-Greylist: delayed 1616 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Apr 2007 03:37:50 EDT
-Message-ID: <46286775.5000507@goth.net>
-Date: Fri, 20 Apr 2007 03:10:45 -0400
-From: "Preston A. Elder" <prez@goth.net>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070208)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: AGPGart / AMD K7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Apr 2007 03:46:09 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43296 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754046AbXDTHqH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 03:46:07 -0400
+Date: Fri, 20 Apr 2007 00:45:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tom Alsberg <alsbergt@cs.huji.ac.il>
+Cc: Linux-Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: CPU time limit patch / setrlimit(RLIMIT_CPU, 0) cheat fix
+Message-Id: <20070420004547.87bd8b94.akpm@linux-foundation.org>
+In-Reply-To: <20070417135755.GA55049@cs.huji.ac.il>
+References: <20070417135755.GA55049@cs.huji.ac.il>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 17 Apr 2007 16:57:55 +0300 Tom Alsberg <alsbergt@cs.huji.ac.il> wrote:
 
-I have a Tyan Thunder K7x Pro (S2469) and the amd-k7-agp module does not
-seem to be probing my AGP device.  I have even tried putting debugging
-code into the amd-k7-agp module, and sure enough I can see it being
-loaded, but the probe function is never called.  This is with kernel 2.6.19.
+> Hi there.
+> 
+> As discovered here today, the change in Kernel 2.6.17 intended to
+> inhibit users from setting RLIMIT_CPU to 0 (as that is equivalent to
+> unlimited) by "cheating" and setting it to 1 in such a case, does not
+> make a difference, as the check is done in the wrong place (too late),
+> and only applies to the profiling code.
 
-Here is my lspci -vvv for the relevent devices:
+hm, I tested that.  I guess I must have only tested the profiling limit.
 
-00:00.0 Host bridge: Advanced Micro Devices [AMD] AMD-760 MP [IGD4-2P]
-System Co
-ntroller (rev 20)
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Step
-ping- SERR- FastB2B-
-        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort
-- <MAbort+ >SERR- <PERR-
-        Latency: 32
-        Region 0: Memory at d0000000 (32-bit, prefetchable) [size=256M]
-        Region 1: Memory at c2200000 (32-bit, prefetchable) [size=4K]
-        Region 2: I/O ports at 1050 [disabled] [size=4]
-        Capabilities: [a0] AGP version 2.0
-                Status: RQ=16 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64-
-HTrans- 64
-bit- FW+ AGP3- Rate=x1,x2,x4
-                Command: RQ=1 ArqSz=0 Cal=0 SBA+ AGP+ GART64- 64bit- FW-
-Rate=<n
-one>
+> On all systems I checked running kernels above 2.6.17, no matter what
+> the hard and soft CPU time limits were before, a user could escape
+> them by issuing in the shell (sh/bash/zsh) "ulimit -t 0", and then the
+> user's process was not ever killed.
+> 
+> Attached is a trivial patch to fix that.  Simply moving the check to a
+> slightly earlier location (specifically, before the line that actually
+> assigns the limit - *old_rlim = new_rlim), does the trick.
+> 
+> Do note that at least the zsh (but not ash, dash, or bash) shell has
+> the problem of "caching" the limits set by the ulimit command, so when
+> running zsh the fix will not immediately be evident - after entering
+> "ulimit -t 0", "ulimit -a" will show "-t: cpu time (seconds) 0", even
+> though the actual limit as returned by getrlimit(...) will be 1.  It
+> can be verified by opening a subshell (which will not have the values
+> of the parent shell in cache) and checking in it, or just by running a
+> CPU intensive command like "echo '65536^1048576' | bc" and verifying
+> that it dumps core after one second.
+> 
+> Regardless of whether that is a misfeature in the shell, perhaps it
+> would be better to return -EINVAL from setrlimit in such a case
+> instead of cheating and setting to 1, as that does not really reflect
+> the actual state of the process anymore.  I do not however know what
+> the ground for that decision was in the original 2.6.17 change, and
+> whether there would be any "backward" compatibility issues, so I
+> preferred not to touch that right now.
 
-00:01.0 PCI bridge: Advanced Micro Devices [AMD] AMD-760 MP [IGD4-2P]
-AGP Bridge
- (prog-if 00 [Normal decode])
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Step
-ping- SERR- FastB2B-
-        Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort
-- <MAbort- >SERR- <PERR-
-        Latency: 99
-        Bus: primary=00, secondary=01, subordinate=01, sec-latency=64
-        I/O behind bridge: 00002000-00002fff
-        Memory behind bridge: c0100000-c01fffff
-        Prefetchable memory behind bridge: e0000000-efffffff
-        Secondary status: 66MHz+ FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort
-- <MAbort+ <SERR- <PERR-
-        BridgeCtl: Parity- SERR- NoISA+ VGA+ MAbort- >Reset- FastB2B-
-
-
-As you can see, the first device is indeed showing up as AGP capable and
-such, its just never probed (at least the probe function in amd-k7-agp
-is never called once the module is loaded).
-
-To simplefy things, here is a pcitweak -l of the top two devices above:
-PCI: 00:00:0: chip 1022,700c card 0000,0000 rev 20 class 06,00,00 hdr 00
-PCI: 00:01:0: chip 1022,700d card 0000,0000 rev 00 class 06,04,00 hdr 01
-
-In the amd-k7-agp code, this is in the device list:
-    {
-    .class      = (PCI_CLASS_BRIDGE_HOST << 8),
-    .class_mask = ~0,
-    .vendor     = PCI_VENDOR_ID_AMD,
-    .device     = PCI_DEVICE_ID_AMD_FE_GATE_700C,
-    .subvendor  = PCI_ANY_ID,
-    .subdevice  = PCI_ANY_ID,
-    },
-
-Which matches the first device.  So I'm completely unsure as to why this
-device is never probed or how to fix it.
-
-Any help appreciated,
-
-PreZ :)
-
-PS - please CC me specifically on replies.  I will check the list myself
-manually, but just in case I miss something .. :)
+The 2.6.17 changes was done that way allegedly for 2.4 compatibility.
