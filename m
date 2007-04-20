@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993301AbXDTSBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993113AbXDTSCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993301AbXDTSBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 14:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993110AbXDTSBS
+	id S2993113AbXDTSCh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 14:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993306AbXDTSCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 14:01:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36832 "EHLO
+	Fri, 20 Apr 2007 14:02:37 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38708 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993301AbXDTSBQ (ORCPT
+	with ESMTP id S2993113AbXDTSCf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 14:01:16 -0400
-Date: Fri, 20 Apr 2007 11:01:15 -0700 (PDT)
+	Fri, 20 Apr 2007 14:02:35 -0400
+Date: Fri, 20 Apr 2007 11:02:34 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: William Lee Irwin III <wli@holomorphy.com>
@@ -20,7 +20,7 @@ cc: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org,
        Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
 Subject: Re: [RFC 7/8] Enhance ramfs to support higher order pages
 In-Reply-To: <20070420171928.GA2986@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0704201100040.20868@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704201101170.20868@schroedinger.engr.sgi.com>
 References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
  <20070419163540.11948.51549.sendpatchset@schroedinger.engr.sgi.com>
  <20070420134226.GA16878@skynet.ie> <20070420144726.GI31925@holomorphy.com>
@@ -32,182 +32,312 @@ Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Variable Order Page Cache: mmap_nopage and mmap_populate
-
-Fix up both functions to be able to operate on arbitrary order
-pages. However, both functions establish page table entries
-in PAGE_SIZE only and the offset and pgoffset when calling
-both functions is always in PAGE_SIZE units. Thus the parameters
-were renamed to pgoff_page which is in PAGE_SIZE unites in
-constrast to pgoff which is in the order prescribed by the
-address space.
-
-As a result both functions may handle a page struct pointer to
-a tail page. That is the page to be mapped or that was mapped.
-However, that page struct cannot be used to get a refcount
-or mark page characteristics. This can only be done on the
-head page!
-
-We need to fixup install_page also since filemap_populate
-relies on it.
-
-[WARNING: Early early draft may not compile untested]
+Some ideas for memory.c pieces. Just junk like the earlier patches.
 
 ---
- mm/filemap.c |   38 ++++++++++++++++++++++++++++----------
- mm/fremap.c  |   17 +++++++++++------
- 2 files changed, 39 insertions(+), 16 deletions(-)
+ mm/memory.c |  108 ++++++++++++++++++++++++++++++++++++------------------------
+ 1 file changed, 66 insertions(+), 42 deletions(-)
 
-Index: linux-2.6.21-rc7/mm/filemap.c
+Index: linux-2.6.21-rc7/mm/memory.c
 ===================================================================
---- linux-2.6.21-rc7.orig/mm/filemap.c	2007-04-19 21:26:16.000000000 -0700
-+++ linux-2.6.21-rc7/mm/filemap.c	2007-04-19 21:27:55.000000000 -0700
-@@ -1318,6 +1318,12 @@ static int fastcall page_cache_read(stru
-  * The goto's are kind of ugly, but this streamlines the normal case of having
-  * it in the page cache, and handles the special cases reasonably without
-  * having a lot of duplicated code.
+--- linux-2.6.21-rc7.orig/mm/memory.c	2007-04-20 10:55:49.000000000 -0700
++++ linux-2.6.21-rc7/mm/memory.c	2007-04-20 10:56:13.000000000 -0700
+@@ -368,6 +368,12 @@ static inline int is_cow_mapping(unsigne
+ /*
+  * This function gets the "struct page" associated with a pte.
+  *
++ * NOTE! For compound pages it may get to a tail page (maybe we
++ * only deal with a portion of a compound page after all). This
++ * means that the result of vm_normal_page may not directly be
++ * used to manipulate the page state. Use compound_head() if
++ * operations (like getting a ref count) are necessary.
 + *
-+ * filemap_nopage returns pointer to a page that may be a tail page
-+ * of a compound page suitable for the VM to map a PAGE_SIZE portion.
-+ * However, the VM must update state information in the head page
-+ * alone. F.e. Taking a refcount on a tail page does not have the
-+ * intended effect.
-  */
- struct page *filemap_nopage(struct vm_area_struct *area,
- 				unsigned long address, int *type)
-@@ -1328,13 +1334,15 @@ struct page *filemap_nopage(struct vm_ar
- 	struct file_ra_state *ra = &file->f_ra;
- 	struct inode *inode = mapping->host;
- 	struct page *page;
--	unsigned long size, pgoff;
-+	unsigned long size, pgoff, pgoff_page, compound_index;
- 	int did_readaround = 0, majmin = VM_FAULT_MINOR;
+  * NOTE! Some mappings do not have "struct pages". A raw PFN mapping
+  * will have each page table entry just pointing to a raw page frame
+  * number, and as far as the VM layer is concerned, those do not have
+@@ -480,9 +486,11 @@ copy_one_pte(struct mm_struct *dst_mm, s
  
--	pgoff = ((address-area->vm_start) >> PAGE_CACHE_SHIFT) + area->vm_pgoff;
-+	pgoff_page = ((address-area->vm_start) >> PAGE_CACHE_SHIFT) + area->vm_pgoff;
-+	pgoff = pgoff_page >> mapping->order;
-+	compound_index = pg_off_page % (1 << mapping->order);
- 
- retry_all:
--	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+	size = (i_size_read(inode) + page_cache_size(mapping) - 1) >> page_cache_shift(mapping);
- 	if (pgoff >= size)
- 		goto outside_data_content;
- 
-@@ -1412,7 +1420,7 @@ success:
- 	mark_page_accessed(page);
- 	if (type)
- 		*type = majmin;
--	return page;
-+	return page + compound_index;
- 
- outside_data_content:
- 	/*
-@@ -1637,8 +1645,12 @@ err:
- 	return NULL;
- }
- 
-+/*
-+ * filemap_populate installs page sized ptes in the indicated area.
-+ * However, the underlying pages may be of higher order.
-+ */
- int filemap_populate(struct vm_area_struct *vma, unsigned long addr,
--		unsigned long len, pgprot_t prot, unsigned long pgoff,
-+		unsigned long len, pgprot_t prot, unsigned long pgoff_page,
- 		int nonblock)
- {
- 	struct file *file = vma->vm_file;
-@@ -1648,14 +1660,20 @@ int filemap_populate(struct vm_area_stru
- 	struct mm_struct *mm = vma->vm_mm;
- 	struct page *page;
- 	int err;
-+	unsigned long pgoff;
-+	int compound_index;
- 
- 	if (!nonblock)
- 		force_page_cache_readahead(mapping, vma->vm_file,
--					pgoff, len >> PAGE_CACHE_SHIFT);
-+			pgoff_page >> mapping->order,
-+			len >> page_cache_shift(mapping));
- 
- repeat:
--	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
--	if (pgoff + (len >> PAGE_CACHE_SHIFT) > size)
-+	pgoff = pgoff_page >> mapping->order;
-+	compound_index = pgoff_page % (1 << mapping->order);
-+
-+	size = (i_size_read(inode) + page_cache_size(mapping) - 1) >> page_cache_shift(mapping);
-+	if (pgoff + (len >> page_cache_shift(mapping)) > size)
- 		return -EINVAL;
- 
- 	page = filemap_getpage(file, pgoff, nonblock);
-@@ -1666,7 +1684,7 @@ repeat:
- 		return -ENOMEM;
- 
+ 	page = vm_normal_page(vma, addr, pte);
  	if (page) {
--		err = install_page(mm, vma, addr, page, prot);
-+		err = install_page(mm, vma, addr, page + compound_index, prot);
- 		if (err) {
- 			page_cache_release(page);
- 			return err;
-@@ -1682,7 +1700,7 @@ repeat:
+-		get_page(page);
+-		page_dup_rmap(page);
+-		rss[!!PageAnon(page)]++;
++		struct page *head_page = compound_head(page);
++
++		get_page(head_page);
++		page_dup_rmap(head_page);
++		rss[!!PageAnon(head_page)]++;
+ 	}
  
- 	len -= PAGE_SIZE;
- 	addr += PAGE_SIZE;
--	pgoff++;
-+	pgoff_page++;
- 	if (len)
- 		goto repeat;
+ out_set_pte:
+@@ -642,8 +650,14 @@ static unsigned long zap_pte_range(struc
  
-Index: linux-2.6.21-rc7/mm/fremap.c
-===================================================================
---- linux-2.6.21-rc7.orig/mm/fremap.c	2007-04-19 21:33:34.000000000 -0700
-+++ linux-2.6.21-rc7/mm/fremap.c	2007-04-19 21:37:30.000000000 -0700
-@@ -46,7 +46,9 @@ static int zap_pte(struct mm_struct *mm,
+ 		if (pte_present(ptent)) {
+ 			struct page *page;
++			struct page *head_page;
+ 
+ 			page = vm_normal_page(vma, addr, ptent);
++			if (page)
++				head_page = compound_head(page);
++			else
++				head_page = NULL;
++
+ 			if (unlikely(details) && page) {
+ 				/*
+ 				 * unmap_shared_mapping_pages() wants to
+@@ -651,15 +665,15 @@ static unsigned long zap_pte_range(struc
+ 				 * unmap shared but keep private pages.
+ 				 */
+ 				if (details->check_mapping &&
+-				    details->check_mapping != page->mapping)
++				    details->check_mapping != head_page->mapping)
+ 					continue;
+ 				/*
+ 				 * Each page->index must be checked when
+ 				 * invalidating or truncating nonlinear.
+ 				 */
+ 				if (details->nonlinear_vma &&
+-				    (page->index < details->first_index ||
+-				     page->index > details->last_index))
++				    (head_page->index < details->first_index ||
++				     head_page->index > details->last_index))
+ 					continue;
+ 			}
+ 			ptent = ptep_get_and_clear_full(mm, addr, pte,
+@@ -668,21 +682,24 @@ static unsigned long zap_pte_range(struc
+ 			if (unlikely(!page))
+ 				continue;
+ 			if (unlikely(details) && details->nonlinear_vma
+-			    && linear_page_index(details->nonlinear_vma,
+-						addr) != page->index)
++			    && linear_page_index_mapping(details->nonlinear_vma,
++						addr, compound_order(head_page))
++							!= head_page->index)
+ 				set_pte_at(mm, addr, pte,
+-					   pgoff_to_pte(page->index));
+-			if (PageAnon(page))
++					   pgoff_to_pte(
++					   	(head_page->index << compound_page(order))
++							+ page - head_page));
++			if (PageAnon(head_page))
+ 				anon_rss--;
+ 			else {
+ 				if (pte_dirty(ptent))
+-					set_page_dirty(page);
++					set_page_dirty(head_page);
+ 				if (pte_young(ptent))
+-					SetPageReferenced(page);
++					SetPageReferenced(head_page);
+ 				file_rss--;
+ 			}
+-			page_remove_rmap(page, vma);
+-			tlb_remove_page(tlb, page);
++			page_remove_rmap(head_page, vma);
++			tlb_remove_page(tlb, head_page);
+ 			continue;
+ 		}
+ 		/*
+@@ -899,6 +916,10 @@ unsigned long zap_page_range(struct vm_a
  
  /*
-  * Install a file page to a given virtual memory address, release any
-- * previously existing mapping.
-+ * previously existing mapping. The page may point to a tail page
-+ * in which case we update the state in the head page but establish
-+ * a PAGE_SIZEd mapping to the tail page alone.
+  * Do a quick page-table lookup for a single page.
++ *
++ * Note: This function may return a pointer to a tail page. However,
++ * any operations like getting a page reference and touching it will
++ * have to be performed on the head page.
   */
- int install_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 		unsigned long addr, struct page *page, pgprot_t prot)
-@@ -57,6 +59,8 @@ int install_page(struct mm_struct *mm, s
- 	pte_t *pte;
- 	pte_t pte_val;
- 	spinlock_t *ptl;
-+	struct address_space *mapping;
-+	struct head_page *page = compound_head(page);
+ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
+ 			unsigned int flags)
+@@ -949,13 +970,14 @@ struct page *follow_page(struct vm_area_
+ 	if (unlikely(!page))
+ 		goto unlock;
  
- 	pte = get_locked_pte(mm, addr, &ptl);
- 	if (!pte)
-@@ -67,12 +71,13 @@ int install_page(struct mm_struct *mm, s
- 	 * caller about it.
++	head_page = compound_head(page);
+ 	if (flags & FOLL_GET)
+-		get_page(page);
++		get_page(head_page);
+ 	if (flags & FOLL_TOUCH) {
+ 		if ((flags & FOLL_WRITE) &&
+-		    !pte_dirty(pte) && !PageDirty(page))
+-			set_page_dirty(page);
+-		mark_page_accessed(page);
++		    !pte_dirty(pte) && !PageDirty(head_page))
++			set_page_dirty(head_page);
++		mark_page_accessed(head_page);
+ 	}
+ unlock:
+ 	pte_unmap_unlock(ptep, ptl);
+@@ -1537,6 +1559,7 @@ static int do_wp_page(struct mm_struct *
+ 		spinlock_t *ptl, pte_t orig_pte)
+ {
+ 	struct page *old_page, *new_page;
++	struct page *old_page_head, *new_page_head;
+ 	pte_t entry;
+ 	int reuse = 0, ret = VM_FAULT_MINOR;
+ 	struct page *dirty_page = NULL;
+@@ -1545,14 +1568,15 @@ static int do_wp_page(struct mm_struct *
+ 	if (!old_page)
+ 		goto gotten;
+ 
++	old_page_head = compound_head(old_page);
+ 	/*
+ 	 * Take out anonymous pages first, anonymous shared vmas are
+ 	 * not dirty accountable.
  	 */
- 	err = -EINVAL;
--	inode = vma->vm_file->f_mapping->host;
--	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
--	if (!page->mapping || page->index >= size)
-+	mapping = vma->vm_file->f_mapping;
-+	inode = mapping->host;
-+	size = (i_size_read(inode) + page_cache_size(mapping) - 1) >> page_cache_shift(mapping);
-+	if (!head_page->mapping || head_page->index >= size)
- 		goto unlock;
- 	err = -ENOMEM;
--	if (page_mapcount(page) > INT_MAX/2)
-+	if (page_mapcount(head_page) > INT_MAX/2)
- 		goto unlock;
+-	if (PageAnon(old_page)) {
+-		if (!TestSetPageLocked(old_page)) {
+-			reuse = can_share_swap_page(old_page);
+-			unlock_page(old_page);
++	if (PageAnon(old_page_head)) {
++		if (!TestSetPageLocked(old_page_head)) {
++			reuse = can_share_swap_page(old_page_head);
++			unlock_page(old_page_head);
+ 		}
+ 	} else if (unlikely((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
+ 					(VM_WRITE|VM_SHARED))) {
+@@ -1570,10 +1594,10 @@ static int do_wp_page(struct mm_struct *
+ 			 * We do this without the lock held, so that it can
+ 			 * sleep if it needs to.
+ 			 */
+-			page_cache_get(old_page);
++			page_cache_get(old_page_head);
+ 			pte_unmap_unlock(page_table, ptl);
  
- 	if (pte_none(*pte) || !zap_pte(mm, vma, addr, pte))
-@@ -81,7 +86,7 @@ int install_page(struct mm_struct *mm, s
- 	flush_icache_page(vma, page);
- 	pte_val = mk_pte(page, prot);
- 	set_pte_at(mm, addr, pte, pte_val);
--	page_add_file_rmap(page);
-+	page_add_file_rmap(head_page);
- 	update_mmu_cache(vma, addr, pte_val);
- 	lazy_mmu_prot_update(pte_val);
- 	err = 0;
+-			if (vma->vm_ops->page_mkwrite(vma, old_page) < 0)
++			if (vma->vm_ops->page_mkwrite(vma, old_page_head) < 0)
+ 				goto unwritable_page;
+ 
+ 			/*
+@@ -1584,11 +1608,11 @@ static int do_wp_page(struct mm_struct *
+ 			 */
+ 			page_table = pte_offset_map_lock(mm, pmd, address,
+ 							 &ptl);
+-			page_cache_release(old_page);
++			page_cache_release(old_page_head);
+ 			if (!pte_same(*page_table, orig_pte))
+ 				goto unlock;
+ 		}
+-		dirty_page = old_page;
++		dirty_page = old_page_head;
+ 		get_page(dirty_page);
+ 		reuse = 1;
+ 	}
+@@ -1607,7 +1631,7 @@ static int do_wp_page(struct mm_struct *
+ 	/*
+ 	 * Ok, we need to copy. Oh, well..
+ 	 */
+-	page_cache_get(old_page);
++	page_cache_get(old_page_head);
+ gotten:
+ 	pte_unmap_unlock(page_table, ptl);
+ 
+@@ -1630,8 +1654,8 @@ gotten:
+ 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+ 	if (likely(pte_same(*page_table, orig_pte))) {
+ 		if (old_page) {
+-			page_remove_rmap(old_page, vma);
+-			if (!PageAnon(old_page)) {
++			page_remove_rmap(old_page_head, vma);
++			if (!PageAnon(old_page_head)) {
+ 				dec_mm_counter(mm, file_rss);
+ 				inc_mm_counter(mm, anon_rss);
+ 			}
+@@ -1654,13 +1678,13 @@ gotten:
+ 		page_add_new_anon_rmap(new_page, vma, address);
+ 
+ 		/* Free the old page.. */
+-		new_page = old_page;
++		new_page = old_page_head;
+ 		ret |= VM_FAULT_WRITE;
+ 	}
+ 	if (new_page)
+ 		page_cache_release(new_page);
+ 	if (old_page)
+-		page_cache_release(old_page);
++		page_cache_release(old_page_head);
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ 	if (dirty_page) {
+@@ -1669,8 +1693,8 @@ unlock:
+ 	}
+ 	return ret;
+ oom:
+-	if (old_page)
+-		page_cache_release(old_page);
++	if (old_page_head)
++		page_cache_release(old_page_head);
+ 	return VM_FAULT_OOM;
+ 
+ unwritable_page:
+@@ -2243,7 +2267,7 @@ retry:
+ 			if (!page)
+ 				goto oom;
+ 			copy_user_highpage(page, new_page, address, vma);
+-			page_cache_release(new_page);
++			page_cache_release(compound_head(new_page));
+ 			new_page = page;
+ 			anon = 1;
+ 
+@@ -2254,7 +2278,7 @@ retry:
+ 			if (vma->vm_ops->page_mkwrite &&
+ 			    vma->vm_ops->page_mkwrite(vma, new_page) < 0
+ 			    ) {
+-				page_cache_release(new_page);
++				page_cache_release(compound_head(new_page));
+ 				return VM_FAULT_SIGBUS;
+ 			}
+ 		}
+@@ -2268,7 +2292,7 @@ retry:
+ 	 */
+ 	if (mapping && unlikely(sequence != mapping->truncate_count)) {
+ 		pte_unmap_unlock(page_table, ptl);
+-		page_cache_release(new_page);
++		page_cache_release(compound_head(new_page));
+ 		cond_resched();
+ 		sequence = mapping->truncate_count;
+ 		smp_rmb();
+@@ -2298,15 +2322,15 @@ retry:
+ 			page_add_new_anon_rmap(new_page, vma, address);
+ 		} else {
+ 			inc_mm_counter(mm, file_rss);
+-			page_add_file_rmap(new_page);
++			page_add_file_rmap(compound_head(new_page));
+ 			if (write_access) {
+-				dirty_page = new_page;
++				dirty_page = compound_head(new_page);
+ 				get_page(dirty_page);
+ 			}
+ 		}
+ 	} else {
+ 		/* One of our sibling threads was faster, back out. */
+-		page_cache_release(new_page);
++		page_cache_release(compound_head(new_page));
+ 		goto unlock;
+ 	}
+ 
+@@ -2321,7 +2345,7 @@ unlock:
+ 	}
+ 	return ret;
+ oom:
+-	page_cache_release(new_page);
++	page_cache_release(compound_head(new_page));
+ 	return VM_FAULT_OOM;
+ }
+ 
+@@ -2720,13 +2744,13 @@ int access_process_vm(struct task_struct
+ 		if (write) {
+ 			copy_to_user_page(vma, page, addr,
+ 					  maddr + offset, buf, bytes);
+-			set_page_dirty_lock(page);
++			set_page_dirty_lock(compound_head(page));
+ 		} else {
+ 			copy_from_user_page(vma, page, addr,
+ 					    buf, maddr + offset, bytes);
+ 		}
+ 		kunmap(page);
+-		page_cache_release(page);
++		page_cache_release(compound_head(page));
+ 		len -= bytes;
+ 		buf += bytes;
+ 		addr += bytes;
 
