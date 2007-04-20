@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993276AbXDTQNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030332AbXDTQP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993276AbXDTQNQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993275AbXDTQNQ
+	id S1030332AbXDTQP3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030503AbXDTQP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:13:16 -0400
-Received: from usul.saidi.cx ([204.11.33.34]:53071 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993276AbXDTQNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:13:15 -0400
-Message-ID: <4628E68A.9000809@overt.org>
-Date: Fri, 20 Apr 2007 09:12:58 -0700
-From: Philip Langdale <philipl@overt.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Fri, 20 Apr 2007 12:15:29 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60867 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030332AbXDTQP2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 12:15:28 -0400
+Date: Fri, 20 Apr 2007 09:15:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@skynet.ie>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 3/8] Flushing and zeroing higher order page cache pages
+In-Reply-To: <20070420110244.GB12075@skynet.ie>
+Message-ID: <Pine.LNX.4.64.0704200910440.20232@schroedinger.engr.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+ <20070419163520.11948.15503.sendpatchset@schroedinger.engr.sgi.com>
+ <20070420110244.GB12075@skynet.ie>
 MIME-Version: 1.0
-To: Madhusudhan c <cr.madhusudhan@gmail.com>
-CC: Pierre Ossman <drzeus@drzeus.cx>, linux-kernel@vger.kernel.org
-References: <ff1613620704162359w62df9e0ao6c43215a767bd706@mail.gmail.com>	 <4625DAFC.4000208@drzeus.cx>	 <ff1613620704180453t69585e21h5c31a4fe908d0aac@mail.gmail.com>	 <46262953.3040801@drzeus.cx>	 <ff1613620704190704n2cf37c9dv43536bb8fc0d4c79@mail.gmail.com>	 <462797EE.2050808@drzeus.cx> <ff1613620704200421w1e1aeea5r5acc3a7c0c548b96@mail.gmail.com>
-In-Reply-To: <ff1613620704200421w1e1aeea5r5acc3a7c0c548b96@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-I-Got-Here: Yes
-X-I-Got-Here: Yes3
-Subject: Re: MMCv4 support (8-bit support missing)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Madhusudhan c wrote:
-> 
-> Suppose a host controller is capable of suporting 8-bit and it tells
-> the core that it can support 8-bit. Now the card that is plugged in
-> might or might not support 8-bit based on the type of the card. There
-> is no field in the ext_csd which will tell you what bus width the card
-> can support.
+On Fri, 20 Apr 2007, Mel Gorman wrote:
 
-My understanding is that 8-bit support on the card is not optional. ie:
-the card is not mmc 4 compliant if it doesn't support 8-bit and this
-is why there's no ext_csd field. The only case I could think of where
-bus testing would be needed would be if a controller was placed into
-a configuration where some pins were deliberately left unconnected
-(perhaps because space constraints prevented the extra 4 pins from being
-placed on a pcb) and there was no way to change the capabilities reported
-by the controller.
+> While this looks fine, it seems that clear_huge_page() and
+> clear_mapping_page() could share a common helper. I also note that
+> clear_huge_page() calls cond_reched() and this doesn't which may be the
+> type of different behavior we want to avoid.
 
-But in any case - this is all hypothetical right now - one can't find
-a controller in the wild for love or money (well - Arasan will sell you
-a validation controller for $5000 but still...). As neither Pierre or
-myself is in a position to do any sort of tests on an 8-bit controller,
-we can't investigate or verify any of this.
+I am really thinking that this variable order page cache approach 
+is likely going to result in the final death of the huge page subsystem. I 
+would like to keep huge pages separate from this so that the huge page 
+subsystem can be removed at some point without too much trouble. Right now 
+it is a very sore point at least from a performance standpoint since the 
+hugetlb subsystem is serialized with a single lock. There is a weird maze 
+of locking and accounting constraints in there that makes it difficult to 
+fix this.
 
-It certainly seems that you have access to an 8-bit controller. If you
-can help one or both of us get access to one, I'm sure we could work out
-the right thing to do.
+> That said, if this goes ahead, it might be an excuse to look at using
+> ramfs as the basis for hugetlbfs instead of it's current approach. I
+> believe using ramfs for hugepages is something that wli wants anyway.
 
---phil
+Right. There is no reason for hugetlbfs to exist anymore. We will have 
+very transparent and flexible support for huge pages.
