@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXDTJQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbXDTJRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbXDTJQY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 05:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXDTJQY
+	id S1753821AbXDTJRd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 05:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXDTJRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 05:16:24 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:58613 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752892AbXDTJQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 05:16:23 -0400
-Date: Fri, 20 Apr 2007 11:22:01 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070420092201.GC1695@ff.dom.local>
-References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru>
+	Fri, 20 Apr 2007 05:17:33 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:51252 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754123AbXDTJRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 05:17:31 -0400
+Date: Fri, 20 Apr 2007 11:17:27 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: David Howells <dhowells@redhat.com>
+Cc: "Aubrey Li" <aubreylee@gmail.com>,
+       "Robin Getz" <rgetz@blackfin.uclinux.org>, uaca@alumni.uv.es,
+       bryan.wu@analog.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       waltje@uwalt.nl.mugnet.org, netdev@vger.kernel.org,
+       "Andrew Morton" <akpm@osdl.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU
+Message-Id: <20070420111727.fc69d671.dada1@cosmosbay.com>
+In-Reply-To: <2181.1177059532@redhat.com>
+References: <6d6a94c50704200139vb9b24f6y77a6d23544c8f7b9@mail.gmail.com>
+	<200704091146.32346.rgetz@blackfin.uclinux.org>
+	<1176112223.17975.8.camel@roc-desktop>
+	<9561.1176209728@redhat.com>
+	<200704101952.05380.rgetz@blackfin.uclinux.org>
+	<6d6a94c50704170336l62fc9ael1e58197e6c3853ba@mail.gmail.com>
+	<2817.1176910411@redhat.com>
+	<6d6a94c50704192146k5bbe2aefr31fa5726bf1c1e54@mail.gmail.com>
+	<1016.1177055893@redhat.com>
+	<2181.1177059532@redhat.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070419102122.GA93@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 02:21:22PM +0400, Oleg Nesterov wrote:
-> On 04/19, Andrew Morton wrote:
-> > 
-> > Begin forwarded message:
-> > 
-> > Date: Thu, 19 Apr 2007 08:54:04 +0200
-> > From: Jarek Poplawski <jarkao2@o2.pl>
-> > To: linux-kernel@vger.kernel.org
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Subject: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-
-At first I didn't spotted your thread is "independent" and
-from your second message it seems you didn't receive all, you
-expected. I wonder, if there is a need and possibility to add
-somewhere (I would prefer Linus' tree git's http frontend)
-addresses of developers (but not maintainers), who are
-interested in CC-ing about some files' patches?. 
-
-...
-> Yes. It would be better to use cancel_work_sync() instead of flush_workqueue()
-> to make this less possible (because cancel_work_sync() doesn't need to wait for
-> the whole ->worklist), but we can't.
+On Fri, 20 Apr 2007 09:58:52 +0100
+David Howells <dhowells@redhat.com> wrote:
 > 
-> > Maybe this patch could check, if I'm not dreaming...
-> 
-> Also: cancel_rearming_delayed_work() will hang if it (or cancel_delayed_work())
-> was already called.
-> 
-> I had some ideas how to make this interface reliable, but I can't see how to do
-> this without uglification of the current code.
+> Because kmalloc() may be able to get us a smaller chunk of memory.  Actually,
+> calling __get_free_pages() might be a better, and then release the excess
+> pages.
 
-For some time I thought about using a flag (isn't there
-one available after NOAUTOREL?), e.g. WORK_STRUCT_CANCEL,
-as a sign:
+Interesting, that rings a bell here.
 
-- for a workqueue code: that the work shouldn't be queued,
-nor executed, if possiblei, at first possible check.
+I wonder why we dont use this in alloc_large_system_hash().
 
-- for a work function: to stop execution as soon as possible,
-even without completing the usual job, at first possible check.
+(if __get_free_pages(GFP_ATOMIC, order) is used instead of alloc_bootmem() or __vmalloc())
 
-There would be a question, whether the flag should be changed
-under a lock for exact synchronisation.
+We currently loose 1/4 of space on tcp hash table for example, because sizeof(inet_ehash_bucket) is not a power of 2.
 
-Cheers,
-Jarek P.
+Is it really possible to allocate an order-10 page, then release part of it (say an order-8 subpage) ?
 
-PS: I hope there is no reason against going with this to lkml
