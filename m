@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030930AbXDTTTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030974AbXDTTU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030930AbXDTTTP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 15:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXDTTTO
+	id S1030974AbXDTTU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 15:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030977AbXDTTU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 15:19:14 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:49394 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1754489AbXDTTTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 15:19:13 -0400
-Date: Fri, 20 Apr 2007 11:45:34 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Stephen Smalley <sds@tycho.nsa.gov>
-cc: Andi Kleen <andi@firstfloor.org>, Karl MacMillan <kmacmill@redhat.com>,
-       David Safford <safford@watson.ibm.com>,
-       James Morris <jmorris@namei.org>, John Johansen <jjohansen@suse.de>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: AppArmor FAQ
-In-Reply-To: <1177004790.27654.147.camel@moss-spartans.epoch.ncsc.mil>
-Message-ID: <Pine.LNX.4.63.0704201144160.4634@qynat.qvtvafvgr.pbz>
-References: <20070416213350.GB4030@suse.de>  <Line.LNX.4.64.0704161846110.13905@d.namei>
-  <1176822230.3366.65.camel@localhost.localdomain> 
- <1176825641.5946.41.camel@localhost.localdomain>  <p73abx66fme.fsf@bingen.suse.de>
- <1177004790.27654.147.camel@moss-spartans.epoch.ncsc.mil>
+	Fri, 20 Apr 2007 15:20:57 -0400
+Received: from holomorphy.com ([66.93.40.71]:49662 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030974AbXDTTU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 15:20:57 -0400
+Date: Fri, 20 Apr 2007 12:21:15 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 7/8] Enhance ramfs to support higher order pages
+Message-ID: <20070420192115.GK31925@holomorphy.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163540.11948.51549.sendpatchset@schroedinger.engr.sgi.com> <20070420134226.GA16878@skynet.ie> <20070420144726.GI31925@holomorphy.com> <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com> <20070420171118.GZ2986@holomorphy.com> <Pine.LNX.4.64.0704201012500.20723@schroedinger.engr.sgi.com> <20070420171928.GA2986@holomorphy.com> <Pine.LNX.4.64.0704201051040.20868@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704201051040.20868@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007, Stephen Smalley wrote:
+On Fri, 20 Apr 2007, William Lee Irwin III wrote:
+>> Probably just terminological disagreement here. I was referring to
+>> allocating the higher-order page from the fault path here, not mapping
+>> it or a piece of it with a user pte.
 
-> already happened to integrate such support into userland.
->
-> To look at it in a slightly different way, the AA emphasis on not
-> modifying applications could be viewed as a limitation.  Ultimately,
-> users have security goals that go beyond just what the OS can directly
-> enforce and at least some applications (notably things like X, D-BUS,
-> PostgreSQL, etc) need to likewise support strong domain separation and
-> controlled information flow through their own internal objects and
-> operations.  SELinux provides APIs and infrastructure for such
-> applications, and has already done quite a bit of work in that space
-> (D-BUS support, XACE/XSELinux, SE-PostgreSQL), whereas AA seems to have
-> no interest in going there (and would have to recant its emphasis on no
-> application mods to do so).  If you actually want to truly confine a
-> desktop application, you can't limit yourself to the kernel.  And the
-   ^^^^^^^^^^^^^^^^^^^
+On Fri, Apr 20, 2007 at 10:57:25AM -0700, Christoph Lameter wrote:
+> Ah. Okay. I have some dysfunctional patches here that implement mmap 
+> support. Would you be willing to take care of that aspect of things? Then 
+> I can focus on the other VM pieces. I am going to post them following this 
+> message. These are an absolute mess. They do not compile etc etc.
 
-> label model provides a unifying abstraction for dealing with all of
-> these various objects, whereas the path/"natural abstraction" model has
-> no unifying abstraction at all.
+Good stuff. Going over this sounds like more fun than trying to 
+preemptively clean up after whichever scheduler trainwreck ends up
+hitting mainline.
 
 
-AA isn't aimed at confineing desktop applications. it's aimed at confining 
-server applications. this really is a easier task (if it happens to be useful 
-for some desktop apps as well, so much the better)
-
-David Lang
+-- wli
