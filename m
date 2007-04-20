@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767222AbXDTTbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030977AbXDTTcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767222AbXDTTbS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 15:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767218AbXDTTbS
+	id S1030977AbXDTTcT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 15:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030980AbXDTTcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 15:31:18 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53709 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767217AbXDTTbR (ORCPT
+	Fri, 20 Apr 2007 15:32:19 -0400
+Received: from mail.tmr.com ([64.65.253.246]:43733 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030977AbXDTTcS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 15:31:17 -0400
-Date: Fri, 20 Apr 2007 12:30:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: "Cameron, Steve" <Steve.Cameron@hp.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] cciss: Fix warnings during compilation under
- 32bitenvironment
-Message-Id: <20070420123041.94aac1e1.akpm@linux-foundation.org>
-In-Reply-To: <1177095007.3718.43.camel@mulgrave.il.steeleye.com>
-References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
-	<226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
-	<1176995934.31764.7.camel@mulgrave.il.steeleye.com>
-	<226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
-	<1176999730.31764.15.camel@mulgrave.il.steeleye.com>
-	<558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
-	<20070419222028.d33c7f86.akpm@linux-foundation.org>
-	<1177074641.3718.5.camel@mulgrave.il.steeleye.com>
-	<20070420114337.12a67141.akpm@linux-foundation.org>
-	<1177095007.3718.43.camel@mulgrave.il.steeleye.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Apr 2007 15:32:18 -0400
+Message-ID: <4629152C.7020801@tmr.com>
+Date: Fri, 20 Apr 2007 15:31:56 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: caglar@pardus.org.tr
+CC: Ingo Molnar <mingo@elte.hu>,
+       Christoph Pfister <christophpfister@gmail.com>,
+       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
+       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: Kaffeine problem with CFS
+References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr> <20070418154811.GA16842@elte.hu> <200704190008.19262.caglar@pardus.org.tr>
+In-Reply-To: <200704190008.19262.caglar@pardus.org.tr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 14:50:06 -0400
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
-
-> > CONFIG_LBD=y gives us an additional 3kb of instructions on i386
-> > allnoconfig.  Other architectures might do less well.  It's not a huge
-> > difference, but that's the way in which creeping bloatiness happens.
+S.Çag(lar Onur wrote:
+> 18 Nis 2007 Çar tarihinde, Ingo Molnar s,unlar? yazm?s,t?: 
+>> * S.Çag(lar Onur <caglar@pardus.org.tr> wrote:
+>>> -       schedule();
+>>> +       msleep(1);
+>>>
+>>> which Ingo sends me to try also has the same effect on me. I cannot
+>>> reproduce hangs anymore with that patch applied top of CFS while one
+>>> console checks out SVN repos and other one compiles a small test
+>>> software.
+>> great! Could you please unapply the hack above and try the proper fix
+>> below, does this one solve the hangs too?
 > 
-> OK, sure, but if we really care about this saving, then unconditionally
-> casting to u64 is therefore wrong as well ... this is starting to open
-> quite a large can of worms ...
+> Instead of that one, i tried CFSv3 and i cannot reproduce the hang anymore, 
+> Thanks!...
 > 
-> For the record, if we have to do this, I fancy sector_upper_32() ... we
-> should already have some similar accessor for dma_addr_t as well.
+And that explains why CFS-v3 on 21-rc7-git3 wouldn't show me the hang. 
+As a matter of fact, nothing I did showed any bad behavior! Note that I 
+was doing actual badly behaved things which do sometimes glitch the 
+standard scheduler, not running benchmarks.
 
-hm.  How about this?
+This scheduler is boring, everything works. I am going to try some tests 
+on a uniprocessor, though, I have been running everything on either SMP 
+or HT CPUs. But so far it looks fine.
 
---- a/include/linux/kernel.h~upper-32-bits
-+++ a/include/linux/kernel.h
-@@ -40,6 +40,17 @@ extern const char linux_proc_banner[];
- #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
- #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
- 
-+/**
-+ * upper_32_bits - return bits 32-63 of a number
-+ * @n: the number we're accessing
-+ *
-+ * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
-+ * the "right shift count >= width of type" warning when that quantity is
-+ * 32-bits.
-+ */
-+#define upper_32_bits(n) (((u64)(n)) >> 32)
-+
-+
- #define	KERN_EMERG	"<0>"	/* system is unusable			*/
- #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
- #define	KERN_CRIT	"<2>"	/* critical conditions			*/
-_
 
-It seems to generate the desired code.  I avoided Alan's ((n >> 31) >> 1)
-trick because it'll generate peculiar results with signed 64-bit
-quantities.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
