@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbXDTUDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993321AbXDTUP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbXDTUDM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 16:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbXDTUDM
+	id S2993321AbXDTUP3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 16:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993323AbXDTUPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:03:12 -0400
-Received: from holomorphy.com ([66.93.40.71]:34049 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754493AbXDTUDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:03:11 -0400
-Date: Fri, 20 Apr 2007 13:03:22 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-Message-ID: <20070420200322.GD2986@holomorphy.com>
-References: <20070418175017.GA5250@elte.hu> <20070418212645.GU2986@holomorphy.com> <Pine.LNX.4.64.0704201223280.21417@schroedinger.engr.sgi.com> <20070420192906.GB2986@holomorphy.com> <Pine.LNX.4.64.0704201231250.21514@schroedinger.engr.sgi.com> <20070420193856.GC2986@holomorphy.com> <Pine.LNX.4.64.0704201243280.21514@schroedinger.engr.sgi.com>
+	Fri, 20 Apr 2007 16:15:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:35965 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993315AbXDTUPP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 16:15:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=dSxSEDw1LGpryTHzTSvZNl8UlnChQ5/3GgngZNw+pSPIg8cYq1K9SnM7kNSKV0xaQxsInvUNBKHvxflRwhCEpl+fTycNkyxtpcUqbl1NoenAUHtRQfNnfzqq3Ysc3cE0XNAj1WJvCOC1ClvKhSTlTYjmQJJDuoAi4r81TqweFBk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH pata-2.6 fix queue] hpt366: fix kernel oops with HPT302N
+Date: Fri, 20 Apr 2007 21:54:52 +0200
+User-Agent: KMail/1.9.6
+Cc: codermattie@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200702032309.43867.sshtylyov@ru.mvista.com> <200702162321.40813.sshtylyov@ru.mvista.com> <200704182338.00604.sshtylyov@ru.mvista.com>
+In-Reply-To: <200704182338.00604.sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704201243280.21514@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704202154.52254.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, William Lee Irwin III wrote:
->> I'm not really convinced it's all that worthwhile of an optimization,
->> essentially for the same reasons as you, but presumably there's a
->> benchmark result somewhere that says it matters. I've just not seen it.
+On Wednesday 18 April 2007, Sergei Shtylyov wrote:
+> The driver crashes the kernel on HPT302N chips due to the missing initializer
+> for 'hpt302n.settings' having been unfortunately overlooked so far. :-<
+> 
+> Much thanks to Mike Mattie for pin-pointing the reason of crash.
+> 
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-On Fri, Apr 20, 2007 at 12:44:55PM -0700, Christoph Lameter wrote:
-> If it is true that we frequently remotely write the per cpu runqueue 
-> data then we may have a NUMA scalability issue.
-
->From the discussion on Suresh's thread, it appears to have sped up a
-database benchmark 0.5%.
-
-Last I checked it was workload-dependent, but there were things that
-hammer it. I mostly know of the remote wakeup issue, but there could
-be other things besides wakeups that do it, too.
-
-
--- wli
+applied
