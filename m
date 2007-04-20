@@ -1,62 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993108AbXDTR6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993106AbXDTR7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993108AbXDTR6Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993084AbXDTR6Z
+	id S2993106AbXDTR7e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993078AbXDTR7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:58:25 -0400
-Received: from agrajag.inprovide.com ([82.153.166.94]:58488 "EHLO
-	mail.mansr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993108AbXDTR6Y convert rfc822-to-8bit (ORCPT
+	Fri, 20 Apr 2007 13:59:34 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:47887 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2993106AbXDTR7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:58:24 -0400
-X-Greylist: delayed 2021 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Apr 2007 13:58:24 EDT
-To: Andi Kleen <ak@suse.de>
-Cc: discuss@x86-64.org, =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [discuss] Dropping CONFIG_REORDER on x86-64 for 2.6.22
-References: <200704191354.52985.ak@suse.de> <46277C36.6030301@linux.intel.com>
-	<yw1x4pnba1fl.fsf@thrashbarg.mansr.com>
-	<200704201137.45799.ak@suse.de>
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Date: Fri, 20 Apr 2007 18:24:42 +0100
-In-Reply-To: <200704201137.45799.ak@suse.de> (Andi Kleen's message of "Fri, 20 Apr 2007 11:37:45 +0200")
-Message-ID: <yw1xr6qf7ycl.fsf@thrashbarg.mansr.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (Double Solitaire, linux)
+	Fri, 20 Apr 2007 13:59:33 -0400
+Message-ID: <4628FFBB.2090900@ru.mvista.com>
+Date: Fri, 20 Apr 2007 22:00:27 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 14/15] ide: rework the code for selecting the best DMA
+ transfer mode
+References: <20070203135301.2546.54884.sendpatchset@localhost.localdomain> <20070203135323.2546.29438.sendpatchset@localhost.localdomain> <4627C386.9020407@ru.mvista.com> <4627C5D1.5010602@ru.mvista.com> <4628D64B.7080500@ru.mvista.com>
+In-Reply-To: <4628D64B.7080500@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+Hello, I wrote:
 
-> On Friday 20 April 2007 10:35:10 Måns Rullgård wrote:
->> Arjan van de Ven <arjan@linux.intel.com> writes:
->> 
->> > Andi Kleen wrote:
->> >> Rationale:
->> >> - It cannot be enabled in normal builds because all current lds
->> >> become very slow when they have to handle thousands of sections.
->> >>
->> >
->> > afaik this is only ever reported on SuSE; I've not heard it on any
->> > other distro...
->> 
->> Even with that option set, the full kernel build with my configuration
->> finishes in one minute flat on my Gentoo box.  Could it be that the
->> linker uses enormous amounts of memory?  I have 4GB so I wouldn't
->> immediately notice.
->
-> What binutils version do you use? Maybe that particular problem is
-> finally fixed.  Of course would still leave the other issues I
-> listed.
+>>>> Index: b/drivers/ide/pci/hpt366.c
+>>>> ===================================================================
+>>>> --- a/drivers/ide/pci/hpt366.c
+>>>> +++ b/drivers/ide/pci/hpt366.c
+>>>> @@ -513,43 +513,31 @@ static int check_in_drive_list(ide_drive
+>>>>      return 0;
+>>>>  }
+>>>>  
+>>>> -static u8 hpt3xx_ratemask(ide_drive_t *drive)
+>>>> -{
+>>>> -    struct hpt_info *info    = pci_get_drvdata(HWIF(drive)->pci_dev);
+>>>> -    u8 mode            = info->max_mode;
+>>>> -
+>>>> -    if (!eighty_ninty_three(drive) && mode)
+>>>> -        mode = min(mode, (u8)1);
+>>>> -    return mode;
+>>>> -}
+>>>> -
+>>>>  /*
+>>>>   *    Note for the future; the SATA hpt37x we must set
+>>>>   *    either PIO or UDMA modes 0,4,5
+>>>>   */
+>>>> - -static u8 hpt3xx_ratefilter(ide_drive_t *drive, u8 speed)
+>>>> +
+>>>> +static u8 hpt3xx_udma_filter(ide_drive_t *drive)
+>>>>  {
+>>>>      struct hpt_info *info    = pci_get_drvdata(HWIF(drive)->pci_dev);
+>>>>      u8 chip_type        = info->chip_type;
+>>>> -    u8 mode            = hpt3xx_ratemask(drive);
+>>>> -
+>>>> -    if (drive->media != ide_disk)
+>>>> -        return min(speed, (u8)XFER_PIO_4);
+>>>> +    u8 mode            = info->max_mode;
+>>>> +    u8 mask;
+>>>>  
+>>>>      switch (mode) {
+>>>>          case 0x04:
+>>>> -            speed = min_t(u8, speed, XFER_UDMA_6);
+>>>> +            mask = 0x7f;
+>>>>              break;
+>>>>          case 0x03:
+>>>> -            speed = min_t(u8, speed, XFER_UDMA_5);
+>>>> +            mask = 0x3f;
+>>>>              if (chip_type >= HPT374)
+>>>>                  break;
+>>>>              if (!check_in_drive_list(drive, bad_ata100_5))
+>>>>                  goto check_bad_ata33;
+>>>>              /* fall thru */
+>>>>          case 0x02:
+>>>> -            speed = min_t(u8, speed, XFER_UDMA_4);
+>>>> +            mask = 0x1f;
+>>>>  
+>>>>              /*
+>>>>               * CHECK ME, Does this need to be changed to HPT374 ??
+>>>> @@ -560,13 +548,13 @@ static u8 hpt3xx_ratefilter(ide_drive_t 
+>>>>                  !check_in_drive_list(drive, bad_ata66_4))
+>>>>                  goto check_bad_ata33;
+>>>>  
+>>>> -            speed = min_t(u8, speed, XFER_UDMA_3);
 
-I'm using the Gentoo default, which is 2.16.1 plus some patches.  A
-quick scan of the patches suggests that perhaps this one has something
-to do with it:
-http://sources.redhat.com/ml/binutils/2005-03/msg00847.html
+  Hm, found a buglet in my former filtering rewrite -- the condition in the preceding if stmt should be a reverse one, and speed limitation to XFER_UDMA_3 should have been left under it.  With the current code, XFER_UDMA_2 limitation wouldn't have been applied if the same drive is not in both 'bad_ata66_4' and 'bad_ata66_3' lists -- this, however, actually is not the case since WDC AC310200R drive is in both these lists (maybe I wrote it this way because of this fact :-).
 
--- 
-Måns Rullgård
-mans@mansr.com
+>>>> +            mask = 0x0f;
+>>>>              if (HPT366_ALLOW_ATA66_3 &&
+>>>>                  !check_in_drive_list(drive, bad_ata66_3))
+>>>>                  goto check_bad_ata33;
+>>>>              /* fall thru */
+>>>>          case 0x01:
+>>>> -            speed = min_t(u8, speed, XFER_UDMA_2);
+>>>> +            mask = 0x07;
+>>>>  
+>>>>          check_bad_ata33:
+>>>>              if (chip_type >= HPT370A)
+
+>>>   This case 0x01 will *never* be hit for HPT370 chip with the new 
+>>> code, therefore the filter won't get applied.
+
+>>   Oh, and for HPT36x chips used with 40c cable too (unless they're 
+>> artificaially reduced to UltraDMA/33 by the driver #define's).
+
+>   It will still get applied since the code always resorts to looking up 
+> the 'bad_ata33' list for HPT36x/370.
+> I've got a bit muddled in my own code -- not sure if it got much clearer 
+> after I'd untangled hpt3xx_ratemask() / hpt3xx_ratefilter() puzzle. :-)
+
+  Yeah, I'm definitely having trouble understanding my own code after some months have passed... :-/
+
+MBR, Sergei
+
