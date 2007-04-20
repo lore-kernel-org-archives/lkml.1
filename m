@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993311AbXDTSP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993312AbXDTSSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993311AbXDTSP7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 14:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993308AbXDTSP7
+	id S2993312AbXDTSSe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 14:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993313AbXDTSSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 14:15:59 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:45105 "EHLO
+	Fri, 20 Apr 2007 14:18:34 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:39757 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993307AbXDTSP6 (ORCPT
+	by vger.kernel.org with ESMTP id S2993312AbXDTSSd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 14:15:58 -0400
-Date: Fri, 20 Apr 2007 11:15:26 -0700
+	Fri, 20 Apr 2007 14:18:33 -0400
+Date: Fri, 20 Apr 2007 11:18:07 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Cc: mpm@selenic.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
-Message-Id: <20070420111526.01ad7f4c.akpm@linux-foundation.org>
-In-Reply-To: <46288D11.4000801@bx.jp.nec.com>
-References: <462605DC.2080804@bx.jp.nec.com>
-	<462609D1.50300@bx.jp.nec.com>
-	<20070419210813.a599c54f.akpm@linux-foundation.org>
-	<46288D11.4000801@bx.jp.nec.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       perex@suse.cz, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [1/2] 2.6.21-rc7: known regressions
+Message-Id: <20070420111807.82d67afb.akpm@linux-foundation.org>
+In-Reply-To: <s5h7is7xrkl.wl%tiwai@suse.de>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	<20070416003714.GL3691@stusta.de>
+	<4623EE59.7090005@redhat.com>
+	<s5hk5wbcny7.wl%tiwai@suse.de>
+	<4627CB04.4060401@googlemail.com>
+	<s5h7is7xrkl.wl%tiwai@suse.de>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,42 +32,21 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 18:51:13 +0900
-Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+On Fri, 20 Apr 2007 12:34:18 +0200
+Takashi Iwai <tiwai@suse.de> wrote:
 
-> > I started to do some cleanups and fixups here, but abandoned it when it was
-> > all getting a bit large.
-> > 
-> > Here are some fixes against this patch:
+> Good to hear!  I forgot the patch description and sign-off, so here it
+> is again:
 > 
-> I'm going to fix my patches by following your reviews and send new patches 
-> on the LKML and the netdev ML in a few days.
 > 
+> [PATCH] ALSA: intel8x0 - Fix Oops in crash kernel
+> 
+> When intel8x0 driver is loaded in the crash kernel, it gets Oops
+> occasionally.  This is because the irq handler gets called before
+> the proper hardware initialization.  Now defer it after
+> snd_intel8x0_chip_init().
 
-Well..  before you can finish this work we need to decide upon what the
-interface to userspace will be.
+Neat, thanks.
 
-- The miscdev isn't appropriate
-
-- netlink remains a possibility
-
-- Stephen suggests an ioctl against a socket and davem suggests socket
-  options, but it's unclear to me how that socket will get bound to
-  netconsole?
-
-
-either way, I agree with the overall thrust of this work: netconsole is
-useful in production environments, can become more useful and will need
-runtime configurability.
-
-
-I wonder if we're approaching this in the right way, however...
-
-At a high level, netconsole is just a flow of UDP packets between two
-machines.  The kernel already has rich and well-understood ways of creating
-and configuring such flows.
-
-So...  instead of creating a brand new way of configuring such a flow via
-sysfs and ioctl, could we instead create a flow using the existing
-mechanisms (presumably the socket API) and then "transfer" the information
-from that flow over to netconsole by some means??
+Do we think this is safe enough and important enough for 2.6.21?
+And if so, do you want me to merge it?
