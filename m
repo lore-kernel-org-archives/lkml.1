@@ -1,50 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766898AbXDTI7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766807AbXDTJBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766898AbXDTI7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 04:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766807AbXDTI7X
+	id S1766807AbXDTJBN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 05:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766927AbXDTJBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 04:59:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44322 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766692AbXDTI7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 04:59:22 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <6d6a94c50704200139vb9b24f6y77a6d23544c8f7b9@mail.gmail.com> 
-References: <6d6a94c50704200139vb9b24f6y77a6d23544c8f7b9@mail.gmail.com>  <200704091146.32346.rgetz@blackfin.uclinux.org> <1176112223.17975.8.camel@roc-desktop> <9561.1176209728@redhat.com> <200704101952.05380.rgetz@blackfin.uclinux.org> <6d6a94c50704170336l62fc9ael1e58197e6c3853ba@mail.gmail.com> <2817.1176910411@redhat.com> <6d6a94c50704192146k5bbe2aefr31fa5726bf1c1e54@mail.gmail.com> <1016.1177055893@redhat.com> 
-To: "Aubrey Li" <aubreylee@gmail.com>
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>, uaca@alumni.uv.es,
-       bryan.wu@analog.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       waltje@uwalt.nl.mugnet.org, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CONFIG_PACKET_MMAP should depend on MMU 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Fri, 20 Apr 2007 09:58:52 +0100
-Message-ID: <2181.1177059532@redhat.com>
+	Fri, 20 Apr 2007 05:01:13 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:33316 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1766807AbXDTJBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 05:01:11 -0400
+Message-ID: <46288155.7060701@gmail.com>
+Date: Fri, 20 Apr 2007 11:01:09 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, johann deneux <johann.deneux@gmail.com>,
+       Dmitry Torokhov <dtor@insightbb.com>, stenyak@gmail.com,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [RFC 2/2] Input: phantom, add a new driver
+References: <210731960111436322@karneval.cz>	<258431179037841809@karneval.cz> <20070419230719.a118a132.akpm@linux-foundation.org>
+In-Reply-To: <20070419230719.a118a132.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Aubrey Li <aubreylee@gmail.com> wrote:
-
-> as checked in packet_set_ring, buffer size must be a multiple of PAGE_SIZE,
-> --------------------packet_set_ring------------------------
-> if (unlikely(req->tp_block_size & (PAGE_SIZE - 1)))
+Andrew Morton napsal(a):
+> On Tue, 17 Apr 2007 22:02:10 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> So why not use __get_free_pages rather than kmalloc,
+>> phantom, add a new driver
+[...]
+>> +#define PHANTOM_VERSION		"n0.9.4"
+> 
+> That's an impressive version number ;)
 
-Because kmalloc() may be able to get us a smaller chunk of memory.  Actually,
-calling __get_free_pages() might be a better, and then release the excess
-pages.
+fork of 0.8 or so 2.4 linux driver -> the n in the meaning of new :)
 
-> so that we have pagetables to count?
+>> +#define PHM_MAX_TORQUES		3
+>> +
+>> +#define PHN_CONTROL		0x6
+>> +#define PHN_CTL_AMP		0x1
+>> +#define PHN_CTL_BUT		0x2
+>> +#define PHN_CTL_IRQ		0x10
+>> +
+>> +#define PHN_IRQCTL		0x4c
+>> +
+>> +#define PHN_ZERO_FORCE		2048
+> 
+> <wonders what all those do>
 
-There are no pagetables in NOMMU-mode.
+I have no clue too, cut&paste from sensable 2.4 driver. But I'll document as
+much as possible.
 
-David
+>> +#define PCI_ENCODER(dev, axis) ((0 - (int)ioread32((dev)->iaddr + (axis))) & \
+>> +									0xffff)
+> 
+> Is there any reason why this cannot be a lower-cased inline C function? 
+> Nicer to read, typesafe, etc.
+
+yes, I'll switch it.
+
+>> +#define PHB_RUNNING		1
+>> +#define PHB_RESET		2
+>> +
+>> +static struct PH_CLASSTYPE *phantom_class;
+> 
+> I guess that PH_CLASSTYPE is some protect-me-from-gregkh compatibility
+> thing.  But there isn't such a macro in the tree.  I switched this to plain
+> old `class'.
+
+Yes, my bad.
+
+>> +
+>> +static irqreturn_t phantom_isr(int irq, void *data)
+>> +{
+>> +	struct phantom_device *dev = data;
+>> +	struct input_dev *idev = dev->idev;
+>> +	unsigned int a, hw_status;
+>> +
+>> +	hw_status = ioread32(dev->iaddr + PHN_CONTROL);
+>> +	if (!(hw_status & PHN_CTL_IRQ))
+>> +		return IRQ_NONE;
+>> +
+>> +	iowrite32(0, dev->iaddr);
+>> +	wmb();
+>> +	iowrite32(0xc0, dev->iaddr);
+> 
+> there too.
+
+Seems reasonable, it can't be reordered. (I hope this holds on all archs.)
+
+>> +	if (unlikely(idev == NULL))
+>> +		return IRQ_HANDLED;
+> 
+> Can this happen?  If so, a comment explaining why would be nice.
+
+In the case of DEBUG_SHIRQ=y. Comment will be added or better -- devinit code
+reordered.
+
+thanks for notes,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
