@@ -1,137 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXDTEQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbXDTE2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965407AbXDTEQu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 00:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965109AbXDTEQu
+	id S1754384AbXDTE2r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 00:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbXDTE2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 00:16:50 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53294 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964988AbXDTEQt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 00:16:49 -0400
-Date: Thu, 19 Apr 2007 21:16:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Cc: mpm@selenic.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take4 6/6] add ioctls for adding/removing
- target
-Message-Id: <20070419211630.70c20706.akpm@linux-foundation.org>
-In-Reply-To: <46260BBF.2070202@bx.jp.nec.com>
-References: <462605DC.2080804@bx.jp.nec.com>
-	<46260BBF.2070202@bx.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Apr 2007 00:28:47 -0400
+Received: from mail.suse.de ([195.135.220.2]:45564 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751209AbXDTE2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 00:28:46 -0400
+From: Neil Brown <neilb@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Date: Fri, 20 Apr 2007 14:28:19 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17960.16739.870487.497750@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: SLUB: kmem_cache_destroy doesn't - version 2.
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Apr 2007 21:14:55 +0900 Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
 
-> From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-> 
-> We add ioctls for adding/removing target.
-> If we use NETCONSOLE_ADD_TARGET ioctl, 
-> we can dynamically add netconsole target.
-> If we use NETCONSOLE_REMOVE_TARGET ioctl,
-> we can dynamically remoe netconsole target.
-> 
-> ...
->
-> --- mm.orig/drivers/net/netconsole.c
-> +++ mm/drivers/net/netconsole.c
-> @@ -47,6 +47,7 @@
->  #include <linux/netpoll.h>
->  #include <linux/miscdevice.h>
->  #include <linux/inet.h>
-> +#include <linux/netconsole.h>
->  
->  MODULE_AUTHOR("Maintainer: Matt Mackall <mpm@selenic.com>");
->  MODULE_DESCRIPTION("Console driver for network interfaces");
-> @@ -313,6 +314,64 @@ static void release_target(struct kobjec
->  	remove_target(nt);
->  }
->  
-> +static int netconsole_ioctl(struct inode *inode, struct file *file,
-> +			    unsigned int cmd, unsigned long arg)
-> +{
-> +	int id, count;
-> +	char config[256];
-> +	char *cur;
-> +	struct netconsole_request req;
-> +	struct netconsole_target *nt, *tmp;
-> +	void __user *argp = (void __user *)arg;
-> +
-> +	switch (cmd) {
-> +	case NETCON_ADD_TARGET:
-> +		printk(KERN_INFO "netconsole: cmd=NETCON_ADD_TARGET\n");
-> +		if (copy_from_user(&req, argp, sizeof(req)))
-> +			return -EFAULT;
-> +		cur = config;
-> +		count = sprintf(cur, "%d@", req.local_port);
-> +		cur += count;
-> +		if (req.local_ip)
-> +			count = sprintf(cur, "%d.%d.%d.%d/",
-> +					NIPQUAD(req.local_ip));
-> +		else
-> +			count = sprintf(cur, "/");
-> +		cur += count;
-> +		count = sprintf(cur, "%s,", req.netdev_name);
-> +		cur += count;
-> +		count = sprintf(cur, "%d@", req.remote_port);
-> +		cur += count;
-> +		count = sprintf(cur, "%d.%d.%d.%d/",
-> +				NIPQUAD(req.remote_ip));
-> +		cur += count;
-> +		count = sprintf(cur, "%02x:%02x:%02x:%02x:%02x:%02x",
-> +				req.remote_mac[0], req.remote_mac[1],
-> +				req.remote_mac[2], req.remote_mac[3],
-> +				req.remote_mac[4], req.remote_mac[5]);
-> +		printk(KERN_INFO "count = %d config=[%s]\n", count, config);
-> +		if (add_target(config))
-> +			return -EINVAL;
-> +		break;
-> +	case NETCON_REMOVE_TARGET:
-> +		printk(KERN_INFO "netconsole: cmd=NETCON_REMOVE_TARGET\n");
-> +		if (copy_from_user(&id, argp, sizeof(int)))
-> +			return -EFAULT;
-> +		printk(KERN_INFO "netconsole: id=%d\n", id);
-> +		list_for_each_entry_safe(nt, tmp, &target_list, list) {
-> +			if (nt->id == id) {
-> +				kobject_unregister(&nt->obj);
-> +				break;
-> +			}
-> +		}
-> +		break;
-> +	default:
-> +		return -ENOTTY;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static struct sysfs_ops target_sysfs_ops = {
->  	.show = show_target_attr,
->  	.store = store_target_attr
-> @@ -324,9 +383,14 @@ static struct kobj_type target_ktype = {
->  	.default_attrs = target_attrs,
->  };
->  
-> +static struct file_operations miscdev_fops = {
-> +	.ioctl = netconsole_ioctl,
-> +};
-> +
->  static struct miscdevice netconsole_miscdev = {
->  	.minor = MISC_DYNAMIC_MINOR,
->  	.name = "netconsole",
-> +	.fops = &miscdev_fops,
->  };
->  
->  static struct notifier_block netconsole_notifier = {
+Hi again,
+ I recently noticed that my slub-enabled kernel won't let me stop
+and restart the NFS server.   It stops fine but on restart
+it returns -ENOMEM.
 
-We'll need to wake up the net guys to get an opinion here.  Using an
-ioctl() against a miscdev is rather untypical for networking.  I'd expect
-they'd prefer to see a netlink-based interface to userspace.
+It turns out that this is because kmem_cache_create is failing
+because the name already exists in sysfs.
 
+fs/nfsd/nfs4state creates 4 kmem_caches.
+Two of them get shared:
+
+  /sys/slab/nfsd4_files -> ../slab/eventpoll_pwq
+  /sys/slab/nfsd4_stateids -> ../slab/kmalloc-128
+
+When kmem_cache_destroy is called, the alias count is reduced
+properly, but the alias symlink does not get removed.  So when we
+try to create those caches again, it fails.
+
+Not sure how best to fix this one.... kmem_cache_destroy currently
+doesn't know which alias is being destroyed.
+
+NeilBrown
