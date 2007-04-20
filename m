@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992998AbXDTQGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992999AbXDTQJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992998AbXDTQGy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993269AbXDTQGy
+	id S2992999AbXDTQJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993015AbXDTQJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:06:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44624 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992998AbXDTQGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:06:53 -0400
-Date: Fri, 20 Apr 2007 12:03:08 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-Message-ID: <20070420160308.GB20118@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jeremy Fitzhardinge <jeremy@goop.org>, Adrian Bunk <bunk@stusta.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	pavel@suse.cz, linux-pm@lists.osdl.org,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org> <20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org> <20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org> <20070420145126.GC25051@redhat.com> <4628DC0A.60707@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 20 Apr 2007 12:09:57 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:3944 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992999AbXDTQJ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 12:09:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oKgYIDfMs8DIPnPqP4PR+qYE+h+8h6PJyZGwIM4hQokgcCv6VwgvMJ6mlWxUElFqnWbVXrgXjhE1JmYvFcOC7Zy4XiKZfXkc8ApVsE7cegrXlBmBmc1uQZiWKLsLcPCbqNlhGaORLuJYcXfAH6q+3syw781fg/QayJ28jN5Z8sA=
+Message-ID: <cb7bb73a0704200909h2f47e04cq87cb3dd91d7144f7@mail.gmail.com>
+Date: Fri, 20 Apr 2007 18:09:55 +0200
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: Acecad USB Tablet: usbmouse takeover and odd motion
+Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       edouard.tisserant@wanadoo.fr, vojtech@ucw.cz
+In-Reply-To: <d120d5000704200901m44c9a3aei9ee0572c3b0a61ab@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4628DC0A.60707@goop.org>
-User-Agent: Mutt/1.4.2.2i
+References: <cb7bb73a0704191940s1fd6487j9a4412aebd4342c0@mail.gmail.com>
+	 <Pine.LNX.4.64.0704200903370.29846@jikos.suse.cz>
+	 <cb7bb73a0704200126x1e7893fem5902fe79eefb70b7@mail.gmail.com>
+	 <Pine.LNX.4.64.0704201533300.5138@jikos.suse.cz>
+	 <cb7bb73a0704200855xe841ecdoc9a0f67fc6f7009e@mail.gmail.com>
+	 <d120d5000704200901m44c9a3aei9ee0572c3b0a61ab@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 08:28:10AM -0700, Jeremy Fitzhardinge wrote:
- > Dave Jones wrote:
- > > -BUG: at arch/i386/kernel/sched-clock.c:170 init_sched_clock()
- > > - [<c01091b5>] show_trace_log_lvl+0x1a/0x30
- > > - [<c010980c>] show_trace+0x12/0x14
- > > - [<c01098cb>] dump_stack+0x16/0x18
- > > - [<c0468dbd>] init_sched_clock+0x58/0x9b
- > > - [<c0461502>] init+0x14b/0x241
- > > - [<c0108d97>] kernel_thread_helper+0x7/0x10
- > > - =======================
- > >
- > > heh, one for Ingo :)
- > Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
+On 4/20/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> On 4/20/07, Giuseppe Bilotta <giuseppe.bilotta@gmail.com> wrote:
+> >
+> > Sorry, it seems I was wrong, it's not usbhid but usbmouse taking over.
+> > After a fresh plug (e.g. at bootup) I get the following:
+> >
+>
+> Well, the question is - why do you have usbmouse module on your system?
 
-Ah, I saw you patched in CFS too, and thought it may be related.
+Stock Debian kernel 2.6.18 comes with it.
 
- > > So most of the differences seem to be BIOS/firmware rather than hardware. 
- > > The PCI bus layout is identical for eg.
- > 
- > Do you have Intel wireless?  I realized one chance I'd made was to swap
- > the Atheros wireless with Intel, since it just seems to work better
- > overall.  I'd never had any major suspend/resume problems that I could
- > attribute to madwifi though (lots of minor wifi-related ones though).
+With my custom kernels I can probably skip compiling it at all, if you
+so suggest; should I blacklist it for the distro kernel? Or is there a
+chance that some random USB mouse plugged in would fail to function by
+doing so?
 
-yeah, the intel wireless.  Same as teh one in your pci.gz attachment..
-03:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network Connection (rev 02)
-	Subsystem: Intel Corporation Unknown device 1010
-	Flags: bus master, fast devsel, latency 0, IRQ 21
-
-	Dave
+(sorry for the double-send, forgot to reply to all)
 
 -- 
-http://www.codemonkey.org.uk
+Giuseppe "Oblomov" Bilotta
