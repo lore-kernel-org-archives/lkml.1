@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767276AbXDTVi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767272AbXDTVjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767276AbXDTVi0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 17:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767278AbXDTViZ
+	id S1767272AbXDTVjG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 17:39:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767274AbXDTVjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 17:38:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42865 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767273AbXDTViX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 17:38:23 -0400
-Message-ID: <462932BE.4020005@redhat.com>
-Date: Fri, 20 Apr 2007 17:38:06 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Fri, 20 Apr 2007 17:39:06 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:19925 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767272AbXDTVjD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 17:39:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZDfHqz5Vm/NHfvUKMIzrv2taLi4wdQ9s61OZNRtb+C7YRnaG3YLEeRgzxw7IvITfSe3rT1pvjVXfzHVE262bqw2xBoRAqQVicR6KN0Smoy9GTDI2EN1hyrXKQXOCJCJGjOxJ3kdWS9xYD6a7W1LRfJvEJmyYWtfgB4rSUxC6hRU=
+Message-ID: <1c1c86360704201439u26f06de4j3b7a53145b9e96e2@mail.gmail.com>
+Date: Sat, 21 Apr 2007 09:39:01 +1200
+From: "mdew ." <some.nzguy@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, v4
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070420140457.GA14017@elte.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com> <20070420135715.f6e8e091.akpm@linux-foundation.org>
-In-Reply-To: <20070420135715.f6e8e091.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070420140457.GA14017@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+Any chance of supporting 2.6.20?
 
-> I've also merged Nick's "mm: madvise avoid exclusive mmap_sem".
-> 
-> - Nick's patch also will help this problem.  It could be that your patch
->   no longer offers a 2x speedup when combined with Nick's patch.
-> 
->   It could well be that the combination of the two is even better, but it
->   would be nice to firm that up a bit.  
-
-I'll test that.
-
->   I do go on about that.  But we're adding page flags at about one per
->   year, and when we run out we're screwed - we'll need to grow the
->   pageframe.
-
-If you want, I can take a look at folding this into the
-->mapping pointer.  I can guarantee you it won't be
-pretty, though :)
-
-> - I need to update your patch for Nick's patch.  Please confirm that
->   down_read(mmap_sem) is sufficient for MADV_FREE.
-
-It is.  MADV_FREE needs no more protection than MADV_DONTNEED.
-
-> Stylistic nit:
-> 
->> +	if (PageLazyFree(page) && !migration) {
->> +		/* There is new data in the page.  Reinstate it. */
->> +		if (unlikely(pte_dirty(pteval))) {
->> +			set_pte_at(mm, address, pte, pteval);
->> +			ret = SWAP_FAIL;
->> +			goto out_unmap;
->> +		}
-> 
-> The comment should be inside the second `if' statement.  As it is, It
-> looks like we reinstate the page if (PageLazyFree(page) && !migration).
-
-Want me to move it?
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+On 4/21/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> i'm pleased to announce release -v4 of the CFS patchset. The patch
+> against v2.6.21-rc7 can be downloaded from:
+>
+>     http://redhat.com/~mingo/cfs-scheduler/
+>
+> this CFS release too is mainly about fixing regressions and improving
+> interactivity, so the rate of change is relatively low:
+>
+>     11 files changed, 136 insertions(+), 72 deletions(-)
+>
+> in particular the preemption fix could resolve the 'desktop slows down
+> under IO load' reports and the 'firefox does not switch tabs fast
+> enough' reports as well. The suspend2 crash and the yield related
+> Kaffeine hangs should be resolved as well.
+>
+> Changes since -v3:
+>
+>  - usability fix: automatic renicing of kernel threads such as keventd,
+>    OOM tasks and tasks doing privileged hardware access (such as Xorg).
+>    (This is a substitute for group scheduling until the group scheduling
+>     details have been worked out.)
+>
+>  - bugfix: buggy yield() caused suspend2 problems
+>
+>  - preemption fix: it caused desktop app latencies
+>
+> As usual, any sort of feedback, bugreport, fix and suggestion is more
+> than welcome,
+>
+>         Ingo
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
