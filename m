@@ -1,42 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbXDTBzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbXDTCA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbXDTBzJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 21:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbXDTBzJ
+	id S1754347AbXDTCA4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 22:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXDTCA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 21:55:09 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52502 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751894AbXDTBzF (ORCPT
+	Thu, 19 Apr 2007 22:00:56 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:55159 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754019AbXDTCAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 21:55:05 -0400
-Date: Thu, 19 Apr 2007 18:54:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH] cpqphp: Convert to use the kthread API
-Message-Id: <20070419185426.50de618f.akpm@linux-foundation.org>
-In-Reply-To: <11769695592278-git-send-email-ebiederm@xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695592278-git-send-email-ebiederm@xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 22:00:55 -0400
+Date: Thu, 19 Apr 2007 22:00:48 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Renice X for cpu schedulers
+In-reply-to: <200704200847.30516.kernel@kolivas.org>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Message-id: <200704192200.49189.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070417062621.GL2986@holomorphy.com>
+ <200704191416.14374.gene.heskett@gmail.com>
+ <200704200847.30516.kernel@kolivas.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 01:58:36 -0600 "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+On Thursday 19 April 2007, Con Kolivas wrote:
+>On Friday 20 April 2007 04:16, Gene Heskett wrote:
+>> On Thursday 19 April 2007, Con Kolivas wrote:
+>>
+>> [and I snipped a good overview]
+>>
+>> >So yes go ahead and think up great ideas for other ways of metering out
+>> > cpu bandwidth for different purposes, but for X, given the absurd
+>> > simplicity of renicing, why keep fighting it? Again I reiterate that
+>> > most users of SD have not found the need to renice X anyway except if
+>> > they stick to old habits of make -j4 on uniprocessor and the like, and I
+>> > expect that those on CFS and Nicksched would also have similar
+>> > experiences.
+>>
+>> FWIW folks, I have never touched x's niceness, its running at the default
+>> -1 for all of my so-called 'tests', and I have another set to be rebooted
+>> to right now.  And yes, my kernel makeit script uses -j4 by default, and
+>> has used -j8 just for effects, which weren't all that different from what
+>> I expected in 'abusing' a UP system that way.  The system DID remain
+>> usable, not snappy, but usable.
+>
+>Gene, you're agreeing with me. You've shown that you're very happy with a
+> fair distribution of cpu and leaving X at nice 0.
 
-> This patch changes cpqphp to use kthread_run and not
-> kernel_thread and daemonize to startup and setup
-> the cpqphp thread.
+I was quite happy till Ingo's first patch came out, and it was even better, 
+but I over-wrote it, and we're still figuring out just exactly what the magic 
+twanger was that made it all click for me.  OTOH, I don't think that patch 
+passed muster with Mike G., either.  We have obviously different workloads, 
+and critical points in them.
 
-ok..  I'll rename this to "partially convert" and shall add a note
-to the changelog,
+>> Having tried re-nicing X a while back, and having the rest of the system
+>> suffer in quite obvious ways for even 1 + or - from its default felt
+>> pretty bad from this users perspective.
+>>
+>> It is my considered opinion (yeah I know, I'm just a leaf in the hurricane
+>> of this list) that if X has to be re-niced from the 1 point advantage its
+>> had for ages, then something is basicly wrong with the overall scheduling,
+>> cpu or i/o, or both in combination.  FWIW I'm using cfq for i/o.
+>
+>It's those who want X to have an unfair advantage that want it to do
+>something "special". Your agreement that it works fine at nice 0 shows you
+>don't want it to have an unfair advantage. Others who want it to have an
+>unfair advantage _can_ renice it if they desire. But if the cpu scheduler
+>gives X an unfair advantage within the kernel by default then you have _no_
+>choice. If you leave the choice up to userspace (renice or not) then both
+>parties get their way. If you put it into the kernel only one party wins and
+>there is no way for the Genes (and Cons) of this world to get it back.
+>
+>Your opinion is as valuable as eveyone else's Gene. It is hard to get people
+>to speak on as frightening a playground as the linux kernel mailing list so
+>please do.
 
-This is another driver which will look a lot nicer when it has been
-converted to kthread_should_stop() and kthread_stop()
+In the FWIW category, htop has always told me that x is running at -1, not 
+zero.  Now, I have NDI where this is actually set at, so I'd have to ask 
+stupid questions here if I did wanna play with it.  Which I really don't, the 
+last time I tried to -5 x, kde got a whole lot LESS responsive.  But heck, 
+2.6.2 was freshly minted then too and I've long since forgot how I went about 
+that unless I used htop to change it, the most likely scenario that I can 
+picture at this late date. 
+
+As for speaking my mind, yes, and I've been slapped down a few times, as much 
+because I do a lot of bitching and microscopic amounts of patch submission. 
+The only patch I ever submitted was for something in the floppy driver, way 
+back in the middle of 2.2 days, rejected because I didn't know how to use the 
+tools correctly.  I didn't, so it was a shrug and my feelings weren't hurt.
+
+Some see that as an unbalanced set of books and I'm aware of it.  OTOH, I 
+think I do a pretty good job of playing the canary here, and that should be 
+worth something if for no other reason than I can turn into a burr under 
+somebodies saddle when things go all aglay.  But I figure if its happening to 
+me, then if I don't fuss, and that gotcha gets into a distro kernel, there 
+are gonna be a hell of a lot more folks than me trying to grab the 
+microphone.
+
+BTW, I'm glad you are feeling well enough to get into this again.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+There cannot be a crisis next week.  My schedule is already full.
+		-- Henry Kissinger
