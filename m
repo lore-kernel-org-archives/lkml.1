@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993082AbXDTLe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993096AbXDTLex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993082AbXDTLe0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 07:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992993AbXDTLeZ
+	id S2993096AbXDTLex (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 07:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993092AbXDTLew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 07:34:25 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:37372 "EHLO
+	Fri, 20 Apr 2007 07:34:52 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:37404 "EHLO
 	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993059AbXDTLeP (ORCPT
+	with ESMTP id S2993096AbXDTLeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 07:34:15 -0400
-Date: Fri, 20 Apr 2007 13:34:30 +0200
+	Fri, 20 Apr 2007 07:34:50 -0400
+Date: Fri, 20 Apr 2007 13:35:05 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: akpm@linux-foundation.org, gregkh@suse.de
-Subject: [PATCH 6/8] Kconfig: no userspace I/O on s390.
-Message-ID: <20070420113430.GG3738@skybase>
+Cc: akpm@linux-foundation.org, mb@bu3sch.de, linville@tuxdriver.com
+Subject: [PATCH 7/8] Kconfig: silicon backplane dependency.
+Message-ID: <20070420113505.GH3738@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,23 +25,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Hide the config menu for userspace I/O on s390.
-Goes on top of gregkh-driver-uio.patch.
+Make the "Sonics Silicon Backplane" menu dependent on the two buses
+it can be found on.
+Goes on top of git-wireless.patch.
 
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Michael Buesch <mb@bu3sch.de>
+Cc: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/uio/Kconfig |    2 ++
- 1 files changed, 2 insertions(+)
+ drivers/ssb/Kconfig |    1 +
+ 1 files changed, 1 insertion(+)
 
-diff -urpN linux-2.6/drivers/uio/Kconfig linux-2.6-patched/drivers/uio/Kconfig
---- linux-2.6/drivers/uio/Kconfig	2007-04-19 15:24:40.000000000 +0200
-+++ linux-2.6-patched/drivers/uio/Kconfig	2007-04-20 10:51:24.000000000 +0200
-@@ -1,4 +1,6 @@
- menu "Userspace I/O"
-+	depends on !S390
-+
- config UIO
- 	tristate "Userspace I/O drivers"
- 	default n
+diff -urpN linux-2.6/drivers/ssb/Kconfig linux-2.6-patched/drivers/ssb/Kconfig
+--- linux-2.6/drivers/ssb/Kconfig	2007-04-19 15:24:40.000000000 +0200
++++ linux-2.6-patched/drivers/ssb/Kconfig	2007-04-19 15:55:44.000000000 +0200
+@@ -1,4 +1,5 @@
+ menu "Sonics Silicon Backplane"
++	depends on PCI || PCMCIA
+ 
+ config SSB
+ 	tristate "Sonics Silicon Backplane support"
