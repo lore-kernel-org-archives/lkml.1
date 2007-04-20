@@ -1,93 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767131AbXDTQBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993271AbXDTQDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767131AbXDTQBO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767145AbXDTQAk
+	id S2993271AbXDTQDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767148AbXDTQAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:00:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42728 "EHLO mx1.redhat.com"
+	Fri, 20 Apr 2007 12:00:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42495 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767131AbXDTQAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:00:30 -0400
-Message-Id: <20070420155503.334628394@chello.nl>
+	id S1767135AbXDTP75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 11:59:57 -0400
+Message-Id: <20070420155503.061608117@chello.nl>
 References: <20070420155154.898600123@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 20 Apr 2007 17:52:02 +0200
+Date: Fri, 20 Apr 2007 17:52:00 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com
-Subject: [PATCH 08/10] mm: count writeback pages per BDI
-Content-Disposition: inline; filename=bdi_stat_writeback.patch
+Subject: [PATCH 06/10] mm: scalable bdi statistics counters.
+Content-Disposition: inline; filename=bdi_stat.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Count per BDI writeback pages.
+Provide scalable per backing_dev_info statistics counters.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/backing-dev.h |    1 +
- mm/page-writeback.c         |   12 ++++++++++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
+ include/linux/backing-dev.h |   50 ++++++++++++++++++++++++++++++++++++++++++--
+ mm/backing-dev.c            |   26 ++++++++++++++++++++++
+ 2 files changed, 74 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c	2007-04-20 15:27:28.000000000 +0200
-+++ linux-2.6/mm/page-writeback.c	2007-04-20 15:28:10.000000000 +0200
-@@ -979,14 +979,18 @@ int test_clear_page_writeback(struct pag
- 	int ret;
- 
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
- 
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestClearPageWriteback(page);
--		if (ret)
-+		if (ret) {
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__dec_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		write_unlock_irqrestore(&mapping->tree_lock, flags);
- 	} else {
- 		ret = TestClearPageWriteback(page);
-@@ -1002,14 +1006,18 @@ int test_set_page_writeback(struct page 
- 	int ret;
- 
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
- 
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestSetPageWriteback(page);
--		if (!ret)
-+		if (!ret) {
- 			radix_tree_tag_set(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__inc_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		if (!PageDirty(page))
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
 Index: linux-2.6/include/linux/backing-dev.h
 ===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h	2007-04-20 15:25:47.000000000 +0200
-+++ linux-2.6/include/linux/backing-dev.h	2007-04-20 15:28:17.000000000 +0200
-@@ -27,6 +27,7 @@ typedef int (congested_fn)(void *, int);
+--- linux-2.6.orig/include/linux/backing-dev.h	2007-04-12 13:27:13.000000000 +0200
++++ linux-2.6/include/linux/backing-dev.h	2007-04-12 13:28:40.000000000 +0200
+@@ -8,6 +8,7 @@
+ #ifndef _LINUX_BACKING_DEV_H
+ #define _LINUX_BACKING_DEV_H
  
- enum bdi_stat_item {
- 	BDI_RECLAIMABLE,
-+	BDI_WRITEBACK,
- 	NR_BDI_STAT_ITEMS
++#include <linux/percpu_counter.h>
+ #include <asm/atomic.h>
+ 
+ struct page;
+@@ -24,6 +25,10 @@ enum bdi_state {
+ 
+ typedef int (congested_fn)(void *, int);
+ 
++enum bdi_stat_item {
++	NR_BDI_STAT_ITEMS
++};
++
+ struct backing_dev_info {
+ 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
+ 	unsigned long ra_pages0; /* min readahead on start of file */
+@@ -34,14 +39,55 @@ struct backing_dev_info {
+ 	void *congested_data;	/* Pointer to aux data for congested func */
+ 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
+ 	void *unplug_io_data;
++
++	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
  };
  
+-static inline void bdi_init(struct backing_dev_info *bdi)
++void bdi_init(struct backing_dev_info *bdi);
++void bdi_destroy(struct backing_dev_info *bdi);
++
++static inline void __mod_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item, s32 amount)
++{
++	percpu_counter_mod(&bdi->bdi_stat[item], amount);
++}
++
++static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
++{
++	__mod_bdi_stat(bdi, item, 1);
++}
++
++static inline void inc_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	__inc_bdi_stat(bdi, item);
++	local_irq_restore(flags);
++}
++
++static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
+ {
++	__mod_bdi_stat(bdi, item, -1);
++}
++
++static inline void dec_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	__dec_bdi_stat(bdi, item);
++	local_irq_restore(flags);
+ }
+ 
+-static inline void bdi_destroy(struct backing_dev_info *bdi)
++static inline s64 bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
+ {
++	return percpu_counter_read_positive(&bdi->bdi_stat[item]);
+ }
+ 
+ /*
+Index: linux-2.6/mm/backing-dev.c
+===================================================================
+--- linux-2.6.orig/mm/backing-dev.c	2007-04-12 13:27:10.000000000 +0200
++++ linux-2.6/mm/backing-dev.c	2007-04-12 13:28:26.000000000 +0200
+@@ -5,6 +5,30 @@
+ #include <linux/sched.h>
+ #include <linux/module.h>
+ 
++void bdi_init(struct backing_dev_info *bdi)
++{
++	int i;
++
++	if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
++		return;
++
++	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
++		percpu_counter_init(&bdi->bdi_stat[i], 0);
++}
++EXPORT_SYMBOL(bdi_init);
++
++void bdi_destroy(struct backing_dev_info *bdi)
++{
++	int i;
++
++	if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
++		return;
++
++	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
++		percpu_counter_destroy(&bdi->bdi_stat[i]);
++}
++EXPORT_SYMBOL(bdi_destroy);
++
+ static wait_queue_head_t congestion_wqh[2] = {
+ 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),
+ 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
+@@ -70,3 +94,5 @@ long congestion_wait_interruptible(int r
+ 	return ret;
+ }
+ EXPORT_SYMBOL(congestion_wait_interruptible);
++
++
 
 -- 
 
