@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992943AbXDTLVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992966AbXDTLbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992943AbXDTLVx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 07:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992953AbXDTLVx
+	id S2992966AbXDTLbr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 07:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992949AbXDTLbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 07:21:53 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:38144 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992943AbXDTLVw (ORCPT
+	Fri, 20 Apr 2007 07:31:47 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:13215 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992947AbXDTLbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 07:21:52 -0400
-Subject: Re: VMWare Workstation 6 for debugging Linux Kernel (!)
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Xavier Bestel <xavier.bestel@free.fr>, roland <devzero@web.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <p73r6qf49zc.fsf@bingen.suse.de>
-References: <03f401c782d4$95c323e0$eeeea8c0@aldipc>
-	 <1177058522.14404.132.camel@frg-rhel40-em64t-04>
-	 <p73r6qf49zc.fsf@bingen.suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ubhYvmd9BfEaKQ5P+rYA"
-Date: Fri, 20 Apr 2007 21:21:47 +1000
-Message-Id: <1177068108.11136.11.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 20 Apr 2007 07:31:46 -0400
+Date: Fri, 20 Apr 2007 13:31:57 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: akpm@linux-foundation.org, mb@bu3sch.de, linville@tuxdriver.com
+Subject: [PATCH 0/7] Kconfig: cleanup s390.
+Message-ID: <20070420113157.GA3738@skybase>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greetings,
+my last try to straighten then Kconfig for s390 failed, probably due
+to the disable statement. I still want to get rid of the s390 specific
+Kconfig file in drivers/s390/Kconfig. Too much duplication, too often
+something that should have been added is forgotten..
 
---=-ubhYvmd9BfEaKQ5P+rYA
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+So this is a new attempt, this time without the disable extension but
+with lots of "depends on !S390" lines. The eight patches go on top of
+2.6.21-rc6-mm1. Patches 1-4 fit (with hunks) on top of the current git
+as well.
 
-Hi.
+I noticed an oddity with the B44 option. It selects SSB which is a new
+bus that sits on top of either PCI or PCMCIA. The trouble is that s390
+does have neither PCI nor PCMCIA. Patch #7 adds a depends line to the 
+SSB option. Now the SSB option is not available on s390 anymore but
+the B44 option is. You can select it and by doing so the SSB option
+gets selected as well(!). I solved this by replacing the "select SSB"
+with a "depends on SSB", see patch #8. But then the B44 option is only
+available if the SSB option is enabled. What we'd need is an additional
+check if the options that are to be selected by a config option can be
+selected as well and hide the original config option that does the
+invalid select. Quite a nasty problem.
 
-On Fri, 2007-04-20 at 12:27 +0200, Andi Kleen wrote:
-> Xavier Bestel <xavier.bestel@free.fr> writes:
->=20
-> > On Fri, 2007-04-20 at 00:46 +0200, roland wrote:
-> >=20
-> > > We just quietly added an exciting feature to Workstation 6.0. I belie=
-ve it=20
-> > > will make WS6 a great tool for Linux kernel development. You can now =
-debug=20
-> > > kernel of Linux VM with gdb running on the Host without changing anyt=
-hing in=20
-> > > the Guest VM. No kdb, no recompiling and no need for second machine. =
-All you=20
-> > > need is a single line in VM's configuration file.
-> >=20
-> > I think qemu has the exact same feature.
->=20
-> It doesn't seem to work for x86-64 there though.
+If nobody objects to the cleanup I'll add the patches to git390 for
+a please-pull at the next merge window.
 
-You mean the VMware one doesn't work? I tried it and got:
+-- 
+blue skies,
+  Martin.
 
-(gdb) target remote localhost:8832=20
-Remote debugging using localhost:8832=20
-Ignoring packet error, continuing...=20
-warning: unrecognized item "timeout" in "qSupported" respoonse=20
-Ignoring packet error, continuing...=20
-Ignoring packet error, continuing...=20
-Ignoring packet error, continuing...=20
-Malformed response to offset query, timeout=20
-(gdb)
-
-Hopefully that's not too hard to fix. Made the appropriate noises :)
-
-Nigel
-
---=-ubhYvmd9BfEaKQ5P+rYA
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGKKJLN0y+n1M3mo0RAl32AJ9yaGBDmmO5G+HATe8JmmbPFHI5aACfc8Vq
-iam9YZcw9fgTv4NOHtC4yck=
-=NK2o
------END PGP SIGNATURE-----
-
---=-ubhYvmd9BfEaKQ5P+rYA--
+"Reality continues to ruin my life." - Calvin.
 
