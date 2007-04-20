@@ -1,56 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbXDTBLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752906AbXDTBOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389AbXDTBLw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 21:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbXDTBLw
+	id S1752906AbXDTBOO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 21:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbXDTBOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 21:11:52 -0400
-Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:44002 "EHLO
-	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754387AbXDTBLv (ORCPT
+	Thu, 19 Apr 2007 21:14:14 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51653 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752228AbXDTBON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 21:11:51 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: rr_interval experiments
-Date: Fri, 20 Apr 2007 10:47:57 +1000
-User-Agent: KMail/1.9.5
-Cc: ck list <ck@vds.kolivas.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <npiggin@suse.de>
-References: <200704200101.49823.kernel@kolivas.org>
-In-Reply-To: <200704200101.49823.kernel@kolivas.org>
+	Thu, 19 Apr 2007 21:14:13 -0400
+Date: Thu, 19 Apr 2007 18:14:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Chinner <dgc@sgi.com>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Paul Jackson <pj@sgi.com>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [RFC 0/8] Variable Order Page Cache
+In-Reply-To: <20070419224225.GJ32602149@melbourne.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704191810590.14874@schroedinger.engr.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+ <20070419224225.GJ32602149@melbourne.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704201047.57539.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 April 2007 01:01, Con Kolivas wrote:
-> This then allows the maximum rr_interval to be as large as 5000
-> milliseconds.
+On Fri, 20 Apr 2007, David Chinner wrote:
 
-Just for fun, on a core2duo make allnoconfig make -j8 here are the build time 
-differences (on a 1000HZ config) machine:
+> So looking at this the main thing for converting a filesystem is some extra
+> bits in the mount process and replacing PAGE_CACHE_* macros with
+> page_cache_*() wrapper functions.
 
-16ms:
-53.68user 4.81system 0:34.27elapsed 170%CPU (0avgtext+0avgdata 0maxresident)k
+Right.
 
-1ms:
-56.73user 4.83system 0:36.03elapsed 170%CPU (0avgtext+0avgdata 0maxresident)k
+> We can probably set all this up trivially with XFS by allowing block size > page
+> size filesystems to be mounted and modifying the way we feed pages to a bio
+> to be aware of compound pages.
 
-5000ms:
-52.88user 4.77system 0:32.37elapsed 178%CPU (0avgtext+0avgdata 0maxresident)k
+That would be great! Anyone volunterering for the block layer?
 
-For the record, 16ms is what SD v0.43 would choose as the default value on 
-this hardware. A load with a much lower natural context switching rate than a 
-kernel compile, as you said Nick, would show even greater discrepancy in 
-these results.
+> > What is currently not supported:
+> > - Buffer heads for higher order pages (possible with the compound pages in mm
+> >   that do not use page->private requires upgrade of the buffer cache layers).
+> 
+> Does this mean that the -mm code will currently support bufferheads on compound
+> pages? We need that before we can get XFS to work with compound pages.
 
-Fun eh? Note these are not for any comparison with anything else; just to show 
-the effect rr_interval changes have on throughput.
+There needs to be some work done on that level. But page->private can be 
+used for compound pages now which should make this simple to do.
 
--- 
--ck
+> > - Higher order pages in the block layer etc.
+> 
+> It's more drivers that we have to worry about, I think.  We don't need to
+> modify bios to explicitly support compound pages. From bio.h:
+> 
+> /*
+>  * was unsigned short, but we might as well be ready for > 64kB I/O pages
+>  */
+> struct bio_vec {
+>         struct page     *bv_page;
+>         unsigned int    bv_len;
+>         unsigned int    bv_offset;
+> };
+> 
+> So compound pages should be transparent to anything that doesn't
+> look at the contents of bio_vecs....
+
+Great!
+
+> > - Mmapping higher order pages
+> 
+> *nod*
+> 
+> hmmm - what about the way we do copyin and copyout from the page cache? ie
+> we kmap_atomic() them before we access them. Does this need to change?
+
+kmap_atomic does not do anything if we do not use highmem. If we want to 
+support highmem with higher order pages then kmap_atomic needs to support 
+arbitrary page orders.
+
+>> > The ramfs driver can be used to test higher order page cache functionality
+> > (and may help troubleshoot the VM support until we get some real filesystem
+> > and real devices supporting higher order pages).
+> 
+> I don't think it will take much to get XFS to work with a high order
+> page cache and we can probably insulate the block layer initially with some
+> kind of bio_add_compound_page() wrapper and some similar
+> wrapper on the io completion side.
+
+I'd be happy if we could make this work soon.
+
+> So far it's much less intrusive than I expected ;)
+
+I was surprised too. Seems that multiple people have been preparing for 
+the great day when we finally support higher order pages in the page 
+cache.
+
