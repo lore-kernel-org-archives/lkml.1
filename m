@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422887AbXDTFvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422936AbXDTF7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422887AbXDTFvJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 01:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422895AbXDTFvJ
+	id S1422936AbXDTF7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 01:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422919AbXDTF7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 01:51:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60012 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422887AbXDTFvG (ORCPT
+	Fri, 20 Apr 2007 01:59:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:57275 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422651AbXDTF7b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 01:51:06 -0400
-Date: Thu, 19 Apr 2007 22:51:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Neil Brown <neilb@suse.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
-In-Reply-To: <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0704192249070.17171@schroedinger.engr.sgi.com>
-References: <17960.16739.870487.497750@notabene.brown>
- <Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
- <17960.20796.761309.771912@notabene.brown> <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
+	Fri, 20 Apr 2007 01:59:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=XKzIqx2FYEzU7DTzKAqDJVvHw9+xrM06NMxQe4OnzskeEd/bqaTZ75r4b1jKkVbzF2DxtjOY8klos5cfO9ppcnrtWaz7Fl76aeLEAR/KNmzIMefeoVfTC2Rzu9Kv8EbV4dUm+CXEnZYY9u7lS23WucXN6XNKWMs5Pw1CmcwfM9M=
+Message-ID: <462856B9.9010307@gmail.com>
+Date: Fri, 20 Apr 2007 14:59:21 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+References: <Pine.LNX.4.44L0.0704181032060.12246-100000@iolanthe.rowland.org>	 <46263A82.1030703@gmail.com>	 <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com>	 <20070419145133.2f7ed45a@gondolin.boeblingen.de.ibm.com>	 <d120d5000704190613h178ad644h53ad817db2950426@mail.gmail.com>	 <20070419154849.2e722762@gondolin.boeblingen.de.ibm.com> <d120d5000704190721u16be1110ufe04880eded7d54e@mail.gmail.com>
+In-Reply-To: <d120d5000704190721u16be1110ufe04880eded7d54e@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another approach drop the symlinks completely. Just 
-write a message to the syslog informing the user that we
-created an alias. If debugging is off then the user would have to consult
-the syslog to find aliases.
+Hello, Dmitry.
 
+Dmitry Torokhov wrote:
+> On 4/19/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+>> On Thu, 19 Apr 2007 09:13:43 -0400,
+>> "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+>>
+>> > Because they are managed by 2 different entities. the struct device
+>> > objects are managed by device core and driver-specific objects are
+>> > managed by their respective driver.
+>>
+>> Not sure if I understand you here. My view of this was always that the
+>> embedding object was kind of an extended device and that the relevant
+>> driver/subsystem managed it through the driver core infrastructure.
+>>
+> 
+> I am not sure if I agree with this point of view. Driver (or
+> subsystem) provides an instance of struct device for the rest of the
+> system to iteract uniformly with (suspend/resume/tree
+> visualization/etc) i.e. struct device implement an interface for
+> subsystems. However most of the system use their own mechanisms to
+> manage their devices. They can rely on the driver core to a certain
+> degree but driver core is mostly a carries out helper functions, not
+> the meat.
 
-Index: linux-2.6.21-rc6/mm/slub.c
-===================================================================
---- linux-2.6.21-rc6.orig/mm/slub.c	2007-04-19 22:46:20.000000000 -0700
-+++ linux-2.6.21-rc6/mm/slub.c	2007-04-19 22:48:26.000000000 -0700
-@@ -158,11 +158,9 @@ LIST_HEAD(slab_caches);
- 
- #ifdef CONFIG_SYSFS
- static int sysfs_slab_add(struct kmem_cache *);
--static int sysfs_slab_alias(struct kmem_cache *, const char *);
- static void sysfs_slab_remove(struct kmem_cache *);
- #else
- static int sysfs_slab_add(struct kmem_cache *s) { return 0; }
--static int sysfs_slab_alias(struct kmem_cache *s, const char *p) { return 0; }
- static void sysfs_slab_remove(struct kmem_cache *s) {}
- #endif
- 
-@@ -2324,8 +2322,8 @@ struct kmem_cache *kmem_cache_create(con
- 		 */
- 		s->objsize = max(s->objsize, (int)size);
- 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
--		if (sysfs_slab_alias(s, name))
--			goto err;
-+		printk(KERN_INFO "SLUB: %s is an alias of %s\n",
-+							name, s->name);
- 	} else {
- 		s = kmalloc(kmem_size, GFP_KERNEL);
- 		if (s && kmem_cache_open(s, GFP_KERNEL, name,
-@@ -3335,37 +3333,6 @@ static void sysfs_slab_remove(struct kme
- 	kobject_del(&s->kobj);
- }
- 
--/*
-- * Need to buffer aliases during bootup until sysfs becomes
-- * available lest we loose that information.
-- */
--struct saved_alias {
--	struct kmem_cache *s;
--	const char *name;
--	struct saved_alias *next;
--};
--
--struct saved_alias *alias_list;
--
--static int sysfs_slab_alias(struct kmem_cache *s, const char *name)
--{
--	struct saved_alias *al;
--
--	if (slab_state == SYSFS)
--		return sysfs_create_link(&slab_subsys.kset.kobj,
--						&s->kobj, name);
--
--	al = kmalloc(sizeof(struct saved_alias), GFP_KERNEL);
--	if (!al)
--		return -ENOMEM;
--
--	al->s = s;
--	al->name = name;
--	al->next = alias_list;
--	alias_list = al;
--	return 0;
--}
--
- int __init slab_sysfs_init(void)
- {
- 	int err;
-@@ -3378,15 +3345,6 @@ int __init slab_sysfs_init(void)
- 
- 	finish_bootstrap();
- 
--	while (alias_list) {
--		struct saved_alias *al = alias_list;
--
--		alias_list = alias_list->next;
--		err = sysfs_slab_alias(al->s, al->name);
--		BUG_ON(err);
--		kfree(al);
--	}
--
- 	resiliency_test();
- 	return 0;
- }
+Many drivers (at least all the SCSI/IDE ones) consider struct device as
+the base class of the devices those drivers implement.  I don't think we
+can just consider those drivers to be wrong.
+
+-- 
+tejun
