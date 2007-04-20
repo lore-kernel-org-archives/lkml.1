@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030332AbXDTQP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030503AbXDTQQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030332AbXDTQP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 12:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030503AbXDTQP3
+	id S1030503AbXDTQQk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 12:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030851AbXDTQQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 12:15:29 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60867 "EHLO
+	Fri, 20 Apr 2007 12:16:40 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58067 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030332AbXDTQP2 (ORCPT
+	with ESMTP id S1030503AbXDTQQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 12:15:28 -0400
-Date: Fri, 20 Apr 2007 09:15:25 -0700 (PDT)
+	Fri, 20 Apr 2007 12:16:39 -0400
+Date: Fri, 20 Apr 2007 09:16:37 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 3/8] Flushing and zeroing higher order page cache pages
-In-Reply-To: <20070420110244.GB12075@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0704200910440.20232@schroedinger.engr.sgi.com>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
- <20070419163520.11948.15503.sendpatchset@schroedinger.engr.sgi.com>
- <20070420110244.GB12075@skynet.ie>
+To: Benjamin LaHaise <bcrl@kvack.org>
+cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Larry Woodman <lwoodman@redhat.com>
+Subject: Re: [PATCH] Make new setting of panic_on_oom
+In-Reply-To: <20070420124157.GA21709@kvack.org>
+Message-ID: <Pine.LNX.4.64.0704200916250.20232@schroedinger.engr.sgi.com>
+References: <20070420202752.0E69.Y-GOTO@jp.fujitsu.com> <20070420124157.GA21709@kvack.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, Mel Gorman wrote:
+On Fri, 20 Apr 2007, Benjamin LaHaise wrote:
 
-> While this looks fine, it seems that clear_huge_page() and
-> clear_mapping_page() could share a common helper. I also note that
-> clear_huge_page() calls cond_reched() and this doesn't which may be the
-> type of different behavior we want to avoid.
+> On Fri, Apr 20, 2007 at 08:43:56PM +0900, Yasunori Goto wrote:
+> > 
+> > The current panic_on_oom may not work if there is a process using 
+> > cpusets/mempolicy, because other nodes' memory may still free.
+> > But some people want failover by panic ASAP even if they are used.
+> > This patch makes new setting for its request.
+> > 
+> > This is not tested yet. But it would work.
+> 
+> >  	read_lock(&tasklist_lock);
+> >  
+> > +	if (sysctl_panic_on_oom == 2)
+> > +		panic("out of memory. Compulsory panic_on_oom is selected.\n");
+> > +
+> 
+> Wouldn't it be safer to put the panic before the read_lock()?
 
-I am really thinking that this variable order page cache approach 
-is likely going to result in the final death of the huge page subsystem. I 
-would like to keep huge pages separate from this so that the huge page 
-subsystem can be removed at some point without too much trouble. Right now 
-it is a very sore point at least from a performance standpoint since the 
-hugetlb subsystem is serialized with a single lock. There is a weird maze 
-of locking and accounting constraints in there that makes it difficult to 
-fix this.
+I agree. Otherwise the patch seem to be okay.
 
-> That said, if this goes ahead, it might be an excuse to look at using
-> ramfs as the basis for hugetlbfs instead of it's current approach. I
-> believe using ramfs for hugepages is something that wli wants anyway.
-
-Right. There is no reason for hugetlbfs to exist anymore. We will have 
-very transparent and flexible support for huge pages.
