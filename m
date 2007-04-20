@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992478AbXDTLCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbXDTLER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992478AbXDTLCr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 07:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992531AbXDTLCr
+	id S1752625AbXDTLER (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 07:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbXDTLER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 07:02:47 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:49692 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992478AbXDTLCq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 07:02:46 -0400
-Date: Fri, 20 Apr 2007 12:02:44 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 3/8] Flushing and zeroing higher order page cache pages
-Message-ID: <20070420110244.GB12075@skynet.ie>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163520.11948.15503.sendpatchset@schroedinger.engr.sgi.com>
+	Fri, 20 Apr 2007 07:04:17 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:46430 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752625AbXDTLEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 07:04:16 -0400
+Date: Fri, 20 Apr 2007 13:09:54 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070420110954.GA3640@ff.dom.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070419163520.11948.15503.sendpatchset@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (19/04/07 09:35), Christoph Lameter didst pronounce:
-> ---
->  include/linux/pagemap.h |   27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
-> 
-> Index: linux-2.6.21-rc7/include/linux/pagemap.h
-> ===================================================================
-> --- linux-2.6.21-rc7.orig/include/linux/pagemap.h	2007-04-18 22:08:36.000000000 -0700
-> +++ linux-2.6.21-rc7/include/linux/pagemap.h	2007-04-18 22:09:13.000000000 -0700
-> @@ -210,6 +210,33 @@ static inline void wait_on_page_writebac
->  
->  extern void end_page_writeback(struct page *page);
->  
-> +/* Support for clearing higher order pages */
-> +static inline void clear_mapping_page(struct address_space *a,
-> +						struct page *page)
-> +{
-> +	int nr_pages = 1 << a->order;
-> +	int i;
-> +
-> +	for (i = 0; i < nr_pages; i++)
-> +		clear_highpage(page + i);
-> +}
+(take 2)
 
-While this looks fine, it seems that clear_huge_page() and
-clear_mapping_page() could share a common helper. I also note that
-clear_huge_page() calls cond_reched() and this doesn't which may be the
-type of different behavior we want to avoid.
+I'm not sure we've agreed enough, who'll resubmit, so here
+it is with WARN_ON. If it was submited already - forget it.
 
-That said, if this goes ahead, it might be an excuse to look at using
-ramfs as the basis for hugetlbfs instead of it's current approach. I
-believe using ramfs for hugepages is something that wli wants anyway.
+Jarek P.
 
-> +
-> +/*
-> + * Support for flushing higher order pages.
-> + *
-> + * A bit stupid: On many platforms flushing the first page
-> + * will flush any TLB starting there
-> + */
-> +static inline void flush_mapping_page(struct address_space *a,
-> +						struct page *page)
-> +{
-> +	int nr_pages = 1 << a->order;
-> +	int i;
-> +
-> +	for (i = 0; i < nr_pages; i++)
-> +		flush_dcache_page(page + i);
-> +}
-> +
->  /*
->   * Fault a userspace page into pagetables.  Return non-zero on a fault.
->   *
+--->
+IMHO cancel_rearming_delayed_work is dangerous place:
 
-I suppose I'll see where this is used later in the patchset. It might be
-easier to review if these helpers are introduced at the point they are
-used.Not super-sure
+- it assumes a work function always rearms (with no exception),
+which probably isn't explained enough now (but anyway should
+be checked in such loops);
 
+- probably possible (theoretical) scenario: a few work
+functions rearm themselves with very short, equal times;
+before flush_workqueue ends, their timers are already
+fired, so cancel_delayed_work has nothing to do.
 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Maybe this patch could check, if I'm not dreaming...
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+PS: of course the counter value below is a question of taste
+
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+
+---
+
+diff -Nurp 2.6.21-rc6-mm1-/kernel/workqueue.c 2.6.21-rc6-mm1/kernel/workqueue.c
+--- 2.6.21-rc6-mm1-/kernel/workqueue.c	2007-04-18 20:07:45.000000000 +0200
++++ 2.6.21-rc6-mm1/kernel/workqueue.c	2007-04-18 20:15:44.000000000 +0200
+@@ -557,9 +557,12 @@ void cancel_rearming_delayed_work(struct
+ 	/* Was it ever queued ? */
+ 	if (cwq != NULL) {
+ 		struct workqueue_struct *wq = cwq->wq;
++		int i = 1000;
+ 
+-		while (!cancel_delayed_work(dwork))
++		while (!cancel_delayed_work(dwork)) {
+ 			flush_workqueue(wq);
++			WARN_ON(!i--);
++		}
+ 	}
+ }
+ EXPORT_SYMBOL(cancel_rearming_delayed_work);
+
