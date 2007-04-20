@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbXDTNv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992797AbXDTNwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbXDTNv3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 09:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbXDTNv3
+	id S2992797AbXDTNwK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 09:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993013AbXDTNwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 09:51:29 -0400
-Received: from iucha.net ([209.98.146.184]:33845 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753872AbXDTNv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 09:51:28 -0400
-Date: Fri, 20 Apr 2007 08:51:27 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: chuck.lever@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Success! Was: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-Message-ID: <20070420135127.GB24044@iucha.net>
-References: <1176950713.6422.95.camel@heimdal.trondhjem.org> <462786C9.7090405@oracle.com> <1176995848.6663.1.camel@heimdal.trondhjem.org> <20070419155046.GR24044@iucha.net> <1176998982.6663.10.camel@heimdal.trondhjem.org> <20070419195844.GT24044@iucha.net> <1177018242.6628.10.camel@heimdal.trondhjem.org> <20070419214931.GX24044@iucha.net> <20070420133028.GA24044@iucha.net> <1177076250.6364.10.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DaTEgnRu5pEC8TLg"
-Content-Disposition: inline
-In-Reply-To: <1177076250.6364.10.camel@heimdal.trondhjem.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+	Fri, 20 Apr 2007 09:52:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:18074 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992797AbXDTNwH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 09:52:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=KZJVkEG8CPj1glqydZmh9EprWenn+fiI246WESo0mQjgrib93/r6yADjbesnP3q8YjSIFPDWNtVCiD4fX3iABsvq6/I2GFROwIUwY3h2pI1XzE640bDThvg65MjzYHgyFQuAGDEn+GlpZUgCbRZJqgk/Pj3tfLmwbHBZfDpEMjI=
+Subject: Re: [PATCH 01/01] New FBDev driver for Intel Vermilion Range
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Alan Hourihane <alanh@fairlite.demon.co.uk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1177059856.10128.48.camel@jetpack.demon.co.uk>
+References: <1175769886.10382.29.camel@localhost>
+	 <1177059856.10128.48.camel@jetpack.demon.co.uk>
+Content-Type: text/plain
+Date: Fri, 20 Apr 2007 21:51:38 +0800
+Message-Id: <1177077098.8463.17.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-04-20 at 10:04 +0100, Alan Hourihane wrote:
+> I've updated the Vermilion Range (LE80578) patch against linus' tree.
+> 
+> Hopefully this rectifies all of the issues noted previously.
+> 
+> Let me know again if there's more updates needed.
+> 
+> Thanks to all who responded with the feedback, it was appreciated.
+> 
 
---DaTEgnRu5pEC8TLg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This (at least the framebuffer part) looks good to me (except for the
+excessive curly braces, but that can be fixed easily).  Okay if I add a 
 
-On Fri, Apr 20, 2007 at 09:37:30AM -0400, Trond Myklebust wrote:
-> Thanks! Did you ever find out what had happened to the test that hung
-> last night?
+Signed-off-by: Alan Hourihane <alanh@fairlite.demon.co.uk>?
 
-Nope.  I could not ssh into it and the machine was needed for some
-windows duty before I got home ;)  I'll try again this coming week-end
-and let you know if I see any problems.
 
-Regards,
-florin
+Tony
 
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
 
---DaTEgnRu5pEC8TLg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGKMVfND0rFCN2b1sRApkfAKCAfhw4sxskKtb6kjX3rEiL4LE9ngCeNDJY
-xU6qBSceRywo0zFgN2hhzU4=
-=JAQk
------END PGP SIGNATURE-----
-
---DaTEgnRu5pEC8TLg--
