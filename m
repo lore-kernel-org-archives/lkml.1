@@ -1,63 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422708AbXDTF04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422856AbXDTF1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422708AbXDTF04 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 01:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422854AbXDTF04
+	id S1422856AbXDTF1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 01:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422888AbXDTF1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 01:26:56 -0400
-Received: from holomorphy.com ([66.93.40.71]:57925 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422708AbXDTF0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 01:26:55 -0400
-Date: Thu, 19 Apr 2007 22:26:19 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070420052619.GX2986@holomorphy.com>
-References: <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> <20070419031807.GA24512@wotan.suse.de> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu> <20070419075746.GD31925@holomorphy.com> <4627577B.7050204@bigpond.net.au>
+	Fri, 20 Apr 2007 01:27:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:47247 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422856AbXDTF1P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 01:27:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=DIXKCmCy/IGzafNeM8yESTeSKZ9JZD8rumnZVgVjL6WjKlgPhaQ/E63OgcotiZKrrdr3YPEGvHXiTakN4oTXc3mvK1818DJJY8l7JasDQs8c7JBEsJPBdRShqahC0uk2ImIotY7fA+2+2ckwP9kLIKzmgKG5w34Pvfgxix2gMc0=
+Message-ID: <46284F2A.4000401@gmail.com>
+Date: Fri, 20 Apr 2007 14:27:06 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4627577B.7050204@bigpond.net.au>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+References: <Pine.LNX.4.44L0.0704181219250.12246-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704181219250.12246-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
->> I'd further recommend making priority levels accessible to kernel threads
->> that are not otherwise accessible to processes, both above and below
->> user-available priority levels. Basically, if you can get SCHED_RR and
->> SCHED_FIFO to coexist as "intimate scheduler classes," then a SCHED_KERN
->> scheduler class can coexist with SCHED_OTHER in like fashion, but with
->> availability of higher and lower priorities than any userspace process
->> is allowed, and potentially some differing scheduling semantics. In such
->> a manner nonessential background processing intended not to ever disturb
->> userspace can be given priorities appropriate to it (perhaps even con's
->> SCHED_IDLEPRIO would make sense), and other, urgent processing can be
->> given priority over userspace altogether.
+Hello, Alan.
 
-On Thu, Apr 19, 2007 at 09:50:19PM +1000, Peter Williams wrote:
-> This is sounding very much like System V Release 4 (and descendants) 
-> except that they call it SCHED_SYS and also give SCHED_NORMAL tasks that 
-> are in system mode dynamic priorities in the SCHED_SYS range (to avoid 
-> priority inversion, I believe).
+Alan Stern wrote:
+> This doesn't solve a related problem: a subsystem wants to register
+> devices and to provide a set of mutually-exclusive services to the
+> devices' drivers.  The mutual exclusion has to be provided by a mutex or
+> something similar, and the drivers need a way to unbind even while waiting
+> to acquire the mutex.
 
-Descriptions of that are probably where I got the idea (hurrah for OS
-textbooks). It makes a fair amount of sense. Not sure what the take on
-the specific precedent is. The only content here is expanding the
-priority range with ranges above and below for the exclusive use of
-ultra-privileged tasks, so it's really trivial. Actually it might be so
-trivial it should just be some permission checks in the SCHED_OTHER
-renicing code.
+I don't really follow why the drivers need a way to unbind even while
+waiting to acquire the mutex.  Care to enlighten me?
 
+> The obvious answer is to introduce a different sort of synchronization 
+> primitive: a mutex (or semaphore or rwsem) which can be invalidated.
+> 
+> The semantics would be straightforward.  When mutex_invalidate() is
+> called, it marks the mutex so that all future lock attempts will fail with
+> -ENODEV.  It also wakes up all threads that are blocked trying to lock the
+> mutex and causes them to fail with the same error.  Once all that is done
+> mutex_invalidate() returns.  In particular, it doesn't wait for the
+> current lock to be released -- in fact, you would call it while holding
+> the lock.
+> 
+> This would solve a lot of your problems.  But it would also mean making 
+> extensive changes to the kernel.  For one thing, mutex_lock() would return 
+> int instead of void, and you would want to mark it __must_check.  Every 
+> place where a mutex is locked, the code would have to be changed to add an 
+> error pathway.  That's the sort of thing I was talking about when I said 
+> it was going to be a tremendous job.
 
--- wli
+I think we both agree that's not a good idea.  :-)
+
+> I thought of something else that could also be done: There should be a way
+> to cancel an outstanding workqueue request.  At the moment all you can do
+> is call flush_workqueue(), which will hang if you are already executing in
+> a workqueue routine.  You should be able to delete a particular entry from
+> the workqueue (or wait for it to complete if it has already started
+> running).  This could be implemented right away.
+
+It all depends on how a particular subsystem is shaped but having such
+thing would definitely help.
+
+> More problems with immediate detach -- it would have to apply to char
+> devices.  When a char device is unregistered you can't force user
+> processes to close their open file handles.  Instead something like your
+> change to sysfs is needed -- wait for outstanding calls to complete and
+> fail any future calls.  This means that registering a device will use up
+> more than just a pointer in a table of minor device numbers.  Each entry
+> would require at least an rwsem, and device I/O would be slowed down by
+> the need to get a read-lock each time before entering the device driver.
+> 
+> The same idea applies to block devices, although here the problems center 
+> more around the block core and request queues.
+
+Yeah, exactly.  My argument is that that impedance matching between
+lifetime rules must happen at some place and it's better if we can do in
+the higher layer where we can afford more effort and thus complexity.
+We're currently pushing that down to each drivers and not too many are
+getting it right.  I think it's just unrealistic to expect every and
+each driver subsystems to get it right, so some overhead at higher layer
+is acceptable and we can definitely afford much more optimization at
+higher layer.
+
+Thanks.
+
+-- 
+tejun
