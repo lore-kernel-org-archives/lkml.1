@@ -1,176 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423034AbXDTKPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXDTKQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423034AbXDTKPI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 06:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423032AbXDTKPI
+	id S1030419AbXDTKQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 06:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423032AbXDTKQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 06:15:08 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:15531 "EHLO
-	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423034AbXDTKPF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 06:15:05 -0400
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Message-ID: <46289509.6090306@amd.com>
-Date: Fri, 20 Apr 2007 12:25:13 +0200
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070413)
-MIME-Version: 1.0
-To: "Chris Murton" <chris.murton@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Oops on 2.6.21 with dvb-usb-dib0700?
-X-OriginalArrivalTime: 20 Apr 2007 10:14:18.0557 (UTC)
- FILETIME=[A82036D0:01C78334]
-X-WSS-ID: 6A364D191XC191057-01-01
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Apr 2007 06:16:20 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:32804 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030419AbXDTKQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 06:16:19 -0400
+Date: Fri, 20 Apr 2007 12:21:57 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: David Chinner <dgc@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070420102157.GD1695@ff.dom.local>
+References: <20070419065404.GB1782@ff.dom.local> <20070419144618.GG32602149@melbourne.sgi.com> <20070420081325.GB1695@ff.dom.local> <20070420085354.GP32602149@melbourne.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070420085354.GP32602149@melbourne.sgi.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Apr 20, 2007 at 06:53:54PM +1000, David Chinner wrote:
+...
+> Yes, after spending another two hours working out why my fix was
+> then hanging in cancel_rearming_delayed_work() I was a little bit
+> annoyed at the now obviously misleading comment. Five minutes later
 
-this will be fixed in upcoming kernel releases, there's already a patch 
-for that in the video4linux/dvb repository on linuxtv.org.
-So if you update your v4l-dvb drivers that problem shouldn't occure anymore.
+I agree with your feelings, but strictly speaking it's not "obviously
+misleading":
 
-http://linuxtv.org/repo/
+" * cancel_rearming_delayed_work - reliably kill off a delayed
+keventd work whose handler rearms the delayed work."
 
--Markus
+And all your rearmed works were, probably, reliably killed!
 
-On 4/19/07, Chris Murton <chris.murton@gmail.com> wrote:
- > Hi,
- >
- > Get an occasional Oops which can occur either when the device is in use,
- > or idle.. and it only usually happens after several hours of uptime with
- > the module and device loaded. The 'oops' seems to directly correlate
- > with the device appearing to disconnect and reconnect via USB (but
- > nothing physical has changed).
- >
- > In this example, the box was booted at 21:50 and the Oops occurred at
- > 03:13 when the device was idle:
- >
- > Apr 19 03:13:01 basil kernel: usb 2-1: USB disconnect, address 2
- > Apr 19 03:13:01 basil kernel: ehci_hcd 0000:04:08.2: qh ffff81003dbc61e0
- > (#82) state 4(has tds)
- > Apr 19 03:13:01 basil kernel: mt2060 I2C write failed
- > Apr 19 03:13:01 basil kernel: mt2060 I2C write failed
- > Apr 19 03:13:01 basil kernel: dvb-usb: Hauppauge Nova-T 500 Dual DVB-T
- > successfully deinitialized and disconnected.
- > Apr 19 03:13:02 basil kernel: usb 2-1: new high speed USB device using
- > ehci_hcd and address 3
- > Apr 19 03:13:02 basil kernel: usb 2-1: configuration #1 chosen from 1 
-choice
- > Apr 19 03:13:02 basil kernel: dvb-usb: found a 'Hauppauge Nova-T 500
- > Dual DVB-T' in warm state.
- > Apr 19 03:13:02 basil kernel: **WARNING** I2C adapter driver [Hauppauge
- > Nova-T 500 Dual DVB-T] forgot to specify physical device; fi
- > x it!
- > Apr 19 03:13:02 basil kernel: dvb-usb: will pass the complete MPEG2
- > transport stream to the software demuxer.
- > Apr 19 03:13:02 basil kernel: DVB: registering new adapter (Hauppauge
- > Nova-T 500 Dual DVB-T).
- > Apr 19 03:13:02 basil kernel: **WARNING** I2C adapter driver [DiBX000
- > tuner I2C bus] forgot to specify physical device; fix it!
- > Apr 19 03:13:02 basil kernel: DVB: registering frontend 0 (DiBcom
- > 3000MC/P)...
- > Apr 19 03:13:02 basil kernel: MT2060: successfully identified (IF1 = 
-1220)
- > Apr 19 03:13:02 basil kernel: dvb-usb: will pass the complete MPEG2
- > transport stream to the software demuxer.
- > Apr 19 03:13:02 basil kernel: DVB: registering new adapter (Hauppauge
- > Nova-T 500 Dual DVB-T).
- > Apr 19 03:13:02 basil kernel: **WARNING** I2C adapter driver [DiBX000
- > tuner I2C bus] forgot to specify physical device; fix it!
- > Apr 19 03:13:02 basil kernel: DVB: registering frontend 1 (DiBcom
- > 3000MC/P)...
- > Apr 19 03:13:02 basil kernel: MT2060: successfully identified (IF1 = 
-1220)
- > Apr 19 03:13:03 basil kernel: dvb-usb: Hauppauge Nova-T 500 Dual DVB-T
- > successfully initialized and connected.
- > Apr 19 03:17:30 basil kernel: Unable to handle kernel NULL pointer
- > dereference at 0000000000000000 RIP:
- > Apr 19 03:17:30 basil kernel:  [<ffffffff804a4af2>]
- > __mutex_lock_interruptible_slowpath+0x22/0x99
- > Apr 19 03:17:30 basil kernel: PGD 13042067 PUD 13043067 PMD 0
- > Apr 19 03:17:30 basil kernel: Oops: 0002 [1]
- > Apr 19 03:17:30 basil kernel: CPU 0
- > Apr 19 03:17:30 basil kernel: Modules linked in: nvidia(P) snd_mpu401
- > snd_mpu401_uart snd_seq_midi snd_seq_midi_event snd_hda_intel
- > snd_hda_codec snd_seq snd_pcm_oss snd_mixer_oss dvb_usb_dib0700 dib7000m
- > dib7000p dvb_usb snd_rawmidi dvb_core snd_pcm snd_timer snd
- > _seq_device lirc_imon lirc_mceusb2 lirc_dev dvb_pll dib3000mc
- > dibx000_common mt2060 snd_page_alloc
- > Apr 19 03:17:30 basil kernel: Pid: 7860, comm: mythbackend Tainted:
- > P      2.6.20 #1
- > Apr 19 03:17:30 basil kernel: RIP: 0010:[<ffffffff804a4af2>] 
- > [<ffffffff804a4af2>] __mutex_lock_interruptible_slowpath+0x22/0x99
- > Apr 19 03:17:30 basil kernel: RSP: 0018:ffff81002e929ea8  EFLAGS: 
-00010292
- > Apr 19 03:17:30 basil kernel: RAX: ffffc200101ad0a0 RBX:
- > ffffc200101ad098 RCX: 0000000000000000
- > Apr 19 03:17:30 basil kernel: RDX: ffff81002e929fd8 RSI:
- > ffff8100331ee980 RDI: ffffc200101ad098
- > Apr 19 03:17:30 basil kernel: RBP: ffff810034403200 R08:
- > 0000000000000000 R09: 0000000000001eb4
- > Apr 19 03:17:30 basil kernel: R10: 0000000000000000 R11:
- > 0000000000000206 R12: ffffc200101ad098
- > Apr 19 03:17:30 basil kernel: R13: ffff81003cff7418 R14:
- > ffff81003da1a8c0 R15: ffff81003c997b70
- > Apr 19 03:17:30 basil kernel: FS:  000000004a816960(0063)
- > GS:ffffffff80615000(0000) knlGS:00000000f7db58c0
- > Apr 19 03:17:30 basil kernel: CS:  0010 DS: 0000 ES: 0000 CR0:
- > 000000008005003b
- > Apr 19 03:17:30 basil kernel: CR2: 0000000000000000 CR3:
- > 0000000013041000 CR4: 00000000000006e0
- > Apr 19 03:17:30 basil kernel: Process mythbackend (pid: 7860, threadinfo
- > ffff81002e928000, task ffff810034403200)
- > Apr 19 03:17:30 basil kernel: Stack:  ffffc200101ad0a0 0000000000000000
- > 0000000000000000 0000000800000000
- > Apr 19 03:17:30 basil kernel:  ffff81003c542fa0 ffffc200101ad000
- > ffff81003c542fa0 ffffffff88043d22
- > Apr 19 03:17:30 basil kernel:  0000000000000008 ffff8100331ee980
- > ffff81003cff7418 ffffffff802618ec
- > Apr 19 03:17:30 basil kernel: Call Trace:
- > Apr 19 03:17:30 basil kernel:  [<ffffffff88043d22>]
- > :dvb_core:dvb_demux_release+0x37/0xba
- > Apr 19 03:17:30 basil kernel:  [<ffffffff802618ec>] __fput+0xb1/0x164
- > Apr 19 03:17:30 basil kernel:  [<ffffffff8023671d>] 
-hrtimer_wakeup+0x0/0x21
- > Apr 19 03:17:30 basil kernel:  [<ffffffff8025f3ec>] filp_close+0x5d/0x65
- > Apr 19 03:17:30 basil kernel:  [<ffffffff8026046d>] sys_close+0x76/0xaf
- > Apr 19 03:17:30 basil kernel:  [<ffffffff802092be>] system_call+0x7e/0x83
- > Apr 19 03:17:30 basil kernel:
- > Apr 19 03:17:30 basil kernel:
- > Apr 19 03:17:30 basil kernel: Code: 48 89 21 48 89 4c 24 08 48 89 6c 24
- > 10 48 83 c8 ff 87 03 ff
- > Apr 19 03:17:30 basil kernel: RIP  [<ffffffff804a4af2>]
- > __mutex_lock_interruptible_slowpath+0x22/0x99
- > Apr 19 03:17:30 basil kernel:  RSP <ffff81002e929ea8>
- > Apr 19 03:17:30 basil kernel: CR2: 0000000000000000
- >
- > If you need any more diagnostics or information from me, just let me 
-know.
- >
- > Thanks
- > Chris
- > -
- > To unsubscribe from this list: send the line "unsubscribe 
-linux-kernel" in
- > the body of a message to majordomo@vger.kernel.org
- > More majordomo info at  http://vger.kernel.org/majordomo-info.html
- > Please read the FAQ at  http://www.tux.org/lkml/
- >
+> I'd fixed the bug properly. A better comment would have saved me two
+> hours of wasted time.....
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+It seems to be an Achilles' heel of linux... 
 
-
-
+Regards,
+Jarek P.
