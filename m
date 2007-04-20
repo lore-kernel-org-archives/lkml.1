@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992655AbXDTIm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992648AbXDTImc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992655AbXDTIm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 04:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992648AbXDTIm0
+	id S2992648AbXDTImc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 04:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992642AbXDTImc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 04:42:26 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38240 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992642AbXDTImX (ORCPT
+	Fri, 20 Apr 2007 04:42:32 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:41588 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992648AbXDTIma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 04:42:23 -0400
-Date: Fri, 20 Apr 2007 18:42:06 +1000
-From: David Chinner <dgc@sgi.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Paul Jackson <pj@sgi.com>,
-       Dave Chinner <dgc@sgi.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [RFC 0/8] Variable Order Page Cache
-Message-ID: <20070420084206.GO32602149@melbourne.sgi.com>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070420044718.GV2986@holomorphy.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070420044718.GV2986@holomorphy.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 20 Apr 2007 04:42:30 -0400
+Date: Fri, 20 Apr 2007 09:42:29 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Pierre Peiffer <Pierre.Peiffer@bull.net>
+cc: Andy Whitcroft <apw@shadowen.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm] fix undefined symbol if CONFIG_PAGE_GROUP_BY_MOBILITY
+ not set
+In-Reply-To: <20070420100744.cd287042.Pierre.Peiffer@bull.net>
+Message-ID: <Pine.LNX.4.64.0704200940460.6816@skynet.skynet.ie>
+References: <20070420100744.cd287042.Pierre.Peiffer@bull.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 09:47:18PM -0700, William Lee Irwin III wrote:
-> On Thu, Apr 19, 2007 at 09:35:04AM -0700, Christoph Lameter wrote:
-> > This patchset modifies the core VM so that higher order page cache pages
-> > become possible. The higher order page cache pages are compound pages
-> > and can be handled in the same way as regular pages.
-> > The order of the pages is determined by the order set up in the mapping
-> > (struct address_space). By default the order is set to zero.
-> > This means that higher order pages are optional. There is no attempt here
-> > to generally change the page order of the page cache. 4K pages are effective
-> > for small files.
-> 
-> Oh dear. Per-file pagesizes are foul. Better to fix up the pagecache's
-> radix tree than to restrict it like this.
+On Fri, 20 Apr 2007, Pierre Peiffer wrote:
 
-How is this restrictive? This opens up much goodness to filesystems.
-I *want* to be able to use different radix tree index orders for
-different inodes in a single filesystem. Not just for data, either;
-XFS has metadata constructs larger than a page that mean we have to
-carry our own buffer cache around.  Being able to use the page cache
-directly for these metadata constructs would enable us to remove a
-good chunk of code from XFS....
+> Hi,
+>
+> This is a fix against the patch
+> do-not-group-pages-by-mobility-type-on-low-memory-systems.patch (include in -mm
+> tree):
+> The error "page_group_by_mobility_disabled undefinied" occured if
+> CONFIG_PAGE_GROUP_BY_MOBILITY is not set.
+>
+> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+>
 
-Cheers,
+Hi,
 
-Dave.
+Your fix looks correct but the compile-time option 
+CONFIG_PAGE_GROUP_BY_MOBILITY was removed in a patch I sent to Andrew two 
+days ago. It went into mm-commits last night so this problem should no 
+longer exist.
+
+> ---
+> mm/page_alloc.c |    5 +++++
+> 1 file changed, 5 insertions(+)
+>
+> Index: b/mm/page_alloc.c
+> ===================================================================
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -2297,6 +2297,7 @@ void __meminit build_all_zonelists(void)
+> 	}
+> 	vm_total_pages = nr_free_pagecache_pages();
+>
+> +#ifdef CONFIG_PAGE_GROUP_BY_MOBILITY
+> 	/*
+> 	 * Disable grouping by mobility if the number of pages in the
+> 	 * system is too low to allow the mechanism to work. It would be
+> @@ -2313,6 +2314,10 @@ void __meminit build_all_zonelists(void)
+> 			num_online_nodes(),
+> 			page_group_by_mobility_disabled ? "off" : "on",
+> 			vm_total_pages);
+> +#else
+> +	printk("Built %i zonelists.  Total pages: %ld\n",
+> +	       num_online_nodes(), vm_total_pages);
+> +#endif
+> }
+>
+> /*
+>
+>
+> -- 
+> Pierre
+>
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
