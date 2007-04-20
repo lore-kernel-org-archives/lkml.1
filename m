@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766549AbXDTJhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767035AbXDTJi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766549AbXDTJhS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 05:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766556AbXDTJhS
+	id S1767035AbXDTJi3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 05:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767036AbXDTJi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 05:37:18 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:64889 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766549AbXDTJhP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 05:37:15 -0400
-Message-ID: <462889C6.2000201@fr.ibm.com>
-Date: Fri, 20 Apr 2007 11:37:10 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 20 Apr 2007 05:38:29 -0400
+Received: from ns1.suse.de ([195.135.220.2]:34703 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767035AbXDTJi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 05:38:28 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: discuss@x86-64.org
+Subject: Re: [discuss] Dropping CONFIG_REORDER on x86-64 for 2.6.22
+Date: Fri, 20 Apr 2007 11:37:45 +0200
+User-Agent: KMail/1.9.6
+Cc: =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       linux-kernel@vger.kernel.org
+References: <200704191354.52985.ak@suse.de> <46277C36.6030301@linux.intel.com> <yw1x4pnba1fl.fsf@thrashbarg.mansr.com>
+In-Reply-To: <yw1x4pnba1fl.fsf@thrashbarg.mansr.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       Andrew de Quincey <adq_dvb@lidskialf.net>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH] dvb_en_50221: Convert to kthread API
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969639190-git-send-email-ebiederm@xmission.com> <20070419153413.8768fd1d.akpm@linux-foundation.org> <20070420063714.GA5205@infradead.org> <20070419234809.894769e1.akpm@linux-foundation.org>
-In-Reply-To: <20070419234809.894769e1.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200704201137.45799.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 20 Apr 2007 07:37:14 +0100 Christoph Hellwig <hch@infradead.org> wrote:
+On Friday 20 April 2007 10:35:10 Måns Rullgård wrote:
+> Arjan van de Ven <arjan@linux.intel.com> writes:
 > 
->>> urgh, yes, this is just sad.  We should convert this driver fully to
->>> the kthread API - it will end up much better.
->>>
->>> I'll queue this up as a -mm-only thing as a gentle reminder that
->>> we should do it properly.
->> Here's an attempted update to the full kthread API + wake_up_process:
+> > Andi Kleen wrote:
+> >> Rationale:
+> >> - It cannot be enabled in normal builds because all current lds
+> >> become very slow when they have to handle thousands of sections.
+> >>
+> >
+> > afaik this is only ever reported on SuSE; I've not heard it on any
+> > other distro...
 > 
->  drivers/media/dvb/dvb-core/dvb_ca_en50221.c |   84 +++---------------
->  1 file changed, 16 insertions(+), 68 deletions(-)
-> 
-> tasty!
+> Even with that option set, the full kernel build with my configuration
+> finishes in one minute flat on my Gentoo box.  Could it be that the
+> linker uses enormous amounts of memory?  I have 4GB so I wouldn't
+> immediately notice.
 
-Indeed !
+What binutils version do you use? Maybe that particular problem is finally fixed.
+Of course would still leave the other issues I listed.
 
-I have sent a similar patch a few months ago :
-
-	http://lkml.org/lkml/2007/1/24/178
-
-with a less aggressive diffstat though :) 
-
-Andrew (de Quincey) just drop mine, if you haven't already done. Christoph's is
-more recent and looks better.
-
-Thanks,
-
-C.
+-Andi
