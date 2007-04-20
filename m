@@ -1,195 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767056AbXDTKq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbXDTKz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767056AbXDTKq5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 06:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767058AbXDTKq5
+	id S1753169AbXDTKz4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 06:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbXDTKz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 06:46:57 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:37346 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767056AbXDTKq4 (ORCPT
+	Fri, 20 Apr 2007 06:55:56 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:46021 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753169AbXDTKzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 06:46:56 -0400
-Date: Fri, 20 Apr 2007 16:16:47 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-ID: <20070420104647.GA11290@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070419120131.GB13435@in.ibm.com> <20070419120419.GB17069@in.ibm.com> <20070419143133.a6c82ef8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 20 Apr 2007 06:55:55 -0400
+Date: Fri, 20 Apr 2007 11:55:52 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 2/8] Basic allocation for higher order page cache pages
+Message-ID: <20070420105552.GA12075@skynet.ie>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163515.11948.44138.sendpatchset@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070419143133.a6c82ef8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20070419163515.11948.44138.sendpatchset@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 02:31:33PM -0700, Andrew Morton wrote:
-> On Thu, 19 Apr 2007 17:34:19 +0530
-> Gautham R Shenoy <ego@in.ibm.com> wrote:
+On (19/04/07 09:35), Christoph Lameter didst pronounce:
+> Variable Order Page Cache: Add basic allocation functions
 > 
+> Extend __page_cache_alloc to take an order parameter and
+> modify caller sites. Modify mapping_set_gfp_mask to set
+> __GFP_COMP if the mapping requires higher order allocations.
 > 
-> flush_workqueue() just needs to die.  I think there are (almost) no
-> legitimate users of it once cancel_work_sync() is merged.
+> put_page() is already capable of handling compound pages. So
+> there are no changes needed to release higher order page
+> cache pages.
 > 
-> > This patch attempts to address such a situation with a fix for kthread_stop.
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 > 
-> Via wholly undescribed means :(
+> ---
+>  include/linux/pagemap.h |   15 +++++++++------
+>  mm/filemap.c            |    9 +++++----
+>  2 files changed, 14 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6.21-rc7/include/linux/pagemap.h
+> ===================================================================
+> --- linux-2.6.21-rc7.orig/include/linux/pagemap.h	2007-04-18 21:21:56.000000000 -0700
+> +++ linux-2.6.21-rc7/include/linux/pagemap.h	2007-04-18 21:29:02.000000000 -0700
+> @@ -32,6 +32,8 @@ static inline void mapping_set_gfp_mask(
+>  {
+>  	m->flags = (m->flags & ~(__force unsigned long)__GFP_BITS_MASK) |
+>  				(__force unsigned long)mask;
+> +	if (m->order)
+> +		m->flags |= __GFP_COMP;
 
-Sorry. I will document stuff better next time.
-> 
-> > Strictly experimental. Compile tested on i386.
-> 
-> Rather than doing <whatever you did>, perhaps we could make the freezing
-> process a dual-pass thing.  On pass 1, mark all the threads as "we'll be
-> freezing you soon" and on the second pass, do the actual freezing.  Then,
-> in problematic places such as kthread_stop() we can look to see if we'll
-> soon be asked to freeze and if so, run try_to_freeze().
+This might need a comment. It might not be superclear that compound
+pages have destructors that know how to lookup the order on free.
 
-We can do that. Just that the freezer will now have to wait for 2 sets
-of ack's instead of 1 set before declaring the system as frozen.
-
-But the whole point of the patch was so that a thread A can tell
-a thread B that it's dependent on the latter, and hence would like
-to postpone B's freezing for some time. So I am thinking if we can
-achieve this through the scheme you described.
-
-> 
-> Of course, running try_to_freeze() in kthread_stop() would be very wrong,
-> so we'd actually need to do it in callers, preferably via a new
-> kthread_stop_freezeable() wrapper.
-> 
-
-Well, even then we'll need to ensure that a thread would not call
-kthread_stop_freezeable() with any locks held. That would mean more
-audits :)
-
-> And the two-pass-freeze thing is of course racy.  It's also unnecessary:
-> setting a flag on every task in the machine is equivalent to setting a
-> global variable.  So perhaps just use a global variable?
-> 
-> int kthread_stop_freezeable(struct task_struct *k)
-> {
-> 	if (freeze_state == ABOUT_TO_START) {
-> 		wait_for(freeze_state == STARTED);
-> 		try_to_freeze();
-> 	}
-> 	kthread_stop(k);
-> }
-> 
-> which is theoretically racy if another freeze_processes() starts
-> immediately.  Anyway - please have a think about it ;)
-> 
-
-Sure, am already thinking about it :)
-
-> > +static struct freezer_status_struct freezer_status = {
-> > +				.lock = SPIN_LOCK_UNLOCKED,
-> > +				.count = 0,
-> > +			};
-> 
-> SPIN_LOCK_UNLOCKED is deprecated (it subverts lockdep)
-> 
-
-Ok, will change it to __SPIN_LOCK_UNLOCKED(freezer_status.lock)
-
-> >  static inline int freezeable(struct task_struct * p)
-> >  {
-> >  	if ((p == current) ||
-> > @@ -45,7 +55,8 @@ void refrigerator(void)
-> >  		 * *after* the freezer did the freezeable() check
-> >  		 * on us.
-> >  		 */
-> > -		if (current->flags & PF_NOFREEZE) {
-> > +		if ((current->flags & PF_NOFREEZE) ||
-> > +		    test_tsk_thread_flag(current, TIF_FREEZER_HELD)) {
-> >  			clear_tsk_thread_flag(current, TIF_FREEZE);
-> >  			task_unlock(current);
-> >  			return;
-> > @@ -63,12 +74,16 @@ void refrigerator(void)
-> >  	recalc_sigpending(); /* We sent fake signal, clean it up */
-> >  	spin_unlock_irq(&current->sighand->siglock);
-> >  
-> > +	task_lock(current);
-> >  	for (;;) {
-> >  		set_current_state(TASK_UNINTERRUPTIBLE);
-> >  		if (!frozen(current))
-> >  			break;
-> > +		task_unlock(current);
-> >  		schedule();
-> > +		task_lock(current);
-> >  	}
-> > +	task_unlock(current);
-> >  	pr_debug("%s left refrigerator\n", current->comm);
-> >  	current->state = save;
-> 
-> I guess we should use set_current_state() here.
-> 
-> > +
-> > +	if (thaw_user_space) {
-> > +		spin_lock(&freezer_status.lock);
-> > +			if (freezer_status.count < 0)
-> > +				freezer_status.count++;
-> > +		spin_unlock(&freezer_status.lock);
-> > +	}
-> >  }
-> 
-> whitespace went wrong
->
-
-Huh! yeah, dunno how though.
-
-> > +#define TIF_FREEZER_HELD	21	/* is temporarily holding up the
-> > +					 * process freezer
-> > +					 */
-> >  
-> >  #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
-> >  #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
-> > @@ -102,6 +105,7 @@ struct thread_info {
-> >  #define _TIF_MCA_INIT		(1 << TIF_MCA_INIT)
-> >  #define _TIF_DB_DISABLED	(1 << TIF_DB_DISABLED)
-> >  #define _TIF_FREEZE		(1 << TIF_FREEZE)
-> > +#define _TIF_FREEZER_HELD	(1 << TIF_FREEZER_HELD)
-> >  
-> >  /* "work to do on user-return" bits */
-> >  #define TIF_ALLWORK_MASK	(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
-> > Index: linux-2.6.21-rc6/include/asm-mips/thread_info.h
-> > ===================================================================
-> > --- linux-2.6.21-rc6.orig/include/asm-mips/thread_info.h
-> > +++ linux-2.6.21-rc6/include/asm-mips/thread_info.h
-> > @@ -120,6 +120,7 @@ register struct thread_info *__current_t
-> >  #define TIF_MEMDIE		18
-> >  #define TIF_FREEZE		19
-> >  #define TIF_ALLOW_FP_IN_KERNEL	20
-> > +#define TIF_FREEZER_HELD	21
-> >  #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
-> >  
-> >  #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-> > @@ -132,6 +133,7 @@ register struct thread_info *__current_t
-> >  #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
-> >  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
-> >  #define _TIF_FREEZE		(1<<TIF_FREEZE)
-> > +#define _TIF_FREEZER_HELD	(1<<TIF_FREEZER_HELD)
-> 
-> hm, all this duplication is unpleasing.  We could do something similar to
-> include/linux/buffer_head.h:BH_PrivateStart here: get all architectures to
-> define a TIF_COMMON_STUFF_STARTS_HERE then include asm-generic/whatever.h
-> which defines all the flags which every architecture must define, as
-> TIF_COMMON_STUFF_STARTS_HERE+0, TIF_COMMON_STUFF_STARTS_HERE+1, etc.
-> 
-
-Ok.
-
-Thanks and Regards
-gautham.
+>  }
+>  
+>  /*
+> @@ -40,7 +42,7 @@ static inline void mapping_set_gfp_mask(
+>   * throughput (it can then be mapped into user
+>   * space in smaller chunks for same flexibility).
+>   *
+> - * Or rather, it _will_ be done in larger chunks.
+> + * This is the base page size
+>   */
+>  #define PAGE_CACHE_SHIFT	PAGE_SHIFT
+>  #define PAGE_CACHE_SIZE		PAGE_SIZE
+> @@ -52,22 +54,23 @@ static inline void mapping_set_gfp_mask(
+>  void release_pages(struct page **pages, int nr, int cold);
+>  
+>  #ifdef CONFIG_NUMA
+> -extern struct page *__page_cache_alloc(gfp_t gfp);
+> +extern struct page *__page_cache_alloc(gfp_t gfp, int order);
+>  #else
+> -static inline struct page *__page_cache_alloc(gfp_t gfp)
+> +static inline struct page *__page_cache_alloc(gfp_t gfp, int order)
+>  {
+> -	return alloc_pages(gfp, 0);
+> +	return alloc_pages(gfp, order);
+>  }
+>  #endif
+>  
+>  static inline struct page *page_cache_alloc(struct address_space *x)
+>  {
+> -	return __page_cache_alloc(mapping_gfp_mask(x));
+> +	return __page_cache_alloc(mapping_gfp_mask(x), x->order);
+>  }
+>  
+>  static inline struct page *page_cache_alloc_cold(struct address_space *x)
+>  {
+> -	return __page_cache_alloc(mapping_gfp_mask(x)|__GFP_COLD);
+> +	return __page_cache_alloc(mapping_gfp_mask(x)|__GFP_COLD,
+> +		x->order);
+>  }
+>  
+>  typedef int filler_t(void *, struct page *);
+> Index: linux-2.6.21-rc7/mm/filemap.c
+> ===================================================================
+> --- linux-2.6.21-rc7.orig/mm/filemap.c	2007-04-18 21:21:56.000000000 -0700
+> +++ linux-2.6.21-rc7/mm/filemap.c	2007-04-18 21:28:30.000000000 -0700
+> @@ -467,13 +467,13 @@ int add_to_page_cache_lru(struct page *p
+>  }
+>  
+>  #ifdef CONFIG_NUMA
+> -struct page *__page_cache_alloc(gfp_t gfp)
+> +struct page *__page_cache_alloc(gfp_t gfp, int order)
+>  {
+>  	if (cpuset_do_page_mem_spread()) {
+>  		int n = cpuset_mem_spread_node();
+> -		return alloc_pages_node(n, gfp, 0);
+> +		return alloc_pages_node(n, gfp, order);
+>  	}
+> -	return alloc_pages(gfp, 0);
+> +	return alloc_pages(gfp, order);
+>  }
+>  EXPORT_SYMBOL(__page_cache_alloc);
+>  #endif
+> @@ -803,7 +803,8 @@ grab_cache_page_nowait(struct address_sp
+>  		page_cache_release(page);
+>  		return NULL;
+>  	}
+> -	page = __page_cache_alloc(mapping_gfp_mask(mapping) & ~__GFP_FS);
+> +	page = __page_cache_alloc(mapping_gfp_mask(mapping) & ~__GFP_FS,
+> +		mapping->order);
+>  	if (page && add_to_page_cache_lru(page, mapping, index, GFP_KERNEL)) {
+>  		page_cache_release(page);
+>  		page = NULL;
+> -
 
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
