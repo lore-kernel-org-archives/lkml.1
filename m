@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbXDTWGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbXDTWLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510AbXDTWGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 18:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXDTWGf
+	id S1754511AbXDTWLM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 18:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXDTWLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 18:06:35 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35171 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754510AbXDTWGe (ORCPT
+	Fri, 20 Apr 2007 18:11:12 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:57451 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754511AbXDTWLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 18:06:34 -0400
-Date: Fri, 20 Apr 2007 15:06:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-Message-Id: <20070420150618.179d31a4.akpm@linux-foundation.org>
-In-Reply-To: <462932BE.4020005@redhat.com>
-References: <46247427.6000902@redhat.com>
-	<20070420135715.f6e8e091.akpm@linux-foundation.org>
-	<462932BE.4020005@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Apr 2007 18:11:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=TpIIGYWmGaGcq00n0c1rLj9WL+hkyEB/x6HK/Uy0QVsMlwg6bWKz/xi9s95iPvTnpSPwheaUHY2If1dK+FzHCGqAcmhJ+aVfS6FdJWe8tHfGQo/OtNy1WOmgPnv684rk7uHY7XhHWwYdiZDMdtcXB9jzIOfbtcGMITA6rEA/lzY=
+Message-ID: <361d23520704201511j6d345d57u9f6dd6658c78d178@mail.gmail.com>
+Date: Fri, 20 Apr 2007 18:11:10 -0400
+From: "David Kyle" <dsk6@pitt.edu>
+To: linux-kernel@vger.kernel.org
+Subject: Sleep during spinlock in TPM driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 70cbe69c4e2c783b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 17:38:06 -0400
-Rik van Riel <riel@redhat.com> wrote:
+I've been working with the TPM driver, and I found that if I opened,
+used, then closed the TPM char device very frequently, I would get a
+kernel BUG message saying that the kernel tried to sleep while holding
+a spinlock.  I think I've isolated the problem to this function, in
+drivers/char/tpm/tpm.c:
 
-> Andrew Morton wrote:
-> 
-> > I've also merged Nick's "mm: madvise avoid exclusive mmap_sem".
-> > 
-> > - Nick's patch also will help this problem.  It could be that your patch
-> >   no longer offers a 2x speedup when combined with Nick's patch.
-> > 
-> >   It could well be that the combination of the two is even better, but it
-> >   would be nice to firm that up a bit.  
-> 
-> I'll test that.
+int tpm_release(struct inode *inode, struct file *file)
+{
+        struct tpm_chip *chip = file->private_data;
+        spin_lock(&driver_lock);
+        file->private_data = NULL;
+        chip->num_opens--;
+        del_singleshot_timer_sync(&chip->user_read_timer);
+        flush_scheduled_work();
+        atomic_set(&chip->data_pending, 0);
+        put_device(chip->dev);
+        kfree(chip->data_buffer);
+        spin_unlock(&driver_lock);
+        return 0;
+}
+EXPORT_SYMBOL_GPL(tpm_release);
 
-Thanks.
+I believe that flush_scheduled_work can sleep, correct?  Does anyone
+know why this function is called while the spinlock is held?
 
-> >   I do go on about that.  But we're adding page flags at about one per
-> >   year, and when we run out we're screwed - we'll need to grow the
-> >   pageframe.
-> 
-> If you want, I can take a look at folding this into the
-> ->mapping pointer.  I can guarantee you it won't be
-> pretty, though :)
-
-Well, let's see how fugly it ends up looking?
-
-> > - I need to update your patch for Nick's patch.  Please confirm that
-> >   down_read(mmap_sem) is sufficient for MADV_FREE.
-> 
-> It is.  MADV_FREE needs no more protection than MADV_DONTNEED.
-> 
-> > Stylistic nit:
-> > 
-> >> +	if (PageLazyFree(page) && !migration) {
-> >> +		/* There is new data in the page.  Reinstate it. */
-> >> +		if (unlikely(pte_dirty(pteval))) {
-> >> +			set_pte_at(mm, address, pte, pteval);
-> >> +			ret = SWAP_FAIL;
-> >> +			goto out_unmap;
-> >> +		}
-> > 
-> > The comment should be inside the second `if' statement.  As it is, It
-> > looks like we reinstate the page if (PageLazyFree(page) && !migration).
-> 
-> Want me to move it?
-
-I did that, thanks.
+-David
