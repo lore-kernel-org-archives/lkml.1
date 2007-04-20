@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767272AbXDTVjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767277AbXDTVkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767272AbXDTVjG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 17:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767274AbXDTVjG
+	id S1767277AbXDTVkE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 17:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161371AbXDTVkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 17:39:06 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:19925 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767272AbXDTVjD (ORCPT
+	Fri, 20 Apr 2007 17:40:04 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:59207 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161332AbXDTVkB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 17:39:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZDfHqz5Vm/NHfvUKMIzrv2taLi4wdQ9s61OZNRtb+C7YRnaG3YLEeRgzxw7IvITfSe3rT1pvjVXfzHVE262bqw2xBoRAqQVicR6KN0Smoy9GTDI2EN1hyrXKQXOCJCJGjOxJ3kdWS9xYD6a7W1LRfJvEJmyYWtfgB4rSUxC6hRU=
-Message-ID: <1c1c86360704201439u26f06de4j3b7a53145b9e96e2@mail.gmail.com>
-Date: Sat, 21 Apr 2007 09:39:01 +1200
-From: "mdew ." <some.nzguy@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, v4
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070420140457.GA14017@elte.hu>
+	Fri, 20 Apr 2007 17:40:01 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: how to tell linux (on x86) to ignore 1M or memory
+To: Rene Herman <rene.herman@gmail.com>, Dave Jones <davej@redhat.com>,
+       Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Kyle McMartin <kyle@canonical.com>, linux-kernel@vger.kernel.org,
+       alan@redhat.com, bcollins@ubuntu.com, pjones@redhat.com
+Reply-To: 7eggert@gmx.de
+Date: Fri, 20 Apr 2007 23:39:54 +0200
+References: <8bFEz-3B4-39@gated-at.bofh.it> <8c6EE-4Jj-5@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070420140457.GA14017@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1Hf0pe-0001Ne-J8@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19anbb+i+9DoDY9WiYjY2rXL7fDQ4HCECYJNMt
+ iT0IRMlLydkU4OqVkYv8gPcf//FG0AeJRRTexS4tZ01z56EEoD
+ d+nCry0iIs2ttE+8uN3qQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any chance of supporting 2.6.20?
+Rene Herman <rene.herman@gmail.com> wrote:
+> On 04/19/2007 04:18 PM, Bart Trojanowski wrote:
 
-On 4/21/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> i'm pleased to announce release -v4 of the CFS patchset. The patch
-> against v2.6.21-rc7 can be downloaded from:
->
->     http://redhat.com/~mingo/cfs-scheduler/
->
-> this CFS release too is mainly about fixing regressions and improving
-> interactivity, so the rate of change is relatively low:
->
->     11 files changed, 136 insertions(+), 72 deletions(-)
->
-> in particular the preemption fix could resolve the 'desktop slows down
-> under IO load' reports and the 'firefox does not switch tabs fast
-> enough' reports as well. The suspend2 crash and the yield related
-> Kaffeine hangs should be resolved as well.
->
-> Changes since -v3:
->
->  - usability fix: automatic renicing of kernel threads such as keventd,
->    OOM tasks and tasks doing privileged hardware access (such as Xorg).
->    (This is a substitute for group scheduling until the group scheduling
->     details have been worked out.)
->
->  - bugfix: buggy yield() caused suspend2 problems
->
->  - preemption fix: it caused desktop app latencies
->
-> As usual, any sort of feedback, bugreport, fix and suggestion is more
-> than welcome,
->
->         Ingo
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+>> I need to preserve some state from the bios before entering protected
+>> mode.  For now I want to copy it into some ram accessible by real-mode,
+>> say the last megabyte visible in real-mode.
+>> 
+>> What's the easiest way to have linux ignore the megabyte starting at 15M?
+> 
+> Note that real-mode can only access the first megabyte (*) and not the first
+> 16. 16MB is the 16-bit protected mode (286) limit.
+> 
+> (*) well, the first 1M + 64K - 16 bytes using segment FFFF assuming A20 is
+> enabled and x > 1 in x86...
+
+Interrupt 15h, function 87h allows copying from/to extended memory.
+You might like to look into Ralph Brown's interrupt list for more details.
+
+You could also cpio-gzip the data and append it to the initramfs.
+-- 
+Fun things to slip into your budget
+Does that line item say 'Personal Massage System' Oops, it's supposed to be
+'Message'. Go ahead and sign the authorization, Boss; I'll correct it later.
+(Iike Hell I will)
