@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767165AbXDTRsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767168AbXDTRtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767165AbXDTRsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767168AbXDTRsA
+	id S1767168AbXDTRtX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993301AbXDTRtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:48:00 -0400
-Received: from mx02.qsc.de ([213.148.130.14]:34803 "EHLO mx02.qsc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767165AbXDTRr6 convert rfc822-to-8bit (ORCPT
+	Fri, 20 Apr 2007 13:49:23 -0400
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:2882 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2993299AbXDTRtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:47:58 -0400
-X-Greylist: delayed 1471 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Apr 2007 13:47:58 EDT
-From: =?iso-8859-1?q?Ren=E9_Rebe?= <rene@exactcode.de>
-Organization: ExactCODE
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: InitIO SCSI: Volunteers required
-Date: Fri, 20 Apr 2007 19:23:16 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070420103849.7358f1f1@the-village.bc.nu>
-In-Reply-To: <20070420103849.7358f1f1@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704201923.16996.rene@exactcode.de>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: Spam detection software, running on the system "grum.localhost", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  On Friday 20 April 2007 11:38:49 Alan Cox wrote: > I'm
-	looking for some testers for a revamp of the initio driver. No real >
-	code changes other than to hopefully stop it exploding on load on 64bit,
-	> but a major reorganisation, commenting and "de-windowsification" so
-	the > code is actually readable and I can do the pci_find_device to >
-	pci_get_device transitions. [...] 
-	Content analysis details:   (-1.4 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	Fri, 20 Apr 2007 13:49:22 -0400
+Date: Fri, 20 Apr 2007 19:49:33 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
+       Christer Weinigel <wingel@nano-system.com>,
+       Jordan Crouse <jordan.crouse@amd.com>
+Subject: Re: [PATCH v3] Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070420194933.0813a359@hyperion.delvare>
+In-Reply-To: <20070419205942.GC5577@csclub.uwaterloo.ca>
+References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
+	<20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
+	<20070414192807.60bdf84b@hyperion.delvare>
+	<20070418174256.GB5577@csclub.uwaterloo.ca>
+	<20070419085413.1520feef@hyperion.delvare>
+	<20070419205942.GC5577@csclub.uwaterloo.ca>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 April 2007 11:38:49 Alan Cox wrote:
-> I'm looking for some testers for a revamp of the initio driver. No real
-> code changes other than to hopefully stop it exploding on load on 64bit,
-> but a major reorganisation, commenting and "de-windowsification" so the
-> code is actually readable and I can do the pci_find_device to
-> pci_get_device transitions.
+Hi Lennart,
 
-I once had  such a card flying around, feel free to attach it to me
-and I can see if I find the card in some box over the weekend :-)
+On Thu, 19 Apr 2007 16:59:42 -0400, Lennart Sorensen wrote:
+> On Thu, Apr 19, 2007 at 08:54:13AM +0200, Jean Delvare wrote:
+> > The major difference is that the implementation in scx200_i2c is
+> > hardware-specific, while the i2c-gpio driver is a generic one, so it's
+> > a lot better.
+> > 
+> > What this means is that i2c-gpio obsoletes scx200_i2c, so I am inclined
+> > to delete scx200_i2c right away. I'm not even sure anyone still uses it
+> > now that scx200_acb has been fixed and is reported to work very well.
+> > If anyone really needs to do I2C over GPIO pins on SCx200, this should
+> > be reimplemented on top of i2c-gpio.
+> 
+> I use scx200_i2c.  The SBC I am using doesn't work with the scx200_acb
+> (different pins on the cpu after all).  I would love to see it
+> reimplemented using the generic interface, since there isn't that many
+> lines of code involved as far as I can tell.  Well scx200_acb works fine
+> on a Geode LX board, but not on a Geode SC1200 board.  Unless it has
+> been fixed since 2.6.18, then it still doesn't work, but scx200_i2c
+> works perfectly fine.
 
-Yours,
+The scx200_acb driver was heavily modified in 2.6.17 and 2.6.18, not
+much since then. I am not familiar with the hardware so I can't comment
+on which chips are supposed to work and which aren't.
 
 -- 
-  René Rebe - ExactCODE GmbH - Europe, Germany, Berlin
-  Geschäftsführer: Susanne Klaus, René Rebe
-  Sitz: Berlin, Amtsgericht Charlottenburg HRB 105 123 B
-  USt-IdNr.: DE251602478
-  http://exactcode.de | http://t2-project.org | http://rene.rebe.name
+Jean Delvare
