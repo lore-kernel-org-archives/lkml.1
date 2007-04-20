@@ -1,175 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767040AbXDTK32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767043AbXDTK3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767040AbXDTK32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 06:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030848AbXDTK2N
+	id S1767043AbXDTK3c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 06:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767042AbXDTK33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 06:28:13 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:33598 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423043AbXDTK1z (ORCPT
+	Fri, 20 Apr 2007 06:29:29 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:40693 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030865AbXDTK2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 06:27:55 -0400
-Message-Id: <20070420102631.544911966@szeredi.hu>
+	Fri, 20 Apr 2007 06:28:14 -0400
+Message-Id: <20070420102652.075606533@szeredi.hu>
 References: <20070420102532.385211890@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 20 Apr 2007 12:25:35 +0200
+Date: Fri, 20 Apr 2007 12:25:39 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
        linuxram@us.ibm.com, ebiederm@xmission.com
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org
-Subject: [patch 3/8] account user mounts
-Content-Disposition: inline; filename=account_user_mounts.patch
+Subject: [patch 7/8] allow unprivileged mounts
+Content-Disposition: inline; filename=unprivileged_mount.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Add sysctl variables for accounting and limiting the number of user
-mounts.
+Define a new fs flag FS_SAFE, which denotes, that unprivileged
+mounting of this filesystem may not constitute a security problem.
 
-The maximum number of user mounts is set to 1024 by default.  This
-won't in itself enable user mounts, setting a mount to be owned by a
-user is first needed
+Since most filesystems haven't been designed with unprivileged
+mounting in mind, a thorough audit is needed before setting this flag.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/include/linux/sysctl.h
-===================================================================
---- linux.orig/include/linux/sysctl.h	2007-04-20 11:55:02.000000000 +0200
-+++ linux/include/linux/sysctl.h	2007-04-20 11:55:07.000000000 +0200
-@@ -818,6 +818,8 @@ enum
- 	FS_AIO_NR=18,	/* current system-wide number of aio requests */
- 	FS_AIO_MAX_NR=19,	/* system-wide maximum number of aio requests */
- 	FS_INOTIFY=20,	/* inotify submenu */
-+	FS_NR_USER_MOUNTS=21,	/* int:current number of user mounts */
-+	FS_MAX_USER_MOUNTS=22,	/* int:maximum number of user mounts */
- 	FS_OCFS2=988,	/* ocfs2 */
- };
- 
-Index: linux/kernel/sysctl.c
-===================================================================
---- linux.orig/kernel/sysctl.c	2007-04-20 11:55:02.000000000 +0200
-+++ linux/kernel/sysctl.c	2007-04-20 11:55:07.000000000 +0200
-@@ -1063,6 +1063,22 @@ static ctl_table fs_table[] = {
- #endif	
- #endif
- 	{
-+		.ctl_name	= FS_NR_USER_MOUNTS,
-+		.procname	= "nr_user_mounts",
-+		.data		= &nr_user_mounts,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0444,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
-+		.ctl_name	= FS_MAX_USER_MOUNTS,
-+		.procname	= "max_user_mounts",
-+		.data		= &max_user_mounts,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
- 		.ctl_name	= KERN_SETUID_DUMPABLE,
- 		.procname	= "suid_dumpable",
- 		.data		= &suid_dumpable,
-Index: linux/Documentation/filesystems/proc.txt
-===================================================================
---- linux.orig/Documentation/filesystems/proc.txt	2007-04-20 11:55:02.000000000 +0200
-+++ linux/Documentation/filesystems/proc.txt	2007-04-20 11:55:07.000000000 +0200
-@@ -923,6 +923,15 @@ reaches aio-max-nr then io_setup will fa
- raising aio-max-nr does not result in the pre-allocation or re-sizing
- of any kernel data structures.
- 
-+nr_user_mounts and max_user_mounts
-+----------------------------------
-+
-+These represent the number of "user" mounts and the maximum number of
-+"user" mounts respectively.  User mounts may be created by
-+unprivileged users.  User mounts may also be created with sysadmin
-+privileges on behalf of a user, in which case nr_user_mounts may
-+exceed max_user_mounts.
-+
- 2.2 /proc/sys/fs/binfmt_misc - Miscellaneous binary formats
- -----------------------------------------------------------
- 
 Index: linux/fs/namespace.c
 ===================================================================
---- linux.orig/fs/namespace.c	2007-04-20 11:55:06.000000000 +0200
-+++ linux/fs/namespace.c	2007-04-20 11:55:07.000000000 +0200
-@@ -39,6 +39,9 @@ static int hash_mask __read_mostly, hash
- static struct kmem_cache *mnt_cache __read_mostly;
- static struct rw_semaphore namespace_sem;
- 
-+int nr_user_mounts;
-+int max_user_mounts = 1024;
-+
- /* /sys/fs */
- decl_subsys(fs, NULL, NULL);
- EXPORT_SYMBOL_GPL(fs_subsys);
-@@ -227,11 +230,30 @@ static struct vfsmount *skip_mnt_tree(st
- 	return p;
- }
- 
-+static void dec_nr_user_mounts(void)
-+{
-+	spin_lock(&vfsmount_lock);
-+	nr_user_mounts--;
-+	spin_unlock(&vfsmount_lock);
-+}
-+
- static void set_mnt_user(struct vfsmount *mnt)
+--- linux.orig/fs/namespace.c	2007-04-20 11:55:10.000000000 +0200
++++ linux/fs/namespace.c	2007-04-20 11:55:13.000000000 +0200
+@@ -781,13 +781,17 @@ asmlinkage long sys_oldumount(char __use
+  * - mountpoint is not a symlink or special file
+  * - mountpoint is in a mount owned by the user
+  */
+-static bool permit_mount(struct nameidata *nd, int *flags)
++static bool permit_mount(struct nameidata *nd, struct file_system_type *type,
++			 int *flags)
  {
- 	BUG_ON(mnt->mnt_flags & MNT_USER);
- 	mnt->mnt_uid = current->uid;
- 	mnt->mnt_flags |= MNT_USER;
-+	spin_lock(&vfsmount_lock);
-+	nr_user_mounts++;
-+	spin_unlock(&vfsmount_lock);
-+}
+ 	struct inode *inode = nd->dentry->d_inode;
+ 
+ 	if (capable(CAP_SYS_ADMIN))
+ 		return true;
+ 
++	if (type && !(type->fs_flags & FS_SAFE))
++		return false;
 +
-+static void clear_mnt_user(struct vfsmount *mnt)
-+{
-+	if (mnt->mnt_flags & MNT_USER) {
-+		mnt->mnt_uid = 0;
-+		mnt->mnt_flags &= ~MNT_USER;
-+		dec_nr_user_mounts();
+ 	if (!S_ISDIR(inode->i_mode) && !S_ISREG(inode->i_mode))
+ 		return false;
+ 
+@@ -1021,7 +1025,7 @@ static int do_loopback(struct nameidata 
+ 	struct vfsmount *mnt = NULL;
+ 	int err;
+ 
+-	if (!permit_mount(nd, &flags))
++	if (!permit_mount(nd, NULL, &flags))
+ 		return -EPERM;
+ 	if (!old_name || !*old_name)
+ 		return -EINVAL;
+@@ -1182,26 +1186,46 @@ out:
+  * create a new mount for userspace and request it to be added into the
+  * namespace's tree
+  */
+-static int do_new_mount(struct nameidata *nd, char *type, int flags,
++static int do_new_mount(struct nameidata *nd, char *fstype, int flags,
+ 			int mnt_flags, char *name, void *data)
+ {
++	int err;
+ 	struct vfsmount *mnt;
++	struct file_system_type *type;
+ 
+-	if (!type || !memchr(type, 0, PAGE_SIZE))
++	if (!fstype || !memchr(fstype, 0, PAGE_SIZE))
+ 		return -EINVAL;
+ 
+-	/* we need capabilities... */
+-	if (!capable(CAP_SYS_ADMIN))
+-		return -EPERM;
+-
+-	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
+-	if (IS_ERR(mnt))
++	type = get_fs_type(fstype);
++	if (!type)
++		return -ENODEV;
++
++	err = -EPERM;
++	if (!permit_mount(nd, type, &flags))
++		goto out_put_filesystem;
++
++	if (flags & MS_SETUSER) {
++		err = reserve_user_mount();
++		if (err)
++			goto out_put_filesystem;
 +	}
++
++	mnt = vfs_kern_mount(type, flags & ~MS_SETUSER, name, data);
++	put_filesystem(type);
++	if (IS_ERR(mnt)) {
++		if (flags & MS_SETUSER)
++			dec_nr_user_mounts();
+ 		return PTR_ERR(mnt);
++	}
+ 
+ 	if (flags & MS_SETUSER)
+-		set_mnt_user(mnt);
++		__set_mnt_user(mnt);
+ 
+ 	return do_add_mount(mnt, nd, mnt_flags, NULL);
++
++ out_put_filesystem:
++	put_filesystem(type);
++	return err;
  }
  
- static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
-@@ -283,6 +305,7 @@ static inline void __mntput(struct vfsmo
- {
- 	struct super_block *sb = mnt->mnt_sb;
- 	dput(mnt->mnt_root);
-+	clear_mnt_user(mnt);
- 	free_vfsmnt(mnt);
- 	deactivate_super(sb);
- }
-@@ -1023,6 +1046,7 @@ static int do_remount(struct nameidata *
- 	down_write(&sb->s_umount);
- 	err = do_remount_sb(sb, flags, data, 0);
- 	if (!err) {
-+		clear_mnt_user(nd->mnt);
- 		nd->mnt->mnt_flags = mnt_flags;
- 		if (flags & MS_SETUSER)
- 			set_mnt_user(nd->mnt);
+ /*
+@@ -1231,7 +1255,7 @@ int do_add_mount(struct vfsmount *newmnt
+ 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+ 		goto unlock;
+ 
+-	/* MNT_USER was set earlier */
++	/* some flags may have been set earlier */
+ 	newmnt->mnt_flags |= mnt_flags;
+ 	if ((err = graft_tree(newmnt, nd)))
+ 		goto unlock;
 Index: linux/include/linux/fs.h
 ===================================================================
---- linux.orig/include/linux/fs.h	2007-04-20 11:55:05.000000000 +0200
-+++ linux/include/linux/fs.h	2007-04-20 11:55:07.000000000 +0200
-@@ -50,6 +50,9 @@ extern struct inodes_stat_t inodes_stat;
- 
- extern int leases_enable, lease_break_time;
- 
-+extern int nr_user_mounts;
-+extern int max_user_mounts;
-+
- #ifdef CONFIG_DNOTIFY
- extern int dir_notify_enable;
- #endif
+--- linux.orig/include/linux/fs.h	2007-04-20 11:55:11.000000000 +0200
++++ linux/include/linux/fs.h	2007-04-20 11:55:13.000000000 +0200
+@@ -96,6 +96,7 @@ extern int dir_notify_enable;
+ #define FS_REQUIRES_DEV 1 
+ #define FS_BINARY_MOUNTDATA 2
+ #define FS_HAS_SUBTYPE 4
++#define FS_SAFE 8		/* Safe to mount by unprivileged users */
+ #define FS_REVAL_DOT	16384	/* Check the paths ".", ".." for staleness */
+ #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move()
+ 					 * during rename() internally.
 
 --
