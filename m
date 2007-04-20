@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752330AbXDTCkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbXDTDLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752330AbXDTCkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 22:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbXDTCkz
+	id S1754379AbXDTDLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 23:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbXDTDLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 22:40:55 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:4401 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752330AbXDTCky (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 22:40:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=PAPYQ25yGKtTvrwciLMaSWG/CDvoFSbsaLOdHozTST+v07SYJAkVxqlJdoZzPv0ETwSvBU/8lu9HdMgvVWsKSij6zkBMAWrUMpLvCFV51zGUA526m1a3RUxjUg0ffcrltJ6RYjlXFkBkF6WNVQfBmrriqQRR7W5EKi/KuXSWm1I=
-Message-ID: <cb7bb73a0704191940s1fd6487j9a4412aebd4342c0@mail.gmail.com>
-Date: Fri, 20 Apr 2007 04:40:39 +0200
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-To: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com, jkosina@suse.cz,
-       edouard.tisserant@wanadoo.fr, svoltz@numericable.fr
-Subject: Acecad USB Tablet: usbmouse takeover and odd motion
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Apr 2007 23:11:43 -0400
+Received: from mail.suse.de ([195.135.220.2]:42515 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754379AbXDTDLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Apr 2007 23:11:42 -0400
+Date: Fri, 20 Apr 2007 05:11:41 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: rr_interval experiments
+Message-ID: <20070420031140.GA8633@wotan.suse.de>
+References: <200704200101.49823.kernel@kolivas.org> <200704201047.57539.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200704201047.57539.kernel@kolivas.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Fri, Apr 20, 2007 at 10:47:57AM +1000, Con Kolivas wrote:
+> On Friday 20 April 2007 01:01, Con Kolivas wrote:
+> > This then allows the maximum rr_interval to be as large as 5000
+> > milliseconds.
+> 
+> Just for fun, on a core2duo make allnoconfig make -j8 here are the build time 
+> differences (on a 1000HZ config) machine:
+> 
+> 16ms:
+> 53.68user 4.81system 0:34.27elapsed 170%CPU (0avgtext+0avgdata 0maxresident)k
+> 
+> 1ms:
+> 56.73user 4.83system 0:36.03elapsed 170%CPU (0avgtext+0avgdata 0maxresident)k
+> 
+> 5000ms:
+> 52.88user 4.77system 0:32.37elapsed 178%CPU (0avgtext+0avgdata 0maxresident)k
+> 
+> For the record, 16ms is what SD v0.43 would choose as the default value on 
+> this hardware. A load with a much lower natural context switching rate than a 
+> kernel compile, as you said Nick, would show even greater discrepancy in 
+> these results.
+> 
+> Fun eh? Note these are not for any comparison with anything else; just to show 
+> the effect rr_interval changes have on throughput.
 
-I have a Medi@com-branded Acecad USB Tablet and I've been trying for a
-while to set it up to work fine under Linux, without very much
-success. I've been using the stock Debian kernel (2.6.18), but also
-tried rolling my own 2.6.x git series (latest tried a 2.6.21-rc7 just
-this evening). The problems still appear.
+Yeah very interesting, thanks. I was sure that a more modern CPU and/or
+one with more cache (in this case, both!) would show bigger differences
+even on kbuild.
 
-The first problem is that the usbmouse and usbhid drivers take control
-of the device, so that when I plug it in the tablet appears as a
-mouse, with extremely funny effects (cursor jumping around, buttons
-clicking out of nowhere, and other strange stuff).I have to rmmod
-usbmouse and usbhid and then re-modprobe acecad to get proper data
-from the tablet (where by 'proper' I mean that input-events reports
-apparently correct values for X, Y, pressure and keypresses.
+In this case, 16ms -> infinite results in almost 6% performance
+improvement.
 
-So the first question is: is there a way to let acecad control the
-tablet without blacklisting usbmouse and usbhid?
-
-The second question is more user-space related, so this might not be
-the right place to ask; feel free to address me to more appropriate
-discussion places for the following issues.
-
-Basically, in console the tablet works 'almost' correctly, with gpm
-set to read from /dev/input/mice with protocol autops2: if I wrap the
-pen from one side to the opposite side without passing through the
-tablet, the cursor jumps to the correct place. However, if I move the
-pen across the tablet, the motion seems to be always either too fast
-or too slow, so that either the mouse reaches the opposite side of the
-screen while I'm still halfway throught the tablet, or conversely.
-
-In X (X.org 7.2.0), I cannot use the acecad driver (it fails to
-initialize the device, probably because it's managed by the kernel
-already, I assume), so I have to use the evdev driver version 1.1.0
-(xinput version 1.2.0). With this setup, programs such as Inkscape or
-Gimp 'know' that the Tablet is a tablet and correctly configure the
-3rd axis for pressure, but the cursor movement is extremely jerky, and
-neither pressure nor button presses seem to be received, making the
-tablet essentially useless.
-
-I've tried setting CONFIG_INPUT_MOUSEDEV_SCREEN_{X,Y} to match my
-screen resolution {1600,1200}, but this has barely improved the motion
-jerkiness, if at all (Why is there a need for the kernel to know the
-resolution used by X, anyway? Shouldn't userspace itself take care of
-scaling input->screen coordinates?) Moreover, it hasn't solved the
-missing buttons/pressure.
-
- Is this an evdev/X bug, a kernel limitation, neither or both?
-
--- 
-Giuseppe "Oblomov" Bilotta
