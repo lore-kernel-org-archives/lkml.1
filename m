@@ -1,53 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbXDTPAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXDTPBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbXDTPAf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 11:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbXDTPAf
+	id S932224AbXDTPBq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 11:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992865AbXDTPBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 11:00:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49496 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754059AbXDTPAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 11:00:33 -0400
-Date: Fri, 20 Apr 2007 10:59:18 -0400
-From: Jakub Jelinek <jakub@redhat.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, cmm@us.ibm.com, suparna@in.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Subject: Re: Interface for the new fallocate() system call
-Message-ID: <20070420145918.GY355@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070420135146.GA21352@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 20 Apr 2007 11:01:46 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55288 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932224AbXDTPBp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 11:01:45 -0400
+Date: Fri, 20 Apr 2007 11:01:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <46284F2A.4000401@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704201016260.2616-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 07:21:46PM +0530, Amit K. Arora wrote:
-> Ok.
-> In this case we may have to consider following things:
+On Fri, 20 Apr 2007, Tejun Heo wrote:
+
+> Hello, Alan.
 > 
-> 1) Obviously, for this glibc will have to call fallocate() syscall with
-> different arguments on s390, than other archs. I think this should be
-> doable and should not be an issue with glibc folks (right?).
+> Alan Stern wrote:
+> > This doesn't solve a related problem: a subsystem wants to register
+> > devices and to provide a set of mutually-exclusive services to the
+> > devices' drivers.  The mutual exclusion has to be provided by a mutex or
+> > something similar, and the drivers need a way to unbind even while waiting
+> > to acquire the mutex.
+> 
+> I don't really follow why the drivers need a way to unbind even while
+> waiting to acquire the mutex.  Care to enlighten me?
 
-glibc can cope with this easily, will just add
-sysdeps/unix/sysv/linux/s390/fallocate.c or something similar to override
-the generic Linux implementation.
+Forget I mentioned it.  It isn't a problem if the subsystem uses its own
+mutex to provide the mutual exclusion.  Things become difficult only
+if the subsystem tries to use dev->sem.
 
-> 2) we also need to see how strace behaves in this case. With little
-> knowledge that I have of strace, I don't think it should depend on
-> argument ordering of a system call on different archs (since it uses
-> ptrace internally and that should take care of it). But, it will be
-> nice if someone can confirm this.
+> > I thought of something else that could also be done: There should be a way
+> > to cancel an outstanding workqueue request.  At the moment all you can do
+> > is call flush_workqueue(), which will hang if you are already executing in
+> > a workqueue routine.  You should be able to delete a particular entry from
+> > the workqueue (or wait for it to complete if it has already started
+> > running).  This could be implemented right away.
+> 
+> It all depends on how a particular subsystem is shaped but having such
+> thing would definitely help.
 
-strace would solve this with #ifdef mess, it already does that in many
-places so guess another few lines don't make it significantly worse.
+I saw something recently suggesting such a thing is already present in
+Andrew Morton's queue.  Great minds think alike...  :-)
 
-	Jakub
+
+> Yeah, exactly.  My argument is that that impedance matching between
+> lifetime rules must happen at some place and it's better if we can do in
+> the higher layer where we can afford more effort and thus complexity.
+> We're currently pushing that down to each drivers and not too many are
+> getting it right.  I think it's just unrealistic to expect every and
+> each driver subsystems to get it right, so some overhead at higher layer
+> is acceptable and we can definitely afford much more optimization at
+> higher layer.
+
+Agreed.
+
+
+You know, things may not be quite as bad as I had thought.  I was under 
+the impression that the driver core did put_device(dev->parent) during 
+device_release().  But that's not the case; the call is made during 
+device_del().
+
+This makes things very different.  Failure to drop references to a device
+during remove() won't cause any lingering references to the device's
+parent.  The effects of one badly-behaved driver won't propagate
+indefinitely far up the device tree.
+
+On the other hand, although devices behave this way, kobjects do not.  The 
+call to kobject_put(kobj->parent) is in kobject_cleanup(), not in 
+kobject_del() or unlink().  So this still needs to be fixed.  It may be 
+related to the sysfs <-> kobject link you have been trying to break.
+
+
+Dmitry, in thinking things over some more I realized there's going to be a
+problem with the autosuspend support in USB.  It has to do with the way a
+driver needs to prevent (or block) suspends from occurring while it is 
+actively using a device.
+
+To understand this, you need to know that USB adds a pm_mutex to the
+device structure.  It gets used for synchronizing all suspend- or
+resume-related activities.  In particular, the driver's suspend() method
+is called with usbdev->pm_mutex held.
+
+The next idea is that a driver needs to synchronize its remove() method
+with other methods such as read() -- we mustn't allow read() to try and
+refer to the device after the driver has been unbound.  Let's say the
+driver has unbind_mutex embedded in its private data structure for this 
+purpose.
+
+Now consider what read() has to do.  It needs to block suspends from 
+occurring while it runs, and it needs to do an autoresume if the device 
+was already suspended.  So read() will look like this:
+
+	mutex_lock(&private->unbind_mutex);
+	if (private->gone) {
+		ret = -ENODEV;
+		goto done;
+	}
+	if (private->suspended)
+		autoresume(private->usbdev);
+	...
+ done:
+	mutex_unlock(&private->unbind_mutex);
+	return ret;
+
+Meanwhile, the suspend() method needs to block while read() is running.  
+So it will look like this:
+
+	private->suspended = 1;
+	mutex_lock(&private->unbind_mutex);
+	/* Now the driver has quiesced */
+	mutex_unlock(&private->unbind_mutex);
+
+Here's the problem:  The autoresume() call inside read() tries to acquire
+usbdev->pm_mutex while holding private->unbind_mutex.  The suspend()  
+method does the reverse, a locking-order violation.
+
+So far I haven't figured out any way to make this work.  Do you have a
+suggestion?  (Don't say read() should hold pm_mutex as well as
+unbind_mutex; that's no good -- although the reason is rather obscure.)
+
+Alan Stern
+
