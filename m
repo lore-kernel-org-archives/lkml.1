@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbXDTNvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbXDTNyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbXDTNvr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 09:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbXDTNvq
+	id S1753826AbXDTNyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 09:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992815AbXDTNyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 09:51:46 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:48865 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbXDTNvo (ORCPT
+	Fri, 20 Apr 2007 09:54:19 -0400
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:4292 "EHLO
+	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753826AbXDTNyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 09:51:44 -0400
-Date: Fri, 20 Apr 2007 19:21:46 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Andreas Dilger <adilger@clusterfs.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, cmm@us.ibm.com,
-       suparna@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>, torvalds@linux-foundation.org
-Subject: Re: Interface for the new fallocate() system call
-Message-ID: <20070420135146.GA21352@amitarora.in.ibm.com>
-References: <20070301183445.GA7911@amitarora.in.ibm.com> <20070316143101.GA10152@amitarora.in.ibm.com> <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int>
+	Fri, 20 Apr 2007 09:54:19 -0400
+Subject: Re: [PATCH 01/01] New FBDev driver for Intel Vermilion Range
+From: Alan Hourihane <alanh@fairlite.demon.co.uk>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1177077098.8463.17.camel@daplas>
+References: <1175769886.10382.29.camel@localhost>
+	 <1177059856.10128.48.camel@jetpack.demon.co.uk>
+	 <1177077098.8463.17.camel@daplas>
+Content-Type: text/plain
+Date: Fri, 20 Apr 2007 14:54:14 +0100
+Message-Id: <1177077254.10128.63.camel@jetpack.demon.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070418130600.GW5967@schatzie.adilger.int>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.2.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 18, 2007 at 07:06:00AM -0600, Andreas Dilger wrote:
-> On Apr 17, 2007  18:25 +0530, Amit K. Arora wrote:
-> > On Fri, Mar 30, 2007 at 02:14:17AM -0500, Jakub Jelinek wrote:
-> > > Wouldn't
-> > > int fallocate(loff_t offset, loff_t len, int fd, int mode)
-> > > work on both s390 and ppc/arm?  glibc will certainly wrap it and
-> > > reorder the arguments as needed, so there is no need to keep fd first.
+On Fri, 2007-04-20 at 21:51 +0800, Antonino A. Daplas wrote:
+> On Fri, 2007-04-20 at 10:04 +0100, Alan Hourihane wrote:
+> > I've updated the Vermilion Range (LE80578) patch against linus' tree.
 > > 
-> > I think more people are comfirtable with this approach.
+> > Hopefully this rectifies all of the issues noted previously.
+> > 
+> > Let me know again if there's more updates needed.
+> > 
+> > Thanks to all who responded with the feedback, it was appreciated.
+> > 
 > 
-> Really?  I thought from the last postings that "fd first, wrap on s390"
-> was better.
+> This (at least the framebuffer part) looks good to me (except for the
+> excessive curly braces, but that can be fixed easily).  Okay if I add a 
 > 
-> > Since glibc
-> > will wrap the system call and export the "conventional" interface
-> > (with fd first) to applications, we may not worry about keeping fd first
-> > in kernel code. I am personally fine with this approach.
-> 
-> It would seem to make more sense to wrap the syscall on those architectures
-> that can't handle the "conventional" interface (fd first).
+> Signed-off-by: Alan Hourihane <alanh@fairlite.demon.co.uk>?
 
-Ok.
-In this case we may have to consider following things:
+Signed-off-by: Alan Hourihane <alanh@tungstengraphics.com>
 
-1) Obviously, for this glibc will have to call fallocate() syscall with
-different arguments on s390, than other archs. I think this should be
-doable and should not be an issue with glibc folks (right?).
+would be better.
 
-2) we also need to see how strace behaves in this case. With little
-knowledge that I have of strace, I don't think it should depend on
-argument ordering of a system call on different archs (since it uses
-ptrace internally and that should take care of it). But, it will be
-nice if someone can confirm this.
+Thanks Antonino !
 
-Thanks!
---
-Regards,
-Amit Arora
+Alan.
+
