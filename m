@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767227AbXDTUaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767243AbXDTUdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767227AbXDTUaR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 16:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767236AbXDTUaQ
+	id S1767243AbXDTUdW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 16:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767242AbXDTUdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:30:16 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:4479 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767227AbXDTUaP (ORCPT
+	Fri, 20 Apr 2007 16:33:21 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:55210 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767240AbXDTUdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:30:15 -0400
-Date: Sat, 21 Apr 2007 00:30:20 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, Greg KH <gregkh@suse.de>,
-       Adam Jackson <ajackson@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: PCI bridge range sizing bug
-Message-ID: <20070421003020.A21503@jurassic.park.msu.ru>
-References: <1175812632.17147.12.camel@localhost.localdomain> <alpine.LFD.0.98.0704191702200.9964@woody.linux-foundation.org> <20070420132352.A19232@jurassic.park.msu.ru> <200704200932.52181.jesse.barnes@intel.com> <alpine.LFD.0.98.0704201102000.9964@woody.linux-foundation.org>
+	Fri, 20 Apr 2007 16:33:20 -0400
+Subject: Re: qla2xxx hba crashes with older 2310 cards
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: David Miller <davem@davemloft.net>
+Cc: rpeterso@redhat.com, linux-kernel@vger.kernel.org,
+       andrew.vasquez@qlogic.com, hch@lst.de, linux-scsi@vger.kernel.org
+In-Reply-To: <20070420.132402.119227720.davem@davemloft.net>
+References: <4628DEEE.3060205@redhat.com>
+	 <20070420.132402.119227720.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 20 Apr 2007 16:33:09 -0400
+Message-Id: <1177101189.3718.49.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <alpine.LFD.0.98.0704201102000.9964@woody.linux-foundation.org>; from torvalds@linux-foundation.org on Fri, Apr 20, 2007 at 11:28:42AM -0700
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 11:28:42AM -0700, Linus Torvalds wrote:
-> Actually, I would suggest we not do it automatically (because the need for 
-> it is just so low, and the downsides are potentially huge - there are just 
-> too many resources that are "hidden" from us through ACPI tricks and 
-> having hardware that doesn't actually expose their PCI resources fully 
-> through the normal PCI resource setup).
+On Fri, 2007-04-20 at 13:24 -0700, David Miller wrote:
+> From: Robert Peterson <rpeterso@redhat.com>
+> Date: Fri, 20 Apr 2007 10:40:30 -0500
+> 
+> > I've seen some chatter about the qla2xxx driver but not paid attention, so
+> > I'm sorry if this is a known issue.  I've got an older qlogic hba, and recent
+> > drivers don't seem to play nice with it.  I've got the latest firmware from
+> > qlogic's web site.  I'm using a 2.6.21-rc6 kernel from Steve Whitehouse's
+> > -nmw git tree.  Reverting to an older driver (but same kernel) and it works.
+> > The current driver gives this:
+> 
+> Yes, known problem, I'm sorry these guys broke the driver for
+> you as well, please see this thread:
+> 
+> 	http://marc.info/?l=linux-kernel&m=117671067701124&w=2
+> 
+> This was really a stupid change to make.
 
-Definitely. I was intending to enable that *only* with some boot option.
+OK,OK, we heard you the first time ... the maintainers will try to fix
+this in a manner acceptable to all concerned ... could we try to cool
+down the public traductions now?
 
-> Ivan, want to add some way to force that allocation (something like 
-> "pci=assign-bus-resources")
+James
 
-Yes, hopefully I'll get something in a next couple of days.
 
-Ivan.
