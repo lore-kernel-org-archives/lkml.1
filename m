@@ -1,144 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161218AbXDTFkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422887AbXDTFvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161218AbXDTFkx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 01:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161228AbXDTFkw
+	id S1422887AbXDTFvJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 01:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422895AbXDTFvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 01:40:52 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:47042 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161218AbXDTFkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 01:40:51 -0400
-Date: Thu, 19 Apr 2007 22:39:09 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Keiichi KII <k-keiichi@bx.jp.nec.com>, mpm@selenic.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take4 6/6] add ioctls for adding/removing
- target
-Message-ID: <20070419223909.00e8285d@localhost.localdomain>
-In-Reply-To: <20070419211630.70c20706.akpm@linux-foundation.org>
-References: <462605DC.2080804@bx.jp.nec.com>
-	<46260BBF.2070202@bx.jp.nec.com>
-	<20070419211630.70c20706.akpm@linux-foundation.org>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Apr 2007 01:51:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60012 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422887AbXDTFvG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 01:51:06 -0400
+Date: Thu, 19 Apr 2007 22:51:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Neil Brown <neilb@suse.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
+In-Reply-To: <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704192249070.17171@schroedinger.engr.sgi.com>
+References: <17960.16739.870487.497750@notabene.brown>
+ <Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
+ <17960.20796.761309.771912@notabene.brown> <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 21:16:30 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Another approach drop the symlinks completely. Just 
+write a message to the syslog informing the user that we
+created an alias. If debugging is off then the user would have to consult
+the syslog to find aliases.
 
-> On Wed, 18 Apr 2007 21:14:55 +0900 Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
-> 
-> > From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-> > 
-> > We add ioctls for adding/removing target.
-> > If we use NETCONSOLE_ADD_TARGET ioctl, 
-> > we can dynamically add netconsole target.
-> > If we use NETCONSOLE_REMOVE_TARGET ioctl,
-> > we can dynamically remoe netconsole target.
-> > 
-> > ...
-> >
-> > --- mm.orig/drivers/net/netconsole.c
-> > +++ mm/drivers/net/netconsole.c
-> > @@ -47,6 +47,7 @@
-> >  #include <linux/netpoll.h>
-> >  #include <linux/miscdevice.h>
-> >  #include <linux/inet.h>
-> > +#include <linux/netconsole.h>
-> >  
-> >  MODULE_AUTHOR("Maintainer: Matt Mackall <mpm@selenic.com>");
-> >  MODULE_DESCRIPTION("Console driver for network interfaces");
-> > @@ -313,6 +314,64 @@ static void release_target(struct kobjec
-> >  	remove_target(nt);
-> >  }
-> >  
-> > +static int netconsole_ioctl(struct inode *inode, struct file *file,
-> > +			    unsigned int cmd, unsigned long arg)
-> > +{
-> > +	int id, count;
-> > +	char config[256];
-> > +	char *cur;
-> > +	struct netconsole_request req;
-> > +	struct netconsole_target *nt, *tmp;
-> > +	void __user *argp = (void __user *)arg;
-> > +
-> > +	switch (cmd) {
-> > +	case NETCON_ADD_TARGET:
-> > +		printk(KERN_INFO "netconsole: cmd=NETCON_ADD_TARGET\n");
-> > +		if (copy_from_user(&req, argp, sizeof(req)))
-> > +			return -EFAULT;
-> > +		cur = config;
-> > +		count = sprintf(cur, "%d@", req.local_port);
-> > +		cur += count;
-> > +		if (req.local_ip)
-> > +			count = sprintf(cur, "%d.%d.%d.%d/",
-> > +					NIPQUAD(req.local_ip));
-> > +		else
-> > +			count = sprintf(cur, "/");
-> > +		cur += count;
-> > +		count = sprintf(cur, "%s,", req.netdev_name);
-> > +		cur += count;
-> > +		count = sprintf(cur, "%d@", req.remote_port);
-> > +		cur += count;
-> > +		count = sprintf(cur, "%d.%d.%d.%d/",
-> > +				NIPQUAD(req.remote_ip));
-> > +		cur += count;
-> > +		count = sprintf(cur, "%02x:%02x:%02x:%02x:%02x:%02x",
-> > +				req.remote_mac[0], req.remote_mac[1],
-> > +				req.remote_mac[2], req.remote_mac[3],
-> > +				req.remote_mac[4], req.remote_mac[5]);
-> > +		printk(KERN_INFO "count = %d config=[%s]\n", count, config);
-> > +		if (add_target(config))
-> > +			return -EINVAL;
-> > +		break;
-> > +	case NETCON_REMOVE_TARGET:
-> > +		printk(KERN_INFO "netconsole: cmd=NETCON_REMOVE_TARGET\n");
-> > +		if (copy_from_user(&id, argp, sizeof(int)))
-> > +			return -EFAULT;
-> > +		printk(KERN_INFO "netconsole: id=%d\n", id);
-> > +		list_for_each_entry_safe(nt, tmp, &target_list, list) {
-> > +			if (nt->id == id) {
-> > +				kobject_unregister(&nt->obj);
-> > +				break;
-> > +			}
-> > +		}
-> > +		break;
-> > +	default:
-> > +		return -ENOTTY;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  static struct sysfs_ops target_sysfs_ops = {
-> >  	.show = show_target_attr,
-> >  	.store = store_target_attr
-> > @@ -324,9 +383,14 @@ static struct kobj_type target_ktype = {
-> >  	.default_attrs = target_attrs,
-> >  };
-> >  
-> > +static struct file_operations miscdev_fops = {
-> > +	.ioctl = netconsole_ioctl,
-> > +};
-> > +
-> >  static struct miscdevice netconsole_miscdev = {
-> >  	.minor = MISC_DYNAMIC_MINOR,
-> >  	.name = "netconsole",
-> > +	.fops = &miscdev_fops,
-> >  };
-> >  
-> >  static struct notifier_block netconsole_notifier = {
-> 
-> We'll need to wake up the net guys to get an opinion here.  Using an
-> ioctl() against a miscdev is rather untypical for networking.  I'd expect
-> they'd prefer to see a netlink-based interface to userspace.
 
-Should't this just be a network ioctl against an UDP (AF_INET, SOCK_DGRAM) socket?
-Also consider netconsole over IPV6 for future enhancement.
+Index: linux-2.6.21-rc6/mm/slub.c
+===================================================================
+--- linux-2.6.21-rc6.orig/mm/slub.c	2007-04-19 22:46:20.000000000 -0700
++++ linux-2.6.21-rc6/mm/slub.c	2007-04-19 22:48:26.000000000 -0700
+@@ -158,11 +158,9 @@ LIST_HEAD(slab_caches);
+ 
+ #ifdef CONFIG_SYSFS
+ static int sysfs_slab_add(struct kmem_cache *);
+-static int sysfs_slab_alias(struct kmem_cache *, const char *);
+ static void sysfs_slab_remove(struct kmem_cache *);
+ #else
+ static int sysfs_slab_add(struct kmem_cache *s) { return 0; }
+-static int sysfs_slab_alias(struct kmem_cache *s, const char *p) { return 0; }
+ static void sysfs_slab_remove(struct kmem_cache *s) {}
+ #endif
+ 
+@@ -2324,8 +2322,8 @@ struct kmem_cache *kmem_cache_create(con
+ 		 */
+ 		s->objsize = max(s->objsize, (int)size);
+ 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
+-		if (sysfs_slab_alias(s, name))
+-			goto err;
++		printk(KERN_INFO "SLUB: %s is an alias of %s\n",
++							name, s->name);
+ 	} else {
+ 		s = kmalloc(kmem_size, GFP_KERNEL);
+ 		if (s && kmem_cache_open(s, GFP_KERNEL, name,
+@@ -3335,37 +3333,6 @@ static void sysfs_slab_remove(struct kme
+ 	kobject_del(&s->kobj);
+ }
+ 
+-/*
+- * Need to buffer aliases during bootup until sysfs becomes
+- * available lest we loose that information.
+- */
+-struct saved_alias {
+-	struct kmem_cache *s;
+-	const char *name;
+-	struct saved_alias *next;
+-};
+-
+-struct saved_alias *alias_list;
+-
+-static int sysfs_slab_alias(struct kmem_cache *s, const char *name)
+-{
+-	struct saved_alias *al;
+-
+-	if (slab_state == SYSFS)
+-		return sysfs_create_link(&slab_subsys.kset.kobj,
+-						&s->kobj, name);
+-
+-	al = kmalloc(sizeof(struct saved_alias), GFP_KERNEL);
+-	if (!al)
+-		return -ENOMEM;
+-
+-	al->s = s;
+-	al->name = name;
+-	al->next = alias_list;
+-	alias_list = al;
+-	return 0;
+-}
+-
+ int __init slab_sysfs_init(void)
+ {
+ 	int err;
+@@ -3378,15 +3345,6 @@ int __init slab_sysfs_init(void)
+ 
+ 	finish_bootstrap();
+ 
+-	while (alias_list) {
+-		struct saved_alias *al = alias_list;
+-
+-		alias_list = alias_list->next;
+-		err = sysfs_slab_alias(al->s, al->name);
+-		BUG_ON(err);
+-		kfree(al);
+-	}
+-
+ 	resiliency_test();
+ 	return 0;
+ }
