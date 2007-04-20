@@ -1,130 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767274AbXDTVkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXDTVlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767274AbXDTVkQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 17:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767275AbXDTVkQ
+	id S1161228AbXDTVlb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 17:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbXDTVla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 17:40:16 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:45940 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767274AbXDTVkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 17:40:14 -0400
-Date: Fri, 20 Apr 2007 17:39:57 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       "Cameron, Steve" <Steve.Cameron@hp.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] cciss: Fix warnings during compilation under
- 32bitenvironment
-In-Reply-To: <20070420141218.a0222472.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.0.98.0704201732240.11655@sigma.j-a-k-j.com>
-References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
- <226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
- <1176995934.31764.7.camel@mulgrave.il.steeleye.com>
- <226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
- <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
- <558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
- <20070419222028.d33c7f86.akpm@linux-foundation.org>
- <1177074641.3718.5.camel@mulgrave.il.steeleye.com>
- <20070420114337.12a67141.akpm@linux-foundation.org>
- <1177095007.3718.43.camel@mulgrave.il.steeleye.com>
- <20070420123041.94aac1e1.akpm@linux-foundation.org>
- <1177100459.3718.45.camel@mulgrave.il.steeleye.com>
- <20070420141218.a0222472.akpm@linux-foundation.org>
+	Fri, 20 Apr 2007 17:41:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51567 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754510AbXDTVl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 17:41:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
+Date: Fri, 20 Apr 2007 23:45:22 +0200
+User-Agent: KMail/1.9.5
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
+References: <20070419120131.GB13435@in.ibm.com> <20070420110520.GB11290@in.ibm.com> <20070420212057.GB820@tv-sign.ru>
+In-Reply-To: <20070420212057.GB820@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704202345.23823.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, Andrew Morton wrote:
-
-> On Fri, 20 Apr 2007 16:20:59 -0400
-> James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> 
-> > On Fri, 2007-04-20 at 12:30 -0700, Andrew Morton wrote:
-> > > On Fri, 20 Apr 2007 14:50:06 -0400
-> > > James Bottomley <James.Bottomley@SteelEye.com> wrote:
+On Friday, 20 April 2007 23:20, Oleg Nesterov wrote:
+> On 04/20, Gautham R Shenoy wrote:
+> >
+> > On Fri, Apr 20, 2007 at 10:54:36AM +0200, Rafael J. Wysocki wrote:
 > > > 
-> > > > > CONFIG_LBD=y gives us an additional 3kb of instructions on i386
-> > > > > allnoconfig.  Other architectures might do less well.  It's not a huge
-> > > > > difference, but that's the way in which creeping bloatiness happens.
-> > > > 
-> > > > OK, sure, but if we really care about this saving, then unconditionally
-> > > > casting to u64 is therefore wrong as well ... this is starting to open
-> > > > quite a large can of worms ...
-> > > > 
-> > > > For the record, if we have to do this, I fancy sector_upper_32() ... we
-> > > > should already have some similar accessor for dma_addr_t as well.
+> > > Hmm, can't we do something like this instead:
 > > > 
-> > > hm.  How about this?
+> > > ---
+> > >  kernel/kthread.c |   10 ++++++++++
+> > >  1 file changed, 10 insertions(+)
 > > > 
-> > > --- a/include/linux/kernel.h~upper-32-bits
-> > > +++ a/include/linux/kernel.h
-> > > @@ -40,6 +40,17 @@ extern const char linux_proc_banner[];
-> > >  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-> > >  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
-> > >  
-> > > +/**
-> > > + * upper_32_bits - return bits 32-63 of a number
-> > > + * @n: the number we're accessing
-> > > + *
-> > > + * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
-> > > + * the "right shift count >= width of type" warning when that quantity is
-> > > + * 32-bits.
-> > > + */
-> > > +#define upper_32_bits(n) (((u64)(n)) >> 32)
-> > 
-> > Won't this have the unwanted side effect of promoting everything in a
-> > calculation to long long on 32 bit platforms, even if n was only 32
-> > bits?
-> 
-> bummer.
-> 
+> > > Index: linux-2.6.21-rc7/kernel/kthread.c
+> > > ===================================================================
+> > > --- linux-2.6.21-rc7.orig/kernel/kthread.c
+> > > +++ linux-2.6.21-rc7/kernel/kthread.c
+> > > @@ -13,6 +13,7 @@
+> > >  #include <linux/file.h>
+> > >  #include <linux/module.h>
+> > >  #include <linux/mutex.h>
+> > > +#include <linux/freezer.h>
+> > >  #include <asm/semaphore.h>
+> > > 
+> > >  /*
+> > > @@ -232,6 +233,15 @@ int kthread_stop(struct task_struct *k)
+> > > 
+> > >  	/* Now set kthread_should_stop() to true, and wake it up. */
+> > >  	kthread_stop_info.k = k;
+> > > +	if (!(current->flags & PF_NOFREEZE)) {
+> > > +		/* If we are freezable, the freezer will wait for us */
+> > > +		task_lock(k);
+> > > +		k->flags |= PF_NOFREEZE;
+> > > +		if (frozen(k))
+> > > +			k->flags &= ~PF_FROZEN;
 > > > +
-> > > +
-> > >  #define	KERN_EMERG	"<0>"	/* system is unusable			*/
-> > >  #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
-> > >  #define	KERN_CRIT	"<2>"	/* critical conditions			*/
-> > > _
-> > > 
-> > > It seems to generate the desired code.  I avoided Alan's ((n >> 31) >> 1)
-> > > trick because it'll generate peculiar results with signed 64-bit
-> > > quantities.
+> > > +		task_unlock(k);
+> > > +	}
 > > 
-> > I've seen the trick done similarly with ((n >> 16) >> 16) which
-> > shouldn't have the issue.
+> > Yes, we can do this for now since the tasks have only two freeze states,
+> > namely Freezeable and Non Freezeable. 
 > 
-> That works if we know the caller is treating the return value as 32 bits,
-> but we don't know that.
-> 
-> If we have
-> 
-> #define upper_32_bits(x)  ((x >> 16) >> 16)
-> 
-> then
-> 
-> 	upper_32_bits(0x8888777766665555)
-> 
-> will return 0x88887777 if it's treated as 32-bits, but it'll return
-> 0xffffffff88887777 if the caller is using 64-bits.
-> 
-> I spose
-> 
-> #define upper_32_bits(x)  ((u32)((x >> 16) >> 16))
-> 
-> will do the trick.
+> No, we can't change k->flags, k owns its ->flags, and it is not atomic.
 
-What about this?
+Yes, but if we move PF_FROZEN to a separate field in task_struct with
+appropriate locking, then it won't be a problem any more IMO.
+ 
+> Rafael, may I suggest you to document task_lock() in thaw_process() ? This
+> looks really confusing, as if task_lock() protects "p->flags &= ~PF_FROZEN".
+> 
+> Actually, task_lock() is needed to prevent the race with refrigerator()
+> when the freezing fails, but this is not obvious.
 
-#define upper_32_bits(x) (sizeof(x) == 8 ? (u64)(x) >> 32 : 0)
+Sure, I will.
 
-The u64 cast prevents the sign bit from being carried over and therefore 
-eliminates the need for a subsequent cast to u32 since the upper 32 of the 
-result will be 0. Shouldn't be any case where an integer gets promoted if 
-64 bits is the largest possible promotion.
-
-Assuming, of course, I'm not an idiot. Which I somewhat frequently am.
+Greetings,
+Rafael
