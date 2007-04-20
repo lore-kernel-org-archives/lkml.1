@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767100AbXDTNc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767105AbXDTNdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767100AbXDTNc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 09:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767103AbXDTNc4
+	id S1767105AbXDTNdn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 09:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767106AbXDTNdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 09:32:56 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:6299 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767100AbXDTNcz (ORCPT
+	Fri, 20 Apr 2007 09:33:43 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38715 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767105AbXDTNdm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 09:32:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=f3T9iHiwuVFvb+MNY6b99npTUXFEggabtRD0uaFd0xE1etN4eKdUJWBdrITvXPjW8m6XQb/EA5Sbi2cU/yx195bAPdFhU0SAp1nXb+mnfo0HJFHc2VDy9jLx65xsEyfyMzI6p2timmImb6TQ9NZksB4hW5OwEpzdVBigHJ6yqL8=
-Message-ID: <6278d2220704200632p3300a6e2y8c9d14f4d735015c@mail.gmail.com>
-Date: Fri, 20 Apr 2007 14:32:41 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: bhuvan.mittal@st.com
-Subject: Re: How to make mmap'ed kernel buffer non-cacheable
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 20 Apr 2007 09:33:42 -0400
+Date: Fri, 20 Apr 2007 14:36:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Cameron, Steve" <Steve.Cameron@hp.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] cciss: Fix warnings during compilation under
+ 32bitenvironment
+Message-ID: <20070420143645.0e787f41@the-village.bc.nu>
+In-Reply-To: <1177074641.3718.5.camel@mulgrave.il.steeleye.com>
+References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
+	<226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
+	<1176995934.31764.7.camel@mulgrave.il.steeleye.com>
+	<226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
+	<1176999730.31764.15.camel@mulgrave.il.steeleye.com>
+	<558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
+	<20070419222028.d33c7f86.akpm@linux-foundation.org>
+	<1177074641.3718.5.camel@mulgrave.il.steeleye.com>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20 Apr, 14:20, Bhuvan Kumar MITTAL <bhuvan.mit...@st.com> wrote:
-> Hi,
->   I am working on an audio device driver development on Linux. I have a kernel
-> buffer which I have mapped to user space using mmap call from user space. My
-> problem is that the data which comes to the kernel buffer is getting dropped in
-> user space and I get only 50-60% of the data which is randomly ordered. The user
-> to kernel level buffer address translation code is fine and I suspect this data
-> dropping is occurring coz the kernel buffer is cacheable. Please suggest me some
-> way of making the entire buffer non cacheable. I am stuck on this for quite a while
-> now.
+> > #if (BITS_PER_LONG > 32) || defined(CONFIG_LBD)
+> > #define sector_upper_32(sector) ((sector) >> 32)
+> > #else
+> > #define sector_upper_32(sector) (0)
+> > #endif
 
-You can use rdmsr() in your driver to check if the page attribute
-table MSR is available, then find and/or add the right entry in the
-table to set in each page's flags. This is documented in the Intel
-IA-32 Intel Architecture Software Developer's Manuals at intel.com.
+Gak
 
-Dan
--- 
-Daniel J Blueman
+Just do
+
+	sector_upper_32(sector)   (((sector) >> 31) >> 1)
+
+and lose all the ifdefs,
+
+Alan
