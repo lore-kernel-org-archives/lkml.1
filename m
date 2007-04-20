@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767266AbXDTVV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbXDTVWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767266AbXDTVV2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 17:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767255AbXDTVV2
+	id S1753673AbXDTVWp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 17:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbXDTVWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 17:21:28 -0400
-Received: from mail.screens.ru ([213.234.233.54]:34516 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767224AbXDTVV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 17:21:27 -0400
-Date: Sat, 21 Apr 2007 01:20:57 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-ID: <20070420212057.GB820@tv-sign.ru>
-References: <20070419120131.GB13435@in.ibm.com> <20070419120419.GB17069@in.ibm.com> <20070419143133.a6c82ef8.akpm@linux-foundation.org> <200704201054.38037.rjw@sisk.pl> <20070420110520.GB11290@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070420110520.GB11290@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Fri, 20 Apr 2007 17:22:45 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53168 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753673AbXDTVWo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 17:22:44 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 20 Apr 2007 23:21:35 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] ieee1394: update MAINTAINERS database
+To: Ben Collins <ben.collins@ubuntu.com>,
+       Jody McIntyre <scjody@modernduck.com>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Message-ID: <tkrat.04564966d265736f@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/20, Gautham R Shenoy wrote:
->
-> On Fri, Apr 20, 2007 at 10:54:36AM +0200, Rafael J. Wysocki wrote:
-> > 
-> > Hmm, can't we do something like this instead:
-> > 
-> > ---
-> >  kernel/kthread.c |   10 ++++++++++
-> >  1 file changed, 10 insertions(+)
-> > 
-> > Index: linux-2.6.21-rc7/kernel/kthread.c
-> > ===================================================================
-> > --- linux-2.6.21-rc7.orig/kernel/kthread.c
-> > +++ linux-2.6.21-rc7/kernel/kthread.c
-> > @@ -13,6 +13,7 @@
-> >  #include <linux/file.h>
-> >  #include <linux/module.h>
-> >  #include <linux/mutex.h>
-> > +#include <linux/freezer.h>
-> >  #include <asm/semaphore.h>
-> > 
-> >  /*
-> > @@ -232,6 +233,15 @@ int kthread_stop(struct task_struct *k)
-> > 
-> >  	/* Now set kthread_should_stop() to true, and wake it up. */
-> >  	kthread_stop_info.k = k;
-> > +	if (!(current->flags & PF_NOFREEZE)) {
-> > +		/* If we are freezable, the freezer will wait for us */
-> > +		task_lock(k);
-> > +		k->flags |= PF_NOFREEZE;
-> > +		if (frozen(k))
-> > +			k->flags &= ~PF_FROZEN;
-> > +
-> > +		task_unlock(k);
-> > +	}
-> 
-> Yes, we can do this for now since the tasks have only two freeze states,
-> namely Freezeable and Non Freezeable. 
+  - update Ben's address
+  - replace Ben's contact by mine as raw1394's 2nd contact
+  - eth1394's and pcilynx's maintenance doesn't really differ from that
+    of other parts of the stack like video1394
 
-No, we can't change k->flags, k owns its ->flags, and it is not atomic.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-Rafael, may I suggest you to document task_lock() in thaw_process() ? This
-looks really confusing, as if task_lock() protects "p->flags &= ~PF_FROZEN".
+Ben, is this correct?
 
-Actually, task_lock() is needed to prevent the race with refrigerator()
-when the freezing fails, but this is not obvious.
 
-Oleg.
+ MAINTAINERS |   22 ++++------------------
+ 1 file changed, 4 insertions(+), 18 deletions(-)
+
+Index: linux/MAINTAINERS
+===================================================================
+--- linux.orig/MAINTAINERS
++++ linux/MAINTAINERS
+@@ -1681,7 +1681,7 @@ S:	Maintained
+ 
+ IEEE 1394 SUBSYSTEM
+ P:	Ben Collins
+-M:	bcollins@debian.org
++M:	ben.collins@ubuntu.com
+ P:	Stefan Richter
+ M:	stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+@@ -1689,25 +1689,11 @@ W:	http://www.linux1394.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+ S:	Maintained
+ 
+-IEEE 1394 IPV4 DRIVER (eth1394)
+-P:	Stefan Richter
+-M:	stefanr@s5r6.in-berlin.de
+-L:	linux1394-devel@lists.sourceforge.net
+-S:	Odd Fixes
+-
+-IEEE 1394 PCILYNX DRIVER
+-P:	Jody McIntyre
+-M:	scjody@modernduck.com
+-P:	Stefan Richter
+-M:	stefanr@s5r6.in-berlin.de
+-L:	linux1394-devel@lists.sourceforge.net
+-S:	Odd Fixes
+-
+-IEEE 1394 RAW I/O DRIVER
+-P:	Ben Collins
+-M:	bcollins@debian.org
++IEEE 1394 RAW I/O DRIVER (raw1394)
+ P:	Dan Dennedy
+ M:	dan@dennedy.org
++P:	Stefan Richter
++M:	stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+ S:	Maintained
+ 
+
+-- 
+Stefan Richter
+-=====-=-=== -=-- =-=--
+http://arcgraph.de/sr/
 
