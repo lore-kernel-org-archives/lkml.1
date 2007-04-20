@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767094AbXDTN0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767097AbXDTN2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767094AbXDTN0K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 09:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767096AbXDTN0K
+	id S1767097AbXDTN2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 09:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767098AbXDTN2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 09:26:10 -0400
-Received: from 85-126-107-146.static.sdsl-line.inode.at ([85.126.107.146]:4760
-	"EHLO mail.contec.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767094AbXDTN0J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 09:26:09 -0400
-From: Manfred Gruber <m.gruber@tirol.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: preempt_rt bug or warn on arm v4t
-Date: Fri, 20 Apr 2007 15:26:40 +0200
-User-Agent: KMail/1.6.2
-References: <200704201306.08066.m.gruber@tirol.com> <1177074102.3636.49.camel@localhost.localdomain>
-In-Reply-To: <1177074102.3636.49.camel@localhost.localdomain>
-Cc: tglx@linutronix.de, mingo@elte.hu
+	Fri, 20 Apr 2007 09:28:31 -0400
+Received: from styx.suse.cz ([82.119.242.94]:38463 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767096AbXDTN2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 09:28:30 -0400
+Date: Fri, 20 Apr 2007 15:35:54 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
+       edouard.tisserant@wanadoo.fr
+Subject: Re: Acecad USB Tablet: usbmouse takeover and odd motion
+In-Reply-To: <cb7bb73a0704200126x1e7893fem5902fe79eefb70b7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0704201533300.5138@jikos.suse.cz>
+References: <cb7bb73a0704191940s1fd6487j9a4412aebd4342c0@mail.gmail.com> 
+ <Pine.LNX.4.64.0704200903370.29846@jikos.suse.cz>
+ <cb7bb73a0704200126x1e7893fem5902fe79eefb70b7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704201526.40785.m.gruber@tirol.com>
-X-OriginalArrivalTime: 20 Apr 2007 13:26:06.0359 (UTC) FILETIME=[734F7270:01C7834F]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi jan !
+On Fri, 20 Apr 2007, Giuseppe Bilotta wrote:
 
-Am Freitag, 20. April 2007 15:01 schrieben Sie:
+> > could you please send me the product ID of the hardware in question? 
+> > (you could get it for example by running lsusb). Currently the usbhid 
+> > driver blacklists just product ids 0x0004 and 0x0008 (so that for 
+> > these product ids, the HID driver doesn't claim the device and lets 
+> > other driver - acecad - to claim it). I guess you have some newer 
+> > version of the device, so just adding it to blacklist should suffice.
+> lsusb claims:
+> Bus 002 Device 003: ID 0460:0004 Ace Cad Enterprise Co., Ltd
+> and according to hid-core.c this *is* a blacklisted ID ...
 
-> > I am using 2.6.21-rc7 with Preempt_rt Patch 2.6.20-rc6-rt0 on ep93xx.
->
-> Do you mean 2.6.21-rc6-rt0?
+Yes, so it definitely should be ignored and not claimed by the usbhid 
+subsystem.
 
-sorry yes 2.6.21-rc6-rt0.
+Could you please verify in /sys/bus/usb/drivers/usbhid whether this device 
+is really claimed by the usbhid driver? Do you have other HID devices in 
+the system?
 
-> > This oops does not trigger in preempt_rt patch is applied.
->
-> It does only appear, when the preempt_rt patch is applied. Did I get you
-> right?
-
-correct
-
-regards manfred
+-- 
+Jiri Kosina
