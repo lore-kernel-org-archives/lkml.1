@@ -1,89 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423018AbXDTATm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031187AbXDTAU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423018AbXDTATm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Apr 2007 20:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423020AbXDTATl
+	id S1031187AbXDTAU4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Apr 2007 20:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031164AbXDTAU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Apr 2007 20:19:41 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53463 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423019AbXDTATk (ORCPT
+	Thu, 19 Apr 2007 20:20:56 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:48426 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031141AbXDTAUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Apr 2007 20:19:40 -0400
-Date: Thu, 19 Apr 2007 17:19:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <gregkh@suse.de>
-cc: Jesse Barnes <jesse.barnes@intel.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Adam Jackson <ajackson@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: PCI bridge range sizing bug
-In-Reply-To: <20070419234014.GB3215@suse.de>
-Message-ID: <alpine.LFD.0.98.0704191702200.9964@woody.linux-foundation.org>
-References: <1175812632.17147.12.camel@localhost.localdomain>
- <200704191611.52125.jesse.barnes@intel.com>
- <20070419234014.GB3215@suse.de>
+	Thu, 19 Apr 2007 20:20:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gidDU6kb0qbRFdtWa1XRQJNdpTiZRnjSYblPbhFpYgtRDXLNkickj0tpIPKvddR4i1EenRto+u8SZnYkiwIcKiSqpBiM0Ls+zh6PU8yiKYcg9Mi7mSZKvo/If99uqTixeCTxQ6AabIjoPAqv8zFZ0WLv7I5WT3DXk5GgC3uu+K8=
+Message-ID: <f2b55d220704191720k761ffce2qa8cdb4cb58cc8c79@mail.gmail.com>
+Date: Thu, 19 Apr 2007 17:20:53 -0700
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Con Kolivas" <kernel@kolivas.org>
+Subject: Re: Renice X for cpu schedulers
+Cc: ray-gmail@madrabbit.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Matt Mackall" <mpm@selenic.com>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "Peter Williams" <pwil3058@bigpond.net.au>,
+       "Mike Galbraith" <efault@gmx.de>, "ck list" <ck@vds.kolivas.org>,
+       "Bill Huey" <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <200704200856.06387.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070417062621.GL2986@holomorphy.com>
+	 <200704192159.35546.kernel@kolivas.org>
+	 <2c0942db0704191226t21d3dae1lb0fa99bcd9714cf2@mail.gmail.com>
+	 <200704200856.06387.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 4/19/07, Con Kolivas <kernel@kolivas.org> wrote:
+> The cpu scheduler core is a cpu bandwidth and latency
+> proportionator and should be nothing more or less.
 
+Not really.  The CPU scheduler is (or ought to be) what electric
+utilities call an economic dispatch mechanism -- a real-time
+controller whose goal is to service competing demands cost-effectively
+from a limited supply, without compromising system stability.
 
-On Thu, 19 Apr 2007, Greg KH wrote:
+If you live in the 1960's, coal and nuclear (and a little bit of
+fig-leaf hydro) are all you have, it takes you twelve hours to bring
+plants on and off line, and there's no live operational control or
+pricing signal between you and your customers.  So you're stuck
+running your system at projected peak + operating margin, dumping
+excess power as waste heat most of the time, and browning or blacking
+people out willy-nilly when there's excess demand.  Maybe you get to
+trade off shedding the loads with the worst transmission efficiency
+against degrading the customers with the most tolerance for brownouts
+(or the least regulatory clout).  That's life without modern economic
+dispatch.
 
-> On Thu, Apr 19, 2007 at 04:11:50PM -0700, Jesse Barnes wrote:
-> > On Thursday, April 5, 2007 3:37 pm Adam Jackson wrote:
-> > > So I'm attempting to do something fairly heinous (X server across
-> > > five video cards), and I hit a fun bug in bridge range setup.  See
-> > > attached lspci and dmesg, but the short of it is I've got two VGA
-> > > chips on one card behind a bridge, which is itself behind a second
-> > > PCI bridge, and the bridge ranges get set up so that I can't map the
-> > > ROMs, which means I can't post them, and therefore can't use them
-> > > period.
+If you live in 2007, natural gas and (outside the US) better control
+over nuclear plants give you more ability to ramp supply up and down
+with demand on something like a 15-minute cycle.  Better yet, you can
+store a little energy "in the grid" to smooth out instantaneous demand
+fluctuations; if you're lucky, you also have enough fast-twitch hydro
+(thanks, Canada!) that you can run your coal and lame-ass nuclear very
+close to base load even when gas is expensive, and even pump water
+back uphill when demand dips.  (Coal is nasty stuff and a worse
+contributor by far to radiation exposure than nuclear generation; but
+on current trends it's going to last a lot longer than oil and gas,
+and it's a lot easier to stockpile next to the generator.)
 
-Ok, let me start out by saying that at this point in the development cycle 
-(ie trying to get 2.6.21 out some day), I can't really find it in myself 
-to care all that deeply about people doing something quote _that_ fairly 
-heinous ;)
+Best of all, you have industrial customers who will trade you live
+control (within limits) over when and how much power they take in
+return for a lower price per unit energy.  Some of them will even dump
+power back into the grid when you ask them to.  So now the biggest
+challenge in making supply and demand meet (in the short term) is to
+damp all the different ways that a control feedback path might result
+in an oscillation -- or in runaway pricing.  Because there's always
+some asshole greedhead who will gamble with system stability in order
+to game the pricing mechanism.  Lots of 'em, if you're in California
+and your legislature is so dumb, or so bought, that they let the
+asshole greedheads design the whole system so they can game it to the
+max.  (But that's a whole 'nother rant.)
 
-> > > The alignment restriction on the ROMs seems a bit extreme:
-> > >
-> > > % sudo setpci -s 7:2 ROM_ADDRESS=ffffffff
-> > > % sudo setpci -s 7:2 ROM_ADDRESS
-> > > f0000001
+Embedded systems are already in 2007, and the mainline Linux scheduler
+frankly sucks on them, because it thinks it's back in the 1960's with
+a fixed supply and captive demand, pissing away "CPU bandwidth" as
+waste heat.  Not to say it's an easy problem; even academics with a
+dozen publications in this area don't seem to be able to model energy
+usage to the nearest big O, let alone design a stable economic
+dispatch engine.  But it helps to acknowledge what the problem is:
+even in a 1960's raised-floor screaming-air-conditioners
+screw-the-power-bill machine room, you can't actually run a
+half-decent CPU flat out any more without burning it to a crisp.
 
-Yeah, they seem to want 256MB.
+You can act ignorant and let the PMIC brown you out when it has to.
+Or you can start coping in mainline the way that organizations big
+enough (and smart enough) to feel the heat in their pocketbooks do in
+their pet kernels.  (Boo on Google for not sharing, and props to IBM
+for doing their damnedest.)  And guess what?  The system will actually
+get simpler, and stabler, and faster, and easier to maintain, because
+it'll be based on a real theory of operation with equations and things
+instead of a bunch of opaque, undocumented shotgun heuristics.
 
-> > Yep, looks like those two devices had a problem.  Supposedly they want 
-> > to sit at 256M?  Given that we're only giving each bridge 1M of memory 
-> > space that would definitely be a problem.
+This hypothetical economic-dispatch scheduler will still _have_
+heuristics, of course -- you can't begin to model a modern CPU
+accurately on-line.  But they will be contained in _data_ rather than
+_code_, and issues of numerical stability will be separated cleanly
+from the rule set.  You'll be able to characterize the rule set's
+domain of stability, given a conservative set of assumptions about the
+feedback paths in the system under control, with the sort of
+techniques they teach in the engineering schools that none of us (me
+included) seem to have attended.  (I went to school thinking I was
+going to be a physicist.  Wishful thinking -- but I was young and
+stupid.  What's your excuse?  ;-)
 
-We should be sizing the bridge regions by how much space the devices 
-behind the bridges actually need, BUT I can guess at two problems:
+OK, it feels better to have that off my chest.  Apologies to those
+readers -- doubtless the vast majority of LKML, including everyone
+else in this thread -- for whom it's irrelevant, pseudo-learned
+pontification with no patch attached.  And my sincere thanks to Ingo,
+Con, and really everyone else CC'ed, without whom Linux wouldn't be as
+good as it is (really quite good, all things considered) and wouldn't
+contribute as much as it does to my own livelihood.
 
- - On PC's, we generally trust any BIOS setup. If the bridge has been 
-   initialized to some value that seems half-way valid we generally leave 
-   it there. Moving things around tends to cause a lot  more problems than 
-   it fixes.
- - we normally do *not* try to assign ROM resources at all, because a 
-   number of video cards in particular do some really strange stuff with 
-   the ROMS, like share the decoders for the ROM's and the other PCI 
-   resources!
-
-IOW, I think that what happens is that the BIOS has set it up to have a 
-32MB window, and since the kernel doesn't think there is anything wrong 
-with that, it leaves it well enough alone.
-
-You could try adding "pci=rom" to the kernel command line, which should 
-make the kernel try to assign space for the roms too.
-
-I think we used to *never* assign PCI bus resources on x86, but that thing 
-got fixed some time ago. Now I think we only re-assign them if they were 
-unassigned *or* if the assignment wasn't working before. But I'm not 100% 
-sure about that second part... It's been working so well that I don't 
-think we've had a lot of problems with resource assignment lately, and 
-I've paged it all out of my brain.
-
-Ivan, can you remind my tired old brain?
-
-		Linus
+Cheers,
+- Michael
