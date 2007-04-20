@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993298AbXDTRbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993302AbXDTRdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993298AbXDTRbv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767162AbXDTRbv
+	id S2993302AbXDTRdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993303AbXDTRdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:31:51 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:43049 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993295AbXDTRbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:31:50 -0400
-Date: Fri, 20 Apr 2007 10:30:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ego@in.ibm.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-Id: <20070420103052.686f3c71.akpm@linux-foundation.org>
-In-Reply-To: <20070420122609.GA22325@in.ibm.com>
-References: <20070419120131.GB13435@in.ibm.com>
-	<200704201054.38037.rjw@sisk.pl>
-	<20070420110520.GB11290@in.ibm.com>
-	<200704201359.30490.rjw@sisk.pl>
-	<20070420122609.GA22325@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Apr 2007 13:33:16 -0400
+Received: from mx2.suse.de ([195.135.220.15]:59795 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993302AbXDTRdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:33:15 -0400
+Date: Fri, 20 Apr 2007 10:31:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: const struct pci_driver [Was: [RFC 2/2] Input: phantom, add a
+	new driver]
+Message-ID: <20070420173118.GA10082@suse.de>
+References: <210731960111436322@karneval.cz> <258431179037841809@karneval.cz> <20070419230719.a118a132.akpm@linux-foundation.org> <462879BE.1050401@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462879BE.1050401@gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 17:56:09 +0530
-Gautham R Shenoy <ego@in.ibm.com> wrote:
-
-> > I mean, we already have four of them (PF_NOFREEZE, PF_FROZEN,
-> > PF_FREEZER_SKIP, TIF_FREEZE), and you will need to introduce two more for
-> > the freezer-based CPU hotplug, so if yet another one is needed, that will make
-> > up almost a separate u8 field ...
+On Fri, Apr 20, 2007 at 10:28:46AM +0200, Jiri Slaby wrote:
+> Andrew Morton napsal(a):
+> > On Tue, 17 Apr 2007 22:02:10 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
+> > 
+> >> phantom, add a new driver
+> [...]
+> >> +static struct pci_driver phantom_pci_driver = {
+> >> +	.name = "phantom",
+> >> +	.id_table = phantom_pci_tbl,
+> >> +	.probe = phantom_probe,
+> >> +	.remove = __devexit_p(phantom_remove),
+> >> +	.suspend = phantom_suspend,
+> >> +	.resume = phantom_resume
+> >> +};
+> > 
+> > This goes into the read/write section.  Make it const?
 > 
-> I am perfectly ok with it. But I am not sure if everybody would agree to have
-> another field in the task struct, though in this case it does make sense :-)
+> Hmm, good question, I don't know the answer. Why are not pci_driver structs
+> const, Greg?
 
-OK by me.  You might want to consider making that fields's locking protocol
-be set_bit(), clear_bit(), etc rather than task_lock().
+Because the pci core sets the needed pci_driver.driver structure fields
+that the driver core needs in order to properly hook up things.
+
+I'm considering a change to this that would allow pci (and all other)
+driver structures be const, and then dynamically create the needed
+driver core structure based on this "template" which would also let us
+do some other things that the driver core wants, but that work is a few
+months away.  When/if I get to that, I'll go through and mark all of the
+driver structures const to move them to the read-only kernel section.
+
+thanks,
+
+greg k-h
