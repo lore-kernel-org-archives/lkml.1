@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993289AbXDTRXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993294AbXDTRY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993289AbXDTRXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993294AbXDTRXr
+	id S2993294AbXDTRY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993295AbXDTRY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:23:47 -0400
-Received: from mail.screens.ru ([213.234.233.54]:44746 "EHLO mail.screens.ru"
+	Fri, 20 Apr 2007 13:24:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43423 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993289AbXDTRXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:23:46 -0400
-Date: Fri, 20 Apr 2007 21:23:48 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] workqueue: cancel_rearming_delayed_work/workqueue usage warning
-Message-ID: <20070420172348.GC470@tv-sign.ru>
-References: <20070419065404.GB1782@ff.dom.local> <20070419144618.GG32602149@melbourne.sgi.com> <20070420081325.GB1695@ff.dom.local> <20070420085354.GP32602149@melbourne.sgi.com> <20070420102157.GD1695@ff.dom.local> <20070420110119.GS32602149@melbourne.sgi.com> <20070420121255.GA4042@ff.dom.local>
+	id S2993294AbXDTRY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:24:28 -0400
+Date: Fri, 20 Apr 2007 13:21:47 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+Message-ID: <20070420172147.GC20118@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jeremy Fitzhardinge <jeremy@goop.org>, Adrian Bunk <bunk@stusta.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	pavel@suse.cz, linux-pm@lists.osdl.org,
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
+References: <20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org> <20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org> <20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org> <20070420145126.GC25051@redhat.com> <4628DC0A.60707@goop.org> <20070420160308.GB20118@redhat.com> <4628F586.3040606@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070420121255.GA4042@ff.dom.local>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <4628F586.3040606@goop.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/20, Jarek Poplawski wrote:
-> 
-> Here is my proposal to make things clearer:
-> (this time on 2.6.21-rc7)
-> 
-> CC: David Chinner <dgc@sgi.com>
-> CC: Oleg Nesterov <oleg@tv-sign.ru>
-> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-> 
-> ---
-> 
-> diff -Nurp 2.6.21-rc7-/kernel/workqueue.c 2.6.21-rc7/kernel/workqueue.c
-> --- 2.6.21-rc7-/kernel/workqueue.c	2007-04-18 10:14:16.000000000 +0200
-> +++ 2.6.21-rc7/kernel/workqueue.c	2007-04-20 13:56:51.000000000 +0200
-> @@ -662,6 +662,8 @@ EXPORT_SYMBOL(flush_scheduled_work);
->   * cancel_rearming_delayed_workqueue - reliably kill off a delayed work whose handler rearms the delayed work.
->   * @wq:   the controlling workqueue structure
->   * @dwork: the delayed work struct
-> + *
-> + * WARNING: use only with handlers, which rearm unconditionally with delay > 0
->   */
+On Fri, Apr 20, 2007 at 10:16:54AM -0700, Jeremy Fitzhardinge wrote:
+ > Dave Jones wrote:
+ > >  > Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
+ > >
+ > > Ah, I saw you patched in CFS too, and thought it may be related.
+ > >   
+ > 
+ > Well, I have CONFIG_FB_BACKLIGHT enabled, and it still works.
+ > 
+ > Maybe there's something in Andi's queue which is making it work?
 
-Nit: it is ok if the work re-arms itself with delay == 0 "sometimes". What we
-need is that the handler use delay > 0 eventually.
+Shrug, I'm out of ideas.  I'm hoping that it'll magically start working
+when people start flushing their git trees for .22
+Maybe that'll yield a clue for something that can be backported to .21.x
+because right now, I'm completely puzzled.
 
-I'd suggest to re-diff against -mm tree. I don't think this patch can find its
-way to the soon to be released 2.6.21.
+I was testing on a vanilla 2.6.21-rc7-git3.
 
-Oleg.
+	Dave
 
+-- 
+http://www.codemonkey.org.uk
