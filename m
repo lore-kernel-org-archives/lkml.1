@@ -1,105 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992899AbXDTPEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992893AbXDTPLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992899AbXDTPEp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 11:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992923AbXDTPEo
+	id S2992893AbXDTPLt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 11:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992923AbXDTPLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 11:04:44 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4151 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992899AbXDTPEn (ORCPT
+	Fri, 20 Apr 2007 11:11:49 -0400
+Received: from bungunia.hst.terra.com.br ([200.176.10.196]:44886 "EHLO
+	bungunia.hst.terra.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992893AbXDTPLs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 11:04:43 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 3/3] introduce HIGH_ORDER delineating easily reclaimable orders
-References: <exportbomb.1177081388@pinky>
-InReply-To: <exportbomb.1177081388@pinky>
-Message-ID: <cc3c22ba296c3d75cd7bd66747fb08c0@pinky>
-Date: Fri, 20 Apr 2007 16:04:36 +0100
+	Fri, 20 Apr 2007 11:11:48 -0400
+X-Terra-Karma: -2%
+X-Terra-Hash: bb8060abf7d074b7ddeea289078506b5
+Message-ID: <4628D830.3020906@centralinf.com.br>
+Date: Fri, 20 Apr 2007 12:11:44 -0300
+From: guilherme <guilherme@centralinf.com.br>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc7: HPET enabled freeze my machine at boot
+References: <4628B0DA.3070907@centralinf.com.br>	<p73mz133zr0.fsf@bingen.suse.de> <4628C045.3020503@centralinf.com.br> <p73irbr3ybm.fsf@bingen.suse.de>
+In-Reply-To: <p73irbr3ybm.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi,
 
-The memory allocator treats lower order (order <= 3) and higher order
-(order >= 4) allocations in slightly different ways.  As lower orders
-are much more likely to be available and also more likely to be
-simply reclaimed it is deemed reasonable to wait longer for those.
-Lumpy reclaim also changes behaviour at this same boundary, more
-agressivly targetting pages in reclaim at higher order.
+root@dub:/usr/src/linux-2.6# git bisect good
+5d8b34fdcb384161552d01ee8f34af5ff11f9684 is first bad commit
+commit 5d8b34fdcb384161552d01ee8f34af5ff11f9684
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Fri Feb 16 01:27:43 2007 -0800
 
-This patch removes all these magical numbers and replaces with
-with a constant HIGH_ORDER.
+     [PATCH] clocksource: Add verification (watchdog) helper
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
----
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 8c87d79..f9d2ced 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -25,6 +25,13 @@
- #endif
- #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
- 
-+/*
-+ * The boundary between small and large allocations.  That is between
-+ * allocation orders which should colesce naturally under reasonable
-+ * reclaim pressure and those which will not.
-+ */
-+#define HIGH_ORDER 3
-+
- #ifdef CONFIG_PAGE_GROUP_BY_MOBILITY
- #define MIGRATE_UNMOVABLE     0
- #define MIGRATE_RECLAIMABLE   1
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d7e33cb..44786d9 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1768,7 +1768,7 @@ nofail_alloc:
- 	 */
- 	do_retry = 0;
- 	if (!(gfp_mask & __GFP_NORETRY)) {
--		if ((order <= 3) || (gfp_mask & __GFP_REPEAT))
-+		if ((order <= HIGH_ORDER) || (gfp_mask & __GFP_REPEAT))
- 			do_retry = 1;
- 		if (gfp_mask & __GFP_NOFAIL)
- 			do_retry = 1;
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index e5e77fb..79aedcb 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -472,7 +472,8 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 
- 		referenced = page_referenced(page, 1);
- 		/* In active use or really unfreeable?  Activate it. */
--		if (sc->order <= 3 && referenced && page_mapping_inuse(page))
-+		if (sc->order <= HIGH_ORDER &&
-+					referenced && page_mapping_inuse(page))
- 			goto activate_locked;
- 
- #ifdef CONFIG_SWAP
-@@ -505,7 +506,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		}
- 
- 		if (PageDirty(page)) {
--			if (sc->order <= 3 && referenced)
-+			if (sc->order <= HIGH_ORDER && referenced)
- 				goto keep_locked;
- 			if (!may_enter_fs)
- 				goto keep_locked;
-@@ -774,9 +775,9 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
- 		unsigned long nr_active;
- 
- 		nr_taken = isolate_lru_pages(sc->swap_cluster_max,
--				     &zone->inactive_list,
--				     &page_list, &nr_scan, sc->order,
--				     (sc->order > 3)? ISOLATE_BOTH : 0);
-+			     &zone->inactive_list,
-+			     &page_list, &nr_scan, sc->order,
-+			     (sc->order > HIGH_ORDER)? ISOLATE_BOTH : 0);
- 		nr_active = deactivate_pages(&page_list);
- 
- 		__mod_zone_page_state(zone, NR_ACTIVE, -nr_active);
+     The TSC needs to be verified against another clocksource.  Instead 
+of using
+     hardwired assumptions of available hardware, provide a generic 
+verification
+     mechanism.  The verification uses the best available clocksource 
+and handles
+     the usability for high resolution timers / dynticks of the 
+clocksource which
+     needs to be verified.
+
+     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+     Cc: john stultz <johnstul@us.ibm.com>
+     Cc: Roman Zippel <zippel@linux-m68k.org>
+     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+:040000 040000 62dc665aebadaa1bdb948959a718162b88e1ff68 
+605d2b2d55e0b0edc4b26580d700f64fb878753a M      arch
+:040000 040000 ce257f3585445396942b4bb35d4fd23c44ab4bb1 
+5ace8e9bd9e9806ce468d7e8dec2db4f9052ed5e M      include
+:040000 040000 dfca91fe8a0b3ee7de842b4dd3451220634516f1 
+4c2ec00e90009d296f44f3e0b89c50e43336c6bc M      kernel
+root@dub:/usr/src/linux-2.6#
+
+Thanks.
+
+Guilherme M. Schroeder
+Network Administrator
+Central de Vendas Informatica LTDA
+Tel.: (11) 3665-2000 Ramal: 2008
+http://www.centralinf.com.br
+
+
+Andi Kleen wrote:
+> guilherme <guilherme@centralinf.com.br> writes:
+> 
+>> With noapic it freezes too. This doesn't occur with 2.6.20.x thought.
+> 
+> Ah. Can you please git bisect it then? 
+> 
+> -Andi
+> 
+> 
