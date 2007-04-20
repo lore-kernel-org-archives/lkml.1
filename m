@@ -1,96 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992984AbXDTP5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767137AbXDTP7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992984AbXDTP5a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 11:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993261AbXDTP53
+	id S1767137AbXDTP7x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 11:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767131AbXDTP7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 11:57:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:62059 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992984AbXDTP52 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 11:57:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QsGOOTfvnzZEJe9ZWGUzkb7ase4J55YmwLrPAiciV6p2qlCGu+wzg0Vygyn7r5JdOf1ZPyCi4dIjGaSssFBxQ/7KwDiLu0us/G4WdXN+GGtXswC572V3Hkdfs5SAJmOyOo2qEGwYKofT8j4UGuHGrI+ml0OaLqYuOrSwj/oW4P8=
-Message-ID: <d120d5000704200857s6661f700ifc18084b32675db0@mail.gmail.com>
-Date: Fri, 20 Apr 2007 11:57:27 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Cc: "Tejun Heo" <htejun@gmail.com>, "Cornelia Huck" <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Greg K-H" <greg@kroah.com>, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <Pine.LNX.4.44L0.0704201016260.2616-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46284F2A.4000401@gmail.com>
-	 <Pine.LNX.4.44L0.0704201016260.2616-100000@iolanthe.rowland.org>
+	Fri, 20 Apr 2007 11:59:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42431 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767137AbXDTP7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 11:59:52 -0400
+Message-Id: <20070420155503.473053637@chello.nl>
+References: <20070420155154.898600123@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Fri, 20 Apr 2007 17:52:03 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: [PATCH 09/10] mm: expose BDI statistics in sysfs.
+Content-Disposition: inline; filename=bdi_stat_sysfs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/20/07, Alan Stern <stern@rowland.harvard.edu> wrote:
->
-> Dmitry, in thinking things over some more I realized there's going to be a
-> problem with the autosuspend support in USB.  It has to do with the way a
-> driver needs to prevent (or block) suspends from occurring while it is
-> actively using a device.
->
-> To understand this, you need to know that USB adds a pm_mutex to the
-> device structure.  It gets used for synchronizing all suspend- or
-> resume-related activities.  In particular, the driver's suspend() method
-> is called with usbdev->pm_mutex held.
->
-> The next idea is that a driver needs to synchronize its remove() method
-> with other methods such as read() -- we mustn't allow read() to try and
-> refer to the device after the driver has been unbound.  Let's say the
-> driver has unbind_mutex embedded in its private data structure for this
-> purpose.
->
-> Now consider what read() has to do.  It needs to block suspends from
-> occurring while it runs, and it needs to do an autoresume if the device
-> was already suspended.  So read() will look like this:
->
->        mutex_lock(&private->unbind_mutex);
->        if (private->gone) {
->                ret = -ENODEV;
->                goto done;
->        }
->        if (private->suspended)
->                autoresume(private->usbdev);
->        ...
->  done:
->        mutex_unlock(&private->unbind_mutex);
->        return ret;
->
-> Meanwhile, the suspend() method needs to block while read() is running.
-> So it will look like this:
->
->        private->suspended = 1;
->        mutex_lock(&private->unbind_mutex);
->        /* Now the driver has quiesced */
->        mutex_unlock(&private->unbind_mutex);
->
-> Here's the problem:  The autoresume() call inside read() tries to acquire
-> usbdev->pm_mutex while holding private->unbind_mutex.  The suspend()
-> method does the reverse, a locking-order violation.
->
-> So far I haven't figured out any way to make this work.  Do you have a
-> suggestion?  (Don't say read() should hold pm_mutex as well as
-> unbind_mutex; that's no good -- although the reason is rather obscure.)
->
+Expose the per BDI stats in /sys/block/<dev>/queue/*
 
-First of all I think that I would merge pm and unbind mutex into one -
-you also need to synchronize resume and suspend with bind and unbind
-so you pretty much need to always acquire both of them.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ block/ll_rw_blk.c |   32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-Second (and I admit I have not followed USB autoresume discussions, my
-usb-devle backlog is over 5000 messages ;( ) is I am not sure why
-woudl a read block autoresume. I can see write doing that but passive
-reads should not affect device state.
+Index: linux-2.6-mm/block/ll_rw_blk.c
+===================================================================
+--- linux-2.6-mm.orig/block/ll_rw_blk.c
++++ linux-2.6-mm/block/ll_rw_blk.c
+@@ -3976,6 +3976,15 @@ static ssize_t queue_max_hw_sectors_show
+ 	return queue_var_show(max_hw_sectors_kb, (page));
+ }
+ 
++static ssize_t queue_nr_reclaimable_show(struct request_queue *q, char *page)
++{
++	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_RECLAIMABLE));
++}
++
++static ssize_t queue_nr_writeback_show(struct request_queue *q, char *page)
++{
++	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_WRITEBACK));
++}
+ 
+ static struct queue_sysfs_entry queue_requests_entry = {
+ 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
+@@ -4006,6 +4020,16 @@ static struct queue_sysfs_entry queue_ma
+ 	.show = queue_max_hw_sectors_show,
+ };
+ 
++static struct queue_sysfs_entry queue_reclaimable_entry = {
++	.attr = {.name = "reclaimable_pages", .mode = S_IRUGO },
++	.show = queue_nr_reclaimable_show,
++};
++
++static struct queue_sysfs_entry queue_writeback_entry = {
++	.attr = {.name = "writeback_pages", .mode = S_IRUGO },
++	.show = queue_nr_writeback_show,
++};
++
+ static struct queue_sysfs_entry queue_iosched_entry = {
+ 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
+ 	.show = elv_iosched_show,
+@@ -4018,6 +4047,8 @@ static struct attribute *default_attrs[]
+ 	&queue_initial_ra_entry.attr,
+ 	&queue_max_hw_sectors_entry.attr,
+ 	&queue_max_sectors_entry.attr,
++	&queue_reclaimable_entry.attr,
++	&queue_writeback_entry.attr,
+ 	&queue_iosched_entry.attr,
+ 	NULL,
+ };
 
 -- 
-Dmitry
+
