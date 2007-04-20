@@ -1,78 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422963AbXDTGRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422967AbXDTGVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422963AbXDTGRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 02:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422967AbXDTGRI
+	id S1422967AbXDTGVZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 02:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422974AbXDTGVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 02:17:08 -0400
-Received: from omta05sl.mx.bigpond.com ([144.140.93.195]:23284 "EHLO
-	omta05sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422963AbXDTGRG (ORCPT
+	Fri, 20 Apr 2007 02:21:25 -0400
+Received: from omta04sl.mx.bigpond.com ([144.140.93.156]:30764 "EHLO
+	omta04sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422967AbXDTGVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 02:17:06 -0400
-Message-ID: <46285AD8.10402@bigpond.net.au>
-Date: Fri, 20 Apr 2007 16:16:56 +1000
+	Fri, 20 Apr 2007 02:21:24 -0400
+Message-ID: <46285BE0.6070702@bigpond.net.au>
+Date: Fri, 20 Apr 2007 16:21:20 +1000
 From: Peter Williams <pwil3058@bigpond.net.au>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
+To: Willy Tarreau <w@1wt.eu>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
- Scheduler [CFS]
-References: <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org> <20070419031807.GA24512@wotan.suse.de> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu> <20070419075746.GD31925@holomorphy.com> <4627577B.7050204@bigpond.net.au> <20070420052619.GX2986@holomorphy.com>
-In-Reply-To: <20070420052619.GX2986@holomorphy.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, v3
+References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420044850.GA31438@1wt.eu> <46285781.7090205@bigpond.net.au>
+In-Reply-To: <46285781.7090205@bigpond.net.au>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta05sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Fri, 20 Apr 2007 06:17:02 +0000
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta04sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Fri, 20 Apr 2007 06:21:21 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> William Lee Irwin III wrote:
->>> I'd further recommend making priority levels accessible to kernel threads
->>> that are not otherwise accessible to processes, both above and below
->>> user-available priority levels. Basically, if you can get SCHED_RR and
->>> SCHED_FIFO to coexist as "intimate scheduler classes," then a SCHED_KERN
->>> scheduler class can coexist with SCHED_OTHER in like fashion, but with
->>> availability of higher and lower priorities than any userspace process
->>> is allowed, and potentially some differing scheduling semantics. In such
->>> a manner nonessential background processing intended not to ever disturb
->>> userspace can be given priorities appropriate to it (perhaps even con's
->>> SCHED_IDLEPRIO would make sense), and other, urgent processing can be
->>> given priority over userspace altogether.
+Peter Williams wrote:
+> Willy Tarreau wrote:
+>> On Fri, Apr 20, 2007 at 10:10:45AM +1000, Peter Williams wrote:
+>>> Ingo Molnar wrote:
+>>>> - bugfix: use constant offset factor for nice levels instead of   
+>>>> sched_granularity_ns. Thus nice levels work even if someone sets   
+>>>> sched_granularity_ns to 0. NOTE: nice support is still naive, i'll   
+>>>> address the many nice level related suggestions in -v4.
+>>> I have a suggestion I'd like to make that addresses both nice and 
+>>> fairness at the same time.  As I understand the basic principle 
+>>> behind this scheduler it to work out a time by which a task should 
+>>> make it onto the CPU and then place it into an ordered list (based on 
+>>> this value) of tasks waiting for the CPU.  I think that this is a 
+>>> great idea and my suggestion is with regard to a method for working 
+>>> out this time that takes into account both fairness and nice.
+>>>
+>>> First suppose we have the following metrics available in addition to 
+>>> what's already provided.
+>>>
+>>> rq->avg_weight_load /* a running average of the weighted load on the 
+>>> CPU */
+>>> p->avg_cpu_per_cycle /* the average time in nsecs that p spends on 
+>>> the CPU each scheduling cycle */
+>>>
+>>> where a scheduling cycle for a task starts when it is placed on the 
+>>> queue after waking or being preempted and ends when it is taken off 
+>>> the CPU either voluntarily or after being preempted.  So 
+>>> p->avg_cpu_per_cycle is just the average amount of time p spends on 
+>>> the CPU each time it gets on to the CPU.  Sorry for the long 
+>>> explanation here but I just wanted to make sure there was no chance 
+>>> that "scheduling cycle" would be construed as some mechanism being 
+>>> imposed on the scheduler.)
+>>>
+>>> We can then define:
+>>>
+>>> effective_weighted_load = max(rq->raw_weighted_load, 
+>>> rq->avg_weighted_load)
+>>>
+>>> If p is just waking (i.e. it's not on the queue and its load_weight 
+>>> is not included in rq->raw_weighted_load) and we need to queue it, we 
+>>> say that the maximum time (in all fairness) that p should have to 
+>>> wait to get onto the CPU is:
+>>>
+>>> expected_wait = p->avg_cpu_per_cycle * effective_weighted_load / 
+>>> p->load_weight
+>>>
+>>> Calculating p->avg_cpu_per_cycle costs one add, one multiply and one 
+>>> shift right per scheduling cycle of the task.  An additional cost is 
+>>> that you need a shift right to get the nanosecond value from value 
+>>> stored in the task struct. (i.e. the above code is simplified to give 
+>>> the general idea).  The average would be number of cycles based 
+>>> rather than time based and (happily) this simplifies the calculations.
+>>>
+>>> If the expected time to get onto the CPU (i.e. expected_wait plus the 
+>>> current time) for p is earlier than the equivalent time for the 
+>>> currently running task then preemption of that task would be justified.
+>>
+>> I 100% agree on this method because I came to nearly the same 
+>> conclusion on
+>> paper about 1 year ago. What I'd like to add is that the expected wake 
+>> up time
+>> is not the most precise criterion for fairness.
 > 
-> On Thu, Apr 19, 2007 at 09:50:19PM +1000, Peter Williams wrote:
->> This is sounding very much like System V Release 4 (and descendants) 
->> except that they call it SCHED_SYS and also give SCHED_NORMAL tasks that 
->> are in system mode dynamic priorities in the SCHED_SYS range (to avoid 
->> priority inversion, I believe).
+> It's not the expected wake up time being computed.  It's the expected 
+> time that the task is selected to run after being put on the queue 
+> (either as a result of waking or being pre-empted).
 > 
-> Descriptions of that are probably where I got the idea (hurrah for OS
-> textbooks).
+> I think that your comments below are mainly invalid because of this 
+> understanding.
+> 
+>> The expected completion
+>> time is better. When you have one task t1 which is expected to run for T1
+>> nanosecs and another task t2 which is expected to run for T2, what is
+>> important for the user for fairness is when the task completes its 
+>> work. If
+>> t1 should wake up at time W1 and t2 at W2, then the list should be 
+>> ordered
+>> by comparing W1+T1 and W2+T2.
+> 
+> This is a point where misunderstanding results in a wrong conclusion. 
+> However, the notion of expected completion time is useful.  I'd 
+> calculate the expected completion time for the task as it goes on to the 
+> CPU and if while it is running a new task is queued whose expected "on 
+> CPU" time is before the current task's expected end time you can think 
+> about preempting when the new tasks "on CPU" task arrives -- how 
+> hard/easy this would be to implement is moot.
+> 
+>>
+>> What I like with this method is that it remains fair with nice tasks 
+>> because
+>> because in order to renice a task tN, you just have to change TN, and 
+>> if it
+>> has to run shorter, it can be executed before CPU hogs and stay there 
+>> for a
+>> very short time.
+>>
+>> Also, I found that if we want to respect interactivity, we must 
+>> conserve a
+>> credit for each task.
+> 
+> This is one point where the misunderstanding results in an invalid 
+> conclusion.  There is no need for credits as the use of the average time 
+> on CPU each cycle makes the necessary corrections that credits would be 
+> used to address.
+> 
+>> It is a bounded amount of CPU time left to be used. When
+>> the task t3 has the right to use T3 nsecs, and wakes up at W3, if it 
+>> does not
+>> spend T3 nsec on the CPU, but only N3<T3, then we have a credit C3 
+>> computed
+>> like this :
+>>
+>>   C3 = MAX(MAX_CREDIT, C3 + T3 - N3)
+>>
+>> And if a CPU hog uses more than its assigned time slice due to scheduler
+>> resolution, then C3 can become negative (and bounded too) :
+>>
+>>   C3 = MAX(MIN_CREDIT, C3 + T3 - N3)
+>>
+>> Now how is the credit used ? Simple: the credit is a part of a 
+>> timeslice, so
+>> it's systematically added to the computed timeslice when ordering the 
+>> tasks.
+>> So we indeed order tasks t1 and t2 by W1+T1+C1 and W2+T2+C2.
+> 
+> I think this is overcomplicating matters.
+> 
+> However, some compensating credit might be in order for tasks that get 
+> pre-empted e.g. base their next expected "on CPU" time on the difference 
+> between their average on CPU time and they amount they got to use before 
+> they were pre-empted.
 
-And long term background memory.  :-)
-
-> It makes a fair amount of sense.
-
-Yes.  You could also add a SCHED_IA in between SCHED_SYS and SCHED_OTHER 
-(a la Solaris) for interactive tasks.  The only problem is how to get a 
-task into SCHED_IA without root privileges.
-
-> Not sure what the take on
-> the specific precedent is. The only content here is expanding the
-> priority range with ranges above and below for the exclusive use of
-> ultra-privileged tasks, so it's really trivial. Actually it might be so
-> trivial it should just be some permission checks in the SCHED_OTHER
-> renicing code.
-
-Perhaps.
+Oops.  I made a mistake here it should be just the amount they got this 
+time if that's less than their average and otherwise the average.  That 
+way if they're booted off early they get back sooner and if they get 
+booted off late in the game they wait their normal amount.
 
 Peter
 -- 
