@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767062AbXDTMCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767067AbXDTMCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767062AbXDTMCK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 08:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767064AbXDTMCK
+	id S1767067AbXDTMCa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 08:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767068AbXDTMC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 08:02:10 -0400
-Received: from mx1-2.mail.ru ([194.67.23.121]:7804 "EHLO mx1.mail.ru"
+	Fri, 20 Apr 2007 08:02:29 -0400
+Received: from mx2-2.mail.ru ([194.67.23.122]:27923 "EHLO mx2.mail.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767062AbXDTMCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 08:02:09 -0400
-Date: Fri, 20 Apr 2007 15:59:21 +0400
+	id S1767066AbXDTMC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 08:02:28 -0400
+Date: Fri, 20 Apr 2007 16:00:26 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: linux-kernel@vger.kernel.org
 Cc: kernel-discuss@handhelds.org
-Subject: [PATCH 5/7] APM emulation driver for class batteries
-Message-ID: <20070420115921.GE21752@zarina>
+Subject: [PATCH 6/7] ds2760 W1 slave
+Message-ID: <20070420120026.GF21752@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
@@ -22,277 +22,287 @@ User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's still tristate, but now on module removal it will set
-apm get status function to NULL, to not cause oops if two APM
-modules loaded/unloaded in special order.
-
-Fixing APM API itself is another story.
+This is W1 slave for ds2760 chip, found inside almost every HP iPaq and
+HTC PDAs/phones.
 
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/battery/Kconfig     |    7 ++
- drivers/battery/Makefile    |    1 +
- drivers/battery/apm_power.c |  228 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 236 insertions(+), 0 deletions(-)
- create mode 100644 drivers/battery/apm_power.c
+ drivers/w1/slaves/Kconfig     |   13 +++
+ drivers/w1/slaves/Makefile    |    1 +
+ drivers/w1/slaves/w1_ds2760.c |  162 +++++++++++++++++++++++++++++++++++++++++
+ drivers/w1/slaves/w1_ds2760.h |   50 +++++++++++++
+ drivers/w1/w1_family.h        |    1 +
+ 5 files changed, 227 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/w1/slaves/w1_ds2760.c
+ create mode 100644 drivers/w1/slaves/w1_ds2760.h
 
-diff --git a/drivers/battery/Kconfig b/drivers/battery/Kconfig
-index 0c14ae0..5e2dac8 100644
---- a/drivers/battery/Kconfig
-+++ b/drivers/battery/Kconfig
-@@ -15,4 +15,11 @@ config BATTERY_DS2760
- 	help
- 	  Say Y here to enable support for batteries with ds2760 chip.
+diff --git a/drivers/w1/slaves/Kconfig b/drivers/w1/slaves/Kconfig
+index 904e5ae..df95d6c 100644
+--- a/drivers/w1/slaves/Kconfig
++++ b/drivers/w1/slaves/Kconfig
+@@ -35,4 +35,17 @@ config W1_SLAVE_DS2433_CRC
+ 	  Each block has 30 bytes of data and a two byte CRC16.
+ 	  Full block writes are only allowed if the CRC is valid.
  
-+config APM_POWER
-+	tristate "APM emulation"
-+	depends on BATTERY && APM_EMULATION
++config W1_SLAVE_DS2760
++	tristate "Dallas 2760 battery monitor chip (HP iPAQ & others)"
++	depends on W1
 +	help
-+	  Say Y here to enable support APM status emulation using
-+	  battery class devices.
++	  If you enable this you will have the DS2760 battery monitor
++	  chip support.
++
++	  The battery monitor chip is used in many batteries/devices
++	  as the one who is responsible for charging/discharging/monitoring
++	  Li+ batteries.
++
++	  If you are unsure, say N.
 +
  endmenu
-diff --git a/drivers/battery/Makefile b/drivers/battery/Makefile
-index 9902513..cea5807 100644
---- a/drivers/battery/Makefile
-+++ b/drivers/battery/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_BATTERY)              += battery.o
- obj-$(CONFIG_BATTERY_DS2760)       += ds2760_battery.o
-+obj-$(CONFIG_APM_POWER)            += apm_power.o
-diff --git a/drivers/battery/apm_power.c b/drivers/battery/apm_power.c
+diff --git a/drivers/w1/slaves/Makefile b/drivers/w1/slaves/Makefile
+index 725dcfd..a8eb752 100644
+--- a/drivers/w1/slaves/Makefile
++++ b/drivers/w1/slaves/Makefile
+@@ -5,4 +5,5 @@
+ obj-$(CONFIG_W1_SLAVE_THERM)	+= w1_therm.o
+ obj-$(CONFIG_W1_SLAVE_SMEM)	+= w1_smem.o
+ obj-$(CONFIG_W1_SLAVE_DS2433)	+= w1_ds2433.o
++obj-$(CONFIG_W1_SLAVE_DS2760)	+= w1_ds2760.o
+ 
+diff --git a/drivers/w1/slaves/w1_ds2760.c b/drivers/w1/slaves/w1_ds2760.c
 new file mode 100644
-index 0000000..e3bb4bd
+index 0000000..1bd1c6d
 --- /dev/null
-+++ b/drivers/battery/apm_power.c
-@@ -0,0 +1,228 @@
++++ b/drivers/w1/slaves/w1_ds2760.c
+@@ -0,0 +1,162 @@
 +/*
-+ * Copyright (c) 2007 Anton Vorontsov <cbou@mail.ru>
-+ * Copyright (c) 2007 Eugeny Boger <eugenyboger@dgap.mipt.ru>
++ * 1-Wire implementation for the ds2760 chip
 + *
-+ * Author: Eugeny Boger <eugenyboger@dgap.mipt.ru>
++ * Copyright (c) 2004-2005, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
 + *
 + * Use consistent with the GNU GPL is permitted,
 + * provided that this copyright notice is
 + * preserved in its entirety in all copies and derived works.
++ *
 + */
 +
++#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/battery.h>
-+#include <linux/apm-emulation.h>
++#include <linux/device.h>
++#include <linux/types.h>
 +
-+#ifdef current
-+#undef current /* it expands to get_current() */
++#include "../w1.h"
++#include "../w1_int.h"
++#include "../w1_family.h"
++#include "w1_ds2760.h"
++
++static int w1_ds2760_io(struct device *dev, char *buf, int addr, size_t count,
++                        int io)
++{
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++
++	if (!dev)
++		return 0;
++
++	mutex_lock(&sl->master->mutex);
++
++	if (addr > DS2760_DATA_SIZE || addr < 0) {
++		count = 0;
++		goto out;
++	}
++	if (addr + count > DS2760_DATA_SIZE)
++		count = DS2760_DATA_SIZE - addr;
++
++	if (!w1_reset_select_slave(sl)) {
++		if (!io) {
++			w1_write_8(sl->master, W1_DS2760_READ_DATA);
++			w1_write_8(sl->master, addr);
++			count = w1_read_block(sl->master, buf, count);
++		} else {
++			w1_write_8(sl->master, W1_DS2760_WRITE_DATA);
++			w1_write_8(sl->master, addr);
++			w1_write_block(sl->master, buf, count);
++			/* XXX w1_write_block returns void, not n_written */
++		}
++	}
++
++out:
++	mutex_unlock(&sl->master->mutex);
++
++	return count;
++}
++
++int w1_ds2760_read(struct device *dev, char *buf, int addr, size_t count)
++{
++	return w1_ds2760_io(dev, buf, addr, count, 0);
++}
++
++int w1_ds2760_write(struct device *dev, char *buf, int addr, size_t count)
++{
++	return w1_ds2760_io(dev, buf, addr, count, 1);
++}
++
++#if 0
++/* Code below works, but unused currently, thus produces "defined but not
++ * used" warning. It stays here for reference and future needs, feel free
++ * to drop "#if 0" when you're about to use it. */
++
++/* io = 0 means copy from EEPROM to SRAM, 1 means from SRAM to EEPROM */
++static int w1_ds2760_eeprom(struct device *dev, int addr, int io)
++{
++	struct w1_slave *sl = container_of(dev, struct w1_slave, dev);
++	int ret = 0;
++
++	mutex_lock(&sl->master->mutex);
++
++	if (!w1_reset_select_slave(sl)) {
++		if (!io)
++		    w1_write_8(sl->master, W1_DS2760_RECALL_DATA);
++		else
++		    w1_write_8(sl->master, W1_DS2760_COPY_DATA);
++		w1_write_8(sl->master, addr);
++	}
++
++	mutex_unlock(&sl->master->mutex);
++
++	return ret;
++}
++
++static int w1_ds2760_recall(struct device *dev, int addr)
++{
++	return w1_ds2760_eeprom(dev, addr, 0);
++}
++
++static int w1_ds2760_copy(struct device *dev, int addr)
++{
++	return w1_ds2760_eeprom(dev, addr, 1);
++}
 +#endif
 +
-+#define BATTERY_PROP(bat, prop) ({                                 \
-+	void *value = bat->get_property(bat, BATTERY_PROP_##prop); \
-+	value ? *(int*)value : 0;                                  \
-+})
-+
-+#define MBATTERY_PROP(prop) main_battery->get_property(main_battery, \
-+                                            BATTERY_PROP_##prop)
-+
-+static struct battery *main_battery;
-+
-+static void find_main_battery(void)
++static ssize_t w1_ds2760_read_bin(struct kobject *kobj, char *buf, loff_t off,
++                                  size_t count)
 +{
-+	struct device *dev;
-+	struct battery *bat, *batm;
-+	int max_charge = 0;
-+
-+	main_battery = NULL;
-+	batm = NULL;
-+	list_for_each_entry(dev, &battery_class->devices, node) {
-+		bat = dev_get_drvdata(dev);
-+		/* If none of battery devices cantains 'main_battery' flag,
-+		   choice one with maximum design charge */
-+		if (BATTERY_PROP(bat, CHARGE_FULL_DESIGN) > max_charge) {
-+			batm = bat;
-+			max_charge = BATTERY_PROP(bat, CHARGE_FULL_DESIGN);
-+		}
-+
-+		if (bat->main_battery)
-+			main_battery = bat;
-+	}
-+	if (!main_battery)
-+		main_battery = batm;
-+
-+	return;
++	struct device *dev = container_of(kobj, struct device, kobj);
++	return w1_ds2760_read(dev, buf, off, count);
 +}
 +
-+static int calculate_time(int status)
++static struct bin_attribute w1_ds2760_bin_attr = {
++	.attr = {
++		.name = "w1_slave",
++		.mode = S_IRUGO,
++		.owner = THIS_MODULE,
++	},
++	.size = DS2760_DATA_SIZE,
++	.read = w1_ds2760_read_bin,
++};
++
++static int w1_ds2760_add_slave(struct w1_slave *sl)
 +{
-+	int *charge_full;
-+	int *charge_empty;
-+	int *charge;
-+	int *current;
-+
-+	charge_full = MBATTERY_PROP(CHARGE_FULL);
-+	/* if battery can't report this property, use design value */
-+	if (!charge_full)
-+		charge_full = MBATTERY_PROP(CHARGE_FULL_DESIGN);
-+
-+	charge_empty = MBATTERY_PROP(CHARGE_EMPTY);
-+	/* if battery can't report this property, use design value */
-+	if (!charge_empty)
-+		charge_empty = MBATTERY_PROP(CHARGE_EMPTY_DESIGN);
-+
-+	charge = MBATTERY_PROP(CHARGE_AVG);
-+	/* if battery can't report average value, use momentary */
-+	if (!charge)
-+		charge = MBATTERY_PROP(CHARGE_NOW);
-+
-+	current = MBATTERY_PROP(CURRENT_AVG);
-+	/* if battery can't report average value, use momentary */
-+	if (!current)
-+		current = MBATTERY_PROP(CURRENT_NOW);
-+
-+	/* no luck */
-+	if (!current || !charge || !charge_empty)
-+		return -1;
-+
-+	if (status == BATTERY_STATUS_CHARGING)
-+		return ((*charge - *charge_full) * 60L) / *current;
-+	else
-+		return -((*charge - *charge_empty) * 60L) / *current;
++	return sysfs_create_bin_file(&sl->dev.kobj, &w1_ds2760_bin_attr);
 +}
 +
-+/* TODO: teach this function to calculate battery life using energy */
-+static int calculate_capacity(void)
++static void w1_ds2760_remove_slave(struct w1_slave *sl)
 +{
-+	int ret;
-+	int *charge_empty;
-+	int *charge_full;
-+	int *charge;
-+
-+	charge_full = MBATTERY_PROP(CHARGE_FULL);
-+	/* if battery can't report this property, use design value */
-+	if (!charge_full)
-+		charge_full = MBATTERY_PROP(CHARGE_FULL_DESIGN);
-+
-+	charge_empty = MBATTERY_PROP(CHARGE_EMPTY);
-+	/* if battery can't report this property, use design value */
-+	if (!charge_empty)
-+		charge_empty = MBATTERY_PROP(CHARGE_EMPTY_DESIGN);
-+
-+	charge = MBATTERY_PROP(CHARGE_AVG);
-+	/* if battery can't report average value, use momentary */
-+	if (!charge)
-+		charge = MBATTERY_PROP(CHARGE_NOW);
-+
-+	/* no luck */
-+	if (!charge_full || !charge_empty || !charge)
-+		return -1;
-+
-+	if (*charge_full - *charge_empty)
-+		ret =  ((*charge - *charge_empty) * 100L) /
-+		       (*charge_full - *charge_empty);
-+	else
-+		return -1;
-+
-+	if (ret > 100)
-+		return 100;
-+	else if (ret < 0)
-+		return 0;
-+	else
-+		return ret;
++	sysfs_remove_bin_file(&sl->dev.kobj, &w1_ds2760_bin_attr);
 +}
 +
-+static void apm_battery_apm_get_power_status(struct apm_power_info *info)
++static struct w1_family_ops w1_ds2760_fops = {
++	.add_slave    = w1_ds2760_add_slave,
++	.remove_slave = w1_ds2760_remove_slave,
++};
++
++static struct w1_family w1_ds2760_family = {
++	.fid = W1_FAMILY_DS2760,
++	.fops = &w1_ds2760_fops,
++};
++
++static int __init w1_ds2760_init(void)
 +{
-+	int status;
-+	int *capacity;
-+	int *time_to_full;
-+	int *time_to_empty;
-+
-+	down(&battery_class->sem);
-+	find_main_battery();
-+	if (!main_battery) {
-+		up(&battery_class->sem);
-+		return;
-+	}
-+
-+	/* status */
-+
-+	if (MBATTERY_PROP(STATUS))
-+		status = *(int *)MBATTERY_PROP(STATUS);
-+	else
-+		status = BATTERY_STATUS_UNKNOWN;
-+
-+	/* ac line status */
-+
-+	if ((status == BATTERY_STATUS_CHARGING) ||
-+	    (status == BATTERY_STATUS_NOT_CHARGING) ||
-+	    (status == BATTERY_STATUS_FULL))
-+		info->ac_line_status = APM_AC_ONLINE;
-+	else
-+		info->ac_line_status = APM_AC_OFFLINE;
-+
-+	/* battery life (i.e. capacity, in percents) */
-+
-+	capacity = MBATTERY_PROP(CAPACITY);
-+	if (capacity)
-+		info->battery_life = *capacity;
-+	else
-+		info->battery_life = calculate_capacity();
-+
-+	/* charging status */
-+
-+	if (status == BATTERY_STATUS_CHARGING)
-+		info->battery_status = APM_BATTERY_STATUS_CHARGING;
-+	else {
-+		if (info->battery_life > 50)
-+			info->battery_status = APM_BATTERY_STATUS_HIGH;
-+		else if (info->battery_life > 5)
-+			info->battery_status = APM_BATTERY_STATUS_LOW;
-+		else
-+			info->battery_status = APM_BATTERY_STATUS_CRITICAL;
-+	}
-+	info->battery_flag = info->battery_status;
-+
-+	/* time */
-+
-+	info->units = APM_UNITS_MINS;
-+
-+	time_to_empty = MBATTERY_PROP(TIME_TO_EMPTY_AVG);
-+	if (!time_to_empty)
-+		time_to_empty = MBATTERY_PROP(TIME_TO_EMPTY_NOW);
-+
-+	time_to_full = MBATTERY_PROP(TIME_TO_FULL_AVG);
-+	if (!time_to_full)
-+		time_to_full = MBATTERY_PROP(TIME_TO_FULL_NOW);
-+
-+	if (status == BATTERY_STATUS_CHARGING && time_to_full)
-+		info->time = *time_to_full / 60;
-+	else if (status != BATTERY_STATUS_CHARGING && time_to_empty)
-+		info->time = *time_to_empty / 60;
-+	else
-+		info->time = calculate_time(status);
-+
-+	up(&battery_class->sem);
-+	return;
++	printk(KERN_INFO "1-Wire driver for the DS2760 battery monitor "
++	       " chip  - (c) 2004-2005, Szabolcs Gyurko\n");
++	return w1_register_family(&w1_ds2760_family);
 +}
 +
-+static int __init apm_battery_init(void)
++static void __exit w1_ds2760_exit(void)
 +{
-+	printk(KERN_INFO "APM Battery Driver\n");
-+
-+	apm_get_power_status = apm_battery_apm_get_power_status;
-+	return 0;
++	w1_unregister_family(&w1_ds2760_family);
 +}
 +
-+static void __exit apm_battery_exit(void)
-+{
-+	apm_get_power_status = NULL;
-+	return;
-+}
++EXPORT_SYMBOL(w1_ds2760_read);
++EXPORT_SYMBOL(w1_ds2760_write);
 +
-+module_init(apm_battery_init);
-+module_exit(apm_battery_exit);
++module_init(w1_ds2760_init);
++module_exit(w1_ds2760_exit);
 +
-+MODULE_AUTHOR("Eugeny Boger <eugenyboger@dgap.mipt.ru>");
-+MODULE_DESCRIPTION("APM emulation driver for battery monitoring class");
 +MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>");
++MODULE_DESCRIPTION("1-wire Driver Dallas 2760 battery monitor chip");
+diff --git a/drivers/w1/slaves/w1_ds2760.h b/drivers/w1/slaves/w1_ds2760.h
+new file mode 100644
+index 0000000..0ee92b9
+--- /dev/null
++++ b/drivers/w1/slaves/w1_ds2760.h
+@@ -0,0 +1,50 @@
++/*
++ * 1-Wire implementation for the ds2760 chip
++ *
++ * Copyright (c) 2004-2005, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
++ *
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
++ *
++ */
++
++#ifndef __w1_ds2760_h__
++#define __w1_ds2760_h__
++
++/* Known commands to the DS2760 chip */
++#define W1_DS2760_SWAP                      0xAA
++#define W1_DS2760_READ_DATA                 0x69
++#define W1_DS2760_WRITE_DATA                0x6C
++#define W1_DS2760_COPY_DATA                 0x48
++#define W1_DS2760_RECALL_DATA               0xB8
++#define W1_DS2760_LOCK                      0x6A
++
++/* Number of valid register addresses */
++#define DS2760_DATA_SIZE	    0x40
++
++#define DS2760_PROTECTION_REG	    0x00
++#define DS2760_STATUS_REG	    0x01
++#define DS2760_EEPROM_REG	    0x07
++#define DS2760_SPECIAL_FEATURE_REG  0x08
++#define DS2760_VOLTAGE_MSB	    0x0c
++#define DS2760_VOLTAGE_LSB	    0x0d
++#define DS2760_CURRENT_MSB	    0x0e
++#define DS2760_CURRENT_LSB	    0x0f
++#define DS2760_CURRENT_ACCUM_MSB    0x10
++#define DS2760_CURRENT_ACCUM_LSB    0x11
++#define DS2760_TEMP_MSB		    0x18
++#define DS2760_TEMP_LSB		    0x19
++#define DS2760_EEPROM_BLOCK0	    0x20
++#define DS2760_ACTIVE_FULL	    0x20
++#define DS2760_EEPROM_BLOCK1	    0x30
++#define DS2760_RATED_CAPACITY	    0x32
++#define DS2760_CURRENT_OFFSET_BIAS  0x33
++#define DS2760_ACTIVE_EMPTY	    0x3b
++
++extern int w1_ds2760_read(struct device *dev, char *buf, int addr,
++                          size_t count);
++extern int w1_ds2760_write(struct device *dev, char *buf, int addr,
++                           size_t count);
++
++#endif /* !__w1_ds2760_h__ */
+diff --git a/drivers/w1/w1_family.h b/drivers/w1/w1_family.h
+index 1e2ac40..ef1e1da 100644
+--- a/drivers/w1/w1_family.h
++++ b/drivers/w1/w1_family.h
+@@ -33,6 +33,7 @@
+ #define W1_THERM_DS1822  	0x22
+ #define W1_EEPROM_DS2433  	0x23
+ #define W1_THERM_DS18B20 	0x28
++#define W1_FAMILY_DS2760	0x30
+ 
+ #define MAXNAMELEN		32
+ 
 -- 
 1.5.1.1-dirty
