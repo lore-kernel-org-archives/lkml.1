@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423030AbXDTI21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbXDTI2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423030AbXDTI21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 04:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXDTI21
+	id S1754132AbXDTI2z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 04:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXDTI2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 04:28:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50067 "EHLO amd.ucw.cz"
+	Fri, 20 Apr 2007 04:28:55 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:53061 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754076AbXDTI20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 04:28:26 -0400
-Date: Fri, 20 Apr 2007 10:27:46 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Anton Vorontsov <cbou@mail.ru>
-Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
-Subject: Re: [PATCH 7/7] [RFC] APM emulation driver for class batteries
-Message-ID: <20070420082746.GA22992@elf.ucw.cz>
-References: <20070411232644.GG20095@zarina> <20070413135005.GE20618@zarina> <20070416202421.GC19713@flint.arm.linux.org.uk> <20070416210829.GA5107@zarina>
+	id S1754139AbXDTI2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 04:28:53 -0400
+Message-ID: <462879BE.1050401@gmail.com>
+Date: Fri, 20 Apr 2007 10:28:46 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070416210829.GA5107@zarina>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+Subject: const struct pci_driver [Was: [RFC 2/2] Input: phantom, add a new
+ driver]
+References: <210731960111436322@karneval.cz>	<258431179037841809@karneval.cz> <20070419230719.a118a132.akpm@linux-foundation.org>
+In-Reply-To: <20070419230719.a118a132.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > +static void (*old_apm_get_power_status)(struct apm_power_info*);
-> > > +
-> > > +static int __init apm_battery_init(void)
-> > > +{
-> > > +	printk(KERN_INFO "APM Battery Driver\n");
-> > > +
-> > > +	old_apm_get_power_status = apm_get_power_status;
-> > > +	apm_get_power_status = apm_battery_apm_get_power_status;
-> > > +	return 0;
-> > > +}
-> > > +
-> > > +static void __exit apm_battery_exit(void)
-> > > +{
-> > > +	apm_get_power_status = old_apm_get_power_status;
-> > > +	return;
-> > > +}
-> > 
-> > Utterly unsafe.  What happens if some other module gets loaded which
-> > does this, and then this module is unloaded followed by the other
-> > module.  Result: Oops.
+Andrew Morton napsal(a):
+> On Tue, 17 Apr 2007 22:02:10 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> Right. And loading two modules which changing apm_get_power_status
-> is a race already. Thus, APM interface needs a mutex.
+>> phantom, add a new driver
+[...]
+>> +static struct pci_driver phantom_pci_driver = {
+>> +	.name = "phantom",
+>> +	.id_table = phantom_pci_tbl,
+>> +	.probe = phantom_probe,
+>> +	.remove = __devexit_p(phantom_remove),
+>> +	.suspend = phantom_suspend,
+>> +	.resume = phantom_resume
+>> +};
 > 
-> Or pda_power should be marked "bool" in Kconfig, as it is done
-> in arch/arm/common/sharpsl_pm.c. Sharpsl_pm is safe only because it
-> can't be a module.
+> This goes into the read/write section.  Make it const?
 
-Just mark it bool, when you fix it with mutex, you can go back to
-tristate.
-								Pavel
+Hmm, good question, I don't know the answer. Why are not pci_driver structs
+const, Greg?
 
+thanks,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
