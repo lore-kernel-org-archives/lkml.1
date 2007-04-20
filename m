@@ -1,96 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993268AbXDTP2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767127AbXDTPkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993268AbXDTP2L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 11:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993269AbXDTP2K
+	id S1767127AbXDTPkl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 11:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767130AbXDTPkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 11:28:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:41801 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993268AbXDTP2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 11:28:09 -0400
-Message-ID: <4628DC0A.60707@goop.org>
-Date: Fri, 20 Apr 2007 08:28:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 20 Apr 2007 11:40:41 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44121 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1767127AbXDTPkk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 11:40:40 -0400
+Date: Fri, 20 Apr 2007 11:40:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <46284F2A.4000401@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704201136590.2616-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org> <20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org> <20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org> <20070420145126.GC25051@redhat.com>
-In-Reply-To: <20070420145126.GC25051@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> -BUG: at arch/i386/kernel/sched-clock.c:170 init_sched_clock()
-> - [<c01091b5>] show_trace_log_lvl+0x1a/0x30
-> - [<c010980c>] show_trace+0x12/0x14
-> - [<c01098cb>] dump_stack+0x16/0x18
-> - [<c0468dbd>] init_sched_clock+0x58/0x9b
-> - [<c0461502>] init+0x14b/0x241
-> - [<c0108d97>] kernel_thread_helper+0x7/0x10
-> - =======================
->
-> heh, one for Ingo :)
->   
+Here's a patch to do what I mentioned earlier.  Not tested -- it may 
+expose some existing bugs.  It may even break something, but I'm not aware 
+of anything that depends on it explicitly.
 
-Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
+Greg, do you know of anything in particular that depends on a kobjects not 
+being released before their children are released?
 
-> -ACPI: ACPI Dock Station Driver 
-> -ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: found ejectable bay
-> -ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: Adding notify handler
-> -ACPI: Bay [\_SB_.PCI0.IDE0.PRIM.MSTR] Added
->
-> Hmm, I should try without the dock stuff built.
->
-> -PCI: Using MMCONFIG
-> +PCI: PCI BIOS revision 2.10 entry at 0xfd82b, last bus=24
-> +PCI: Using configuration type 1
->
-> Think I've tried with and without MMCONFIG
->
-> -pnp: PnP ACPI: found 11 devices
-> +pnp: PnP ACPI: found 13 devices
->
-> My Wacom tablet is one of them. There's also a mysterious 13th device :)
->
->  ibm_acpi: IBM ThinkPad ACPI Extras v0.13
->  ibm_acpi: http://ibm-acpi.sf.net/
-> -ibm_acpi: ThinkPad EC firmware 7BHT37WW-1.10
-> +ibm_acpi: ThinkPad EC firmware 7JHT12WW-1.03
->
-> possibly just because of the touchscreen.
->   
+This is meant to be used without any of the other changes Cornelia and I 
+have posted.  Although it might not hurt to have them all present...
 
-I'm running a very recent BIOS in order to enable hardware
-virtualization (VT/VMX).  The BIOS updates also update the EC firmware.
+Alan Stern
 
-> So most of the differences seem to be BIOS/firmware rather than hardware. 
-> The PCI bus layout is identical for eg.
->   
 
-Do you have Intel wireless?  I realized one chance I'd made was to swap
-the Atheros wireless with Intel, since it just seems to work better
-overall.  I'd never had any major suspend/resume problems that I could
-attribute to madwifi though (lots of minor wifi-related ones though).
 
-> Looking at your .config, I notice that you don't have CONFIG_FB_BACKLIGHT set
-> (because you don't have any framebuffer drivers that use it enabled).
-> Can you enable say.. CONFIG_FB_RADEON=m and CONFIG_FB_RADEON_BACKLIGHT=y
-> (which should turn on CONFIG_FB_BACKLIGHT=y by dependancy), and see if
-> it stops working for you? (You don't even need to load radeonfb.ko, just
-> have it compiled).
+Index: usb-2.6/lib/kobject.c
+===================================================================
+--- usb-2.6.orig/lib/kobject.c
++++ usb-2.6/lib/kobject.c
+@@ -192,12 +192,15 @@ void kobject_init(struct kobject * kobj)
+ 
+ static void unlink(struct kobject * kobj)
+ {
++	struct kobject *parent = kobj->parent;
++
+ 	if (kobj->kset) {
+ 		spin_lock(&kobj->kset->list_lock);
+ 		list_del_init(&kobj->entry);
+ 		spin_unlock(&kobj->kset->list_lock);
+ 	}
+ 	kobject_put(kobj);
++	kobject_put(parent);
+ }
+ 
+ /**
+@@ -241,7 +244,6 @@ int kobject_shadow_add(struct kobject * 
+ 	if (error) {
+ 		/* unlink does the kobject_put() for us */
+ 		unlink(kobj);
+-		kobject_put(parent);
+ 
+ 		/* be noisy on error issues */
+ 		if (error == -EEXIST)
+@@ -489,7 +491,6 @@ void kobject_cleanup(struct kobject * ko
+ {
+ 	struct kobj_type * t = get_ktype(kobj);
+ 	struct kset * s = kobj->kset;
+-	struct kobject * parent = kobj->parent;
+ 
+ 	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
+ 	if (kobj->k_name != kobj->name)
+@@ -505,7 +506,6 @@ void kobject_cleanup(struct kobject * ko
+ 
+ 	if (s)
+ 		kset_put(s);
+-	kobject_put(parent);
+ }
+ 
+ static void kobject_release(struct kref *kref)
 
-OK, I'll give it a spin.
-
-    J
