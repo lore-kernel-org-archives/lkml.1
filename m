@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993052AbXDTRTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993289AbXDTRXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993052AbXDTRTH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993291AbXDTRTH
+	id S2993289AbXDTRXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993294AbXDTRXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:19:07 -0400
-Received: from holomorphy.com ([66.93.40.71]:42201 "EHLO holomorphy.com"
+	Fri, 20 Apr 2007 13:23:47 -0400
+Received: from mail.screens.ru ([213.234.233.54]:44746 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993052AbXDTRTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:19:04 -0400
-Date: Fri, 20 Apr 2007 10:19:28 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 7/8] Enhance ramfs to support higher order pages
-Message-ID: <20070420171928.GA2986@holomorphy.com>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163540.11948.51549.sendpatchset@schroedinger.engr.sgi.com> <20070420134226.GA16878@skynet.ie> <20070420144726.GI31925@holomorphy.com> <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com> <20070420171118.GZ2986@holomorphy.com> <Pine.LNX.4.64.0704201012500.20723@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
+	id S2993289AbXDTRXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:23:46 -0400
+Date: Fri, 20 Apr 2007 21:23:48 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] workqueue: cancel_rearming_delayed_work/workqueue usage warning
+Message-ID: <20070420172348.GC470@tv-sign.ru>
+References: <20070419065404.GB1782@ff.dom.local> <20070419144618.GG32602149@melbourne.sgi.com> <20070420081325.GB1695@ff.dom.local> <20070420085354.GP32602149@melbourne.sgi.com> <20070420102157.GD1695@ff.dom.local> <20070420110119.GS32602149@melbourne.sgi.com> <20070420121255.GA4042@ff.dom.local>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704201012500.20723@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070420121255.GA4042@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, William Lee Irwin III wrote:
->> The core VM can do that but the hugetlb architectural code can't fall
->> back to smaller page sizes. It also should not be put into a situation
->> where it needs to do so given the semantics it must honor.
+On 04/20, Jarek Poplawski wrote:
+> 
+> Here is my proposal to make things clearer:
+> (this time on 2.6.21-rc7)
+> 
+> CC: David Chinner <dgc@sgi.com>
+> CC: Oleg Nesterov <oleg@tv-sign.ru>
+> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> 
+> ---
+> 
+> diff -Nurp 2.6.21-rc7-/kernel/workqueue.c 2.6.21-rc7/kernel/workqueue.c
+> --- 2.6.21-rc7-/kernel/workqueue.c	2007-04-18 10:14:16.000000000 +0200
+> +++ 2.6.21-rc7/kernel/workqueue.c	2007-04-20 13:56:51.000000000 +0200
+> @@ -662,6 +662,8 @@ EXPORT_SYMBOL(flush_scheduled_work);
+>   * cancel_rearming_delayed_workqueue - reliably kill off a delayed work whose handler rearms the delayed work.
+>   * @wq:   the controlling workqueue structure
+>   * @dwork: the delayed work struct
+> + *
+> + * WARNING: use only with handlers, which rearm unconditionally with delay > 0
+>   */
 
-On Fri, Apr 20, 2007 at 10:15:00AM -0700, Christoph Lameter wrote:
-> Wel we could potentially add a handle_pmd_fault to the vm...?
+Nit: it is ok if the work re-arms itself with delay == 0 "sometimes". What we
+need is that the handler use delay > 0 eventually.
 
-Unconscionably foul. I guess x86-uber-alles pagetables in the core vm
-is the Linux way, though.
+I'd suggest to re-diff against -mm tree. I don't think this patch can find its
+way to the soon to be released 2.6.21.
 
+Oleg.
 
-On Fri, 20 Apr 2007, William Lee Irwin III wrote:
->> Also, the final assertion is inaccurate. Fault handlers must instantiate
->> pages of order mapping->order when faulting in a page of a file with
->> a given pagecache size. The semantics of faulting and mmap()'ing are
-
-On Fri, Apr 20, 2007 at 10:15:00AM -0700, Christoph Lameter wrote:
-> Why? I agree that the page state of the higher order page must be updated 
-> consistently but one can use a pte to map a 4k chunk of a higher 
-> order page.
-
-Probably just terminological disagreement here. I was referring to
-allocating the higher-order page from the fault path here, not mapping
-it or a piece of it with a user pte.
-
-
--- wli
