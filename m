@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767242AbXDTUeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767245AbXDTUe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767242AbXDTUeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 16:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767251AbXDTUeL
+	id S1767245AbXDTUe1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 16:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767248AbXDTUeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 16:34:11 -0400
-Received: from dh166.citi.umich.edu ([141.211.133.166]:47386 "EHLO
+	Fri, 20 Apr 2007 16:34:19 -0400
+Received: from dh166.citi.umich.edu ([141.211.133.166]:47391 "EHLO
 	heimdal.trondhjem.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767242AbXDTUeK (ORCPT
+	with ESMTP id S1767250AbXDTUeL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 16:34:10 -0400
-X-Greylist: delayed 1299 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Apr 2007 16:34:10 EDT
+	Fri, 20 Apr 2007 16:34:11 -0400
 From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH 2/5] NFS: Don't clear PG_writeback until after we've processed unstable writes
-Date: Fri, 20 Apr 2007 16:12:40 -0400
+Subject: [PATCH 0/5] 2.6.21-rc7 NFS writes: fix a series of issues
+Date: Fri, 20 Apr 2007 16:03:58 -0400
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Florin Iucha <florin@iucha.net>,
        Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
        OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
        Chuck Lever <chuck.lever@oracle.com>, linux-kernel@vger.kernel.org,
        nfs@lists.sourceforge.net
-Message-Id: <20070420201239.7897.74094.stgit@heimdal.trondhjem.org>
-In-Reply-To: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
-References: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
+Message-Id: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
 Content-Type: text/plain; charset=utf-8; format=fixed
 Content-Transfer-Encoding: 8bit
 User-Agent: StGIT/0.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+I've split the issues introduced by the 2.6.21-rcX write code up into 4
+subproblems.
 
-Ensure that we don't release the PG_writeback lock until after the page has
-either been redirtied, or queued on the nfs_inode 'commit' list.
+The first patch is just a cleanup in order to ease review.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+Patch number 2 ensures that we never release the PG_writeback flag until
+_after_ we've either discarded the unstable request altogether, or put it
+on the nfs_inode's commit or dirty lists.
 
- fs/nfs/write.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Patch number 3 fixes the 'desynchronized value of nfs_i.ncommit' error. It
+uses the PG_NEED_COMMIT flag as an indicator for whether or not the request
+may be redirtied.
 
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 3ed4feb..8e94246 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -920,8 +920,8 @@ out_bad:
- 		list_del(&data->pages);
- 		nfs_writedata_release(data);
- 	}
--	nfs_end_page_writeback(req->wb_page);
- 	nfs_redirty_request(req);
-+	nfs_end_page_writeback(req->wb_page);
- 	nfs_clear_page_writeback(req);
- 	return -ENOMEM;
- }
-@@ -966,8 +966,8 @@ static int nfs_flush_one(struct inode *inode, struct list_head *head, int how)
- 	while (!list_empty(head)) {
- 		struct nfs_page *req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
--		nfs_end_page_writeback(req->wb_page);
- 		nfs_redirty_request(req);
-+		nfs_end_page_writeback(req->wb_page);
- 		nfs_clear_page_writeback(req);
- 	}
- 	return -ENOMEM;
-@@ -1002,8 +1002,8 @@ out_err:
- 	while (!list_empty(head)) {
- 		req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
--		nfs_end_page_writeback(req->wb_page);
- 		nfs_redirty_request(req);
-+		nfs_end_page_writeback(req->wb_page);
- 		nfs_clear_page_writeback(req);
- 	}
- 	return error;
+Patch number 4 protects the NFS '.set_page_dirty' address_space operation
+against races with nfs_inode_add_request.
+
+Finally, patch number 5 fixes an issue with the RPC code that is supposed
+ensure that NFSv4 disconnects before resending a request. The current code
+will disconnect for every request it resends (and has a bunch of false
+positive cases), instead of just ensuring that it disconnects once every
+time a timeout or a garbage reply occurs.
+
+My thanks to the various patient victim^Wpeople who helped with extensive
+testing.
+
+Cheers
+  Trond
