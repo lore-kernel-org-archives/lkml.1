@@ -1,64 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030757AbXDTSuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030856AbXDTSuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030757AbXDTSuY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 14:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030827AbXDTSuY
+	id S1030856AbXDTSuZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 14:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030827AbXDTSuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 14:50:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43633 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030757AbXDTSuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 14:50:25 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:54348 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030672AbXDTSuX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Apr 2007 14:50:23 -0400
-Date: Fri, 20 Apr 2007 14:49:56 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Preston A. Elder" <prez@goth.net>
-Cc: linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: Re: AGPGart / AMD K7
-Message-ID: <20070420184956.GD13939@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Preston A. Elder" <prez@goth.net>, linux-kernel@vger.kernel.org,
-	greg@kroah.com
-References: <46286775.5000507@goth.net> <20070420155537.GA20118@redhat.com> <4628F00B.3010304@goth.net> <20070420173337.GD20118@redhat.com> <462900BD.8020204@goth.net> <20070420182029.GF20118@redhat.com> <462906E5.8060609@goth.net>
+Subject: Re: [PATCH] cciss: Fix warnings during compilation under
+	32bitenvironment
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Cameron, Steve" <Steve.Cameron@hp.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20070420114337.12a67141.akpm@linux-foundation.org>
+References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
+	 <226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
+	 <1176995934.31764.7.camel@mulgrave.il.steeleye.com>
+	 <226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
+	 <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
+	 <558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
+	 <20070419222028.d33c7f86.akpm@linux-foundation.org>
+	 <1177074641.3718.5.camel@mulgrave.il.steeleye.com>
+	 <20070420114337.12a67141.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 20 Apr 2007 14:50:06 -0400
+Message-Id: <1177095007.3718.43.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462906E5.8060609@goth.net>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 02:31:01PM -0400, Preston A. Elder wrote:
+On Fri, 2007-04-20 at 11:43 -0700, Andrew Morton wrote:
+> On Fri, 20 Apr 2007 09:10:41 -0400
+> James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> 
+> > On Thu, 2007-04-19 at 22:20 -0700, Andrew Morton wrote:
+> > > On Thu, 19 Apr 2007 16:27:26 -0000 "Cameron, Steve" <Steve.Cameron@hp.com> wrote:
+> > > > 
+> > > > Something like 
+> > > > 
+> > > > if (sizeof(blah) > 4) {
+> > > >    do all the assignments with shifts
+> > > > }
+> > > > 
+> > > > might be slighly better since the CDB is already zeroed
+> > > > by cmd_alloc() and doesn't need to be zeroed a 2nd time.
+> > > > 
+> > > > -- steve
+> > > > 
+> > > > -----Original Message-----
+> > > > From: James Bottomley [mailto:James.Bottomley@SteelEye.com]
+> > > > Sent: Thu 4/19/2007 11:22 AM
+> > > > To: Miller, Mike (OS Dev)
+> > > > Cc: Hisashi Hifumi; akpm@linux-foundation.org; jens.axboe@oracle.com; linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Cameron, Steve
+> > > > Subject: RE: [PATCH] cciss: Fix warnings during compilation under 32bitenvironment
+> > > >  
+> > > > On Thu, 2007-04-19 at 16:12 +0000, Miller, Mike (OS Dev) wrote:
+> > > > > > > Nak. You still haven't told where you saw these warnings. What 
+> > > > > > > compiler are you using? I do not see these in my 32-bit environment.
+> > > > > > 
+> > > > > > I think it's seen with CONFIG_LBD=n on 32 bits
+> > > > > > 
+> > > > > > In that configuration, sector_t is a u32 (it's u64 even on 32 
+> > > > > > bits with CONFIG_LBD=y).  The proposed code change is a 
+> > > > > > simple cut and paste from the sd driver.
+> > > > > 
+> > > > > Isn't there a better way than testing each one?
+> > > > 
+> > > > It's not such a bad option.  The sizeof() test is compile time
+> > > > determinable, so the compiler simply zeros the fields in the
+> > > > CONFIG_LBD=n case and does the shift for CONFIG_LBD=y.  It certainly
+> > > > never compiles to four inline condition checks.
+> > > > 
+> > > 
+> > > Boy you guys make a mess of a nice email trail :(
+> > > 
+> > > 
+> > > --- linux-2.6.21-rc7.org/drivers/block/cciss.c	2007-04-17 16:36:02.000000000 +0900
+> > > +++ linux-2.6.21-rc7/drivers/block/cciss.c	2007-04-17 16:25:53.000000000 +0900
+> > > @@ -2552,10 +2552,10 @@ static void do_cciss_request(request_que
+> > >  	} else {
+> > >  		c->Request.CDBLen = 16;
+> > >  		c->Request.CDB[1]= 0;
+> > > -		c->Request.CDB[2]= (start_blk >> 56) & 0xff;	//MSB
+> > > -		c->Request.CDB[3]= (start_blk >> 48) & 0xff;
+> > > -		c->Request.CDB[4]= (start_blk >> 40) & 0xff;
+> > > -		c->Request.CDB[5]= (start_blk >> 32) & 0xff;
+> > > +		c->Request.CDB[2]= sizeof(start_blk) > 4 ? (start_blk >> 56) & 0xff : 0;	//MSB
+> > > +		c->Request.CDB[3]= sizeof(start_blk) > 4 ? (start_blk >> 48) & 0xff : 0;
+> > > +		c->Request.CDB[4]= sizeof(start_blk) > 4 ? (start_blk >> 40) & 0xff : 0;
+> > > +		c->Request.CDB[5]= sizeof(start_blk) > 4 ? (start_blk >> 32) & 0xff : 0;
+> > >  		c->Request.CDB[6]= (start_blk >> 24) & 0xff;
+> > >  		c->Request.CDB[7]= (start_blk >> 16) & 0xff;
+> > >  		c->Request.CDB[8]= (start_blk >>  8) & 0xff;
+> > > 
+> > > This is not the first time we've hit this problem and presumably it won't
+> > > be the last time.
+> > > 
+> > > Could we do something like
+> > > 
+> > > #if (BITS_PER_LONG > 32) || defined(CONFIG_LBD)
+> > > #define sector_upper_32(sector) ((sector) >> 32)
+> > > #else
+> > > #define sector_upper_32(sector) (0)
+> > > #endif
+> > > 
+> > > and then cciss can do
+> > > 
+> > > -	c->Request.CDB[2]= start_blk >> 56;
+> > > +	c->Request.CDB[2]= sector_upper_32(start_blk) >> 24;
+> > > 
+> > > which will do the right thing.
+> > 
+> > Sure, we could do that.  The slight problem is that we don't have
+> > general agreement in the kernel how to handle sector_t.  So, the only
+> > consumer in scsi, sd, does the sizeof(block) ? thing.  If you look in
+> > libata you'll see that it unconditionally uses a u64 for picking up the
+> > value of sector_t so the shift is never invalid ... if we're going to
+> > start making macros for handling this, we probably need to ask the
+> > janitors to fix all of our existing code to use them ... or we could
+> > just let sleeping dogs lie ..
+> 
+> Let's decide how we _should_ do it, implement that, then teach cciss about
+> it, then try to ensure that new code uses the approved interfaces.  Over
+> time, people may (or may not) migrate existing code over to the new
+> interfaces.
+> 
+> They may also merge new code which uses open-coded hand-rolled stuff, too :(
+> 
+> > Is there even a valid use for CONFIG_LBD=n anymore, anyway?
+> 
+> Lots and lots and lots of systems don't have any disks larger than 2TB.
+> 
+> CONFIG_LBD=y gives us an additional 3kb of instructions on i386
+> allnoconfig.  Other architectures might do less well.  It's not a huge
+> difference, but that's the way in which creeping bloatiness happens.
 
- > Here is the code for __pci_register_driver:
- > ...
- > 
- > So in the above case, we ARE saying if driver_register returns 0 then
- > pci_create_newid_file.
- > 
- > Is it different to the code you have?  As I said, this IS 2.6.19.
+OK, sure, but if we really care about this saving, then unconditionally
+casting to u64 is therefore wrong as well ... this is starting to open
+quite a large can of worms ...
 
-Yes, .20 changed this in this way..
+For the record, if we have to do this, I fancy sector_upper_32() ... we
+should already have some similar accessor for dma_addr_t as well.
 
-@@ -445,9 +442,12 @@ int __pci_register_driver(struct pci_driver *drv, struct module *owner)
- 
-        /* register with core */
-        error = driver_register(&drv->driver);
-+       if (error)
-+               return error;
- 
--       if (!error)
--               error = pci_create_newid_file(drv);
-+       error = pci_create_newid_file(drv);
-+       if (error)
-+               driver_unregister(&drv->driver);
- 
-        return error;
- }
+James
 
 
-Retry your tracing with .20 (or better yet, .21rc7/todays git)
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
