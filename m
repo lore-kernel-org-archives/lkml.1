@@ -1,67 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993055AbXDTRKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993293AbXDTROU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993055AbXDTRKz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 13:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993021AbXDTRKz
+	id S2993293AbXDTROU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 13:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993291AbXDTROT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 13:10:55 -0400
-Received: from holomorphy.com ([66.93.40.71]:40741 "EHLO holomorphy.com"
+	Fri, 20 Apr 2007 13:14:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39401 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993055AbXDTRKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 13:10:54 -0400
-Date: Fri, 20 Apr 2007 10:11:18 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 7/8] Enhance ramfs to support higher order pages
-Message-ID: <20070420171118.GZ2986@holomorphy.com>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163540.11948.51549.sendpatchset@schroedinger.engr.sgi.com> <20070420134226.GA16878@skynet.ie> <20070420144726.GI31925@holomorphy.com> <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com>
+	id S2993287AbXDTROS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 13:14:18 -0400
+Message-ID: <4628F3ED.9040101@redhat.com>
+Date: Fri, 20 Apr 2007 12:10:05 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704200925160.20232@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: ext4 development <linux-ext4@vger.kernel.org>
+Subject: [PATCH] fix ext2 allocator overflows above 31 bit blocks
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, William Lee Irwin III wrote:
->> Careful there. mmap() needs more than this.
->> (1) mapping->order is variable within an fs, so the architectural code
->> 	would need some vague awareness of the underlying page size
->> 	being variable unless the fs restricts it properly.
+If ext3 can do 16T, ext2 probably should be able to as well.
+There are still "int" block containers in the block allocation path
+that need to be fixed up.
 
-On Fri, Apr 20, 2007 at 09:30:30AM -0700, Christoph Lameter wrote:
-> We can map arbitrary 4k chunks of larger pages.
+Perhaps ext2 should get the ext2_fsblk_t/ext2_grpblk_t treatment
+as ext3 did, for clarity...
 
-The core VM can do that but the hugetlb architectural code can't fall
-back to smaller page sizes. It also should not be put into a situation
-where it needs to do so given the semantics it must honor.
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+
+Index: linux-2.6.21-rc5/fs/ext2/balloc.c
+===================================================================
+--- linux-2.6.21-rc5.orig/fs/ext2/balloc.c
++++ linux-2.6.21-rc5/fs/ext2/balloc.c
+@@ -323,7 +323,7 @@ got_it:
+  * bitmap, and then for any free bit if that fails.
+  * This function also updates quota and i_blocks field.
+  */
+-int ext2_new_block(struct inode *inode, unsigned long goal,
++unsigned long ext2_new_block(struct inode *inode, unsigned long goal,
+ 			u32 *prealloc_count, u32 *prealloc_block, int *err)
+ {
+ 	struct buffer_head *bitmap_bh = NULL;
+@@ -332,8 +332,8 @@ int ext2_new_block(struct inode *inode, 
+ 	int group_no;			/* i */
+ 	int ret_block;			/* j */
+ 	int group_idx;			/* k */
+-	int target_block;		/* tmp */
+-	int block = 0;
++	unsigned long target_block;	/* tmp */
++	unsigned long block = 0;
+ 	struct super_block *sb = inode->i_sb;
+ 	struct ext2_sb_info *sbi = EXT2_SB(sb);
+ 	struct ext2_super_block *es = sbi->s_es;
+@@ -460,7 +460,7 @@ got_block:
+ 		      sbi->s_itb_per_group))
+ 		ext2_error (sb, "ext2_new_block",
+ 			    "Allocating block in system zone - "
+-			    "block = %u", target_block);
++			    "block = %lu", target_block);
+ 
+ 	if (target_block >= le32_to_cpu(es->s_blocks_count)) {
+ 		ext2_error (sb, "ext2_new_block",
+Index: linux-2.6.21-rc5/fs/ext2/ext2.h
+===================================================================
+--- linux-2.6.21-rc5.orig/fs/ext2/ext2.h
++++ linux-2.6.21-rc5/fs/ext2/ext2.h
+@@ -91,7 +91,7 @@ static inline struct ext2_inode_info *EX
+ /* balloc.c */
+ extern int ext2_bg_has_super(struct super_block *sb, int group);
+ extern unsigned long ext2_bg_num_gdb(struct super_block *sb, int group);
+-extern int ext2_new_block (struct inode *, unsigned long,
++extern unsigned long ext2_new_block (struct inode *, unsigned long,
+ 			   __u32 *, __u32 *, int *);
+ extern void ext2_free_blocks (struct inode *, unsigned long,
+ 			      unsigned long);
+Index: linux-2.6.21-rc5/fs/ext2/inode.c
+===================================================================
+--- linux-2.6.21-rc5.orig/fs/ext2/inode.c
++++ linux-2.6.21-rc5/fs/ext2/inode.c
+@@ -107,7 +107,7 @@ void ext2_discard_prealloc (struct inode
+ #endif
+ }
+ 
+-static int ext2_alloc_block (struct inode * inode, unsigned long goal, int *err)
++static unsigned long ext2_alloc_block (struct inode * inode, unsigned long goal, int *err)
+ {
+ #ifdef EXT2FS_DEBUG
+ 	static unsigned long alloc_hits, alloc_attempts;
+@@ -425,13 +425,13 @@ static int ext2_alloc_branch(struct inod
+ 	int n = 0;
+ 	int err;
+ 	int i;
+-	int parent = ext2_alloc_block(inode, goal, &err);
++	unsigned long parent = ext2_alloc_block(inode, goal, &err);
+ 
+ 	branch[0].key = cpu_to_le32(parent);
+ 	if (parent) for (n = 1; n < num; n++) {
+ 		struct buffer_head *bh;
+ 		/* Allocate the next block */
+-		int nr = ext2_alloc_block(inode, parent, &err);
++		unsigned long nr = ext2_alloc_block(inode, parent, &err);
+ 		if (!nr)
+ 			break;
+ 		branch[n].key = cpu_to_le32(nr);
 
 
-On Fri, 20 Apr 2007, William Lee Irwin III wrote:
->> The hugetlbfs fs stub has by and large been a huge embarrassment to me,
->> so I'd welcome the opportunity to foist off the vfs lifting onto ramfs.
->> I'd be happier with real superpages, but it's not my kernel.
-
-On Fri, Apr 20, 2007 at 09:30:30AM -0700, Christoph Lameter wrote:
-> We are not doing superpages in any form. The filesystem determines it page 
-> cache size thereby managing pages of arbitrary order. The usual VM 
-> mmap will work using PAGE_SIZEd mappings as now (once that is working 
-> right). There is no need to tie the page cache order to the page sizes 
-> used by mmap or the sizes used by the fault handling of the VM.
-
-Fine, s/real superpages/superpages/ -- I'm not picky enough.
-
-Also, the final assertion is inaccurate. Fault handlers must instantiate
-pages of order mapping->order when faulting in a page of a file with
-a given pagecache size. The semantics of faulting and mmap()'ing are
-slightly underspecified but no requirements for the size of the newly
-established translations are included, so they can be PAGE_SIZE easily
-enough.
-
-
--- wli
