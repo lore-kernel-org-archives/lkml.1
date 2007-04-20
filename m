@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767035AbXDTJi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbXDTJvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767035AbXDTJi3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 05:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767036AbXDTJi3
+	id S1754139AbXDTJvy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 05:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXDTJvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 05:38:29 -0400
-Received: from ns1.suse.de ([195.135.220.2]:34703 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767035AbXDTJi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 05:38:28 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: discuss@x86-64.org
-Subject: Re: [discuss] Dropping CONFIG_REORDER on x86-64 for 2.6.22
-Date: Fri, 20 Apr 2007 11:37:45 +0200
-User-Agent: KMail/1.9.6
-Cc: =?iso-8859-1?q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
-       linux-kernel@vger.kernel.org
-References: <200704191354.52985.ak@suse.de> <46277C36.6030301@linux.intel.com> <yw1x4pnba1fl.fsf@thrashbarg.mansr.com>
-In-Reply-To: <yw1x4pnba1fl.fsf@thrashbarg.mansr.com>
+	Fri, 20 Apr 2007 05:51:53 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:44427 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752808AbXDTJvw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 05:51:52 -0400
+Message-ID: <46288D11.4000801@bx.jp.nec.com>
+Date: Fri, 20 Apr 2007 18:51:13 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200704201137.45799.ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mpm@selenic.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
+References: <462605DC.2080804@bx.jp.nec.com>	<462609D1.50300@bx.jp.nec.com> <20070419210813.a599c54f.akpm@linux-foundation.org>
+In-Reply-To: <20070419210813.a599c54f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 April 2007 10:35:10 Måns Rullgård wrote:
-> Arjan van de Ven <arjan@linux.intel.com> writes:
+> I started to do some cleanups and fixups here, but abandoned it when it was
+> all getting a bit large.
 > 
-> > Andi Kleen wrote:
-> >> Rationale:
-> >> - It cannot be enabled in normal builds because all current lds
-> >> become very slow when they have to handle thousands of sections.
-> >>
-> >
-> > afaik this is only ever reported on SuSE; I've not heard it on any
-> > other distro...
-> 
-> Even with that option set, the full kernel build with my configuration
-> finishes in one minute flat on my Gentoo box.  Could it be that the
-> linker uses enormous amounts of memory?  I have 4GB so I wouldn't
-> immediately notice.
+> Here are some fixes against this patch:
 
-What binutils version do you use? Maybe that particular problem is finally fixed.
-Of course would still leave the other issues I listed.
+I'm going to fix my patches by following your reviews and send new patches 
+on the LKML and the netdev ML in a few days.
 
--Andi
+Thank you for your comments and reviews.
+-- 
+Keiichi KII
+NEC Corporation OSS Promotion Center
+E-mail: k-keiichi@bx.jp.nec.com
