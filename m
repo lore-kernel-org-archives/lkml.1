@@ -1,120 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031041AbXDUNIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031025AbXDUNIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031041AbXDUNIZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 09:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031030AbXDUNIZ
+	id S1031025AbXDUNIb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031030AbXDUNIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 09:08:25 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:55347 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030973AbXDUNIY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 09:08:24 -0400
-Date: Sat, 21 Apr 2007 09:06:58 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       "Cameron, Steve" <Steve.Cameron@hp.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH] utilities: add helper functions for safe 64-bit integer
- operations as 32-bit halves
-In-Reply-To: <20070421030825.bed0b8a9.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.0.98.0704210847340.3766@sigma.j-a-k-j.com>
-References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
- <226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
- <1176995934.31764.7.camel@mulgrave.il.steeleye.com>
- <226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
- <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
- <558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
- <20070419222028.d33c7f86.akpm@linux-foundation.org>
- <1177074641.3718.5.camel@mulgrave.il.steeleye.com>
- <20070420114337.12a67141.akpm@linux-foundation.org>
- <1177095007.3718.43.camel@mulgrave.il.steeleye.com>
- <20070420123041.94aac1e1.akpm@linux-foundation.org>
- <1177100459.3718.45.camel@mulgrave.il.steeleye.com>
- <20070420141218.a0222472.akpm@linux-foundation.org>
- <alpine.DEB.0.98.0704201732240.11655@sigma.j-a-k-j.com>
- <alpine.DEB.0.98.0704202040150.16687@sigma.j-a-k-j.com>
- <20070421030825.bed0b8a9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 21 Apr 2007 09:08:31 -0400
+Received: from 1wt.eu ([62.212.114.60]:2090 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031025AbXDUNIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 09:08:30 -0400
+Date: Sat, 21 Apr 2007 15:02:16 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070421130216.GC6383@1wt.eu>
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <200704212240.19139.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704212240.19139.kernel@kolivas.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
-
-Add helper functions "upper_32_bits" and "lower_32_bits" to 
-<include/linux/kernel.h> to allow 64-bit integers to be separated into 
-their 32-bit upper and lower halves without promoting integers, without 
-stretching sign bits, and without generating compiler warnings when used 
-with any integer not greater than 64 bits wide. High-order bits are 
-assumed to be zero for integers with fewer than 64 of them. Result values 
-are always 32-bit unsigned.
-
-Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
-
----
-
-> > +#define upper_32_bits(n) (sizeof(n) == 8 ? (u64)(n) >> 32 : 0)
+On Sat, Apr 21, 2007 at 10:40:18PM +1000, Con Kolivas wrote:
+> On Saturday 21 April 2007 22:12, Willy Tarreau wrote:
+> > Hi Ingo, Hi Con,
+> >
+> > I promised to perform some tests on your code. I'm short in time right now,
+> > but I observed behaviours that should be commented on.
+> >
+> > 1) machine : dual athlon 1533 MHz, 1G RAM, kernel 2.6.21-rc7 + either
+> > scheduler Test:  ./ocbench -R 250000 -S 750000 -x 8 -y 8
+> >    ocbench: http://linux.1wt.eu/sched/
+> >
+> > 2) SD-0.44
+> >
+> >    Feels good, but becomes jerky at moderately high loads. I've started
+> >    64 ocbench with a 250 ms busy loop and 750 ms sleep time. The system
+> >    always responds correctly but under X, mouse jumps quite a bit and
+> >    typing in xterm or even text console feels slightly jerky. The CPU is
+> >    not completely used, and the load varies a lot (see below). However,
+> >    the load is shared equally between all 64 ocbench, and they do not
+> >    deviate even after 4000 iterations. X uses less than 1% CPU during
+> >    those tests.
+> >
+> >    Here's the vmstat output :
+> [snip]
 > 
-> It's very unclear what type this returns, in terms of both size and
-> signedness.  Perhaps it always returns a u64, dunno.  If it does, that will
-> cause the arithmetic which uses this macro to go 64-bit too.  Casting the
-> whole return value to u32 would fix all those doubts up.
-
-If the argument is 64-bit, the return value is 64-bit; otherwise, the 
-return value is the same as the size of the argument. This prevents 
-integer promotion. I was trying to also not promote,, say, a short int, if 
-for some stupid reason somebody was using one. But you're right, a cast is 
-clearer, and the functions are clearly intended for 32-bit arithmetic.
-
-> > +#define lower_32_bits(n) (sizeof(n) == 8 ? (u32)(n) : (n))
+> > 3) CFS-v4
+> >
+> >   Feels even better, mouse movements are very smooth even under high load.
+> >   I noticed that X gets reniced to -19 with this scheduler. I've not looked
+> >   at the code yet but this looked suspicious to me. I've reniced it to 0
+> > and it did not change any behaviour. Still very good. The 64 ocbench share
+> > equal CPU time and show exact same progress after 2000 iterations. The CPU
+> > load is more smoothly spread according to vmstat, and there's no idle (see
+> > below). BUT I now think it was wrong to let new processes start with no
+> > timeslice at all, because it can take tens of seconds to start a new
+> > process when only 64 ocbench are there. Simply starting "killall ocbench"
+> > takes about 10 seconds. On a smaller machine (VIA C3-533), it took me more
+> > than one minute to do "su -", even from console, so that's not X. BTW, X
+> > uses less than 1% CPU during those tests.
+> >
+> > willy@pcw:~$ vmstat 1
+> [snip]
 > 
-> n&0xffffffff would be simpler.
+> > 4) first impressions
+> >
+> > I think that CFS is based on a more promising concept but is less mature
+> > and is dangerous right now with certain workloads. SD shows some strange
+> > behaviours like not using all CPU available and a little jerkyness, but is
+> > more robust and may be the less risky solution for a first step towards
+> > a better scheduler in mainline, but it may also probably be the last O(1)
+> > scheduler, which may be replaced sometime later when CFS (or any other one)
+> > shows at the same time the smoothness of CFS and the robustness of SD.
+> 
+> I assumed from your description that you were running X nice 0 during all this 
+Yes, that's what I did.
 
-I suppose. I'm trying to be careful and account for stupid edge cases, but 
-then again, such code is horribly broken so we can instead ignore them? We 
-shall assume the mask gets promoted as necessary.
+> testing and left the tunables from both SD and CFS at their defaults;
 
-> Do we actually have any call for this?
+yes too because I don't have enough time to try many combinations this week-end.
 
-It enhances readability and prevents compiler warnings without increasing 
-code-local complexity. Besides, if we have upper_32_bits, we should have 
-lower_32_bits. Two similarly-named function calls is better than a 
-function call and a mask.
+> this 
+> tends to have the effective equivalent of "timeslice" in CFS smaller than SD.
 
-And it's really nice to be able to write code that is word-size 
-independent and also not cluttered. And if any code declares macros like 
-this now, they can be eliminated and make a little more utility code 
-central.
+If you look at the CS column in vmstat, you'll see that there's about twice
+as many context switches with CFS than with SD, meaning the average timeslice
+would be about twice as short with CFS. But my impression is that some tasks
+occasionally get very long timeslices with SD while this never happens with
+CFS, hence the very smooth versus jerky feeling which cannot be explained
+by just halved timeslices alone.
 
---- linux-2.6.21-rc7-git4.orig/include/linux/kernel.h	2007-04-20 20:22:13.000000000 -0400
-+++ linux-2.6.21-rc7-git4.mod/include/linux/kernel.h	2007-04-21 08:59:01.000000000 -0400
-@@ -40,6 +40,24 @@ extern const char linux_proc_banner[];
- #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
- #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
- 
-+/**
-+ * lower_32_bits, upper_32_bits - separate the halves of a 64-bit integer
-+ * @n: the integer to separate
-+ *
-+ * Separate a 64-bit integer into its upper and lower 32-bit halves.
-+ * Designed to avoid integer promotions and compiler warnings when used
-+ * with smaller integers, in which case the missing bits are assumed to
-+ * be zero. Designed to treat integers as unsigned whether or not they
-+ * really are. (If you are using these with signed integers, your code
-+ * is almost certainly wrong. The cast is good for people too lazy to
-+ * type "unsigned" in their code, since breaking things is bad.)
-+ *
-+ * These assume the integer used is NOT greater than 64 bits wide.
-+ * Return values are always 32-bit unsigned integers.
-+ */
-+#define upper_32_bits(n) ((u32)(sizeof(n) == 8 ? (u64)(n) >> 32 : 0))
-+#define lower_32_bits(n) ((u32)(n & ~(u32)0))
-+
- #define	KERN_EMERG	"<0>"	/* system is unusable			*/
- #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
- #define	KERN_CRIT	"<2>"	/* critical conditions			*/
+> > I'm sorry not to spend more time on them right now, I hope that other
+> > people will do.
+> 
+> Thanks for that interesting testing you've done. The fluctuating cpu load and 
+> the apparently high idle time means there is almost certainly a bug still in 
+> the cpu accounting I do in update_cpu_clock. It looks suspicious to me 
+> already on just my first glance. Fortunately the throughput does not appear 
+> to be adversely affected on other benchmarks so I suspect it's lying about 
+> the idle time and it's not really there. Which means it's likely also 
+> accounting the cpu time wrongly.
+
+It is possible that only measurement is wrong because the time was evenly
+distributed among the 64 processes. Maybe the fix could also prevent some
+tasks from occasionally stealing one slice and reduce the jerkiness feeling.
+Anyway, it's just a bit jerky, no more freezes as we've known for years ;-)
+
+> Which also means there's something I can fix and improve SD further.
+> Great stuff, thanks! 
+
+You're welcome !
+
+Cheers,
+Willy
+
