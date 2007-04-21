@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbXDUU7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbXDUVCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752848AbXDUU7y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 16:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXDUU7y
+	id S1752702AbXDUVCX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 17:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXDUVCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 16:59:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40614 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752857AbXDUU7x (ORCPT
+	Sat, 21 Apr 2007 17:02:23 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50632 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXDUVCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 16:59:53 -0400
-Date: Sat, 21 Apr 2007 22:01:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       "Cameron, Steve" <Steve.Cameron@hp.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH] utilities: add helper functions for safe 64-bit integer
- operations as 32-bit halves
-Message-ID: <20070421220147.7144113e@the-village.bc.nu>
-In-Reply-To: <20070421030825.bed0b8a9.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
-	<226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
-	<1176995934.31764.7.camel@mulgrave.il.steeleye.com>
-	<226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
-	<1176999730.31764.15.camel@mulgrave.il.steeleye.com>
-	<558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
-	<20070419222028.d33c7f86.akpm@linux-foundation.org>
-	<1177074641.3718.5.camel@mulgrave.il.steeleye.com>
-	<20070420114337.12a67141.akpm@linux-foundation.org>
-	<1177095007.3718.43.camel@mulgrave.il.steeleye.com>
-	<20070420123041.94aac1e1.akpm@linux-foundation.org>
-	<1177100459.3718.45.camel@mulgrave.il.steeleye.com>
-	<20070420141218.a0222472.akpm@linux-foundation.org>
-	<alpine.DEB.0.98.0704201732240.11655@sigma.j-a-k-j.com>
-	<alpine.DEB.0.98.0704202040150.16687@sigma.j-a-k-j.com>
-	<20070421030825.bed0b8a9.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Apr 2007 17:02:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 7/8] allow unprivileged mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102652.075606533@szeredi.hu>
+	<20070421005513.e230aa88.akpm@linux-foundation.org>
+	<m1bqhhked1.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.61.0704211743100.9989@yvahk01.tjqt.qr>
+	<m1zm51is2h.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.61.0704211905230.9989@yvahk01.tjqt.qr>
+Date: Sat, 21 Apr 2007 15:00:16 -0600
+In-Reply-To: <Pine.LNX.4.61.0704211905230.9989@yvahk01.tjqt.qr> (Jan
+	Engelhardt's message of "Sat, 21 Apr 2007 19:10:55 +0200 (MEST)")
+Message-ID: <m17is5igtb.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +#define lower_32_bits(n) (sizeof(n) == 8 ? (u32)(n) : (n))
-> 
-> n&0xffffffff would be simpler.
-> 
-> Do we actually have any call for this?
+Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
 
-The only case for all of this we care about is sector_t, which is one
-type, with specific properties (eg always being positive). The rest is
-over-engineering. Call it sector_upper32() do it the simple way and stop
-trying to solve a problem we don't have
+> On Apr 21 2007 10:57, Eric W. Biederman wrote:
+>>
+>>> tmpfs!
+>>
+>>tmpfs is a possible problem because it can consume lots of ram/swap. 
+>>Which is why it has limits on the amount of space it can consume. 
+>
+> Users can gobble up all RAM and swap already today. (Unless they are
+> confined into an rlimit, which, in most systems, is not the case.)
+> And in case /dev/shm exists, they can already fill it without running
+> into an rlimit early.
+
+There are systems that care about rlimits and there is strong intersection
+between caring about rlimits and user mounts.  Although I do agree that
+it looks like we have gotten lazy with the default mount options for
+/dev/shm.
+
+Going a little farther any filesystem that is safe to put on a usb
+stick and mount automatically should ultimately be safe for unprivileged
+mounts as well.
+
+So it looks to me like ultimately most of the common filesystems will actually
+be safe for non-privileged mounting.
+
+Regardless this looks like an important discussion as soon as we have the
+glitches out of the non-privileged mount code.
+
+Eric
