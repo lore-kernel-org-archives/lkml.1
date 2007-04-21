@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbXDUACN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXDUAGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbXDUACN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 20:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXDUACN
+	id S1752403AbXDUAGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 20:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXDUAGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 20:02:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:33576 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752568AbXDUACL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 20:02:11 -0400
-Message-ID: <4629547D.9090404@goop.org>
-Date: Fri, 20 Apr 2007 17:02:05 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 20 Apr 2007 20:06:18 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:59072 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbXDUAGS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 20:06:18 -0400
+Date: Fri, 20 Apr 2007 17:03:40 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+Message-ID: <20070421000340.GB12155@kroah.com>
+References: <46284F2A.4000401@gmail.com> <Pine.LNX.4.44L0.0704201136590.2616-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
-Subject: Re: [2/2] 2.6.21-rc7: known regressions
-References: <20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org> <20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org> <20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org> <20070420145126.GC25051@redhat.com> <4628DC0A.60707@goop.org> <20070420160308.GB20118@redhat.com> <4628F586.3040606@goop.org> <20070420172147.GC20118@redhat.com>
-In-Reply-To: <20070420172147.GC20118@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0704201136590.2616-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Fri, Apr 20, 2007 at 10:16:54AM -0700, Jeremy Fitzhardinge wrote:
->  > Dave Jones wrote:
->  > >  > Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
->  > >
->  > > Ah, I saw you patched in CFS too, and thought it may be related.
->  > >   
->  > 
->  > Well, I have CONFIG_FB_BACKLIGHT enabled, and it still works.
->  > 
->  > Maybe there's something in Andi's queue which is making it work?
->
-> Shrug, I'm out of ideas.  I'm hoping that it'll magically start working
-> when people start flushing their git trees for .22
-> Maybe that'll yield a clue for something that can be backported to .21.x
-> because right now, I'm completely puzzled.
+On Fri, Apr 20, 2007 at 11:40:39AM -0400, Alan Stern wrote:
+> Here's a patch to do what I mentioned earlier.  Not tested -- it may 
+> expose some existing bugs.  It may even break something, but I'm not aware 
+> of anything that depends on it explicitly.
+> 
+> Greg, do you know of anything in particular that depends on a kobjects not 
+> being released before their children are released?
 
-Well, it seemed reliable, but I just got a resume failure.  Different
-from any previous symptom I've seen:
+Yes, the whole driver model :)
 
-Intel machine check architecture supported
-Intel machine check reporting enabled enabled on CPU#1
-Back to C!
-<hang>
+When adding a new device, we always grab a reference to the parent
+device so it can not go away before we do.
 
-    J
+Look at the last kobject_put(parent); in kobject_cleanup() which ensures
+this.
+
+> Index: usb-2.6/lib/kobject.c
+> ===================================================================
+> --- usb-2.6.orig/lib/kobject.c
+> +++ usb-2.6/lib/kobject.c
+> @@ -192,12 +192,15 @@ void kobject_init(struct kobject * kobj)
+>  
+>  static void unlink(struct kobject * kobj)
+>  {
+> +	struct kobject *parent = kobj->parent;
+> +
+>  	if (kobj->kset) {
+>  		spin_lock(&kobj->kset->list_lock);
+>  		list_del_init(&kobj->entry);
+>  		spin_unlock(&kobj->kset->list_lock);
+>  	}
+>  	kobject_put(kobj);
+> +	kobject_put(parent);
+>  }
+>  
+>  /**
+> @@ -241,7 +244,6 @@ int kobject_shadow_add(struct kobject * 
+>  	if (error) {
+>  		/* unlink does the kobject_put() for us */
+>  		unlink(kobj);
+> -		kobject_put(parent);
+>  
+>  		/* be noisy on error issues */
+>  		if (error == -EEXIST)
+> @@ -489,7 +491,6 @@ void kobject_cleanup(struct kobject * ko
+>  {
+>  	struct kobj_type * t = get_ktype(kobj);
+>  	struct kset * s = kobj->kset;
+> -	struct kobject * parent = kobj->parent;
+>  
+>  	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
+>  	if (kobj->k_name != kobj->name)
+> @@ -505,7 +506,6 @@ void kobject_cleanup(struct kobject * ko
+>  
+>  	if (s)
+>  		kset_put(s);
+> -	kobject_put(parent);
+>  }
+
+Ick, no, I think this used to be the way things worked, but bad things
+would end up happening, so we fixed it up to be the way things are
+today.  Read the comments for the changelog for this file for details.
+
+Specifically, look at commit 10921a8f1305b8ec97794941db78b825db5839bc
+in the history.git repo which is almost exactly what you are proposing
+to be reverted...
+
+thanks,
+
+greg k-h
