@@ -1,113 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbXDUBpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXDUBst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932189AbXDUBpt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 21:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXDUBpt
+	id S1754042AbXDUBst (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 21:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932203AbXDUBst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 21:45:49 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54942 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754042AbXDUBps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 21:45:48 -0400
-Message-ID: <46296CB8.3090100@suse.com>
-Date: Fri, 20 Apr 2007 21:45:28 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Fri, 20 Apr 2007 21:48:49 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32769 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754042AbXDUBss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 21:48:48 -0400
+Date: Fri, 20 Apr 2007 18:48:47 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ethan Solomita <solo@google.com>
+cc: akpm@osdl.org, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC 0/8] Cpuset aware writeback
+In-Reply-To: <46296ACD.3020402@google.com>
+Message-ID: <Pine.LNX.4.64.0704201840200.13607@schroedinger.engr.sgi.com>
+References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com>
+ <45C2960B.9070907@google.com> <Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com>
+ <46019F67.3010300@google.com> <Pine.LNX.4.64.0703211428430.4832@schroedinger.engr.sgi.com>
+ <4626CEDA.7050608@google.com> <Pine.LNX.4.64.0704181948260.8743@schroedinger.engr.sgi.com>
+ <46296ACD.3020402@google.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Vladimir V. Saveliev" <vs@namesys.com>, a.righi@cineca.it,
-       linux-kernel@vger.kernel.org, reiserfs-dev@namesys.com,
-       Edward Shishkin <edward@namesys.com>, zam@clusterfs.com, ak@suse.de
-Subject: Re: Fwd: Fw: [2.6.20.4] BUG: dentry xattrs still in use in shrink_dcache_for_umount()
- with reiserfs
-References: <20070413095219.02075323.akpm@linux-foundation.org>	<462536B2.5060308@users.sourceforge.net>	<c04ebacf0704180152qdc72fcdnd0755dbf070b40d2@mail.gmail.com>	<200704181816.21166.vs@namesys.com>	<46263270.9010108@suse.com> <20070420170738.e269fcae.akpm@linux-foundation.org>
-In-Reply-To: <20070420170738.e269fcae.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Fri, 20 Apr 2007, Ethan Solomita wrote:
 
-Andrew Morton wrote:
-> On Wed, 18 Apr 2007 11:00:00 -0400
-> Jeff Mahoney <jeffm@suse.com> wrote:
+> cpuset_write_dirty_map.htm
 > 
->>> Do you think that could be a reason of the extra reference count on   xattr_root dentry?
->> No, I don't think it is. Looking at the code now, it seems obvious, but
->> I didn't notice it before and nobody else has reported a problem.
->>
->> getxattr() doesn't require any VFS locking. When we get down into the
->> reiserfs code, it takes a read lock. If we get two concurrent threads
->> looking up an xattr before the root has been saved, there's a window
->> where REISERFS_SB(s)->xattr_root is NULL but we've already looked it up
->> and taken a reference on it.
->>
->> I have a patch set to clean up the extended attribute code that fixes
->> this problem along the way by killing off the xattr locks and using the
->> backing files/dirs i_mutex instead. I'll post them to the reiserfs
->> mailing list.
+>    In __set_page_dirty_nobuffers() you always call cpuset_update_dirty_nodes()
+> but in __set_page_dirty_buffers() you call it only if page->mapping is still
+> set after locking. Is there a reason for the difference? Also a question not
+> about your patch: why do those functions call __mark_inode_dirty() even if the
+> dirty page has been truncated and mapping == NULL?
+
+If page->mapping has been cleared then the page was removed from the 
+mapping. __mark_inode_dirty just dirties the inode. If a truncation occurs 
+then the inode was modified.
+
+> cpuset_write_throttle.htm
 > 
-> Do we have anything suitable for 2.6.21 which will address this crash?
-> 
-> Also, it's not clear to me how many users we can expect to be impacted by it.
-> I assume that if the same bug is in 2.6.20 then the answer is "not many".
-> How come Andrea is able to keep hitting it?
+>    I noticed that several lines have leading spaces. I didn't check if other
+> patches have the problem too.
 
-I have the patchset that I mentioned, but I'm not proposing it for 2.6.21.
-It's much too invasive to be introduced in an -rc7, but it does include
-locking changes that I believe avoid this bug.
+Maybe download the patches? How did those strange .htm endings get 
+appended to the patches?
 
-Vladimir was right in his analysis that sometimes get_xa_root() takes the
-reference once and other times twice, but not for the right reasons.  I save
-a reference to the xattr dir to avoid a lookup later, but when there are multiple
-getxattrs or listxattrs as the first xattr operation on the file system, we can end
-up taking a second reference when we shouldn't. This is because those operations
-are protected by read locks and the ->xattr_root pointer isn't protected by anything
-else. A quick fix would be to just extend the protection of the priv root's i_mutex
-around the assignment, and test first. The right fix involves a complete rework of
-the locking, and I have code to do that, it's just too late to include it in 2.6.21.
+>    In get_dirty_limits(), when cpusets are configd you don't subtract highmen
+> the same way that is done without cpusets. Is this intentional?
 
-I'd love to know what Andrea (and now Andi Kleen) are doing to hit this now. There
-haven't been any changes in this code in a while, and the shrink_dcache_for_umount()
-has been around since October. I'm unable to reproduce locally so far, so if Andrea
-or Andi could see if this fixes it for them, I'd appreciate it.
+That is something in flux upstream. Linus changed it recently. Do it one 
+way or the other.
 
-- -Jeff
+>    It seems that dirty_exceeded is still a global punishment across cpusets.
+> Should it be addressed?
 
-- --- a/fs/reiserfs/xattr.c	2007-04-20 21:19:05.000000000 -0400
-+++ b/fs/reiserfs/xattr.c	2007-04-20 21:41:16.000000000 -0400
-@@ -72,14 +72,16 @@
- 		err =
- 		    privroot->d_inode->i_op->mkdir(privroot->d_inode, xaroot,
- 						   0700);
-- -		mutex_unlock(&privroot->d_inode->i_mutex);
- 
- 		if (err) {
-+			mutex_unlock(&privroot->d_inode->i_mutex);
- 			dput(xaroot);
- 			dput(privroot);
- 			return ERR_PTR(err);
- 		}
-- -		REISERFS_SB(sb)->xattr_root = dget(xaroot);
-+		if (REISERFS_SB(sb)->xattr_root == NULL)
-+			REISERFS_SB(sb)->xattr_root = dget(xaroot);
-+		mutex_unlock(&privroot->d_inode->i_mutex);
- 	}
- 
-       out:
+Sure. It would be best if you could place that somehow in a cpuset.
 
-- -- 
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFGKWy4LPWxlyuTD7IRAhcVAJ9vpYk2ayYf7xP7eB40inFpkiERvgCglayP
-P7pDkPouMuBlw07rs1qaKPo=
-=jdRe
------END PGP SIGNATURE-----
