@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbXDUTyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbXDUU1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318AbXDUTyz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 15:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXDUTyz
+	id S1752449AbXDUU1Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 16:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXDUU1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 15:54:55 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59847 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbXDUTyy (ORCPT
+	Sat, 21 Apr 2007 16:27:16 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:38205 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbXDUU1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 15:54:54 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Robin Holt <holt@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dean Nelson <dcn@americas.sgi.com>, Jes Sorensen <jes@americas.sgi.com>,
-       containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Tony Luck <tony.luck@intel.com>, rja@sgi.com
-Subject: Re: [PATCH] ia64 sn xpc: Convert to use kthread API.
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<1176969574439-git-send-email-ebiederm@xmission.com>
-	<20070419165103.5b671b28.akpm@linux-foundation.org>
-	<46285C6B.7080101@sgi.com>
-	<20070420142140.GB17368@lnx-holt.americas.sgi.com>
-Date: Sat, 21 Apr 2007 13:53:20 -0600
-In-Reply-To: <20070420142140.GB17368@lnx-holt.americas.sgi.com> (Robin Holt's
-	message of "Fri, 20 Apr 2007 09:21:40 -0500")
-Message-ID: <m1mz11ijwv.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 21 Apr 2007 16:27:15 -0400
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, a.p.zijlstra@chello.nl, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+In-reply-to: <20070421035444.f7a42fad.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sat, 21 Apr 2007 03:54:44 -0700)
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+References: <20070420155154.898600123@chello.nl>
+	<20070420155503.608300342@chello.nl>
+	<20070421025532.916b1e2e.akpm@linux-foundation.org>
+	<E1HfCzN-0002dZ-00@dorka.pomaz.szeredi.hu> <20070421035444.f7a42fad.akpm@linux-foundation.org>
+Message-Id: <E1HfM9K-0003OA-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 21 Apr 2007 22:25:38 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Holt <holt@sgi.com> writes:
+> > The other deadlock, in throttle_vm_writeout() is still to be solved.
+> 
+> Let's go back to the original changelog:
+> 
+> Author: marcelo.tosatti <marcelo.tosatti>
+> Date:   Tue Mar 8 17:25:19 2005 +0000
+> 
+>     [PATCH] vm: pageout throttling
+>     
+>     With silly pageout testcases it is possible to place huge amounts of memory
+>     under I/O.  With a large request queue (CFQ uses 8192 requests) it is
+>     possible to place _all_ memory under I/O at the same time.
+>     
+>     This means that all memory is pinned and unreclaimable and the VM gets
+>     upset and goes oom.
+>     
+>     The patch limits the amount of memory which is under pageout writeout to be
+>     a little more than the amount of memory at which balance_dirty_pages()
+>     callers will synchronously throttle.
+>     
+>     This means that heavy pageout activity can starve heavy writeback activity
+>     completely, but heavy writeback activity will not cause starvation of
+>     pageout.  Because we don't want a simple `dd' to be causing excessive
+>     latencies in page reclaim.
+>     
+>     Signed-off-by: Andrew Morton <akpm@osdl.org>
+>     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+> 
+> (A good one!  I wrote it ;))
+> 
+> 
+> I believe that the combination of dirty-page-tracking and its calls to
+> balance_dirty_pages() mean that we can now never get more than dirty_ratio
+> of memory into the dirty-or-writeback condition.
+> 
+> The vm scanner can convert dirty pages into clean, under-writeback pages,
+> but it cannot increase the total of dirty+writeback.
 
-> I think this was originally coded with daemonize to avoid issues with
-> reaping children.  Dean Nelson can correct me if I am wrong.  I assume
-> this patch is going in as part of the set which will make these threads
-> clear themselves from the children list and if that is the case, I can
-> see no issues.
+What about swapout?  That can increase the number of writeback pages,
+without decreasing the number of dirty pages, no?
 
-One of my earlier patches guarantees that kthreadd will have pid == 2.
-
-daemonize actually explicitly reparents to init so using daemonize and
-kernel_thread provides no help at all with respect to scaling.  It in
-fact guarantees you will be on init's list of child processes.
-
-The work to enhance wait is a little tricky and it conflicts with the
-utrace patches, which makes it hard to pursue at the moment.
-
-I'm actually sorting out kthread stop so I can complete the pid namespace.
-But since all kthreads are children of kthreadd this helps in a small
-way with the scaling issue.
-
-Eric
+Miklos
