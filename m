@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030864AbXDUMzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbXDUM7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030864AbXDUMzv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 08:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030973AbXDUMzv
+	id S1753398AbXDUM7k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 08:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbXDUM7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 08:55:51 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52124 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030864AbXDUMzu (ORCPT
+	Sat, 21 Apr 2007 08:59:40 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:39020 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753349AbXDUM7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 08:55:50 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [patch 2/8] allow unprivileged umount
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102626.825263599@szeredi.hu>
-	<20070421005506.6a315bec.akpm@linux-foundation.org>
-	<E1HfAf8-0002Ky-00@dorka.pomaz.szeredi.hu>
-	<20070421013622.1f2a7d00.akpm@linux-foundation.org>
-Date: Sat, 21 Apr 2007 06:53:58 -0600
-In-Reply-To: <20070421013622.1f2a7d00.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Sat, 21 Apr 2007 01:36:22 -0700")
-Message-ID: <m11widlwgp.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 21 Apr 2007 08:59:38 -0400
+Message-ID: <462A0AA9.8000304@linux.vnet.ibm.com>
+Date: Sat, 21 Apr 2007 18:29:21 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Balbir Singh <balbir@in.ibm.com>, nagar@watson.ibm.com, jlan@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] Taskstats fix the structure members alignment issue
+References: <20070420164341.14718.5013.sendpatchset@balbir-laptop> <20070420121543.6a1a8426.akpm@linux-foundation.org>
+In-Reply-To: <20070420121543.6a1a8426.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Andrew Morton wrote:
+> On Fri, 20 Apr 2007 22:13:41 +0530
+> Balbir Singh <balbir@in.ibm.com> wrote:
+> 
+>> We broke the the alignment of members of taskstats to the 8 byte boundary
+>> with the CSA patches. In the current kernel, the taskstats structure is
+>> not suitable for use by 32 bit applications in a 64 bit kernel.
+>>
+> 
+> ugh, that was bad of us.
 
-> On Sat, 21 Apr 2007 10:09:42 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
->
->> > > +static bool permit_umount(struct vfsmount *mnt, int flags)
->> > > +{
->> > >
->> > > ...
->> > >
->> > > +	return mnt->mnt_uid == current->uid;
->> > > +}
->> > 
->> > Yes, this seems very wrong.  I'd have thought that comparing user_struct*'s
->> > would get us a heck of a lot closer to being able to support aliasing of
->> > UIDs between different namespaces.
->> > 
->> 
->> OK, I'll fix this up.
->> 
->> Actually an earlier version of this patch did use user_struct's but
->> I'd changed it to uids, because it's simpler.
->
-> OK..
->
->>  I didn't think about
->> this being contrary to the id namespaces thing.
->
-> Well I was madly assuming that when serarate UID namespaces are in use, UID
-> 42 in container A will have a different user_struct from UID 42 in
-> container B.  I'd suggest that we provoke an opinion from Eric & co before
-> you do work on this.
+Yes :-)
 
-That is what I what I have been thinking as well, storing a user
-struct on each mount point seems sane, plus it allows per user mount
-rlimits which is major plus.  Especially since we seem to be doing
-accounting only for user mounts a per user rlimit seems good.
+> 
+>> ...
+>> The patch adds an __attribute__((aligned(8))) to the
+>> taskstats structure members so that 32 bit applications using taskstats
+>> can work with a 64 bit kernel.
+> 
+> But there might be 32-bit applications out there which are using the
+> present wrong structure?
+> 
+> otoh, I assume that those applications would be using taskstats.h and would
+> hence encounter this bug and we would have heard about it, is that correct?
+> 
 
-To get the user we should be user fs_uid as HPA suggested.
+Yes, correct.
 
-Finally I'm pretty certain the capability we should care about in
-this context is CAP_SETUID.  Instead of CAP_SYS_ADMIN.
+> otoh^2, 32-bit applications running under 32-bit kernels will presently be
+> functioning correctly, and your change will require that those applications
+> be recompiled, I think?
+> 
 
-If we have CAP_SETUID we can become which ever user owns the mount,
-and the root user in a container needs this, so he can run login
-programs.  So changing the appropriate super user checks from
-CAP_SYS_ADMIN to CAP_SETUID I think is the right thing todo.
+Yes, correct. They would be broken with this fix. We could  bump up the
+version TASKSTATS_VERSION to 4. Would you like a new patch the version
+bumped up?
 
-With the CAP_SETUID thing handled I'm not currently seeing any adverse
-implications to using this in containers.
+> 
+> This patch looks like 2.6.20 and 2.6.21 material, but very carefully...
 
-Ok.  Now that I have a reasonable approximation of the 10,000 foot
-view now to see how the patches match up.
+Yes, 2.6.20 and 2.6.21 sound correct.
 
-Eric
-
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
