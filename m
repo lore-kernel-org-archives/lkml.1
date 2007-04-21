@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbXDUWuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbXDUWv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566AbXDUWuc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 18:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbXDUWuc
+	id S1753564AbXDUWv1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 18:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbXDUWv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 18:50:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:57665 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564AbXDUWub convert rfc822-to-8bit (ORCPT
+	Sat, 21 Apr 2007 18:51:27 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:48927 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753564AbXDUWv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 18:50:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 1/8] Kconfig: refine depends statements.
-Date: Sun, 22 Apr 2007 00:50:23 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <20070420113228.GB3738@skybase>
-In-Reply-To: <20070420113228.GB3738@skybase>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704220050.24089.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/hPHZaYSj2p9n4t2pXG0dbCX1fCnOiR06lCWE
- QwCvGSRgCHKn6QeehA5FID7wuTo1ENcrkVqoo2v9jjf9EirxMn
- 2LcVlXmq6njhe0Tk2w/3A==
+	Sat, 21 Apr 2007 18:51:26 -0400
+Date: Sat, 21 Apr 2007 15:50:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "David Kyle" <dsk6@pitt.edu>
+Cc: linux-kernel@vger.kernel.org, Kylene Jo Hall <kjhall@us.ibm.com>,
+       tpm@selhorst.net, tpmdd-devel@lists.sourceforge.net
+Subject: Re: Sleep during spinlock in TPM driver
+Message-Id: <20070421155055.242d22dc.akpm@linux-foundation.org>
+In-Reply-To: <361d23520704201511j6d345d57u9f6dd6658c78d178@mail.gmail.com>
+References: <361d23520704201511j6d345d57u9f6dd6658c78d178@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 April 2007, Martin Schwidefsky wrote:
-> diff -urpN linux-2.6/drivers/auxdisplay/Kconfig linux-2.6-patched/drivers/auxdisplay/Kconfig
-> --- linux-2.6/drivers/auxdisplay/Kconfig        2007-04-19 15:23:55.000000000 +0200
-> +++ linux-2.6-patched/drivers/auxdisplay/Kconfig        2007-04-19 15:49:17.000000000 +0200
-> @@ -6,6 +6,7 @@
->  #
->  
->  menu "Auxiliary Display support"
-> +       depends on PARPORT_PC
->  
->  config KS0108
->         tristate "KS0108 LCD Controller"
+On Fri, 20 Apr 2007 18:11:10 -0400 "David Kyle" <dsk6@pitt.edu> wrote:
 
-I would guess that this actually depends on PARPORT, not PARPORT_PC.
+> I've been working with the TPM driver, and I found that if I opened,
+> used, then closed the TPM char device very frequently, I would get a
+> kernel BUG message saying that the kernel tried to sleep while holding
+> a spinlock.  I think I've isolated the problem to this function, in
+> drivers/char/tpm/tpm.c:
+> 
+> int tpm_release(struct inode *inode, struct file *file)
+> {
+>         struct tpm_chip *chip = file->private_data;
+>         spin_lock(&driver_lock);
+>         file->private_data = NULL;
+>         chip->num_opens--;
+>         del_singleshot_timer_sync(&chip->user_read_timer);
+>         flush_scheduled_work();
+>         atomic_set(&chip->data_pending, 0);
+>         put_device(chip->dev);
+>         kfree(chip->data_buffer);
+>         spin_unlock(&driver_lock);
+>         return 0;
+> }
+> EXPORT_SYMBOL_GPL(tpm_release);
+> 
+> I believe that flush_scheduled_work can sleep, correct?  Does anyone
+> know why this function is called while the spinlock is held?
+> 
 
-The rest of this patch looks good.
+yup, that's a bug.  It's not immediately clear to e what driver_lock is
+protecting.  Some global things, some per-device things, it appears.
 
-	Arnd <><
+A suitable fix might be to make driver_lock a mutex.
