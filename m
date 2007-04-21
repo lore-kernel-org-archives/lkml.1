@@ -1,115 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbXDUNSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031045AbXDUNaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753682AbXDUNSL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 09:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXDUNSL
+	id S1031045AbXDUNaq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030866AbXDUNap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 09:18:11 -0400
-Received: from as1.cineca.com ([130.186.84.251]:34245 "EHLO as1.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753682AbXDUNSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 09:18:09 -0400
-Message-ID: <462A0F06.9020602@cineca.it>
-From: Andrea Righi <a.righi@cineca.it>
-Reply-To: a.righi@cineca.it
-Organization: CINECA
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Vladimir V. Saveliev" <vs@namesys.com>, linux-kernel@vger.kernel.org,
-       reiserfs-dev@namesys.com, Edward Shishkin <edward@namesys.com>,
-       zam@clusterfs.com, ak@suse.de
-Subject: Re: Fwd: Fw: [2.6.20.4] BUG: dentry xattrs still in use in shrink_dcache_for_umount()
- with reiserfs
-References: <20070413095219.02075323.akpm@linux-foundation.org>	<462536B2.5060308@users.sourceforge.net>	<c04ebacf0704180152qdc72fcdnd0755dbf070b40d2@mail.gmail.com>	<200704181816.21166.vs@namesys.com>	<46263270.9010108@suse.com> <20070420170738.e269fcae.akpm@linux-foundation.org> <46296CB8.3090100@suse.com>
-In-Reply-To: <46296CB8.3090100@suse.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Sat, 21 Apr 2007 15:17:57 +0200 (MEST)
+	Sat, 21 Apr 2007 09:30:45 -0400
+Received: from wine.ocn.ne.jp ([220.111.47.146]:51352 "EHLO
+	smtp.wine.ocn.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754442AbXDUNao (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 09:30:44 -0400
+X-Greylist: delayed 1983 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Apr 2007 09:30:43 EDT
+To: agruen@suse.de
+Cc: alan@lxorguk.ukuu.org.uk, jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, akpm@linux-foundation.org
+Subject: Re: [d_path 3/7] Add d_namespace_path() to compute namespace relative pathnames
+From: Tetsuo Handa <penguin-fsdevel@I-love.SAKURA.ne.jp>
+References: <20070412090809.917795000@suse.de>
+	<200704170335.21805.agruen@suse.de>
+	<20070417182126.2327d89d@the-village.bc.nu>
+	<20070419232303.300441585@schurl.suse.de>
+	<20070419234704.123573327@schurl.suse.de>
+In-Reply-To: <20070419234704.123573327@schurl.suse.de>
+Message-Id: <200704212157.GCF15034.WFMQGJHFTFOtEOV@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50]
+X-Accept-Language: ja,en
+Date: Sat, 21 Apr 2007 21:57:46 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Mahoney wrote:
-> I have the patchset that I mentioned, but I'm not proposing it for 2.6.21.
-> It's much too invasive to be introduced in an -rc7, but it does include
-> locking changes that I believe avoid this bug.
-> 
-> Vladimir was right in his analysis that sometimes get_xa_root() takes the
-> reference once and other times twice, but not for the right reasons.  I save
-> a reference to the xattr dir to avoid a lookup later, but when there are multiple
-> getxattrs or listxattrs as the first xattr operation on the file system, we can end
-> up taking a second reference when we shouldn't. This is because those operations
-> are protected by read locks and the ->xattr_root pointer isn't protected by anything
-> else. A quick fix would be to just extend the protection of the priv root's i_mutex
-> around the assignment, and test first. The right fix involves a complete rework of
-> the locking, and I have code to do that, it's just too late to include it in 2.6.21.
-> 
-> I'd love to know what Andrea (and now Andi Kleen) are doing to hit this now. There
-> haven't been any changes in this code in a while, and the shrink_dcache_for_umount()
-> has been around since October. I'm unable to reproduce locally so far, so if Andrea
-> or Andi could see if this fixes it for them, I'd appreciate it.
+Hello.
 
-Jeff, your patch doesn't resolve, but you hit the problem. Actually, I
-think the xattr_root pointer must be protected also in get_xa_root()
-using the same private root i_mutex.
+I've just returned from ELC2007 and
+I haven't read all posts in this thread yet,
+but I want to comment to this function.
 
-I've tested the following patch and it resolves in my case. What do you
-think about it? could it be a reasonable fix?
- 
-Thanks!
--Andrea
+> In AppArmor, we are interested in pathnames relative to the namespace root.
+> This is the same as d_path() except for the root where the search ends. Add
+> a function for computing the namespace-relative path.
+Yes. You came to the same conclusion as TOMOYO Linux does.
+http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/fs/realpath.c#L39
 
---- linux/fs/reiserfs/xattr.c.orig	2007-04-14 18:53:02.000000000 +0200
-+++ linux/fs/reiserfs/xattr.c	2007-04-21 14:16:02.000000000 +0200
-@@ -72,14 +72,16 @@ static struct dentry *create_xa_root(str
- 		err =
- 		    privroot->d_inode->i_op->mkdir(privroot->d_inode, xaroot,
- 						   0700);
--		mutex_unlock(&privroot->d_inode->i_mutex);
- 
- 		if (err) {
-+			mutex_unlock(&privroot->d_inode->i_mutex);
- 			dput(xaroot);
- 			dput(privroot);
- 			return ERR_PTR(err);
- 		}
--		REISERFS_SB(sb)->xattr_root = dget(xaroot);
-+		if (REISERFS_SB(sb)->xattr_root == NULL)
-+			REISERFS_SB(sb)->xattr_root = dget(xaroot);
-+		mutex_unlock(&privroot->d_inode->i_mutex);
- 	}
- 
-       out:
-@@ -122,12 +124,26 @@ static struct dentry *__get_xa_root(stru
-  */
- static inline struct dentry *get_xa_root(struct super_block *s)
- {
--	struct dentry *dentry = dget(REISERFS_SB(s)->xattr_root);
-+	struct dentry *privroot = dget(REISERFS_SB(s)->priv_root);
-+	struct dentry *xaroot = NULL;
-+
-+	if (!privroot)
-+		return ERR_PTR(-EOPNOTSUPP);
-+
-+	if (!privroot->d_inode)
-+		goto out;
-+
-+	mutex_lock(&privroot->d_inode->i_mutex);
-+
-+	xaroot = (REISERFS_SB(s)->xattr_root) ?
-+			dget(REISERFS_SB(s)->xattr_root) :
-+			__get_xa_root(s);
- 
--	if (!dentry)
--		dentry = __get_xa_root(s);
-+	mutex_unlock(&privroot->d_inode->i_mutex);
- 
--	return dentry;
-+      out:
-+	dput(privroot);
-+	return xaroot;
- }
- 
- /* Opens the directory corresponding to the inode's extended attribute store.
+
+TOMOYO Linux uses pathnames relative to the namespace root.
+You do this using d_path()'s way, but there needs some extensions
+if you want to use d_namespace_path() for access control/auditing purpose.
+
+In Linux, all characters other than NULL can be used in its pathname.
+This means that you can't assume that whitespaces are delimiters.
+For example, when you process entries in "Access ..... granted/rejected\n" format
+(where ..... is a pathname and \n is a carriage return, like "Access /bin/ls granted\n"),
+an entry "Access /bin/ls granted\nAccess /bin/cat granted\n" can be produced
+if ..... is "/bin/ls granted\nAccess /bin/cat".
+Processing such entry will produce wrong result.
+
+Also, you want wildcards (usually "*") when doing pathname comparison,
+but there are files that contains wildcards
+(for example, "/usr/share/guile/1.6/ice-9/and-let*.scm" in CentOS 4.4).
+You need to escape so that you can tell whether "*" indicates
+a literal "*" or a wildcard.
+
+Also, in non-English regions, characters that are out of ASCII printable range
+are included in its pathname (for example, files created via Samba from Windows client).
+Some programs can't handle characters that have MSB bit on,
+so you may want to represent all characters without using MSB bit.
+
+It may be OK if you use d_namespace_path() for processing a userland's configuration file,
+but it is not OK if you use it for processing a kernel's configuration file.
+The kernel has to be able to handle any characters.
+
+So, you may want customized version of d_namespace_path()?
