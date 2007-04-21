@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbXDUJiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbXDUJlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368AbXDUJiO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 05:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbXDUJiO
+	id S1751131AbXDUJlL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 05:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbXDUJlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 05:38:14 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51580 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754531AbXDUJiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 05:38:14 -0400
-Date: Sat, 21 Apr 2007 11:37:23 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, vatsa@in.ibm.com, paulmck@us.ibm.com
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-ID: <20070421093723.GA2090@elf.ucw.cz>
-References: <20070419120131.GB13435@in.ibm.com> <20070419120419.GB17069@in.ibm.com> <20070419143133.a6c82ef8.akpm@linux-foundation.org> <20070420104647.GA11290@in.ibm.com>
+	Sat, 21 Apr 2007 05:41:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52436 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751131AbXDUJlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 05:41:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+Date: Sat, 21 Apr 2007 11:45:04 +0200
+User-Agent: KMail/1.9.5
+Cc: Dave Jones <davej@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, gregkh@suse.de
+References: <20070416003723.GM3691@stusta.de> <20070420172147.GC20118@redhat.com> <4629547D.9090404@goop.org>
+In-Reply-To: <4629547D.9090404@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070420104647.GA11290@in.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200704211145.05827.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Saturday, 21 April 2007 02:02, Jeremy Fitzhardinge wrote:
+> Dave Jones wrote:
+> > On Fri, Apr 20, 2007 at 10:16:54AM -0700, Jeremy Fitzhardinge wrote:
+> >  > Dave Jones wrote:
+> >  > >  > Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
+> >  > >
+> >  > > Ah, I saw you patched in CFS too, and thought it may be related.
+> >  > >   
+> >  > 
+> >  > Well, I have CONFIG_FB_BACKLIGHT enabled, and it still works.
+> >  > 
+> >  > Maybe there's something in Andi's queue which is making it work?
+> >
+> > Shrug, I'm out of ideas.  I'm hoping that it'll magically start working
+> > when people start flushing their git trees for .22
+> > Maybe that'll yield a clue for something that can be backported to .21.x
+> > because right now, I'm completely puzzled.
+> 
+> Well, it seemed reliable, but I just got a resume failure.  Different
+> from any previous symptom I've seen:
+> 
+> Intel machine check architecture supported
+> Intel machine check reporting enabled enabled on CPU#1
+> Back to C!
+> <hang>
 
-> > Of course, running try_to_freeze() in kthread_stop() would be very wrong,
-> > so we'd actually need to do it in callers, preferably via a new
-> > kthread_stop_freezeable() wrapper.
-> > 
-> Well, even then we'll need to ensure that a thread would not call
-> kthread_stop_freezeable() with any locks held. That would mean more
-> audits :)
+Hmm, looks like something in device_power_up() went awry.  Probably in
+sysdev_resume().
 
-I'll take audits over 200 new lines of code ;-). (And it should be
-reasonably simple to audit; person doing kthread_stop() ->
-ktrhread_stop_freezeable() should look after locks).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings,
+Rafael
