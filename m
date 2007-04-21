@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbXDUTqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbXDUTtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbXDUTqi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 15:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbXDUTqi
+	id S1752237AbXDUTtK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 15:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXDUTtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 15:46:38 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:6310 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151AbXDUTqf (ORCPT
+	Sat, 21 Apr 2007 15:49:09 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49200 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbXDUTtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 15:46:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Wk2z8B7ObCY4WwP185Dp8i2sMrCqlwYd3oW0LeRlbWkdKnIa9Y1Yf3RIDzlZG6lprHvGVEsZyX+sOs7B3C1TTw2whBrEV+o20b5+zup1AIxvjYY7fMpvpUdOhq1+Ii4NvfASjFI0dRXxvK6Ee5TSzBX4wvIl+Nvdic9U1pCdQ68=
-Message-ID: <a36005b50704211246x339415d1wcb9dac8c2239b692@mail.gmail.com>
-Date: Sat, 21 Apr 2007 12:46:34 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Andreas Gruenbacher" <agruen@suse.de>
-Subject: Re: [d_path 0/7] Fixes to d_path: Respin
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200704212104.06349.agruen@suse.de>
+	Sat, 21 Apr 2007 15:49:08 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH] nfs lockd reclaimer: Convert to kthread API
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769696321319-git-send-email-ebiederm@xmission.com>
+	<1176999710.6663.12.camel@heimdal.trondhjem.org>
+	<m1slawkw76.fsf@ebiederm.dsl.xmission.com>
+	<1177017564.6628.5.camel@heimdal.trondhjem.org>
+	<20070419144059.7f5b9b39.akpm@linux-foundation.org>
+	<1177020284.6628.27.camel@heimdal.trondhjem.org>
+Date: Sat, 21 Apr 2007 13:47:39 -0600
+In-Reply-To: <1177020284.6628.27.camel@heimdal.trondhjem.org> (Trond
+	Myklebust's message of "Thu, 19 Apr 2007 18:04:44 -0400")
+Message-ID: <m1r6qdik6c.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070412090809.917795000@suse.de>
-	 <200704201840.07247.agruen@suse.de>
-	 <a36005b50704201217l649195f0q204c2434445e7160@mail.gmail.com>
-	 <200704212104.06349.agruen@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/21/07, Andreas Gruenbacher <agruen@suse.de> wrote:
-> What I described is a supported feature, nothing more and nothing less. It's
-> also relatively easy to handle this case correctly in glibc, e.g., [...]
+Trond Myklebust <trond.myklebust@fys.uio.no> writes:
 
-This is only useful if the requirement of an ordered /proc/mounts is
-part of the kernel ABI.  I.e., until somebody specifies (in the
-sources, in kernel docs, I don't care where exactly) that the entries
-in /proc/mounts appear in the order in which the mounts happened this
-change is not better than the current code.  I have never found such
-an assurance.
+> On Thu, 2007-04-19 at 14:40 -0700, Andrew Morton wrote:
+>> Using signals to communicate with kernel threads is fairly unpleasant, IMO.
+>> We have much simpler, faster and more idiomatic ways of communicating
+>> between threads in-kernel and there are better ways in which userspace can
+>> communicate with the kernel - system calls, for example...
+>> 
+>> So I think generally any move which gets us away from using signals in
+>> kernel threads is moving in a good direction.
+>
+> I have yet to see a proposal which did. Eric's patch was eliminating
+> signals in kernel threads that used them without proposing any
+> replacement mechanism or showing that he had plans to do so. That is a
+> good reason for a veto.
 
+Possibly I just hadn't looked close enough.  The signals looked like
+a redundant mechanism.
 
-> This is what POSIX says about statvfs / fstatvfs:
-> > It is unspecified whether all members of the statvfs structure have
-> > meaningful values on all file systems.
+>> > > With pid namespaces all kernel threads will disappear so how do
+>> > > we cope with the problem when the sysadmin can not see the kernel
+>> > > threads?
+>> > 
+>> > Then you have a usability problem. How does the sysadmin reboot the
+>> > system if there is no way to shut down the processes that are hanging on
+>> > an unresponsive filesystem?
+>> 
+>> Where's the hang?  A user process is stuck on h_rwsem?
+>> 
+>> If so, would it be appropriate to convert the user process to use
+>> down_foo_interruptible(), so that the operator can just kill the user
+>> process as expected, rather than having to futz around killing kernel
+>> threads?
+>
+> If an NFS server reboots, then the locks held by user processes on the
+> client need to be re-established by when it comes up again. Otherwise,
+> the processes that thought they were holding locks will suddenly fail.
+> This recovery job is currently the done by a kernel thread.
+>
+> The question is then what to do if the server crashes again while the
+> kernel thread is re-establishing the locks. Particularly if it never
+> comes back again.
+> Currently, the administrator can intervene by killing anything that has
+> open files on that volume and kill the recovery kernel thread.
+> You'll also note that lockd_down(), nfsd_down() etc all use signals to
+> inform lockd(), nfsd() etc that they should be shutting down. Since the
+> reclaimer thread is started by the lockd() thread using CLONE_SIGHAND,
+> this means that we also automatically kill any lingering recovery
+> threads whenever we shutdown lockd().
 
-Sure, just like POSIX in many other place leaves things unspecified.
-This does not change the fact that we do a good job now.  You try to
-use this wording to excuse the fact that you want to make the results
-worse than they are now.  That's *not* the intend of this wording.
+Maybe I'm missing something but I think you are referring to the semantics
+of do_group_exit in the presence of CLONE_THREAD.  All sharing a
+sighand should do is cause the sharing of the signal handler.  Causing
+allow_signal and disallow_signal to act on a group of threads instead
+of a single thread.   I don't recall clone_sighand having any
+other effects.
 
+> These mechanisms need to be replaced _before_ we start shooting down
+> sigallow() etc in the kernel.
 
-> In my opinion, the advantage of not reporting bogus pathnames in /proc/mounts
-> by far outweighs the problems is sometimes causes for fstatvfs().
+Reasonable if these mechanisms are not redundant.
 
-Hell no.  It is never acceptable to deliberately break compatibility.
-Effects of bugs on the ABI might change but this is not the case here.
- This is an interface which forever displayed the information in this
-form and it is correct and useful.
+Thinking it through because everything having to do with nfs mounting and
+unmounting is behind the privileged mount operation this is not going to
+become an issue until we start allowing unprivileged nfs mounts.  Because
+we cannot delegate control of nfs mount and unmount operations until then.
+
+Since signals do not pose a immediate barrier to forward progress like
+daemonize and kernel_thread we can leave things as is until we can
+sort this out.
+
+Eric
