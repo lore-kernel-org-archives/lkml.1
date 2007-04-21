@@ -1,122 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbXDUNPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbXDUNQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbXDUNPd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 09:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXDUNPc
+	id S1753672AbXDUNQJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbXDUNQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 09:15:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36041 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753510AbXDUNPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 09:15:31 -0400
-Date: Sat, 21 Apr 2007 09:15:24 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: nfs@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] RPC: add wrapper for svc_reserve to account for checksum
-Message-ID: <20070421131523.GA18100@dantu.rdu.redhat.com>
+	Sat, 21 Apr 2007 09:16:09 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54445 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753672AbXDUNQE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 09:16:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [patch 1/8] add user mounts to the kernel
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102624.975879175@szeredi.hu>
+Date: Sat, 21 Apr 2007 07:14:23 -0600
+In-Reply-To: <20070420102624.975879175@szeredi.hu> (Miklos Szeredi's message
+	of "Fri, 20 Apr 2007 12:25:33 +0200")
+Message-ID: <m1wt05kgy8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the kernel calls svc_reserve to downsize the expected size of an RPC
-reply, it fails to account for the possibility of a checksum at the end of
-the packet. If a client mounts a NFSv2/3 with sec=krb5i/p, and does I/O then
-you'll generally see messages similar to this in the server's ring buffer:
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-RPC request reserved 164 but used 208
+> From: Miklos Szeredi <mszeredi@suse.cz>
+>
+> Add ownership information to mounts.
+>
+> A new mount flag, MS_SETUSER is used to make a mount owned by a user.
+> If this flag is specified, then the owner will be set to the current
+> real user id and the mount will be marked with the MNT_USER flag.  On
+> remount don't preserve previous owner, and treat MS_SETUSER as for a
+> new mount.  The MS_SETUSER flag is ignored on mount move.
+>
+> The MNT_USER flag is not copied on any kind of mount cloning:
+> namespace creation, binding or propagation.
 
-While I was never able to verify it, I suspect that this problem is also the
-root cause of some oopses I've seen under these conditions:
+I half agree, and as an initial approximation this works.
+Ultimately we should be at the point that for mount propagation
+that we copy the owner of the from the owner of our parent mount
+at the propagation destination.
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=227726
+Mount propagation semantics are a major pain.
 
-This is probably also a problem for other sec= types and for NFSv4. The large
-reserved size for NFSv4 compound packets seems to generally paper over the
-problem, however.
+> For bind mounts the
+> cloned mount(s) are set to MNT_USER depending on the MS_SETUSER mount
+> flag.  In all the other cases MNT_USER is always cleared.
+>
+> For MNT_USER mounts a "user=UID" option is added to /proc/PID/mounts.
+> This is compatible with how mount ownership is stored in /etc/mtab.
 
-This patch adds a wrapper for svc_reserve that accounts for the possibility of
-a checksum. It also fixes up the appropriate callers of svc_reserve to call
-the wrapper. For now, it just uses a hardcoded value that I determined via
-testing. That value may need to be revised upward as things change, or we
-may want to eventually add a new auth_op that attempts to calculate this
-somehow.
+Ok.  While I generally agree with the concept this can be simplified some
+more.
 
-Unfortunately, there doesn't seem to be a good way to reliably determine the
-expected checksum length prior to actually calculating it, particularly with
-schemes like spkm3.
+Eric
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
-diff --git a/fs/nfsd/nfs3proc.c b/fs/nfsd/nfs3proc.c
-index f61142a..7d47c16 100644
---- a/fs/nfsd/nfs3proc.c
-+++ b/fs/nfsd/nfs3proc.c
-@@ -175,7 +175,7 @@ nfsd3_proc_read(struct svc_rqst *rqstp, struct nfsd3_readargs *argp,
- 	if (NFSSVC_MAXBLKSIZE < resp->count)
- 		resp->count = NFSSVC_MAXBLKSIZE;
- 
--	svc_reserve(rqstp, ((1 + NFS3_POST_OP_ATTR_WORDS + 3)<<2) + resp->count +4);
-+	svc_reserve_auth(rqstp, ((1 + NFS3_POST_OP_ATTR_WORDS + 3)<<2) + resp->count +4);
- 
- 	fh_copy(&resp->fh, &argp->fh);
- 	nfserr = nfsd_read(rqstp, &resp->fh, NULL,
-diff --git a/fs/nfsd/nfsproc.c b/fs/nfsd/nfsproc.c
-index 4e06810..21f2ff7 100644
---- a/fs/nfsd/nfsproc.c
-+++ b/fs/nfsd/nfsproc.c
-@@ -154,7 +154,7 @@ nfsd_proc_read(struct svc_rqst *rqstp, struct nfsd_readargs *argp,
- 				argp->count);
- 		argp->count = NFSSVC_MAXBLKSIZE;
- 	}
--	svc_reserve(rqstp, (19<<2) + argp->count + 4);
-+	svc_reserve_auth(rqstp, (19<<2) + argp->count + 4);
- 
- 	resp->count = argp->count;
- 	nfserr = nfsd_read(rqstp, fh_copy(&resp->fh, &argp->fh), NULL,
-diff --git a/include/linux/sunrpc/svc.h b/include/linux/sunrpc/svc.h
-index 94350f5..60f24d6 100644
---- a/include/linux/sunrpc/svc.h
-+++ b/include/linux/sunrpc/svc.h
-@@ -326,4 +326,24 @@ int		   svc_register(struct svc_serv *, int, unsigned short);
- void		   svc_wake_up(struct svc_serv *);
- void		   svc_reserve(struct svc_rqst *rqstp, int space);
- 
-+/*
-+ * When we want to reduce the size of the reserved space in the response
-+ * buffer, we need to take into account the size of any checksum data that
-+ * may be at the end of the packet. For now, just use a hardcoded value
-+ * for each possible authflavor. This will need to be updated when new
-+ * encryption types or algorithms are added, or we'll have to come up with
-+ * a way to reasonably calculate this on the fly (maybe via a new auth_op).
-+ */
-+static inline void 
-+svc_reserve_auth(struct svc_rqst *rqstp, int space)
-+{
-+	int			added_space = 0;
-+
-+	switch(rqstp->rq_authop->flavour) {
-+		case RPC_AUTH_GSS:
-+			added_space = 56; /* determined empirically */
-+	}
-+	return svc_reserve(rqstp, space + added_space);
-+}
-+
- #endif /* SUNRPC_SVC_H */
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index 0aab5b5..2d390d1 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -379,7 +379,7 @@ svc_process(struct svc_serv *serv, struct svc_rqst *rqstp)
- 	 * better idea of reply size
- 	 */
- 	if (procp->pc_xdrressize)
--		svc_reserve(rqstp, procp->pc_xdrressize<<2);
-+		svc_reserve_auth(rqstp, procp->pc_xdrressize<<2);
- 
- 	/* Call the function that processes the request. */
- 	if (!versp->vs_dispatch) {
-diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+>
+> Index: linux/fs/namespace.c
+> ===================================================================
+> --- linux.orig/fs/namespace.c	2007-04-20 11:55:02.000000000 +0200
+> +++ linux/fs/namespace.c	2007-04-20 11:55:05.000000000 +0200
+> @@ -227,6 +227,13 @@ static struct vfsmount *skip_mnt_tree(st
+>  	return p;
+>  }
+>  
+> +static void set_mnt_user(struct vfsmount *mnt)
+> +{
+> +	BUG_ON(mnt->mnt_flags & MNT_USER);
+> +	mnt->mnt_uid = current->uid;
+
+This should be based on fsuid.  Unless I'm completely confused.
+
+I think getting the mount user from current when we do mount
+propagation could be a problem.  In particular I'm pretty
+certain in the mount propagation case the mount should be owned
+by the user who owns the destination mount that is above us.
+
+> +	mnt->mnt_flags |= MNT_USER;
+> +}
+> +
+>  static struct vfsmount *clone_mnt(struct vfsmount *old, struct dentry *root,
+>  					int flag)
+>  {
+> @@ -241,6 +248,11 @@ static struct vfsmount *clone_mnt(struct
+>  		mnt->mnt_mountpoint = mnt->mnt_root;
+>  		mnt->mnt_parent = mnt;
+>  
+> +		/* don't copy the MNT_USER flag */
+> +		mnt->mnt_flags &= ~MNT_USER;
+> +		if (flag & CL_SETUSER)
+> +			set_mnt_user(mnt);
+> +
+>  		if (flag & CL_SLAVE) {
+>  			list_add(&mnt->mnt_slave, &old->mnt_slave_list);
+>  			mnt->mnt_master = old;
+> @@ -403,6 +415,8 @@ static int show_vfsmnt(struct seq_file *
+>  		if (mnt->mnt_flags & fs_infop->flag)
+>  			seq_puts(m, fs_infop->str);
+>  	}
+> +	if (mnt->mnt_flags & MNT_USER)
+> +		seq_printf(m, ",user=%i", mnt->mnt_uid);
+How about making the test "if (mnt->mnt_user != &root_user)"
+
+>  	if (mnt->mnt_sb->s_op->show_options)
+>  		err = mnt->mnt_sb->s_op->show_options(m, mnt);
+>  	seq_puts(m, " 0 0\n");
+> @@ -920,8 +934,9 @@ static int do_change_type(struct nameida
+>  /*
+>   * do loopback mount.
+>   */
+> -static int do_loopback(struct nameidata *nd, char *old_name, int recurse)
+> +static int do_loopback(struct nameidata *nd, char *old_name, int flags)
+>  {
+> +	int clone_flags;
+>  	struct nameidata old_nd;
+>  	struct vfsmount *mnt = NULL;
+>  	int err = mount_is_safe(nd);
+> @@ -941,11 +956,12 @@ static int do_loopback(struct nameidata 
+>  	if (!check_mnt(nd->mnt) || !check_mnt(old_nd.mnt))
+>  		goto out;
+>  
+> +	clone_flags = (flags & MS_SETUSER) ? CL_SETUSER : 0;
+>  	err = -ENOMEM;
+> -	if (recurse)
+> -		mnt = copy_tree(old_nd.mnt, old_nd.dentry, 0);
+> +	if (flags & MS_REC)
+> +		mnt = copy_tree(old_nd.mnt, old_nd.dentry, clone_flags);
+>  	else
+> -		mnt = clone_mnt(old_nd.mnt, old_nd.dentry, 0);
+> +		mnt = clone_mnt(old_nd.mnt, old_nd.dentry, clone_flags);
+>  
+>  	if (!mnt)
+>  		goto out;
+> @@ -987,8 +1003,11 @@ static int do_remount(struct nameidata *
+>  
+>  	down_write(&sb->s_umount);
+>  	err = do_remount_sb(sb, flags, data, 0);
+> -	if (!err)
+> +	if (!err) {
+>  		nd->mnt->mnt_flags = mnt_flags;
+> +		if (flags & MS_SETUSER)
+> +			set_mnt_user(nd->mnt);
+> +	}
+>  	up_write(&sb->s_umount);
+>  	if (!err)
+>  		security_sb_post_remount(nd->mnt, flags, data);
+> @@ -1093,10 +1112,13 @@ static int do_new_mount(struct nameidata
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+>  
+> -	mnt = do_kern_mount(type, flags, name, data);
+> +	mnt = do_kern_mount(type, flags & ~MS_SETUSER, name, data);
+>  	if (IS_ERR(mnt))
+>  		return PTR_ERR(mnt);
+>  
+> +	if (flags & MS_SETUSER)
+> +		set_mnt_user(mnt);
+> +
+>  	return do_add_mount(mnt, nd, mnt_flags, NULL);
+>  }
+>  
+> @@ -1127,7 +1149,8 @@ int do_add_mount(struct vfsmount *newmnt
+>  	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+>  		goto unlock;
+>  
+> -	newmnt->mnt_flags = mnt_flags;
+> +	/* MNT_USER was set earlier */
+> +	newmnt->mnt_flags |= mnt_flags;
+>  	if ((err = graft_tree(newmnt, nd)))
+>  		goto unlock;
+>  
+> @@ -1447,7 +1470,7 @@ long do_mount(char *dev_name, char *dir_
+>  		retval = do_remount(&nd, flags & ~MS_REMOUNT, mnt_flags,
+>  				    data_page);
+>  	else if (flags & MS_BIND)
+> -		retval = do_loopback(&nd, dev_name, flags & MS_REC);
+> +		retval = do_loopback(&nd, dev_name, flags);
+>  	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
+>  		retval = do_change_type(&nd, flags);
+>  	else if (flags & MS_MOVE)
+> Index: linux/include/linux/fs.h
+> ===================================================================
+> --- linux.orig/include/linux/fs.h	2007-04-20 11:55:02.000000000 +0200
+> +++ linux/include/linux/fs.h	2007-04-20 11:55:05.000000000 +0200
+> @@ -123,6 +123,7 @@ extern int dir_notify_enable;
+>  #define MS_SLAVE	(1<<19)	/* change to slave */
+>  #define MS_SHARED	(1<<20)	/* change to shared */
+>  #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
+> +#define MS_SETUSER	(1<<22) /* set mnt_uid to current user */
+
+If we unconditionally use the fsuid I think we can get away without
+this flag.
+
+>  #define MS_ACTIVE	(1<<30)
+>  #define MS_NOUSER	(1<<31)
+>  
+> Index: linux/include/linux/mount.h
+> ===================================================================
+> --- linux.orig/include/linux/mount.h	2007-04-20 11:55:02.000000000 +0200
+> +++ linux/include/linux/mount.h	2007-04-20 11:55:05.000000000 +0200
+> @@ -30,6 +30,7 @@ struct mnt_namespace;
+>  #define MNT_RELATIME	0x20
+>  
+>  #define MNT_SHRINKABLE	0x100
+> +#define MNT_USER	0x200
+
+If we assign a user to all mount points and root gets to own the
+initial set of mounts then we don't need the internal MNT_USER
+flag.
+
+>  #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
+>  #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
+> @@ -61,6 +62,8 @@ struct vfsmount {
+>  	atomic_t mnt_count;
+>  	int mnt_expiry_mark;		/* true if marked for expiry */
+>  	int mnt_pinned;
+> +
+> +	uid_t mnt_uid;			/* owner of the mount */
+
+Can we please make this a user struct.   That requires a bit of
+reference counting but it has uid namespace benefits as well
+as making it easy to implement per user mount rlimits.
+
+>  };
+>  
+>  static inline struct vfsmount *mntget(struct vfsmount *mnt)
+> Index: linux/fs/pnode.h
+> ===================================================================
+> --- linux.orig/fs/pnode.h	2007-04-20 11:55:02.000000000 +0200
+> +++ linux/fs/pnode.h	2007-04-20 11:55:05.000000000 +0200
+> @@ -22,6 +22,7 @@
+>  #define CL_COPY_ALL 		0x04
+>  #define CL_MAKE_SHARED 		0x08
+>  #define CL_PROPAGATION 		0x10
+> +#define CL_SETUSER		0x20
+
+
+>  static inline void set_mnt_shared(struct vfsmount *mnt)
+>  {
+>
+> --
