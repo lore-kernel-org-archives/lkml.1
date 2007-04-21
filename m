@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030619AbXDUNlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031050AbXDUNl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030619AbXDUNlY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 09:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031030AbXDUNlY
+	id S1031050AbXDUNl6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031058AbXDUNl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 09:41:24 -0400
-Received: from mail.tmr.com ([64.65.253.246]:44242 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030619AbXDUNlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 09:41:24 -0400
-Message-ID: <462A144B.9000400@tmr.com>
-Date: Sat, 21 Apr 2007 09:40:27 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 21 Apr 2007 09:41:57 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58160 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031055AbXDUNl4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 09:41:56 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [patch 4/8] propagate error values from clone_mnt
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102634.254288123@szeredi.hu>
+Date: Sat, 21 Apr 2007 07:40:20 -0600
+In-Reply-To: <20070420102634.254288123@szeredi.hu> (Miklos Szeredi's message
+	of "Fri, 20 Apr 2007 12:25:36 +0200")
+Message-ID: <m1k5w5kfqz.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Matt Mackall <mpm@selenic.com>, Nick Piggin <npiggin@suse.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair
-   Scheduler [CFS]
-References: <46244A52.4000403@bigpond.net.au> <20070417042954.GG25513@wotan.suse.de> <20070417060955.GO8915@holomorphy.com> <20070417061503.GC1057@wotan.suse.de> <20070417062621.GL2986@holomorphy.com> <20070417070155.GF1057@wotan.suse.de> <20070417213954.GE11166@waste.org> <20070418031511.GA18452@wotan.suse.de> <20070418043831.GR11115@waste.org> <20070418050024.GF18452@wotan.suse.de> <20070418055525.GS11115@waste.org> <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704180742470.2828@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Wed, 18 Apr 2007, Matt Mackall wrote:
->> Why is X special? Because it does work on behalf of other processes?
->> Lots of things do this. Perhaps a scheduler should focus entirely on
->> the implicit and directed wakeup matrix and optimizing that
->> instead[1].
-> 
-> I 100% agree - the perfect scheduler would indeed take into account where 
-> the wakeups come from, and try to "weigh" processes that help other 
-> processes make progress more. That would naturally give server processes 
-> more CPU power, because they help others
-> 
-> I don't believe for a second that "fairness" means "give everybody the 
-> same amount of CPU". That's a totally illogical measure of fairness. All 
-> processes are _not_ created equal.
-> 
-> That said, even trying to do "fairness by effective user ID" would 
-> probably already do a lot. In a desktop environment, X would get as much 
-> CPU time as the user processes, simply because it's in a different 
-> protection domain (and that's really what "effective user ID" means: it's 
-> not about "users", it's really about "protection domains").
-> 
-> And "fairness by euid" is probably a hell of a lot easier to do than 
-> trying to figure out the wakeup matrix.
-> 
-You probably want to consider the controlling terminal as well...  do 
-you want to have people starting 'at' jobs competing on equal footing 
-with people typing at a terminal? I'm not offering an answer, just 
-raising the question.
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-And for some database applications, everyone in a group may connect with 
-the same login-id, then do sub authorization to the database 
-application. euid may be an issue there as well.
+> From: Miklos Szeredi <mszeredi@suse.cz>
+>
+> Allow clone_mnt() to return errors other than ENOMEM.  This will be
+> used for returning a different error value when the number of user
+> mounts goes over the limit.
+>
+> Fix copy_tree() to return EPERM for unbindable mounts.
+>
+> Don't propagate further from dup_mnt_ns() as that copy_tree() can only
+> fail with -ENOMEM.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+At a quick skim this looks ok.
+
+Eric
