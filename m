@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXDUQXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbXDUQcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbXDUQXg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 12:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXDUQXg
+	id S1752905AbXDUQcR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 12:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXDUQcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 12:23:36 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:15395 "EHLO
-	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752463AbXDUQXf (ORCPT
+	Sat, 21 Apr 2007 12:32:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:53959 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752893AbXDUQcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 12:23:35 -0400
-Subject: Re: [RFC][PATCH] reiserfs vs BKL
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, reiserfs-list@namesys.com,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Mason <chris.mason@oracle.com>,
-       Nikita Danilov <nikita@clusterfs.com>
-In-Reply-To: <462A3871.3060104@suse.com>
-References: <1177170364.7316.17.camel@twins>  <462A3871.3060104@suse.com>
-Content-Type: text/plain
-Date: Sat, 21 Apr 2007 18:23:31 +0200
-Message-Id: <1177172611.7316.22.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 21 Apr 2007 12:32:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Qm5ogtYMmQgP2c7OiHYemSTFB85NlKr0s3HCxnryfnAVXOCZCLVrG9exuMWLGggKMmFQMs4X1wtik0tulMhFBnu2f+Y8TC7iphqZ9OQGgQ0vr7GE1NjuQbqIyvXfWHagU2YOt+QGH501mw4LK7fGP25ykzAFI5+hbOZl5VQmC+0=
+Message-ID: <a36005b50704210932h3fe775ebv392a407054675eef@mail.gmail.com>
+Date: Sat, 21 Apr 2007 09:32:15 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE 2/2
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>, "Jakub Jelinek" <jakub@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0704210830310.26485@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46247427.6000902@redhat.com> <4627DBF0.1080303@redhat.com>
+	 <20070420140316.e0155e7d.akpm@linux-foundation.org>
+	 <a36005b50704201424q3c07d457m6b2c468ff8a826c7@mail.gmail.com>
+	 <Pine.LNX.4.64.0704210830310.26485@blonde.wat.veritas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-21 at 12:14 -0400, Jeff Mahoney wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Peter Zijlstra wrote:
-> > Replace all the lock_kernel() instances with reiserfs_write_lock(sb),
-> > and make that use an actual per super-block mutex instead of
-> > lock_kernel().
-> > 
-> > This should make reiserfs safe from PREEMPT_BKL=n, since it seems to
-> > rely on being able to schedule. Also, it removes the dependency on the
-> > BKL, and thereby is not prone to cause prio inversion with remaining BKL
-> > users (notably tty).
-> > 
-> > Compile tested only, since I didn't dare boot it.
-> 
-> NACK.
+On 4/21/07, Hugh Dickins <hugh@veritas.com> wrote:
+> But the Linux MADV_DONTNEED does throw away
+> data from a PROT_WRITE,MAP_PRIVATE mapping (or brk or stack) - those
+> changes are discarded, and a subsequent access will revert to zeroes
+> or the underlying mapped file.  Been like that since before 2.4.0.
 
-darn, I suspected it would be wrong :-/, it was too easy to be right.
-
-> Believe me, I would *love* to nuke the BKL from reiserfs, but a search
-> and replace of this nature is just wrong. reiserfs_write_lock() using
-> the BKL isn't an accident - it depends on its nesting properties. If you
-> did try to boot this kernel, you'd deadlock pretty quickly.
-
-Right, I see. 
-
-> This one has been on my TODO list for a long time. Interestingly, I've
-> been doing reiserfs xattr development recently using 2.6.21-rc7-git2,
-> and I'm not seeing any of these messages.
-
-Yeah, that would be pretty close to what I ran.
-
-> # CONFIG_PREEMPT_NONE is not set
-> CONFIG_PREEMPT_VOLUNTARY=y
-> # CONFIG_PREEMPT is not set
-> # CONFIG_PREEMPT_BKL is not set
-
-I have CONFIG_PREEMPT=y, but seeing how one of those points came from a
-cond_resched() within a lock_kernel() section, I'm not seeing how you
-don't get these.
-
-A well, I really do hope you come up with something some day, for me its
-time to go change filesystems - bah, the pain...
-
+I didn't say it changed.  I just say that there is a hole in the
+current implementation as it does not allow to implement
+POSIX_MADV_DONTNEED with anything but a no-op.  The
+POSIX_MADV_DONTNEED behavior is useful and something IMO should be
+added to allow implementing it.
