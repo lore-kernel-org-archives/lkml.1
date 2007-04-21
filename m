@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbXDUBeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbXDUBh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754035AbXDUBeq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 21:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbXDUBeq
+	id S1754041AbXDUBh7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 21:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXDUBh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 21:34:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58135 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754035AbXDUBep (ORCPT
+	Fri, 20 Apr 2007 21:37:59 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:25177 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754041AbXDUBh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 21:34:45 -0400
-Date: Sat, 21 Apr 2007 03:34:54 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Marcos Pinto <markybob@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
-       Alan Cox <alan@redhat.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: 2.6.20.7 locking up hard on boot
-Message-ID: <20070421013454.GB4016@stusta.de>
-References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com>
+	Fri, 20 Apr 2007 21:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=hfqutYC3bcBjVIxIYFHyfePK4jL1EBn7DENDHm/fOFrbcnPWHyovg/JM1EPmK+LSL
+	tGFT8oPz5OKxFeGOYUeBA==
+Message-ID: <46296ACD.3020402@google.com>
+Date: Fri, 20 Apr 2007 18:37:17 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Christoph Lameter <clameter@sgi.com>
+CC: akpm@osdl.org, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
+       Dave Chinner <dgc@sgi.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC 0/8] Cpuset aware writeback
+References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com> <45C2960B.9070907@google.com> <Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com> <46019F67.3010300@google.com> <Pine.LNX.4.64.0703211428430.4832@schroedinger.engr.sgi.com> <4626CEDA.7050608@google.com> <Pine.LNX.4.64.0704181948260.8743@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0704181948260.8743@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 07:47:13PM -0500, Marcos Pinto wrote:
-> I'm not subscribed, so please personally CC me any answers/comments.
-> Thank you.
+Christoph Lameter wrote:
+> Hmmmm.... Sorry. I got distracted and I have sent them to Kame-san who was 
+> interested in working on them. 
 >
-> While booting, (AMD64 Turion x2) 2.6.20.7 kernel locks up hard.  The
-> last kernel that I tried, 2.6.18.8, worked perfectly without any
-> trickery.  2.6.20.7 only boots up with "acpi=off" being added to the
-> kernel line.  Note that 2.6.18.8 works perfectly with acpi on, which
-> is really the
-> only way I can run this box because with "acpi=off" it overheats and 
-> freezes.
-> Please let me know if there's anything else that I could do to help with 
-> this.
->
->
-> Here's what's on the screen when it happens:
->
-> Brought up 2 CPUs
-> testing NMI watchdog ... OK.
-> Disabling vsyscall due to  use of PM timer
-> time.c: Using 3.579545 MHz WALL PM GTOD PM timer.
-> time.c: Detected 1808.264 MHz processor.
-> migration_cost=281
-> NET: Registered protocol family 16
-> ACPI: bus type pci registered
-> PCI: Using MMCONFIG at e0000000
-> PCI: No mmconfig possible on device 00:18
-> PCI: No mmconfig possible on device 07:05
-> ACPI: Interpreter enabled
-> ACPI: Using IOAPIC for interrupt routing
-> ACPI: PCI Root Bridge [PCI0] (0000:00)
-> ACPI: Assume root bridge [\_SB_.PCI0] bus is 0
-> 0000:00:0d.0: cannot adjust BAR0 (not I/O)
-> 0000:00:0d.0: cannot adjust BAR1 (not I/O)
->...
+> I have placed the most recent version at
+> http://ftp.kernel.org/pub/linux/kernel/people/christoph/cpuset_dirty
+>   
 
-Does 2.6.20.3 boot with ACPI enabled?
+    Hi Christoph -- a few comments on the patches:
 
-cu
-Adrian
+cpuset_write_dirty_map.htm
 
--- 
+    In __set_page_dirty_nobuffers() you always call 
+cpuset_update_dirty_nodes() but in __set_page_dirty_buffers() you call 
+it only if page->mapping is still set after locking. Is there a reason 
+for the difference? Also a question not about your patch: why do those 
+functions call __mark_inode_dirty() even if the dirty page has been 
+truncated and mapping == NULL?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+cpuset_write_throttle.htm
+
+    I noticed that several lines have leading spaces. I didn't check if 
+other patches have the problem too.
+
+    In get_dirty_limits(), when cpusets are configd you don't subtract 
+highmen the same way that is done without cpusets. Is this intentional?
+
+    It seems that dirty_exceeded is still a global punishment across 
+cpusets. Should it be addressed?
+
+
+    -- Ethan
 
