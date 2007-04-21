@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030687AbXDULJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030680AbXDULKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030687AbXDULJJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 07:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030768AbXDULJJ
+	id S1030680AbXDULKo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 07:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030694AbXDULKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 07:09:09 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:14854 "EHLO
-	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030761AbXDULJI (ORCPT
+	Sat, 21 Apr 2007 07:10:44 -0400
+Received: from amsfep16-int.chello.nl ([62.179.120.11]:40606 "EHLO
+	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030680AbXDULKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 07:09:08 -0400
-Subject: Re: [PATCH 08/10] mm: count writeback pages per BDI
+	Sat, 21 Apr 2007 07:10:43 -0400
+Subject: Re: [PATCH 09/10] mm: expose BDI statistics in sysfs.
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
        neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com
-In-Reply-To: <20070421025525.042ed73a.akpm@linux-foundation.org>
+In-Reply-To: <20070421025528.03105b60.akpm@linux-foundation.org>
 References: <20070420155154.898600123@chello.nl>
-	 <20070420155503.334628394@chello.nl>
-	 <20070421025525.042ed73a.akpm@linux-foundation.org>
+	 <20070420155503.473053637@chello.nl>
+	 <20070421025528.03105b60.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Sat, 21 Apr 2007 13:07:16 +0200
-Message-Id: <1177153636.2934.43.camel@lappy>
+Date: Sat, 21 Apr 2007 13:08:51 +0200
+Message-Id: <1177153731.2934.46.camel@lappy>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
@@ -31,62 +31,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sat, 2007-04-21 at 02:55 -0700, Andrew Morton wrote:
-> On Fri, 20 Apr 2007 17:52:02 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Fri, 20 Apr 2007 17:52:03 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> > Count per BDI writeback pages.
+> > Expose the per BDI stats in /sys/block/<dev>/queue/*
 > > 
 > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > > ---
-> >  include/linux/backing-dev.h |    1 +
-> >  mm/page-writeback.c         |   12 ++++++++++--
-> >  2 files changed, 11 insertions(+), 2 deletions(-)
+> >  block/ll_rw_blk.c |   32 ++++++++++++++++++++++++++++++++
+> >  1 file changed, 32 insertions(+)
 > > 
-> > Index: linux-2.6/mm/page-writeback.c
+> > Index: linux-2.6-mm/block/ll_rw_blk.c
 > > ===================================================================
-> > --- linux-2.6.orig/mm/page-writeback.c	2007-04-20 15:27:28.000000000 +0200
-> > +++ linux-2.6/mm/page-writeback.c	2007-04-20 15:28:10.000000000 +0200
-> > @@ -979,14 +979,18 @@ int test_clear_page_writeback(struct pag
-> >  	int ret;
+> > --- linux-2.6-mm.orig/block/ll_rw_blk.c
+> > +++ linux-2.6-mm/block/ll_rw_blk.c
+> > @@ -3976,6 +3976,15 @@ static ssize_t queue_max_hw_sectors_show
+> >  	return queue_var_show(max_hw_sectors_kb, (page));
+> >  }
 > >  
-> >  	if (mapping) {
-> > +		struct backing_dev_info *bdi = mapping->backing_dev_info;
-> >  		unsigned long flags;
-> >  
-> >  		write_lock_irqsave(&mapping->tree_lock, flags);
-> >  		ret = TestClearPageWriteback(page);
-> > -		if (ret)
-> > +		if (ret) {
-> >  			radix_tree_tag_clear(&mapping->page_tree,
-> >  						page_index(page),
-> >  						PAGECACHE_TAG_WRITEBACK);
-> > +			if (bdi_cap_writeback_dirty(bdi))
-> > +				__dec_bdi_stat(bdi, BDI_WRITEBACK);
+> > +static ssize_t queue_nr_reclaimable_show(struct request_queue *q, char *page)
+> > +{
+> > +	return sprintf(page, "%lld\n", bdi_stat(&q->backing_dev_info, BDI_RECLAIMABLE));
+> > +}
 > 
-> Why do we test bdi_cap_writeback_dirty() here?
+> We try to present memory statistics to userspace in bytes or kbytes rather
+> than number-of-pages.  Because page-size varies between architectures and
+> between .configs.  Displaying number-of-pages is just inviting people to write
+> it-broke-when-i-moved-it-to-ia64 applications.
 > 
-> If we remove that test, we end up accumulating statistics for
-> non-writebackable backing devs, but does that matter? 
+> Plus kbytes is a bit more user-friendly, particularly when the user will
+> want to compare these numbers to /proc/meminfo, for example.
+> 
+> Using %llu might be more appropriate than %lld.
 
-It would not, had I not cheated:
 
-+void bdi_init(struct backing_dev_info *bdi)
-+{
-+       int i;
-+
-+       if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
-+               return;
-+
-+       for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
-+               percpu_counter_init(&bdi->bdi_stat[i], 0);
-+}
-+EXPORT_SYMBOL(bdi_init);
+Right, the biggest problem I actually have with his piece of code is
+that is does not represent all BDIs in the system. For example, the BDI
+of NFS mounts is not accessible.
 
->  Probably the common
-> case is writebackable backing-devs, so eliminating the test-n-branch might
-> be a net microgain.
-
-Time vs space. Now we don't even have storage for those BDIs..
-
-Don't particularly care on this point though, I just thought it might be
-worthwhile to save on the percpu data.
+Will fix the other points.
 
