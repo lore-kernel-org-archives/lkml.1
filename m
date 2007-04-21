@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031050AbXDUNl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031030AbXDUN6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031050AbXDUNl6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 09:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031058AbXDUNl5
+	id S1031030AbXDUN6c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031076AbXDUN6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 09:41:57 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58160 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031055AbXDUNl4 (ORCPT
+	Sat, 21 Apr 2007 09:58:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:10672 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031030AbXDUN6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 09:41:56 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [patch 4/8] propagate error values from clone_mnt
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102634.254288123@szeredi.hu>
-Date: Sat, 21 Apr 2007 07:40:20 -0600
-In-Reply-To: <20070420102634.254288123@szeredi.hu> (Miklos Szeredi's message
-	of "Fri, 20 Apr 2007 12:25:36 +0200")
-Message-ID: <m1k5w5kfqz.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 21 Apr 2007 09:58:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=DMW7kEP+V9aIdw8MsjrUU5dXHLZBw7kpM/I9vM1xEhBCuwrUjCPQ1wdp3B30Klfl8fTDJFKpccyU9gKs4h0PgrSpLoKlTRXU+ZGfyVLIzsOLYcnBsQNlJPetkErISmv+R591XWbFEiElDeVfwlPCZELUlH2E6li8opsOMbgq2xk=
+Message-ID: <8355959a0704210658j3b54a8cfl8a8a73661cd50c9d@mail.gmail.com>
+Date: Sat, 21 Apr 2007 19:28:30 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.20.7 - Hard Disk rumbling?
+Cc: "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       stable@kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> writes:
+Hello,
 
-> From: Miklos Szeredi <mszeredi@suse.cz>
->
-> Allow clone_mnt() to return errors other than ENOMEM.  This will be
-> used for returning a different error value when the number of user
-> mounts goes over the limit.
->
-> Fix copy_tree() to return EPERM for unbindable mounts.
->
-> Don't propagate further from dup_mnt_ns() as that copy_tree() can only
-> fail with -ENOMEM.
+I am facing a strange problems with an old 1.2 GHz P-III machine with
+a 10 GB disk (used as a dedicated web server, later retired out of
+service!).
 
-At a quick skim this looks ok.
+Out of interest to implement some wireless solution (experiment), I
+did compile 2.6.20.7 for my requirement. Strangely, I did observe:-
 
-Eric
+hda: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
+hda: drive_cmd: error=0x04 { DriveStatusError }
+ide: failed opcode was: 0xb0
+
+What might be the problem?
+
+~Akula2
