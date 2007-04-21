@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbXDUHUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXDUHX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933041AbXDUHUv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 03:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933058AbXDUHUv
+	id S933036AbXDUHX6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 03:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933064AbXDUHX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 03:20:51 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42960 "EHLO
+	Sat, 21 Apr 2007 03:23:58 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59513 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933041AbXDUHUu (ORCPT
+	by vger.kernel.org with ESMTP id S933036AbXDUHX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 03:20:50 -0400
-Date: Sat, 21 Apr 2007 00:20:45 -0700
+	Sat, 21 Apr 2007 03:23:56 -0400
+Date: Sat, 21 Apr 2007 00:23:45 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: bbpetkov@yahoo.de
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHv2] [KERNEL-DOC] kill warnings when building mandocs
-Message-Id: <20070421002045.36a663ba.akpm@linux-foundation.org>
-In-Reply-To: <20070419071931.GA4778@gollum.tnic>
-References: <20070413091422.GA15426@zmei.tnic>
-	<20070413092943.GA16491@zmei.tnic>
-	<20070418101654.7c7906c1.randy.dunlap@oracle.com>
-	<20070419063019.GB3974@gollum.tnic>
-	<20070419071931.GA4778@gollum.tnic>
+To: Josef Bacik <jwhiter@redhat.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
+Message-Id: <20070421002345.673d9988.akpm@linux-foundation.org>
+In-Reply-To: <20070419150655.GC1481@korben.rdu.redhat.com>
+References: <20070419132459.GB1481@korben.rdu.redhat.com>
+	<1176991356.31764.3.camel@mulgrave.il.steeleye.com>
+	<20070419150655.GC1481@korben.rdu.redhat.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,36 +28,68 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Apr 2007 09:19:32 +0200 Borislav Petkov <bbpetkov@yahoo.de> wrote:
+On Thu, 19 Apr 2007 11:06:56 -0400 Josef Bacik <jwhiter@redhat.com> wrote:
 
-> +# get kernel version
-> +sub get_kernel_version() {
-> +    my $version;
-> +    open (FILE, $ENV{"SRCTREE"}."Makefile") || die "Can't open main kernel Makefile: $!";
-> +
-> +    EOF: while (my $line = <FILE>)
-> +    {
-> +	if ($line =~ /VERSION\s+=\s+(\d+)/) {
-> +	     $version .= $1;
-> +	     next;
-> +	}
-> +	if ($line =~ /PATCHLEVEL\s+=\s+(\d+)/) {
-> +	     $version .= ".$1";
-> +	     next;
-> +	}
-> +	if ($line =~ /SUBLEVEL\s+=\s+(\d+)/) {
-> +	     $version .= ".$1";
-> +	     next;
-> +	}
-> +	if ($line =~ /EXTRAVERSION\s+=\s+(.*)$/) {
-> +	     $version .= $1;
-> +	     last EOF;
-> +	}
-> +    }
-> +    return $version;
-> +}
+> On Thu, Apr 19, 2007 at 10:02:36AM -0400, James Bottomley wrote:
+> > On Thu, 2007-04-19 at 09:25 -0400, Josef Bacik wrote:
+> > > Looking through everything I came to the conclusion that we don't really need
+> > > the scsi_sysfs_add_devices in scsi_finish_async_scan, which gets run everytime
+> > > we do a do_scan_async.  In doing the scanning, if we come upon anything we will
+> > > already be registering the device with sysfs so the scsi_sysfs_add_devices step
+> > > is kind of useless.
+> > 
+> > Unfortunately, it isn't.  The registration step while scanning is at the
+> > end of scsi_add_lun():
+> > 
+> > 
+> > 	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
+> > 		return SCSI_SCAN_NO_RESPONSE;
+> > 
+> > 	return SCSI_SCAN_LUN_PRESENT;
+> > 
+> > The !async should mean that the addition *only* occurs for the non async
+> > scan case ... if you remove the post async scan add, we'll lose devices.
+> > 
+> > >   I tested this and it worked fine on my UP box (where the
+> > > problem was happening) and my SMP box (where the problem wasn't happening).  Now
+> > > I'm not entirely sure if this is correct, but I'm attaching the patch that I
+> > > used to fix it for me, please point out if I've done something wrong or if there
+> > > is a different way this needs to be fixed.  Thank you,
+> > 
+> > Could you add some debugging first to see if we're actually adding the
+> > device twice (and also, if we are, what the value of the async is).
+> >
+> 
+> Sorry I should have put that in the original post, I added debugging to
+> kobject_add to check to see if we were adding something twice, thats how I
+> figured out who was doing it
+> 
+> kobject rport-3:0-0: registering. parent: host3, set: devices
+> kobject rport-3:0-0: registering. parent: fc_remote_ports, set: class_obj
+> kobject target3:0:0: registering. parent: rport-3:0-0, set: devices
+> kobject rport-3:0-1: registering. parent: host3, set: devices
+> kobject rport-3:0-1: registering. parent: fc_remote_ports, set: class_obj
+> kobject target3:0:0: registering. parent: fc_transport, set: class_obj
+> kobject rport-3:0-2: registering. parent: host3, set: devices
+> kobject rport-3:0-2: registering. parent: fc_remote_ports, set: class_obj
+> kobject rport-3:0-3: registering. parent: host3, set: devices
+> kobject rport-3:0-3: registering. parent: fc_remote_ports, set: class_obj
+> kobject rport-3:0-4: registering. parent: host3, set: devices
+> kobject rport-3:0-4: registering. parent: fc_remote_ports, set: class_obj
+> kobject rport-3:0-5: registering. parent: host3, set: devices
+> kobject rport-3:0-5: registering. parent: fc_remote_ports, set: class_obj
+> kobject rport-3:0-6: registering. parent: host3, set: devices
+> kobject rport-3:0-6: registering. parent: fc_remote_ports, set: class_obj
+> kobject rport-3:0-7: registering. parent: host3, set: devices
+> kobject rport-3:0-7: registering. parent: fc_remote_ports, set: class_obj
+> >> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
+> kobject 3:0:0:0: registering. parent: scsi_device, set: class_obj
+> scsi 3:0:0:0: Direct-Access     IBM 1742-900         0520 PQ: 0 ANSI: 3
+> >> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
+> kobject_add failed for 3:0:0:0 with -EEXIST, don't try to register things with 
+> the same name in the same directory.
+> 
+> Async in the first case is set and in the second case it isn't set.  Thank you,
+> 
 
-we already did this in the top-level Makefile.  It's in $(KERNELVERSION)
-and is printed by `make kernelversion'.
-
-Cannot we use that info somehow?
+So.... do we now know what is causing this failure?
