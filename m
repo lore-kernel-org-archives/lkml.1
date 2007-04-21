@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXDUG2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932932AbXDUGrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932768AbXDUG2V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 02:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932710AbXDUG2V
+	id S932932AbXDUGrU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 02:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932943AbXDUGrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 02:28:21 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:42231 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932129AbXDUG2U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 02:28:20 -0400
-Subject: Re: [PATCH 7/8] Kconfig: silicon backplane dependency.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Michael Buesch <mb@bu3sch.de>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       akpm@linux-foundation.org, linville@tuxdriver.com
-In-Reply-To: <200704202245.43806.mb@bu3sch.de>
-References: <20070420113505.GH3738@skybase>
-	 <200704202245.43806.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Sat, 21 Apr 2007 08:28:33 +0200
-Message-Id: <1177136913.25034.0.camel@localhost>
+	Sat, 21 Apr 2007 02:47:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33338 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932932AbXDUGrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 02:47:19 -0400
+Date: Sat, 21 Apr 2007 08:47:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "mdew ." <some.nzguy@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, v4
+Message-ID: <20070421064707.GA11173@elte.hu>
+References: <20070420140457.GA14017@elte.hu> <1c1c86360704201439u26f06de4j3b7a53145b9e96e2@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1c1c86360704201439u26f06de4j3b7a53145b9e96e2@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-20 at 22:45 +0200, Michael Buesch wrote:
-> This is wrong. SSB does not depend on PCI or PCMCIA.
-> SSB can (and does) stay very well on its own feet and
-> can be the main system bus.
-> Most Linksys WRT routers work that way. They have no
-> PCI bus, but a SSB bus instead.
-> 
-> Nevertheless, I'm not sure what your problem really is.
-> Does a s390 machine exist with a B44 card? I doubt it.
-> So what about the following: We simply add
-> a DEPENDS ON !S390 to both SSB and B44.
-> I really thing that is the right fix for this.
-> The patch above is clearly not, as it breaks things for
-> embedded devices without PCI or PCMCIA bus.
 
-Ok, thanks. I will change the patch accordingly.
+* mdew . <some.nzguy@gmail.com> wrote:
 
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
+> Any chance of supporting 2.6.20?
 
-"Reality continues to ruin my life." - Calvin.
+okay, it seems it was less work to backport it to v2.6.20 than it was to 
+answer all the "where's the v2.6.20 version?" emails ;-) You can 
+download the v2.6.20.7 version of CFS from:
 
+    http://redhat.com/~mingo/cfs-scheduler/sched-cfs-v4-v2.6.20.7.patch
 
+let me know how well it works for you and how it compares to the vanilla 
+scheduler and/or other schedulers you might have tried.
+
+	Ingo
