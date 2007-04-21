@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbXDUWv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbXDUWzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753564AbXDUWv1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 18:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbXDUWv1
+	id S1753645AbXDUWzK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 18:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbXDUWzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 18:51:27 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:48927 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753564AbXDUWv0 (ORCPT
+	Sat, 21 Apr 2007 18:55:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:29657 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753645AbXDUWzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 18:51:26 -0400
-Date: Sat, 21 Apr 2007 15:50:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "David Kyle" <dsk6@pitt.edu>
-Cc: linux-kernel@vger.kernel.org, Kylene Jo Hall <kjhall@us.ibm.com>,
-       tpm@selhorst.net, tpmdd-devel@lists.sourceforge.net
-Subject: Re: Sleep during spinlock in TPM driver
-Message-Id: <20070421155055.242d22dc.akpm@linux-foundation.org>
-In-Reply-To: <361d23520704201511j6d345d57u9f6dd6658c78d178@mail.gmail.com>
-References: <361d23520704201511j6d345d57u9f6dd6658c78d178@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 21 Apr 2007 18:55:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=YzBOEo1bw65y9HIgEDIsva/QzeTctR4jGCXIXAcOEJJL7tOvf/duWZiUyT/2ESKdlx3BulhS7PmQJHH+BkLEpTlevfRY0BHlW+MNFmRX/A5azwMttU/kUbF5QQhBbkaYEeJOcYDSJTxyW6mnb0wxl21+ACo6WMUWyKd9MsBWNV8=
+From: Denis Vlasenko <vda.linux@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Date: Sun, 22 Apr 2007 00:54:58 +0200
+User-Agent: KMail/1.8.2
+Cc: Con Kolivas <kernel@kolivas.org>, Willy Tarreau <w@1wt.eu>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+References: <20070420140457.GA14017@elte.hu> <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu>
+In-Reply-To: <20070421160008.GA28783@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704220054.58639.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 18:11:10 -0400 "David Kyle" <dsk6@pitt.edu> wrote:
-
-> I've been working with the TPM driver, and I found that if I opened,
-> used, then closed the TPM char device very frequently, I would get a
-> kernel BUG message saying that the kernel tried to sleep while holding
-> a spinlock.  I think I've isolated the problem to this function, in
-> drivers/char/tpm/tpm.c:
+On Saturday 21 April 2007 18:00, Ingo Molnar wrote:
+> correct. Note that Willy reniced X back to 0 so it had no relevance on 
+> his test. Also note that i pointed this change out in the -v4 CFS 
+> announcement:
 > 
-> int tpm_release(struct inode *inode, struct file *file)
-> {
->         struct tpm_chip *chip = file->private_data;
->         spin_lock(&driver_lock);
->         file->private_data = NULL;
->         chip->num_opens--;
->         del_singleshot_timer_sync(&chip->user_read_timer);
->         flush_scheduled_work();
->         atomic_set(&chip->data_pending, 0);
->         put_device(chip->dev);
->         kfree(chip->data_buffer);
->         spin_unlock(&driver_lock);
->         return 0;
-> }
-> EXPORT_SYMBOL_GPL(tpm_release);
+> || Changes since -v3:
+> ||
+> ||  - usability fix: automatic renicing of kernel threads such as 
+> ||    keventd, OOM tasks and tasks doing privileged hardware access
+> ||    (such as Xorg).
 > 
-> I believe that flush_scheduled_work can sleep, correct?  Does anyone
-> know why this function is called while the spinlock is held?
-> 
+> i've attached it below in a standalone form, feel free to put it into 
+> SD! :)
 
-yup, that's a bug.  It's not immediately clear to e what driver_lock is
-protecting.  Some global things, some per-device things, it appears.
+But X problems have nothing to do with "privileged hardware access".
+X problems are related to priority inversions between server and client
+processes, and "one server process - many client processes" case.
 
-A suitable fix might be to make driver_lock a mutex.
+I think syncronous nature of Xlib (clients cannot fire-and-forget
+their commands to X server, with Xlib each command waits for ACK
+from server) also add some amount of pain.
+--
+vda
