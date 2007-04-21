@@ -1,29 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbXDUUzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbXDUU7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752652AbXDUUzo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 16:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXDUUzo
+	id S1752848AbXDUU7y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 16:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXDUU7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 16:55:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41084 "EHLO
+	Sat, 21 Apr 2007 16:59:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40614 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752652AbXDUUzo (ORCPT
+	with ESMTP id S1752857AbXDUU7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 16:55:44 -0400
-Date: Sat, 21 Apr 2007 21:58:44 +0100
+	Sat, 21 Apr 2007 16:59:53 -0400
+Date: Sat, 21 Apr 2007 22:01:47 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
-Message-ID: <20070421215844.542d3aab@the-village.bc.nu>
-In-Reply-To: <462A0CA7.2090908@imap.cc>
-References: <Pine.LNX.4.64.0701150634270.1953@CPE00045a9c397f-CM001225dbafb6>
-	<45ABB53C.5030100@imap.cc>
-	<Pine.LNX.4.64.0701151216310.7260@CPE00045a9c397f-CM001225dbafb6>
-	<20070115172912.GA3323@pingi.kke.suse.de>
-	<462A0CA7.2090908@imap.cc>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       "Cameron, Steve" <Steve.Cameron@hp.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] utilities: add helper functions for safe 64-bit integer
+ operations as 32-bit halves
+Message-ID: <20070421220147.7144113e@the-village.bc.nu>
+In-Reply-To: <20070421030825.bed0b8a9.akpm@linux-foundation.org>
+References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
+	<226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
+	<1176995934.31764.7.camel@mulgrave.il.steeleye.com>
+	<226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
+	<1176999730.31764.15.camel@mulgrave.il.steeleye.com>
+	<558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
+	<20070419222028.d33c7f86.akpm@linux-foundation.org>
+	<1177074641.3718.5.camel@mulgrave.il.steeleye.com>
+	<20070420114337.12a67141.akpm@linux-foundation.org>
+	<1177095007.3718.43.camel@mulgrave.il.steeleye.com>
+	<20070420123041.94aac1e1.akpm@linux-foundation.org>
+	<1177100459.3718.45.camel@mulgrave.il.steeleye.com>
+	<20070420141218.a0222472.akpm@linux-foundation.org>
+	<alpine.DEB.0.98.0704201732240.11655@sigma.j-a-k-j.com>
+	<alpine.DEB.0.98.0704202040150.16687@sigma.j-a-k-j.com>
+	<20070421030825.bed0b8a9.akpm@linux-foundation.org>
 X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,21 +47,13 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Apr 2007 15:07:51 +0200
-Tilman Schmidt <tilman@imap.cc> wrote:
-
-> From: Tilman Schmidt <tilman@imap.cc>
+> > +#define lower_32_bits(n) (sizeof(n) == 8 ? (u32)(n) : (n))
 > 
-> The "obsolete" label on the ISDN_I4L Kconfig option is not, and
-> has never been, accurate. It has already prompted repeated attempts
-> to remove actively used functionality from the kernel without a
-> working replacement. This patch removes the incorrect label and
-> corrects the accompanying help text.
+> n&0xffffffff would be simpler.
 > 
-> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+> Do we actually have any call for this?
 
-Nak-by: Alan Cox <alan@redhat.com>
-
-If it isn't obsolete then fix the code to use the newer APIs as its about
-to end up && BROKEN let alone Obsolete. Make yourself maintainer and go
-for it.
+The only case for all of this we care about is sector_t, which is one
+type, with specific properties (eg always being positive). The rest is
+over-engineering. Call it sector_upper32() do it the simple way and stop
+trying to solve a problem we don't have
