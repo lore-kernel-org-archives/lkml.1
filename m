@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964796AbXDUHdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964865AbXDUHhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964796AbXDUHdK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 03:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964865AbXDUHdK
+	id S964865AbXDUHhO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 03:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964989AbXDUHhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 03:33:10 -0400
-Received: from omta01sl.mx.bigpond.com ([144.140.92.153]:22699 "EHLO
-	omta01sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964796AbXDUHdJ (ORCPT
+	Sat, 21 Apr 2007 03:37:14 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:16089 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964865AbXDUHhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 03:33:09 -0400
-Message-ID: <4629BE29.6010306@bigpond.net.au>
-Date: Sat, 21 Apr 2007 17:32:57 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 21 Apr 2007 03:37:12 -0400
+X-AuditID: d80ac287-a869fbb000005f82-7a-4629bf27d36b 
+Date: Sat, 21 Apr 2007 08:37:03 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Ulrich Drepper <drepper@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Jakub Jelinek <jakub@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE 2/2
+In-Reply-To: <a36005b50704201424q3c07d457m6b2c468ff8a826c7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0704210830310.26485@blonde.wat.veritas.com>
+References: <46247427.6000902@redhat.com> <4627DBF0.1080303@redhat.com> 
+ <20070420140316.e0155e7d.akpm@linux-foundation.org>
+ <a36005b50704201424q3c07d457m6b2c468ff8a826c7@mail.gmail.com>
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420131544.GG31925@holomorphy.com> <4629596B.6020403@bigpond.net.au> <20070421050734.GL31925@holomorphy.com> <4629A349.8060207@bigpond.net.au>
-In-Reply-To: <4629A349.8060207@bigpond.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06sl.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Sat, 21 Apr 2007 07:33:02 +0000
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 21 Apr 2007 07:37:11.0233 (UTC) FILETIME=[DF6A7B10:01C783E7]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
-> William Lee Irwin III wrote:
->> William Lee Irwin III wrote:
->> On Sat, Apr 21, 2007 at 10:23:07AM +1000, Peter Williams wrote:
->>> If some form of precise timer was used (instead) to trigger 
->>> pre-emption then, where there is more than one task with the same 
->>> expected "on CPU" time, only the last would get any CPU (and that's 
->>> only the case if some infinite loop doesn't get created).
->>
->> I think you can check for this and adjust their on-cpu times in various
->> ways and choose what order to run them in. I think it'd end up something
->> of a missed deadline policy.
+On Fri, 20 Apr 2007, Ulrich Drepper wrote:
 > 
-> Arguably the latest one should go first as its estimate is more likely 
-> to be correct being based on more recent info i.e. the other's estimates 
-> would be based on less runnable tasks and be optimistic. This would 
-> involve pushing them down the queue and pushing items already on the 
-> queue downwards is likely to be expensive.  Which is why I prefer the 
-> less elegant solution of the periodical interrupt.
-> 
-> Of course, one solution might be to just add the adjustment to the key 
-> time on all tasks on the queue?
+> Just for reference: the MADV_CURRENT behavior is to throw away data in
+> the range.
 
-I retract this suggestion as it's a very bad idea.  It introduces the 
-possibility of starvation via the poor sods at the bottom of the queue 
-having their "on CPU" forever postponed and we all know that even the 
-smallest possibility of starvation will eventually cause problems.
+Not exactly.  The Linux MADV_DONTNEED never throws away data from a
+PROT_WRITE,MAP_SHARED mapping (or shm) - it propagates the dirty bit,
+the page will eventually get written out to file, and can be retrieved
+later by subsequent access.  But the Linux MADV_DONTNEED does throw away
+data from a PROT_WRITE,MAP_PRIVATE mapping (or brk or stack) - those
+changes are discarded, and a subsequent access will revert to zeroes
+or the underlying mapped file.  Been like that since before 2.4.0.
 
-I think there should be a rule: Once a task is on the queue its "on CPU" 
-time is immutable.
-
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+> The POSIX_MADV_DONTNEED behavior is to never lose data.
+> I.e., file backed data is written back, anon data is at most swapped
+> out.
