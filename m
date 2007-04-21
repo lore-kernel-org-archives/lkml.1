@@ -1,91 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030685AbXDULA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030715AbXDULBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030685AbXDULA4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 07:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030686AbXDULAz
+	id S1030715AbXDULBT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 07:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030694AbXDULBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 07:00:55 -0400
-Received: from amsfep19-int.chello.nl ([213.46.243.16]:64602 "EHLO
-	amsfep11-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030685AbXDULAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 07:00:55 -0400
-Subject: Re: [PATCH 03/10] lib: dampen the percpu_counter FBC_BATCH
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Sat, 21 Apr 2007 07:01:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59687 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030690AbXDULBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 07:01:16 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+9iQFE7Pm9PVKfHPCZE+eOy1aTB82LyZZQPcnUEB
+	FvpL07vSR4UfPL
+Date: Sat, 21 Apr 2007 13:01:14 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-In-Reply-To: <20070421025510.41f97a6a.akpm@linux-foundation.org>
-References: <20070420155154.898600123@chello.nl>
-	 <20070420155502.679143273@chello.nl>
-	 <20070421025510.41f97a6a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 21 Apr 2007 12:58:57 +0200
-Message-Id: <1177153137.2934.31.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       linux-kernel@vger.kernel.org, starvik@axis.com
+Subject: Re: [PATCH] dma_declare_coherent_memory wrong allocation
+In-Reply-To: <20070421000817.124e917b.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.60.0704211251050.14499@poirot.grange>
+References: <Pine.LNX.4.60.0704132000030.5919@poirot.grange>
+ <20070421000817.124e917b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-21 at 02:55 -0700, Andrew Morton wrote:
-> On Fri, 20 Apr 2007 17:51:57 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Sat, 21 Apr 2007, Andrew Morton wrote:
+
+> On Fri, 13 Apr 2007 20:08:28 +0200 (CEST) Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 > 
-> > With the current logic the percpu_counter's accuracy delta is quadric
-> > wrt the number of cpus in the system, reduce this to O(n ln n).
+> > Hi
 > > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  include/linux/percpu_counter.h |    7 ++-----
-> >  1 file changed, 2 insertions(+), 5 deletions(-)
-> > 
-> > Index: linux-2.6-mm/include/linux/percpu_counter.h
-> > ===================================================================
-> > --- linux-2.6-mm.orig/include/linux/percpu_counter.h
-> > +++ linux-2.6-mm/include/linux/percpu_counter.h
-> > @@ -11,6 +11,7 @@
-> >  #include <linux/threads.h>
-> >  #include <linux/percpu.h>
-> >  #include <linux/types.h>
-> > +#include <linux/log2.h>
-> >  
-> >  #ifdef CONFIG_SMP
-> >  
-> > @@ -20,11 +21,7 @@ struct percpu_counter {
-> >  	s32 *counters;
-> >  };
-> >  
-> > -#if NR_CPUS >= 16
-> > -#define FBC_BATCH	(NR_CPUS*2)
-> > -#else
-> > -#define FBC_BATCH	(NR_CPUS*4)
-> > -#endif
-> > +#define FBC_BATCH	(8*ilog2(NR_CPUS))
-> >  
-> >  static inline void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
-> >  {
-> 
-> I worry that this might be too small when there are hundreds of CPUs online.
-> 
-> With 1024 CPUs we go for the lock once per 80 counts.  That's not much. 
-> 
-> If we have 1024 CPUs, each one of which is incrementing this counter at N
-> Hz, we have 1024/80=12 CPUs all going for the same lock at N Hz.  It could
-> get bad.
-> 
-> But I don't know what the gain is for this loss.  Your changelog should
-> have told us.
-> 
-> What problem is this patch solving?
+> > Either I've finally gone blind on this Friday 13th or... Looks like this 
+> > almost 3 year old function has a bug. Patch below compile-tested... in a 
+> > way.
 
-In 10/10 I introduce bdi_stat_delta() which gives the maximum error of a
-single counter. That is used to switch between precise
-(percpu_counter_sum) and imprecise (percpu_counter_read) accesses of the
-stats.
+[patch skipped]
 
-I worried that the current quadric error would be too large; and as the
-ZVC counters also use a logarithmic error bound I thought it would be
-good to have here as well.
+> Looks that way to me, too.
 
+Then I'll dare suggest arch/cris - the second and last arch implementing 
+this API - has the same problem. Maintainer added to cc:, patch below.
+
+> It also hopes like hell that `size' was a multiple of PAGE_SIZE.
+
+Well, this API seems to have a bigger problem: it is difficult to get to 
+SoC/bus-local memory from several child devices. Even if I do implement 
+that DMA_MEMORY_INCLUDES_CHILDREN flag, 1) you do not always have the 
+desired device as your immediate parent, 2) you have to ref-count it. For 
+example, I was trying to use SoC-local SRAM on PXA270 from the 
+framebuffer, but fb-devices on PXA are either platform devices, or 
+sometimes get other parents. So, looks like another way to get to the SoC 
+node is needed...
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
+
+Fix dma_declare_coherent_memory wrong allocation for cris/arch-v32
+    
+arch/cris/arch-v32 seems to have copy-pasted the bug from arch/i386 fixed 
+with an earlier patch - allocate bitmap in bytes, not words.
+    
+Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+
+diff --git a/arch/cris/arch-v32/drivers/pci/dma.c b/arch/cris/arch-v32/drivers/pci/dma.c
+index 70d3bf0..d634347 100644
+--- a/arch/cris/arch-v32/drivers/pci/dma.c
++++ b/arch/cris/arch-v32/drivers/pci/dma.c
+@@ -76,7 +76,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
+ {
+ 	void __iomem *mem_base;
+ 	int pages = size >> PAGE_SHIFT;
+-	int bitmap_size = (pages + 31)/32;
++	int bitmap_size = DIV_ROUND_UP(pages, 8);
+ 
+ 	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
+ 		goto out;
