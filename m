@@ -1,201 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbXDUP0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXDUP1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbXDUP0p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 11:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXDUP0p
+	id S1753412AbXDUP1U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 11:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXDUP1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 11:26:45 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42662 "EHLO mx1.suse.de"
+	Sat, 21 Apr 2007 11:27:19 -0400
+Received: from kanga.kvack.org ([66.96.29.28]:33259 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753276AbXDUP0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 11:26:44 -0400
-Message-ID: <462A2D27.3060809@suse.com>
-Date: Sat, 21 Apr 2007 11:26:31 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: a.righi@cineca.it
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Vladimir V. Saveliev" <vs@namesys.com>, linux-kernel@vger.kernel.org,
-       reiserfs-dev@namesys.com, Edward Shishkin <edward@namesys.com>,
-       zam@clusterfs.com, ak@suse.de
-Subject: [PATCH] reiserfs: fix xattr root locking/refcount bug
-References: <20070413095219.02075323.akpm@linux-foundation.org>	<462536B2.5060308@users.sourceforge.net>	<c04ebacf0704180152qdc72fcdnd0755dbf070b40d2@mail.gmail.com>	<200704181816.21166.vs@namesys.com>	<46263270.9010108@suse.com> <20070420170738.e269fcae.akpm@linux-foundation.org> <46296CB8.3090100@suse.com> <462A0F06.9020602@cineca.it> <462A2055.1040509@suse.com> <462A2107.6060902@suse.de>
-In-Reply-To: <462A2107.6060902@suse.de>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1751130AbXDUP1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 11:27:17 -0400
+Date: Sat, 21 Apr 2007 11:27:05 -0400
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Larry Woodman <lwoodman@redhat.com>
+Subject: Re: [PATCH] Make new setting of panic_on_oom
+Message-ID: <20070421152705.GE21709@kvack.org>
+References: <20070420124157.GA21709@kvack.org> <Pine.LNX.4.64.0704200916250.20232@schroedinger.engr.sgi.com> <20070421132543.CA5D.Y-GOTO@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070421132543.CA5D.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The listxattr() and getxattr() operations are only protected by a read
- lock. As a result, if either of these operations run in parallel, a race
- condition exists where the xattr_root will end up being cached twice,
- which results in the leaking of a reference and a BUG() on umount.
+On Sat, Apr 21, 2007 at 01:28:16PM +0900, Yasunori Goto wrote:
+> Ok. This is take 2.
+> Thanks for your comment.
+> 
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
- This patch refactors get_xa_root(), __get_xa_root(), and
- create_xa_root(), into one get_xa_root() function that takes
- the appropriate locking around the entire critical section.
+Looks good.  Signed-off-by: Benjamin LaHaise <bcrl@kvack.org>
 
- Changes from initial version:
- With the previous version, established file systems worked, but freshly
- created file systems would fail to mount due to a circular dependency
- with the privroot. New inodes created in directories without I_PRIVATE
- will inherit the parent's default ACL. When creating the privroot,
- we'd get -EOPNOTSUPP due to the privroot not existing while looking up
- the default ACL. The old get_xa_dir() only checked for a negative
- dentry and returned -ENODATA. This version treats a missing privroot
- as -ENODATA. This is safe since xattrs are disabled automatically in
- reiserfs_xattr_init() when the privroot can't be created or found.
-
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-
----
- fs/reiserfs/xattr.c |   92 +++++++++++++---------------------------------------
- 1 file changed, 24 insertions(+), 68 deletions(-)
-
---- a/fs/reiserfs/xattr.c	2007-04-21 10:15:00.000000000 -0400
-+++ b/fs/reiserfs/xattr.c	2007-04-21 11:21:02.000000000 -0400
-@@ -54,82 +54,48 @@
- static struct reiserfs_xattr_handler *find_xattr_handler_prefix(const char
- 								*prefix);
- 
--static struct dentry *create_xa_root(struct super_block *sb)
-+/* Returns the dentry referring to the root of the extended attribute
-+ * directory tree. If it has already been retrieved, it is used. If it
-+ * hasn't been created and the flags indicate creation is allowed, we
-+ * attempt to create it. On error, we return a pointer-encoded error.
-+ */
-+static struct dentry *get_xa_root(struct super_block *sb, int flags)
- {
- 	struct dentry *privroot = dget(REISERFS_SB(sb)->priv_root);
- 	struct dentry *xaroot;
- 
- 	/* This needs to be created at mount-time */
- 	if (!privroot)
--		return ERR_PTR(-EOPNOTSUPP);
-+		return ERR_PTR(-ENODATA);
- 
--	xaroot = lookup_one_len(XAROOT_NAME, privroot, strlen(XAROOT_NAME));
--	if (IS_ERR(xaroot)) {
-+	mutex_lock(&privroot->d_inode->i_mutex);
-+	if (REISERFS_SB(sb)->xattr_root) {
-+		xaroot = dget(REISERFS_SB(sb)->xattr_root);
- 		goto out;
--	} else if (!xaroot->d_inode) {
--		int err;
--		mutex_lock(&privroot->d_inode->i_mutex);
--		err =
--		    privroot->d_inode->i_op->mkdir(privroot->d_inode, xaroot,
--						   0700);
--		mutex_unlock(&privroot->d_inode->i_mutex);
--
--		if (err) {
--			dput(xaroot);
--			dput(privroot);
--			return ERR_PTR(err);
--		}
--		REISERFS_SB(sb)->xattr_root = dget(xaroot);
- 	}
- 
--      out:
--	dput(privroot);
--	return xaroot;
--}
--
--/* This will return a dentry, or error, refering to the xa root directory.
-- * If the xa root doesn't exist yet, the dentry will be returned without
-- * an associated inode. This dentry can be used with ->mkdir to create
-- * the xa directory. */
--static struct dentry *__get_xa_root(struct super_block *s)
--{
--	struct dentry *privroot = dget(REISERFS_SB(s)->priv_root);
--	struct dentry *xaroot = NULL;
--
--	if (IS_ERR(privroot) || !privroot)
--		return privroot;
--
- 	xaroot = lookup_one_len(XAROOT_NAME, privroot, strlen(XAROOT_NAME));
- 	if (IS_ERR(xaroot)) {
- 		goto out;
- 	} else if (!xaroot->d_inode) {
--		dput(xaroot);
--		xaroot = NULL;
--		goto out;
-+		int err = -ENODATA;
-+		if (flags == 0 || flags & XATTR_CREATE)
-+			err = privroot->d_inode->i_op->mkdir(privroot->d_inode,
-+			                                     xaroot, 0700);
-+		if (err) {
-+			dput(xaroot);
-+			xaroot = ERR_PTR(err);
-+			goto out;
-+		}
- 	}
--
--	REISERFS_SB(s)->xattr_root = dget(xaroot);
-+	REISERFS_SB(sb)->xattr_root = dget(xaroot);
- 
-       out:
-+	mutex_unlock(&privroot->d_inode->i_mutex);
- 	dput(privroot);
- 	return xaroot;
- }
- 
--/* Returns the dentry (or NULL) referring to the root of the extended
-- * attribute directory tree. If it has already been retrieved, it is used.
-- * Otherwise, we attempt to retrieve it from disk. It may also return
-- * a pointer-encoded error.
-- */
--static inline struct dentry *get_xa_root(struct super_block *s)
--{
--	struct dentry *dentry = dget(REISERFS_SB(s)->xattr_root);
--
--	if (!dentry)
--		dentry = __get_xa_root(s);
--
--	return dentry;
--}
--
- /* Opens the directory corresponding to the inode's extended attribute store.
-  * If flags allow, the tree to the directory may be created. If creation is
-  * prohibited, -ENODATA is returned. */
-@@ -138,21 +104,11 @@ static struct dentry *open_xa_dir(const 
- 	struct dentry *xaroot, *xadir;
- 	char namebuf[17];
- 
--	xaroot = get_xa_root(inode->i_sb);
--	if (IS_ERR(xaroot)) {
-+	xaroot = get_xa_root(inode->i_sb, flags);
-+	if (IS_ERR(xaroot))
- 		return xaroot;
--	} else if (!xaroot) {
--		if (flags == 0 || flags & XATTR_CREATE) {
--			xaroot = create_xa_root(inode->i_sb);
--			if (IS_ERR(xaroot))
--				return xaroot;
--		}
--		if (!xaroot)
--			return ERR_PTR(-ENODATA);
--	}
- 
- 	/* ok, we have xaroot open */
--
- 	snprintf(namebuf, sizeof(namebuf), "%X.%X",
- 		 le32_to_cpu(INODE_PKEY(inode)->k_objectid),
- 		 inode->i_generation);
-@@ -821,7 +777,7 @@ int reiserfs_delete_xattrs(struct inode 
- 
- 	/* Leftovers besides . and .. -- that's not good. */
- 	if (dir->d_inode->i_nlink <= 2) {
--		root = get_xa_root(inode->i_sb);
-+		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
- 		reiserfs_write_lock_xattrs(inode->i_sb);
- 		err = vfs_rmdir(root->d_inode, dir);
- 		reiserfs_write_unlock_xattrs(inode->i_sb);
-
+		-ben
 -- 
-Jeff Mahoney
-SUSE Labs
-
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
