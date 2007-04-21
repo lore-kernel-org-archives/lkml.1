@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbXDUTaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXDUTdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821AbXDUTaa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 15:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbXDUTaa
+	id S1752004AbXDUTdq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 15:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXDUTdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 15:30:30 -0400
-Received: from amsfep15-int.chello.nl ([62.179.120.10]:55265 "EHLO
-	amsfep15-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821AbXDUTa3 (ORCPT
+	Sat, 21 Apr 2007 15:33:46 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:52905 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752004AbXDUTdp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 15:30:29 -0400
-Subject: Re: [PATCH 04/10] lib: percpu_counter_mod64
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-In-Reply-To: <20070421122139.f5259c82.akpm@linux-foundation.org>
-References: <20070420155154.898600123@chello.nl>
-	 <20070420155502.787144532@chello.nl>
-	 <20070421025517.d9f9bc14.akpm@linux-foundation.org>
-	 <1177153346.2934.36.camel@lappy>
-	 <20070421122139.f5259c82.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 21 Apr 2007 21:30:25 +0200
-Message-Id: <1177183825.7316.25.camel@twins>
+	Sat, 21 Apr 2007 15:33:45 -0400
+Date: Sat, 21 Apr 2007 12:33:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@linux.vnet.ibm.com
+Cc: Balbir Singh <balbir@in.ibm.com>, nagar@watson.ibm.com, jlan@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] Taskstats fix the structure members alignment issue
+Message-Id: <20070421123307.5dc2566f.akpm@linux-foundation.org>
+In-Reply-To: <462A0AA9.8000304@linux.vnet.ibm.com>
+References: <20070420164341.14718.5013.sendpatchset@balbir-laptop>
+	<20070420121543.6a1a8426.akpm@linux-foundation.org>
+	<462A0AA9.8000304@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-21 at 12:21 -0700, Andrew Morton wrote:
-> On Sat, 21 Apr 2007 13:02:26 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > > > +	cpu = get_cpu();
-> > > > +	pcount = per_cpu_ptr(fbc->counters, cpu);
-> > > > +	count = *pcount + amount;
-> > > > +	if (count >= FBC_BATCH || count <= -FBC_BATCH) {
-> > > > +		spin_lock(&fbc->lock);
-> > > > +		fbc->count += count;
-> > > > +		*pcount = 0;
-> > > > +		spin_unlock(&fbc->lock);
-> > > > +	} else {
-> > > > +		*pcount = count;
-> > > > +	}
-> > > > +	put_cpu();
-> > > > +}
-> > > > +EXPORT_SYMBOL(percpu_counter_mod64);
-> > > 
-> > > Bloaty.  Surely we won't be needing this on 32-bit kernels?  Even monster
-> > > PAE has only 64,000,000 pages and won't be using deltas of more than 4
-> > > gigapages?
-> > > 
-> > > <Does even 64-bit need to handle 4 gigapages in a single hit?  /me suspects
-> > > another changelog bug>
+On Sat, 21 Apr 2007 18:29:21 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> >> The patch adds an __attribute__((aligned(8))) to the
+> >> taskstats structure members so that 32 bit applications using taskstats
+> >> can work with a 64 bit kernel.
 > > 
-> > Yeah, /me chastises himself for that...
+> > But there might be 32-bit applications out there which are using the
+> > present wrong structure?
 > > 
-> > This is because percpu_counter is s64 instead of the native long; I need
-> > to halve the counter at some point (bdi_writeout_norm) and do that by
-> > subtracting half the current value.
+> > otoh, I assume that those applications would be using taskstats.h and would
+> > hence encounter this bug and we would have heard about it, is that correct?
+> > 
 > 
-> ah, the mysterious bdi_writeout_norm().
+> Yes, correct.
 > 
-> I don't think it's possible to precisely halve a percpu_counter - there has
-> to be some error involved.  I guess that's acceptable within the
-> inscrutable bdi_writeout_norm().
+> > otoh^2, 32-bit applications running under 32-bit kernels will presently be
+> > functioning correctly, and your change will require that those applications
+> > be recompiled, I think?
+> > 
 > 
-> otoh, there's a chance that the attempt to halve the counter will take the
-> counter negative, due to races.  Does the elusive bdi_writeout_norm()
-> handle that?  If not, it should.  If it does, then there should be comments
-> around the places where this is being handled, because it is subtle, and unobvious,
-> and others might break it by accident.
+> Yes, correct. They would be broken with this fix. We could  bump up the
+> version TASKSTATS_VERSION to 4. Would you like a new patch the version
+> bumped up?
 
-The counter it is halving is only ever incremented, so we might be off a
-little, but only to the safe side.
+I can do that.
 
-I shall do the comment thing along with all the other missing
-comments :-)
+> > 
+> > This patch looks like 2.6.20 and 2.6.21 material, but very carefully...
+> 
+> Yes, 2.6.20 and 2.6.21 sound correct.
 
+OK.  I guess we have little choice but to slam it in asap, with a 2.6.20.x backport
+before too many people start using the old interface.
