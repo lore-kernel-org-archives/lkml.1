@@ -1,62 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030781AbXDUMd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030805AbXDUMlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030781AbXDUMd6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 08:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030805AbXDUMd6
+	id S1030805AbXDUMlr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 08:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030864AbXDUMlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 08:33:58 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:3655 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030781AbXDUMd5 (ORCPT
+	Sat, 21 Apr 2007 08:41:47 -0400
+Received: from mail24.syd.optusnet.com.au ([211.29.133.165]:45684 "EHLO
+	mail24.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030805AbXDUMlq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 08:33:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=S3MO3e4YmP220gbIODd57zro2cvk2K8LZKcBcB4cha4zzyJSOUYDJZVUlG5UxBhVp4Ta9OaeHSZaIeqdRBtAwtwbjZTgnvXmlauhYM+9K2BkQR9QGqlAQP8ms1Js3txG/9pdi3B0s1whzLlXK+wTijWaub0S1mmXzhfO+1+2OU4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.20.7 locking up hard on boot
-Date: Sat, 21 Apr 2007 14:44:03 +0200
-User-Agent: KMail/1.9.6
-Cc: Greg KH <gregkh@suse.de>, Marcos Pinto <markybob@gmail.com>,
-       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
-       Alan Cox <alan@redhat.com>, linux-pci@atrey.karlin.mff.cuni.cz
-References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com> <20070421053420.GA10974@suse.de> <20070421103632.GC4016@stusta.de>
-In-Reply-To: <20070421103632.GC4016@stusta.de>
+	Sat, 21 Apr 2007 08:41:46 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Date: Sat, 21 Apr 2007 22:40:18 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu>
+In-Reply-To: <20070421121235.GA2044@1wt.eu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704211444.03365.bzolnier@gmail.com>
+Message-Id: <200704212240.19139.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 21 April 2007 22:12, Willy Tarreau wrote:
+> Hi Ingo, Hi Con,
+>
+> I promised to perform some tests on your code. I'm short in time right now,
+> but I observed behaviours that should be commented on.
+>
+> 1) machine : dual athlon 1533 MHz, 1G RAM, kernel 2.6.21-rc7 + either
+> scheduler Test:  ./ocbench -R 250000 -S 750000 -x 8 -y 8
+>    ocbench: http://linux.1wt.eu/sched/
+>
+> 2) SD-0.44
+>
+>    Feels good, but becomes jerky at moderately high loads. I've started
+>    64 ocbench with a 250 ms busy loop and 750 ms sleep time. The system
+>    always responds correctly but under X, mouse jumps quite a bit and
+>    typing in xterm or even text console feels slightly jerky. The CPU is
+>    not completely used, and the load varies a lot (see below). However,
+>    the load is shared equally between all 64 ocbench, and they do not
+>    deviate even after 4000 iterations. X uses less than 1% CPU during
+>    those tests.
+>
+>    Here's the vmstat output :
+[snip]
 
-On Saturday 21 April 2007, Adrian Bunk wrote:
-> On Fri, Apr 20, 2007 at 10:34:20PM -0700, Greg KH wrote:
-> > On Fri, Apr 20, 2007 at 11:30:59PM -0500, Marcos Pinto wrote:
-> > >  Yes, I just tried 2.6.20.3 with ACPI enabled and it booted perfectly.
-> > >  I'm hoping this means you know what's wrong? :-)
-> > 
-> > Can you do a 'git bisect' on the versions between 2.6.20.3 and 2.6.20.7
-> > to try to find the problem patch?
-> 
-> Considering where it failed and that 2.6.20.3 worked, I would be 
-> extremely surprised if this wasn't one more report of 
-> adjust-legacy-ide-resource-setting.patch breaking booting (and we 
-> already have confirmed reports for this)...
-> 
-> But AFAIK we still don't understand how this patch managed to break 
-> things.
+> 3) CFS-v4
+>
+>   Feels even better, mouse movements are very smooth even under high load.
+>   I noticed that X gets reniced to -19 with this scheduler. I've not looked
+>   at the code yet but this looked suspicious to me. I've reniced it to 0
+> and it did not change any behaviour. Still very good. The 64 ocbench share
+> equal CPU time and show exact same progress after 2000 iterations. The CPU
+> load is more smoothly spread according to vmstat, and there's no idle (see
+> below). BUT I now think it was wrong to let new processes start with no
+> timeslice at all, because it can take tens of seconds to start a new
+> process when only 64 ocbench are there. Simply starting "killall ocbench"
+> takes about 10 seconds. On a smaller machine (VIA C3-533), it took me more
+> than one minute to do "su -", even from console, so that's not X. BTW, X
+> uses less than 1% CPU during those tests.
+>
+> willy@pcw:~$ vmstat 1
+[snip]
 
-Same here but 2.6.21 is near and we need to do something about this issue.
+> 4) first impressions
+>
+> I think that CFS is based on a more promising concept but is less mature
+> and is dangerous right now with certain workloads. SD shows some strange
+> behaviours like not using all CPU available and a little jerkyness, but is
+> more robust and may be the less risky solution for a first step towards
+> a better scheduler in mainline, but it may also probably be the last O(1)
+> scheduler, which may be replaced sometime later when CFS (or any other one)
+> shows at the same time the smoothness of CFS and the robustness of SD.
 
-I'm thinking about reverting this patch for 2.6.21-final - having broken
-X server is better than having broken and not booting kernel.
+I assumed from your description that you were running X nice 0 during all this 
+testing and left the tunables from both SD and CFS at their defaults; this 
+tends to have the effective equivalent of "timeslice" in CFS smaller than SD.
 
-Jan, Alan?
+> I'm sorry not to spend more time on them right now, I hope that other
+> people will do.
 
-Thanks,
-Bart
+Thanks for that interesting testing you've done. The fluctuating cpu load and 
+the apparently high idle time means there is almost certainly a bug still in 
+the cpu accounting I do in update_cpu_clock. It looks suspicious to me 
+already on just my first glance. Fortunately the throughput does not appear 
+to be adversely affected on other benchmarks so I suspect it's lying about 
+the idle time and it's not really there. Which means it's likely also 
+accounting the cpu time wrongly. Which also means there's something I can fix 
+and improve SD further. Great stuff, thanks! 
+
+-- 
+-ck
