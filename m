@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030777AbXDUM1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030781AbXDUMd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030777AbXDUM1l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 08:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030781AbXDUM1l
+	id S1030781AbXDUMd6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 08:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030805AbXDUMd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 08:27:41 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38517 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030777AbXDUM1k (ORCPT
+	Sat, 21 Apr 2007 08:33:58 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:3655 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030781AbXDUMd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 08:27:40 -0400
-X-Sasl-enc: Bi6DIKpvTTdo0lI8PZnGKczv281Sh9iy1WUwgZPr+ANB 1177158459
-Message-ID: <462A03D7.4030508@imap.cc>
-Date: Sat, 21 Apr 2007 14:30:15 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Sat, 21 Apr 2007 08:33:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=S3MO3e4YmP220gbIODd57zro2cvk2K8LZKcBcB4cha4zzyJSOUYDJZVUlG5UxBhVp4Ta9OaeHSZaIeqdRBtAwtwbjZTgnvXmlauhYM+9K2BkQR9QGqlAQP8ms1Js3txG/9pdi3B0s1whzLlXK+wTijWaub0S1mmXzhfO+1+2OU4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.20.7 locking up hard on boot
+Date: Sat, 21 Apr 2007 14:44:03 +0200
+User-Agent: KMail/1.9.6
+Cc: Greg KH <gregkh@suse.de>, Marcos Pinto <markybob@gmail.com>,
+       linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
+       Alan Cox <alan@redhat.com>, linux-pci@atrey.karlin.mff.cuni.cz
+References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com> <20070421053420.GA10974@suse.de> <20070421103632.GC4016@stusta.de>
+In-Reply-To: <20070421103632.GC4016@stusta.de>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       i4ldeveloper@listserv.isdn4linux.de,
-       Andrew Morton <akpm@linux-foundation.org>, Karsten Keil <kkeil@suse.de>
-Subject: Re: other potentially deletable, dead stuff
-References: <Pine.LNX.4.64.0704201901470.2187@CPE00045a9c397f-CM001225dbafb6>
-In-Reply-To: <Pine.LNX.4.64.0704201901470.2187@CPE00045a9c397f-CM001225dbafb6>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE840A26DA2F12A412A92E672"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704211444.03365.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE840A26DA2F12A412A92E672
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Am 21.04.2007 01:19 schrieb Robert P. J. Day:
-> [...] here's the short list of other stuff that is listed as on
-> its way to being dead, based on the contents of Kconfig files.  any of
-> this stuff candidates for removal, if not scheduling for removal?
+On Saturday 21 April 2007, Adrian Bunk wrote:
+> On Fri, Apr 20, 2007 at 10:34:20PM -0700, Greg KH wrote:
+> > On Fri, Apr 20, 2007 at 11:30:59PM -0500, Marcos Pinto wrote:
+> > >  Yes, I just tried 2.6.20.3 with ACPI enabled and it booted perfectly.
+> > >  I'm hoping this means you know what's wrong? :-)
+> > 
+> > Can you do a 'git bisect' on the versions between 2.6.20.3 and 2.6.20.7
+> > to try to find the problem patch?
+> 
+> Considering where it failed and that 2.6.20.3 worked, I would be 
+> extremely surprised if this wasn't one more report of 
+> adjust-legacy-ide-resource-setting.patch breaking booting (and we 
+> already have confirmed reports for this)...
+> 
+> But AFAIK we still don't understand how this patch managed to break 
+> things.
 
-[...]
+Same here but 2.6.21 is near and we need to do something about this issue.
 
-> config ISDN_I4L
->         tristate "Old ISDN4Linux (obsolete)"
+I'm thinking about reverting this patch for 2.6.21-final - having broken
+X server is better than having broken and not booting kernel.
 
-<message type=3Drecorded>
+Jan, Alan?
 
-The "obsolete" label on the ISDN_I4L Kconfig option is,
-and has always been, incorrect.
-
-isdn4linux is not obsolete.
-
-isdn4linux is in active use, and there is no replacement.
-
-Removing isdn4linux would constitute a serious regression.
-
-</message>
-
---=20
-Tilman Schmidt                                  E-Mail: tilman@imap.cc
-Wehrhausweg 66                                  Fax: +49 228 4299019
-53227 Bonn
-Germany
-
-
---------------enigE840A26DA2F12A412A92E672
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGKgPXMdB4Whm86/kRArBuAKCA0fYKtg7/mT1bs5/K84yO9p7yVQCeJbji
-1029z55+xxXyov1Vv0SCnnI=
-=YKZ1
------END PGP SIGNATURE-----
-
---------------enigE840A26DA2F12A412A92E672--
+Thanks,
+Bart
