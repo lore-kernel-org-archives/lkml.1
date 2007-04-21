@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXDUOSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031251AbXDUOUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030628AbXDUOSZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 10:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030866AbXDUOSZ
+	id S1031251AbXDUOUb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 10:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031249AbXDUOUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 10:18:25 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:36036 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030628AbXDUOSY (ORCPT
+	Sat, 21 Apr 2007 10:20:31 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48591 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030634AbXDUOUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 10:18:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=YK7zMVvZLjiCiDf1i/Q2YPYfrgl0FooY8xBAdnKB7r5FadzzwM5GVidoxh2IsCmVtvxyQrKdBxJDFEseBUjG/9R1kTRg/zP4wFuUvbNJDkvbFeBb/AZEXg0Eadzldl2j+TjVWrBRs+bRQehtoTgFFxGFFYPN66I5ouzecjgJbck=
-Message-ID: <254054bc0704210718t20ec96et3b7ab82ef783684f@mail.gmail.com>
-Date: Sat, 21 Apr 2007 16:18:01 +0200
-From: "Wiktor Wandachowicz" <siryes@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.6.20+ and rt2500/rt2570 problem
+	Sat, 21 Apr 2007 10:20:30 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [patch 8/8] allow unprivileged fuse mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102656.364689151@szeredi.hu>
+Date: Sat, 21 Apr 2007 08:18:47 -0600
+In-Reply-To: <20070420102656.364689151@szeredi.hu> (Miklos Szeredi's message
+	of "Fri, 20 Apr 2007 12:25:40 +0200")
+Message-ID: <m17is5kdyw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently I tried newer releases of Linux distributions, specifically
-Sabayon Linux 3.3 and Ubuntu 7.04. Both suffer from problems with
-rt2500/rt2570 modules not being able to associate with access points.
-There are numerous problems reported Ubuntu Launchpad, Gentoo Forums
-and Sabayon Forums.
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-Please, Linux kernel developers, try to help out the guys at:
-http://rt2x00.serialmonkey.com/
+> From: Miklos Szeredi <mszeredi@suse.cz>
+>
+> Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+>
+> FUSE was designed from the beginning to be safe for unprivileged
+> users.  This has also been verified in practice over many years.  In
+> addition unprivileged mounts require the parent mount to be owned by
+> the user, which is more strict than the current userspace policy.
+>
+> This will enable future installations to remove the suid-root
+> fusermount utility.
+>
+> Don't require the "user_id=" and "group_id=" options for unprivileged
+> mounts, but if they are present, verify them for sanity.
+>
+> Disallow the "allow_other" option for unprivileged mounts.
+>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+>
+> Index: linux/fs/fuse/inode.c
+> ===================================================================
+> --- linux.orig/fs/fuse/inode.c	2007-04-20 11:55:01.000000000 +0200
+> +++ linux/fs/fuse/inode.c	2007-04-20 11:55:14.000000000 +0200
+> @@ -311,6 +311,19 @@ static int parse_fuse_opt(char *opt, str
+>  	d->max_read = ~0;
+>  	d->blksize = 512;
+>  
+> +	/*
+> +	 * For unprivileged mounts use current uid/gid.  Still allow
+> +	 * "user_id" and "group_id" options for compatibility, but
+> +	 * only if they match these values.
+> +	 */
+> +	if (!capable(CAP_SYS_ADMIN)) {
+> +		d->user_id = current->uid;
+> +		d->user_id_present = 1;
+> +		d->group_id = current->gid;
+> +		d->group_id_present = 1;
+> +
+> +	}
 
-They look pretty clueless and don't know exactly what to do.
-It seems that advances in kernel to Wireless Extensions 19 broke
-their efforts somewhat.
+CAP_SETUID is the appropriate capability...
 
-If possible, speed up the inclusion process of the driver into mainline
-kernel, so users won't have to be forced to do a hardware upgrade.
-Additionally, this problem prevents my machines from being upgraded from
-Ubuntu 6.10 (kernel 2.6.17) to Ubuntu 7.04 (kernel 2.6.20 I believe).
+This is not a dimension we have not fully explored.
+What is the problem with a user controlled mount having different
+uid and gid values.
 
-With kind regards,
-Wiktor Wandachowicz
+Yes they map into different users but how is this a problem.
+The only problem that I can recall is the historic chown problem
+where you could give files to other users and mess up their quotas.
 
+Or is the problem other users writing to this user controlled
+filesystem?
 
-[1] http://rt2x00.serialmonkey.com/phpBB2/viewtopic.php?t=3477
-[2] http://rt2x00.serialmonkey.com/phpBB2/viewtopic.php?t=3543
-[3] http://rt2x00.serialmonkey.com/phpBB2/viewtopic.php?t=3552
-[4] http://rt2x00.serialmonkey.com/phpBB2/viewtopic.php?t=3571
-[5] http://www.sabayonlinux.org/forum/viewtopic.php?t=5013
-[6] http://www.sabayonlinux.org/forum/viewtopic.php?t=5239
-[7] http://www.sabayonlinux.org/forum/viewtopic.php?t=5305
-
--- 
-Registered Linux user #390131 (http://counter.li.org)
+Eric
