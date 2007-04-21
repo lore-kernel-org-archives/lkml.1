@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbXDUQ7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbXDUQ7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbXDUQ7c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 12:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbXDUQ7c
+	id S1753396AbXDUQ7i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 12:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbXDUQ7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 12:59:32 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35640 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbXDUQ7b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 12:59:31 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [patch 7/8] allow unprivileged mounts
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102652.075606533@szeredi.hu>
-	<20070421005513.e230aa88.akpm@linux-foundation.org>
-	<m1bqhhked1.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.61.0704211743100.9989@yvahk01.tjqt.qr>
-Date: Sat, 21 Apr 2007 10:57:10 -0600
-In-Reply-To: <Pine.LNX.4.61.0704211743100.9989@yvahk01.tjqt.qr> (Jan
-	Engelhardt's message of "Sat, 21 Apr 2007 17:43:28 +0200 (MEST)")
-Message-ID: <m1zm51is2h.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sat, 21 Apr 2007 12:59:38 -0400
+Received: from 1wt.eu ([62.212.114.60]:2137 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753396AbXDUQ7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 12:59:37 -0400
+Date: Sat, 21 Apr 2007 18:57:02 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070421165702.GE7840@1wt.eu>
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <20070421154614.GA26169@elte.hu> <20070421161818.GC7840@1wt.eu> <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org> <20070421165347.GA26903@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070421165347.GA26903@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
+On Sat, Apr 21, 2007 at 06:53:47PM +0200, Ingo Molnar wrote:
+> 
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > It would be even better to simply have the rule:
+> >  - child gets almost no points at startup
+> >  - but when a parent does a "waitpid()" call and blocks, it will spread 
+> >    out its points to the childred (the "vfork()" blocking is another case 
+> >    that is really the same).
+> > 
+> > This is a very special kind of "priority inversion" logic: you give 
+> > higher priority to the things you wait for. Not because of holding any 
+> > locks, but simply because a blockign waitpid really is a damn big hint 
+> > that "ok, the child now works for the parent".
+> 
+> yeah. One problem i can see with the implementation of this though is 
+> that shells typically do nonspecific waits - for example bash does this 
+> on a simple 'ls' command:
+> 
+>   21310 clone(child_stack=0,  ...) = 21399
+>   ...
+>   21399 execve("/bin/ls", 
+>   ...
+>   21310 waitpid(-1, <unfinished ...>
+> 
+> the PID is -1 so we dont actually know which task we are waiting for. We 
+> could use the first entry from the p->children list, but that looks too 
+> specific of a hack to me. It should catch most of the 
+> synchronous-helper-task cases though.
 
-> On Apr 21 2007 08:10, Eric W. Biederman wrote:
->>>
->>>> Define a new fs flag FS_SAFE, which denotes, that unprivileged
->>>> mounting of this filesystem may not constitute a security problem.
->>>> 
->>>> Since most filesystems haven't been designed with unprivileged
->>>> mounting in mind, a thorough audit is needed before setting this flag.
->>>
->>> Practically speaking, is there any realistic likelihood that any filesystem
->>> apart from FUSE will ever use this?
->>
->>Also potentially some of the kernel virtual filesystems.  /proc should
->>be safe already.  If you don't have any kind of backing store this problem
->>gets easier.
->
-> tmpfs!
+The last one should be more appropriate IMHO. If you waitpid(), it's very
+likely that you're waiting for the result of the very last fork().
 
-tmpfs is a possible problem because it can consume lots of ram/swap.  Which
-is why it has limits on the amount of space it can consume.  Those are set as
-mount options as I recall.  Which means that we would need to do something
-different with respect to limits before tmpfs could become safe for
-an untrusted user to mount.
+Willy
 
-Still it's close.
-
-
-Eric
