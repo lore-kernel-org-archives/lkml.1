@@ -1,102 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbXDUXYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXDUXhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753012AbXDUXYa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 19:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbXDUXYa
+	id S1753897AbXDUXhc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 19:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXDUXhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 19:24:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:49175 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753012AbXDUXY3 (ORCPT
+	Sat, 21 Apr 2007 19:37:31 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:52571 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753897AbXDUXhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 19:24:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=fA+vRhYMmOSuiyzPahHaZH9BZ4+ZYvDj//XLafPoh0p5Ch/wfGBxLazIBgmqBR3VWyvA/ltetZzcp7mlZ73G6a5UdKYGlbKj4jMSrRzpbI8Ib4VJTszlO70TgDONCPMDLb9LXFqe1uKtrf9asppxw0IjWpVypNklqr8jG1ZWIkI=
-Date: Sun, 22 Apr 2007 03:26:00 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [RFCPT] CONFIG_DEBUG_MEMCPY: memcpy() and overlapping areas
-Message-ID: <20070421232600.GA5844@martell.zuzino.mipt.ru>
+	Sat, 21 Apr 2007 19:37:21 -0400
+Date: Sat, 21 Apr 2007 16:35:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ulrich Drepper <drepper@gmail.com>
+cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
+       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+In-Reply-To: <a36005b50704211249pb771b79k227914515b5f9906@mail.gmail.com>
+Message-ID: <alpine.LFD.0.98.0704211634130.9964@woody.linux-foundation.org>
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu>
+  <20070421154614.GA26169@elte.hu> <20070421161818.GC7840@1wt.eu> 
+ <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org> 
+ <20070421164241.GF2986@holomorphy.com>  <E1192E83-5E64-4782-8F92-DDCA09CA2F55@mac.com>
+ <a36005b50704211249pb771b79k227914515b5f9906@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Overlapping areas are subject to memmove() not memcpy().
 
-CONFIG_DEBUG_MEMCPY will print pointers and length in question as well as
-backtrace to logs. Also, it should help if one of 3 variables got
-corrupted somehow and you were lucky enough.
 
-So far it was booted successfully on one x86_64 box and spit a couple of test
-overlapping memcpy() becktraces, which means it's ready.
----
+On Sat, 21 Apr 2007, Ulrich Drepper wrote:
+> 
+> If you do this, and it has been requested many a times, then please
+> generalize it.  We have the same issue with futexes.  If a FUTEX_WAIT
+> call is issues the remaining time in the slot should be given to the
+> thread currently owning the futex.
 
- arch/x86_64/lib/memmove.c   |    8 ++++++++
- include/asm-x86_64/string.h |    9 +++++++++
- lib/Kconfig.debug           |    6 ++++++
- 3 files changed, 23 insertions(+)
+And how the hell do you imagine you'd even *know* what thread holds the 
+futex?
 
---- a/arch/x86_64/lib/memmove.c
-+++ b/arch/x86_64/lib/memmove.c
-@@ -9,7 +9,15 @@
- void *memmove(void * dest,const void *src,size_t count)
- {
- 	if (dest < src) { 
-+#ifdef CONFIG_DEBUG_MEMCPY
-+		char *d = dest;
-+		const char *s = src;
-+		while (count--)
-+			*d++ = *s++;
-+		return dest;
-+#else
- 		return memcpy(dest,src,count);
-+#endif
- 	} else {
- 		char *p = (char *) dest + count;
- 		char *s = (char *) src + count;
---- a/include/asm-x86_64/string.h
-+++ b/include/asm-x86_64/string.h
-@@ -3,6 +3,8 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/kernel.h>
-+
- /* Written 2002 by Andi Kleen */ 
- 
- /* Only used for special circumstances. Stolen from i386/string.h */ 
-@@ -32,6 +34,13 @@ return (to);
- extern void *__memcpy(void *to, const void *from, size_t len); 
- static inline void *memcpy(void *dst, const void *src, size_t len)
- {
-+#ifdef CONFIG_DEBUG_MEMCPY
-+	if ((src < dst && src + len > dst) ||
-+	    (src > dst && dst + len > src)) {
-+		printk("memcpy(0x%p, 0x%p, %zu);\n", dst, src, len);
-+		WARN_ON(1);
-+	}
-+#endif
- 	if (__builtin_constant_p(len) && len >= 64)
- 		return __memcpy(dst, src, len);
- 	else
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -355,6 +355,12 @@ config DEBUG_LIST
- 
- 	  If unsure, say N.
- 
-+config DEBUG_MEMCPY
-+	bool "Debug memcpy() function calls"
-+	depends on DEBUG_KERNEL
-+	help
-+	  Enable checking for memcpy() on overlapping areas.
-+
- config FRAME_POINTER
- 	bool "Compile the kernel with frame pointers"
- 	depends on DEBUG_KERNEL && (X86 || CRIS || M68K || M68KNOMMU || FRV || UML || S390 || AVR32 || SUPERH)
+The whole point of the "f" part of the mutex is that it's fast, and we 
+never see the non-contended case in the kernel. 
 
+So we know who *blocks*, but we don't know who actually didn't block.
+
+		Linus
