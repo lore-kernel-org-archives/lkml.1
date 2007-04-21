@@ -1,293 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbXDUAXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbXDUA13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbXDUAXU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 20:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbXDUAXU
+	id S1753678AbXDUA13 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 20:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbXDUA13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 20:23:20 -0400
-Received: from omta05ps.mx.bigpond.com ([144.140.83.195]:65021 "EHLO
-	omta05ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753735AbXDUAXS (ORCPT
+	Fri, 20 Apr 2007 20:27:29 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:53508 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753640AbXDUA12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 20:23:18 -0400
-Message-ID: <4629596B.6020403@bigpond.net.au>
-Date: Sat, 21 Apr 2007 10:23:07 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420131544.GG31925@holomorphy.com>
-In-Reply-To: <20070420131544.GG31925@holomorphy.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 20 Apr 2007 20:27:28 -0400
+Subject: Re: [PATCH] fix ext2 allocator overflows above 31 bit blocks
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ext4 development <linux-ext4@vger.kernel.org>
+In-Reply-To: <46294967.6070601@redhat.com>
+References: <4628F3ED.9040101@redhat.com>
+	 <20070420230208.GU5967@schatzie.adilger.int>  <46294967.6070601@redhat.com>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Fri, 20 Apr 2007 17:27:15 -0700
+Message-Id: <1177115236.3778.23.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Sat, 21 Apr 2007 00:23:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> On Fri, Apr 20, 2007 at 10:10:45AM +1000, Peter Williams wrote:
->> I have a suggestion I'd like to make that addresses both nice and 
->> fairness at the same time.  As I understand the basic principle behind 
->> this scheduler it to work out a time by which a task should make it onto 
->> the CPU and then place it into an ordered list (based on this value) of 
->> tasks waiting for the CPU.  I think that this is a great idea and my 
->> suggestion is with regard to a method for working out this time that 
->> takes into account both fairness and nice.
+On Fri, 2007-04-20 at 18:14 -0500, Eric Sandeen wrote:
+> Andreas Dilger wrote:
+> > On Apr 20, 2007  12:10 -0500, Eric Sandeen wrote:
+> >> If ext3 can do 16T, ext2 probably should be able to as well.
+> >> There are still "int" block containers in the block allocation path
+> >> that need to be fixed up.
+> > 
+> > Yeah, but who wants to do 16TB e2fsck on every boot?  I think there
+> > needs to be some limits imposed for the sake of usability.
 > 
-> Hmm. Let me take a look...
+> I figure this is in the fine tradition of "enough rope to hang oneself"
 > 
+> If you have 16T of filesystem you probably know enough to not hang 
+> yourself this way.
 > 
-> On Fri, Apr 20, 2007 at 10:10:45AM +1000, Peter Williams wrote:
->> First suppose we have the following metrics available in addition to 
->> what's already provided.
->> rq->avg_weight_load /* a running average of the weighted load on the CPU */
->> p->avg_cpu_per_cycle /* the average time in nsecs that p spends on the 
->> CPU each scheduling cycle */
+> *shrug*
 > 
-> I'm suspicious of mean service times not paired with mean inter-arrival
-> times.
+> It's a bug, today.   
+
+They are fixed in mm tree, as part of the patches which backports ext3
+block reservation code to ext2. filesystem block numbers are all
+ext2_fsblk_t type(i.e. unsigned long)(see ext2_new_blocks()). Maybe need
+a round of thorough review to see if anything left, but I think what in
+mm tree looks good.
+
+And those patches in mm tree also backports the ext3 best-effort
+allocates multiple blocks code (allocate multiple blocks within the
+block reservation window as much as possible), FYI.
+
+Mingming
+
+> If we need another change to limit ext2 to 500G or 
+> something, fine by me.  :)
 > 
-> 
-> On Fri, Apr 20, 2007 at 10:10:45AM +1000, Peter Williams wrote:
->> where a scheduling cycle for a task starts when it is placed on the 
->> queue after waking or being preempted and ends when it is taken off the 
->> CPU either voluntarily or after being preempted.  So 
->> p->avg_cpu_per_cycle is just the average amount of time p spends on the 
->> CPU each time it gets on to the CPU.  Sorry for the long explanation 
->> here but I just wanted to make sure there was no chance that "scheduling 
->> cycle" would be construed as some mechanism being imposed on the scheduler.)
-> 
-> I went and looked up priority queueing queueing theory garbage and
-> re-derived various things I needed. The basics check out. Probably no
-> one cares that I checked.
-> 
-> 
-> On Fri, Apr 20, 2007 at 10:10:45AM +1000, Peter Williams wrote:
->> We can then define:
->> effective_weighted_load = max(rq->raw_weighted_load, rq->avg_weighted_load)
->> If p is just waking (i.e. it's not on the queue and its load_weight is 
->> not included in rq->raw_weighted_load) and we need to queue it, we say 
->> that the maximum time (in all fairness) that p should have to wait to 
->> get onto the CPU is:
->> expected_wait = p->avg_cpu_per_cycle * effective_weighted_load / 
->> p->load_weight
+> -Eric
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-You're right.  The time that the task spent sleeping before being woken 
-should be subtracted from this value.  If the answer is less than or 
-equal to zero pre-emption should occur.
-
-> 
-> This doesn't look right, probably because the scaling factor of
-> p->avg_cpu_per_cycle is the reciprocal of its additive contribution to
-> the ->avg_weight_load as opposed to a direct estimate of its initial
-> delay or waiting time before completing its current requested service.
-> 
-> p->load_weight/effective_weighted_load more properly represents an
-> entitlement to CPU bandwidth.
-
-Yes.  But expected_wait isn't entitlement it's its inverse.
-
-> 	p->avg_cpu_per_cycle/(p->load_weight/effective_weighted_load)
-> would be more like the expected time spent on the runqueue
-
-When I went to school that would be just another way of expressing the 
-equation that I expressed.
-
-> (whether
-> waiting to run or actually running) for a time interval spent in a
-> runnable state and the expected time runnable and waiting to run in such
-> an interval would be
-> 	p->avg_cpu_per_cycle*(1-effective_weighted_load/p->load_weight),
-> 
-> Neither represents the initial delay between entering the runqeueue and
-> first acquiring the CPU, but that's a bit hard to figure out without
-> deciding the scheduling policy up-front anyway.
-> 
-> This essentially doesn't look correct because while you want to enforce
-> the CPU bandwidth allocation, this doesn't have much to do with that
-> apart from the CPU bandwidth appearing as a term. It's more properly
-> a rate of service as opposed to a time at which anything should happen
-> or a number useful for predicting such. When service should begin more
-> properly depends on the other tasks in the system and a number of other
-> decisions that are part of the scheduling policy.
-
-This model takes all of those into consideration.  The idea is not just 
-to predict but to use the calculated time to decide when to boot the 
-current process of the CPU (if it doesn't leave voluntarily) and put 
-this one on.  This more or less removes the need to give each task a 
-predetermined chunk of CPU when they go on to the CPU.  This should, in 
-general, reduce the number context switches as tasks get to run until 
-they've finished what they're doing or another task becomes higher 
-priority rather than being booted off after an arbitrary time interval. 
-  (If this ever gets tried it will be interesting to see if this 
-prediction comes true.)
-
-BTW Even if Ingo doesn't choose to try this model, I'll probably make a 
-patch (way in the future after Ingo's changes are settled) to try it out 
-myself.
-
-> 
-> If you want to choose a "quasi-inter-arrival time" to achieve the
-> specified CPU bandwidth allocation, this would be it, but to use that
-> to actually enforce the CPU bandwidth allocation, you would need to
-> take into account the genuine inter-arrival time to choose an actual
-> time for service to begin. In other words, this should be a quota for
-> the task to have waited. If it's not waited long enough, then it should
-> be delayed by the difference to achieve the inter-arrival time you're
-> trying to enforce. If it's waited longer, it should be executed
-> sooner modulo other constraints, and perhaps even credited for future
-> scheduling cycles.
-
-The idea isn't to enforce the bandwidth entitlement to the extent of 
-throttling tasks if they exceed their entitlement and there's no other 
-tasks ready to use the CPU.  This is mainly because the bandwidth 
-entitlement isn't fixed -- it's changing constantly as the number and 
-type of runnable tasks changes.
-
-> 
-> In order to partially avoid underallocating CPU bandwidth to p, one
-> should track the time last spent sleeping and do the following:
-
-Yes I made a mistake in omitting to take into account sleep interval. 
-See another e-mail to Ingo correcting this problem.
-
-> 	last_sleep = now - p->last_went_to_sleep;
-> 	wait = p->avg_cpu_per_cycle*effective_weighted_load/p->load_weight;
-> 	wait = wait > last_sleep ? wait - last_sleep : 0;
-> 
-> By and large the scheduler can deterministically choose waits on the
-> runqueue but it doesn't actually do that. Some additional corrections
-> for delays beyond those decided up-front while on the runqueue or
-> getting scheduled early on the runqueue may also help, though I'm not
-> as interested in them as I am the one for sleep:
-> 	last_wait = now - p->last_taken_off_the_cpu;
-> 	wait = p->avg_cpu_per_cycle*effective_weighted_load/p->load_weight;
-> 	if (wait > last_wait) /* didn't wait long enough? */
-> 		wait += wait - last_wait; /* wait the difference longer */
-> 	else if (wait < last_wait) /* waited too long? */
-> 		/* wait less to make up the difference */
-> 		wait -= wait > last_wait - wait ? last_wait - wait : wait;
-> Where ->last_taken_off_the_cpu represents the time the task was last
-> taken off the CPU for whatever reason (this may need to be done
-> differently to handle time variables).
-> 
-> In order to do better, longer-term history is required,
-
-The half life of the Kalman filter (roughly equivalent to a running 
-average) used to calculate the averages determines how much history is 
-taken into account.  It could be made configurable (at least, until 
-enough real life experience was available to decide on the best value to 
-use).
-
-> but it can't be
-> a truly infinite history.
-
-I agree.
-
-> To attempt to maintain an infinite history of
-> bandwidth underutilization to be credited too far in the future would
-> enable potentially long-term overutilization when such credits are
-> cashed en masse for a sustained period of time. At some point you have
-> to say "use it or lose it;" over a shorter period of time some smoothing
-> is still admissible and even desirable.
-
-Yes, that's why I suggest a running average over the last few scheduling 
-cycles for the task.  But thinking about it some more I'm now not so 
-sure.  The lack of apparent "smoothness" when I've done this sort of 
-thing with raw rather than smooth data (in modifications to the current 
-dynamic priority based scheduler model) is usually noticed by running 
-top and seeing wildly fluctuating dynamic priorities.  I'm not sure that 
-the actual responsiveness of the system reflects this.  So I'm now 
-willing to reserve my judgement on this issue.
-
-> 
-> One might also consider debits owing to non-preemptibility or other
-> sorts of cpu bandwidth overutilization with similar caveats. A half-
-> life to an otherwise infinite history of credits and/or debits
-> specified in absolute time may be appropriate, though it's not quite as
-> computationally cheap as the above. The accounting for these credits
-> and debits would take the place of ->last_taken_off_the_cpu above.
-
-Credits shouldn't be necessary with this model if, instead of using the 
-average "on CPU" time per cycle for a pre-empted task when requeuing it, 
-you use the time period that it was "an CPU" before it was booted off as 
-this should compensate it correctly.
-
-> 
-> Another attack on the problem of CPU bandwidth misallocation would be
-> to further credit or debit the task according to the ratio of actual
-> CPU bandwidth to allocated CPU bandwidth in order to compensate
-> for prior failures to enforce the allocation.
-
-The fact that the allocated CPU bandwidth is changing continuously makes 
-this not a good idea.  On a system where allocations were made directly 
-rather being a side effect of "nice" and the number of runnable 
-processes it might be the way to go.
-
-> Unfortunately, the result
-> of scaling the artificial inter-arrival time in the obvious way is
-> degenerate (independent of priority) so it can't be done that simply.
-> Perhaps it could be used solely to adjust the credit and debit history
-> contribution to the quasi-inter-arrival time or the difference used
-> somehow, but I don't care to make more complex proposals than the
-> first-order correction above (if it's even worthy of being called a
-> proposal or a correction) for either this or a time-decaying credit
-> and debit history or even debit accounting at all.
-> 
-> I'd be happy enough to see the correction term to subtract out sleeping
-> time (i.e. the code snippet with last_sleep).
-
-Yes, this is THE important deficiency in my proposal.
-
-> The rest and/or stronger
-> attempts to factor in sleeping time or bandwidth misallocation I don't
-> consider so significant, at least not without some demonstration there
-> is CPU bandwidth misallocation happening.
-> 
-> 
-> On Fri, Apr 20, 2007 at 10:10:45AM +1000, Peter Williams wrote:
->> I appreciate that the notion of basing the expected wait on the task's 
->> average cpu use per scheduling cycle is counter intuitive but I believe 
->> that (if you think about it) you'll see that it actually makes sense.
-> 
-> I don't know. It sounds rather standard to me.
-
-That's good to hear.
-
-I also think that (as Ingo would probably prefer) that this mechanism 
-might work without using averages i.e. just use the last "on CPU" time. 
-  If it does work it would have the advantage of being impervious to the 
-possible bad effects of CPU speed changes on those systems where this is 
-a feature.  When using averages, I think that special consideration 
-would need to be made for variable cpu speeds -- probably not that 
-difficult but additional overhead anyway.
-
-I've been giving some thought into a mechanism for pre-empting the 
-current task when another task's expected "on CPU" time arrives.  I 
-think that it would be sufficient for scheduler_tick() to compare the 
-current time (via sched_clock() or whatever) with the "on CPU" for the 
-next task on the queue and initiation pre-emption if it's later than 
-that time.  This increases the granularity a little but is compensated 
-for by the fact it will help with the situation where more than one task 
-on the queue has the same expected "on CPU" time in that each of them 
-would get at least a tick (if they needed it).
-
-If some form of precise timer was used (instead) to trigger pre-emption 
-then, where there is more than one task with the same expected "on CPU" 
-time, only the last would get any CPU (and that's only the case if some 
-infinite loop doesn't get created).
-
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
