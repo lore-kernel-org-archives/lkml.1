@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbXDUTpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbXDUTqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752057AbXDUTpI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 15:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXDUTpH
+	id S1752063AbXDUTqS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 15:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbXDUTqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 15:45:07 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37568 "EHLO
+	Sat, 21 Apr 2007 15:46:18 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:37602 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752057AbXDUTpG (ORCPT
+	by vger.kernel.org with ESMTP id S1752063AbXDUTqR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 15:45:06 -0400
-Date: Sat, 21 Apr 2007 12:43:45 -0700
+	Sat, 21 Apr 2007 15:46:17 -0400
+Date: Sat, 21 Apr 2007 12:46:14 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: "Sunil Naidu" <akula2.shark@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Greg KH" <gregkh@suse.de>,
-       stable@kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: Linux 2.6.20.7 - Hard Disk rumbling?
-Message-Id: <20070421124345.1f9b63fa.akpm@linux-foundation.org>
-In-Reply-To: <8355959a0704210658j3b54a8cfl8a8a73661cd50c9d@mail.gmail.com>
-References: <8355959a0704210658j3b54a8cfl8a8a73661cd50c9d@mail.gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: Linux 2.6.21-rc7 - ACPI issues?
+Message-Id: <20070421124614.1206dcfa.akpm@linux-foundation.org>
+In-Reply-To: <8355959a0704210703n35b0dc35wcad04e5723eaec7@mail.gmail.com>
+References: <8355959a0704210703n35b0dc35wcad04e5723eaec7@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,27 +26,35 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Apr 2007 19:28:30 +0530 "Sunil Naidu" <akula2.shark@gmail.com> wrote:
+On Sat, 21 Apr 2007 19:33:52 +0530 "Sunil Naidu" <akula2.shark@gmail.com> wrote:
 
 > Hello,
 > 
-> I am facing a strange problems with an old 1.2 GHz P-III machine with
-> a 10 GB disk (used as a dedicated web server, later retired out of
-> service!).
+> I did compile 2.6.21-rc7 for a P-III machine. Here is the ACPI part in
+> the dmesg:-
 > 
-> Out of interest to implement some wireless solution (experiment), I
-> did compile 2.6.20.7 for my requirement. Strangely, I did observe:-
+> ACPI Error (psargs-0355): [PRSE] Namespace lookup failure, AE_NOT_FOUND
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.LNKE._PRS] (Node dfd63f40), AE_NOT_FOUND
+> ACPI Exception (pci_link-0180): AE_NOT_FOUND, Evaluating _PRS [20060707]
+> ACPI Error (psargs-0355): [PRSF] Namespace lookup failure, AE_NOT_FOUND
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.LNKF._PRS] (Node dfd63ea0), AE_NOT_FOUND
+> ACPI Exception (pci_link-0180): AE_NOT_FOUND, Evaluating _PRS [20060707]
+> ACPI Error (psargs-0355): [PRSG] Namespace lookup failure, AE_NOT_FOUND
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.LNKG._PRS] (Node dfd63e00), AE_NOT_FOUND
+> ACPI Exception (pci_link-0180): AE_NOT_FOUND, Evaluating _PRS [20060707]
+> ACPI Error (psargs-0355): [PRSH] Namespace lookup failure, AE_NOT_FOUND
+> ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.LNKH._PRS] (Node c147d75c), AE_NOT_FOUND
+> ACPI Exception (pci_link-0180): AE_NOT_FOUND, Evaluating _PRS [20060707]
 > 
-> hda: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
-> hda: drive_cmd: error=0x04 { DriveStatusError }
-> ide: failed opcode was: 0xb0
-> 
-> What might be the problem?
+> I tried with few configurations (config) to solve the problem, am not
+> sure what's causing this failure. Any hint?
 > 
 
-So the machine is OK with an earlier kernel version?  If so, which version?
+(added linux-acpi)
 
-Please send the full log from attempting to boot 2.6.20.7 on that machine.  This
-might require netconsole or serial console.
+Are any other problems observeable due to this?
 
-Thanks.
