@@ -1,65 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbXDUPLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216AbXDUPTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753180AbXDUPLN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 11:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbXDUPLN
+	id S1752216AbXDUPTc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 11:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXDUPTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 11:11:13 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:3952 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbXDUPLM (ORCPT
+	Sat, 21 Apr 2007 11:19:32 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2167 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752216AbXDUPTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 11:11:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SOY58M2dkAxlMbLPvqTWn/bSOVS54p7NLvR3MlQC1APqX5XfhLUoy+3/wq6oSZ+b+99w0StSphhTBlhA5vVC01RGwy/ZuNA1AKyHDr5WLZlRMOFcVKCElZIpPbA2+mAvz/H9ftt66hTtsnhvirRNPjraTQCHg1tkf8mN/STZXTY=
-Message-ID: <b637ec0b0704210811t3815ebb9y6f601637e5b21571@mail.gmail.com>
-Date: Sat, 21 Apr 2007 17:11:10 +0200
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Subject: Re: Loud "pop" coming from hard drive on reboot
-Cc: "Chuck Ebbert" <cebbert@redhat.com>, Stephen.Clark@seclark.us,
-       "Mark Lord" <liml@rtr.ca>, "Tejun Heo" <htejun@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, 7eggert@gmx.de,
-       emisca <emisca.ml@gmail.com>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       "Adrian Bunk" <bunk@stusta.de>, "Andrew Morton" <akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.61.0704211631540.9989@yvahk01.tjqt.qr>
+	Sat, 21 Apr 2007 11:19:31 -0400
+Date: Sat, 21 Apr 2007 11:19:28 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <d120d5000704200857s6661f700ifc18084b32675db0@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0704211102270.26258-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <88SeR-5Sf-15@gated-at.bofh.it>
-	 <20070418160627.7ab77c30@the-village.bc.nu> <46263650.3080705@rtr.ca>
-	 <46263859.2060309@gmail.com> <46265089.4000409@rtr.ca>
-	 <46265307.7060405@rtr.ca> <4626596E.4040304@seclark.us>
-	 <4627ABE9.8090906@redhat.com>
-	 <b637ec0b0704201257l24d9e9c8ha31221c9c9d8da3e@mail.gmail.com>
-	 <Pine.LNX.4.61.0704211631540.9989@yvahk01.tjqt.qr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan,
-mine does not pop running Linux but  only during the shutdown. As I
-wrote before, switching from PATA to IDE has solved the problem for
-me.
-Regards,
-Fabio
+On Fri, 20 Apr 2007, Dmitry Torokhov wrote:
 
-
-On 4/21/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
->
-> >On Apr 20 2007 21:57, Fabio Comolli wrote:
+> On 4/20/07, Alan Stern <stern@rowland.harvard.edu> wrote:
 > >
-> > hda: TOSHIBA MK8025GAS, ATA DISK drive
->
-> MK...? These sort of disks do that stupid pop. Mine -- a MK2003GAH --
-> does it even while running Linux, if the disk is _idle_.
-> See http://lkml.org/lkml/2006/11/15/413 - hope it provides some pointers.
->
-> Regards,
-> Jan
-> --
->
+> > Dmitry, in thinking things over some more I realized there's going to be a
+> > problem with the autosuspend support in USB.  It has to do with the way a
+> > driver needs to prevent (or block) suspends from occurring while it is
+> > actively using a device.
+> >
+> > To understand this, you need to know that USB adds a pm_mutex to the
+> > device structure.  It gets used for synchronizing all suspend- or
+> > resume-related activities.  In particular, the driver's suspend() method
+> > is called with usbdev->pm_mutex held.
+> >
+> > The next idea is that a driver needs to synchronize its remove() method
+> > with other methods such as read() -- we mustn't allow read() to try and
+> > refer to the device after the driver has been unbound.  Let's say the
+> > driver has unbind_mutex embedded in its private data structure for this
+> > purpose.
+> >
+> > Now consider what read() has to do.  It needs to block suspends from
+> > occurring while it runs, and it needs to do an autoresume if the device
+> > was already suspended.  So read() will look like this:
+> >
+> >        mutex_lock(&private->unbind_mutex);
+> >        if (private->gone) {
+> >                ret = -ENODEV;
+> >                goto done;
+> >        }
+> >        if (private->suspended)
+> >                autoresume(private->usbdev);
+> >        ...
+> >  done:
+> >        mutex_unlock(&private->unbind_mutex);
+> >        return ret;
+> >
+> > Meanwhile, the suspend() method needs to block while read() is running.
+> > So it will look like this:
+> >
+> >        private->suspended = 1;
+> >        mutex_lock(&private->unbind_mutex);
+> >        /* Now the driver has quiesced */
+> >        mutex_unlock(&private->unbind_mutex);
+> >
+> > Here's the problem:  The autoresume() call inside read() tries to acquire
+> > usbdev->pm_mutex while holding private->unbind_mutex.  The suspend()
+> > method does the reverse, a locking-order violation.
+> >
+> > So far I haven't figured out any way to make this work.  Do you have a
+> > suggestion?  (Don't say read() should hold pm_mutex as well as
+> > unbind_mutex; that's no good -- although the reason is rather obscure.)
+> >
+> 
+> First of all I think that I would merge pm and unbind mutex into one -
+> you also need to synchronize resume and suspend with bind and unbind
+> so you pretty much need to always acquire both of them.
+
+The USB core already insures that suspend and resume are mutually 
+exclusive with bind and unbind, so that part doesn't matter.
+
+Besides, there's a more important reason for not merging the pm and unbind
+mutexes: The pm mutex lies in the usb_device structure but the unbind
+mutex lies in the private data structure.
+
+It has to be this way.  The pm mutex is used by the USB core, which
+doesn't know anything about the private data.  Conversely, the driver has
+to acquire the unbind mutex at times when it doesn't know whether or not
+it has already been unbound, so that mutex must go in the private data.  
+Otherwise the driver might try to acquire the mutex -- thereby touching
+the usb_device -- after it was unbound, violating immediate detachment.
+
+> Second (and I admit I have not followed USB autoresume discussions, my
+> usb-devle backlog is over 5000 messages ;( ) is I am not sure why
+> woudl a read block autoresume. I can see write doing that but passive
+> reads should not affect device state.
+
+I was just using read() as an example.  And it wouldn't block autoresume;
+it would _do_ an autoresume, thereby preventing autosuspend.
+
+Another possible arrangement would be to have open() do an autoresume
+(preventing autosuspend during the entire time the device file is held
+open) and have close() re-enable autosuspend.  But the principle remains
+the same.
+
+I don't know, perhaps adding another mutex would work.  I need to think 
+about it some more.
+
+There's always the easy solution: Don't do a complete immediate detach.  
+The driver could keep a reference to the device structure for an extended
+period, provided it always checks private->gone whenever it locks
+usbdev->sem.  This would mean that the USB core might not be able to
+release usbdev until the lower-level driver was unloaded.  But that's
+okay: Since the lower-level driver contains code references to routines in
+the USB core, the core would be pinned anyway.
+
+This example does show that implementing immediate detach comes with a
+price.  It makes things more complicated than they would be otherwise.
+
+Alan Stern
+
