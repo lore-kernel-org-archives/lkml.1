@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752237AbXDUTtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbXDUTty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752237AbXDUTtK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 15:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXDUTtJ
+	id S1752253AbXDUTty (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 15:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXDUTty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 15:49:09 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49200 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbXDUTtI (ORCPT
+	Sat, 21 Apr 2007 15:49:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:9129 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752801AbXDUTtx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 15:49:08 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH] nfs lockd reclaimer: Convert to kthread API
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769696321319-git-send-email-ebiederm@xmission.com>
-	<1176999710.6663.12.camel@heimdal.trondhjem.org>
-	<m1slawkw76.fsf@ebiederm.dsl.xmission.com>
-	<1177017564.6628.5.camel@heimdal.trondhjem.org>
-	<20070419144059.7f5b9b39.akpm@linux-foundation.org>
-	<1177020284.6628.27.camel@heimdal.trondhjem.org>
-Date: Sat, 21 Apr 2007 13:47:39 -0600
-In-Reply-To: <1177020284.6628.27.camel@heimdal.trondhjem.org> (Trond
-	Myklebust's message of "Thu, 19 Apr 2007 18:04:44 -0400")
-Message-ID: <m1r6qdik6c.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 21 Apr 2007 15:49:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mE708NIwrhAzS3sP4QvN+Jd7IORzSu9Hvy8K59J/30d25BxvBsaXxVLEZSkZyuWFF1fQJ7QP34XDwmyt1QKfNFVUSLmwHBsyTE1f9YlwCkBADClfi0H9Onx4q6Qu9+IYBcHvyJeCDklIgyI7cZ5A/KMQg2DvuY/+pyj1wLZQvoM=
+Message-ID: <a36005b50704211249pb771b79k227914515b5f9906@mail.gmail.com>
+Date: Sat, 21 Apr 2007 12:49:52 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Kyle Moffett" <mrmacman_g4@mac.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Cc: "William Lee Irwin III" <wli@holomorphy.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Willy Tarreau" <w@1wt.eu>, "Ingo Molnar" <mingo@elte.hu>,
+       "Con Kolivas" <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>, "Mike Galbraith" <efault@gmx.de>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Peter Williams" <pwil3058@bigpond.net.au>,
+       "Thomas Gleixner" <tglx@linutronix.de>, caglar@pardus.org.tr,
+       "Gene Heskett" <gene.heskett@gmail.com>
+In-Reply-To: <E1192E83-5E64-4782-8F92-DDCA09CA2F55@mac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu>
+	 <20070421154614.GA26169@elte.hu> <20070421161818.GC7840@1wt.eu>
+	 <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org>
+	 <20070421164241.GF2986@holomorphy.com>
+	 <E1192E83-5E64-4782-8F92-DDCA09CA2F55@mac.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+On 4/21/07, Kyle Moffett <mrmacman_g4@mac.com> wrote:
+> It might be nice if it was possible to actively contribute your CPU
+> time to a child process.  For example:
+> int sched_donate(pid_t pid, struct timeval *time, int percentage);
 
-> On Thu, 2007-04-19 at 14:40 -0700, Andrew Morton wrote:
->> Using signals to communicate with kernel threads is fairly unpleasant, IMO.
->> We have much simpler, faster and more idiomatic ways of communicating
->> between threads in-kernel and there are better ways in which userspace can
->> communicate with the kernel - system calls, for example...
->> 
->> So I think generally any move which gets us away from using signals in
->> kernel threads is moving in a good direction.
->
-> I have yet to see a proposal which did. Eric's patch was eliminating
-> signals in kernel threads that used them without proposing any
-> replacement mechanism or showing that he had plans to do so. That is a
-> good reason for a veto.
-
-Possibly I just hadn't looked close enough.  The signals looked like
-a redundant mechanism.
-
->> > > With pid namespaces all kernel threads will disappear so how do
->> > > we cope with the problem when the sysadmin can not see the kernel
->> > > threads?
->> > 
->> > Then you have a usability problem. How does the sysadmin reboot the
->> > system if there is no way to shut down the processes that are hanging on
->> > an unresponsive filesystem?
->> 
->> Where's the hang?  A user process is stuck on h_rwsem?
->> 
->> If so, would it be appropriate to convert the user process to use
->> down_foo_interruptible(), so that the operator can just kill the user
->> process as expected, rather than having to futz around killing kernel
->> threads?
->
-> If an NFS server reboots, then the locks held by user processes on the
-> client need to be re-established by when it comes up again. Otherwise,
-> the processes that thought they were holding locks will suddenly fail.
-> This recovery job is currently the done by a kernel thread.
->
-> The question is then what to do if the server crashes again while the
-> kernel thread is re-establishing the locks. Particularly if it never
-> comes back again.
-> Currently, the administrator can intervene by killing anything that has
-> open files on that volume and kill the recovery kernel thread.
-> You'll also note that lockd_down(), nfsd_down() etc all use signals to
-> inform lockd(), nfsd() etc that they should be shutting down. Since the
-> reclaimer thread is started by the lockd() thread using CLONE_SIGHAND,
-> this means that we also automatically kill any lingering recovery
-> threads whenever we shutdown lockd().
-
-Maybe I'm missing something but I think you are referring to the semantics
-of do_group_exit in the presence of CLONE_THREAD.  All sharing a
-sighand should do is cause the sharing of the signal handler.  Causing
-allow_signal and disallow_signal to act on a group of threads instead
-of a single thread.   I don't recall clone_sighand having any
-other effects.
-
-> These mechanisms need to be replaced _before_ we start shooting down
-> sigallow() etc in the kernel.
-
-Reasonable if these mechanisms are not redundant.
-
-Thinking it through because everything having to do with nfs mounting and
-unmounting is behind the privileged mount operation this is not going to
-become an issue until we start allowing unprivileged nfs mounts.  Because
-we cannot delegate control of nfs mount and unmount operations until then.
-
-Since signals do not pose a immediate barrier to forward progress like
-daemonize and kernel_thread we can leave things as is until we can
-sort this out.
-
-Eric
+If you do this, and it has been requested many a times, then please
+generalize it.  We have the same issue with futexes.  If a FUTEX_WAIT
+call is issues the remaining time in the slot should be given to the
+thread currently owning the futex.  For non-PI futexes this needs an
+extension of the interface but I would be up for that.  It can have
+big benefits on the throughput of an application.
