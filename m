@@ -1,98 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751024AbXDUNFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031041AbXDUNIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751024AbXDUNFR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 09:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbXDUNFR
+	id S1031041AbXDUNIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031030AbXDUNIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 09:05:17 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:55265 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751024AbXDUNFP (ORCPT
+	Sat, 21 Apr 2007 09:08:25 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:55347 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030973AbXDUNIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 09:05:15 -0400
-X-Sasl-enc: GBePpw3CoWEvbklUVsaTrs0hU0cUgDQBfNpvd+vcIGZR 1177160715
-Message-ID: <462A0CA7.2090908@imap.cc>
-Date: Sat, 21 Apr 2007 15:07:51 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Sat, 21 Apr 2007 09:08:24 -0400
+Date: Sat, 21 Apr 2007 09:06:58 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       "Cameron, Steve" <Steve.Cameron@hp.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] utilities: add helper functions for safe 64-bit integer
+ operations as 32-bit halves
+In-Reply-To: <20070421030825.bed0b8a9.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.0.98.0704210847340.3766@sigma.j-a-k-j.com>
+References: <6.0.0.20.2.20070418160231.043f23c8@172.19.0.2>
+ <226E1C65E4F6164E8EA5FD3CC913AE8CF461DE@G3W0639.americas.hpqcorp.net>
+ <1176995934.31764.7.camel@mulgrave.il.steeleye.com>
+ <226E1C65E4F6164E8EA5FD3CC913AE8CF462EE@G3W0639.americas.hpqcorp.net>
+ <1176999730.31764.15.camel@mulgrave.il.steeleye.com>
+ <558F4D473FD7FE419B019232BF2D37B401167D74@G3W0634.americas.hpqcorp.net>
+ <20070419222028.d33c7f86.akpm@linux-foundation.org>
+ <1177074641.3718.5.camel@mulgrave.il.steeleye.com>
+ <20070420114337.12a67141.akpm@linux-foundation.org>
+ <1177095007.3718.43.camel@mulgrave.il.steeleye.com>
+ <20070420123041.94aac1e1.akpm@linux-foundation.org>
+ <1177100459.3718.45.camel@mulgrave.il.steeleye.com>
+ <20070420141218.a0222472.akpm@linux-foundation.org>
+ <alpine.DEB.0.98.0704201732240.11655@sigma.j-a-k-j.com>
+ <alpine.DEB.0.98.0704202040150.16687@sigma.j-a-k-j.com>
+ <20070421030825.bed0b8a9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
-References: <Pine.LNX.4.64.0701150634270.1953@CPE00045a9c397f-CM001225dbafb6> <45ABB53C.5030100@imap.cc> <Pine.LNX.4.64.0701151216310.7260@CPE00045a9c397f-CM001225dbafb6> <20070115172912.GA3323@pingi.kke.suse.de>
-In-Reply-To: <20070115172912.GA3323@pingi.kke.suse.de>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9BFAF6EBC1D1D5616AF5507E"
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9BFAF6EBC1D1D5616AF5507E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-From: Tilman Schmidt <tilman@imap.cc>
+Add helper functions "upper_32_bits" and "lower_32_bits" to 
+<include/linux/kernel.h> to allow 64-bit integers to be separated into 
+their 32-bit upper and lower halves without promoting integers, without 
+stretching sign bits, and without generating compiler warnings when used 
+with any integer not greater than 64 bits wide. High-order bits are 
+assumed to be zero for integers with fewer than 64 of them. Result values 
+are always 32-bit unsigned.
 
-The "obsolete" label on the ISDN_I4L Kconfig option is not, and
-has never been, accurate. It has already prompted repeated attempts
-to remove actively used functionality from the kernel without a
-working replacement. This patch removes the incorrect label and
-corrects the accompanying help text.
-
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
 ---
 
---- a/drivers/isdn/Kconfig	2007-02-04 19:44:54.000000000 +0100
-+++ b/drivers/isdn/Kconfig	2007-04-21 14:48:54.000000000 +0200
-@@ -25,9 +25,9 @@ menu "Old ISDN4Linux"
- 	depends on NET && ISDN
+> > +#define upper_32_bits(n) (sizeof(n) == 8 ? (u64)(n) >> 32 : 0)
+> 
+> It's very unclear what type this returns, in terms of both size and
+> signedness.  Perhaps it always returns a u64, dunno.  If it does, that will
+> cause the arithmetic which uses this macro to go 64-bit too.  Casting the
+> whole return value to u32 would fix all those doubts up.
 
- config ISDN_I4L
--	tristate "Old ISDN4Linux (obsolete)"
-+	tristate "Old ISDN4Linux subsystem"
- 	---help---
--	  This driver allows you to use an ISDN-card for networking
-+	  This driver allows you to use an ISDN adapter for networking
- 	  connections and as dialin/out device.  The isdn-tty's have a built
- 	  in AT-compatible modem emulator.  Network devices support autodial,
- 	  channel-bundling, callback and caller-authentication without having
-@@ -38,8 +38,9 @@ config ISDN_I4L
+If the argument is 64-bit, the return value is 64-bit; otherwise, the 
+return value is the same as the size of the argument. This prevents 
+integer promotion. I was trying to also not promote,, say, a short int, if 
+for some stupid reason somebody was using one. But you're right, a cast is 
+clearer, and the functions are clearly intended for 32-bit arithmetic.
 
- 	  ISDN support in the linux kernel is moving towards a new API,
- 	  called CAPI (Common ISDN Application Programming Interface).
--	  Therefore the old ISDN4Linux layer is becoming obsolete. It is
--	  still usable, though, if you select this option.
-+	  Therefore the old ISDN4Linux layer will eventually become obsolete.
-+	  It is still available, though, for use with adapters that are not
-+	  supported by the new CAPI subsystem yet.
+> > +#define lower_32_bits(n) (sizeof(n) == 8 ? (u32)(n) : (n))
+> 
+> n&0xffffffff would be simpler.
 
- if ISDN_I4L
- source "drivers/isdn/i4l/Kconfig"
+I suppose. I'm trying to be careful and account for stupid edge cases, but 
+then again, such code is horribly broken so we can instead ignore them? We 
+shall assume the mask gets promoted as necessary.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-In theory, there is no difference between theory and practice.
-In practice, there is.
+> Do we actually have any call for this?
 
+It enhances readability and prevents compiler warnings without increasing 
+code-local complexity. Besides, if we have upper_32_bits, we should have 
+lower_32_bits. Two similarly-named function calls is better than a 
+function call and a mask.
 
---------------enig9BFAF6EBC1D1D5616AF5507E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+And it's really nice to be able to write code that is word-size 
+independent and also not cluttered. And if any code declares macros like 
+this now, they can be eliminated and make a little more utility code 
+central.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGKgynMdB4Whm86/kRAmnUAJ9bNVo55dViBt4VxNt4S30/GLEB0ACfS0WG
-y73kYX9nlPBgKfWMvtkH9os=
-=YZsk
------END PGP SIGNATURE-----
-
---------------enig9BFAF6EBC1D1D5616AF5507E--
+--- linux-2.6.21-rc7-git4.orig/include/linux/kernel.h	2007-04-20 20:22:13.000000000 -0400
++++ linux-2.6.21-rc7-git4.mod/include/linux/kernel.h	2007-04-21 08:59:01.000000000 -0400
+@@ -40,6 +40,24 @@ extern const char linux_proc_banner[];
+ #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+ #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+ 
++/**
++ * lower_32_bits, upper_32_bits - separate the halves of a 64-bit integer
++ * @n: the integer to separate
++ *
++ * Separate a 64-bit integer into its upper and lower 32-bit halves.
++ * Designed to avoid integer promotions and compiler warnings when used
++ * with smaller integers, in which case the missing bits are assumed to
++ * be zero. Designed to treat integers as unsigned whether or not they
++ * really are. (If you are using these with signed integers, your code
++ * is almost certainly wrong. The cast is good for people too lazy to
++ * type "unsigned" in their code, since breaking things is bad.)
++ *
++ * These assume the integer used is NOT greater than 64 bits wide.
++ * Return values are always 32-bit unsigned integers.
++ */
++#define upper_32_bits(n) ((u32)(sizeof(n) == 8 ? (u64)(n) >> 32 : 0))
++#define lower_32_bits(n) ((u32)(n & ~(u32)0))
++
+ #define	KERN_EMERG	"<0>"	/* system is unusable			*/
+ #define	KERN_ALERT	"<1>"	/* action must be taken immediately	*/
+ #define	KERN_CRIT	"<2>"	/* critical conditions			*/
