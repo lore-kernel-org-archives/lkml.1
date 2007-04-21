@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbXDUWKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbXDUWLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbXDUWKi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 18:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXDUWKi
+	id S1753278AbXDUWLN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 18:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXDUWLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 18:10:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57413 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbXDUWKh (ORCPT
+	Sat, 21 Apr 2007 18:11:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46959
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753400AbXDUWK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 18:10:37 -0400
-Date: Sun, 22 Apr 2007 00:10:33 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Scott Porter <scott@opengridcomputing.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Akinobu Mita <Akinobu.Mita@gmail.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: Fault Injection issues: stacktrace x86_64 and failslab NUMA
-Message-ID: <20070421221033.GA30496@one.firstfloor.org>
-References: <1177095354.25165.48.camel@scott-desktop.site> <1177192363.25165.101.camel@scott-desktop.site>
+	Sat, 21 Apr 2007 18:10:59 -0400
+Date: Sat, 21 Apr 2007 15:10:52 -0700 (PDT)
+Message-Id: <20070421.151052.78709111.davem@davemloft.net>
+To: alan@lxorguk.ukuu.org.uk
+Cc: tilman@imap.cc, linux-kernel@vger.kernel.org, kkeil@suse.de,
+       i4ldeveloper@listserv.isdn4linux.de, akpm@linux-foundation.org
+Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070421215844.542d3aab@the-village.bc.nu>
+References: <20070115172912.GA3323@pingi.kke.suse.de>
+	<462A0CA7.2090908@imap.cc>
+	<20070421215844.542d3aab@the-village.bc.nu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177192363.25165.101.camel@scott-desktop.site>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There is no FRAME_POINTER support in the x86_64 code.  Apparently it was
-> removed when the unwind code was added but now that has been removed as
-> well!
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Sat, 21 Apr 2007 21:58:44 +0100
 
-That's because no assembly code in x86-64 knows anything about frame pointers.
-You will always get truncated traces if anything assembler is in trace.
-That's just dangerous.
-
-> Digging around in the archives it looks like Andi Kleen knew this was an
-> issue with the x86_64 fallback stacktrace code.  Now that there is no
-
-No I didn't.
-
-> unwind code to even attempt to avoid the problem what should be done?
-> How about:
+> On Sat, 21 Apr 2007 15:07:51 +0200
+> Tilman Schmidt <tilman@imap.cc> wrote:
 > 
-> (1) Make it clear the Fault Injection with STACKTRACE on x86_64 is at
-> best "Russian Roulette" -- maybe a !X86_64 in Kconfig.debug?
+> > From: Tilman Schmidt <tilman@imap.cc>
+> > 
+> > The "obsolete" label on the ISDN_I4L Kconfig option is not, and
+> > has never been, accurate. It has already prompted repeated attempts
+> > to remove actively used functionality from the kernel without a
+> > working replacement. This patch removes the incorrect label and
+> > corrects the accompanying help text.
+> > 
+> > Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 > 
-> (2) Introduce FRAME_POINTER support back into the x86_64 code.  This is
-> what Fault Injection really wants.
+> Nak-by: Alan Cox <alan@redhat.com>
 > 
-> (3) Keep the saved stack address entries array out of sight of the
-> fallback save_stack_trace() code.  Lockdep does this by storing it in
-> static space but this requires locking which would be ugly for Fault
-> Injection.  Another option is to mask the saved addresses so they fail
-> the __kernel_text_address() test but fail_stacktrace() uses the same
-> mask to make it's comparisons.  There's still the problem of avoiding
-> kernel text addresses stored on the stack by other code (that is, other
-> than the expected stack chain uses).
+> If it isn't obsolete then fix the code to use the newer APIs as its about
+> to end up && BROKEN let alone Obsolete. Make yourself maintainer and go
+> for it.
 
-Some hack in (3) would be probably best, otherwise (1).
-At some point I hope we can get the dwarf2 unwinder back, then
-the problem should be also solved. But then you would need to force
-the dwarf2 unwinder with fault injection on, but that shouldn't
-be a problem.
+This is my opinion too.
 
--Andi
+There is zero work being done on that subsystem to freshen it up
+and make it current in any way.
+
+Lack of a working replacement is not an argument for anything.
