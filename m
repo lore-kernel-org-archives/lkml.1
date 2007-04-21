@@ -1,637 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030761AbXDUMEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030768AbXDUMNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030761AbXDUMEh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 08:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030769AbXDUMEh
+	id S1030768AbXDUMNb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 08:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030772AbXDUMNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 08:04:37 -0400
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:38821 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030761AbXDUMEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 08:04:36 -0400
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-In-Reply-To: <20070421025532.916b1e2e.akpm@linux-foundation.org>
-References: <20070420155154.898600123@chello.nl>
-	 <20070420155503.608300342@chello.nl>
-	 <20070421025532.916b1e2e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 21 Apr 2007 14:01:36 +0200
-Message-Id: <1177156902.2934.96.camel@lappy>
+	Sat, 21 Apr 2007 08:13:31 -0400
+Received: from 1wt.eu ([62.212.114.60]:2076 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030768AbXDUMNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 08:13:30 -0400
+Date: Sat, 21 Apr 2007 14:12:35 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070421121235.GA2044@1wt.eu>
+References: <20070420140457.GA14017@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070420140457.GA14017@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-21 at 02:55 -0700, Andrew Morton wrote:
-> On Fri, 20 Apr 2007 17:52:04 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > Scale writeback cache per backing device, proportional to its writeout speed.
-> > 
-> > By decoupling the BDI dirty thresholds a number of problems we currently have
-> > will go away, namely:
-> > 
-> >  - mutual interference starvation (for any number of BDIs);
-> >  - deadlocks with stacked BDIs (loop, FUSE and local NFS mounts).
-> > 
-> > It might be that all dirty pages are for a single BDI while other BDIs are
-> > idling. By giving each BDI a 'fair' share of the dirty limit, each one can have
-> > dirty pages outstanding and make progress.
-> > 
-> > A global threshold also creates a deadlock for stacked BDIs; when A writes to
-> > B, and A generates enough dirty pages to get throttled, B will never start
-> > writeback until the dirty pages go away. Again, by giving each BDI its own
-> > 'independent' dirty limit, this problem is avoided.
-> > 
-> > So the problem is to determine how to distribute the total dirty limit across
-> > the BDIs fairly and efficiently. A DBI that has a large dirty limit but does
-> > not have any dirty pages outstanding is a waste.
-> > 
-> > What is done is to keep a floating proportion between the DBIs based on
-> > writeback completions. This way faster/more active devices get a larger share
-> > than slower/idle devices.
-> 
-> This is a pretty major improvement to various nasty corner-cases, if it
-> works.
-> 
-> Does it work?  Please describe the testing you did, and the results.
+Hi Ingo, Hi Con,
 
-The testing I did was several dd instances racing each other to various
-devices; usually one in a loop and the other a single, timed, instance.
+I promised to perform some tests on your code. I'm short in time right now,
+but I observed behaviours that should be commented on.
 
-I tested, disk vs disk, disk vs usbstick, disk vs nfs-mount.
+1) machine : dual athlon 1533 MHz, 1G RAM, kernel 2.6.21-rc7 + either scheduler
+   Test:  ./ocbench -R 250000 -S 750000 -x 8 -y 8
+   ocbench: http://linux.1wt.eu/sched/
 
-Using the debug patch from the last series; the one which exposed the
-actual ratio assigned and the total; I monitored (where possible) that
-the ratio was around the relative writeout speeds.
+2) SD-0.44
 
-The main indicator was that the writes should complete in roughly the
-same time as if they were done on an idle system.
+   Feels good, but becomes jerky at moderately high loads. I've started
+   64 ocbench with a 250 ms busy loop and 750 ms sleep time. The system
+   always responds correctly but under X, mouse jumps quite a bit and
+   typing in xterm or even text console feels slightly jerky. The CPU is
+   not completely used, and the load varies a lot (see below). However,
+   the load is shared equally between all 64 ocbench, and they do not
+   deviate even after 4000 iterations. X uses less than 1% CPU during
+   those tests.
 
-the disk vs usbstick gave the most dramatic improvement; on mainline the
-usbstick is totally starved by a heavy disk writer, with these patches
-it takes about the same time as it would on an idle system
+   Here's the vmstat output :
 
-Along with the first series was a number of results; those still stand.
+willy@pcw:~$ vmstat 1
+   procs                      memory      swap          io     system      cpu
+ r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
+ 0  0  0      0 919856   6648  57788    0    0    22     2    4   148 31 49 20
+ 0  0  0      0 919856   6648  57788    0    0     0     0    2   285 32 50 19
+28  0  0      0 919836   6648  57788    0    0     0     0    0   331 24 40 36
+64  0  0      0 919836   6648  57788    0    0     0     0    1   618 23 40 37
+65  0  0      0 919836   6648  57788    0    0     0     0    0   571 21 36 43
+35  0  0      0 919836   6648  57788    0    0     0     0    3   382 32 50 18
+ 2  0  0      0 919836   6648  57788    0    0     0     0    0   308 37 61  2
+ 8  0  0      0 919836   6648  57788    0    0     0     0    1   533 36 65  0
+32  0  0      0 919768   6648  57788    0    0     0     0   93   706 33 62  5
+62  0  0      0 919712   6648  57788    0    0     0     0   65   617 32 54 13
+63  0  0      0 919712   6648  57788    0    0     0     0    1   569 28 48 23
+40  0  0      0 919712   6648  57788    0    0     0     0    0   427 26 50 24
+ 4  0  0      0 919712   6648  57788    0    0     0     0    1   382 29 48 23
+ 4  0  0      0 919712   6648  57788    0    0     0     0    0   383 34 65  0
+14  0  0      0 919712   6648  57788    0    0     0     0    1   769 39 61  0
+40  0  0      0 919712   6648  57788    0    0     0     0    0   384 37 52 11
+54  0  0      0 919712   6648  57788    0    0     0     0    1   715 31 60  8
+58  0  2      0 919712   6648  57788    0    0     0     0    1   611 34 65  0
+41  0  0      0 919712   6648  57788    0    0     0     0   19   395 28 45 27
+ 0  0  0      0 919712   6648  57788    0    0     0     0   31   421 23 32 45
+ 0  0  0      0 919712   6648  57788    0    0     0     0   31   328 34 44 22
+29  0  0      0 919712   6648  57788    0    0     0     0   34   369 32 43 25
+65  0  0      0 919712   6648  57788    0    0     0     0   31   410 24 35 40
+47  0  1      0 919712   6648  57788    0    0     0     0   42   538 25 39 35
 
-> Has this been confirmed to fix Miklos's FUSE and loopback problems?
+3) CFS-v4
 
-I must defer to Miklos for that.
+  Feels even better, mouse movements are very smooth even under high load.
+  I noticed that X gets reniced to -19 with this scheduler. I've not looked
+  at the code yet but this looked suspicious to me. I've reniced it to 0 and
+  it did not change any behaviour. Still very good. The 64 ocbench share
+  equal CPU time and show exact same progress after 2000 iterations. The CPU
+  load is more smoothly spread according to vmstat, and there's no idle (see
+  below). BUT I now think it was wrong to let new processes start with no
+  timeslice at all, because it can take tens of seconds to start a new process
+  when only 64 ocbench are there. Simply starting "killall ocbench" takes about
+  10 seconds. On a smaller machine (VIA C3-533), it took me more than one
+  minute to do "su -", even from console, so that's not X. BTW, X uses less
+  than 1% CPU during those tests.
 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  include/linux/backing-dev.h |   51 ++++++++++++
-> >  mm/backing-dev.c            |    3 
-> >  mm/page-writeback.c         |  181 ++++++++++++++++++++++++++++++++++++--------
-> >  3 files changed, 206 insertions(+), 29 deletions(-)
-> > 
-> > Index: linux-2.6/include/linux/backing-dev.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/backing-dev.h	2007-04-20 15:28:17.000000000 +0200
-> > +++ linux-2.6/include/linux/backing-dev.h	2007-04-20 15:33:59.000000000 +0200
-> > @@ -28,6 +28,7 @@ typedef int (congested_fn)(void *, int);
-> >  enum bdi_stat_item {
-> >  	BDI_RECLAIMABLE,
-> >  	BDI_WRITEBACK,
-> > +	BDI_WRITEOUT,
-> >  	NR_BDI_STAT_ITEMS
-> >  };
-> 
-> Whoa, head is now swimming.  What's the difference between "writeback" and
-> "writeout"?
+willy@pcw:~$ vmstat 1
+   procs                      memory      swap          io     system      cpu
+ r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
+12  0  2      0 922120   6532  57540    0    0   299    29   31   386 17 27 57
+12  0  2      0 922096   6532  57556    0    0     0     0    1   776 37 63  0
+14  0  2      0 922096   6532  57556    0    0     0     0    1   782 35 65  0
+13  0  1      0 922096   6532  57556    0    0     0     0    0   782 38 62  0
+14  0  1      0 922096   6532  57556    0    0     0     0    1   782 36 64  0
+13  0  1      0 922096   6532  57556    0    0     0     0    2   785 38 62  0
+13  0  1      0 922096   6532  57556    0    0     0     0    1   774 35 65  0
+14  0  1      0 922096   6532  57556    0    0     0     0    0   784 36 64  0
+13  0  1      0 922096   6532  57556    0    0     0     0    1   767 37 63  0
+13  0  1      0 922096   6532  57556    0    0     0     0    1   785 41 59  0
+14  0  1      0 922096   6532  57556    0    0     0     0    0   779 38 62  0
+19  0  1      0 922096   6532  57556    0    0     0     0    1   816 38 62  0
+22  0  1      0 922096   6532  57556    0    0     0     0    0   817 35 65  0
+19  0  1      0 922096   6532  57556    0    0     0     0    1   817 39 61  0
+21  0  1      0 922096   6532  57556    0    0     0     0    0   849 36 64  0
+20  0  0      0 922096   6532  57556    0    0     0     0    1   793 36 64  0
+21  0  0      0 922096   6532  57556    0    0     0     0    0   815 37 63  0
+19  0  0      0 922096   6532  57556    0    0     0     0    1   824 35 65  0
+21  0  0      0 922096   6532  57556    0    0     0     0    0   817 35 65  0
+26  0  0      0 922096   6532  57556    0    0     0     0    1   824 38 62  0
+26  0  0      0 922096   6532  57556    0    0     0     0    1   817 35 65  0
+26  0  0      0 922096   6532  57556    0    0     0     0    0   811 37 63  0
+26  0  0      0 922096   6532  57556    0    0     0     0    1   804 34 66  0
+16  0  0      0 922096   6532  57556    0    0     0     0   39   850 35 65  0
+18  0  0      0 922096   6532  57556    0    0     0     0    1   801 39 61  0
 
-writeback is the number of pages in the writeback state.
 
-writeout is a relative proportion (against all other BDIs) of completed
-writeouts.
+4) first impressions
 
-> > @@ -43,6 +44,13 @@ struct backing_dev_info {
-> >  	void *unplug_io_data;
-> >  
-> >  	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
-> > +
-> > +	/*
-> > +	 * data used for scaling the writeback cache
-> > +	 */
-> > +	spinlock_t lock;	/* protect the cycle count */
-> > +	unsigned long cycles;	/* writeout cycles */
-> > +	int dirty_exceeded;
-> >  };
-> >  
-> >  void bdi_init(struct backing_dev_info *bdi);
-> > @@ -54,6 +62,12 @@ static inline void __mod_bdi_stat(struct
-> >  	percpu_counter_mod(&bdi->bdi_stat[item], amount);
-> >  }
-> >  
-> > +static inline void __mod_bdi_stat64(struct backing_dev_info *bdi,
-> > +		enum bdi_stat_item item, s64 amount)
-> > +{
-> > +	percpu_counter_mod64(&bdi->bdi_stat[item], amount);
-> > +}
-> > +
-> >  static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
-> >  		enum bdi_stat_item item)
-> >  {
-> > @@ -86,12 +100,49 @@ static inline void dec_bdi_stat(struct b
-> >  	local_irq_restore(flags);
-> >  }
-> >  
-> > +static inline s64 __bdi_stat(struct backing_dev_info *bdi,
-> > +		enum bdi_stat_item item)
-> > +{
-> > +	return percpu_counter_read(&bdi->bdi_stat[item]);
-> > +}
-> > +
-> >  static inline s64 bdi_stat(struct backing_dev_info *bdi,
-> >  		enum bdi_stat_item item)
-> >  {
-> >  	return percpu_counter_read_positive(&bdi->bdi_stat[item]);
-> >  }
-> 
-> So here, the __ means "it doesn't do the force-it-positive" treatment.
-> 
-> > +static inline s64 __bdi_stat_sum(struct backing_dev_info *bdi,
-> > +		enum bdi_stat_item item)
-> > +{
-> > +	return percpu_counter_sum(&bdi->bdi_stat[item]);
-> > +}
-> > +
-> > +static inline s64 bdi_stat_sum(struct backing_dev_info *bdi,
-> > +		enum bdi_stat_item item)
-> > +{
-> > +	s64 sum;
-> > +	unsigned long flags;
-> > +
-> > +	local_irq_save(flags);
-> > +	sum = __bdi_stat_sum(bdi, item);
-> > +	local_irq_restore(flags);
-> > +
-> > +	return sum;
-> > +}
-> 
-> And here __ means "not safe to use if this counter is updated from
-> interrupt context".
-> 
-> At least, I think that's what it all means.  The lack of code comments
-> casts some doubt.
-> 
-> 
-> The interfaces here could do with a little more thought wrt regularity,
-> naming and commenting, methinks.
+I think that CFS is based on a more promising concept but is less mature
+and is dangerous right now with certain workloads. SD shows some strange
+behaviours like not using all CPU available and a little jerkyness, but is
+more robust and may be the less risky solution for a first step towards
+a better scheduler in mainline, but it may also probably be the last O(1)
+scheduler, which may be replaced sometime later when CFS (or any other one)
+shows at the same time the smoothness of CFS and the robustness of SD.
 
-good points, shall consider.
+I'm sorry not to spend more time on them right now, I hope that other people
+will do.
 
-> 
-> > +/*
-> > + * maximal error of a stat counter.
-> > + */
-> > +static inline unsigned long bdi_stat_delta(void)
-> > +{
-> > +#ifdef CONFIG_SMP
-> > +	return NR_CPUS * FBC_BATCH;
-> 
-> This is enormously wrong for CONFIG_NR_CPUS=1024 on a 2-way.
-> 
-> > +#else
-> > +	return 1UL;
-> 
-> The UL is pretty pointless IMO.  The compiler will happily convert "1" to
-> unsigned long here.  And if we later change the return type to signed char,
-> we don't have to remember to edit this line too.
-
-me and my pedantry.
-
-> > +#endif
-> > +}
-> >
-> >  /*
-> >   * Flags in backing_dev_info::capability
-> >   * - The first two flags control whether dirty pages will contribute to the
-> > Index: linux-2.6/mm/page-writeback.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/page-writeback.c	2007-04-20 15:28:10.000000000 +0200
-> > +++ linux-2.6/mm/page-writeback.c	2007-04-20 15:35:01.000000000 +0200
-> > @@ -49,8 +49,6 @@
-> >   */
-> >  static long ratelimit_pages = 32;
-> >  
-> > -static int dirty_exceeded __cacheline_aligned_in_smp;	/* Dirty mem may be over limit */
-> > -
-> >  /*
-> >   * When balance_dirty_pages decides that the caller needs to perform some
-> >   * non-background writeback, this is how many pages it will attempt to write.
-> > @@ -103,6 +101,88 @@ EXPORT_SYMBOL(laptop_mode);
-> >  static void background_writeout(unsigned long _min_pages);
-> >  
-> >  /*
-> > + * Scale the writeback cache size proportional to the relative writeout speeds.
-> > + *
-> > + * We do this by tracking a floating average per BDI and a global floating
-> > + * average. We optimize away the '/= 2' for the global average by noting that:
-> > + *
-> > + *  if (++i > thresh) i /= 2:
-> > + *
-> > + * Can be approximated by:
-> > + *
-> > + *   thresh/2 + (++i % thresh/2)
-> > + *
-> > + * Furthermore, when we choose thresh to be 2^n it can be written in terms of
-> > + * binary operations and wraparound artifacts disappear.
-> > + *
-> > + * Also note that this yields a natural counter of the elapsed periods:
-> > + *
-> > + *   i / thresh
-> > + *
-> > + * Its monotonous increasing property can be applied to mitigate the wrap-
-> > + * around issue.
-> > + */
-
-Whaha, and here I thought this was an adequate comment :-/
-Obviously it sucked, since you are rather confused.
-
-> > +static int vm_cycle_shift __read_mostly;
-> > +static struct percpu_counter vm_writeout_total;
-> > +
-> > +/*
-> > + * Sync up the per BDI average to the global cycle.
-> > + */
-> > +static void bdi_writeout_norm(struct backing_dev_info *bdi)
-> > +{
-> > +	int bits = vm_cycle_shift;
-> > +	unsigned long cycle = 1UL << bits;
-> > +	unsigned long mask = ~(cycle - 1);
-> > +	unsigned long global_cycle = percpu_counter_read(&vm_writeout_total);
-> > +	unsigned long flags;
-> > +
-> > +	global_cycle <<= 1;
-> > +	global_cycle &= mask;
-> > +
-> > +	if ((bdi->cycles & mask) == global_cycle)
-> > +		return;
-> > +
-> > +	spin_lock_irqsave(&bdi->lock, flags);
-> > +	bdi->cycles &= mask;
-> > +	while (bdi->cycles != global_cycle) {
-> > +		unsigned long val = __bdi_stat(bdi, BDI_WRITEOUT);
-> > +		unsigned long half = (val + 1) >> 1;
-> > +
-> > +		if (!val)
-> > +			break;
-> > +
-> > +		__mod_bdi_stat64(bdi, BDI_WRITEOUT, -half);
-> > +		bdi->cycles += cycle;
-> > +	}
-> > +	bdi->cycles = global_cycle;
-> > +	spin_unlock_irqrestore(&bdi->lock, flags);
-> > +}
-> 
-> Here we get to the real critical substance of the patchset, and I don't
-> have a clue what it's doing nor how it's doing it.  And I bet nobody else
-> does either.
-
-I shall send a comment patch; but let me try to explain:
-
-I am trying to keep a floating proportion between the BDIs based on
-writeout events. That is, each device is given a share equal to its
-proportion of completed writebacks (writeback, we are in the process of
-writing vs. writeout, we have written). This proportion is measured in a
-'time'-span measured itself in writeouts.
-
-Example:
-
-  device A completes 4, device B completes 12 and, device C 16 writes.
-This gives a 4:12:16 of 32 ratio. Now, assume the 'time'-span is 32
-writes. This will force the counters to get halved: 2:6:8 of 16.
-
-Now the devices complete: A:8 B:8 C:0, another 16, making 32 again.
-2+8=10 : 6+8=14 : 8+0=8 of 32, or, because its a full period:
-5:7:4 of 16.
-
-That is basically what happens; the implementation tries to be a little
-smart about it, because it wants to avoid having to traverse all BDIs
-when a period expires.
-
-see how the total runs up to 32, gets halved, runs up to 32 again, gets
-halved, etc..
-
-That is the
-  if (++i > thresh) i /= 2;
-from that comment above, which we approximate by:
-  thresh/2 + (++i % thresh/2)
-
-the thresh = 2^n -> bit operations part is clear I hope.
-
-now we note that the total (i), is ever increasing, when we look at
-  i / (thresh/2)
-we see that that is the number of periods expired.
-
-If we then keep track of in which period each BDI is, we can 'normalize'
-the (per bdi) counter whenever we detect that the total went into
-another period. This is what bdi_writeout_norm() does. bdi->cycle is the
-local period (shifted left a bit to align with the global period bits so
-that wrap around is handled naturally), and global_cycle the global
-period.
-
-> <continues to wonder wtf "writeout" is.  Perhaps knowing that would help>
-> 
-> I dunno.  I'm sure it's very good code but I don't have the time nor
-> inclination to reverse engineer the design from the implementation.
-> 
-> This is a very important part of the kernel - one of the few most important
-> parts, really.  See all the crap going around about CPU schedulers at
-> present?  Well hoo-boy, if we get this part of code even a little bit
-> wrong, they won't know what hit them.
-> 
-> So please, spend quite a lot of time thinking about how we can make this
-> code as comprehensible and approachable and maintainable as possible. 
-> Often this is done with comments ;)
-> 
-> > +static void __bdi_writeout_inc(struct backing_dev_info *bdi)
-> > +{
-> > +	bdi_writeout_norm(bdi);
-> 
-> I'm assuming that "norm" here means "normalise".  There's a hint for me.
-> 
-> > +	__inc_bdi_stat(bdi, BDI_WRITEOUT);
-> > +	percpu_counter_mod(&vm_writeout_total, 1);
-> > +}
-> > +
-> > +void get_writeout_scale(struct backing_dev_info *bdi, long *scale, long *div)
-> > +{
-> > +	int bits = vm_cycle_shift - 1;
-> > +	unsigned long cycle = 1UL << bits;
-> > +	unsigned long mask = cycle - 1;
-> > +	unsigned long total = percpu_counter_read(&vm_writeout_total);
-> > +
-> > +	if (bdi_cap_writeback_dirty(bdi)) {
-> > +		bdi_writeout_norm(bdi);
-> > +		*scale = bdi_stat(bdi, BDI_WRITEOUT);
-> > +	} else
-> > +		*scale = 0;
-> > +
-> > +	*div = cycle + (total & mask);
-> > +}
-> 
-> I suppose that if I stared at this for long enough I could work out what
-> it's doing, and why it's doing it.  But given that it needs comments
-> telling others that, there isn't much point in me blowing the time to do
-> so.
-
-Right, so with the above clear (I hope), bdi_writeout_inc() tracks the
-per bdi and global writeout events. We need to normalize the counter
-before incrementing because the global period might have expired due to
-another BDI's activity.
-
-get_writeout_scale() does the magic of getting the current ratio.
-Remember the example; say that the current state for A, B and, C is:
-  3:8:7 of 18
-and we're currently interested in A's share.
-
-the 18 (*div) is obtained from 16 (cycle) + 2 (total & 15),
-the 3 (*scale) is read from the per BDI counter (again, after
-normalizing it, for the global period might have been advance since we
-last showed interest in it).
-
-(nr * 3) / 18 gives A's share of nr.
-
-If anything remains unclear, please holler.
-
-> It should have static scope.
-
-ok
-
-> Are all the per-bdi counters being exposed in sysfs?  I think not. 
-> Probably they should be?
-
-Like stated in that sysfs email, I'd rather have we had a per bdi sysfs
-spot, the current location is only for disks.
-
-> > +/*
-> >   * Work out the current dirty-memory clamping and background writeout
-> >   * thresholds.
-> >   *
-> > @@ -158,8 +238,8 @@ static unsigned long determine_dirtyable
-> >  }
-> >  
-> >  static void
-> > -get_dirty_limits(long *pbackground, long *pdirty,
-> > -					struct address_space *mapping)
-> > +get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
-> > +		 struct backing_dev_info *bdi)
-> >  {
-> >  	int background_ratio;		/* Percentages */
-> >  	int dirty_ratio;
-> > @@ -193,6 +273,30 @@ get_dirty_limits(long *pbackground, long
-> >  	}
-> >  	*pbackground = background;
-> >  	*pdirty = dirty;
-> > +
-> > +	if (bdi) {
-> > +		long long tmp = dirty;
-> > +		long reserve;
-> > +		long scale, div;
-> > +
-> > +		get_writeout_scale(bdi, &scale, &div);
-> > +
-> > +		tmp *= scale;
-> > +		do_div(tmp, div);
-> > +
-> > +		reserve = dirty -
-> > +			(global_page_state(NR_FILE_DIRTY) +
-> > +			 global_page_state(NR_WRITEBACK) +
-> > +			 global_page_state(NR_UNSTABLE_NFS));
-> > +
-> > +		if (reserve < 0)
-> > +			reserve = 0;
-> > +
-> > +		reserve += bdi_stat(bdi, BDI_RECLAIMABLE) +
-> > +			bdi_stat(bdi, BDI_WRITEBACK);
-> > +
-> > +		*pbdi_dirty = min((long)tmp, reserve);
-> 
-> min_t is preferred
-> 
-> tmp isn't a particularly good identifier
-
-ok, shall fix.
-
-> > +	}
-> >  }
-> >  
-> >  /*
-> > @@ -204,9 +308,11 @@ get_dirty_limits(long *pbackground, long
-> >   */
-> >  static void balance_dirty_pages(struct address_space *mapping)
-> >  {
-> > -	long nr_reclaimable;
-> > +	long bdi_nr_reclaimable;
-> > +	long bdi_nr_writeback;
-> >  	long background_thresh;
-> >  	long dirty_thresh;
-> > +	long bdi_thresh;
-> >  	unsigned long pages_written = 0;
-> >  	unsigned long write_chunk = sync_writeback_pages();
-> >  
-> > @@ -221,15 +327,15 @@ static void balance_dirty_pages(struct a
-> >  			.range_cyclic	= 1,
-> >  		};
-> >  
-> > -		get_dirty_limits(&background_thresh, &dirty_thresh, mapping);
-> > -		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
-> > -					global_page_state(NR_UNSTABLE_NFS);
-> > -		if (nr_reclaimable + global_page_state(NR_WRITEBACK) <=
-> > -			dirty_thresh)
-> > +		get_dirty_limits(&background_thresh, &dirty_thresh,
-> > +				&bdi_thresh, bdi);
-> > +		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
-> > +		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-> > +		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-> >  				break;
-> >  
-> > -		if (!dirty_exceeded)
-> > -			dirty_exceeded = 1;
-> > +		if (!bdi->dirty_exceeded)
-> > +			bdi->dirty_exceeded = 1;
-> >  
-> >  		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
-> >  		 * Unstable writes are a feature of certain networked
-> > @@ -237,16 +343,27 @@ static void balance_dirty_pages(struct a
-> >  		 * written to the server's write cache, but has not yet
-> >  		 * been flushed to permanent storage.
-> >  		 */
-> > -		if (nr_reclaimable) {
-> > +		if (bdi_nr_reclaimable) {
-> >  			writeback_inodes(&wbc);
-> > -			get_dirty_limits(&background_thresh,
-> > -					 	&dirty_thresh, mapping);
-> > -			nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
-> > -					global_page_state(NR_UNSTABLE_NFS);
-> > -			if (nr_reclaimable +
-> > -				global_page_state(NR_WRITEBACK)
-> > -					<= dirty_thresh)
-> > -						break;
-> > +
-> > +			get_dirty_limits(&background_thresh, &dirty_thresh,
-> > +				       &bdi_thresh, bdi);
-> > +
-> > +			if (bdi_thresh < 2*bdi_stat_delta()) {
-> > +				bdi_nr_reclaimable =
-> > +					bdi_stat_sum(bdi, BDI_RECLAIMABLE);
-> > +				bdi_nr_writeback =
-> > +					bdi_stat_sum(bdi, BDI_WRITEBACK);
-> > +			} else {
-> > +				bdi_nr_reclaimable =
-> > +					bdi_stat(bdi, BDI_RECLAIMABLE);
-> > +				bdi_nr_writeback =
-> > +					bdi_stat(bdi, BDI_WRITEBACK);
-> > +			}
-> > +
-> > +			if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-> > +				break;
-> > +
-> >  			pages_written += write_chunk - wbc.nr_to_write;
-> >  			if (pages_written >= write_chunk)
-> >  				break;		/* We've done our duty */
-> > @@ -254,9 +371,9 @@ static void balance_dirty_pages(struct a
-> >  		congestion_wait(WRITE, HZ/10);
-> >  	}
-> >  
-> > -	if (nr_reclaimable + global_page_state(NR_WRITEBACK)
-> > -		<= dirty_thresh && dirty_exceeded)
-> > -			dirty_exceeded = 0;
-> > +	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
-> > +			bdi->dirty_exceeded)
-> > +		bdi->dirty_exceeded = 0;
-> >  
-> >  	if (writeback_in_progress(bdi))
-> >  		return;		/* pdflush is already working this queue */
-> > @@ -270,7 +387,9 @@ static void balance_dirty_pages(struct a
-> >  	 * background_thresh, to keep the amount of dirty memory low.
-> >  	 */
-> >  	if ((laptop_mode && pages_written) ||
-> > -	     (!laptop_mode && (nr_reclaimable > background_thresh)))
-> > +			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
-> > +					  + global_page_state(NR_UNSTABLE_NFS)
-> > +					  > background_thresh)))
-> >  		pdflush_operation(background_writeout, 0);
-> >  }
-> 
-> Did you test laptop mode?
-
-admittedly, no. Shall do.
-
-> > @@ -306,7 +425,7 @@ void balance_dirty_pages_ratelimited_nr(
-> >  	unsigned long *p;
-> >  
-> >  	ratelimit = ratelimit_pages;
-> > -	if (dirty_exceeded)
-> > +	if (mapping->backing_dev_info->dirty_exceeded)
-> >  		ratelimit = 8;
-> >  
-> >  	/*
-> > @@ -342,7 +461,7 @@ void throttle_vm_writeout(gfp_t gfp_mask
-> >  	}
-> >  
-> >          for ( ; ; ) {
-> > -		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
-> > +		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
-> >  
-> >                  /*
-> >                   * Boost the allowable dirty threshold a bit for page
-> > @@ -377,7 +496,7 @@ static void background_writeout(unsigned
-> >  		long background_thresh;
-> >  		long dirty_thresh;
-> >  
-> > -		get_dirty_limits(&background_thresh, &dirty_thresh, NULL);
-> > +		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
-> >  		if (global_page_state(NR_FILE_DIRTY) +
-> >  			global_page_state(NR_UNSTABLE_NFS) < background_thresh
-> >  				&& min_pages <= 0)
-> > @@ -585,6 +704,8 @@ void __init page_writeback_init(void)
-> >  	mod_timer(&wb_timer, jiffies + dirty_writeback_interval);
-> >  	writeback_set_ratelimit();
-> >  	register_cpu_notifier(&ratelimit_nb);
-> > +	vm_cycle_shift = 1 + ilog2(vm_total_pages);
-> > +	percpu_counter_init(&vm_writeout_total, 0);
-> >  }
-> >  
-> >  /**
-> > @@ -988,8 +1109,10 @@ int test_clear_page_writeback(struct pag
-> >  			radix_tree_tag_clear(&mapping->page_tree,
-> >  						page_index(page),
-> >  						PAGECACHE_TAG_WRITEBACK);
-> > -			if (bdi_cap_writeback_dirty(bdi))
-> > +			if (bdi_cap_writeback_dirty(bdi)) {
-> >  				__dec_bdi_stat(bdi, BDI_WRITEBACK);
-> > +				__bdi_writeout_inc(bdi);
-> > +			}
-> >  		}
-> >  		write_unlock_irqrestore(&mapping->tree_lock, flags);
-> >  	} else {
-> > Index: linux-2.6/mm/backing-dev.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/backing-dev.c	2007-04-20 15:20:11.000000000 +0200
-> > +++ linux-2.6/mm/backing-dev.c	2007-04-20 15:31:42.000000000 +0200
-> > @@ -12,6 +12,9 @@ void bdi_init(struct backing_dev_info *b
-> >  	if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
-> >  		return;
-> >  
-> > +	spin_lock_init(&bdi->lock);
-> > +	bdi->cycles = 0;
-> > +	bdi->dirty_exceeded = 0;
-> >  	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
-> >  		percpu_counter_init(&bdi->bdi_stat[i], 0);
-> >  }
-> > 
-> 
-> ho hum, I'll toss it all in -mm, see what happens.
-
-You show great confidence, thanks!
+Regards,
+Willy
 
