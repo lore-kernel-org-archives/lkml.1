@@ -1,168 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbXDUHvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965051AbXDUHyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964932AbXDUHvm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 03:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965051AbXDUHvm
+	id S965051AbXDUHyi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 03:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965105AbXDUHyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 03:51:42 -0400
-Received: from mail23.syd.optusnet.com.au ([211.29.133.164]:56402 "EHLO
-	mail23.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964932AbXDUHvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 03:51:41 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Al Boldi <a1426z@gawab.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] sched: implement staircase scheduler yaf fix
-Date: Sat, 21 Apr 2007 17:51:29 +1000
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Apr 2007 03:54:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44800 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965051AbXDUHyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 03:54:37 -0400
+Date: Sat, 21 Apr 2007 09:54:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: William Lee Irwin III <wli@holomorphy.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, v3
+Message-ID: <20070421075401.GA23410@elte.hu>
+References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420131544.GG31925@holomorphy.com> <4629596B.6020403@bigpond.net.au> <20070421050734.GL31925@holomorphy.com> <4629A349.8060207@bigpond.net.au> <4629BE29.6010306@bigpond.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704211751.29985.kernel@kolivas.org>
+In-Reply-To: <4629BE29.6010306@bigpond.net.au>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While it annoys even me to keep posting fixes for SD, it is nice that fixing
-these bugs improves the behaviour further. This change causes noticeable
-improvements with loads that fork (ie make and friends).
 
-Thanks Al!
+* Peter Williams <pwil3058@bigpond.net.au> wrote:
 
-Andrew please apply.
----
-Management of time_slice sharing across fork was broken by changing
-time_slice to a signed int.
+> I retract this suggestion as it's a very bad idea.  It introduces the 
+> possibility of starvation via the poor sods at the bottom of the queue 
+> having their "on CPU" forever postponed and we all know that even the 
+> smallest possibility of starvation will eventually cause problems.
+> 
+> I think there should be a rule: Once a task is on the queue its "on 
+> CPU" time is immutable.
 
-first_time_slice was not being cleared anywhere near often enough. 
+Yeah, fully agreed. Currently i'm using the simple method of 
+p->nice_offset, which plainly just moves the per nice level areas of the 
+tree far enough apart (by a constant offset) so that lower nice levels 
+rarely interact with higher nice levels. Lower nice levels never truly 
+starve because rq->fair_clock increases deterministically and currently 
+the fair_key values are indeed 'immutable' as you suggest.
 
-SCHED_BATCH tasks in the current implementation should advance prio_level
-and best_static_prio.
+In practice they can starve a bit when one renices thousands of tasks, 
+so i was thinking about the following special-case: to at least make 
+them easily killable: if a nice 0 task sends a SIGKILL to a nice 19 task 
+then we could 'share' its p->wait_runtime with that nice 19 task and 
+copy the signal sender's nice_offset. This would in essence pass the 
+right to execute over to the killed task, so that it can tear itself 
+down.
 
-Thanks Al Boldi <a1426z@gawab.com> for making me check the fork code.
+This cannot be used to gain an 'unfair advantage' because the signal 
+sender spends its own 'right to execute on the CPU', and because the 
+target task cannot execute any user code anymore when it gets a SIGKILL.
 
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
+In any case, it is clear that rq->raw_cpu_load should be used instead of 
+rq->nr_running, when calculating the fair clock, but i begin to like the 
+nice_offset solution too in addition of this: it's effective in practice 
+and starvation-free in theory, and most importantly, it's very simple. 
+We could even make the nice offset granularity tunable, just in case 
+anyone wants to weaken (or strengthen) the effectivity of nice levels. 
+What do you think, can you see any obvious (or less obvious) 
+showstoppers with this approach?
 
----
- kernel/sched.c |   50 +++++++++++++++++++++++++++++++-------------------
- 1 file changed, 31 insertions(+), 19 deletions(-)
-
-Index: linux-2.6.21-rc7-sd/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc7-sd.orig/kernel/sched.c	2007-04-21 16:43:23.000000000 +1000
-+++ linux-2.6.21-rc7-sd/kernel/sched.c	2007-04-21 17:31:12.000000000 +1000
-@@ -661,6 +661,12 @@ static void dequeue_task(struct task_str
- 		__clear_bit(p->prio, p->array->prio_bitmap);
- }
- 
-+static void reset_first_time_slice(struct task_struct *p)
-+{
-+	if (unlikely(p->first_time_slice))
-+		p->first_time_slice = 0;
-+}
-+
- /*
-  * The task is being queued on a fresh array so it has its entitlement
-  * bitmap cleared.
-@@ -672,6 +678,7 @@ static void task_new_array(struct task_s
- 	p->rotation = rq->prio_rotation;
- 	p->time_slice = p->quota;
- 	p->array = array;
-+	reset_first_time_slice(p);
- }
- 
- /* Find the first slot from the relevant prio_matrix entry */
-@@ -740,6 +747,7 @@ static void queue_expired(struct task_st
- 	p->prio = p->normal_prio = first_prio_slot(p);
- 	if (p->static_prio < rq->expired->best_static_prio)
- 		rq->expired->best_static_prio = p->static_prio;
-+	reset_first_time_slice(p);
- }
- 
- #ifdef CONFIG_SMP
-@@ -1661,13 +1669,20 @@ void fastcall sched_fork(struct task_str
- 	 * resulting in more scheduling fairness.
- 	 */
- 	local_irq_disable();
--	current->time_slice >>= 1;
--	p->time_slice = current->time_slice;
--	/*
--	 * The remainder of the first timeslice might be recovered by
--	 * the parent if the child exits early enough.
--	 */
--	p->first_time_slice = 1;
-+	if (current->time_slice > 0) {
-+		current->time_slice /= 2;
-+		if (current->time_slice)
-+			p->time_slice = current->time_slice;
-+		else
-+			p->time_slice = 1;
-+		/*
-+		 * The remainder of the first timeslice might be recovered by
-+		 * the parent if the child exits early enough.
-+		 */
-+		p->first_time_slice = 1;
-+	} else
-+		p->time_slice = 0;
-+
- 	p->timestamp = sched_clock();
- 	local_irq_enable();
- out:
-@@ -1748,7 +1763,7 @@ void fastcall sched_exit(struct task_str
- 
- 	parent = p->parent;
- 	rq = task_rq_lock(parent, &flags);
--	if (p->first_time_slice && task_cpu(p) == task_cpu(parent)) {
-+	if (p->first_time_slice > 0 && task_cpu(p) == task_cpu(parent)) {
- 		parent->time_slice += p->time_slice;
- 		if (unlikely(parent->time_slice > parent->quota))
- 			parent->time_slice = parent->quota;
-@@ -3148,8 +3163,7 @@ static void task_expired_entitlement(str
- 	struct prio_array *old_array;
- 	int overrun, old_prio;
- 
--	if (unlikely(p->first_time_slice))
--		p->first_time_slice = 0;
-+	reset_first_time_slice(p);
- 	if (rt_task(p)) {
- 		p->time_slice = p->quota;
- 		list_move_tail(&p->run_list, p->array->queue + p->prio);
-@@ -3251,9 +3265,10 @@ static void reset_prio_levels(struct rq 
-  */
- static inline struct task_struct *next_dynamic_task(struct rq *rq, int idx)
- {
-+	struct prio_array *array = rq->active;
- 	struct task_struct *next;
- 	struct list_head *queue;
--	struct prio_array *array = rq->active;
-+	int nstatic;
- 
- retry:
- 	if (idx >= MAX_PRIO) {
-@@ -3281,14 +3296,11 @@ retry:
- 		goto retry;
- 	}
- 	next->rotation = rq->prio_rotation;
--	if (likely(next->policy != SCHED_BATCH)) {
--		int nstatic = next->static_prio;
--
--		if (nstatic < array->best_static_prio)
--			array->best_static_prio = nstatic;
--		if (idx > rq->prio_level[USER_PRIO(nstatic)])
--			rq->prio_level[USER_PRIO(nstatic)] = idx;
--	}
-+	nstatic = next->static_prio;
-+	if (nstatic < array->best_static_prio)
-+		array->best_static_prio = nstatic;
-+	if (idx > rq->prio_level[USER_PRIO(nstatic)])
-+		rq->prio_level[USER_PRIO(nstatic)] = idx;
- 	return next;
- }
- 
-
-
--- 
--ck
+	Ingo
