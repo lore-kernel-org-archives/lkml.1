@@ -1,98 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030250AbXDUIQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030367AbXDUISb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030250AbXDUIQz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 04:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030316AbXDUIQz
+	id S1030367AbXDUISb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 04:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030339AbXDUISb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 04:16:55 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:28226 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030250AbXDUIQx (ORCPT
+	Sat, 21 Apr 2007 04:18:31 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:59086 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030190AbXDUISa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 04:16:53 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:user-agent:mime-version:to:cc:
-	subject:references:in-reply-to:content-type:content-transfer-encoding;
-	b=nN3Gt/bSOXVk++XGrgULHjZxTSjMaQKhY2bXRrESVFLO9TyN9/nw827sq4STb/L65
-	1y53JeqiQ3Pvol8rhzfyg==
-Message-ID: <4629C81D.8050606@google.com>
-Date: Sat, 21 Apr 2007 01:15:25 -0700
-From: Ethan Solomita <solo@google.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: akpm@osdl.org, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-mm@kvack.org, Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
-       Dave Chinner <dgc@sgi.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC 0/8] Cpuset aware writeback
-References: <20070116054743.15358.77287.sendpatchset@schroedinger.engr.sgi.com> <45C2960B.9070907@google.com> <Pine.LNX.4.64.0702011815240.9799@schroedinger.engr.sgi.com> <46019F67.3010300@google.com> <Pine.LNX.4.64.0703211428430.4832@schroedinger.engr.sgi.com> <4626CEDA.7050608@google.com> <Pine.LNX.4.64.0704181948260.8743@schroedinger.engr.sgi.com> <46296ACD.3020402@google.com> <Pine.LNX.4.64.0704201840200.13607@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704201840200.13607@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Apr 2007 04:18:30 -0400
+To: akpm@linux-foundation.org
+CC: serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+In-reply-to: <20070421005516.18e0c797.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sat, 21 Apr 2007 00:55:16 -0700)
+Subject: Re: [patch 8/8] allow unprivileged fuse mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102656.364689151@szeredi.hu> <20070421005516.18e0c797.akpm@linux-foundation.org>
+Message-Id: <E1HfAlG-0002MD-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 21 Apr 2007 10:16:02 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 20 Apr 2007, Ethan Solomita wrote:
->
->   
->> cpuset_write_dirty_map.htm
->>
->>    In __set_page_dirty_nobuffers() you always call cpuset_update_dirty_nodes()
->> but in __set_page_dirty_buffers() you call it only if page->mapping is still
->> set after locking. Is there a reason for the difference? Also a question not
->> about your patch: why do those functions call __mark_inode_dirty() even if the
->> dirty page has been truncated and mapping == NULL?
->>     
->
-> If page->mapping has been cleared then the page was removed from the 
-> mapping. __mark_inode_dirty just dirties the inode. If a truncation occurs 
-> then the inode was modified.
->   
+> > Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+> > 
+> > FUSE was designed from the beginning to be safe for unprivileged
+> > users.  This has also been verified in practice over many years.
+> 
+> How does FUSE do this?
+> 
+> There are obvious cases like crafting a filesystem which has setuid executables
+> or world-writeable device nodes or whatever.  I'm sure there are lots of other
+> cases.
+> 
+> Where is FUSE's implementation of all this protection described?
 
-    You didn't address the first half. Why do the buffers() and 
-nobuffers() act differently when calling cpuset_update_dirty_nodes()?
+Most of it is in Documentation/filesystems/fuse.txt, some of it is
+code comments.
 
->> cpuset_write_throttle.htm
->>
->>    I noticed that several lines have leading spaces. I didn't check if other
->> patches have the problem too.
->>     
->
-> Maybe download the patches? How did those strange .htm endings get 
-> appended to the patches?
->   
-
-    Something weird with Firefox, but instead of jumping on me did you 
-consider double checking your patches? I just went back, found the text 
-versions, and the spaces are still there.e.g.:
-
-+  	unsigned long dirtyable_memory;
-
-
->>    In get_dirty_limits(), when cpusets are configd you don't subtract highmen
->> the same way that is done without cpusets. Is this intentional?
->>     
->
-> That is something in flux upstream. Linus changed it recently. Do it one 
-> way or the other.
->   
-
-    Exactly -- your patch should be consistent and do it the same way as 
-whatever your patch is built against. Your patch is built against a 
-kernel that subtracts off highmem. "Do it..." are you handing off the 
-patch and are done with it?
-
->>    It seems that dirty_exceeded is still a global punishment across cpusets.
->> Should it be addressed?
->>     
->
-> Sure. It would be best if you could place that somehow in a cpuset.
->   
-
-    Again it sounds like you're handing them off. I'm not objecting I 
-just hadn't understood that.
-    -- Ethan
-
+Miklos
