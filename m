@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbXDUWLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbXDUWS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbXDUWLN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 18:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXDUWLM
+	id S1753301AbXDUWS4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 18:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbXDUWS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 18:11:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46959
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753400AbXDUWK7 (ORCPT
+	Sat, 21 Apr 2007 18:18:56 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36112 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753301AbXDUWSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 18:10:59 -0400
-Date: Sat, 21 Apr 2007 15:10:52 -0700 (PDT)
-Message-Id: <20070421.151052.78709111.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: tilman@imap.cc, linux-kernel@vger.kernel.org, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de, akpm@linux-foundation.org
-Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070421215844.542d3aab@the-village.bc.nu>
-References: <20070115172912.GA3323@pingi.kke.suse.de>
-	<462A0CA7.2090908@imap.cc>
-	<20070421215844.542d3aab@the-village.bc.nu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sat, 21 Apr 2007 18:18:55 -0400
+Date: Sat, 21 Apr 2007 15:18:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Paul Jackson <pj@sgi.com>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [RFC 0/8] Variable Order Page Cache
+Message-Id: <20070421151830.4edb54ae.akpm@linux-foundation.org>
+In-Reply-To: <20070420074818.GN32602149@melbourne.sgi.com>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com>
+	<20070419224225.GJ32602149@melbourne.sgi.com>
+	<20070420063257.GB6525@kernel.dk>
+	<20070420074818.GN32602149@melbourne.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Sat, 21 Apr 2007 21:58:44 +0100
+On Fri, 20 Apr 2007 17:48:18 +1000 David Chinner <dgc@sgi.com> wrote:
 
-> On Sat, 21 Apr 2007 15:07:51 +0200
-> Tilman Schmidt <tilman@imap.cc> wrote:
-> 
-> > From: Tilman Schmidt <tilman@imap.cc>
-> > 
-> > The "obsolete" label on the ISDN_I4L Kconfig option is not, and
-> > has never been, accurate. It has already prompted repeated attempts
-> > to remove actively used functionality from the kernel without a
-> > working replacement. This patch removes the incorrect label and
-> > corrects the accompanying help text.
-> > 
-> > Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-> 
-> Nak-by: Alan Cox <alan@redhat.com>
-> 
-> If it isn't obsolete then fix the code to use the newer APIs as its about
-> to end up && BROKEN let alone Obsolete. Make yourself maintainer and go
-> for it.
+> Agreed - I was talking about a quick way to hack a real filesystem
+> in to the VM to start exercising the new VM code without needing to
+> implement compound page support down the whole I/O stack. 
 
-This is my opinion too.
+Yes.  The whole point of this work is to speed stuff up, so I'd encourage
+people to first work on getting some minimal scruffy proptotype in place -
+whatever is needed to be able to start running performance tests.
 
-There is zero work being done on that subsystem to freshen it up
-and make it current in any way.
+Then we can take a look at the numbers (and the types of machines and
+workloads upon which they are based) and decide whether it looks like
+there's any point in proceeding with a full-on implementation.
 
-Lack of a working replacement is not an argument for anything.
+And as part of that decision-making process we should take a detailed look
+at the performance of the existing code and see if there are other ways in
+which it might be acceptably sped up.
+
+Because right now we're assuming that larger pages are the only way in
+which acceptable performance may be obtained.  But that has not been proved.
