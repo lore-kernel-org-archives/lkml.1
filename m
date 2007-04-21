@@ -1,100 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXDUAGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXDUAIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752403AbXDUAGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 20:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXDUAGS
+	id S1752812AbXDUAIj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 20:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXDUAIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 20:06:18 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:59072 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbXDUAGS (ORCPT
+	Fri, 20 Apr 2007 20:08:38 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:35037 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752812AbXDUAIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 20:06:18 -0400
-Date: Fri, 20 Apr 2007 17:03:40 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Message-ID: <20070421000340.GB12155@kroah.com>
-References: <46284F2A.4000401@gmail.com> <Pine.LNX.4.44L0.0704201136590.2616-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0704201136590.2616-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 20 Apr 2007 20:08:37 -0400
+Date: Fri, 20 Apr 2007 17:07:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: "Vladimir V. Saveliev" <vs@namesys.com>, a.righi@cineca.it,
+       linux-kernel@vger.kernel.org, reiserfs-dev@namesys.com,
+       Edward Shishkin <edward@namesys.com>, zam@clusterfs.com
+Subject: Re: Fwd: Fw: [2.6.20.4] BUG: dentry xattrs still in use in
+ shrink_dcache_for_umount() with reiserfs
+Message-Id: <20070420170738.e269fcae.akpm@linux-foundation.org>
+In-Reply-To: <46263270.9010108@suse.com>
+References: <20070413095219.02075323.akpm@linux-foundation.org>
+	<462536B2.5060308@users.sourceforge.net>
+	<c04ebacf0704180152qdc72fcdnd0755dbf070b40d2@mail.gmail.com>
+	<200704181816.21166.vs@namesys.com>
+	<46263270.9010108@suse.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 11:40:39AM -0400, Alan Stern wrote:
-> Here's a patch to do what I mentioned earlier.  Not tested -- it may 
-> expose some existing bugs.  It may even break something, but I'm not aware 
-> of anything that depends on it explicitly.
+On Wed, 18 Apr 2007 11:00:00 -0400
+Jeff Mahoney <jeffm@suse.com> wrote:
+
+> > Do you think that could be a reason of the extra reference count on   xattr_root dentry?
 > 
-> Greg, do you know of anything in particular that depends on a kobjects not 
-> being released before their children are released?
+> No, I don't think it is. Looking at the code now, it seems obvious, but
+> I didn't notice it before and nobody else has reported a problem.
+> 
+> getxattr() doesn't require any VFS locking. When we get down into the
+> reiserfs code, it takes a read lock. If we get two concurrent threads
+> looking up an xattr before the root has been saved, there's a window
+> where REISERFS_SB(s)->xattr_root is NULL but we've already looked it up
+> and taken a reference on it.
+> 
+> I have a patch set to clean up the extended attribute code that fixes
+> this problem along the way by killing off the xattr locks and using the
+> backing files/dirs i_mutex instead. I'll post them to the reiserfs
+> mailing list.
 
-Yes, the whole driver model :)
+Do we have anything suitable for 2.6.21 which will address this crash?
 
-When adding a new device, we always grab a reference to the parent
-device so it can not go away before we do.
+Also, it's not clear to me how many users we can expect to be impacted by it.
+I assume that if the same bug is in 2.6.20 then the answer is "not many".
+How come Andrea is able to keep hitting it?
 
-Look at the last kobject_put(parent); in kobject_cleanup() which ensures
-this.
-
-> Index: usb-2.6/lib/kobject.c
-> ===================================================================
-> --- usb-2.6.orig/lib/kobject.c
-> +++ usb-2.6/lib/kobject.c
-> @@ -192,12 +192,15 @@ void kobject_init(struct kobject * kobj)
->  
->  static void unlink(struct kobject * kobj)
->  {
-> +	struct kobject *parent = kobj->parent;
-> +
->  	if (kobj->kset) {
->  		spin_lock(&kobj->kset->list_lock);
->  		list_del_init(&kobj->entry);
->  		spin_unlock(&kobj->kset->list_lock);
->  	}
->  	kobject_put(kobj);
-> +	kobject_put(parent);
->  }
->  
->  /**
-> @@ -241,7 +244,6 @@ int kobject_shadow_add(struct kobject * 
->  	if (error) {
->  		/* unlink does the kobject_put() for us */
->  		unlink(kobj);
-> -		kobject_put(parent);
->  
->  		/* be noisy on error issues */
->  		if (error == -EEXIST)
-> @@ -489,7 +491,6 @@ void kobject_cleanup(struct kobject * ko
->  {
->  	struct kobj_type * t = get_ktype(kobj);
->  	struct kset * s = kobj->kset;
-> -	struct kobject * parent = kobj->parent;
->  
->  	pr_debug("kobject %s: cleaning up\n",kobject_name(kobj));
->  	if (kobj->k_name != kobj->name)
-> @@ -505,7 +506,6 @@ void kobject_cleanup(struct kobject * ko
->  
->  	if (s)
->  		kset_put(s);
-> -	kobject_put(parent);
->  }
-
-Ick, no, I think this used to be the way things worked, but bad things
-would end up happening, so we fixed it up to be the way things are
-today.  Read the comments for the changelog for this file for details.
-
-Specifically, look at commit 10921a8f1305b8ec97794941db78b825db5839bc
-in the history.git repo which is almost exactly what you are proposing
-to be reverted...
-
-thanks,
-
-greg k-h
+Thanks.
