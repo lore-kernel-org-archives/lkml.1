@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbXDUA13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbXDUAeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbXDUA13 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 20:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbXDUA13
+	id S1752864AbXDUAeM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 20:34:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbXDUAeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 20:27:29 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:53508 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbXDUA12 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 20:27:28 -0400
-Subject: Re: [PATCH] fix ext2 allocator overflows above 31 bit blocks
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-In-Reply-To: <46294967.6070601@redhat.com>
-References: <4628F3ED.9040101@redhat.com>
-	 <20070420230208.GU5967@schatzie.adilger.int>  <46294967.6070601@redhat.com>
-Content-Type: text/plain
-Organization: IBM LTC
-Date: Fri, 20 Apr 2007 17:27:15 -0700
-Message-Id: <1177115236.3778.23.camel@dyn9047017103.beaverton.ibm.com>
+	Fri, 20 Apr 2007 20:34:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56810 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752864AbXDUAeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 20:34:11 -0400
+Date: Fri, 20 Apr 2007 20:33:47 -0400
+From: Dave Jones <davej@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: "Preston A. Elder" <prez@goth.net>, linux-kernel@vger.kernel.org
+Subject: Re: AGPGart / AMD K7
+Message-ID: <20070421003347.GA12760@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
+	"Preston A. Elder" <prez@goth.net>, linux-kernel@vger.kernel.org
+References: <46286775.5000507@goth.net> <20070420155537.GA20118@redhat.com> <4628F00B.3010304@goth.net> <20070420173337.GD20118@redhat.com> <462900BD.8020204@goth.net> <20070420182029.GF20118@redhat.com> <20070420182952.GA18930@kroah.com> <20070420190028.GF13939@redhat.com> <20070420232651.GB10949@kroah.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070420232651.GB10949@kroah.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-20 at 18:14 -0500, Eric Sandeen wrote:
-> Andreas Dilger wrote:
-> > On Apr 20, 2007  12:10 -0500, Eric Sandeen wrote:
-> >> If ext3 can do 16T, ext2 probably should be able to as well.
-> >> There are still "int" block containers in the block allocation path
-> >> that need to be fixed up.
-> > 
-> > Yeah, but who wants to do 16TB e2fsck on every boot?  I think there
-> > needs to be some limits imposed for the sake of usability.
-> 
-> I figure this is in the fine tradition of "enough rope to hang oneself"
-> 
-> If you have 16T of filesystem you probably know enough to not hang 
-> yourself this way.
-> 
-> *shrug*
-> 
-> It's a bug, today.   
+On Fri, Apr 20, 2007 at 04:26:51PM -0700, Greg Kroah-Hartman wrote:
+ > > We should always have a bus in bus_add_driver()
+ > > Instead of returning success when we don't, BUG().
+ > 
+ > Nah, I don't like adding BUG() calls to the kernel if it can be helped,
+ > how about the version I copied you on a few hours ago, which is also
+ > below?
 
-They are fixed in mm tree, as part of the patches which backports ext3
-block reservation code to ext2. filesystem block numbers are all
-ext2_fsblk_t type(i.e. unsigned long)(see ext2_new_blocks()). Maybe need
-a round of thorough review to see if anything left, but I think what in
-mm tree looks good.
+Either works for me..
 
-And those patches in mm tree also backports the ext3 best-effort
-allocates multiple blocks code (allocate multiple blocks within the
-block reservation window as much as possible), FYI.
+	Dave
 
-Mingming
-
-> If we need another change to limit ext2 to 500G or 
-> something, fine by me.  :)
-> 
-> -Eric
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+-- 
+http://www.codemonkey.org.uk
