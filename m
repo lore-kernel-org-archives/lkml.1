@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXDUVfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbXDUVgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753025AbXDUVfW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 17:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbXDUVfW
+	id S1753071AbXDUVgz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 17:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbXDUVgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 17:35:22 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52035 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753007AbXDUVfV (ORCPT
+	Sat, 21 Apr 2007 17:36:55 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4934 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753071AbXDUVgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 17:35:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [patch 7/8] allow unprivileged mounts
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102652.075606533@szeredi.hu>
-	<20070421005513.e230aa88.akpm@linux-foundation.org>
-	<p73d51x4c1w.fsf@bingen.suse.de>
-Date: Sat, 21 Apr 2007 15:33:25 -0600
-In-Reply-To: <p73d51x4c1w.fsf@bingen.suse.de> (Andi Kleen's message of "22 Apr
-	2007 00:06:51 +0200")
-Message-ID: <m1d51x2z16.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 21 Apr 2007 17:36:55 -0400
+Date: Sat, 21 Apr 2007 17:36:51 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Tejun Heo <htejun@gmail.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <20070421000340.GB12155@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0704211654080.12439-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+On Fri, 20 Apr 2007, Greg KH wrote:
 
-> Andrew Morton <akpm@linux-foundation.org> writes:
->
->> On Fri, 20 Apr 2007 12:25:39 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
->> 
->> > Define a new fs flag FS_SAFE, which denotes, that unprivileged
->> > mounting of this filesystem may not constitute a security problem.
->> > 
->> > Since most filesystems haven't been designed with unprivileged
->> > mounting in mind, a thorough audit is needed before setting this flag.
->> 
->> Practically speaking, is there any realistic likelihood that any filesystem
->> apart from FUSE will ever use this?
->
-> If it worked for mount --bind for any fs I could see uses of this.  I haven't
-> thought
-> through the security implications though, so it might not work.
+> > Greg, do you know of anything in particular that depends on a kobjects not 
+> > being released before their children are released?
+> 
+> Yes, the whole driver model :)
 
-Binding a directory that you have access to in other was is essentially
-the same thing as a symlink.  So there are no real security implications
-there.  The only problem case I can think of is removal media that you
-want to remove but someone has made a bind mount to.  But that is
-essentially the same case as opening a file so there are no new
-real issues.  Although our diagnostic tools will likely fall behind
-for a bit.
+But anything in particular?  Looking through the source code, I see 
+kobj->parent gets used mainly by kobject_get_path() and not by much else.
 
-We handle the security implications by assigning an owner to all mounts
-and only allowing you to add additional mounts on top of a mount you
-already own.
+Looking some more, kobject_get_path() is used for kobject renaming,
+uevent handling, and a little bit in the input core.  None of these things 
+should try to access a kobject after it has been del()ed.  After all, it's 
+no longer present in the filesystem so it doesn't _have_ a path.
 
-If you have the right capabilities you can create a mount owned by
-another user.
+So I don't see any immediate problem.  A quick boot with my patch applied,
+during which I installed and removed various modules and hot-pluggable
+devices, didn't cause anything strange to happen.
 
-For a new mount if you don't have the appropriate capabilities nodev
-and nosuid will be forced.
+> When adding a new device, we always grab a reference to the parent
+> device so it can not go away before we do.
+> 
+> Look at the last kobject_put(parent); in kobject_cleanup() which ensures
+> this.
 
-Initial super block creation is a lot more delicate so we need the
-FS_SAFE flag, to know that the kernel is prepared to deal with the
-crazy things that a hostile user space is prepared to do.
+Yes, I know.  The question is: What (if anything) is wrong with the parent
+going away first?  So long as the parent remains present while the child
+is _registered_, who will care if the parent is deallocated after the
+child is unregistered but before it is released?
 
-Eric
+And if there is any code which does care, don't you think we should be
+able to change it so that it doesn't?
+
+
+> Ick, no, I think this used to be the way things worked, but bad things
+> would end up happening, so we fixed it up to be the way things are
+> today.  Read the comments for the changelog for this file for details.
+> 
+> Specifically, look at commit 10921a8f1305b8ec97794941db78b825db5839bc
+> in the history.git repo which is almost exactly what you are proposing
+> to be reverted...
+
+Yes, it is.  I had a little trouble finding it; the search facility in the
+gitweb system at git.kernel.org doesn't seem to work right.  Who should
+I complain to about that?
+
+Anyway, the patch itself is available at
+
+	http://marc.info/?l=linux-kernel&m=107116644617624&w=2
+
+Here's what the changelog comment says:
+
+	It fixes a kobject bug where the parent could be deleted before the
+	child object, causing all sorts of badness later when we clean up the
+	child object.  It's been acked by Pat.
+
+Not terribly explicit.  As far as I can tell, cleaning up the child object
+doesn't do much except to kfree() a few items and call the ktype's
+release() routine.  For a struct device, the release() routine merely
+calls dev->release(), or dev->type->release(), or
+dev->class->dev_release() as the case may be.  None of these should try to
+access the device's parent unless they made special arrangements to
+acquire a reference to it beforehand.  Which is what we're trying to
+eliminate -- that's what immediate detach means.
+
+The change was made back in December 2003, for 2.6.0-test11.  Since then
+the driver-model core and its users have evolved an awful lot.  Perhaps
+reverting it now won't hurt anything.
+
+Alan Stern
+
