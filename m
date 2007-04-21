@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbXDUQNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbXDUQO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbXDUQNr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 12:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXDUQNr
+	id S1752540AbXDUQO6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 12:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbXDUQO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 12:13:47 -0400
-Received: from 1wt.eu ([62.212.114.60]:2104 "EHLO 1wt.eu"
+	Sat, 21 Apr 2007 12:14:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45068 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbXDUQNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 12:13:47 -0400
-Date: Sat, 21 Apr 2007 18:12:08 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Con Kolivas <kernel@kolivas.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070421161208.GB7840@1wt.eu>
-References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070421160008.GA28783@elte.hu>
-User-Agent: Mutt/1.5.11
+	id S1752540AbXDUQO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 12:14:57 -0400
+Message-ID: <462A3871.3060104@suse.com>
+Date: Sat, 21 Apr 2007 12:14:41 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, reiserfs-list@namesys.com,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Chris Mason <chris.mason@oracle.com>,
+       Nikita Danilov <nikita@clusterfs.com>
+Subject: Re: [RFC][PATCH] reiserfs vs BKL
+References: <1177170364.7316.17.camel@twins>
+In-Reply-To: <1177170364.7316.17.camel@twins>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 21, 2007 at 06:00:08PM +0200, Ingo Molnar wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Peter Zijlstra wrote:
+> Replace all the lock_kernel() instances with reiserfs_write_lock(sb),
+> and make that use an actual per super-block mutex instead of
+> lock_kernel().
 > 
-> * Con Kolivas <kernel@kolivas.org> wrote:
+> This should make reiserfs safe from PREEMPT_BKL=n, since it seems to
+> rely on being able to schedule. Also, it removes the dependency on the
+> BKL, and thereby is not prone to cause prio inversion with remaining BKL
+> users (notably tty).
 > 
-> > >   Feels even better, mouse movements are very smooth even under high 
-> > >   load. I noticed that X gets reniced to -19 with this scheduler. 
-> > >   I've not looked at the code yet but this looked suspicious to me. 
-> > >   I've reniced it to 0 and it did not change any behaviour. Still 
-> > >   very good.
-> > 
-> > Looks like this code does it:
-> > 
-> > +int sysctl_sched_privileged_nice_level __read_mostly = -19;
-> 
-> correct. Note that Willy reniced X back to 0 so it had no relevance on 
-> his test.
+> Compile tested only, since I didn't dare boot it.
 
-Anyway, my X was mostly unused (below 1% CPU), which was my intent when
-replacing glxgears by ocbench. We have not settled yet about how to handle
-the special case for X. Let's at least try to get the best schedulers without
-this problem, then see how to make them behave the best taking X into account.
+NACK.
 
-> Also note that i pointed this change out in the -v4 CFS 
-> announcement:
-> 
-> || Changes since -v3:
-> ||
-> ||  - usability fix: automatic renicing of kernel threads such as 
-> ||    keventd, OOM tasks and tasks doing privileged hardware access
-> ||    (such as Xorg).
-> 
-> i've attached it below in a standalone form, feel free to put it into 
-> SD! :)
+Believe me, I would *love* to nuke the BKL from reiserfs, but a search
+and replace of this nature is just wrong. reiserfs_write_lock() using
+the BKL isn't an accident - it depends on its nesting properties. If you
+did try to boot this kernel, you'd deadlock pretty quickly.
 
-Con, I think it could be a good idea since you recommend to renice X with
-SD. Most of the problem users are facing with renicing X is that they need
-to change their configs or scripts. If the kernel can reliably detect X and
-handle it differently, why not do it ?
+This one has been on my TODO list for a long time. Interestingly, I've
+been doing reiserfs xattr development recently using 2.6.21-rc7-git2,
+and I'm not seeing any of these messages.
 
-It makes me think that this hint might be used to set some flags in the task
-struct in order to apply different processing than just renicing. It is indeed
-possible that nice is not the best solution and that something else would be
-even better (eg: longer timeslices, but not changing priority in the queues).
-Just an idea anyway.
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=y
+# CONFIG_PREEMPT is not set
+# CONFIG_PREEMPT_BKL is not set
 
-OK, back to work ;-)
-Willy
+- -Jeff
 
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFGKjhxLPWxlyuTD7IRAgCkAJ95MUehySJUUjBzl1ldr7BxESmQQACgjnkw
+73KpJaH2G725AMJeWD02Arg=
+=PaIV
+-----END PGP SIGNATURE-----
