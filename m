@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbXDUM7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751024AbXDUNFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbXDUM7k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 08:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbXDUM7k
+	id S1751024AbXDUNFR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbXDUNFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 08:59:40 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:39020 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753349AbXDUM7i (ORCPT
+	Sat, 21 Apr 2007 09:05:17 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:55265 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751024AbXDUNFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 08:59:38 -0400
-Message-ID: <462A0AA9.8000304@linux.vnet.ibm.com>
-Date: Sat, 21 Apr 2007 18:29:21 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Sat, 21 Apr 2007 09:05:15 -0400
+X-Sasl-enc: GBePpw3CoWEvbklUVsaTrs0hU0cUgDQBfNpvd+vcIGZR 1177160715
+Message-ID: <462A0CA7.2090908@imap.cc>
+Date: Sat, 21 Apr 2007 15:07:51 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Balbir Singh <balbir@in.ibm.com>, nagar@watson.ibm.com, jlan@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] Taskstats fix the structure members alignment issue
-References: <20070420164341.14718.5013.sendpatchset@balbir-laptop> <20070420121543.6a1a8426.akpm@linux-foundation.org>
-In-Reply-To: <20070420121543.6a1a8426.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Linux kernel mailing list <linux-kernel@vger.kernel.org>, kkeil@suse.de,
+       i4ldeveloper@listserv.isdn4linux.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
+References: <Pine.LNX.4.64.0701150634270.1953@CPE00045a9c397f-CM001225dbafb6> <45ABB53C.5030100@imap.cc> <Pine.LNX.4.64.0701151216310.7260@CPE00045a9c397f-CM001225dbafb6> <20070115172912.GA3323@pingi.kke.suse.de>
+In-Reply-To: <20070115172912.GA3323@pingi.kke.suse.de>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig9BFAF6EBC1D1D5616AF5507E"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 20 Apr 2007 22:13:41 +0530
-> Balbir Singh <balbir@in.ibm.com> wrote:
-> 
->> We broke the the alignment of members of taskstats to the 8 byte boundary
->> with the CSA patches. In the current kernel, the taskstats structure is
->> not suitable for use by 32 bit applications in a 64 bit kernel.
->>
-> 
-> ugh, that was bad of us.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig9BFAF6EBC1D1D5616AF5507E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes :-)
+From: Tilman Schmidt <tilman@imap.cc>
 
-> 
->> ...
->> The patch adds an __attribute__((aligned(8))) to the
->> taskstats structure members so that 32 bit applications using taskstats
->> can work with a 64 bit kernel.
-> 
-> But there might be 32-bit applications out there which are using the
-> present wrong structure?
-> 
-> otoh, I assume that those applications would be using taskstats.h and would
-> hence encounter this bug and we would have heard about it, is that correct?
-> 
+The "obsolete" label on the ISDN_I4L Kconfig option is not, and
+has never been, accurate. It has already prompted repeated attempts
+to remove actively used functionality from the kernel without a
+working replacement. This patch removes the incorrect label and
+corrects the accompanying help text.
 
-Yes, correct.
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 
-> otoh^2, 32-bit applications running under 32-bit kernels will presently be
-> functioning correctly, and your change will require that those applications
-> be recompiled, I think?
-> 
+---
 
-Yes, correct. They would be broken with this fix. We could  bump up the
-version TASKSTATS_VERSION to 4. Would you like a new patch the version
-bumped up?
+--- a/drivers/isdn/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/isdn/Kconfig	2007-04-21 14:48:54.000000000 +0200
+@@ -25,9 +25,9 @@ menu "Old ISDN4Linux"
+ 	depends on NET && ISDN
 
-> 
-> This patch looks like 2.6.20 and 2.6.21 material, but very carefully...
+ config ISDN_I4L
+-	tristate "Old ISDN4Linux (obsolete)"
++	tristate "Old ISDN4Linux subsystem"
+ 	---help---
+-	  This driver allows you to use an ISDN-card for networking
++	  This driver allows you to use an ISDN adapter for networking
+ 	  connections and as dialin/out device.  The isdn-tty's have a built
+ 	  in AT-compatible modem emulator.  Network devices support autodial,
+ 	  channel-bundling, callback and caller-authentication without having
+@@ -38,8 +38,9 @@ config ISDN_I4L
 
-Yes, 2.6.20 and 2.6.21 sound correct.
+ 	  ISDN support in the linux kernel is moving towards a new API,
+ 	  called CAPI (Common ISDN Application Programming Interface).
+-	  Therefore the old ISDN4Linux layer is becoming obsolete. It is
+-	  still usable, though, if you select this option.
++	  Therefore the old ISDN4Linux layer will eventually become obsolete.
++	  It is still available, though, for use with adapters that are not
++	  supported by the new CAPI subsystem yet.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+ if ISDN_I4L
+ source "drivers/isdn/i4l/Kconfig"
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+In theory, there is no difference between theory and practice.
+In practice, there is.
+
+
+--------------enig9BFAF6EBC1D1D5616AF5507E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGKgynMdB4Whm86/kRAmnUAJ9bNVo55dViBt4VxNt4S30/GLEB0ACfS0WG
+y73kYX9nlPBgKfWMvtkH9os=
+=YZsk
+-----END PGP SIGNATURE-----
+
+--------------enig9BFAF6EBC1D1D5616AF5507E--
