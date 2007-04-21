@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751580AbXDUIgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXDUIhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751580AbXDUIgV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 04:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbXDUIgV
+	id S1030565AbXDUIhq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 04:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030519AbXDUIhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 04:36:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57255 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbXDUIgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 04:36:20 -0400
-Date: Sat, 21 Apr 2007 10:36:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: caglar@pardus.org.tr, Christoph Pfister <christophpfister@gmail.com>,
-       linux-kernel@vger.kernel.org, Michael Lothian <mike@fireburn.co.uk>,
-       Christophe Thommeret <hftom@free.fr>, Jurgen Kofler <kaffeine@gmx.net>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: Kaffeine problem with CFS
-Message-ID: <20070421083608.GC29800@elte.hu>
-References: <19a3b7a80704150955x4e1d809eh929b0f931f842a06@mail.gmail.com> <200704181625.51389.caglar@pardus.org.tr> <20070418154811.GA16842@elte.hu> <200704190008.19262.caglar@pardus.org.tr> <4629152C.7020801@tmr.com>
+	Sat, 21 Apr 2007 04:37:46 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:52448 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030456AbXDUIhp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 04:37:45 -0400
+Date: Sat, 21 Apr 2007 01:36:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [patch 2/8] allow unprivileged umount
+Message-Id: <20070421013622.1f2a7d00.akpm@linux-foundation.org>
+In-Reply-To: <E1HfAf8-0002Ky-00@dorka.pomaz.szeredi.hu>
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102626.825263599@szeredi.hu>
+	<20070421005506.6a315bec.akpm@linux-foundation.org>
+	<E1HfAf8-0002Ky-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4629152C.7020801@tmr.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 21 Apr 2007 10:09:42 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-* Bill Davidsen <davidsen@tmr.com> wrote:
-
-> > Instead of that one, i tried CFSv3 and i cannot reproduce the hang 
-> > anymore, Thanks!...
->
-> And that explains why CFS-v3 on 21-rc7-git3 wouldn't show me the hang. 
-> As a matter of fact, nothing I did showed any bad behavior! Note that 
-> I was doing actual badly behaved things which do sometimes glitch the 
-> standard scheduler, not running benchmarks.
+> > > +static bool permit_umount(struct vfsmount *mnt, int flags)
+> > > +{
+> > >
+> > > ...
+> > >
+> > > +	return mnt->mnt_uid == current->uid;
+> > > +}
+> > 
+> > Yes, this seems very wrong.  I'd have thought that comparing user_struct*'s
+> > would get us a heck of a lot closer to being able to support aliasing of
+> > UIDs between different namespaces.
+> > 
 > 
-> This scheduler is boring, everything works. [...]
+> OK, I'll fix this up.
+> 
+> Actually an earlier version of this patch did use user_struct's but
+> I'd changed it to uids, because it's simpler.
 
-hehe :) Having a 'boring' scheduler in the end is the main goal :)
+OK..
 
-> [...] I am going to try some tests on a uniprocessor, though, I have 
-> been running everything on either SMP or HT CPUs. But so far it looks 
-> fine.
+>  I didn't think about
+> this being contrary to the id namespaces thing.
 
-yeah, please do - while i do test UP frequently, most of my CFS testing 
-was on SMP.
+Well I was madly assuming that when serarate UID namespaces are in use, UID
+42 in container A will have a different user_struct from UID 42 in
+container B.  I'd suggest that we provoke an opinion from Eric & co before
+you do work on this.
 
-	Ingo
