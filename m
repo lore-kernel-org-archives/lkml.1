@@ -1,46 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031030AbXDUN6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031077AbXDUN7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031030AbXDUN6c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 09:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031076AbXDUN6c
+	id S1031077AbXDUN7I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 09:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031123AbXDUN7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 09:58:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:10672 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031030AbXDUN6b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 09:58:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=DMW7kEP+V9aIdw8MsjrUU5dXHLZBw7kpM/I9vM1xEhBCuwrUjCPQ1wdp3B30Klfl8fTDJFKpccyU9gKs4h0PgrSpLoKlTRXU+ZGfyVLIzsOLYcnBsQNlJPetkErISmv+R591XWbFEiElDeVfwlPCZELUlH2E6li8opsOMbgq2xk=
-Message-ID: <8355959a0704210658j3b54a8cfl8a8a73661cd50c9d@mail.gmail.com>
-Date: Sat, 21 Apr 2007 19:28:30 +0530
-From: "Sunil Naidu" <akula2.shark@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.20.7 - Hard Disk rumbling?
-Cc: "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       stable@kernel.org
+	Sat, 21 Apr 2007 09:59:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44127 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031077AbXDUN6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 09:58:49 -0400
+Date: Sat, 21 Apr 2007 09:59:56 -0400
+From: Josef Bacik <jwhiter@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Josef Bacik <jwhiter@redhat.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
+Message-ID: <20070421135956.GA22873@korben.rdu.redhat.com>
+References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com> <20070419150655.GC1481@korben.rdu.redhat.com> <20070421002345.673d9988.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070421002345.673d9988.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sat, Apr 21, 2007 at 12:23:45AM -0700, Andrew Morton wrote:
+> On Thu, 19 Apr 2007 11:06:56 -0400 Josef Bacik <jwhiter@redhat.com> wrote:
+> 
+> > On Thu, Apr 19, 2007 at 10:02:36AM -0400, James Bottomley wrote:
+> > > On Thu, 2007-04-19 at 09:25 -0400, Josef Bacik wrote:
+> > > > Looking through everything I came to the conclusion that we don't really need
+> > > > the scsi_sysfs_add_devices in scsi_finish_async_scan, which gets run everytime
+> > > > we do a do_scan_async.  In doing the scanning, if we come upon anything we will
+> > > > already be registering the device with sysfs so the scsi_sysfs_add_devices step
+> > > > is kind of useless.
+> > > 
+> > > Unfortunately, it isn't.  The registration step while scanning is at the
+> > > end of scsi_add_lun():
+> > > 
+> > > 
+> > > 	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
+> > > 		return SCSI_SCAN_NO_RESPONSE;
+> > > 
+> > > 	return SCSI_SCAN_LUN_PRESENT;
+> > > 
+> > > The !async should mean that the addition *only* occurs for the non async
+> > > scan case ... if you remove the post async scan add, we'll lose devices.
+> > > 
+> > > >   I tested this and it worked fine on my UP box (where the
+> > > > problem was happening) and my SMP box (where the problem wasn't happening).  Now
+> > > > I'm not entirely sure if this is correct, but I'm attaching the patch that I
+> > > > used to fix it for me, please point out if I've done something wrong or if there
+> > > > is a different way this needs to be fixed.  Thank you,
+> > > 
+> > > Could you add some debugging first to see if we're actually adding the
+> > > device twice (and also, if we are, what the value of the async is).
+> > >
+> > 
+> > Sorry I should have put that in the original post, I added debugging to
+> > kobject_add to check to see if we were adding something twice, thats how I
+> > figured out who was doing it
+> > 
+> > kobject rport-3:0-0: registering. parent: host3, set: devices
+> > kobject rport-3:0-0: registering. parent: fc_remote_ports, set: class_obj
+> > kobject target3:0:0: registering. parent: rport-3:0-0, set: devices
+> > kobject rport-3:0-1: registering. parent: host3, set: devices
+> > kobject rport-3:0-1: registering. parent: fc_remote_ports, set: class_obj
+> > kobject target3:0:0: registering. parent: fc_transport, set: class_obj
+> > kobject rport-3:0-2: registering. parent: host3, set: devices
+> > kobject rport-3:0-2: registering. parent: fc_remote_ports, set: class_obj
+> > kobject rport-3:0-3: registering. parent: host3, set: devices
+> > kobject rport-3:0-3: registering. parent: fc_remote_ports, set: class_obj
+> > kobject rport-3:0-4: registering. parent: host3, set: devices
+> > kobject rport-3:0-4: registering. parent: fc_remote_ports, set: class_obj
+> > kobject rport-3:0-5: registering. parent: host3, set: devices
+> > kobject rport-3:0-5: registering. parent: fc_remote_ports, set: class_obj
+> > kobject rport-3:0-6: registering. parent: host3, set: devices
+> > kobject rport-3:0-6: registering. parent: fc_remote_ports, set: class_obj
+> > kobject rport-3:0-7: registering. parent: host3, set: devices
+> > kobject rport-3:0-7: registering. parent: fc_remote_ports, set: class_obj
+> > >> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
+> > kobject 3:0:0:0: registering. parent: scsi_device, set: class_obj
+> > scsi 3:0:0:0: Direct-Access     IBM 1742-900         0520 PQ: 0 ANSI: 3
+> > >> kobject 3:0:0:0: registering. parent: target3:0:0, set: devices
+> > kobject_add failed for 3:0:0:0 with -EEXIST, don't try to register things with 
+> > the same name in the same directory.
+> > 
+> > Async in the first case is set and in the second case it isn't set.  Thank you,
+> > 
+> 
+> So.... do we now know what is causing this failure?
 
-I am facing a strange problems with an old 1.2 GHz P-III machine with
-a 10 GB disk (used as a dedicated web server, later retired out of
-service!).
+Yes, the qla init stuff kicks off the async scanning, and then continues to
+initialize, and registers itself with the scsi fc stuff, which makes a workqueue
+to register the fc port.  The problem with this is the async scanning and the fc
+port registration stuff runs back to back on my UP computer, so the scsi async
+stuff does the sysfs registration and then right after that the scsi fc stuff
+goes through and does its own scsi scan without async set, which does the sysfs
+registration as well, and then kobject complains about adding the same thing
+twice.  Taking out the async check in scsi_add_lun would probably work, but this
+really isn't my area of expertise and I have a feeling thats kind of defeating
+the purpose of the async scsi scanning.
 
-Out of interest to implement some wireless solution (experiment), I
-did compile 2.6.20.7 for my requirement. Strangely, I did observe:-
-
-hda: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
-hda: drive_cmd: error=0x04 { DriveStatusError }
-ide: failed opcode was: 0xb0
-
-What might be the problem?
-
-~Akula2
+Josef
