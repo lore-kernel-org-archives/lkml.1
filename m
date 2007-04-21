@@ -1,161 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030314AbXDUIZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030316AbXDUIZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030314AbXDUIZG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 04:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030404AbXDUIZG
+	id S1030316AbXDUIZe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 04:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030339AbXDUIZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 04:25:06 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:33855 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030314AbXDUIYz (ORCPT
+	Sat, 21 Apr 2007 04:25:09 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:39481 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030316AbXDUIY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 04:24:55 -0400
-Date: Sat, 21 Apr 2007 01:24:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 2/3] lumpy: increase pressure at the end of the inactive
- list
-Message-Id: <20070421012409.86e06f00.akpm@linux-foundation.org>
-In-Reply-To: <6476c564e476b1038584ea2ed39f2b7e@pinky>
-References: <exportbomb.1177081388@pinky>
-	<6476c564e476b1038584ea2ed39f2b7e@pinky>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Apr 2007 04:24:56 -0400
+To: akpm@linux-foundation.org
+CC: ericvh@gmail.com, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, ebiederm@xmission.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+In-reply-to: <E1HfAig-0002Ll-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Sat, 21 Apr 2007 10:13:22 +0200)
+Subject: Re: [patch 7/8] allow unprivileged mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102652.075606533@szeredi.hu> <20070421005513.e230aa88.akpm@linux-foundation.org> <E1HfAig-0002Ll-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1HfAsR-0002Nw-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 21 Apr 2007 10:23:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 16:04:04 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
-
+> > 
+> > > Define a new fs flag FS_SAFE, which denotes, that unprivileged
+> > > mounting of this filesystem may not constitute a security problem.
+> > > 
+> > > Since most filesystems haven't been designed with unprivileged
+> > > mounting in mind, a thorough audit is needed before setting this flag.
+> > 
+> > Practically speaking, is there any realistic likelihood that any filesystem
+> > apart from FUSE will ever use this?
 > 
-> Having selected an area at the end of the inactive list, reclaim is
-> attempted for all LRU pages within that contiguous area.  Currently,
-> any pages in this area found to still be active or referenced are
-> rotated back to the active list as normal and the rest reclaimed.
-> At low orders there is a reasonable likelyhood of finding contigious
-> inactive areas for reclaim.  However when reclaiming at higher order
-> there is a very low chance all pages in the area being inactive,
-> unreferenced and therefore reclaimable.
-> 
-> This patch modifies behaviour when reclaiming at higher order
-> (order >= 4).  All LRU pages within the target area are reclaimed,
-> including both active and recently referenced pages.
+> V9FS people did express an interest in this.  Yeah, I should've CC-ed
+> them, but forgot.  Sorry.
 
-um, OK, I guess.
+And CIFS maybe.  They also have an unprivileged mounting suid hack.
+But I'm not very optimistic about CIFS, seeing some of the code,
+that's in there.
 
-Should we use smaller values of 4 if PAGE_SIZE > 4k?  I mean, users of the
-page allocator usually request a number of bytes, not a number of pages. 
-Order 3 allocations on 64k pagesize will be far less common than on 4k
-pagesize, no?
-
-And is there a relationship between this magic 4 and the magic 3 in
-__alloc_pages()?  (Which has the same PAGE_SIZE problem, btw)
-
-
-
-I must say that this is a pretty grotty-looking patch.
-
-
-> [mel@csn.ul.ie: additionally apply pressure to referenced paged]
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> Acked-by: Mel Gorman <mel@csn.ul.ie>
-> ---
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 466435f..e5e77fb 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -472,7 +472,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
->  
->  		referenced = page_referenced(page, 1);
->  		/* In active use or really unfreeable?  Activate it. */
-> -		if (referenced && page_mapping_inuse(page))
-> +		if (sc->order <= 3 && referenced && page_mapping_inuse(page))
-
-The oft-occurring magic "3" needs a #define.
-
-> @@ -599,6 +599,7 @@ keep:
->   *
->   * returns 0 on success, -ve errno on failure.
->   */
-> +#define ISOLATE_BOTH -1		/* Isolate both active and inactive pages. */
->  static int __isolate_lru_page(struct page *page, int active)
->  {
->  	int ret = -EINVAL;
-> @@ -608,7 +609,8 @@ static int __isolate_lru_page(struct page *page, int active)
->  	 * dealing with comparible boolean values.  Take the logical not
->  	 * of each.
->  	 */
-> -	if (PageLRU(page) && (!PageActive(page) == !active)) {
-> +	if (PageLRU(page) && (active == ISOLATE_BOTH ||
-> +					(!PageActive(page) == !active))) {
-
-So we have a nice enumerated value but we only half-use it: sometimes we
-implicitly assume that ISOLATE_BOTH has a non-zero value, which rather
-takes away from the whole point of creating ISOLATE_BOTH in the first
-place.
-
-Cleaner to do:
-
-#define ISOLATE_INACTIVE	0
-#define ISOLATE_ACTIVE		1
-#define ISOLATE_BOTH		2
-
-	if (!PageLRU(page))
-		return;			/* save a tabstop! */
-
-	if (active != ISOLATE_BOTH) {
-		if (PageActive(page) && active != ISOLATE_ACTIVE)
-			return;
-		if (!PageActive(page) && active != ISOLATE_INACTIVE)
-			return;
-	}
-
-	<isolate the page>
-
-or some such.  At present it is all very confused.
-
-
-And the comment describing the `active' arg to __isolate_lru_page() needs
-to be updated.
-
-And the name `active' is now clearly inappropriate.  It needs to be renamed
-`mode' or something.
-
-
->  		ret = -EBUSY;
->  		if (likely(get_page_unless_zero(page))) {
->  			/*
-> @@ -729,6 +731,26 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
->  }
->  
->  /*
-> + * deactivate_pages() is a helper for shrink_active_list(), it deactivates
-> + * all active pages on the passed list.
-> + */
-> +static unsigned long deactivate_pages(struct list_head *page_list)
-
-The phrase "deactivate a page" normally means "move it from the active list
-to the inactive list".  But that isn't what this function does.  Something
-like clear_active_flags(), maybe?
-
-> +{
-> +	int nr_active = 0;
-> +	struct list_head *entry;
-> +
-> +	list_for_each(entry, page_list) {
-> +		struct page *page = list_entry(entry, struct page, lru);
-
-list_for_each_entry()?
-
-> +		if (PageActive(page)) {
-> +			ClearPageActive(page);
-> +			nr_active++;
-> +		}
-> +	}
-> +
-> +	return nr_active;
-> +}
-
+Miklos
