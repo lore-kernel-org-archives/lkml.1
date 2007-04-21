@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXDUGsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXDUHIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932943AbXDUGsd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 02:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXDUGsd
+	id S932903AbXDUHIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 03:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932997AbXDUHIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 02:48:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54491 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932943AbXDUGsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 02:48:31 -0400
-Date: Sat, 21 Apr 2007 02:48:16 -0400
-From: Dave Jones <davej@redhat.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [RFC PATCH 1/3] x86: use defined names for all CPU feature flags
-Message-ID: <20070421064816.GA4293@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Andi Kleen <ak@suse.de>
-References: <4629438C.4070209@redhat.com> <46294444.1050608@redhat.com>
+	Sat, 21 Apr 2007 03:08:25 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46704 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932903AbXDUHIY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 03:08:24 -0400
+Date: Sat, 21 Apr 2007 00:08:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dma_declare_coherent_memory wrong allocation
+Message-Id: <20070421000817.124e917b.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.60.0704132000030.5919@poirot.grange>
+References: <Pine.LNX.4.60.0704132000030.5919@poirot.grange>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46294444.1050608@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 06:52:52PM -0400, Chuck Ebbert wrote:
+On Fri, 13 Apr 2007 20:08:28 +0200 (CEST) Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
- > --- 2.6.21-rc7-d390.orig/arch/x86_64/kernel/setup.c
- > +++ 2.6.21-rc7-d390/arch/x86_64/kernel/setup.c
- > @@ -576,7 +576,7 @@ static void __cpuinit init_amd(struct cp
- >  
- >  	/* Bit 31 in normal CPUID used for nonstandard 3DNow ID;
- >  	   3DNow is IDd by bit 31 in extended CPUID (1*32+31) anyway */
- > -	clear_bit(0*32+31, &c->x86_capability);
- > +	clear_bit(X86_FEATURE_PBE, &c->x86_capability);
+> Hi
+> 
+> Either I've finally gone blind on this Friday 13th or... Looks like this 
+> almost 3 year old function has a bug. Patch below compile-tested... in a 
+> way.
+> 
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
+> 
+> dma_declare_coherent_memory() allocates a bitmap 1 bit per page, it 
+> calculates the bitmap size based on size of long, but allocates bytes...
+> 
+> Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+> 
+> diff --git a/arch/i386/kernel/pci-dma.c b/arch/i386/kernel/pci-dma.c
+> index 3ebcea0..3d55226 100644
+> --- a/arch/i386/kernel/pci-dma.c
+> +++ b/arch/i386/kernel/pci-dma.c
+> @@ -77,7 +77,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
+>  {
+>  	void __iomem *mem_base = NULL;
+>  	int pages = size >> PAGE_SHIFT;
+> -	int bitmap_size = (pages + 31)/32;
+> +	int bitmap_size = DIV_ROUND_UP(pages, 8);
+>  
+>  	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
+>  		goto out;
 
-The comment suggests this should be X86_FEATURE_3DNOW
-Same for the other instances.
+Looks that way to me, too.
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+It also hopes like hell that `size' was a multiple of PAGE_SIZE.
