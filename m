@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030581AbXDUKbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXDUKgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030581AbXDUKbm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 06:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030599AbXDUKbm
+	id S1030599AbXDUKgX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 06:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932500AbXDUKgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 06:31:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42280 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030581AbXDUKbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 06:31:41 -0400
-Date: Sat, 21 Apr 2007 12:31:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely Fair Scheduler [CFS]
-Message-ID: <20070421103129.GA12621@elte.hu>
-References: <20070414063254.GB14875@elte.hu> <20070414064334.GA19463@elte.hu> <20070414080833.GL943@1wt.eu> <20070414083625.GM943@1wt.eu> <20070414105338.GB19454@elte.hu> <20070414130101.GA2538@1wt.eu> <20070419090144.GA17100@elte.hu> <20070419125438.GA27584@1wt.eu> <20070419151803.GB30959@elte.hu> <20070419184534.GA29096@1wt.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 21 Apr 2007 06:36:23 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58342 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932184AbXDUKgW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 06:36:22 -0400
+Date: Sat, 21 Apr 2007 12:36:32 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Greg KH <gregkh@suse.de>
+Cc: Marcos Pinto <markybob@gmail.com>, linux-kernel@vger.kernel.org,
+       Jan Beulich <jbeulich@novell.com>, Alan Cox <alan@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: 2.6.20.7 locking up hard on boot
+Message-ID: <20070421103632.GC4016@stusta.de>
+References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com> <20070421013454.GB4016@stusta.de> <62eb359a0704202130p39cf24efu89dccc8437c30d25@mail.gmail.com> <20070421053420.GA10974@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070419184534.GA29096@1wt.eu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070421053420.GA10974@suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 20, 2007 at 10:34:20PM -0700, Greg KH wrote:
+> On Fri, Apr 20, 2007 at 11:30:59PM -0500, Marcos Pinto wrote:
+> >  Yes, I just tried 2.6.20.3 with ACPI enabled and it booted perfectly.
+> >  I'm hoping this means you know what's wrong? :-)
+> 
+> Can you do a 'git bisect' on the versions between 2.6.20.3 and 2.6.20.7
+> to try to find the problem patch?
 
-* Willy Tarreau <w@1wt.eu> wrote:
+Considering where it failed and that 2.6.20.3 worked, I would be 
+extremely surprised if this wasn't one more report of 
+adjust-legacy-ide-resource-setting.patch breaking booting (and we 
+already have confirmed reports for this)...
 
-> I hacked it a bit to make it accept two parameters :
->   -R <run_time_in_microsecond> : time spent burning CPU cycles at each round
->   -S <sleep_time_in_microsecond> : time spent getting a rest
-> 
-> It now advances what it thinks is a second at each iteration, so that 
-> it makes it easy to compare its progress with other instances (there 
-> are seconds, minutes and hours, so it's easy to visually count up to 
-> around 43200).
-> 
-> The modified code is here :
-> 
->   http://linux.1wt.eu/sched/orbitclock-0.2bench.tgz
-> 
-> What is interesting to note is that it's easy to make X work a lot 
-> (99%) by using 0 as the sleeping time, and it's easy to make the 
-> process work a lot by using large values for the running time 
-> associated with very low values (or 0) for the sleep time.
-> 
-> Ah, and it supports -geometry ;-)
-> 
-> It could become a useful scheduler benchmark !
+But AFAIK we still don't understand how this patch managed to break 
+things.
 
-i just tried ocbench-0.3, and it is indeed very nice!
+> thanks,
+> 
+> greg k-h
 
-Would it make sense perhaps to (optionally?) also log some sort of 
-periodic text feedback to stdout, about the quality of scheduling? Maybe 
-even a 'run this many seconds' option plus a summary text output at the 
-end (which would output measured runtime, observed longest/smallest 
-latency and standard deviation of latencies maybe)? That would make it 
-directly usable both as a 'consistency of X app scheduling' visual test 
-and as an easily shareable benchmark with an objective numeric result as 
-well.
+cu
+Adrian
 
-	Ingo
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
