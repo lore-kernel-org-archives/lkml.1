@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031255AbXDUOnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031273AbXDUOxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031255AbXDUOnz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 10:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031257AbXDUOnz
+	id S1031273AbXDUOxK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 10:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031271AbXDUOxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 10:43:55 -0400
-Received: from iucha.net ([209.98.146.184]:49793 "EHLO mail.iucha.net"
+	Sat, 21 Apr 2007 10:53:10 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:50178 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031255AbXDUOny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 10:43:54 -0400
-Date: Sat, 21 Apr 2007 09:43:53 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Chuck Lever <chuck.lever@oracle.com>, linux-kernel@vger.kernel.org,
-       nfs@lists.sourceforge.net
-Subject: Re: [PATCH 0/5] 2.6.21-rc7 NFS writes: fix a series of issues
-Message-ID: <20070421144352.GG24044@iucha.net>
-References: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
+	id S1031267AbXDUOxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 10:53:08 -0400
+Date: Sat, 21 Apr 2007 16:33:23 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+cc: Chuck Ebbert <cebbert@redhat.com>, Stephen.Clark@seclark.us,
+       Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, 7eggert@gmx.de,
+       emisca <emisca.ml@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Subject: Re: Loud "pop" coming from hard drive on reboot
+In-Reply-To: <b637ec0b0704201257l24d9e9c8ha31221c9c9d8da3e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0704211631540.9989@yvahk01.tjqt.qr>
+References: <88SeR-5Sf-15@gated-at.bofh.it>  <20070418140346.636879a1@the-village.bc.nu>
+ <46262C0E.9000103@rtr.ca>  <20070418160627.7ab77c30@the-village.bc.nu>
+ <46263650.3080705@rtr.ca>  <46263859.2060309@gmail.com> <46265089.4000409@rtr.ca>
+  <46265307.7060405@rtr.ca> <4626596E.4040304@seclark.us>  <4627ABE9.8090906@redhat.com>
+ <b637ec0b0704201257l24d9e9c8ha31221c9c9d8da3e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mMdCh5/a0q2ATNCM"
-Content-Disposition: inline
-In-Reply-To: <20070420200358.7897.75870.stgit@heimdal.trondhjem.org>
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---mMdCh5/a0q2ATNCM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>On Apr 20 2007 21:57, Fabio Comolli wrote:
+>
+> hda: TOSHIBA MK8025GAS, ATA DISK drive
 
-On Fri, Apr 20, 2007 at 04:03:58PM -0400, Trond Myklebust wrote:
-> I've split the issues introduced by the 2.6.21-rcX write code up into 4
-> subproblems.
-[snip]
-> My thanks to the various patient victim^Wpeople who helped with extensive
-> testing.
+MK...? These sort of disks do that stupid pop. Mine -- a MK2003GAH --
+does it even while running Linux, if the disk is _idle_.
+See http://lkml.org/lkml/2006/11/15/413 - hope it provides some pointers.
 
-I've pulled the tree this morning
-(0f851021c0f91e5073fa89f26b5ac68e23df8e11) and ran big-copy from a
-gnome session.  All is well.
-
-Thanks,
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---mMdCh5/a0q2ATNCM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGKiMoND0rFCN2b1sRAtyxAKCVphzC1CY6sGXtfBdoEwI4TqAFzQCgldMV
-RyFdyLkarOMMJAPaJ0vtl0s=
-=eUrA
------END PGP SIGNATURE-----
-
---mMdCh5/a0q2ATNCM--
+Regards,
+Jan
+-- 
