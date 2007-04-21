@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030192AbXDUIIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030258AbXDUIJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030192AbXDUIIJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 04:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030258AbXDUIII
+	id S1030258AbXDUIJr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 04:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030316AbXDUIJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 04:08:08 -0400
-Received: from omta02ps.mx.bigpond.com ([144.140.83.154]:41405 "EHLO
-	omta02ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030192AbXDUIIG (ORCPT
+	Sat, 21 Apr 2007 04:09:47 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:36192 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030258AbXDUIJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 04:08:06 -0400
-Message-ID: <4629C65C.2050309@bigpond.net.au>
-Date: Sat, 21 Apr 2007 18:07:56 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Peter Williams <pwil3058@bigpond.net.au>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420064600.GA24614@elte.hu> <46286CA0.2050409@bigpond.net.au> <4628B1DF.8000400@bigpond.net.au>
-In-Reply-To: <4628B1DF.8000400@bigpond.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta02ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Sat, 21 Apr 2007 08:08:01 +0000
+	Sat, 21 Apr 2007 04:09:46 -0400
+To: akpm@linux-foundation.org
+CC: serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+In-reply-to: <20070421005503.f3bbf1e5.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sat, 21 Apr 2007 00:55:03 -0700)
+Subject: Re: [patch 1/8] add user mounts to the kernel
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102624.975879175@szeredi.hu> <20070421005503.f3bbf1e5.akpm@linux-foundation.org>
+Message-Id: <E1HfAc0-0002KK-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 21 Apr 2007 10:06:28 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
-> Peter Williams wrote:
->> Ingo Molnar wrote:
->>> your suggestion concentrates on the following scenario: if a task 
->>> happens to schedule in an 'unlucky' way and happens to hit a busy 
->>> period while there are many idle periods. Unless i misunderstood your 
->>> suggestion, that is the main intention behind it, correct?
->>
->> You misunderstand (that's one of my other schedulers :-)).  This one's 
->> based on the premise that if everything happens as the task expects it 
->> will get the amount of CPU bandwidth (over this short period) that 
->> it's entitled to.  In reality, sometimes it will get more and 
->> sometimes less but on average it should get what it deserves. E.g. If 
->> you had two tasks with equal nice and both had demands of 90% of a CPU 
->> you'd expect them each to get about half of the CPU bandwidth.  Now 
->> suppose that one of them uses 5ms of CPU each time it got onto the CPU 
->> and the other uses 10ms.  If these two tasks just round robin with 
->> each other the likely outcome is that the one with the 10ms bursts 
->> will get twice as much CPU as the other but my proposed method should 
->> prevent and cause them to get roughly the same amount of CPU.  (I 
->> believe this was a scenario that caused problems with O(1) and 
->> required a fix at some stage?)
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > Add ownership information to mounts.
+> > 
+> > A new mount flag, MS_SETUSER is used to make a mount owned by a user.
+> > If this flag is specified, then the owner will be set to the current
+> > real user id and the mount will be marked with the MNT_USER flag.  On
+> > remount don't preserve previous owner, and treat MS_SETUSER as for a
+> > new mount.  The MS_SETUSER flag is ignored on mount move.
+> 
+> So is a modified mount(8) needed?  If so, is there some convenient way
+> in which testers can get hold of it?
 
-Another advantage of this mechanism is that, all else being equal, it 
-will tend to run tasks that use short bursts of CPU ahead of those that 
-use long bursts and this tends to reduce the overall time spent waiting 
-for CPU by all tasks on the system which is good for throughput.  I.e. 
-in general, a task that tends to use short bursts of CPU will make other 
-tasks wait less time than will one that tends to use long bursts.
+I haven't yet added this to mount(8).  I'll do that and post patches.
 
-So this means that you were right and it is good in the scenario that 
-you suggested even though that wasn't the motivation behind the design.
+There's an ultra sophisticated mount tester program I use.  It's
+slightly user unfriendly...
 
-This means that this scheduler should be good for improving latency on 
-servers that aren't fully loaded as well as providing good fairness and 
-responsiveness when the system is fully loaded.  (Fingers crossed.)
+Miklos
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+----
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mount.h>
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+int main(int argc, char *argv[])
+{
+	int res;
+	int un = (strrchr(argv[0], '/') ?: argv[0] - 1)[1] == 'u';
+	if ((un && argc != 3) || (!un && argc != 6)) {
+		fprintf(stderr, "usage: %s %s\n", argv[0],
+			un ? "dir flags" : "dev dir type flags opts");
+		return 1;
+	}
+	if (un)
+		res = umount2(argv[1], atoi(argv[2]));
+	else
+		res = mount(argv[1], argv[2], argv[3], atoi(argv[4]), argv[5]);
+	if (res == -1) {
+		perror(argv[0]);
+		return 1;
+	}
+	return 0;
+}
+
