@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbXDUVQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXDUVfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbXDUVQF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 17:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXDUVPr
+	id S1753025AbXDUVfW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 17:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbXDUVfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 17:15:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33543 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752964AbXDUVPm (ORCPT
+	Sat, 21 Apr 2007 17:35:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52035 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753007AbXDUVfV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 17:15:42 -0400
-Date: Sat, 21 Apr 2007 22:19:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [RFC PATCH 1/3] x86: use defined names for all CPU feature
- flags
-Message-ID: <20070421221900.2a6505f4@the-village.bc.nu>
-In-Reply-To: <46294444.1050608@redhat.com>
-References: <4629438C.4070209@redhat.com>
-	<46294444.1050608@redhat.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Apr 2007 17:35:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 7/8] allow unprivileged mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102652.075606533@szeredi.hu>
+	<20070421005513.e230aa88.akpm@linux-foundation.org>
+	<p73d51x4c1w.fsf@bingen.suse.de>
+Date: Sat, 21 Apr 2007 15:33:25 -0600
+In-Reply-To: <p73d51x4c1w.fsf@bingen.suse.de> (Andi Kleen's message of "22 Apr
+	2007 00:06:51 +0200")
+Message-ID: <m1d51x2z16.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> --- 2.6.21-rc7-d390.orig/arch/x86_64/kernel/setup.c
-> +++ 2.6.21-rc7-d390/arch/x86_64/kernel/setup.c
-> @@ -576,7 +576,7 @@ static void __cpuinit init_amd(struct cp
->  
->  	/* Bit 31 in normal CPUID used for nonstandard 3DNow ID;
->  	   3DNow is IDd by bit 31 in extended CPUID (1*32+31) anyway */
-> -	clear_bit(0*32+31, &c->x86_capability);
-> +	clear_bit(X86_FEATURE_PBE, &c->x86_capability);
+Andi Kleen <andi@firstfloor.org> writes:
 
-And this is more clear why ?
+> Andrew Morton <akpm@linux-foundation.org> writes:
+>
+>> On Fri, 20 Apr 2007 12:25:39 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+>> 
+>> > Define a new fs flag FS_SAFE, which denotes, that unprivileged
+>> > mounting of this filesystem may not constitute a security problem.
+>> > 
+>> > Since most filesystems haven't been designed with unprivileged
+>> > mounting in mind, a thorough audit is needed before setting this flag.
+>> 
+>> Practically speaking, is there any realistic likelihood that any filesystem
+>> apart from FUSE will ever use this?
+>
+> If it worked for mount --bind for any fs I could see uses of this.  I haven't
+> thought
+> through the security implications though, so it might not work.
 
-> +#define X86_FEATURE_PBE		(0*32+31) /* PBE */
+Binding a directory that you have access to in other was is essentially
+the same thing as a symlink.  So there are no real security implications
+there.  The only problem case I can think of is removal media that you
+want to remove but someone has made a bind mount to.  But that is
+essentially the same case as opening a file so there are no new
+real issues.  Although our diagnostic tools will likely fall behind
+for a bit.
 
-For these platforms it isn't "PBE" its 3DNow
+We handle the security implications by assigning an owner to all mounts
+and only allowing you to add additional mounts on top of a mount you
+already own.
 
-Alan
+If you have the right capabilities you can create a mount owned by
+another user.
+
+For a new mount if you don't have the appropriate capabilities nodev
+and nosuid will be forced.
+
+Initial super block creation is a lot more delicate so we need the
+FS_SAFE flag, to know that the kernel is prepared to deal with the
+crazy things that a hostile user space is prepared to do.
+
+Eric
