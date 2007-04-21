@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751006AbXDUSHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751130AbXDUSJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751006AbXDUSHw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 14:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXDUSHw
+	id S1751130AbXDUSJW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 14:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXDUSJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 14:07:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53477 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbXDUSHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 14:07:51 -0400
-Message-ID: <462A52BF.7000801@redhat.com>
-Date: Sat, 21 Apr 2007 14:06:55 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Sat, 21 Apr 2007 14:09:22 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:35253 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbXDUSJV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 14:09:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LMaC0at3S1GfpqfSDkzCFnVzHG4ze3uVN66WJd9wxg6Yds6aU8EkjCWyhK5aij5qJMeCoCgikMNpYGjpEJJ2VxLLFRQW7a8nZS/VNgPwPDn54Rmsf1lbxsppksciO5qKLeo53C2pnbq5i3JYwqeI415HaxhMJpecQVmck7ZyFYg=
+Message-ID: <a36005b50704211109s7a0f19a4k868ed05f2423c365@mail.gmail.com>
+Date: Sat, 21 Apr 2007 11:09:20 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Willy Tarreau" <w@1wt.eu>, "Con Kolivas" <kernel@kolivas.org>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>, "Mike Galbraith" <efault@gmx.de>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Peter Williams" <pwil3058@bigpond.net.au>,
+       "Thomas Gleixner" <tglx@linutronix.de>, caglar@pardus.org.tr,
+       "Gene Heskett" <gene.heskett@gmail.com>
+In-Reply-To: <20070421165347.GA26903@elte.hu>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com> <20070420135715.f6e8e091.akpm@linux-foundation.org> <462932BE.4020005@redhat.com> <Pine.LNX.4.64.0704210818580.25689@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0704210818580.25689@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu>
+	 <20070421154614.GA26169@elte.hu> <20070421161818.GC7840@1wt.eu>
+	 <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org>
+	 <20070421165347.GA26903@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Fri, 20 Apr 2007, Rik van Riel wrote:
->> Andrew Morton wrote:
->>
->>>   I do go on about that.  But we're adding page flags at about one per
->>>   year, and when we run out we're screwed - we'll need to grow the
->>>   pageframe.
->> If you want, I can take a look at folding this into the
->> ->mapping pointer.  I can guarantee you it won't be
->> pretty, though :)
-> 
-> Please don't.  If we're going to stuff another pageflag into there,
-> let it be PageSwapCache the natural partner of PageAnon, rather than
-> whatever our latest pageflag happens to be. 
+On 4/21/07, Ingo Molnar <mingo@elte.hu> wrote:
+> on a simple 'ls' command:
+>
+>   21310 clone(child_stack=0,  ...) = 21399
+>   ...
+>   21399 execve("/bin/ls",
+>   ...
+>   21310 waitpid(-1, <unfinished ...>
+>
+> the PID is -1 so we dont actually know which task we are waiting for.
 
-I looked at doing what Andrew wanted, and it did indeed not
-look like the right thing to do.  The locking on page->mapping
-is the kind of locking we want to avoid during zap_page_range
-and in the pageout code.
+That's a special case.  Most programs don't do this.  In fact, in
+multi-threaded code you better never do it since such an unqualified
+wait might catch the child another thread waits for (particularly bad
+if one thread uses system()).
 
-I like your suggestion better.
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+And even in the case of bash, we probably can change to code to use a
+qualified wait in case there are no other children.  This is known at
+any time and I expect that most of the time there are no background
+processes.  At least in shell scripts.
