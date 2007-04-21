@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXDUUuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbXDUUzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752573AbXDUUuX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 16:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbXDUUuX
+	id S1752652AbXDUUzo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 16:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXDUUzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 16:50:23 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:57355 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752573AbXDUUuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 16:50:22 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v4
-Date: Sat, 21 Apr 2007 23:47:48 +0300
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Willy Tarreau <w@1wt.eu>
-References: <20070420140457.GA14017@elte.hu> <200704201738.00684.gene.heskett@gmail.com>
-In-Reply-To: <200704201738.00684.gene.heskett@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2072692.g2M7AeYGrZ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sat, 21 Apr 2007 16:55:44 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41084 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752652AbXDUUzo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 16:55:44 -0400
+Date: Sat, 21 Apr 2007 21:58:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>, kkeil@suse.de,
+       i4ldeveloper@listserv.isdn4linux.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
+Message-ID: <20070421215844.542d3aab@the-village.bc.nu>
+In-Reply-To: <462A0CA7.2090908@imap.cc>
+References: <Pine.LNX.4.64.0701150634270.1953@CPE00045a9c397f-CM001225dbafb6>
+	<45ABB53C.5030100@imap.cc>
+	<Pine.LNX.4.64.0701151216310.7260@CPE00045a9c397f-CM001225dbafb6>
+	<20070115172912.GA3323@pingi.kke.suse.de>
+	<462A0CA7.2090908@imap.cc>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704212347.49310.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2072692.g2M7AeYGrZ
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, 21 Apr 2007 15:07:51 +0200
+Tilman Schmidt <tilman@imap.cc> wrote:
 
-21 Nis 2007 Cts tarihinde, Gene Heskett =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
-=C4=B1:=20
-> This one is another keeper IMO, or as we are fond of saying around here,
-> its good enough for the girls I go with.  If this isn't the best one so
-> far, its very very close and I'm getting pickier.  kmail is the only thing
-> that's lagging, and that's just kmail, which I believe is single threaded=
-=2E=20
+> From: Tilman Schmidt <tilman@imap.cc>
+> 
+> The "obsolete" label on the ISDN_I4L Kconfig option is not, and
+> has never been, accurate. It has already prompted repeated attempts
+> to remove actively used functionality from the kernel without a
+> working replacement. This patch removes the incorrect label and
+> corrects the accompanying help text.
+> 
+> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 
-Add +1 for kmail lags (by the way mines are freezes instead of lags, cause =
-i=20
-cannot use konsole etc. while these happens)
+Nak-by: Alan Cox <alan@redhat.com>
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart2072692.g2M7AeYGrZ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGKnh1y7E6i0LKo6YRAoM2AJ9mXe+FcA3n/8Rh2Vn83NoxZa9+SwCgjreT
-T4m0S8omVSqDC0t8TAHMCGI=
-=qxCf
------END PGP SIGNATURE-----
-
---nextPart2072692.g2M7AeYGrZ--
+If it isn't obsolete then fix the code to use the newer APIs as its about
+to end up && BROKEN let alone Obsolete. Make yourself maintainer and go
+for it.
