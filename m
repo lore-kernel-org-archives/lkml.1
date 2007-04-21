@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbXDTXxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbXDUACN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752076AbXDTXxI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Apr 2007 19:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbXDTXxI
+	id S1752568AbXDUACN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Apr 2007 20:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXDUACN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Apr 2007 19:53:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44487 "EHLO mx1.redhat.com"
+	Fri, 20 Apr 2007 20:02:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:33576 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbXDTXxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Apr 2007 19:53:07 -0400
-Message-ID: <4629524C.5040302@redhat.com>
-Date: Fri, 20 Apr 2007 19:52:44 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	id S1752568AbXDUACL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Apr 2007 20:02:11 -0400
+Message-ID: <4629547D.9090404@goop.org>
+Date: Fri, 20 Apr 2007 17:02:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       shak <dshaks@redhat.com>
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org>
-In-Reply-To: <20070420150618.179d31a4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Dave Jones <davej@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.osdl.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, gregkh@suse.de
+Subject: Re: [2/2] 2.6.21-rc7: known regressions
+References: <20070416003723.GM3691@stusta.de> <4628482B.6040804@goop.org> <20070420050344.GG20566@redhat.com> <46284C84.6060301@goop.org> <20070420051908.GH20566@redhat.com> <462850B3.70901@goop.org> <20070420145126.GC25051@redhat.com> <4628DC0A.60707@goop.org> <20070420160308.GB20118@redhat.com> <4628F586.3040606@goop.org> <20070420172147.GC20118@redhat.com>
+In-Reply-To: <20070420172147.GC20118@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 20 Apr 2007 17:38:06 -0400
-> Rik van Riel <riel@redhat.com> wrote:
-> 
->> Andrew Morton wrote:
->>
->>> I've also merged Nick's "mm: madvise avoid exclusive mmap_sem".
->>>
->>> - Nick's patch also will help this problem.  It could be that your patch
->>>   no longer offers a 2x speedup when combined with Nick's patch.
->>>
->>>   It could well be that the combination of the two is even better, but it
->>>   would be nice to firm that up a bit.  
->> I'll test that.
-> 
-> Thanks.
+Dave Jones wrote:
+> On Fri, Apr 20, 2007 at 10:16:54AM -0700, Jeremy Fitzhardinge wrote:
+>  > Dave Jones wrote:
+>  > >  > Andi, I think.  I've got his firstfloor.org patches applied to this kernel.
+>  > >
+>  > > Ah, I saw you patched in CFS too, and thought it may be related.
+>  > >   
+>  > 
+>  > Well, I have CONFIG_FB_BACKLIGHT enabled, and it still works.
+>  > 
+>  > Maybe there's something in Andi's queue which is making it work?
+>
+> Shrug, I'm out of ideas.  I'm hoping that it'll magically start working
+> when people start flushing their git trees for .22
+> Maybe that'll yield a clue for something that can be backported to .21.x
+> because right now, I'm completely puzzled.
 
-Well, good news.
+Well, it seemed reliable, but I just got a resume failure.  Different
+from any previous symptom I've seen:
 
-It turns out that Nick's patch does not improve peak
-performance much, but it does prevent the decline when
-running with 16 threads on my quad core CPU!
+Intel machine check architecture supported
+Intel machine check reporting enabled enabled on CPU#1
+Back to C!
+<hang>
 
-We _definately_ want both patches, there's a huge benefit
-in having them both.
-
-Here are the transactions/seconds for each combination:
-
-    vanilla   new glibc  madv_free kernel   madv_free + mmap_sem
-threads
-
-1     610         609             596                545
-2    1032        1136            1196               1200
-4    1070        1128            2014               2024
-8    1000        1088            1665               2087
-16    779        1073            1310               1999
-
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+    J
