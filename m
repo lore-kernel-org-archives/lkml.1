@@ -1,121 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030505AbXDUIdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030476AbXDUIeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030505AbXDUIdn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 04:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030476AbXDUIdn
+	id S1030476AbXDUIeS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 04:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030580AbXDUIeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 04:33:43 -0400
-Received: from holomorphy.com ([66.93.40.71]:43388 "EHLO holomorphy.com"
+	Sat, 21 Apr 2007 04:34:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57107 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030505AbXDUIdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 04:33:42 -0400
-Date: Sat, 21 Apr 2007 01:33:17 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+	id S1030476AbXDUIeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 04:34:16 -0400
+Date: Sat, 21 Apr 2007 10:33:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Nick Piggin <npiggin@suse.de>, Bill Huey <billh@gnuppy.monkey.org>,
+       Mike Galbraith <efault@gmx.de>,
+       Peter Williams <pwil3058@bigpond.net.au>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, v3
-Message-ID: <20070421083317.GN31925@holomorphy.com>
-References: <20070418175017.GA5250@elte.hu> <46280505.4020605@bigpond.net.au> <20070420131544.GG31925@holomorphy.com> <4629596B.6020403@bigpond.net.au> <20070421050734.GL31925@holomorphy.com> <4629A349.8060207@bigpond.net.au> <4629BE29.6010306@bigpond.net.au> <20070421075401.GA23410@elte.hu>
-MIME-Version: 1.0
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Announce] [patch] Modular Scheduler Core and Completely   Fair Scheduler [CFS]
+Message-ID: <20070421083343.GB29800@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <200704151327.13589.kernel@kolivas.org> <1176619384.6222.70.camel@Homer.simpson.net> <46240F98.3020800@bigpond.net.au> <1176776941.6222.21.camel@Homer.simpson.net> <20070417034050.GD25513@wotan.suse.de> <1176782489.13059.15.camel@Homer.simpson.net> <20070417041420.GF25513@wotan.suse.de> <20070417095140.GB22626@elte.hu> <462926DF.1030404@tmr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070421075401.GA23410@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <462926DF.1030404@tmr.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 21, 2007 at 09:54:01AM +0200, Ingo Molnar wrote:
-> In practice they can starve a bit when one renices thousands of tasks, 
-> so i was thinking about the following special-case: to at least make 
-> them easily killable: if a nice 0 task sends a SIGKILL to a nice 19 task 
-> then we could 'share' its p->wait_runtime with that nice 19 task and 
-> copy the signal sender's nice_offset. This would in essence pass the 
-> right to execute over to the killed task, so that it can tear itself 
-> down.
-> This cannot be used to gain an 'unfair advantage' because the signal 
-> sender spends its own 'right to execute on the CPU', and because the 
-> target task cannot execute any user code anymore when it gets a SIGKILL.
 
-I suppose this is a special case of the dreaded priority inversion. What
-of, say, nice 19 tasks holding fs semaphores and/or mutexes that nice
--19 tasks are waiting to acquire? Perhaps rt_mutex should be the default
-mutex implementation.
+* Bill Davidsen <davidsen@tmr.com> wrote:
 
+> All of my testing has been on desktop machines, although in most cases 
+> they were really loaded desktops which had load avg 10..100 from time 
+> to time, and none were low memory machines. Up to CFS v3 I thought 
+> nicksched was my winner, now CFSv3 looks better, by not having 
+> stumbles under stupid loads.
 
-On Sat, Apr 21, 2007 at 09:54:01AM +0200, Ingo Molnar wrote:
-> In any case, it is clear that rq->raw_cpu_load should be used instead of 
-> rq->nr_running, when calculating the fair clock, but i begin to like the 
-> nice_offset solution too in addition of this: it's effective in practice 
-> and starvation-free in theory, and most importantly, it's very simple. 
-> We could even make the nice offset granularity tunable, just in case 
-> anyone wants to weaken (or strengthen) the effectivity of nice levels. 
-> What do you think, can you see any obvious (or less obvious) 
-> showstoppers with this approach?
+nice! I hope CFSv4 kept that good tradition too ;)
 
-->nice_offset's semantics are not meaningful to the end user, regardless
-of whether it's effective. If there is something to be tuned, it should
-be relative shares of CPU bandwidth (load_weight) corresponding to each
-nice level or something else directly observable. The implementation
-could be ->nice_offset, if it suffices.
+> I have not tested:
+>   1 - server loads, nntp, smtp, etc
+>   2 - low memory machines
+>   3 - uniprocessor systems
+> 
+> I think this should be done before drawing conclusions. Or if someone 
+> has tried this, perhaps they would report what they saw. People are 
+> talking about smoothness, but not how many pages per second come out 
+> of their overloaded web server.
 
-Suppose a table of nice weights like the following is tuned via /proc/:
+i tested heavily swapping systems. (make -j50 workloads easily trigger 
+that) I also tested UP systems and a handful of SMP systems. I have also 
+tested massive_intr.c which i believe is an indicator of how fairly CPU 
+time is distributed between partly sleeping partly running server 
+threads. But i very much agree that diverse feedback is sought and 
+welcome, both from those who are happy with the current scheduler and 
+those who are unhappy about it.
 
--20	21			 0	1
--19	20			 1	0.5
--18	19			 2	0.3333
--17	18			 3	0.25
--16	17			 4	0.2
--15	16			 5	0.1666
--14	15			 6	0.1429
--13	14			 7	0.125
--12	13			 8	0.1111
--11	12			 9	0.1
--10	11			10	0.0909
- -9	10			11	0.0833
- -8	9			12	0.0769
- -7	8			13	0.0714
- -6	7			14	0.0666
- -5	6			15	0.0625
- -4	5			16	0.0588
- -3	4			17	0.0555
- -2	3			18	0.0526
- -1	2			19	0.0476
-
-Essentially 1/(n+1) when n >= 0 and 1-n when n < 0.
-
-Now suppose two CPU hogs, one being nice 1 and the other nice -1,
-compete against each other. The nice 1 hog should receive 0.5/(2+0.5)
-= 20% of the CPU, and the nice -1 hog should receive 80% of the CPU.
-A nice -5 hog vs. a nice 0 hog should have the nice 0 hog receive
-1/(6+1) = 14.29% of the CPU and the nice -5 hog receive 85.71% of the
-CPU. Three hogs, once nice -1, one nice 0, and one nice 1 should have
-the nice -1 hog receive 2/(2+1+0.5) = 57.14% of the CPU, the nice 0
-hog receive 1/(2+1+0.5) = 28.57% of the CPU, and the nice 1 hog
-receive 0.5/(2+1+0.5) = 14.29% of the CPU. And so on. (Note that these
-are very strong nice semantics, probably too strong for real use.) For
-five hogs with nice numbers ranging from -2 to 2, we'd get:
--2	43.90%
--1	29.27%
- 0	14.63%
- 1	 7.32%
- 2	 4.88%
-
-However this is implemented doesn't matter so long as the semantics
-are honored. I wouldn't specify too much beyond competing tasks with
-equivalent sleep/wakeup behavior; one may wish to apply bonuses and
-penalties to differing sleep/wakeup behavior in the future, even if
-such is not now done.
-
-Basically, the effect of nice numbers should be predictable somehow,
-and frankly, making it specifiable by the user resolves the issue
-of conflicting requirements.
-
-
--- wli
+	Ingo
