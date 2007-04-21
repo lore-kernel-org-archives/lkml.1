@@ -1,115 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbXDUE27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbXDUEbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754316AbXDUE27 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 00:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbXDUE27
+	id S1754342AbXDUEbE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 00:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbXDUEbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 00:28:59 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44535 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754270AbXDUE26 (ORCPT
+	Sat, 21 Apr 2007 00:31:03 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:16635 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754395AbXDUEbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 00:28:58 -0400
-Date: Sat, 21 Apr 2007 13:28:16 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] Make new setting of panic_on_oom
-Cc: Benjamin LaHaise <bcrl@kvack.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Larry Woodman <lwoodman@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0704200916250.20232@schroedinger.engr.sgi.com>
-References: <20070420124157.GA21709@kvack.org> <Pine.LNX.4.64.0704200916250.20232@schroedinger.engr.sgi.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070421132543.CA5D.Y-GOTO@jp.fujitsu.com>
+	Sat, 21 Apr 2007 00:31:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Cdw8O5qjhR/k3FpWSOz8BgCbiejjq/3nuKahifez8+9cH+5jHoHNlaPXUVIw3Sy/pZ7G3LIT6i+v6FFrOB2gTB3nYFj6NNAo6e0FSiOJlMOxrzZP77VjrmOQ+9Rc7A0xddXMMxSTvW+KLpJ+lOaYKogwn8oSVWktCRHi87lXfus=
+Message-ID: <62eb359a0704202130p39cf24efu89dccc8437c30d25@mail.gmail.com>
+Date: Fri, 20 Apr 2007 23:30:59 -0500
+From: "Marcos Pinto" <markybob@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: 2.6.20.7 locking up hard on boot
+Cc: linux-kernel@vger.kernel.org, "Jan Beulich" <jbeulich@novell.com>,
+       "Alan Cox" <alan@redhat.com>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       linux-pci@atrey.karlin.mff.cuni.cz
+In-Reply-To: <20070421013454.GB4016@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Disposition: inline
+References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com>
+	 <20070421013454.GB4016@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yes, I just tried 2.6.20.3 with ACPI enabled and it booted perfectly.
+I'm hoping this means you know what's wrong? :-)
 
-> > >  	read_lock(&tasklist_lock);
-> > >  
-> > > +	if (sysctl_panic_on_oom == 2)
-> > > +		panic("out of memory. Compulsory panic_on_oom is selected.\n");
-> > > +
-> > 
-> > Wouldn't it be safer to put the panic before the read_lock()?
-> 
-> I agree. Otherwise the patch seem to be okay.
+Thanks again,
+Marcos
 
-Ok. This is take 2.
-Thanks for your comment.
-
----------
-
-The current panic_on_oom may not work if there is a process using 
-cpusets/mempolicy, because other nodes' memory may remain.
-But some people want failover by panic ASAP even if they are used.
-This patch makes new setting for its request.
-
-This is not tested yet. But it would work.
-
-Please apply.
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
----
- Documentation/sysctl/vm.txt |   23 +++++++++++++++++------
- mm/oom_kill.c               |    3 +++
- 2 files changed, 20 insertions(+), 6 deletions(-)
-
-Index: panic_on_oom2/Documentation/sysctl/vm.txt
-===================================================================
---- panic_on_oom2.orig/Documentation/sysctl/vm.txt	2007-04-21 12:39:09.000000000 +0900
-+++ panic_on_oom2/Documentation/sysctl/vm.txt	2007-04-21 12:39:58.000000000 +0900
-@@ -197,11 +197,22 @@
- 
- panic_on_oom
- 
--This enables or disables panic on out-of-memory feature.  If this is set to 1,
--the kernel panics when out-of-memory happens.  If this is set to 0, the kernel
--will kill some rogue process, called oom_killer.  Usually, oom_killer can kill
--rogue processes and system will survive.  If you want to panic the system
--rather than killing rogue processes, set this to 1.
-+This enables or disables panic on out-of-memory feature.
- 
--The default value is 0.
-+If this is set to 0, the kernel will kill some rogue process,
-+called oom_killer.  Usually, oom_killer can kill rogue processes and
-+system will survive.
-+
-+If this is set to 1, the kernel panics when out-of-memory happens.
-+However, if a process limits using nodes by mempolicy/cpusets,
-+and those nodes become memory exhaustion status, one process
-+may be killed by oom-killer. No panic occurs in this case.
-+Because other nodes' memory may be free. This means system total status
-+may be not fatal yet.
- 
-+If this is set to 2, the kernel panics compulsorily even on the
-+above-mentioned.
-+
-+The default value is 0.
-+1 and 2 are for failover of clustering. Please select either
-+according to your policy of failover.
-Index: panic_on_oom2/mm/oom_kill.c
-===================================================================
---- panic_on_oom2.orig/mm/oom_kill.c	2007-04-21 12:39:09.000000000 +0900
-+++ panic_on_oom2/mm/oom_kill.c	2007-04-21 12:40:31.000000000 +0900
-@@ -409,6 +409,9 @@
- 		show_mem();
- 	}
- 
-+	if (sysctl_panic_on_oom == 2)
-+		panic("out of memory. Compulsory panic_on_oom is selected.\n");
-+
- 	cpuset_lock();
- 	read_lock(&tasklist_lock);
- 
-
-
--- 
-Yasunori Goto 
-
-
+On 4/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Fri, Apr 20, 2007 at 07:47:13PM -0500, Marcos Pinto wrote:
+> > I'm not subscribed, so please personally CC me any answers/comments.
+> > Thank you.
+> >
+> > While booting, (AMD64 Turion x2) 2.6.20.7 kernel locks up hard.  The
+> > last kernel that I tried, 2.6.18.8, worked perfectly without any
+> > trickery.  2.6.20.7 only boots up with "acpi=off" being added to the
+> > kernel line.  Note that 2.6.18.8 works perfectly with acpi on, which
+> > is really the
+> > only way I can run this box because with "acpi=off" it overheats and
+> > freezes.
+> > Please let me know if there's anything else that I could do to help with
+> > this.
+> >
+> >
+> > Here's what's on the screen when it happens:
+> >
+> > Brought up 2 CPUs
+> > testing NMI watchdog ... OK.
+> > Disabling vsyscall due to  use of PM timer
+> > time.c: Using 3.579545 MHz WALL PM GTOD PM timer.
+> > time.c: Detected 1808.264 MHz processor.
+> > migration_cost=281
+> > NET: Registered protocol family 16
+> > ACPI: bus type pci registered
+> > PCI: Using MMCONFIG at e0000000
+> > PCI: No mmconfig possible on device 00:18
+> > PCI: No mmconfig possible on device 07:05
+> > ACPI: Interpreter enabled
+> > ACPI: Using IOAPIC for interrupt routing
+> > ACPI: PCI Root Bridge [PCI0] (0000:00)
+> > ACPI: Assume root bridge [\_SB_.PCI0] bus is 0
+> > 0000:00:0d.0: cannot adjust BAR0 (not I/O)
+> > 0000:00:0d.0: cannot adjust BAR1 (not I/O)
+> >...
+>
+> Does 2.6.20.3 boot with ACPI enabled?
+>
+> cu
+> Adrian
+>
+> --
+>
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+>
+>
