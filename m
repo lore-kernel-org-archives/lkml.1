@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXDUIhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXDUIzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030565AbXDUIhq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 04:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030519AbXDUIhq
+	id S932247AbXDUIzj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 04:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932286AbXDUIzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 04:37:46 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52448 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030456AbXDUIhp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 04:37:45 -0400
-Date: Sat, 21 Apr 2007 01:36:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [patch 2/8] allow unprivileged umount
-Message-Id: <20070421013622.1f2a7d00.akpm@linux-foundation.org>
-In-Reply-To: <E1HfAf8-0002Ky-00@dorka.pomaz.szeredi.hu>
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102626.825263599@szeredi.hu>
-	<20070421005506.6a315bec.akpm@linux-foundation.org>
-	<E1HfAf8-0002Ky-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Apr 2007 04:55:39 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42589 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932247AbXDUIzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 04:55:38 -0400
+Date: Sat, 21 Apr 2007 10:55:28 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH -mm] freezer: Document task_lock in thaw_process
+Message-ID: <20070421085528.GA1822@elf.ucw.cz>
+References: <200704210023.19825.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704210023.19825.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Apr 2007 10:09:42 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> > > +static bool permit_umount(struct vfsmount *mnt, int flags)
-> > > +{
-> > >
-> > > ...
-> > >
-> > > +	return mnt->mnt_uid == current->uid;
-> > > +}
-> > 
-> > Yes, this seems very wrong.  I'd have thought that comparing user_struct*'s
-> > would get us a heck of a lot closer to being able to support aliasing of
-> > UIDs between different namespaces.
-> > 
+On Sat 2007-04-21 00:23:19, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> OK, I'll fix this up.
+> The task_lock() in include/linux/freezer.h:thaw_process() looks as though it
+> were protecting p->flags, which is not the case.  Add a comment that explains
+> why it's there.
 > 
-> Actually an earlier version of this patch did use user_struct's but
-> I'd changed it to uids, because it's simpler.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-OK..
+ACK.
+									Pavel
 
->  I didn't think about
-> this being contrary to the id namespaces thing.
-
-Well I was madly assuming that when serarate UID namespaces are in use, UID
-42 in container A will have a different user_struct from UID 42 in
-container B.  I'd suggest that we provoke an opinion from Eric & co before
-you do work on this.
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
