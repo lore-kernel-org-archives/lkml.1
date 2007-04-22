@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030649AbXDVMix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030726AbXDVMyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030649AbXDVMix (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030778AbXDVMix
+	id S1030726AbXDVMyc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030765AbXDVMyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:38:53 -0400
-Received: from ik-out-1112.google.com ([66.249.90.180]:2504 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030649AbXDVMiv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:38:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hnpAYObE2uCvsWpDzBbqbwO7DWdqltIe4x3pkI1/3H97doowqjoGcS/EQWcT502jjTzjxthOHiiz+J2BclMmDnbHz5gdIUMSr9SlC4dab0kaDXTuZ+tIv8DQYa3t3eFguY4CwKhnDYC2SoSLxYiD/rnPdaeFQ3t4FMSR5V4tjo4=
-Message-ID: <653402b90704220538gf0041f1yf699cc8aa5f200e8@mail.gmail.com>
-Date: Sun, 22 Apr 2007 14:38:50 +0200
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-To: "oliver pinter" <oliver.pntr@gmail.com>
-Subject: Re: [BUG? -rc7] SMP: Just one CPU activated: P4 3GHz HT
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6101e8c40704220453v544dce39j9e348939b3cb1f2e@mail.gmail.com>
+	Sun, 22 Apr 2007 08:54:32 -0400
+Received: from rtr.ca ([64.26.128.89]:3415 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030726AbXDVMyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 08:54:32 -0400
+Message-ID: <462B5B04.3060309@rtr.ca>
+Date: Sun, 22 Apr 2007 08:54:28 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Renice X for cpu schedulers
+References: <20070417062621.GL2986@holomorphy.com> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu> <200704192159.35546.kernel@kolivas.org> <46276BE5.7020001@rtr.ca> <20070420035717.GA1028@wotan.suse.de> <462A25DD.2050702@rtr.ca>
+In-Reply-To: <462A25DD.2050702@rtr.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <653402b90704220157h5fe2be3p18c4a341d13ccc87@mail.gmail.com>
-	 <6101e8c40704220300n4cfef0f1l652b303f5bab8d1b@mail.gmail.com>
-	 <653402b90704220312k24ed730ay204ccd076dab8d6c@mail.gmail.com>
-	 <6101e8c40704220453v544dce39j9e348939b3cb1f2e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/22/07, oliver pinter <oliver.pntr@gmail.com> wrote:
-> I have CC the kernel
+Just to throw another possibly-overlooked variable into the mess:
 
-Did you?
+My system here is using the on-demand cpufreq policy governor.
+I wonder how that interacts with the various schedulers here?
 
-> and the result is:
->
-> your'e config : failed smp
->
-> your'e config + power managment : ok
->
+I suppose for the "make" kernel case, after a couple of seconds
+the cpufreq would hit max and stay there for the rest of the build,
+so it shouldn't really be a factor for (non-)interactivity during the build.
 
-Interesting, can anyone tell me why does not SMP work without Power
-Managment? Should it be that way?
+Or should it?
 
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+Cheers
