@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965554AbXDVI6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXDVJI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965554AbXDVI6N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 04:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965550AbXDVI6N
+	id S965558AbXDVJI5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 05:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965570AbXDVJI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 04:58:13 -0400
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:35012 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965554AbXDVI6L (ORCPT
+	Sun, 22 Apr 2007 05:08:57 -0400
+Received: from amsfep16-int.chello.nl ([62.179.120.11]:43110 "EHLO
+	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965558AbXDVJI4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 04:58:11 -0400
-X-Greylist: delayed 1107 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Apr 2007 04:58:11 EDT
-Date: Sun, 22 Apr 2007 10:58:09 +0200
-From: Bastian Blank <bastian@waldi.eu.org>
+	Sun, 22 Apr 2007 05:08:56 -0400
+Subject: Re: [PATCH 08/10] mm: count writeback pages per BDI
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow reading tainted flag as user
-Message-ID: <20070422085809.GA9078@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Theodore Ts'o <tytso@mit.edu>, linux-kernel@vger.kernel.org
-References: <20070422083941.GA7945@wavehammer.waldi.eu.org> <20070422015045.f39d6ff7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
-Content-Disposition: inline
-In-Reply-To: <20070422015045.f39d6ff7.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+In-Reply-To: <20070422001949.4d697fe5.akpm@linux-foundation.org>
+References: <20070420155154.898600123@chello.nl>
+	 <20070420155503.334628394@chello.nl>
+	 <20070421025525.042ed73a.akpm@linux-foundation.org>
+	 <1177153636.2934.43.camel@lappy>
+	 <20070422001949.4d697fe5.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 22 Apr 2007 11:08:52 +0200
+Message-Id: <1177232932.7316.67.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2007-04-22 at 00:19 -0700, Andrew Morton wrote:
 
---VbJkn9YxBvnuCH5J
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> It could be that we never call test_clear_page_writeback() against
+> !bdi_cap_writeback_dirty() pages anwyay.  I can't think why we would, but
+> the relationships there aren't very clear.  Does "don't account for dirty
+> memory" imply "doesn't ever do writeback"?  One would need to check, and
+> it's perhaps a bit fragile.
 
-On Sun, Apr 22, 2007 at 01:50:45AM -0700, Andrew Morton wrote:
-> On Sun, 22 Apr 2007 10:39:41 +0200 Bastian Blank <bastian@waldi.eu.org> w=
-rote:
->=20
-> > The commit 34f5a39899f3f3e815da64f48ddb72942d86c366 restricted reading
-> > of the tainted value. The attached patch changes this back to a
-> > write-only check and restores the read behaviour of older versions.
-> >=20
-> > Signed-off-by: Bastian Blank <bastian@waldi.eu.org>
->=20
-> there's no patch here.
+I did, thats how that test ended up there; I guess a comment would have
+been a good thing, no? :-)
 
-Ups.
+end_swap_bio_write() calls end_page_writeback(), and
+swap_backing_dev_info has neither cap_writeback nor cap_account_dirty.
 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 1b255df..c904748 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1676,7 +1676,7 @@ static int proc_dointvec_taint(ctl_table *table, int =
-write, struct file *filp,
- {
- 	int op;
-=20
--	if (!capable(CAP_SYS_ADMIN))
-+	if (write && !capable(CAP_SYS_ADMIN))
- 		return -EPERM;
-=20
- 	op =3D OP_OR;
+> It's worth checking though.  Boy we're doing a lot of stuff in there
+> nowadays.
+> 
+> OT: it might be worth looking into batching this work up - the predominant
+> caller should be mpage_end_io_write(), and he has a whole bunch of pages
+> which are usually all from the same file, all contiguous.  It's pretty
+> inefficient to be handling that data one-page-at-a-time, and some
+> significant speedups may be available.
 
---=20
-Captain's Log, star date 21:34.5...
+Right, that might be a good spot to hook into, I'll have a look.
 
---VbJkn9YxBvnuCH5J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+> Instead, everyone seems to think that variable pagecache page size is the
+> only way of improving things.  Shudder.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+hehe, I guess you haven't looked at my concurrent pagecache patches yet
+either :-)
 
-iEYEARECAAYFAkYrI6EACgkQnw66O/MvCNFVbgCfXSciry2+3nvGzdLVK1uq6c4e
-XZAAnirDrSwXh+Jj9+/17iaK91ARuOvu
-=pLHK
------END PGP SIGNATURE-----
-
---VbJkn9YxBvnuCH5J--
