@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030800AbXDVMz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030810AbXDVM5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030800AbXDVMz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030814AbXDVMz3
+	id S1030810AbXDVM5q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030837AbXDVM5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:55:29 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34159 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030800AbXDVMz2 (ORCPT
+	Sun, 22 Apr 2007 08:57:46 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:20085 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030810AbXDVM5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:55:28 -0400
-Date: Sun, 22 Apr 2007 13:58:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       kkeil@suse.de, i4ldeveloper@listserv.isdn4linux.de,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
-Message-ID: <20070422135835.037e323c@the-village.bc.nu>
-In-Reply-To: <462B54A0.9000203@imap.cc>
-References: <20070115172912.GA3323@pingi.kke.suse.de>
-	<462A0CA7.2090908@imap.cc>
-	<20070421215844.542d3aab@the-village.bc.nu>
-	<20070421.151052.78709111.davem@davemloft.net>
-	<462B54A0.9000203@imap.cc>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Apr 2007 08:57:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YozjeU2F8/mMekYaqsiNZeNgYycwybtYy24QcniRH1ti7igkTm3Vj0Zj3Q0M2n6zCarCJc6S40FV9DDANmoCGivPW/S+95Pcryh9paZYZ3g7e3Na0RLb9G18HXvY6YCIBDLaj8B/y9qs7hsNp/4YwPHlGBIwTTRuLMgRz4ugj2E=
+Message-ID: <4af2d03a0704220557u5d6368a2t13878b73bf9dbe64@mail.gmail.com>
+Date: Sun, 22 Apr 2007 14:57:44 +0200
+From: "Jiri Slaby" <jirislaby@gmail.com>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
+Cc: "johann deneux" <johann.deneux@gmail.com>, linux-kernel@vger.kernel.org,
+       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+In-Reply-To: <d120d5000704190902o60aa4b19y77728585e22b2e84@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com>
+	 <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
+	 <200704190058.11625.dtor@insightbb.com> <46278CDD.2000007@gmail.com>
+	 <d120d5000704190902o60aa4b19y77728585e22b2e84@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> If it isn't obsolete then fix the code to use the newer APIs
-> 
-> Why should that be a precondition for removing the incorrect
-> "obsolete" label?
+On 4/19/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> On 4/19/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> > Dmitry Torokhov napsal(a):
+> > > If we are interested in using FF API we need to come up with a way
+> > > to express this effect without exposing implementation details of
+> > > one particular device.
+> >
+> > Still, torques are better named raw/motor values, which goes to the device
+> > and I'm sceptic about inventing something class-better than this.
+> >
+>
+> Well, I guess we need to make a decision whether moving this kind of
+> devices into a force feedback layer is possible or whether every
+> device needs to have an application specifically tailored to that
+> particular device.
+>
+> If we say that it is feasible to plug a device into FF layer then we
+> must not expose hardware implementation details. That means that
+> device-sepcific translation between 3d vector of forces into motor
+> torques must be done by the driver itself.
 
-Because if we remove the obsolete label the users are going to be
-suprised when it goes away entirely with && BROKEN or && !HOTPLUG or
-similar.
+Hmm, it's 3d at minimum (the glove has 14 torque points, phantom up to
+6), I think we won't be able to make the transition in independent way
+due to unspecified meaning of the torques.
 
-> >> to end up && BROKEN let alone Obsolete.
-> 
-> That can't happen. Any change that breaks isdn4linux before its
-> replacement is ready would constitute a regression.
-> We've been there once, remember?
+> For devices that require tailored application (for example that glove
+> - I am not sure how a generic application could control it) old
+> phantom way of controlling via ioctl will suffice. The device may
+> still use input layer to report back coordinates.
 
-Want to be on that. There is nobody maintaining it. That isn't a
-sustainable situation so it will break.
+Ok, nobody seems to have an idea, I'm going to avoid FF layer in the
+code and hope this is the final change ;).
 
-> I beg to differ. Existence of a working replacement is exactly
-> the criterion we arrived at when discussing the meaning of the
-> term "obsolete". So lack of a working replacement *is* an
-> argument for concluding that something is not obsolete.
-
-Ok then it should be marked "BROKEN" instead.
-
-> - The authors of certain in-kernel API changes seem to have
->   neglected the isdn4linux subsystem in their work.
-
-For simile changes they have kept it going (eg the tty changes), but the
-code is too big and too messy for that to happen for all things. Thus
-it will eventually break
-
-> - These are two independent problems. Blocking the correction of
->   one of them because the other one still exists doesn't help,
->   but only risks deadlock.
-
-No risk of deadlock. It'll progress to && BROKEN which will either cause
-sufficient pain for someone to get off their arse and fix it, for enough
-of a vendors users to get the vendor to do the work or for someone who
-cares to pay a third party to do the work.
-
-Alan
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
