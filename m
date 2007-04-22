@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXDVAcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbXDVArj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbXDVAcX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 20:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXDVAcX
+	id S1753910AbXDVArj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 20:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbXDVArj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 20:32:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:49707 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753742AbXDVAcW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 20:32:22 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 2/8] Kconfig: unwanted menus for s390.
-Date: Sun, 22 Apr 2007 02:32:09 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <20070420113248.GC3738@skybase> <200704220110.54587.arnd@arndb.de>
-In-Reply-To: <200704220110.54587.arnd@arndb.de>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sat, 21 Apr 2007 20:47:39 -0400
+Received: from cs.columbia.edu ([128.59.16.20]:58801 "EHLO cs.columbia.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753883AbXDVAri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 20:47:38 -0400
+Message-ID: <462AB061.2070104@cs.columbia.edu>
+Date: Sat, 21 Apr 2007 20:46:25 -0400
+From: Shaya Potter <spotter@cs.columbia.edu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704220232.10219.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18OzBuNwtfkHthprOSUEcgvQKkR44wK57OiQbc
- HOAWQblsRJdsoIBzhlYra3qsieCG1YaN6jfhbtW4Lyi8nDROWc
- acvO3bE3Z8ylif0wmgxVA==
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com, ebiederm@xmission.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 7/8] allow unprivileged mounts
+References: <20070420102532.385211890@szeredi.hu>	<20070420102652.075606533@szeredi.hu> <20070421005513.e230aa88.akpm@linux-foundation.org>
+In-Reply-To: <20070421005513.e230aa88.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, X-Seen-By filter1.cs.columbia.edu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007, Arnd Bergmann wrote:
-> I would prefer to not have 'depends on !S390' but rather 'depends on MMIO',
-> because that is what really drives stuff like IPMI: they expect the device
-> to be reachable through the use of ioremap or inX/outX instructions, which
-> don't exist on s390.
+Andrew Morton wrote:
+> On Fri, 20 Apr 2007 12:25:39 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
 > 
-> While it's unlikely that another architecture has the same restriction,
-> it expresses much clearer what you mean.
+>> Define a new fs flag FS_SAFE, which denotes, that unprivileged
+>> mounting of this filesystem may not constitute a security problem.
+>>
+>> Since most filesystems haven't been designed with unprivileged
+>> mounting in mind, a thorough audit is needed before setting this flag.
 > 
-> In drivers/Kconfig, you can then simply add a
-> 
-> config MMIO
->         def_bool !S390
+> Practically speaking, is there any realistic likelihood that any filesystem
+> apart from FUSE will ever use this?
 
-I just saw that we already have an option like that, with a slightly different
-name.
-
-arch/s390/Kconfig contains
-
-config NO_IOMEM
-	def_bool y
-
-and lib/Kconfig contains
-
-config HAS_IOMEM
-	boolean
-	depends on !NO_IOMEM
-	default y
-
-You should probably just use one of these two to disable any driver that
-uses ioremap or similar.
-
-	Arnd <><
+Would it be interesting to support mounting of external file systems (be 
+it USB, NFS or whatever) in a way that automatically forces it to ignore 
+suid and devices (which are already mount time options)?   The question 
+I guess is, how much do you gain over a setuid program (hack?) that can 
+handle this?
