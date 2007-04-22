@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030726AbXDVMyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030800AbXDVMz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030726AbXDVMyc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030765AbXDVMyc
+	id S1030800AbXDVMz3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030814AbXDVMz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:54:32 -0400
-Received: from rtr.ca ([64.26.128.89]:3415 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030726AbXDVMyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:54:32 -0400
-Message-ID: <462B5B04.3060309@rtr.ca>
-Date: Sun, 22 Apr 2007 08:54:28 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-Cc: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Renice X for cpu schedulers
-References: <20070417062621.GL2986@holomorphy.com> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu> <200704192159.35546.kernel@kolivas.org> <46276BE5.7020001@rtr.ca> <20070420035717.GA1028@wotan.suse.de> <462A25DD.2050702@rtr.ca>
-In-Reply-To: <462A25DD.2050702@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 22 Apr 2007 08:55:29 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34159 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030800AbXDVMz2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 08:55:28 -0400
+Date: Sun, 22 Apr 2007 13:58:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       kkeil@suse.de, i4ldeveloper@listserv.isdn4linux.de,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
+Message-ID: <20070422135835.037e323c@the-village.bc.nu>
+In-Reply-To: <462B54A0.9000203@imap.cc>
+References: <20070115172912.GA3323@pingi.kke.suse.de>
+	<462A0CA7.2090908@imap.cc>
+	<20070421215844.542d3aab@the-village.bc.nu>
+	<20070421.151052.78709111.davem@davemloft.net>
+	<462B54A0.9000203@imap.cc>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just to throw another possibly-overlooked variable into the mess:
+> >> If it isn't obsolete then fix the code to use the newer APIs
+> 
+> Why should that be a precondition for removing the incorrect
+> "obsolete" label?
 
-My system here is using the on-demand cpufreq policy governor.
-I wonder how that interacts with the various schedulers here?
+Because if we remove the obsolete label the users are going to be
+suprised when it goes away entirely with && BROKEN or && !HOTPLUG or
+similar.
 
-I suppose for the "make" kernel case, after a couple of seconds
-the cpufreq would hit max and stay there for the rest of the build,
-so it shouldn't really be a factor for (non-)interactivity during the build.
+> >> to end up && BROKEN let alone Obsolete.
+> 
+> That can't happen. Any change that breaks isdn4linux before its
+> replacement is ready would constitute a regression.
+> We've been there once, remember?
 
-Or should it?
+Want to be on that. There is nobody maintaining it. That isn't a
+sustainable situation so it will break.
 
-Cheers
+> I beg to differ. Existence of a working replacement is exactly
+> the criterion we arrived at when discussing the meaning of the
+> term "obsolete". So lack of a working replacement *is* an
+> argument for concluding that something is not obsolete.
+
+Ok then it should be marked "BROKEN" instead.
+
+> - The authors of certain in-kernel API changes seem to have
+>   neglected the isdn4linux subsystem in their work.
+
+For simile changes they have kept it going (eg the tty changes), but the
+code is too big and too messy for that to happen for all things. Thus
+it will eventually break
+
+> - These are two independent problems. Blocking the correction of
+>   one of them because the other one still exists doesn't help,
+>   but only risks deadlock.
+
+No risk of deadlock. It'll progress to && BROKEN which will either cause
+sufficient pain for someone to get off their arse and fix it, for enough
+of a vendors users to get the vendor to do the work or for someone who
+cares to pay a third party to do the work.
+
+Alan
