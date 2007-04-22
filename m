@@ -1,107 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbXDVSAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXDVSAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249AbXDVSAX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 14:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbXDVSAX
+	id S1754017AbXDVSAa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 14:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbXDVSAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 14:00:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:59269 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbXDVSAV (ORCPT
+	Sun, 22 Apr 2007 14:00:30 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:2390 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbXDVSA2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 14:00:21 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Wrong free clusters count on FAT32
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, DervishD <lkml@dervishd.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Juergen Beisert <juergen127@kreuzholzen.de>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Sun, 22 Apr 2007 19:21:04 +0200
-References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it> <8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it> <8cAMl-du-3@gated-at.bofh.it> <8cBS7-1Qa-1@gated-at.bofh.it> <8cIqE-3qZ-9@gated-at.bofh.it> <8cITG-40H-5@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Sun, 22 Apr 2007 14:00:28 -0400
+X-Greylist: delayed 561 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Apr 2007 14:00:28 EDT
+X-Hashcash: 1:23:070422:linux-rt-users@vger.kernel.org::lt++acP+rDRth09Z:0000000000000000000000000000000JuYL
+From: James Cloos <cloos@jhcloos.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-rt-users@vger.kernel.org
+Subject: using the rt patch with rc7 (or git HEAD)
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/23.0.0 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMnRFWHRUaXRsZQAvbWF4dG9y
+ L2Nsb29zL2luY29taW5nLzIwMDQvMDIvUFdHL0pIQzE2LnBuZyJMlEwAAAAadEVYdFNvZnR3YXJl
+ AEdOT01FIEljb24gRWRpdG9ynioKbAAAAHFJREFUeJzFk8EKwCAMQ1/ED9cvzw6iuM0N9WIvDTWE
+ 1KjAxmKnLBEBjLcEIBCeI2nccy5YKrjxwbbvAvZ37zlo4GB9iRMC/cq/AppItwmMyJ5I98wd9G7P
+ xxgrSKlYS2lMrOcV13o95aVSKA7E5ndGXG+IIzcl4BNfAAAAAElFTkSuQmCC
+Copyright: Copyright 2007 James Cloos
+OpenPGP-Key: 1024D/ED7DAEA6
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:070422:linux-kernel@vger.kernel.org::jkl1uJENtYZfHkOQ:0000000000000000000000000000000000KtU
+Date: Sun, 22 Apr 2007 13:50:27 -0400
+Message-ID: <m3irbo2t8l.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1Hffkv-0001QP-3C@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX199IwNj0jb4nWUWi5Zv9adY3ODWPTqHyfa41Em
- 5Osx1EZH0JDwjWaPaS8H7jWc2sAd1cWux7pKAqUrWHd/jmcjno
- au8pKKaWSQ1H1rIIcHz4A==
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
-> DervishD <lkml@dervishd.net> writes:
+This recipe results in only two conflicts.  The obvious and easily fixed
+EXTRAVERSION conflict as well as the conflict shown below from kernel/sched.c:
 
->>     Probably it's stupid to update the free clusters count at mount time
->> (sorry if so...) but it looks like a good idea to me. And of course, I
->> don't mean to update the value _on disk_, but the kernel's idea of free
->> clusters (so even FAT filesystems mounted R/O will report correct
->> values).
-> 
-> It would add the limitation to following simple usage,
-> 
-> # mount -t vfat /dev/sda1 /mnt
->         # cp -a * /mnt
->         # umount
-> 
-> if /dev/sda1 was the large and slow device, "mount" will need several
-> minutes to counts free clusters. I think the user will be hard to
-> accept the several minutes at "mount".
+#!/bin/sh
+git clone -n git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git 2.6.21-rc7-rt
+cd 2.6.21-rc7-rt
+git branch rc6 v2.6.21-rc6
+git branch rc7 v2.6.21-rc7
+git branch rc6-rt0 rc6
+git checkout rc6-rt0
+git pull git://people.freedesktop.org/~cloos/rt-2.6.git 2.6.21-rc6-rt0
+git branch rc7-rt
+git checkout rc7-rt
+git pull . rc7
 
-I simulated recalculating the FAT using a suboptimal perl script on my
-32 GB FAT32 partition on a 40 GB drive. The results should show the worst
-case for my system.
+The conlict is:
 
-The results were below 2 seconds (optimized perl at 0.5 s) on my AMD Athlon
-XP 2400+. (BTW: I don't think the device speed itself will be relevant in
-many cases even if you'd asume a slow link, since you'll need to read the
-FAT anyway.)
+,----( conflict from kernel/sched.c from pulling rc7 into rc6-rt0 )
+| <<<<<<< HEAD:kernel/sched.c
+| static inline struct task_struct *eldest_child(struct task_struct *p)
+| {
+|         if (list_empty(&p->children))
+|                 return NULL;
+|         return list_entry(p->children.next,struct task_struct,sibling);
+| }
+| 
+| static inline struct task_struct *older_sibling(struct task_struct *p)
+| {
+|         if (p->sibling.prev==&p->parent->children)
+|                 return NULL;
+|         return list_entry(p->sibling.prev,struct task_struct,sibling);
+| }
+| 
+| static inline struct task_struct *younger_sibling(struct task_struct *p)
+| {
+|         if (p->sibling.next==&p->parent->children)
+|                 return NULL;
+|         return list_entry(p->sibling.next,struct task_struct,sibling);
+| }
+| 
+| static const char stat_nam[] = "RMSDTtZX";
+| =======
+| static const char stat_nam[] = "RSDTtZX";
+| >>>>>>> 94a05509a9e11806acd797153d03019706e466f1:kernel/sched.c
+`----
 
-I think this is acceptable, and on this system, I'd like to enable
-recalculating by default. On slower systems, you'll need to chose another
-default.
+Resolving that conflict (I tried using the <<<<<<< version) and the
+EXTRAVERSION conflict allows a subsequent git pull . master to complete
+w/o conflicts.
 
-I think you'll want that option as a module parameter to make all users happy.
-And while you're at it, fmask and dmask are good candidates for module
-parameters, too.-)
+Obviously keeping the three functions in won't harm the resulting
+kernel, but is leaving the M in stat_nam[] the correct resolution?
 
+I'll be testing this kernel later this afternoon.  (As soon as I
+can do the reboot.)
 
-# echo 3 > /proc/sys/vm/drop_caches
+Incidently, has anyone tried combining the rt patches with any of
+the scheduler patches?
 
-# /usr/bin/time sh -c "dd if=/dev/hda2 bs=$((77834925/64)) count=4 | perl -e
-'"'use POSIX;while (sysread STDIN,$x,4) {$n++ if $x eq "\0\0\0\0"} print
-$n*32,"\n"'\'
-4+0 records in
-4+0 records out
-13954720
-0.76user 0.60system 0:01.95elapsed 69%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (8major+1583minor)pagefaults 0swaps
-
-# /usr/bin/time sh -c "dd if=/dev/hda2 bs=$((77834925/64)) count=4 | perl -e
-'"'use POSIX;while (sysread STDIN,$x,4) {$n++ if $x eq "\0\0\0\0"} print
-$n*32,"\n"'\'
-4+0 records in
-4+0 records out
-13955392
-0.74user 0.69system 0:01.50elapsed 95%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (0major+1591minor)pagefaults 0swaps
-
-# /usr/bin/time sh -c "dd if=/dev/hda2 bs=$((77834925/64)) count=4 | perl -e
-'"'use POSIX;while (sysread STDIN,$x,4096) {for (unpack "L*",$x){$n++ if !$_}}
-print $n*32,"\n"'\'
-4+0 records in
-4+0 records out
-13955392
-0.43user 0.06system 0:00.50elapsed 97%CPU (0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (0major+1599minor)pagefaults 0swaps
-
-
+-JimC
 -- 
-The worse the weather, the more you are required to be out in it. 
-
-Friﬂ, Spammer: fv@upXs.7eggert.dyndns.org z@Z1rk.7eggert.dyndns.org
- VRo@Gb2b4rxc.7eggert.dyndns.org LimmgYHv@smpZsGtB.7eggert.dyndns.org
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
