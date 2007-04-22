@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbXDVJ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173AbXDVJrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbXDVJ2w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 05:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbXDVJ2w
+	id S1754173AbXDVJrT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 05:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXDVJrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 05:28:52 -0400
-Received: from il.qumranet.com ([82.166.9.18]:36211 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754044AbXDVJ2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 05:28:51 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       Avi Kivity <avi@qumranet.com>
-Subject: [PATCH -stable] KVM: MMU: Fix host memory corruption on i386 with >= 4GB ram
-Date: Sun, 22 Apr 2007 12:28:49 +0300
-Message-Id: <11772341294121-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.0.6
+	Sun, 22 Apr 2007 05:47:19 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:39780
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754167AbXDVJrS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 05:47:18 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: schwidefsky@de.ibm.com
+Subject: Re: [PATCH 7/8] Kconfig: silicon backplane dependency.
+Date: Sun, 22 Apr 2007 11:46:11 +0200
+User-Agent: KMail/1.9.5
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, akpm@linux-foundation.org,
+       linville@tuxdriver.com
+References: <20070420113505.GH3738@skybase> <200704220119.32729.arnd@arndb.de> <1177228423.8046.5.camel@localhost>
+In-Reply-To: <1177228423.8046.5.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704221146.11439.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PAGE_MASK is an unsigned long, so using it to mask physical addresses on
-i386 (which are 64-bit wide) leads to truncation.  This can result in
-page->private of unrelated memory pages being modified, with disasterous
-results.
+On Sunday 22 April 2007 09:53, Martin Schwidefsky wrote:
+> On Sun, 2007-04-22 at 01:19 +0200, Arnd Bergmann wrote:
+> > > diff -urpN linux-2.6/drivers/ssb/Kconfig linux-2.6-patched/drivers/ssb/Kconfig
+> > > --- linux-2.6/drivers/ssb/Kconfig       2007-04-19 15:24:40.000000000 +0200
+> > > +++ linux-2.6-patched/drivers/ssb/Kconfig       2007-04-19 15:55:44.000000000 +0200
+> > > @@ -1,4 +1,5 @@
+> > >  menu "Sonics Silicon Backplane"
+> > > +       depends on PCI || PCMCIA
+> > 
+> > No, this doesn't look right. There are other devices that come with
+> > SiliconBackplane but are not PCI or PCMCIA style devices.
+> 
+> Yes, Michael already told me about that. The current solution is to use
+> !S390, could we use HAS_IOMEM instead ?
 
-Fix by not using PAGE_MASK for physical addresses; instead calculate
-the correct value directly from PAGE_SIZE.  Also fix a similar BUG_ON().
+I'd think either should be fine.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/mmu.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index 1e09d4e..1b5e189 100644
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -131,7 +131,7 @@ static int dbg = 1;
- 	(((address) >> PT32_LEVEL_SHIFT(level)) & ((1 << PT32_LEVEL_BITS) - 1))
- 
- 
--#define PT64_BASE_ADDR_MASK (((1ULL << 52) - 1) & PAGE_MASK)
-+#define PT64_BASE_ADDR_MASK (((1ULL << 52) - 1) & ~(u64)(PAGE_SIZE-1))
- #define PT64_DIR_BASE_ADDR_MASK \
- 	(PT64_BASE_ADDR_MASK & ~((1ULL << (PAGE_SHIFT + PT64_LEVEL_BITS)) - 1))
- 
-@@ -406,8 +406,8 @@ static void rmap_write_protect(struct kvm_vcpu *vcpu, u64 gfn)
- 			spte = desc->shadow_ptes[0];
- 		}
- 		BUG_ON(!spte);
--		BUG_ON((*spte & PT64_BASE_ADDR_MASK) !=
--		       page_to_pfn(page) << PAGE_SHIFT);
-+		BUG_ON((*spte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT
-+		       != page_to_pfn(page));
- 		BUG_ON(!(*spte & PT_PRESENT_MASK));
- 		BUG_ON(!(*spte & PT_WRITABLE_MASK));
- 		rmap_printk("rmap_write_protect: spte %p %llx\n", spte, *spte);
 -- 
-1.5.0.6
-
+Greetings Michael.
