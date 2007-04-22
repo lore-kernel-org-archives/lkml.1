@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030868AbXDVNXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030863AbXDVN2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030868AbXDVNXz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 09:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030874AbXDVNXy
+	id S1030863AbXDVN2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 09:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030876AbXDVN2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 09:23:54 -0400
-Received: from rtr.ca ([64.26.128.89]:3591 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030868AbXDVNXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 09:23:54 -0400
-Message-ID: <462B61E7.8050607@rtr.ca>
-Date: Sun, 22 Apr 2007 09:23:51 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+	Sun, 22 Apr 2007 09:28:17 -0400
+Received: from mail09.syd.optusnet.com.au ([211.29.132.190]:33549 "EHLO
+	mail09.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030863AbXDVN2Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 09:28:16 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [ck] Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Date: Sun, 22 Apr 2007 23:27:29 +1000
+User-Agent: KMail/1.9.5
+Cc: ck@vds.kolivas.org, Michael Gerdau <mgd@technosis.de>,
+       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
+       Al Boldi <a1426z@gawab.com>, Bill Huey <billh@gnuppy.monkey.org>,
+       Mike Galbraith <efault@gmx.de>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
        William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
        Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-References: <20070420140457.GA14017@elte.hu> <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu> <200704220959.34978.kernel@kolivas.org>
-In-Reply-To: <200704220959.34978.kernel@kolivas.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Matt Mackall <mpm@selenic.com>
+References: <200704221441.48897.kernel@kolivas.org> <200704222218.32754.kernel@kolivas.org> <20070422130725.GA16601@1wt.eu>
+In-Reply-To: <20070422130725.GA16601@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704222327.29496.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
+On Sunday 22 April 2007 23:07, Willy Tarreau wrote:
+> On Sun, Apr 22, 2007 at 10:18:32PM +1000, Con Kolivas wrote:
+> > On Sunday 22 April 2007 21:42, Con Kolivas wrote:
+> >
+> > Willy I'm still investigating the idle time and fluctuating load as a
+> > separate issue.
 >
-> Oh I definitely was not advocating against renicing X, I just suspect that 
-> virtually all the users who gave glowing reports to CFS comparing it to SD 
-> had no idea it had reniced X to -19 behind their back and that they were 
-> comparing it to SD running X at nice 0.
+> OK.
+>
+> > Is it possible the multiple ocbench processes are naturally
+> > synchronising and desynchronising and choosing to sleep and/or run at the
+> > same time?
+>
+> I don't think so. They're independant processes, and I insist on reducing
+> their X work in order to ensure they don't get perturbated by external
+> factor. Their work consist in looping 250 ms and waiting 750 ms, then
+> displaying a new progress line.
 
-I really do wish I wouldn't feel the need to keep stepping in here
-to manually exclude my own results from such wide brush strokes.
+Well if they always wait 750ms and they always do 250ms of work, they will 
+never actually get their 250ms in a continuous stream, and may be waiting on 
+a runqueue while working. What I mean then is that scheduling could cause 
+that synchronising and desynchronising unwittingly by fluctuating the 
+absolute time over which they get their 250ms. The sleep always takes 750ms, 
+but the actual physical time over which they get their 250ms fluctuates by 
+scheduling aliasing. If instead the code said "500ms has passed while I only 
+did 250ms work so I should sleep for 250ms less" this aliasing would go away. 
+Of course this is impossible since a fully loaded machine would mean each 
+process should never sleep. I'm not arguing this is correct behaviour for the 
+scheduler to cause this, mind you, nor am I saying it's wrong behaviour. I'm 
+just trying to understand better how it happens and what (if anything) should 
+be done about it. Overall their progress and cpu distribution appears 
+identical, as you said. The difference is that the CFS design intrinsically 
+manages this exact scenario by design with its sleep/run timing mechanism.
 
-I'm one of those "users", and I've never even tried CFS v4 (yes).
-All prior versions did NOT do the renicing.
+> > I can remove the idle time entirely by running ocbench at nice 19
+> > which means they are all forced to run at basically the same time by the
+> > scheduler.
+>
+> It may indicate some special handling of nice ?
 
-The renicing was in the CFS v4 announcement, right up front for all to see,
-and the code for it has been posted separately with encouragement for RSDL
-or whatever to also adopt it.
+By running them nice 19 the scheduler has effectively just sequentially 
+schedules them, and there is no aliasing.
 
-Now, with it in all of the various "me-too" schedulers,
-maybe they'll all start to shine a little more on real users' systems.
-So far, the stock 2.6.20 scheduler remains my own current preference,
-despite really good results with CFS v1.
-
-Cheers
-
+-- 
+-ck
