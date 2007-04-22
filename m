@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbXDVWbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbXDVWqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbXDVWbW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 18:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXDVWbW
+	id S1752969AbXDVWqb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 18:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXDVWqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 18:31:22 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53307 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753201AbXDVWbV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 18:31:21 -0400
-Date: Sun, 22 Apr 2007 15:31:11 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: akpm@linux-foundation.org, mingo@elte.hu, ego@in.ibm.com, oleg@tv-sign.ru,
-       linux-kernel@vger.kernel.org, vatsa@in.ibm.com, paulmck@us.ibm.com,
-       pavel@ucw.cz
-Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
-Message-Id: <20070422153111.8f8837c0.pj@sgi.com>
-In-Reply-To: <200704230014.42100.rjw@sisk.pl>
-References: <20070419120131.GB13435@in.ibm.com>
-	<200704222139.27128.rjw@sisk.pl>
-	<20070422141452.a7855599.pj@sgi.com>
-	<200704230014.42100.rjw@sisk.pl>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Apr 2007 18:46:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:33444 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753014AbXDVWqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 18:46:31 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17963.58820.295008.169336@cargo.ozlabs.ibm.com>
+Date: Mon, 23 Apr 2007 08:46:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] macintosh/therm_pm72.c: Convert to kthread API.
+In-Reply-To: <20070422191647.GA14995@infradead.org>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695832169-git-send-email-ebiederm@xmission.com>
+	<20070422191647.GA14995@infradead.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael wrote:
-> I'll try to explain how it works.
+Christoph Hellwig writes:
 
-Ok - thanks.  Good explanation of how it works.
+> Why is this driver using a thread at all?  It's only doing a bunch
+> of rather short-lived things in the thread.
 
-One more question - why would I want to do this?
+It's doing i2c reads and writes, which block, and are actually quite
+slow.
 
-Is this like something that would be useful on a laptop, to suspend
-activity and reduce battery drain, while preserving the current state
-of ones sessions and avoiding having to logout or shutdown?
-
-Or are there other good uses for this?
-
-Is it useful for quietting a system down before doing hot plug or
-unplug of key components, such as processors and memory?
-
-Thanks.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Paul.
