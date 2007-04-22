@@ -1,81 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965164AbXDVH1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965044AbXDVH3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965164AbXDVH1o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDVH1o
+	id S965044AbXDVH3A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXDVH27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:27:44 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:44781 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965164AbXDVH1n (ORCPT
+	Sun, 22 Apr 2007 03:28:59 -0400
+Received: from mail14.syd.optusnet.com.au ([211.29.132.195]:46165 "EHLO
+	mail14.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965044AbXDVH27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:27:43 -0400
-Date: Sun, 22 Apr 2007 00:26:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-Message-Id: <20070422002606.ef060060.akpm@linux-foundation.org>
-In-Reply-To: <1177156902.2934.96.camel@lappy>
-References: <20070420155154.898600123@chello.nl>
-	<20070420155503.608300342@chello.nl>
-	<20070421025532.916b1e2e.akpm@linux-foundation.org>
-	<1177156902.2934.96.camel@lappy>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Apr 2007 03:28:59 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Date: Sun, 22 Apr 2007 17:27:43 +1000
+User-Agent: KMail/1.9.5
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
+       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
+       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Gene Heskett <gene.heskett@gmail.com>
+References: <200704221441.48897.kernel@kolivas.org> <20070422070037.GA15092@1wt.eu>
+In-Reply-To: <20070422070037.GA15092@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704221727.44430.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Apr 2007 14:01:36 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Sat, 2007-04-21 at 02:55 -0700, Andrew Morton wrote:
+On Sunday 22 April 2007 17:00, Willy Tarreau wrote:
+> On Sun, Apr 22, 2007 at 02:41:48PM +1000, Con Kolivas wrote:
+> > A significant bugfix for SMP balancing was just posted for the staircase
+> > deadline cpu scheduler which improves behaviour dramatically on any SMP
+> > machine.
+> >
+> > Thanks to Willy Tarreau for noticing likely fault point.
+> >
+> > Also requested was a version in the Makefile so this version of the patch
+> > adds -sd045 to the kernel version.
 >
-> > > +
-> > > +		__mod_bdi_stat64(bdi, BDI_WRITEOUT, -half);
-> > > +		bdi->cycles += cycle;
-> > > +	}
-> > > +	bdi->cycles = global_cycle;
-> > > +	spin_unlock_irqrestore(&bdi->lock, flags);
-> > > +}
-> > 
-> > Here we get to the real critical substance of the patchset, and I don't
-> > have a clue what it's doing nor how it's doing it.  And I bet nobody else
-> > does either.
-> 
-> I shall send a comment patch; but let me try to explain:
-> 
-> I am trying to keep a floating proportion between the BDIs based on
-> writeout events.
+> Con, I'm sorry, but it is worse with this one :-(
 
-The term "writeout event" hasn't been defined.  I assume that it refers to
-something like "one call to balance_dirty_pages()".  Or maybe "one pass
-through balance_dirty_pages()'s inner loop".  Or maybe something else. 
-This is important, because the reader is already a bit lost.
+Well that was quick testing, thanks.
+>
+> The lag when typing in xterms is even more noticeable and vmstat output
+> oscillates between 8 and 65, with idle rates around 50%, as you can see
+> below :
 
-> That is, each device is given a share equal to its
-> proportion of completed writebacks
+> Renicing X or not does not change anything here.
+>
+> I suspect that the bug you fixed was hiding another one :-/
+> If you want me to test another patch, feel free to ask.
 
-In what units are "writebacks" measured?  Pages?
+Thanks. Clearly still a bug in there. I have to keep looking. The other 
+changes are still valid so I have to run with them.
 
-> (writeback, we are in the process of
-> writing vs. writeout, we have written). This proportion is measured in a
-> 'time'-span measured itself in writeouts.
+> Willy
 
-time is measured how?  jiffies?  Calls to balance_dirty_pages(), or passes
-around its inner loop, or...
-
-> Example:
-> 
->   device A completes 4, device B completes 12 and, device C 16 writes.
-
-writes of what?  One page??
-
-I think you get my point ;) Please start from the top.  Define terms before
-using them, always specify in what units all things are being measured,
-assume *no* prior knowledge apart from general kernel-fu.
-
+-- 
+-ck
