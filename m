@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbXDVBxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbXDVCFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbXDVBxn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 21:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXDVBxn
+	id S1753972AbXDVCFi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 22:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbXDVCFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 21:53:43 -0400
-Received: from mail30.syd.optusnet.com.au ([211.29.133.193]:50459 "EHLO
-	mail30.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753955AbXDVBxm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 21:53:42 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Willy Tarreau <w@1wt.eu>, ck list <ck@vds.kolivas.org>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Date: Sun, 22 Apr 2007 11:51:37 +1000
+	Sat, 21 Apr 2007 22:05:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58796 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753972AbXDVCFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 22:05:37 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: 2.6.20.7 locking up hard on boot
+Date: Sat, 21 Apr 2007 22:00:09 -0400
 User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu>
-In-Reply-To: <20070421121235.GA2044@1wt.eu>
+Cc: "Marcos Pinto" <markybob@gmail.com>, "Adrian Bunk" <bunk@stusta.de>,
+       "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       "Jan Beulich" <jbeulich@novell.com>, "Alan Cox" <alan@redhat.com>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com> <20070421103632.GC4016@stusta.de> <62eb359a0704210354t26164b39tc8a842cf598f1927@mail.gmail.com>
+In-Reply-To: <62eb359a0704210354t26164b39tc8a842cf598f1927@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704221151.38464.kernel@kolivas.org>
+Message-Id: <200704212200.09728.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 April 2007 22:12, Willy Tarreau wrote:
-> 2) SD-0.44
->
->    Feels good, but becomes jerky at moderately high loads. I've started
->    64 ocbench with a 250 ms busy loop and 750 ms sleep time. The system
->    always responds correctly but under X, mouse jumps quite a bit and
->    typing in xterm or even text console feels slightly jerky. The CPU is
->    not completely used, and the load varies a lot (see below). However,
->    the load is shared equally between all 64 ocbench, and they do not
->    deviate even after 4000 iterations. X uses less than 1% CPU during
->    those tests.
+On Saturday 21 April 2007 06:54, Marcos Pinto wrote:
+> It took me several hours, but I just got done combing things over with
+> bisect as Greg requested.  This is what git spit out as the problem
+> patch in the end:
+> 
+> 7639e962234c76031d1ddf436def7fd9602be560 is first bad commit
+> commit 7639e962234c76031d1ddf436def7fd9602be560
+> Author: Jan Beulich <jbeulich@novell.com>
+> Date:   Tue Mar 13 14:04:11 2007 -0400
+> 
+>     adjust legacy IDE resource setting (v2)
+> 
+>     adjust legacy IDE resource setting (v2)
+> 
+>     The change to force legacy mode IDE channels' resources to fixed non-zero
+>     values confuses (at least some versions of) X, because the values reported
+>     by the kernel and those readable from PCI config space aren't consistent
+>     anymore.  Therefore, this patch arranges for the respective BARs to also
+>     get updated if possible.
+> 
+>     Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>     Acked-by: Alan Cox <alan@redhat.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>     Cc: Chuck Ebbert <cebbert@redhat.com>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> :040000 040000 d4ee6822208dc3e205bfc92fd30121e7894e63a9
+> 5155044aa75f0d2671e7f5081f5b2999f24034bd M      drivers
+> bisect run success
+> 
 
-Found it. I broke SMP balancing again so there is serious scope for 
-improvement on SMP hardware. That explains the huge load variations. Expect 
-yet another fix soon, which should improve behaviour further :)
+Looks like others are seeing failures due to this patch also:
+http://bugzilla.kernel.org/show_bug.cgi?id=7562
 
--- 
--ck
+-Len
+
