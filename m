@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbXDVHc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965292AbXDVHdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbXDVHc7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbXDVHc7
+	id S965292AbXDVHdz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbXDVHdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:32:59 -0400
-Received: from mail30.syd.optusnet.com.au ([211.29.133.193]:45425 "EHLO
-	mail30.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754148AbXDVHc6 (ORCPT
+	Sun, 22 Apr 2007 03:33:55 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:50358 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbXDVHdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:32:58 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
-Date: Sun, 22 Apr 2007 17:31:58 +1000
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
-       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
-       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>
-References: <200704221441.48897.kernel@kolivas.org> <20070422070037.GA15092@1wt.eu> <200704221727.44430.kernel@kolivas.org>
-In-Reply-To: <200704221727.44430.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704221731.58724.kernel@kolivas.org>
+	Sun, 22 Apr 2007 03:33:54 -0400
+To: ebiederm@xmission.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+In-reply-to: <m1wt0428cd.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [patch 2/8] allow unprivileged umount
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102626.825263599@szeredi.hu>
+	<20070421005506.6a315bec.akpm@linux-foundation.org>
+	<E1HfAf8-0002Ky-00@dorka.pomaz.szeredi.hu>
+	<20070421013622.1f2a7d00.akpm@linux-foundation.org>
+	<m11widlwgp.fsf@ebiederm.dsl.xmission.com>
+	<E1HfVr9-000431-00@dorka.pomaz.szeredi.hu> <m1wt0428cd.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1HfWYk-0004B8-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 22 Apr 2007 09:32:34 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007 17:27, Con Kolivas wrote:
-> On Sunday 22 April 2007 17:00, Willy Tarreau wrote:
-> > On Sun, Apr 22, 2007 at 02:41:48PM +1000, Con Kolivas wrote:
-> > > A significant bugfix for SMP balancing was just posted for the
-> > > staircase deadline cpu scheduler which improves behaviour dramatically
-> > > on any SMP machine.
-> > >
-> > > Thanks to Willy Tarreau for noticing likely fault point.
-> > >
-> > > Also requested was a version in the Makefile so this version of the
-> > > patch adds -sd045 to the kernel version.
+> > Does this mean, that containers will need this?  Or that you don't
+> > know yet?
+> 
+> The uid namespace is something we have to handle carefully and we
+> have not decided on the final design.
+> 
+> What is clear is that all permission checks will need to become
+> either (uid namspace, uid) tuple comparisons.  Or struct user
+> pointer comparisons.  To see if we are talking about the same
+> uid.
+> 
+> So the eventual uid namespace combined with the possibility
+> for rlimits if we use struct user *.  See to make using a struct
+> user a clear win.
+
+OK, if we don't yet know, I'd rather leave this for later.  It will be
+trivial to change to user_struct if we want per-user rlimits.
+
+> >> storing a user struct on each mount point seems sane, plus it allows
+> >> per user mount rlimits which is major plus.  Especially since we
+> >> seem to be doing accounting only for user mounts a per user rlimit
+> >> seems good.
 > >
-> > Con, I'm sorry, but it is worse with this one :-(
->
-> Well that was quick testing, thanks.
->
-> > The lag when typing in xterms is even more noticeable and vmstat output
-> > oscillates between 8 and 65, with idle rates around 50%, as you can see
-> > below :
+> > I'm not against per-user rlimits for mounts, but I'd rather do this
+> > later...
+> 
+> Then let's add a non-discriminate limit.  Instead of a limit that
+> applies only to root.
+
+See reply to relevant patch.
+
+> >> To get the user we should be user fs_uid as HPA suggested.
 > >
-> > Renicing X or not does not change anything here.
+> > fsuid is exclusively used for checking file permissions, which we
+> > don't do here anymore.  So while it could be argued, that mount() _is_
+> > a filesystem operation, it is really a different sort of filesystem
+> > operation than the rest.
 > >
-> > I suspect that the bug you fixed was hiding another one :-/
-> > If you want me to test another patch, feel free to ask.
+> > OTOH it wouldn't hurt to use fsuid instead of ruid...
+> 
+> Yes.  I may be confused but I'm pretty certain we want either
+> the fsuid or the euid to be the mount owner.  ruid just looks wrong.
+> The fsuid is a special case of the effective uid.  Which is who
+> we should perform operations as.  Unless I'm just confused.
 
-Just as a debug point could you please try this patch? Thanks.
+Definitely not euid.  Euid is the one which is effective, i.e. it will
+basically always be zero for a privileged mount().
 
-> Thanks. Clearly still a bug in there. I have to keep looking. The other
-> changes are still valid so I have to run with them.
->
-> > Willy
----
- kernel/sched.c |    2 ++
- 1 file changed, 2 insertions(+)
+Ruid is the one which is returned by getuid().  If a user execs a
+suid-root program, then ruid will be the id of the user, while euid
+will be zero.
 
-Index: linux-2.6.21-rc7-sd/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc7-sd.orig/kernel/sched.c	2007-04-22 17:30:25.000000000 +1000
-+++ linux-2.6.21-rc7-sd/kernel/sched.c	2007-04-22 17:30:49.000000000 +1000
-@@ -3276,6 +3276,7 @@ retry:
- 	}
- 	queue = array->queue + idx;
- 	next = list_entry(queue->next, struct task_struct, run_list);
-+#if 0
- 	if (unlikely(next->time_slice <= 0)) {
- 		/*
- 		 * Unlucky enough that this task ran out of time_slice
-@@ -3287,6 +3288,7 @@ retry:
- 		idx = find_next_bit(rq->dyn_bitmap, MAX_PRIO, MAX_RT_PRIO);
- 		goto retry;
- 	}
-+#endif
- 	next->rotation = rq->prio_rotation;
- 	nstatic = next->static_prio;
- 	if (nstatic < array->best_static_prio)
 
--- 
--ck
+> >> Finally I'm pretty certain the capability we should care about in
+> >> this context is CAP_SETUID.  Instead of CAP_SYS_ADMIN.
+> >> 
+> >> If we have CAP_SETUID we can become which ever user owns the mount,
+> >> and the root user in a container needs this, so he can run login
+> >> programs.  So changing the appropriate super user checks from
+> >> CAP_SYS_ADMIN to CAP_SETUID I think is the right thing todo.
+> >
+> > That's a flawed logic.  If you want to mount as a specific user, and
+> > you have CAP_SETUID, then just use set*uid() and then mount().
+> 
+> Totally agreed for mount.
+> 
+> > Changing the capability check for mount() would break the userspace
+> > ABI.
+> 
+> Sorry I apparently wasn't clear.  CAP_SETUID should be the capability
+> check for umount.
+
+The argument applies to umount as well.  For compatibility, we _need_
+the CAP_SYS_ADMIN check.  And if program has CAP_SETUID but not
+CAP_SYS_ADMIN, it can just set the id to the mount owner before
+calling umount.
+
+Miklos
