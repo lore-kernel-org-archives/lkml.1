@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbXDVSVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbXDVSZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754329AbXDVSVg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 14:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXDVSVg
+	id S1754334AbXDVSZR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 14:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXDVSZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 14:21:36 -0400
-Received: from mbox1.netikka.net ([213.250.81.202]:35739 "EHLO
-	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754329AbXDVSVf (ORCPT
+	Sun, 22 Apr 2007 14:25:17 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:54532 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754334AbXDVSZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 14:21:35 -0400
-X-Greylist: delayed 1278 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Apr 2007 14:21:35 EDT
-Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.46
-From: Thomas Backlund <tmb@mandriva.org>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
-       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
-       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
-       Gene Heskett <gene.heskett@gmail.com>
-In-Reply-To: <200704230103.15265.kernel@kolivas.org>
-References: <200704230103.15265.kernel@kolivas.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 22 Apr 2007 20:58:34 +0300
-Message-Id: <1177264715.4729.2.camel@turion34.supernet.tld>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
+	Sun, 22 Apr 2007 14:25:15 -0400
+Date: Sun, 22 Apr 2007 14:25:14 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+Subject: Re: Today's 'master' leaves .idx/.pack in 0400
+In-reply-to: <7vmz10nv1h.fsf_-_@assigned-by-dhcp.cox.net>
+X-X-Sender: nico@xanadu.home
+To: Junio C Hamano <junkio@cox.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-id: <alpine.LFD.0.98.0704221422250.28339@xanadu.home>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=us-ascii
+Content-transfer-encoding: 7BIT
+References: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net>
+ <7v1widrl0o.fsf@assigned-by-dhcp.cox.net>
+ <alpine.LFD.0.98.0704221019100.9964@woody.linux-foundation.org>
+ <7vvefonvdz.fsf@assigned-by-dhcp.cox.net>
+ <7vmz10nv1h.fsf_-_@assigned-by-dhcp.cox.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mån 2007-04-23 klockan 01:03 +1000 skrev Con Kolivas:
-> Yet another significant bugfix for SMP balancing was just posted for the 
-> staircase deadline cpu scheduler which improves behaviour dramatically on any 
-> SMP machine.
-> 
-> Thanks to Willy Tarreau for noticing more bugs.
-> 
-> As requested was a version in the Makefile so this version of the patch 
-> adds -sd046 to the kernel version.
-> 
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.46.patch
-> http://ck.kolivas.org/patches/staircase-deadline/2.6.20.7-sd-0.46.patch
-> 
-> Renicing X to -10, while not essential, may be desirable on the desktop. 
-> Unlike the CFS scheduler which renices X without your intervention to 
-> nice -19, the SD patches do not alter nice level on their own.
-> 
-> See the patch just posted called 'sched: implement staircase deadline 
-> scheduler load  weight fix' for details of the fixes.
-> 
-> Thanks to all testing and giving feedback.
-> 
-> Well I'm exhausted...
-> 
+On Sun, 22 Apr 2007, Junio C Hamano wrote:
 
-This one broke 2.6.20.7 build...
+> With recent glibc, mkstemp() creates 0400 file.  Updated
+> pack-objects uses it in pack/idx writing without fixing this,
+> hence this problem.
 
-kernel/sched.c: In function ‘dependent_sleeper’:
-kernel/sched.c:3319: error: ‘DEF_TIMESLICE’ undeclared (first use in
-this function)
-kernel/sched.c:3319: error: (Each undeclared identifier is reported only
-once
-kernel/sched.c:3319: error: for each function it appears in.)
+Oops.  I guess I'm guilty for this.  I didn't bother looking at the 
+permission on the pack for git-pack-objects since git-repack seemed to 
+take care of that.  But it only _remove_ write permissions.
 
--- 
-Thomas Backlund <tmb@mandriva.org>
 
+Nicolas
