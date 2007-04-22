@@ -1,63 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbXDVHRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbXDVHVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754138AbXDVHRd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbXDVHRc
+	id S1754140AbXDVHVl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbXDVHVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:17:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:18465 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbXDVHRc (ORCPT
+	Sun, 22 Apr 2007 03:21:40 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54514 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754140AbXDVHVj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:17:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AQf8T8/lk4Ntd5oXcFFXkFXOze7ts/gZh3idzQACwsA33UKwCO0hkVQNSCucwgBDfWrP3XJmD6s9Vr9PdNNaS0pL9tZVIOCHvto4tSnOilY3tV6Ayiu4APezZVrynGm409I3X2ERDRgAknsW8FkQaF/vXaLaJY6Vx8tt7OyspdI=
-Message-ID: <a36005b50704220017y664eef89u5f78f1e089c5014@mail.gmail.com>
-Date: Sun, 22 Apr 2007 00:17:31 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "William Lee Irwin III" <wli@holomorphy.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Kyle Moffett" <mrmacman_g4@mac.com>, "Willy Tarreau" <w@1wt.eu>,
-       "Ingo Molnar" <mingo@elte.hu>, "Con Kolivas" <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>, "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       "Thomas Gleixner" <tglx@linutronix.de>, caglar@pardus.org.tr,
-       "Gene Heskett" <gene.heskett@gmail.com>
-In-Reply-To: <20070422070238.GH2986@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 22 Apr 2007 03:21:39 -0400
+Date: Sun, 22 Apr 2007 00:19:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: Re: [PATCH 08/10] mm: count writeback pages per BDI
+Message-Id: <20070422001949.4d697fe5.akpm@linux-foundation.org>
+In-Reply-To: <1177153636.2934.43.camel@lappy>
+References: <20070420155154.898600123@chello.nl>
+	<20070420155503.334628394@chello.nl>
+	<20070421025525.042ed73a.akpm@linux-foundation.org>
+	<1177153636.2934.43.camel@lappy>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070420140457.GA14017@elte.hu> <20070421154614.GA26169@elte.hu>
-	 <20070421161818.GC7840@1wt.eu>
-	 <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org>
-	 <20070421164241.GF2986@holomorphy.com>
-	 <E1192E83-5E64-4782-8F92-DDCA09CA2F55@mac.com>
-	 <a36005b50704211249pb771b79k227914515b5f9906@mail.gmail.com>
-	 <alpine.LFD.0.98.0704211634130.9964@woody.linux-foundation.org>
-	 <a36005b50704211846g4ed1256fpad6a3a5670318314@mail.gmail.com>
-	 <20070422070238.GH2986@holomorphy.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/22/07, William Lee Irwin III <wli@holomorphy.com> wrote:
-> I'm just looking for what people want the API to be here. With that in
-> hand we can just go out and do whatever needs to be done.
+On Sat, 21 Apr 2007 13:07:16 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-I think a sched_yield_to is one interface:
+> On Sat, 2007-04-21 at 02:55 -0700, Andrew Morton wrote:
+> > On Fri, 20 Apr 2007 17:52:02 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > Count per BDI writeback pages.
+> > > 
+> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > ---
+> > >  include/linux/backing-dev.h |    1 +
+> > >  mm/page-writeback.c         |   12 ++++++++++--
+> > >  2 files changed, 11 insertions(+), 2 deletions(-)
+> > > 
+> > > Index: linux-2.6/mm/page-writeback.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/mm/page-writeback.c	2007-04-20 15:27:28.000000000 +0200
+> > > +++ linux-2.6/mm/page-writeback.c	2007-04-20 15:28:10.000000000 +0200
+> > > @@ -979,14 +979,18 @@ int test_clear_page_writeback(struct pag
+> > >  	int ret;
+> > >  
+> > >  	if (mapping) {
+> > > +		struct backing_dev_info *bdi = mapping->backing_dev_info;
+> > >  		unsigned long flags;
+> > >  
+> > >  		write_lock_irqsave(&mapping->tree_lock, flags);
+> > >  		ret = TestClearPageWriteback(page);
+> > > -		if (ret)
+> > > +		if (ret) {
+> > >  			radix_tree_tag_clear(&mapping->page_tree,
+> > >  						page_index(page),
+> > >  						PAGECACHE_TAG_WRITEBACK);
+> > > +			if (bdi_cap_writeback_dirty(bdi))
+> > > +				__dec_bdi_stat(bdi, BDI_WRITEBACK);
+> > 
+> > Why do we test bdi_cap_writeback_dirty() here?
+> > 
+> > If we remove that test, we end up accumulating statistics for
+> > non-writebackable backing devs, but does that matter? 
+> 
+> It would not, had I not cheated:
+> 
+> +void bdi_init(struct backing_dev_info *bdi)
+> +{
+> +       int i;
+> +
+> +       if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
+> +               return;
+> +
+> +       for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
+> +               percpu_counter_init(&bdi->bdi_stat[i], 0);
+> +}
+> +EXPORT_SYMBOL(bdi_init);
+> 
+> >  Probably the common
+> > case is writebackable backing-devs, so eliminating the test-n-branch might
+> > be a net microgain.
+> 
+> Time vs space. Now we don't even have storage for those BDIs..
+> 
+> Don't particularly care on this point though, I just thought it might be
+> worthwhile to save on the percpu data.
 
-   int sched_yield_to(pid_t);
+It could be that we never call test_clear_page_writeback() against
+!bdi_cap_writeback_dirty() pages anwyay.  I can't think why we would, but
+the relationships there aren't very clear.  Does "don't account for dirty
+memory" imply "doesn't ever do writeback"?  One would need to check, and
+it's perhaps a bit fragile.
 
-For futex(), the extension is needed for the FUTEX_WAIT operation.  We
-need a new operation FUTEX_WAIT_FOR or so which takes another (the
-fourth) parameter which is the PID of the target.
+It's worth checking though.  Boy we're doing a lot of stuff in there
+nowadays.
 
-For FUTEX_LOCK_PI we need no extension.  The futex value is the PID of
-the current owner.  This is required for the whole interface to work
-in the first place.
+OT: it might be worth looking into batching this work up - the predominant
+caller should be mpage_end_io_write(), and he has a whole bunch of pages
+which are usually all from the same file, all contiguous.  It's pretty
+inefficient to be handling that data one-page-at-a-time, and some
+significant speedups may be available.
+
+Instead, everyone seems to think that variable pagecache page size is the
+only way of improving things.  Shudder.
+
