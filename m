@@ -1,169 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964834AbXDVGQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964793AbXDVGXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964834AbXDVGQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 02:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964810AbXDVGQ6
+	id S964793AbXDVGXB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 02:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964862AbXDVGXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 02:16:58 -0400
-Received: from fed1rmmtao102.cox.net ([68.230.241.44]:64462 "EHLO
-	fed1rmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964778AbXDVGQ5 (ORCPT
+	Sun, 22 Apr 2007 02:23:00 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:32802 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964793AbXDVGXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 02:16:57 -0400
-From: Junio C Hamano <junkio@cox.net>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.1.2
-References: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net>
-cc: linux-kernel@vger.kernel.org
-Date: Sat, 21 Apr 2007 23:16:55 -0700
-In-Reply-To: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net> (Junio C. Hamano's
-	message of "Wed, 11 Apr 2007 19:09:34 -0700")
-Message-ID: <7v1widrl0o.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 22 Apr 2007 02:23:00 -0400
+Date: Sat, 21 Apr 2007 23:22:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Linux Kernel ML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]Fix parsing kernelcore boot option for ia64
+Message-Id: <20070421232248.431ef2da.akpm@linux-foundation.org>
+In-Reply-To: <20070413140533.A239.Y-GOTO@jp.fujitsu.com>
+References: <20070413140533.A239.Y-GOTO@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.1.2 is available at the
-usual places:
+On Fri, 13 Apr 2007 14:26:22 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
 
-  http://www.kernel.org/pub/software/scm/git/
+> Hello.
+> 
+> cmdline_parse_kernelcore() should return the next pointer of boot option
+> like memparse() doing. If not, it is cause of eternal loop on ia64 box.
+> This patch is for 2.6.21-rc6-mm1.
+> 
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> 
+> ----
+> 
+>  arch/ia64/kernel/efi.c |    2 +-
+>  include/linux/mm.h     |    2 +-
+>  mm/page_alloc.c        |    4 ++--
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> Index: current_test/arch/ia64/kernel/efi.c
+> ===================================================================
+> --- current_test.orig/arch/ia64/kernel/efi.c	2007-04-12 17:33:28.000000000 +0900
+> +++ current_test/arch/ia64/kernel/efi.c	2007-04-13 12:13:21.000000000 +0900
+> @@ -424,7 +424,7 @@ efi_init (void)
+>  		} else if (memcmp(cp, "max_addr=", 9) == 0) {
+>  			max_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
+>  		} else if (memcmp(cp, "kernelcore=",11) == 0) {
+> -			cmdline_parse_kernelcore(cp+11);
+> +			cmdline_parse_kernelcore(cp+11, &cp);
+>  		} else if (memcmp(cp, "min_addr=", 9) == 0) {
+>  			min_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
+>  		} else {
+> Index: current_test/mm/page_alloc.c
+> ===================================================================
+> --- current_test.orig/mm/page_alloc.c	2007-04-12 18:25:37.000000000 +0900
+> +++ current_test/mm/page_alloc.c	2007-04-13 12:12:58.000000000 +0900
+> @@ -3736,13 +3736,13 @@ void __init free_area_init_nodes(unsigne
+>   * kernelcore=size sets the amount of memory for use for allocations that
+>   * cannot be reclaimed or migrated.
+>   */
+> -int __init cmdline_parse_kernelcore(char *p)
+> +int __init cmdline_parse_kernelcore(char *p, char **retp)
+>  {
+>  	unsigned long long coremem;
+>  	if (!p)
+>  		return -EINVAL;
+>  
+> -	coremem = memparse(p, &p);
+> +	coremem = memparse(p, retp);
+>  	required_kernelcore = coremem >> PAGE_SHIFT;
+>  
+>  	/* Paranoid check that UL is enough for required_kernelcore */
+> Index: current_test/include/linux/mm.h
+> ===================================================================
+> --- current_test.orig/include/linux/mm.h	2007-04-11 14:15:33.000000000 +0900
+> +++ current_test/include/linux/mm.h	2007-04-13 12:12:20.000000000 +0900
+> @@ -1051,7 +1051,7 @@ extern unsigned long find_max_pfn_with_a
+>  extern void free_bootmem_with_active_regions(int nid,
+>  						unsigned long max_low_pfn);
+>  extern void sparse_memory_present_with_active_regions(int nid);
+> -extern int cmdline_parse_kernelcore(char *p);
+> +extern int cmdline_parse_kernelcore(char *p, char **retp);
+>  #ifndef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
+>  extern int early_pfn_to_nid(unsigned long pfn);
+>  #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
+> 
 
-  git-1.5.1.2.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.1.2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.1.2.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.1.2-1.$arch.rpm	(RPM)
+This will cause all other architectures to crash when kernelcore= is used.
 
-GIT v1.5.1.2 Release Notes
-==========================
-
-Fixes since v1.5.1.1
---------------------
-
-* Bugfixes
-
-  - "git clone" over http from a repository that has lost the
-    loose refs by running "git pack-refs" were broken (a code to
-    deal with this was added to "git fetch" in v1.5.0, but it
-    was missing from "git clone").
-
-  - "git diff a/ b/" incorrectly fell in "diff between two
-    filesystem objects" codepath, when the user most likely
-    wanted to limit the extent of output to two tracked
-    directories.
-
-  - git-quiltimport had the same bug as we fixed for
-    git-applymbox in v1.5.1.1 -- it gave an alarming "did not
-    have any patch" message (but did not actually fail and was
-    harmless).
-
-  - various git-svn fixes.
-
-  - Sample update hook incorrectly always refused requests to
-    delete branches through push.
-
-  - git-blame on a very long working tree path had buffer
-    overrun problem.
-
-  - git-apply did not like to be fed two patches in a row that created
-    and then modified the same file.
-
-  - git-svn was confused when a non-project was stored directly under
-    trunk/, branches/ and tags/.
-
-  - git-svn wants the Error.pm module that was at least as new
-    as what we ship as part of git; install ours in our private
-    installation location if the one on the system is older.
-
-  - An earlier update to command line integer parameter parser was
-    botched and made 'update-index --cacheinfo' completely useless.
-
-
-* Documentation updates
-
-  - Various documentation updates from J. Bruce Fields, Frank
-    Lichtenheld, Alex Riesen and others.  Andrew Ruder started a
-    war on undocumented options.
-
-
-----------------------------------------------------------------
-
-Changes since v1.5.1.1 are as follows:
-
-Alex Riesen (3):
-      Use rev-list --reverse in git-rebase.sh
-      Document -g (--walk-reflogs) option of git-log
-      Fix overwriting of files when applying contextually independent diffs
-
-Andrew Ruder (8):
-      Update git-am documentation
-      Update git-applymbox documentation
-      Update git-apply documentation
-      Update git-annotate/git-blame documentation
-      Update git-archive documentation
-      Update git-cherry-pick documentation
-      Fix unmatched emphasis tag in git-tutorial
-      Update git-config documentation
-
-Andy Whitcroft (1):
-      fix up strtoul_ui error handling
-
-Carlos Rica (1):
-      Use const qualifier for 'sha1' parameter in delete_ref function
-
-Eric Wong (4):
-      git-svn: respect lower bound of -r/--revision when following parent
-      git-svn: quiet some warnings when run only with --version/--help
-      git-svn: don't allow globs to match regular files
-      perl: install private Error.pm if the site version is older than our own
-
-Eygene Ryabinkin (2):
-      Teach gitk to use the user-defined UI font everywhere.
-      Improve look-and-feel of the gitk tool.
-
-Frank Lichtenheld (5):
-      config.txt: Document gitcvs.allbinary
-      config.txt: Document core.autocrlf
-      config.txt: Change pserver to server in description of gitcvs.*
-      config.txt: Fix grammatical error in description of http.noEPSV
-      git-shortlog: Fix two formatting errors in asciidoc documentation
-
-Gerrit Pape (2):
-      variable $projectdesc needs to be set before checking against unchanged default.
-      Have sample update hook not refuse deleting a branch through push.
-
-J. Bruce Fields (7):
-      Documentation: minor edits of git-lost-found manpage
-      Documentation: clarify git-checkout -f, minor editing
-      Documentation: clarify track/no-track option.
-      user-manual: fix discussion of default clone
-      user-manual: detached HEAD
-      user-manual: start revising "internals" chapter
-      user-manual: use detached head when rewriting history
-
-Jim Meyering (1):
-      sscanf/strtoul: parse integers robustly
-
-Junio C Hamano (4):
-      Do not default to --no-index when given two directories.
-      Start preparing for 1.5.1.2
-      git-clone: fix dumb protocol transport to clone from pack-pruned ref
-      GIT 1.5.1.2
-
-Linus Torvalds (1):
-      git-quiltimport complaining yet still working
-
-Matthias Lederhofer (1):
-      handle_options in git wrapper miscounts the options it handled.
-
-Michael Spang (1):
-      git-blame: Fix overrun in fake_working_tree_commit()
-
-Sam Vilain (1):
-      git-tar-tree: complete deprecation conversion message
-
-Shawn O. Pearce (1):
-      git-gui: Brown paper bag fix division by 0 in blame
-
+I wasn't even aware of this kernelcore thing.  It's pretty nasty-looking. 
+yet another reminder that this code hasn't been properly reviewed in the
+past year or three.
 
