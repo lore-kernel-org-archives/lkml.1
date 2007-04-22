@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXDVHuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965513AbXDVHvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965496AbXDVHuV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965483AbXDVHuU
+	id S965513AbXDVHvF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXDVHvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:50:20 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:2604 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965475AbXDVHuR (ORCPT
+	Sun, 22 Apr 2007 03:51:05 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59115 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965483AbXDVHvB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:50:17 -0400
-Subject: Re: [PATCH 2/8] Kconfig: unwanted menus for s390.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <200704220232.10219.arnd@arndb.de>
-References: <20070420113248.GC3738@skybase>
-	 <200704220110.54587.arnd@arndb.de>  <200704220232.10219.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Sun, 22 Apr 2007 09:50:32 +0200
-Message-Id: <1177228232.8046.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Sun, 22 Apr 2007 03:51:01 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [patch 3/8] account user mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102631.544911966@szeredi.hu>
+	<m1odlhkfvy.fsf@ebiederm.dsl.xmission.com>
+	<E1HfWDh-00046V-00@dorka.pomaz.szeredi.hu>
+Date: Sun, 22 Apr 2007 01:49:22 -0600
+In-Reply-To: <E1HfWDh-00046V-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
+	message of "Sun, 22 Apr 2007 09:10:49 +0200")
+Message-ID: <m1lkgk26il.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-22 at 02:32 +0200, Arnd Bergmann wrote:
-> I just saw that we already have an option like that, with a slightly different
-> name.
-> 
-> arch/s390/Kconfig contains
-> 
-> config NO_IOMEM
->         def_bool y
-> 
-> and lib/Kconfig contains
-> 
-> config HAS_IOMEM
->         boolean
->         depends on !NO_IOMEM
->         default y
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-Now that is a good idea, I should be able to replace quite a few !S390
-with HAS_IOMEM. It much better reflects WHY things don't work.
-Just !S390 is so negative ..
+>> > From: Miklos Szeredi <mszeredi@suse.cz>
+>> >
+>> > Add sysctl variables for accounting and limiting the number of user
+>> > mounts.
+>> >
+>> > The maximum number of user mounts is set to 1024 by default.  This
+>> > won't in itself enable user mounts, setting a mount to be owned by a
+>> > user is first needed
+>> 
+>> Since each mount has a user can we just make this a per user rlimit?
+>> 
+>> If we are going to implement a sysctl at this point I think it should
+>> be a global limit that doesn't care if who you are.  Even root can
+>> have recursive mounts that attempt to get out of control.
+>
+> Recursive bind mounts are done carefully enough, so they don't get out
+> of control.
+>
+> Recursive mount propagations can get out of control.  But root can
+> shoot itself in the foot any number of ways, and it's not for the
+> kernel to police that.
 
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
+Yes.  It is.
 
-"Reality continues to ruin my life." - Calvin.
+This is mostly about removing special cases.
+
+We routinely have limits on resources that are global and apply
+to root along with every one else.  Root can change them but
+they still apply to root.  Things like the number of inodes
+in the system or the total number of files.
+
+Since it is perfectly possible to do a per user rlimit at this stage
+in the design.  I contend that either:
+- We implement a per user rlimit of mounts.
+- We implement a global limit on mounts.
+
+No other case makes sense.  The previous objections were at least in
+part because the limit only applied to user mounts but the name of
+the limit did not apply to user mounts.
 
 
+>> Also currently you are not checking the max_users.  It looks like
+>> you do this in a later patch but still it is a little strange to
+>> allow user own mounts and have accounting but to not check the
+>> limit at this state.
+>
+> Yeah, but at this stage user mounts are not yet allowed, so this is
+> safe.
+
+Eric
