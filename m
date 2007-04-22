@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbXDVArj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbXDVBWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbXDVArj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Apr 2007 20:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbXDVArj
+	id S1753905AbXDVBWl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Apr 2007 21:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbXDVBWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Apr 2007 20:47:39 -0400
-Received: from cs.columbia.edu ([128.59.16.20]:58801 "EHLO cs.columbia.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753883AbXDVAri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Apr 2007 20:47:38 -0400
-Message-ID: <462AB061.2070104@cs.columbia.edu>
-Date: Sat, 21 Apr 2007 20:46:25 -0400
-From: Shaya Potter <spotter@cs.columbia.edu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, linuxram@us.ibm.com, ebiederm@xmission.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [patch 7/8] allow unprivileged mounts
-References: <20070420102532.385211890@szeredi.hu>	<20070420102652.075606533@szeredi.hu> <20070421005513.e230aa88.akpm@linux-foundation.org>
-In-Reply-To: <20070421005513.e230aa88.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PerlMx-Spam: Gauge=IIIIIII, Probability=7%, X-Seen-By filter1.cs.columbia.edu
+	Sat, 21 Apr 2007 21:22:41 -0400
+Received: from vms048pub.verizon.net ([206.46.252.48]:40407 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905AbXDVBWk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Apr 2007 21:22:40 -0400
+Date: Sat, 21 Apr 2007 21:22:15 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, v4
+In-reply-to: <200704212347.49310.caglar@pardus.org.tr>
+To: caglar@pardus.org.tr
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, Willy Tarreau <w@1wt.eu>
+Message-id: <200704212122.17154.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+References: <20070420140457.GA14017@elte.hu>
+ <200704201738.00684.gene.heskett@gmail.com>
+ <200704212347.49310.caglar@pardus.org.tr>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 20 Apr 2007 12:25:39 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
-> 
->> Define a new fs flag FS_SAFE, which denotes, that unprivileged
->> mounting of this filesystem may not constitute a security problem.
->>
->> Since most filesystems haven't been designed with unprivileged
->> mounting in mind, a thorough audit is needed before setting this flag.
-> 
-> Practically speaking, is there any realistic likelihood that any filesystem
-> apart from FUSE will ever use this?
+On Saturday 21 April 2007, S.Çağlar Onur wrote:
+>21 Nis 2007 Cts tarihinde, Gene Heskett şunları yazmıştı:
+>> This one is another keeper IMO, or as we are fond of saying around here,
+>> its good enough for the girls I go with.  If this isn't the best one so
+>> far, its very very close and I'm getting pickier.  kmail is the only thing
+>> that's lagging, and that's just kmail, which I believe is single threaded.
+>
+>Add +1 for kmail lags (by the way mines are freezes instead of lags, cause i
+>cannot use konsole etc. while these happens)
+>
+>Cheers
 
-Would it be interesting to support mounting of external file systems (be 
-it USB, NFS or whatever) in a way that automatically forces it to ignore 
-suid and devices (which are already mount time options)?   The question 
-I guess is, how much do you gain over a setuid program (hack?) that can 
-handle this?
+yes, you are correct, the composer in particular, or the response to the + key 
+for next message, will freeze for the second or maybe 2, that kmail is 
+sorting and storing incoming mail.  This is a major problem for users of 
+dialup on an auto basis because its frozen for much of the time it takes the 
+much slower modem communications to complete, compared to a dsl circuit where 
+one can have fetchmail doing the sucking, and handing it off to procmail for 
+treatment by spamassassin and its ilk before finally storing the incoming 
+mail in /var/spool/mail/gene.  kmail sees none of that background activity at 
+all.  They actually run asynchronously here.
+
+kmail then picks that up and sorts it to the correct kmail folder and this 
+does cause the lag/freeze while its doing that.
+
+This latter lag/freeze is all I see, but for those that are using kmail to 
+directly access their ISP's mailserver(s), this lag/freeze isn't a 1 second 
+freeze, but a 10-30 second freeze, and that is truly a cast iron bitch 
+version of a PITA.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+VICARIOUSLY experience some reason to LIVE!!
