@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbXDVISh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXDVIU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932263AbXDVISh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 04:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbXDVISh
+	id S932458AbXDVIU6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 04:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbXDVIU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 04:18:37 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37590 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932263AbXDVISg (ORCPT
+	Sun, 22 Apr 2007 04:20:57 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:42583 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932244AbXDVIU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 04:18:36 -0400
-Date: Sun, 22 Apr 2007 01:18:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-Message-Id: <20070422011810.e76685cc.akpm@linux-foundation.org>
-In-Reply-To: <46247427.6000902@redhat.com>
-References: <46247427.6000902@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Apr 2007 04:20:56 -0400
+To: ebiederm@xmission.com
+CC: jengelh@linux01.gwdg.de, akpm@linux-foundation.org, miklos@szeredi.hu,
+       serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+In-reply-to: <m17is5igtb.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [patch 7/8] allow unprivileged mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102652.075606533@szeredi.hu>
+	<20070421005513.e230aa88.akpm@linux-foundation.org>
+	<m1bqhhked1.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.61.0704211743100.9989@yvahk01.tjqt.qr>
+	<m1zm51is2h.fsf@ebiederm.dsl.xmission.com>
+	<Pine.LNX.4.61.0704211905230.9989@yvahk01.tjqt.qr> <m17is5igtb.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1HfXIY-0004Js-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 22 Apr 2007 10:19:54 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Apr 2007 03:15:51 -0400 Rik van Riel <riel@redhat.com> wrote:
-
-> Make it possible for applications to have the kernel free memory
-> lazily.  This reduces a repeated free/malloc cycle from freeing
-> pages and allocating them, to just marking them freeable.  If the
-> application wants to reuse them before the kernel needs the memory,
-> not even a page fault will happen.
+> > On Apr 21 2007 10:57, Eric W. Biederman wrote:
+> >>
+> >>> tmpfs!
+> >>
+> >>tmpfs is a possible problem because it can consume lots of ram/swap. 
+> >>Which is why it has limits on the amount of space it can consume. 
+> >
+> > Users can gobble up all RAM and swap already today. (Unless they are
+> > confined into an rlimit, which, in most systems, is not the case.)
+> > And in case /dev/shm exists, they can already fill it without running
+> > into an rlimit early.
 > 
-> This patch, together with Ulrich's glibc change, increases
-> MySQL sysbench performance by a factor of 2 on my quad core
-> test system.
+> There are systems that care about rlimits and there is strong intersection
+> between caring about rlimits and user mounts.  Although I do agree that
+> it looks like we have gotten lazy with the default mount options for
+> /dev/shm.
 > 
+> Going a little farther any filesystem that is safe to put on a usb
+> stick and mount automatically should ultimately be safe for unprivileged
+> mounts as well.
 
-In file included from include/linux/mman.h:4,
-                 from arch/sparc64/kernel/sys_sparc.c:19:
-include/asm/mman.h:36:1: "MADV_FREE" redefined
-In file included from include/asm/mman.h:5,
-                 from include/linux/mman.h:4,
-                 from arch/sparc64/kernel/sys_sparc.c:19:
-include/asm-generic/mman.h:32:1: this is the location of the previous definition
+Actually, that's not as simple.
 
-sparc32 and sparc64 already defined MADV_FREE:
+For the usb stick or cdrom you need physical access to the machine.
+And once you have that you basically have full control over the system
+anyway.
 
+But with block filesystems, the user would still need access to the
+device (currently kernel doesn't even check this I think).
 
-#define MADV_FREE       0x5             /* (Solaris) contents can be freed */
+So it may make sense to mark all block based filesystems safe, and
+defer permission checking to user access on the block device.
 
-I'll remove the sparc definitions for now, but we need to work out what
-we're going to do here.  Your patch changes the values of MADV_FREE on
-sparc.
+But the safe flag is still needed for filesystems, which don't have
+such an additional access checking, such as network filesystems.
 
-Perhaps this should be renamed to MADV_FREE_LINUX and given a different
-number.  It depends on how close your proposed behaviour is to Solaris's.
-
+Miklos
