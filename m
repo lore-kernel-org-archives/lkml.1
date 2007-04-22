@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030283AbXDVOmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030923AbXDVOn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030283AbXDVOmm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 10:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030928AbXDVOmm
+	id S1030923AbXDVOn2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 10:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030928AbXDVOn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 10:42:42 -0400
-Received: from www17.your-server.de ([213.133.104.17]:3475 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030283AbXDVOml (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 10:42:41 -0400
-Message-ID: <462B7449.8050908@m3y3r.de>
-Date: Sun, 22 Apr 2007 16:42:17 +0200
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
+	Sun, 22 Apr 2007 10:43:28 -0400
+Received: from oker.escape.de ([194.120.234.254]:43841 "EHLO oker.escape.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030923AbXDVOn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 10:43:27 -0400
+X-Greylist: delayed 4102 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Apr 2007 10:43:27 EDT
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.4.34.3
+References: <20070422101057.GA11893@hera.kernel.org>
+From: Urs Thuermann <urs@isnogud.escape.de>
+Date: 22 Apr 2007 15:33:58 +0200
+In-Reply-To: <20070422101057.GA11893@hera.kernel.org>; from Willy Tarreau on Sun, 22 Apr 2007 10:10:57 +0000
+Message-ID: <ygfzm508reh.fsf@janus.isnogud.escape.de>
+User-Agent: Gnus/5.0808 (Gnus v5.8.8) Emacs/20.7
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386-efi fix /proc/iomem type for kexec-tools
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kexec-tools check for "System RAM".
+Willy Tarreau <wtarreau@hera.kernel.org> writes:
 
-diff --git a/arch/i386/kernel/efi.c b/arch/i386/kernel/efi.c
-index 8f9c624..307156d 100644
---- a/arch/i386/kernel/efi.c
-+++ b/arch/i386/kernel/efi.c
-@@ -638,8 +638,13 @@ efi_initialize_iomem_resources(struct resource
-*code_resource,
-             res->name = "Runtime Service Data";
-             break;
-         case EFI_CONVENTIONAL_MEMORY:
--            res->name = "Conventional Memory";
--            break;
-+                        if (md->attribute & EFI_MEMORY_WP) {
-+                                res->name = "System ROM";
-+                                res->flags |= IORESOURCE_READONLY;
-+                        } else {
-+                                res->name = "System RAM";
-+                        }
-+                        break;
-         case EFI_UNUSABLE_MEMORY:
-             res->name = "Unusable Memory";
-             break;
+> I've just released Linux 2.4.34.3.
+> 
+> Nothing critical, just a bunch of bugfixes and small security fix.
 
+I get the following compile error:
+
+gcc -D__KERNEL__ -I/usr/src/linux-2.4.34.3-ut/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common -fno-builtin-sprintf -fomit-frame-pointer  -pipe -mpreferred-stack-boundary=2 -fno-guess-branch-probability -march=i686 -fno-unit-at-a-time   -nostdinc -iwithprefix include -DKBUILD_BASENAME=fib_semantics  -c -o fib_semantics.o fib_semantics.c
+fib_semantics.c: In function `fib_create_info':
+fib_semantics.c:436: error: label `errout' used but not defined
+make[3]: *** [fib_semantics.o] Error 1
+make[3]: Leaving directory `/usr/src/linux-2.4.34.3-ut/net/ipv4'
+make[2]: *** [first_rule] Error 2
+make[2]: Leaving directory `/usr/src/linux-2.4.34.3-ut/net/ipv4'
+make[1]: *** [_subdir_ipv4] Error 2
+make[1]: Leaving directory `/usr/src/linux-2.4.34.3-ut/net'
+make: *** [_dir_net] Error 2
+
+The appended patch fixes this problem.
+
+
+urs
+
+
+--- net/ipv4/fib_semantics.c.orig	2007-04-22 13:31:23.000000000 +0000
++++ net/ipv4/fib_semantics.c	2007-04-22 13:31:42.000000000 +0000
+@@ -433,7 +433,7 @@
+ 
+ 	if (r->rtm_type > RTN_MAX) {
+ 		err = -EINVAL;
+-		goto errout;
++		goto failure;
+ 	}
+ 
+ 	/* Fast check to catch the most weird cases */
