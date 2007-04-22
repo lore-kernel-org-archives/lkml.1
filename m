@@ -1,52 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbXDVVtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbXDVWKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbXDVVtv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 17:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbXDVVtv
+	id S1752937AbXDVWKv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 18:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbXDVWKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 17:49:51 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:53768 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbXDVVtu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 17:49:50 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Fw: [PATCH][RFC] PCMCIA support for 8xx using platform devices
-Date: Sun, 22 Apr 2007 23:49:41 +0200
-User-Agent: KMail/1.9.6
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-pcmcia@lists.infradead.org,
-       lkml <linux-kernel@vger.kernel.org>
-References: <20070422232658.5f427fd3@localhost.localdomain>
-In-Reply-To: <20070422232658.5f427fd3@localhost.localdomain>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sun, 22 Apr 2007 18:10:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58149 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752920AbXDVWKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 18:10:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Paul Jackson <pj@sgi.com>
+Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
+Date: Mon, 23 Apr 2007 00:14:40 +0200
+User-Agent: KMail/1.9.5
+Cc: akpm@linux-foundation.org, mingo@elte.hu, ego@in.ibm.com, oleg@tv-sign.ru,
+       linux-kernel@vger.kernel.org, vatsa@in.ibm.com, paulmck@us.ibm.com,
+       pavel@ucw.cz
+References: <20070419120131.GB13435@in.ibm.com> <200704222139.27128.rjw@sisk.pl> <20070422141452.a7855599.pj@sgi.com>
+In-Reply-To: <20070422141452.a7855599.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704222349.42368.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18IDspJZvejHVsoo0d29IYojPn6cPi/zepJoLg
- bS63pC4bGx1vXJOkb3ES9+wUdFZi9J5fgGtm63Rst4MwxPKprW
- pZInNp09PhAST16cMu7dQ==
+Message-Id: <200704230014.42100.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007, Vitaly Bordug wrote:
-> This utilizes PCMCIA on mpc885ads and mpc866ads from arch/powerpc. In the
-> new approach, direct IMMR accesses from within drivers/ were totally
-> eliminated, that requires hardware_enable, hardware_disable, voltage_set
-> board-specific functions to be moved over to BSP code section   
-> (arch/powerpc/platforms/8xx in 885 case). There is just no way to have
-> both arch/ppc and arch/powerpc approaches to work simultaneously because
-> of that.  
+On Sunday, 22 April 2007 23:14, Paul Jackson wrote:
+> Rafael wrote:
+> > Move all of the freezer-related flags to a separate field in task_struct and
+> > introduce functions to operate them using set_bit() etc.
+> 
+> It's getting time I learned what this freezer thing is.
+> 
+> What would you suggest I read?
+> 
+> I looked in include/linux/freezer.h and didn't see any explanations.
+> I found one Documenation file, power/kernel_threads.txt, that explained
+> the interaction of freezing and kernel threads.  I looked in the
+> comments for various 2.6.21-rc6-mm1 freezer* patches, and saw various
+> interesting details.
+> 
+> But I couldn't find any documentation telling me what a freezer was,
+> or what a refrigerator is.
+> 
+> Did I miss something?
 
-Maybe I'm missing a key issue here, but what's the point of adding
-more platform_devices for stuff that is already in the device tree?
-Shouldn't this be made an of_platform_driver instead so you can
-use the existing of_device directly?
+Well, unfortunately not.  The freezer is not separately documented, mainly
+because (1) for a long time it's been a part of the suspend code and no one
+else used it, and (2) because it's been changing a lot recently and it's been
+a 'moving target' from the documentation point of view.
 
-	Arnd <><
+I'll try to explain how it works.
+
+In short, we use the freezer to make tasks enter a specific function, called
+the refrigerator, and stay there until they are let out.  This is done by
+calling freeze_processes() (in 2.6.21-rc7 it is located in
+kernel/power/process.c) that executes try_to_freeze_tasks() separately for
+userland processes and kernel threads (the sync() in between is needed by
+the suspend code).  try_to_freeze_tasks() sets the FREEZE flag (TIF_FREEZE in
+2.6.21-rc7) for each freezable (I'll explain what that means in a while) task
+and sends a fake signal to it.
+
+Userland processes then go to get_signal_to_deliver(), where they execute
+try_to_freeze() (defined in include/linux/freezer.h) and call refrigerator()
+(in kernel/power/process.c), since the FREEZE flag is set.  In refrigerator()
+they reset the FREEZE flag and set the FROZEN flag (in 2.6.21-rc7 it is a
+process flag defined in sched.h).  Next, they loop in refrigerator() until
+someone resets the FROZEN flag for them.  Then we say that they are 'frozen'.
+
+Kernel threads don't call get_signal_to_deliver(), so they have to execute
+try_to_freeze() directly to go to the refrigerator.  Moreover, kernel threads
+may not want to go there at all, in which case they should set the NOFREEZE
+flag (in 2.6.21-rc7 it is a process flag defined in sched.h), that makes
+try_to_freeze_tasks() ignore them.
+
+Apart from the kernel threads that have the NOFREEZE flag set,
+try_to_freeze_tasks() ignores the task that's running it (its current task)
+and the tasks that have exit_state different from 0.  They all are regarded
+as 'not freezable'.
+
+Of course, kernel threads that declare themselves as not freezable, by setting
+the NOFREEZE flag, should be careful enough not to interfere with the subsystem
+that is using the freezer (ie. has called freeze_processes()), which may be
+quite difficult in practice, so only a few kernel threads do it (and even some
+of them really shouldn't).
+
+The subsystem that has called freeze_processes() is responsible for the
+'thawing' of tasks, which is done by calling thaw_processes() (defined in
+kernel/power/process.c).  It runs thaw_tasks() (in the same file) for kernel
+threads and userland processes.  This function loops over all tasks and
+resets the FROZEN flag for them, so that they can leave the refrigerator.
+
+The suspend code uses the freezer to make sure that processes won't get
+in the way when some suspend-related low-level operations are carried out
+(like suspending devices, the creation of a suspend image by swsusp etc.).
+Other subsystems may use it for similar purposes.
+
+Greetings,
+Rafael
